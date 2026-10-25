@@ -121,8 +121,9 @@ jobs:
         run: npm ci && bin/rails tailwindcss:build
 
       # The test workers each create their own database (clubhouse3_test-<n>).
+      # The runner has no MariaDB client; the service container does.
       - name: Let the test user create databases
-        run: mariadb --host 127.0.0.1 --user root --password=donothing -e "GRANT ALL ON *.* TO 'rangers'@'%'"
+        run: docker exec ${{ job.services.mariadb.id }} mariadb --user root --password=donothing -e "GRANT ALL ON *.* TO 'rangers'@'%'"
 
       - name: Prepare the database
         run: bin/rails db:prepare
