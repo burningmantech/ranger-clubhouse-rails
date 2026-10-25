@@ -101,6 +101,10 @@ jobs:
     env:
       RAILS_ENV: test
       CI: true
+      # Eight workers suit the database-bound unit tests. The system tests each
+      # drive a Chrome, and eight of them on the runner's four cores time out
+      # (search results in 5s, a dialog in 2s); four is one per core.
+      PARALLEL_WORKERS: ${{ matrix.suite == 'system' && '4' || '8' }}
 
     steps:
       - name: Harden Runner
