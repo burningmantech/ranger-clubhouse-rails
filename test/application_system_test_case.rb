@@ -6,6 +6,10 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   include SystemTestHelpers
 
+  # The CI runner shares four cores among eight Chromes and eight servers, so
+  # a toast's Stimulus controller can connect after Capybara's two seconds.
+  Capybara.default_max_wait_time = 5 if ENV["CI"].present?
+
   # sign_in hands its session to ApplicationController.test_session, so mixed
   # controller/system runs stay signed in, and a class attribute outlives the
   # test. Left set, the next test's first visit renders signed in as this

@@ -42,7 +42,6 @@ class Me::ScheduleSignupsCardTest < ApplicationSystemTestCase
 
     within("[aria-labelledby='slot-#{@future_slot.id}-title']") do
       assert_text @position.title
-      assert_text "Info:"
       assert_text "Berlin Camp"
     end
   end

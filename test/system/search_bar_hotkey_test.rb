@@ -760,12 +760,13 @@ class SearchBarHotkeyTest < ApplicationSystemTestCase
 
   # Slow every search from here on, so a test can act while one is out, and mark
   # the page when one starts and when one has ended. An aborted one ends at once,
-  # as a real request does.
+  # as a real request does. Two seconds: a loaded CI runner spent 800ms between
+  # finding a row and clicking it, and the answer replaced the row under the click.
   def slow_searches
     page.execute_script(<<~JS)
       const realFetch = window.fetch
       window.fetch = (input, init = {}) => new Promise((resolve, reject) => {
-        const timer = setTimeout(() => resolve(realFetch(input, init)), 800)
+        const timer = setTimeout(() => resolve(realFetch(input, init)), 2000)
         init.signal?.addEventListener("abort", () => { clearTimeout(timer); reject(init.signal.reason) })
       })
       document.addEventListener("autocomplete.loadstart", () => {
