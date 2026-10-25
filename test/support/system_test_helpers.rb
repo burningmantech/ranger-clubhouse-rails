@@ -90,10 +90,11 @@ module SystemTestHelpers
   end
 
   # Headless Chrome will not shrink its window below about 500px, so the phone
-  # is emulated through the devtools protocol instead.
-  def on_a_phone
+  # is emulated through the devtools protocol instead. 375x812 is an iPhone X;
+  # height: 667 is the SE, for a test that needs the fold higher up.
+  def on_a_phone(height: 812)
     page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride",
-                                    width: 375, height: 812, deviceScaleFactor: 1, mobile: false)
+                                    width: 375, height:, deviceScaleFactor: 1, mobile: false)
     yield
   ensure
     page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")

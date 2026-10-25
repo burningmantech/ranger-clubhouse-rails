@@ -113,9 +113,10 @@ class Vc::UnifiedFlaggingReviewTest < ApplicationSystemTestCase
 
   # Back restores Turbo's snapshot of the page, which keeps no scroll position
   # for the inner element this layout scrolls. The selected line comes back
-  # into view, with its mark and its pane.
+  # into view, with its mark and its pane. On the SE's screen the page header
+  # alone fills the fold, so the first line starts below it.
   test "Back returns to the line selected before" do
-    on_a_phone do
+    on_a_phone(height: 667) do
       visit vc_unified_flagging_path
       wait_for_controller "review-pane", "[data-controller~=review-pane]"
       assert_not line_in_view?(@flagged), "the first line starts out of view, or this proves nothing"
