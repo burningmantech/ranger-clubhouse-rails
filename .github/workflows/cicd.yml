@@ -48,7 +48,7 @@ jobs:
 
       # importmap audit boots the app, and ruby-vips loads libvips on boot.
       - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips-dev
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips42t64
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
@@ -68,11 +68,18 @@ jobs:
         run: bin/importmap audit
 
 
+  # The system tests get a runner of their own: eight Chromes on four cores
+  # cost the rest of the suite more than the second job's setup does.
   test:
-    name: Tests
+    name: ${{ matrix.suite == 'system' && 'System tests' || 'Tests' }}
 
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [unit, system]
 
     services:
       mariadb:
@@ -104,10 +111,12 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # Ubuntu ships libheif's HEVC decoder as a separate plugin; without it a
-      # HEIC photo upload fails to decode (Debian and Homebrew bundle it).
+      # ruby-vips needs only the shared library. Ubuntu ships libheif's HEVC
+      # decoder as a separate plugin; without it a HEIC photo upload fails to
+      # decode (Debian and Homebrew bundle it). The MySQL client library is on
+      # the runner image already.
       - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y default-libmysqlclient-dev libvips-dev libheif-plugin-libde265
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips42t64 libheif-plugin-libde265
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
@@ -133,7 +142,7 @@ jobs:
         run: bin/rails db:prepare
 
       - name: Run tests
-        run: bin/rails test:all
+        run: bin/rails ${{ matrix.suite == 'system' && 'test:system' || 'test' }}
 
       - name: Keep failed system-test screenshots
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
