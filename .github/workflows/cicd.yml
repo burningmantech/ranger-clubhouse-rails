@@ -14,9 +14,11 @@ on:
     branches: ["main"]
   pull_request:
 
+# A newer push to a pull request cancels its older run. A merge to main never
+# cancels the run before it, which may be rolling staging.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 defaults:
   run:
@@ -187,3 +189,129 @@ jobs:
           name: docker
           path: docker_image.tgz
           retention-days: 1
+
+
+  # Deploy to staging: slice 3 of .scratch/github-cicd/PRD.md, written before
+  # the AWS side exists. Uncomment the job once these do: the ECR repository
+  # rangers/ranger-clubhouse-rails, the service and task definition family
+  # ranger-clubhouse-staging-fg on cluster rangers, the deploy role's trust for
+  # refs/heads/main and its RunTask permissions, and the repository secret
+  # AWS_ACCOUNT_ID. Modeled on burningmantech/ranger-ims-go, plus a migration
+  # task before the service rolls.
+  #
+  # deploy-staging:
+  #   name: Deploy to staging
+  #
+  #   needs: [lint, test, docker-build]
+  #   if: github.ref == 'refs/heads/main'
+  #
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 30
+  #
+  #   permissions:
+  #     id-token: write
+  #     contents: read
+  #
+  #   env:
+  #     AWS_REGION: us-west-2
+  #     AWS_DEPLOY_ROLE: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ranger-gha-deploy"
+  #     AWS_ECR_IMAGE_NAME: /rangers/ranger-clubhouse-rails
+  #     AWS_ECS_CLUSTER: rangers
+  #     AWS_ECS_CONTAINER_NAME: ranger-clubhouse
+  #     AWS_ECS_SERVICE: ranger-clubhouse-staging-fg
+  #     AWS_ECS_TASK_DEFINITION_FAMILY: ranger-clubhouse-staging-fg
+  #
+  #   steps:
+  #     - name: Harden Runner
+  #       uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+  #       with:
+  #         egress-policy: audit
+  #
+  #     - name: Download Docker image artifacts
+  #       uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+  #       with:
+  #         name: docker
+  #
+  #     - name: Load Docker image
+  #       run: gzip --uncompress --stdout docker_image.tgz | docker image load
+  #
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+  #       with:
+  #         aws-region: ${{ env.AWS_REGION }}
+  #         role-to-assume: ${{ env.AWS_DEPLOY_ROLE }}
+  #         role-session-name: ranger-gha-${{ github.repository_id }}-${{ github.job }}-${{ github.run_id }}
+  #
+  #     - name: Login to AWS ECR
+  #       id: ecr
+  #       uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
+  #
+  #     # :<sha> is what the task definition names, :staging is what production
+  #     # promotes, and :staging_rollback is the one before it.
+  #     - name: Push the image to ECR
+  #       run: |
+  #         repository="${{ steps.ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}"
+  #         docker tag "ranger-clubhouse-rails:${{ github.sha }}" "${repository}:${{ github.sha }}"
+  #         docker push "${repository}:${{ github.sha }}"
+  #         if docker pull "${repository}:staging"; then
+  #           docker tag "${repository}:staging" "${repository}:staging_rollback"
+  #           docker push "${repository}:staging_rollback"
+  #         fi
+  #         docker tag "${repository}:${{ github.sha }}" "${repository}:staging"
+  #         docker push "${repository}:staging"
+  #
+  #     # The live task definition holds the environment; only the image and
+  #     # these variables change. Each revision names its own image, so a
+  #     # rollback is pointing the service at the previous revision.
+  #     - name: Render the task definition with the new image
+  #       id: render
+  #       uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1.9.1
+  #       with:
+  #         task-definition-family: ${{ env.AWS_ECS_TASK_DEFINITION_FAMILY }}
+  #         container-name: ${{ env.AWS_ECS_CONTAINER_NAME }}
+  #         image: "${{ steps.ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}:${{ github.sha }}"
+  #         environment-variables: |
+  #           GIT_SHA=${{ github.sha }}
+  #           GHA_ACTOR=${{ github.actor }}
+  #           GHA_RUN_ID=${{ github.run_id }}
+  #
+  #     - name: Register the task definition
+  #       id: register
+  #       run: |
+  #         jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy, .deregisteredAt)' \
+  #           "${{ steps.render.outputs.task-definition }}" > task-definition.json
+  #         arn=$(aws ecs register-task-definition --cli-input-json file://task-definition.json \
+  #           --query taskDefinition.taskDefinitionArn --output text)
+  #         echo "arn=${arn}" >> "${GITHUB_OUTPUT}"
+  #
+  #     # Booting for db:migrate also proves the image starts before any traffic
+  #     # reaches it. A failed migration leaves the service on its revision.
+  #     - name: Migrate the database
+  #       run: |
+  #         network=$(aws ecs describe-services --cluster "${AWS_ECS_CLUSTER}" --services "${AWS_ECS_SERVICE}" \
+  #           --query 'services[0].networkConfiguration' --output json)
+  #         task=$(aws ecs run-task --cluster "${AWS_ECS_CLUSTER}" --launch-type FARGATE \
+  #           --task-definition "${{ steps.register.outputs.arn }}" --network-configuration "${network}" \
+  #           --started-by gha-migrate \
+  #           --overrides "{\"containerOverrides\":[{\"name\":\"${AWS_ECS_CONTAINER_NAME}\",\"command\":[\"bin/rails\",\"db:migrate\"]}]}" \
+  #           --query 'tasks[0].taskArn' --output text)
+  #         aws ecs wait tasks-stopped --cluster "${AWS_ECS_CLUSTER}" --tasks "${task}"
+  #         code=$(aws ecs describe-tasks --cluster "${AWS_ECS_CLUSTER}" --tasks "${task}" \
+  #           --query 'tasks[0].containers[0].exitCode' --output text)
+  #         group=$(jq -r '.containerDefinitions[0].logConfiguration.options["awslogs-group"]' task-definition.json)
+  #         prefix=$(jq -r '.containerDefinitions[0].logConfiguration.options["awslogs-stream-prefix"]' task-definition.json)
+  #         aws logs get-log-events --log-group-name "${group}" \
+  #           --log-stream-name "${prefix}/${AWS_ECS_CONTAINER_NAME}/${task##*/}" \
+  #           --query 'events[].message' --output text || true
+  #         [ "${code}" = 0 ] || { echo "db:migrate exited ${code}; the service stays on its current revision." >&2; exit 1; }
+  #
+  #     # The circuit breaker rolls a failed deployment back, and the service
+  #     # then settles on the old revision: that counts as a failure here.
+  #     - name: Roll the service
+  #       run: |
+  #         aws ecs update-service --cluster "${AWS_ECS_CLUSTER}" --service "${AWS_ECS_SERVICE}" \
+  #           --task-definition "${{ steps.register.outputs.arn }}" > /dev/null
+  #         aws ecs wait services-stable --cluster "${AWS_ECS_CLUSTER}" --services "${AWS_ECS_SERVICE}"
+  #         running=$(aws ecs describe-services --cluster "${AWS_ECS_CLUSTER}" --services "${AWS_ECS_SERVICE}" \
+  #           --query 'services[0].taskDefinition' --output text)
+  #         [ "${running}" = "${{ steps.register.outputs.arn }}" ] || { echo "The deployment was rolled back to ${running##*/}." >&2; exit 1; }
