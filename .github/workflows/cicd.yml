@@ -102,8 +102,10 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # Ubuntu ships libheif's HEVC decoder as a separate plugin; without it a
+      # HEIC photo upload fails to decode (Debian and Homebrew bundle it).
       - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y default-libmysqlclient-dev libvips-dev
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y default-libmysqlclient-dev libvips-dev libheif-plugin-libde265
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
