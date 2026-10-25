@@ -1,0 +1,73 @@
+/*
+ * Neutral Text Color System
+ * Fine-grained typography steps for text that is not a heading and not a
+ * status. Every step is derived from the theme's own ink (--color-base-content)
+ * and paper (--color-base-100), so a theme change moves all of them; naming
+ * Tailwind's stone palette here, as this file used to, pinned ~470 call sites
+ * to a grey ramp no theme block could reach.
+ *
+ * Deriving from ink-and-paper also means no dark: pair is needed. In light the
+ * ink is dark and the paper light, in dark the reverse, so "mix toward the
+ * paper" means "less contrast" in both themes on its own.
+ *
+ * The rungs, strongest ink first:
+ *   text-heading         --color-heading      (theme, app/assets/tailwind)
+ *   text-body            --color-body         (theme)
+ *   text-stone-muted     90% ink              secondary lines
+ *   text-stone-subtle    --color-body-subtle  fine print, icons
+ *
+ * text-body-subtle is deliberately not on that list. Tailwind still generates
+ * it from --color-body-subtle, but it named the same rung as text-stone-subtle
+ * and drifted into being a third spelling for "a bit quieter than body" -- 30
+ * call sites picking it over text-stone-muted for no stated reason. Reach that
+ * rung as text-stone-subtle or text-stone-icon.
+ *
+ * Contrast is quoted against base-300, the row-hover fill: a neutral line
+ * inside a hovered table row is the case that fails first.
+ */
+
+/* Was text-stone-900 dark:text-stone-100 -- a second, stronger heading colour,
+   applied to ~440 titles through ui_section's SECTION_TITLE_BASE. Now the same
+   ink as text-heading, so there is one heading colour rather than two that
+   drift, and section titles no longer glare near-white off a dark ground.
+   10.8:1 light, 9.2:1 dark. */
+@utility text-heading-primary {
+    color: var(--color-heading);
+}
+
+/* text-heading is NOT defined here. It comes from --color-heading in
+   app/assets/tailwind/application.css. A @utility of that name in this file
+   generates .text-heading at the same specificity as the variable's own rule
+   and is emitted earlier, so it loses the cascade and does nothing -- which is
+   what happened to the text-stone-800/dark:text-stone-100 pair that used to
+   sit here. Change the heading colour in the theme block, not here. */
+
+/* Emphasis is carried by weight and size, not by a fourth ink -- the design
+   guide says as much under Color Usage Discipline. Its dark value was
+   stone-300 (L=87), brighter than the headings it was meant to sit under.
+   7.3:1 light, 6.6:1 dark. */
+@utility text-stone-emphasis {
+    color: var(--color-body);
+}
+
+/* The secondary line, and by a wide margin the most-used step. 90% ink lands
+   within 1.5 L of the stone-600/stone-400 pair it replaces, so the 367 call
+   sites do not visibly move -- they just start tracking the theme. 90% is also
+   near the floor: 5.7:1 light and 5.3:1 dark, where 80% would drop to 4.45:1
+   and fail. */
+@utility text-stone-muted {
+    color: color-mix(in oklch, var(--color-base-content) 90%, var(--color-base-100));
+}
+
+/* Fine print. stone-500 measured 3.79:1 on light base-300 -- below AA, across
+   the ~80 call sites this and text-stone-icon share. body-subtle is the
+   lightest step that still clears it, at 4.75:1 light and 4.69:1 dark, and in
+   dark it is finally distinct from muted: the old pair were both stone-400. */
+@utility text-stone-subtle {
+    color: var(--color-body-subtle);
+}
+
+/* Icons and placeholders read at the same weight as fine print. */
+@utility text-stone-icon {
+    color: var(--color-body-subtle);
+}

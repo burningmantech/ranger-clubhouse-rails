@@ -1,0 +1,3 @@
+<%# Who is signed up at one desk for one period, opened from a staffing count on the burn page. %>
+<%= render "people_dialog", title: "#{@desk.title} — #{@period.strftime(DateTimeHelper::MONTH_DAY_TIME)}",
+                            people: @people, empty: "No one is signed up for this period." %>

@@ -1,0 +1,14 @@
+<%# locals: (person:) %>
+<%# The mailbox's compose buttons, under the hero of the index and of a
+    thread alike: on /me (no person) New Message; on the management
+    interfaces a message to the person and one on their behalf. %>
+<div class="flex flex-wrap gap-2 mt-2">
+  <% if person %>
+    <% if person.messaging_permitted? %>
+      <%= button_link "Send Message to #{person.callsign}", :secondary, new_message_path(direction: "to"), icon: "square-plus" %>
+    <% end %>
+    <%= button_link "Send Message from #{person.callsign}", :secondary, new_message_path(direction: "from"), icon: "square-plus" %>
+  <% else %>
+    <%= button_link "Write Message", :primary, new_message_path, icon: "square-plus" %>
+  <% end %>
+</div>

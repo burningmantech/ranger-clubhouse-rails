@@ -1,0 +1,105 @@
+<%#
+  One position's year, a section per shift that had a flake or a rogue. The
+  shifts that had neither are counted at the bottom, not listed.
+%>
+<% content_for :title, "#{@position.title} Flake Report" %>
+
+<%= hero_panel icon: "ghost", heading_level: :h1, id: "scheduling-flake-report-position-header",
+               title: "#{@year} #{@position.title} Flakes & Rogues",
+               back_to: ["#{@year} Flake Report", scheduling_flake_report_path(year: @year)] do |panel| %>
+  <% panel.description do %>
+    Every started shift of this position where someone signed up and was never on
+    duty, or was on duty without signing up.
+  <% end %>
+  <%# The selector posts an action-less GET, so it stays on this position and
+      only swaps the year. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @detail.slot_count.to_s, "Shifts",
+                  icon: "calendar-days", icon_type: :solid %>
+  <%= ui_stat_box @detail.flake_count.to_s, "Flakes",
+                  variant: @detail.flake_count.positive? ? :error : :secondary,
+                  icon: "user-xmark", icon_type: :solid %>
+  <%= ui_stat_box @detail.rogue_count.to_s, "Rogues",
+                  variant: @detail.rogue_count.positive? ? :warning : :secondary,
+                  icon: "user-plus", icon_type: :solid %>
+  <%# A shift no one signed up for produces no row at all, so this box is the
+      only place that coverage gap can show. %>
+  <%= ui_stat_box @detail.unstaffed_slot_count.to_s, "Shifts with No Sign-Ups",
+                  variant: @detail.unstaffed_slot_count.positive? ? :warning : :secondary,
+                  icon: "calendar-xmark", icon_type: :solid %>
+<% end %>
+
+<% if @detail.slot_details.any? %>
+  <%# Out of the hero, and only where there are rows it changes the reading of. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What counts as rangered?</dt>
+      <dd>
+        A sign-up whose timesheet is for this position but was never attached to the shift
+        still counts as rangered.
+      </dd>
+    </dl>
+  <% end %>
+
+  <% @detail.slot_details.each do |detail| %>
+    <%= ui_section flake_report_shift(detail.slot), icon: "clock", icon_type: :solid,
+                   border: false do %>
+      <%# The sign-up count sits here rather than in a section badge: the badge
+          shares one flex row with the shift's date range and gets squeezed to
+          an unreadable two lines on a phone. %>
+      <p class="text-base text-body mb-2"><%= pluralize detail.signup_count, "sign-up" %></p>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%# Fixed widths: every shift is its own table, and auto-sized columns
+            put the three headings in a different place in each one. %>
+        <%= t.header do %>
+          <%= t.heading "Callsign", width: "20%" %>
+          <%= t.heading "Status", width: "15%" %>
+          <%= t.heading "Details" %>
+        <% end %>
+        <%= t.body do %>
+          <% detail.flakes.each do |flake| %>
+            <%= t.row do %>
+              <%# person_display_link, not callsign_link: Edit Slots may read
+                  this page but not open person pages, and unguarded links all
+                  bounce to /me for that reader. %>
+              <%= t.row_header person_display_link(flake.person, flake.person_id) %>
+              <%= t.cell flake_report_flake_badge %>
+              <%= t.cell flake_report_flake_detail(flake) %>
+            <% end %>
+          <% end %>
+          <% detail.rogues.each do |rogue| %>
+            <%= t.row do %>
+              <%= t.row_header person_display_link(rogue.person, rogue.person_id) %>
+              <%= t.cell flake_report_rogue_badge %>
+              <%= t.cell flake_report_rogue_detail(rogue) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%# The three counts are disjoint and add up to the shift total: a shift
+      no one signed up for is uncovered, not clean. %>
+  <p class="mt-2 text-base text-body">
+    <%= pluralize @detail.slot_details.size, "shift" %> with a flake or a rogue ·
+    <%= pluralize @detail.unstaffed_slot_count, "shift" %> with no sign-ups ·
+    <%= pluralize @detail.clean_slot_count, "shift" %> everyone honored
+  </p>
+<% elsif @detail.unstaffed_slot_count.positive? %>
+  <%# Not "all covered": no flakes and no rogues is exactly what a shift
+      no one signed up for produces. %>
+  <%= ui_empty_state "No flakes or rogues &mdash; but #{@detail.unstaffed_slot_count} " \
+                     "of this position's #{@detail.slot_count} #{@year} shifts had no " \
+                     "sign-ups and no one on duty.".html_safe,
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% elsif @detail.slot_count.positive? %>
+  <%= ui_empty_state "Every #{@year} shift of this position was covered by the " \
+                     "people who signed up for it.",
+                     icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No #{@year} shifts of this position have started yet.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

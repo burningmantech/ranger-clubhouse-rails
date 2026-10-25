@@ -1,0 +1,25 @@
+<%# locals: (asset:, attachment_id: nil) %>
+<%# Turbo-streamed into the "modal" frame when a scanned asset has expired
+    (AssetManagementConcern#asset_checkout). Upstream: the "expired" checkout
+    status in port/api/AssetController.php — force overrides expiry only and
+    the new record is marked check_out_forced. %>
+<%= modal_dialog id: "asset-expired-modal", title: "Force Checkout Required", frame: false do %>
+  <p class="mb-3">
+    Asset <strong><%= asset.barcode %></strong> expired on
+    <%= mdy_format(asset.expires_on) %>. The asset was NOT checked out.
+  </p>
+  <%= ui_callout_box :warning, title: "Authorization Needed" do %>
+    Force the checkout only if you have authorization to issue expired equipment.
+    The record will be marked as force-checked-out.
+  <% end %>
+  <%# _top: escape the "modal" turbo-frame so the redirect renders the page. %>
+  <%= ui_form(nil, assets_checkout_path, method: :post,
+              data: { turbo_frame: "_top" }) do |f| %>
+    <%= hidden_field_tag "person_asset[barcode]", asset.barcode %>
+    <% if attachment_id.present? %>
+      <%= hidden_field_tag "person_asset[attachment_id]", attachment_id %>
+    <% end %>
+    <%= hidden_field_tag "person_asset[force]", "1" %>
+    <%= modal_form_footer submit: "Force Checkout", variant: :warning %>
+  <% end %>
+<% end %>

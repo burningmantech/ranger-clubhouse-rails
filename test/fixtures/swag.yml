@@ -1,0 +1,120 @@
+# Test fixtures for Swag model
+
+tshirt_small:
+  title: "Ranger T-Shirt S"
+  type: "dept-shirt"
+  shirt_type: "t-shirt"
+  active: true
+  description: "Small t-shirt"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>
+
+tshirt_medium:
+  title: "Ranger T-Shirt M"
+  type: "dept-shirt"
+  shirt_type: "t-shirt"
+  active: true
+  description: "Medium t-shirt"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>
+
+tshirt_large:
+  title: "Ranger T-Shirt L"
+  type: "dept-shirt"
+  shirt_type: "t-shirt"
+  active: true
+  description: "Large t-shirt"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>
+
+tshirt_xlarge:
+  title: "Ranger T-Shirt XL"
+  type: "dept-shirt"
+  shirt_type: "t-shirt"
+  active: true
+  description: "Extra large t-shirt"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>
+
+longsleeve_small:
+  title: "Ranger Long Sleeve S"
+  type: "dept-shirt"
+  shirt_type: "long-sleeve"
+  active: true
+  description: "Small long sleeve"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>
+
+longsleeve_medium:
+  title: "Ranger Long Sleeve M"
+  type: "dept-shirt"
+  shirt_type: "long-sleeve"
+  active: true
+  description: "Medium long sleeve"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>
+
+longsleeve_large:
+  title: "Ranger Long Sleeve L"
+  type: "dept-shirt"
+  shirt_type: "long-sleeve"
+  active: true
+  description: "Large long sleeve"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>
+
+inactive_tshirt:
+  title: "Inactive T-Shirt M"
+  type: "dept-shirt"
+  shirt_type: "t-shirt"
+  active: false
+  description: "Inactive shirt - should not appear in selections"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>
+
+service_pin_5_year:
+  title: "Ranger 5 Year Service Pin"
+  type: "dept-pin"
+  active: true
+  description: "Awarded after five years"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>
+
+org_pin:
+  title: "Org 5 Year Service Pin"
+  type: "org-pin"
+  active: false
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>
+
+toaster_pin:
+  title: "Toaster Pin"
+  type: "dept-pin"
+  active: true
+  description: "Dept pin whose title, not type, makes it a toaster pin"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>
+
+service_patch_5_year:
+  title: "5 Year Service Patch"
+  type: "dept-patch"
+  active: true
+  description: "Awarded after five years"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>
+
+org_patch_5_year:
+  title: "5 Year B.M. Service Patch"
+  type: "org-patch"
+  active: true
+  description: "Org-wide five year patch"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>
+
+other_swag:
+  title: "Commemorative Mug"
+  type: "other"
+  active: true
+  description: "First line\nSecond line"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.year.ago %>

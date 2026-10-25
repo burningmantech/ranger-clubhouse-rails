@@ -1,0 +1,86 @@
+<%# locals: (row:, schedule_signups_path_builder:, schedule_destroy_path_builder:) %>
+<% slot = row.slot %>
+<%# The hairline is what makes one sign-up read as one record. Below lg these
+    cards are the only structure on the page, and on a phone in glare a
+    shadow-sm on base-100 over base-100 is not a boundary anyone can see. %>
+<div class="card-standard shadow-sm p-3 xl:px-5"
+     aria-labelledby="slot-<%= slot.id %>-title">
+
+  <div class="mb-1 flex flex-row flex-wrap gap-x-4 gap-y-1">
+    <div id="slot-<%= slot.id %>-title" class="font-semibold text-base leading-snug">
+      <%= slot.position.title %>
+    </div>
+    <% if slot.description.present? %>
+      <div class="text-stone-muted text-base">
+        &bullet;
+      </div>
+      <div class="leading-snug text-base font-medium">
+        <%= slot.description %>
+      </div>
+    <% end %>
+    <% if row.overlapping_slots.present? %>
+      <div>
+        <%= ui_badge "overlapping shift", :error %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Three stacked lines is the right shape on a phone and a waste of a tablet.
+      From sm up the time keeps its own line and duration/credits pair off beside
+      each other; at lg the row flattens into the four-column desktop record. %>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1 lg:gap-2 text-stone-emphasis">
+    <div class="sm:col-span-2">
+      <span class="font-medium lg:hidden">Time: </span>
+      <%= datetime_format slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr %>
+    </div>
+    <div class="tabular-nums">
+      <span class="font-medium lg:hidden">Duration: </span>
+      <%= hour_minute_words(slot.duration) %>
+    </div>
+    <%# No "Credits:" prefix below lg -- unlike the time and duration values,
+        this one already names its own unit, and the prefix read "Credits:
+        1.69 credits" on a phone. %>
+    <div class="tabular-nums lg:text-right">
+      <% if row.credits.to_f.zero? %>
+        No credits
+      <% else %>
+        <%= credit_format(row.credits) %>
+      <% end %>
+    </div>
+  </div>
+
+  <% unless row.position.count_hours %>
+    <%= hour_not_counted_disclaimer row.position.training? %>
+  <% end %>
+
+  <% if row.overlapping_slots.present? %>
+    <%= render partial: "common/scheduling/overlapping_sign_ups", locals: { entry: row } %>
+  <% end %>
+
+  <%= render partial: "common/scheduling/slot_additional_info", locals: { slot: } %>
+
+  <div class="flex flex-wrap items-center gap-2 mt-2">
+    <%= button_action "Show Sign-Ups",
+                      :secondary, controller: "toggle",
+                      icon: "users", icon_type: :solid,
+                      data: {
+                        toggle_dom_id_value: "signups-#{slot.id}",
+                        toggle_label_value: "Hide Sign-Ups",
+                        toggle_turbo_src_value: schedule_signups_path_builder.call(slot, year: slot.begins_year)
+                      } %>
+    <% if slot.has_started || slot.has_ended %>
+      <span class="min-h-9 inline-flex items-center text-stone-muted text-sm gap-1">
+        <%= fa_icon "circle-info", :solid %>
+        Cannot remove after shift start
+      </span>
+    <% else %>
+      <%= button_link "Remove from Schedule", :secondary,
+                      schedule_destroy_path_builder.call(slot, year: slot.begins_year),
+                      icon: "trash", icon_type: :solid,
+                      data: confirm_modal(title: "Confirm Shift Removal", message: render(partial: "common/scheduling/confirm_signup_removal", locals: { slot: }), method: :delete, variant: :error)
+      %>
+    <% end %>
+  </div>
+
+  <%= turbo_frame_tag "signups-#{slot.id}" %>
+</div>

@@ -1,0 +1,46 @@
+<% rows = [] %>
+<% if @entry.desired_position_id.present? %>
+  <% rows << ["Position", @entry.position.title,
+              @entry.desired_position&.title || "Position ##{@entry.desired_position_id}",
+              @entry.desired_position_id == @entry.position_id] %>
+<% end %>
+<% if @entry.desired_on_duty.present? %>
+  <% rows << ["On Duty", datetime_format(@entry.on_duty), datetime_format(@entry.desired_on_duty),
+              @entry.on_duty == @entry.desired_on_duty] %>
+<% end %>
+<% if @entry.desired_off_duty.present? %>
+  <% rows << ["Off Duty", datetime_format(@entry.off_duty), datetime_format(@entry.desired_off_duty),
+              @entry.off_duty == @entry.desired_off_duty] %>
+<% end %>
+
+<%= ui_table striped: false, responsive: false do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Field" %>
+    <%= t.heading "Current" %>
+    <%= t.heading "Desired Change" %>
+    <%= t.heading "Applied" %>
+  <% end %>
+  <%= t.body do %>
+    <% rows.each do |label, current, desired, applied| %>
+      <%= t.row do %>
+        <%= t.row_header label %>
+        <%= t.cell current %>
+        <%= t.cell desired %>
+        <%= t.cell applied ? ui_badge("Applied", :success) : ui_badge("Not applied yet", :secondary) %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= render partial: "common/time_warnings",
+           locals: { warnings: @entry.desired_warnings,
+                     start_time: @entry.desired_on_duty || @entry.on_duty,
+                     finish_time: @entry.desired_off_duty || @entry.off_duty,
+                     lead_in: "The DESIRED times are outside the scheduled sign-up date ranges for the entire
+                               event. This might indicate the times were entered incorrectly by the person:" } %>
+
+<div class="my-3">
+  <%= button_link "Use the Desired Changes", :secondary,
+                  edit_person_timesheet_path(@person, @entry, year: @year, apply_desired: 1),
+                  icon: "wand-magic-sparkles", icon_type: :solid %>
+</div>

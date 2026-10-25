@@ -1,0 +1,37 @@
+<%# locals: (message:, reply_form:, autofocus: false) %>
+<%# autofocus only where the reader was just typing here: the re-render after a
+    reply is sent or refused (MessagesConcern#render_reply_form). On a selection
+    it would pull focus off the row the reader activated and scroll the pane to
+    its foot. The editor focuses itself once it loads. The label is hidden, and
+    Lexxy names its text box from labels alone, so aria-label names it: Lexxy
+    copies the host's own onto it. %>
+<%= ui_form(reply_form, create_reply_message_path(message), method: :post) do |f| %>
+  <%= hidden_field_tag :message_id, message.id %>
+  <%# The newest card the thread shows (MessageReplyForm#shown_through); after a
+      send, the one the page was drawn with. %>
+  <%= f.hidden_field :shown_through, value: reply_form.shown_through || [message, *message.replies].map(&:id).max %>
+  <%# As a team the owner is on now (.scratch/team-messaging/PRD.md): the team's
+      name on the card, the owner's callsign to the team's members alone. Absent
+      where there is no such team. Their own name first, as the form's nil; the
+      team is checked on a form first drawn (MessagesConcern#new_reply_form). %>
+  <% reply_teams = message.reply_teams_for(message_owner.id) %>
+  <% if reply_teams.any? %>
+    <%= f.collection_radio_buttons :as_team_id,
+                                   [[message_owner.callsign, ""], *reply_teams.map { |team| [team.title, team.id] }],
+                                   :last, :first,
+                                   { label: "Reply As", layout: :horizontal, label_position: :stacked,
+                                     help_text: "A reply as the team shows the team's name. The team's members still see your callsign." } %>
+  <% end %>
+  <%= f.rich_text_area :reply,
+                       label: "Reply",
+                       hide_label: true,
+                       aria: { label: "Reply" },
+                       required: true,
+                       placeholder: "Type your reply…",
+                       width: "w-full",
+                       class: "messages-reply-editor",
+                       autofocus: %>
+  <div class="flex justify-end">
+    <%= f.submit "Send Reply" %>
+  </div>
+<% end %>

@@ -1,0 +1,208 @@
+<%# locals: (person:, alerts:, admin_acting:, can_edit_sms_state:, can_view_sms_state:, alerts_form_path:, alerts_back_path:) %>
+<%= hero_panel icon: "bell", heading_level: :h1,
+               title: (admin_acting ? "Alert Preferences for #{person.callsign}" : "Alert Preferences"),
+               back_to: ["Profile", alerts_back_path] %>
+
+<%# ===================================================================== %>
+<%# Status Summary                                                        %>
+<%# ===================================================================== %>
+<% sms_available = person.sms_usable?
+   sms_reason = if person.sms_number.blank?
+                  "no phone number on file"
+                elsif person.sms_stopped?
+                  "phone number is stopped"
+                elsif !person.sms_verified?
+                  "phone number is not verified"
+                end %>
+
+
+<% if !sms_available && sms_reason.present? %>
+  <%= ui_callout_box :warning, title: "SMS Alerts Unavailable" do %>
+    <p>SMS alerts are currently unavailable because <%= sms_reason %>.</p>
+    <% unless admin_acting %>
+      <strong>How to fix:</strong>
+      <% if person.sms_number.blank? %>
+        Add a phone number below
+      <% elsif !person.sms_verified? %>
+        Verify your phone number above to enable SMS alerts.
+      <% elsif person.sms_stopped? %>
+        Resume SMS by texting START from your phone.
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+
+<% if admin_acting && (can_edit_sms_state || can_view_sms_state) %>
+  <%# ===================================================================== %>
+  <%# Admin SMS State (read-only for admins, editable for tech-ninjas)      %>
+  <%# ===================================================================== %>
+
+  <%= ui_section "SMS State", icon: "mobile-screen", icon_type: :solid do %>
+    <% if can_edit_sms_state %>
+      <dl class="instruction-list mb-3">
+        <dt>Who sees this?</dt>
+        <dd>Tech Ninjas only. Use to repair SMS state for this Ranger.</dd>
+      </dl>
+      <%= ui_form person, alerts_form_path, method: :patch do |f| %>
+        <%# id: nil throughout -- every form on this page carries an :intent. %>
+        <%= hidden_field_tag :intent, Alerts::EditingConcern::SMS_STATE_INTENT, id: nil %>
+
+        <%= f.text_field :sms_number,
+                         label: "SMS Phone ",
+                         help_text: "Leave blank to clear.",
+                         width: "w-full sm:w-32",
+                         maxlength: 20 %>
+
+        <%= f.check_box :sms_stopped,
+                        label: "Number is stopped (STOP received)" %>
+
+        <%= f.check_box :sms_verified,
+                        label: "Number is verified" %>
+
+        <%= button_row do %>
+          <%= f.submit "Save SMS State" %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <dl class="instruction-list">
+        <dt>Phone number</dt>
+        <dd><%= person.sms_number.presence || content_tag(:em, "none on file") %></dd>
+        <dt>Stopped</dt>
+        <dd><%= person.sms_stopped? ? "Yes" : "No" %></dd>
+        <dt>Verified</dt>
+        <dd><%= person.sms_verified? ? "Yes" : "No" %></dd>
+      </dl>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% unless admin_acting %>
+  <%# ===================================================================== %>
+  <%# Section A: SMS Number Management                                      %>
+  <%# ===================================================================== %>
+
+  <%= ui_section "SMS Phone Number", icon: "mobile-screen", icon_type: :solid do %>
+    <p class="mb-3">
+      Enter your cell phone number to receive SMS alerts. Include your country code for non-USA numbers (e.g., +61 for
+      Australia, +33 for France).
+    </p>
+
+    <%= ui_callout_box :warning, title: "UK Phone Numbers Not Supported" do %>
+      <p>Due to United Kingdom telecom regulatory changes, UK phone numbers cannot be used at this time.
+        Contact <%= link_to "rangers@burningman.org", "mailto:rangers@burningman.org", class: "underline" %> if you need
+        assistance.</p>
+    <% end %>
+
+    <%= ui_form person, alerts_form_path, method: :patch do |f| %>
+      <%= hidden_field_tag :intent, "save_number", id: nil %>
+
+      <%= form_row do %>
+        <%= f.telephone_field :sms_number,
+                              label: "Phone Number",
+                              help_text: "Example: +1 555-123-4567 or +61 4 1234 5678",
+                              placeholder: "+1 555-123-4567",
+                              inputmode: "tel",
+                              autocomplete: "tel",
+                              maxlength: 20,
+                              width: "w-full sm:w-80" %>
+      <% end %>
+      <%= f.submit "Save Phone Number", size: "sm" %>
+    <% end %>
+  <% end %>
+
+  <%# ===================================================================== %>
+  <%# Section B: Verification (shown only when number present & unverified) %>
+  <%# ===================================================================== %>
+
+  <% if person.sms_number.present? && !person.sms_verified? && !person.sms_stopped? %>
+    <%= ui_callout_box :info, title: "Step 2: Verify Your Number" do %>
+      <p class="mb-3">
+        We sent a 4-digit code to <strong><%= person.sms_number %></strong>. Enter it below.
+      </p>
+
+      <%= ui_form person, alerts_form_path, method: :patch do |f| %>
+        <%= hidden_field_tag :intent, "confirm_code", id: nil %>
+
+        <%= form_row do %>
+          <%= f.text_field :verification_code,
+                           label: "Enter 4-Digit Verification Code",
+                           inputmode: "numeric",
+                           pattern: "[0-9]*",
+                           maxlength: 4,
+                           autocomplete: "one-time-code",
+                           placeholder: "Code",
+                           width: "w-24",
+                           value: "" %>
+        <% end %>
+        <%= f.submit "Verify Code", size: "sm" %>
+      <% end %>
+
+      <%= ui_form person, alerts_form_path, method: :patch, no_error_summary: true, html: { class: "mt-2" } do |f| %>
+        <%= hidden_field_tag :intent, "send_code", id: nil %>
+        <%= f.submit "Resend Code", variant: :secondary, size: "sm" %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if person.sms_stopped? %>
+    <%= ui_callout_box :error, title: "Phone Number Is Stopped" do %>
+      <div class="mb-2">
+        <strong>This number is stopped:</strong> <%= person.sms_number %>
+      </div>
+      <div class="font-semibold mb-2">
+        To resume alerts, text the word START from this same phone number using your SMS app.
+      </div>
+      <div class="text-sm">
+        Or contact <%= link_to "rangers@burningman.org", "mailto:rangers@burningman.org", class: "underline" %> for
+        help.
+      </div>
+      <%= ui_disclosure "Why It's Stopped",
+                        class: "mt-3",
+                        summary_class: "text-sm font-medium",
+                        content_class: "mt-2 text-sm" do %>
+        Someone texted the STOP command from this number, which opted out of all SMS alerts.
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# ===================================================================== %>
+<%# Section C: Alert Preferences                                         %>
+<%# ===================================================================== %>
+
+<%= ui_form person, alerts_form_path, method: :patch, no_error_summary: true do |f| %>
+  <%= hidden_field_tag :intent, Alerts::EditingConcern::PREFERENCES_INTENT, id: nil %>
+
+  <% off_playa_alerts = alerts.reject(&:on_playa) %>
+  <% on_playa_alerts  = alerts.select(&:on_playa) %>
+
+  <% if off_playa_alerts.any? %>
+    <%= render partial: "alerts/alert_group",
+               locals: {
+                 alerts: off_playa_alerts,
+                 heading: "Pre & Post Event Alerts",
+                 description: "These alerts may be sent to you before or after the event.",
+                 person: person,
+                 sms_available: sms_available,
+                 sms_reason: sms_reason
+               } %>
+  <% end %>
+
+  <% if on_playa_alerts.any? %>
+    <%= render partial: "alerts/alert_group",
+               locals: {
+                 alerts: on_playa_alerts,
+                 heading: "On Playa Alerts",
+                 description: "These alerts may be sent to you while the event is happening.",
+                 person: person,
+                 sms_available: sms_available,
+                 sms_reason: sms_reason,
+                 index_offset: off_playa_alerts.size
+               } %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Preferences" %>
+  <% end %>
+<% end %>

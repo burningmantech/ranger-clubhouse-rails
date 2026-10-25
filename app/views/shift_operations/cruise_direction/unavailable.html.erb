@@ -1,0 +1,21 @@
+<%#
+  What a dialog opens into when the thing it was opened for is gone -- someone
+  else deleted the pod, or took the Ranger out of it, while this board sat on
+  screen. Rendered into the "modal" frame rather than redirected, so the reader
+  is told rather than left pressing a link that does nothing.
+
+  Locals: message.
+%>
+<%= modal_dialog id: "cruise-direction-unavailable-dialog", title: "That Is No Longer Here" do %>
+  <p class="mb-3"><%= message %></p>
+  <p class="text-sm text-stone-muted mb-3">
+    Someone else has probably changed this shift's pods. Close this and refresh the page to see
+    where things stand now.
+  </p>
+  <%= button_row do %>
+    <%= button_link "Refresh the Pods", :primary,
+                    shift_operations_cruise_direction_path(slot_id: @slot&.id, year: @year),
+                    icon: "arrows-rotate", icon_type: :solid, data: { turbo_frame: "_top" } %>
+    <%= modal_close_button "Close" %>
+  <% end %>
+<% end %>

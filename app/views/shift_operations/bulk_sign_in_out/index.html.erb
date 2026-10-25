@@ -1,0 +1,52 @@
+<%#
+  The form step. Also what a successful commit and a refused submission render,
+  which is why the pasted list is read back from params rather than held in an
+  ivar -- every one of those arrives as its own POST.
+%>
+<% content_for :title, "Bulk Sign In/Out" %>
+
+<%= hero_panel icon: "right-left", heading_level: :h1,
+               id: "shift-operations-bulk-sign-in-out-header",
+               title: "Bulk Sign In/Out" do |panel| %>
+  <% panel.description do %>
+    Sign a list of Rangers in and/or out at once.
+  <% end %>
+<% end %>
+
+<% if @committed %>
+  <%# The reader submitted from the review page and is now back here, so the
+      outcome has to be said out loud -- otherwise a cleared box is the only
+      evidence anything happened. %>
+  <div data-controller="scroll-to-top" hidden></div>
+
+  <%= ui_callout_box :success, icon: "circle-check", icon_type: :solid do %>
+    <strong><%= pluralize(@entries.size, "line") %> applied.</strong>
+    <%= (@entries.one? ? "The timesheet entry has" : "The timesheet entries have") %>
+    been created or closed, and the box below has been cleared for the next batch.
+  <% end %>
+<% end %>
+
+<%= ui_form(nil, shift_operations_preview_bulk_sign_in_out_path,
+            method: :post, no_error_summary: true) do |f| %>
+  <%= f.text_area :lines, label: "Sign In/Out Lines", required: true,
+                  value: (params[:lines] unless @committed), rows: 10,
+                  help_text: "One Ranger per line. Callsign first, then a position " \
+                             "and/or the times — the formats are listed below.",
+                  class: "font-mono" %>
+
+  <%= ui_disclosure "Supported Line Formats" do %>
+    <%= render "formats" %>
+  <% end %>
+
+  <%# Said beside the button it is about, not in the hero: the hero is one
+      sentence on what the page does. my-3, not mb-3 -- the disclosure above
+      brings no margin of its own. %>
+  <p class="my-3">
+    <strong>Checking is always safe.</strong> It shows exactly what each line will do, and
+    nothing is saved until you confirm.
+  </p>
+
+  <%= button_row do %>
+    <%= f.submit "Check the List" %>
+  <% end %>
+<% end %>

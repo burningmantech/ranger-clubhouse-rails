@@ -1,0 +1,23 @@
+/*
+ * Callsign List
+ * Multi-column layout for callsign lists
+ */
+.callsign-list {
+    column-count: auto;
+    column-width: 18ch;
+    column-gap: 1rem;
+
+    > a {
+        display: block;
+    }
+
+    > div, > a {
+        overflow-wrap: break-word;
+        margin-bottom: 0.5vh;
+        break-inside: avoid-column;
+    }
+
+    > div:hover, > a:hover {
+        background-color: var(--color-base-300);
+    }
+}

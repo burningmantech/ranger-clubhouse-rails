@@ -1,0 +1,59 @@
+# Test fixtures for Timesheet model
+# Note: Positions with "Training" in the title are filtered out by WorkHistoryReport
+
+# Active ranger shift history - multiple positions across multiple years
+active_ranger_ood_2023_1:
+  person: active_ranger
+  position: ood_position
+  on_duty: <%= DateTime.new(2023, 8, 28, 10, 0, 0) %>
+  off_duty: <%= DateTime.new(2023, 8, 28, 16, 0, 0) %>
+  review_status: verified
+  is_echelon: false
+
+active_ranger_ood_2023_2:
+  person: active_ranger
+  position: ood_position
+  on_duty: <%= DateTime.new(2023, 8, 30, 8, 0, 0) %>
+  off_duty: <%= DateTime.new(2023, 8, 30, 20, 0, 0) %>
+  review_status: verified
+  is_echelon: false
+
+active_ranger_mentor_2024:
+  person: active_ranger
+  position: mentor_lead
+  on_duty: <%= DateTime.new(2024, 8, 27, 9, 0, 0) %>
+  off_duty: <%= DateTime.new(2024, 8, 27, 17, 0, 0) %>
+  review_status: verified
+  is_echelon: false
+
+# Echelon ranger shifts - marked as echelon service
+echelon_ranger_work_2024:
+  person: echelon_ranger
+  position: mentor_lead
+  on_duty: <%= DateTime.new(2024, 8, 25, 10, 0, 0) %>
+  off_duty: <%= DateTime.new(2024, 8, 25, 18, 0, 0) %>
+  review_status: verified
+  is_echelon: true
+
+# Prospective ranger - no regular shift history (new to the org); the one
+# exception is the Alpha shift below, added for test/lib/intake_test.rb's
+# have_alpha_shift-from-timesheet coverage. position_id is set directly to
+# Position::ALPHA (1) rather than via a `position:` fixture label, since
+# Intake/Timesheet filter on that literal id and there is no FK constraint
+# requiring an actual position row to exist.
+prospective_ranger_alpha_2025:
+  person: prospective_ranger
+  position_id: 1
+  on_duty: <%= DateTime.new(2025, 8, 25, 10, 0, 0) %>
+  off_duty: <%= DateTime.new(2025, 8, 25, 18, 0, 0) %>
+  review_status: verified
+  is_echelon: false
+
+# Auditor ranger shift history - single year
+auditor_ranger_work_2024:
+  person: auditor_ranger
+  position: ood_position
+  on_duty: <%= DateTime.new(2024, 8, 28, 8, 0, 0) %>
+  off_duty: <%= DateTime.new(2024, 8, 28, 16, 0, 0) %>
+  review_status: verified
+  is_echelon: false

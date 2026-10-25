@@ -1,0 +1,30 @@
+<%# locals: (candidates:, prefix:, skip_select_all: false) %>
+<%#
+  One list of Rangers the add dialog can offer.
+
+  Everyone here is on duty and in no pod -- the board's own count is built from
+  the same list, so a name shown here is a name no one has picked up.
+
+  prefix keeps the element ids apart: the two lists never overlap, but they are
+  built from one query and a future third list should not be able to collide.
+%>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+  <% candidates.each do |candidate| %>
+    <% person = candidate.person %>
+    <% field_id = "cruise-direction-candidate-#{prefix}-#{person.id}" %>
+    <div class="flex-center-gap-2">
+      <%= bulk_select_checkbox "person_ids[]", person.id, id: field_id,
+                               aria_label: "Add #{person.callsign}",
+                               skip_select_all: skip_select_all %>
+      <label for="<%= field_id %>" class="cursor-pointer py-1">
+        <span class="font-medium text-body"><%= person.callsign %></span>
+        <span class="block text-sm text-stone-muted">
+          <%= candidate.position_title %>
+          <% if candidate.on_duty_at %>
+            &middot; on duty <%= format_date(candidate.on_duty_at, DateTimeHelper::HOUR_MINS) %>
+          <% end %>
+        </span>
+      </label>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,22 @@
+/*
+ * The disclosure card on paper.
+ *
+ * A closed "About This Report" or "How This Page Works" card is a control, and
+ * paper cannot open it: printed, it is a box with a chevron and nothing in it.
+ * So a page prints without it. A card the reader opened before printing prints
+ * open, exactly as it stands on the screen.
+ *
+ * Only a card holding an instruction list is left out. Other card disclosures
+ * say something while closed -- the Shift Lead picker's subtitle names the
+ * shift the page is about -- and that should still reach the paper.
+ *
+ * .disclosure-card is the hook ui_disclosure puts on the card's wrapper. The
+ * rule matches on it rather than on `details.group`: a bare disclosure can
+ * carry `group` too, and :has() on its parent would take a whole section of
+ * the page off the sheet.
+ */
+@media print {
+    .disclosure-card:has(> details:not([open]) .instruction-list) {
+        display: none;
+    }
+}

@@ -1,0 +1,104 @@
+# Test fixtures for PersonIntakeNote model (table: person_intake_note)
+#
+# All notes are about prospective_ranger (the PNV), matching the rank history in
+# person_intake.yml. Two different team members record notes -- active_ranger and
+# auditor_ranger -- so person_source varies per row rather than always being the
+# same author (both are always distinct from the PNV being noted).
+
+# 2023, Personnel team, no rank yet -- pairs with the ranks-all-nil
+# prospective_ranger_2023 row (notes-only year).
+prospective_personnel_note_2023:
+  person: prospective_ranger
+  year: 2023
+  type: personnel
+  note: "Initial contact at Behavioral Standards orientation; nothing of note yet."
+  is_log: false
+  person_source: active_ranger
+  created_at: 2023-09-05 10:05:00
+  updated_at: 2023-09-05 10:05:00
+
+# 2024, RRN team -- pairs with prospective_ranger_2024's rrn_rank: 2.
+prospective_rrn_note_2024:
+  person: prospective_ranger
+  year: 2024
+  type: rrn
+  note: "RRN check-in complete; attended orientation, no concerns."
+  is_log: false
+  person_source: auditor_ranger
+  created_at: 2024-08-10 09:05:00
+  updated_at: 2024-08-10 09:05:00
+
+# 2024, Mentor team -- pairs with prospective_ranger_2024's mentor_rank: 1 and the
+# "pass" Alpha shift outcomes in person_mentor.yml (mentee_passed, mentee_second_mentor).
+# Different team from prospective_rrn_note_2024 above (2 distinct teams in the same year).
+prospective_mentor_note_2024:
+  person: prospective_ranger
+  year: 2024
+  type: mentor
+  note: "Great energy on Alpha shift; both mentors signed off as pass."
+  is_log: false
+  person_source: active_ranger
+  created_at: 2024-08-27 18:30:00
+  updated_at: 2024-08-27 18:30:00
+
+# 2025, VC team -- pairs with prospective_ranger_2025's vc_rank: 3.
+prospective_vc_note_2025:
+  person: prospective_ranger
+  year: 2025
+  type: vc
+  note: "VC flagged a volunteer-coordination scheduling conflict; watching closely."
+  is_log: false
+  person_source: active_ranger
+  created_at: 2025-06-10 11:05:00
+  updated_at: 2025-06-10 11:05:00
+
+# 2026, Personnel team, first of two same-year/same-team notes -- the pair that
+# escalates to the FLAG below.
+prospective_personnel_note_2026_a:
+  person: prospective_ranger
+  year: 2026
+  type: personnel
+  note: "Reported unsafe behavior at gate post; investigating."
+  is_log: false
+  person_source: auditor_ranger
+  created_at: 2026-06-01 08:05:00
+  updated_at: 2026-06-01 08:05:00
+
+# 2026, Personnel team, second note -- same year+team as prospective_personnel_note_2026_a
+# (multiple notes, same team, same year).
+prospective_personnel_note_2026_b:
+  person: prospective_ranger
+  year: 2026
+  type: personnel
+  note: "Second incident confirmed; recommending FLAG."
+  is_log: false
+  person_source: auditor_ranger
+  created_at: 2026-06-15 10:00:00
+  updated_at: 2026-06-15 10:00:00
+
+# 2026, Personnel team, audit log note for the rank change to 4 -- pairs with
+# prospective_ranger_2026's personnel_rank: 4. is_log: true rows must render
+# distinctly and are never editable/deletable.
+prospective_personnel_rank_change_2026:
+  person: prospective_ranger
+  year: 2026
+  type: personnel
+  note: "rank change [no rank] -> [4]"
+  is_log: true
+  person_source: auditor_ranger
+  created_at: 2026-06-16 09:15:00
+  updated_at: 2026-06-16 09:15:00
+
+# A DIFFERENT PNV (past_prospective_ranger, not prospective_ranger) -- used only
+# to prove Person::IntakeNotesController#destroy/#edit/#update scope notes by the
+# URL's :person_id and can't be reached cross-person (test/controllers/person/
+# intake_notes_controller_test.rb "different person" 404 case).
+past_prospective_personnel_note_2026:
+  person: past_prospective_ranger
+  year: 2026
+  type: personnel
+  note: "Unrelated PNV's own personnel note; must not be reachable via prospective_ranger's URL."
+  is_log: false
+  person_source: active_ranger
+  created_at: 2026-05-01 08:00:00
+  updated_at: 2026-05-01 08:00:00

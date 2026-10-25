@@ -1,0 +1,9 @@
+<p>
+  Delete the asset record for <strong><%= ap.asset.type %> #<%= ap.asset.barcode %></strong>
+  checked out on <%= datetime_format(ap.checked_out) %>?
+</p>
+
+<%= ui_callout_box :error, title: "Admin Action" do %>
+  You are using the <strong>Admin</strong> permission to permanently remove this person_asset record.
+  This cannot be undone and will erase the checkout history row.
+<% end %>

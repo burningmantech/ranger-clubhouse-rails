@@ -1,0 +1,104 @@
+<% content_for :title, "#{@year} Survey Management" %>
+
+<%= hero_panel icon: "square-poll-vertical", heading_level: :h1, id: "survey-management-header" do |panel| %>
+  <% panel.title do %>Survey Management<% end %>
+  <% panel.description do %>
+    Create and edit the feedback surveys shown on the Clubhouse dashboard.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+  <strong>A survey is only seen once it is active.</strong>
+  Build it here first, then switch it on. New to this page? Read
+  <%= link_to "how a survey is put together", "#help-section", class: "underline font-semibold" %>
+  below.
+<% end %>
+
+<% if @manages_no_positions %>
+  <%# Their permission names a position no survey can sit at, so there is
+      nothing here for them and nothing they could add. Saying so beats an
+      empty list beside a button that would refuse every save. %>
+  <%= ui_callout_box :warning, icon: "circle-exclamation", icon_type: :solid,
+                     title: "Your Survey Permission Does Not Cover Any Position Yet" do %>
+    Surveys are managed per cadre, and the Clubhouse does not yet connect your permission to one.
+    Ask the Tech Team to connect it, and this page will show your cadre's surveys.
+  <% end %>
+<% else %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= button_link "Add Survey", :primary, new_communication_survey_path(year: @year),
+                      icon: "plus", icon_type: :solid %>
+    <% end %>
+  </div>
+
+  <% if @surveys.any? %>
+    <%= ui_section "#{pluralize(@surveys.size, "survey")} in #{@year}", border: false do %>
+      <%= ui_table striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Survey" %>
+          <%= t.heading "Position" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Responses" %>
+          <%= t.heading "Actions" %>
+        <% end %>
+        <%= t.body do %>
+          <% @surveys.each do |survey| %>
+            <%= t.row do %>
+              <%= t.row_header do %>
+                <%= render "common/surveys/survey_name", survey: survey %>
+              <% end %>
+              <%= t.cell do %>
+                <div><%= survey.position_title %></div>
+                <% if survey.mentoring_position_id %>
+                  <div class="text-stone-muted">
+                    <%= fa_icon "arrow-right", :solid, end: 1 %> about <%= survey.mentoring_position_title %>
+                  </div>
+                <% end %>
+              <% end %>
+              <%= t.cell survey_status_badge(survey) %>
+              <%= t.cell survey_responses_badge(survey) %>
+              <%= t.cell class: "whitespace-nowrap" do %>
+                <div class="flex-center-gap-2">
+                  <%= button_link "Manage", :primary, communication_survey_path(survey),
+                                  icon: "pen-to-square", icon_type: :solid,
+                                  aria: { label: "Manage #{survey.title}" } %>
+                  <%= survey_duplicate_button(survey) %>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No surveys were created for #{@year}. Duplicate one from an earlier year, or create a new one.",
+                       icon: "clipboard-question", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<%= ui_section "How a Survey Is Put Together", id: "help-section",
+               icon: "circle-question", icon_type: :solid do %>
+  <dl class="instruction-list">
+    <dt>Who sees a survey?</dt>
+    <dd>
+      Whoever held the position it sits at, once it is active. A survey for trainees appears on
+      the dashboard of everyone who passed that training.
+    </dd>
+    <dt>What is a group?</dt>
+    <dd>
+      A heading with its own questions under it. A survey is answered a group at a time, and most
+      groups are reported together as one report.
+    </dd>
+    <dt>How do I start this year's survey?</dt>
+    <dd>
+      Duplicate last year's. The copy keeps every group and question, and starts switched off so
+      you can change it before anyone sees it.
+    </dd>
+    <dt>Can I edit a survey people have already answered?</dt>
+    <dd>
+      Yes, but deleting a question or a group deletes the answers given to it. Editing the wording
+      leaves the answers alone.
+    </dd>
+  </dl>
+<% end %>

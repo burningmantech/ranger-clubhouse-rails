@@ -1,0 +1,18 @@
+<%# locals: (pane:) %>
+<%#
+  The review layout: the block's sections of lines on the left, the pane on the
+  right from lg up and under the selected line below it.
+
+  The pane holds its own turbo frame (uf-pane, in _review_pane) that advances
+  the URL, and each line is a link into that frame, so selecting a line fetches
+  and swaps only the pane: the list, and the link the reader just activated,
+  stay where they are. review_pane_controller keeps the list in step with whom
+  the pane shows, parks the pane under that line below lg, and brings the line
+  into view on a full load or a Back restore.
+%>
+<div class="flex flex-col lg:flex-row gap-4" data-controller="review-pane">
+  <div class="lg:w-2/5 lg:shrink-0">
+    <%= yield %>
+  </div>
+  <%= pane %>
+</div>

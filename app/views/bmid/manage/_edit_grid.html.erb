@@ -1,0 +1,159 @@
+<%# Edit Mode -- the "Batch Grid". Every editable cell of every listed badge is
+    a field inside one form, and one Save commits only the rows that changed.
+
+    Fields are named bmids[<person_id>][<field>] because a row may be a badge
+    that does not exist yet: the listing synthesizes an unsaved record for
+    everyone who qualifies, so person id is the only key every row has. The
+    hidden person_id field keeps a row identifiable even if a careless edit
+    leaves every visible value blank; the server treats it as a marker, never
+    as an assignable attribute.
+
+    Meals, showers, and the Motor Vehicle Record stay read-only: they belong to
+    the person's provisions and event record, not to the badge. Meals and
+    showers still get a button, but it opens the provision dialog in the page's
+    modal frame -- outside this form, saving on its own, and leaving the row
+    unchanged.
+
+    Locals:
+      badges               - the filtered, sorted Bmid rows (some unsaved)
+      sort_state           - { sort:, dir:, params: } for the heading links
+      ticketing_info       - TicketingInfo, for the SAP access-date choices
+      provisions_by_person - person id => their usable provisions, for the
+                             meals and showers buttons
+      form_url             - PATCH target, carrying year, category, filters, and sort %>
+<%= ui_form nil, form_url, method: :patch, local: true, no_error_summary: true,
+            data: { controller: "bulk-edit unsaved-changes",
+                    bulk_edit_dirty_class: Bmid::ManageHelper::DIRTY_ROW_CLASS } do %>
+  <%# Rows that came back from a failed save start dirty, so the counter has to
+      start there too rather than briefly claiming nothing has changed. %>
+  <% dirty_rows = badges.count { |badge| badge.errors.any? } %>
+  <div class="mb-3 flex flex-wrap items-center gap-3">
+    <%= ui_badge bmid_dirty_count_label(dirty_rows), :warning, size: "sm",
+                 data: { bulk_edit_target: "count" } %>
+    <%= button_row do %>
+      <%= submit_button "Save All Changes", data: { bulk_edit_target: "submit" } %>
+      <%= button_action "Discard Changes", :secondary,
+                        icon: "rotate-left", icon_type: :solid,
+                        data: { action: "bulk-edit#discard", bulk_edit_target: "discard" } %>
+    <% end %>
+  </div>
+
+  <%# Deliberately not striped: a dirty row is tinted, and stripes would fight
+      it for the row background. Not responsive either, for the reason the
+      read-only ledger gives (_table.html.erb): it scrolls inside its own box. %>
+  <%= ui_table striped: false, responsive: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading do %>
+        <span class="sr-only">Flags</span>
+      <% end %>
+      <%= bmid_sort_heading t, "Callsign", "callsign", sort_state %>
+      <%= bmid_sort_headings t, sort_state %>
+    <% end %>
+
+    <%= t.body do %>
+      <% badges.each do |bmid| %>
+        <%
+          callsign = bmid.person.callsign
+          # A row that failed to save comes back holding the values that were
+          # submitted, so it starts dirty again and can be saved once fixed.
+          failed = bmid.errors.any?
+          held = provisions_by_person[bmid.person_id] || []
+        %>
+        <%= fields_for "bmids[#{bmid.person_id}]", bmid, builder: AppFormBuilder do |bf| %>
+          <%= t.row id: bmid_row_dom_id(bmid),
+                    class: (Bmid::ManageHelper::DIRTY_ROW_CLASS if failed),
+                    data: { bulk_edit_target: "row", dirty: ("true" if failed) } do %>
+            <%= t.cell class: bmid_row_accent_class(bmid) do %>
+              <%= hidden_field_tag "bmids[#{bmid.person_id}][person_id]", bmid.person_id, id: nil %>
+              <span class="inline-flex-center-gap-2">
+                <%= bmid_flag_icons(bmid) %>
+                <span data-bulk-edit-marker hidden class="inline-flex items-center">
+                  <%= fa_icon "pen", :solid, class: "icon-warning", label: "Changed, not yet saved." %>
+                </span>
+              </span>
+            <% end %>
+
+            <%= t.row_header do %>
+              <%= callsign_link bmid.person %>
+            <% end %>
+
+            <%= t.cell do %>
+              <%= bf.select :status, bmid_edit_status_options(bmid),
+                            hide_label: true, width: "w-full sm:w-36",
+                            wrapper_class: "min-w-0",
+                            aria: { label: "Status for #{callsign}" } %>
+            <% end %>
+
+            <%= t.cell do %>
+              <%= bf.text_field :title1, hide_label: true, maxlength: 64,
+                                width: "w-full sm:w-40", wrapper_class: "min-w-0",
+                                aria: { label: "Title 1 for #{callsign}" } %>
+            <% end %>
+            <%= t.cell do %>
+              <%= bf.text_field :title2, hide_label: true, maxlength: 64,
+                                width: "w-full sm:w-40", wrapper_class: "min-w-0",
+                                aria: { label: "Title 2 for #{callsign}" } %>
+            <% end %>
+            <%# Title 3 is a varchar(64) that prints in a very small box, so the
+                column keeps the database width and narrows the field. %>
+            <%= t.cell do %>
+              <%= bf.text_field :title3, hide_label: true, maxlength: 64,
+                                width: "w-full sm:w-20", wrapper_class: "min-w-0",
+                                aria: { label: "Title 3 for #{callsign}" } %>
+            <% end %>
+
+            <%= t.cell bmid.org_vehicle_insurance ? "Yes" : "—" %>
+            <%# All of them, not the first: a person can hold two usable passes
+                of a type, the cell's label is the union, and the button opens
+                the list of them. %>
+            <%= t.cell do %>
+              <%= render "showers_cell", bmid: bmid, editable: true,
+                         provisions: held.select { |p| p.type == Provision::WET_SPOT } %>
+            <% end %>
+            <%= t.cell do %>
+              <%= render "meals_cell", bmid: bmid, editable: true,
+                         provisions: held.select { |p| p.type == Provision::MEALS } %>
+            <% end %>
+
+            <%# The selected value comes from bmid.admission_date, which reads
+                the SAP document the loader attached to this row.
+
+                A row with no pass, or one whose pass has already gone off to
+                be printed, gets the same control disabled rather than no
+                control at all: the date a submitted badge will print with is
+                exactly what an admin needs to read, and Table View is the only
+                other place it appears -- switching there would throw away
+                every edit in progress. A disabled field is not submitted, and
+                bulk_edit_controller leaves it alone. %>
+            <% sap_disabled = bmid.sap_disabled? %>
+            <%= t.cell center: true do %>
+              <%= bf.select :admission_date, admission_date_options(bmid, ticketing_info),
+                            { hide_label: true, width: "w-full sm:w-44",
+                              wrapper_class: "min-w-0",
+                              aria: { label: "Setup access date for #{callsign}" } },
+                            { disabled: sap_disabled } %>
+              <% if sap_disabled %>
+                <div class="mt-1"><%= bmid_sap_disabled_badge(bmid) %></div>
+              <% end %>
+            <% end %>
+
+            <%= t.cell do %>
+              <%= bf.text_field :team, hide_label: true,
+                                width: "w-full sm:w-32", wrapper_class: "min-w-0",
+                                aria: { label: "Team for #{callsign}" } %>
+            <% end %>
+            <%= t.cell class: "min-w-56" do %>
+              <%= bf.text_area :notes, hide_label: true, rows: 2,
+                               width: "w-full", wrapper_class: "min-w-0",
+                               aria: { label: "Notes for #{callsign}" } %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= submit_button "Save All Changes", data: { bulk_edit_target: "submit" } %>
+  <% end %>
+<% end %>

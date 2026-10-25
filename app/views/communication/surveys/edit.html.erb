@@ -1,0 +1,8 @@
+<% content_for :title, "Edit #{@survey.title}" %>
+
+<%= hero_panel icon: "square-poll-vertical", heading_level: :h1, id: "survey-form-header",
+               title: "Edit Survey",
+               description: "Change who answers this survey, what it says, or whether it is shown.",
+               back_to: [@survey.title, communication_survey_path(@survey)] %>
+
+<%= render "form" %>

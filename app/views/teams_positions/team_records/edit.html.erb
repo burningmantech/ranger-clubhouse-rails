@@ -1,0 +1,6 @@
+<%= hero_panel icon: "people-group", heading_level: :h1, id: "team-record-form-header",
+               title: "Edit #{@team.title}",
+               description: "#{team_record_type_label(@team.type)} ##{@team.id} — #{pluralize(@member_count, "member")}, #{pluralize(@position_count, "position")}.",
+               back_to: ["Team Records", @cancel_path] %>
+
+<%= render "form" %>

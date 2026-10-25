@@ -1,0 +1,19 @@
+<%# locals: (step:,facts:)%>
+<% if facts.is_echelon %>
+  <p><b>Optional for Echelon:</b> Take the Online Course before In-Person Training.</p>
+  <p class="text-sm text-stone-muted"><%= fa_icon "radio", :solid %> Focus on radio protocol if you'll carry a radio.</p>
+<% elsif facts.is_auditor %>
+  <% else %>
+  <p><b>Yearly requirement for all Rangers who intend to Ranger this year.</b> Takes ~2 hours.</p>
+<% end %>
+
+<p class="my-2">
+  <%= fa_icon "book", :solid %> Manual: <%= ext_link "rangers.burningman.org", Setting.get_value(Setting::RANGER_MANUAL_URL) %>
+</p>
+
+<p><%= link_to "Go To Online Course", me_online_course_path, class: "tap-target-link" %></p>
+
+<p class="text-sm text-stone-muted mt-2">
+  <%= fa_icon "clock", :solid %> Completion may take 30 min to show. Still not updated after 2 hours?
+  Email <%= mail_to EmailAddresses::TRAINING_ACADEMY %>
+</p>

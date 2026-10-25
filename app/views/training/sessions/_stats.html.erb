@@ -1,0 +1,26 @@
+<%# The session at a glance: sign-ups and each trainee status, then the roster
+    mix. Re-rendered into #session-stats after every score so the counts stay
+    truthful. "Binaries" = first-year Rangers (the trainer's report uses the
+    same term). %>
+<% session = @training_session %>
+<% slot = session.slot %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box "#{session.trainees.size} of #{slot.max}",
+                  session.full? ? "Signed up — FULL" : "Signed up",
+                  variant: session.full? ? :warning : :secondary %>
+  <% session.status_counts.each do |status, count| %>
+    <%= trainee_status_stat_box status, count %>
+  <% end %>
+  <% if session.art? %>
+    <%= ui_stat_box session.vet_count, "ART Vets" %>
+    <%= ui_stat_box session.prospective_count, "ART Prospectives" %>
+  <% else %>
+    <%= ui_stat_box session.vet_count, "Vets" %>
+    <%= ui_stat_box session.first_year_count, "Binaries" %>
+    <%= ui_stat_box session.prospective_count, "Prospectives" %>
+    <%= ui_stat_box session.auditor_count, "Auditors" %>
+    <%= ui_stat_box session.inactive_retired_count, "Inactive / Retired",
+                    variant: session.inactive_retired_count.positive? ? :warning : :secondary %>
+  <% end %>
+<% end %>

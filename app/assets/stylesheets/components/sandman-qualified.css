@@ -1,0 +1,42 @@
+/*
+ * The sandman qualifications roster.
+ *
+ * Every row is read against its headings -- four yes-or-no columns that mean
+ * nothing once their labels have scrolled away -- so the headings stay put
+ * while the list moves under them.
+ */
+
+/*
+ * Bounds the scrollport. A pinned heading holds to the nearest scrolling
+ * ancestor, and for a table that is its container, so without a height there is
+ * nothing for it to hold to.
+ *
+ * Only from the desktop breakpoint up: below it the table stacks into labelled
+ * cards, which carry their own labels on every field and have no heading row to
+ * pin. Bounding the height there would box the cards into a second scrollbar
+ * for no gain.
+ */
+@media (width >= theme(--breakpoint-lg)) {
+    .sandman-qualified-pane {
+        @apply overflow-y-auto;
+        max-height: 70vh;
+    }
+}
+
+/*
+ * Every heading cell needs its own background, not just the thead: a `th` is
+ * transparent by default and the thead's background does not paint behind it,
+ * so rows scrolling under a pinned heading would show straight through the
+ * words.
+ */
+.sandman-qualified-pane thead th {
+    @apply bg-base-200;
+}
+
+/*
+ * Paper needs no rules of its own. A page box is narrower than the desktop
+ * breakpoint, so printing already takes the stacked-card layout: nothing above
+ * is in force, the heading row is hidden for the screen reader alone, and every
+ * field on paper carries its own label. Resetting the heading's position here
+ * would only drag that hidden row back into the page.
+ */

@@ -1,0 +1,44 @@
+<%# locals: (application:) %>
+<%# Single source for the decision actions: approve, reject, hold, adjust. %>
+<% unless application.finalized? %>
+  <div class="flex flex-wrap items-center gap-2">
+    <% unless application.processing_callsign? || application.status_approved? %>
+      <%= button_link "Approve for Callsign Processing", :success,
+                      dialog_vc_application_path(application, dialog: "status_message", status: ProspectiveApplication::STATUS_HANDLE_CHECK),
+                      icon: "check", icon_type: :solid, data: { turbo_frame: "modal" } %>
+    <% end %>
+    <%# Below lg each menu takes its own row: a 256px panel hanging off a button at the
+        end of the Approve row overflows a 375px screen. Same pattern as person/_actions. %>
+    <%= dropdown_menu "Reject", class: "w-full lg:w-auto",
+                      summary_class: "w-full justify-between lg:w-auto",
+                      menu_class: "w-full lg:w-64" do %>
+      <% [[ProspectiveApplication::STATUS_REJECT_UNQUALIFIED, "Lacking event experience"],
+          [ProspectiveApplication::STATUS_REJECT_TOO_YOUNG, "Too young (under 18)"],
+          [ProspectiveApplication::STATUS_REJECT_PRE_BONK, "Pre-bonk"],
+          [ProspectiveApplication::STATUS_REJECT_UBERBONKED, "Uberbonk"],
+          [ProspectiveApplication::STATUS_REJECT_RETURNING_RANGER, "Returning Ranger"],
+          [ProspectiveApplication::STATUS_DUPLICATE, "Duplicate application"]].each do |status, label| %>
+        <%= dropdown_item label, dialog_vc_application_path(application, dialog: "status_message", status:),
+                          data: { turbo_frame: "modal" } %>
+      <% end %>
+    <% end %>
+    <%= dropdown_menu "Hold", class: "w-full lg:w-auto",
+                      summary_class: "w-full justify-between lg:w-auto",
+                      menu_class: "w-full lg:w-64" do %>
+      <%= dropdown_item "Why Ranger answer issue",
+                        dialog_vc_application_path(application, dialog: "status_message",
+                                                   status: ProspectiveApplication::STATUS_HOLD_WHY_RANGER_QUESTION, ask_for_message: 1),
+                        data: { turbo_frame: "modal" } %>
+      <%= dropdown_item "Ask for event confirmation",
+                        dialog_vc_application_path(application, dialog: "status_message",
+                                                   status: ProspectiveApplication::STATUS_HOLD_QUALIFICATION_ISSUE),
+                        data: { turbo_frame: "modal" } %>
+      <%= dropdown_item "Ask for age confirmation",
+                        dialog_vc_application_path(application, dialog: "status_message",
+                                                   status: ProspectiveApplication::STATUS_HOLD_AGE_ISSUE),
+                        data: { turbo_frame: "modal" } %>
+    <% end %>
+    <%= button_link "Adjust Status", :ghost, dialog_vc_application_path(application, dialog: "adjust_status"),
+                    data: { turbo_frame: "modal" } %>
+  </div>
+<% end %>

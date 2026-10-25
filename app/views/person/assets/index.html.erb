@@ -1,0 +1,48 @@
+<%= hero_panel icon: "boxes-stacked", heading_level: :h1, id: "person-assets-header",
+               title: "Asset History & Checkouts — #{@person.callsign}",
+               description: "Review checkout history, check assets in, and manage current-year asset checkouts for this person.",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.year_selector year: @year, years: @years %>
+<% end %>
+
+<% if @is_current_year %>
+
+  <% if !@person_event.asset_authorized %>
+    <%= ui_callout_box :error, title: "#{@person.callsign} Is Not Asset Authorized" do %>
+      Have them sign the appropriate paperwork before issuing equipment.
+    <% end %>
+  <% end %>
+<% end %>
+
+
+<% if @is_current_year %>
+  <%= ui_section "Asset Checkout", icon: "barcode", icon_type: :solid do %>
+    <%= render "common/assets/checkout_form",
+               checkout_form: @checkout_form,
+               attachments: @attachments %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Asset Check In / Out History", icon: "clock-rotate-left", icon_type: :solid do %>
+  <% if @person_assets.any? %>
+    <%= render "common/assets/table",
+               person_assets: @person_assets,
+               allow_attachment_change: @is_current_year,
+               row_actions: "person/assets/row_actions" %>
+  <% else %>
+    <%= ui_empty_state "No assets found for #{@year}.", icon: "boxes-stacked", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<% if Current.admin? && @is_current_year %>
+  <%= ui_section "Asset Authorization" do %>
+    <%= ui_callout_box :warning, title: "Before You Save" do %>
+      Recording a signature on someone else's behalf may expose the organization to legal liability.
+    <% end %>
+
+    <%= ui_form(@person_event, authorization_person_assets_path(@person, year: @year), method: :patch) do |f| %>
+      <%= f.check_box :asset_authorized, label: "#{Current.year} Asset Authorization Agreement signed" %>
+      <%= f.submit "Save" %>
+    <% end %>
+  <% end %>
+<% end %>

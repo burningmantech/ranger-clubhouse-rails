@@ -1,0 +1,72 @@
+<%#
+  The year's applicant pipeline. Shared by /vc/unified-flagging and In-Person
+  Training's copy -- see UnifiedFlaggingConcern for the per-controller hooks
+  (URL builders, earliest year, and whether note controls render at all).
+%>
+<% content_for :title, "#{@year} Unified Flagging" %>
+<%= hero_panel icon: "flag", heading_level: :h1, id: "unified-flagging-header",
+               title: "#{@year} Unified Flagging" do |panel| %>
+  <% panel.description do %>
+    Every Prospective and Alpha in the <%= @year %> pipeline, with the ranks, flags, and notes left by Personnel,
+    RRN, VC, Training, and Mentors.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @total.zero? %>
+  <%= ui_empty_state "No Prospectives or Alphas were found for #{@year}.", icon: "flag" %>
+<% else %>
+  <%= render "common/unified_flagging/group_tiles", counts: @group_counts, active: @filter_params[:section],
+                                                    year: @year %>
+
+  <%= render "common/unified_flagging/personnel_warning", callsigns: @personnel_flagged %>
+
+  <%# A legend for the entries is all the card holds, so it is offered only
+      when the pipeline has people -- all of them, not the filtered ones. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <%= render "common/unified_flagging/review_legend" %>
+      <%= render "common/unified_flagging/lead_legend" %>
+      <%= render "common/unified_flagging/rank_legend" %>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "unified-flagging-filters",
+                 chips: unified_flagging_filter_chips(@filter_params, @year),
+                 clear_url: unified_flagging_path(year: @year),
+                 count: "Showing #{@shown} of #{pluralize(@total, "person", plural: "people")}",
+                 url: unified_flagging_path do |f| %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.text_field :q, label: "Search by Callsign, Name, or Former Handle",
+                       value: @filter_params[:q], width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :training, unified_flagging_training_filter_options,
+                   label: "Training", selected: @filter_params[:training],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :section, unified_flagging_section_filter_options,
+                   label: "Section", selected: @filter_params[:section],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @total.positive? && @shown.zero? %>
+  <%= ui_empty_state "No one in the #{@year} pipeline matched those filters.",
+                     icon: "magnifying-glass", icon_type: :solid %>
+<% elsif @total.positive? %>
+  <% pane = render "common/unified_flagging/review_pane", summary: @selected, history: @history, year: @year %>
+  <%= render layout: "common/unified_flagging/review_workspace", locals: { pane: } do %>
+    <% unified_flagging_group_meta.each do |group, meta| %>
+      <% rows = @groups[group] || [] %>
+      <% next if rows.empty? %>
+      <%= ui_section meta[:title], icon: meta[:icon], icon_type: :solid,
+                     badge: rows.size.to_s, badge_color: meta[:badge_color] do %>
+        <%= render "common/unified_flagging/review_list", rows: rows, year: @year, selected_id: @selected_id %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

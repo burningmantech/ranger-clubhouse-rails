@@ -1,0 +1,7 @@
+<%# locals: (shifts:) %>
+<%# The grouping rule, one pair for every page whose card explains it. %>
+<dt>What is a mentoring shift?</dt>
+<dd>
+  The mentees signed in to one <%= shifts.mentee_position&.title || "mentee" %> shift, or within an hour of its
+  start, with the mentors signed in around it. Sign-ins that match no shift are grouped with each other by the hour.
+</dd>

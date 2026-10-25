@@ -1,0 +1,34 @@
+<%#
+  What happened when a broadcast's failed messages were sent again. Rendered
+  from the send itself, so reloading this page cannot repeat it.
+%>
+<div data-controller="scroll-to-top" hidden></div>
+
+<% content_for :title, "Broadcast ##{@broadcast.id} Sent Again" %>
+
+<%= hero_panel icon: "rotate-right", heading_level: :h1, id: "rbs-retried-header",
+               title: "Broadcast ##{@broadcast.id} Sent Again",
+               description: "What happened to the messages that had failed.",
+               back_to: ["This broadcast", communication_rbs_history_broadcast_path(@broadcast)] %>
+
+<%= render "common/rbs/delivery_summary", result: @result, sandboxes: @sandboxes,
+           test_address: @email_test_address, resent: true %>
+
+<%= ui_section "Delivery (#{@result.people.size})", icon: "paper-plane", icon_type: :solid, border: false do %>
+  <p class="px-3 pb-2">
+    A Ranger who has since asked us to stop, changed their number, or left is not sent to again.
+  </p>
+  <% if @result.people.empty? %>
+    <%= ui_empty_state "There was nothing left to send." %>
+  <% else %>
+    <%= render "common/rbs/delivery_table", result: @result %>
+  <% end %>
+<% end %>
+
+<%= button_row do %>
+  <%= button_link "Back to This Broadcast", :primary,
+                  communication_rbs_history_broadcast_path(@broadcast),
+                  icon: "arrow-left", icon_type: :solid %>
+  <%= button_link "Broadcast History", :secondary, communication_rbs_history_path,
+                  icon: "clipboard-list", icon_type: :solid %>
+<% end %>

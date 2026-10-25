@@ -1,0 +1,24 @@
+<%# locals: (pog:) %>
+<%# Cancel-pog dialog (Ember port/components/hq-pogs.hbs pogToCancel modal).
+    Turbo-streamed into the "modal" frame; a reason is REQUIRED. The warning
+    copy differs for half-meal (digital record) vs physical pogs. %>
+<%= modal_dialog id: "hq-pog-cancel-modal", title: "Confirm Pog Cancel", frame: false do %>
+  <% if pog.pog == PersonPog::POG_HALF_MEAL %>
+    <%= ui_callout_box :error, icon: "hand-point-right" do %>
+      This will cancel the digital 1/2 Meal Pog record in the Clubhouse.
+    <% end %>
+  <% else %>
+    <%= ui_callout_box :info, icon: "hand-point-right" do %>
+      This does <strong>not</strong> cancel the <strong>physical</strong> pog &mdash; only the
+      record in the Clubhouse. The Ranger can still use the physical pog.
+    <% end %>
+  <% end %>
+  <p class="mb-3">Use this to mark a pog record as issued by mistake.</p>
+  <%= ui_form(pog, hq_shift_manage_update_pog_path(shift_person, pog.id, **shift_context),
+              method: :patch, data: { turbo_frame: "_top" }) do |f| %>
+    <%= hidden_field_tag :pog_op, "cancel" %>
+    <%= f.text_area :notes, label: "Why is this pog being cancelled?",
+                    rows: 2, required: true %>
+    <%= modal_form_footer f, submit: "Cancel #{pog.pog_label}", close: "Do Not Cancel Pog" %>
+  <% end %>
+<% end %>

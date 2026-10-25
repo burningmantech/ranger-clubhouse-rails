@@ -1,0 +1,45 @@
+<%#
+  A list of surveys and the reports each one produces. Shared by the two survey
+  indexes: the training interface renders one of these per audience section for
+  a single year, the Mentors' Alpha surveys render one for every year at once.
+
+  Locals:
+    surveys   [Array<Survey>] rows as Survey.find_for_query returns them --
+              .reports is set there, and .has_responses is answered for the
+              whole page in one query rather than one survey at a time.
+    show_year [Boolean] whether to lead with the survey's year. Only worth a
+              column where the list spans years; survey titles do not carry it.
+
+  The report links come from the host controller's survey_report_url, so each
+  interface keeps its own URLs without this partial knowing either.
+%>
+<%= ui_table full_width: true, striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Year" if show_year %>
+    <%= t.heading "Survey" %>
+    <%= t.heading "Reports" %>
+    <%= t.heading "Responses" %>
+  <% end %>
+  <%= t.body do %>
+    <% surveys.each do |survey| %>
+      <%= t.row do %>
+        <% if show_year %>
+          <%= t.row_header survey.year %>
+          <%= t.cell do %><%= render "common/surveys/survey_name", survey: survey %><% end %>
+        <% else %>
+          <%= t.row_header do %><%= render "common/surveys/survey_name", survey: survey %><% end %>
+        <% end %>
+        <%= t.cell do %>
+          <div class="flex flex-col gap-y-2">
+            <% survey.reports.each do |report| %>
+              <%= link_to report[:title],
+                          survey_report_url(survey, report[:id]),
+                          class: LinkHelper::TABLE_LINK_CLASSES %>
+            <% end %>
+          </div>
+        <% end %>
+        <%= t.cell survey_responses_badge(survey) %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

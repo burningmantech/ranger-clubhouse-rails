@@ -1,0 +1,205 @@
+<%# Advanced search across every account. A bare visit shows the criteria
+    panel with nothing searched yet; searching with no statuses checked warns
+    before it runs, since that would scan the whole Clubhouse. Guards render
+    ABOVE the criteria bar: the open panel is ~700px tall, and a warning below
+    it fires exactly when the page otherwise looks unchanged. %>
+<% results_shown = @searched && @error.blank? && !@needs_confirmation %>
+<%# What the results table draws, read by the card above the criteria bar and
+    by the table itself. Paged and dated are the two states the card explains. %>
+<% listed = results_shown && @people.any? %>
+<% columns = listed ? people_search_columns(@form) : [] %>
+<% paged = listed && @total_pages > 1 %>
+<% dated = columns.any? { |column| People::SearchHelper::DATE_KEYS.include?(column[:key]) } %>
+<% content_for :title,
+               results_shown ? "People Search (#{number_with_delimiter(@people.size)} found)" : "People Search" %>
+
+<%= hero_panel icon: "magnifying-glass", heading_level: :h1, id: "people-search-header",
+               title: "People Search",
+               description: "Find accounts by status, status history, years rangered, training, photo, and ticketing progress." %>
+
+<% if @error.present? %>
+  <%= ui_callout_box :error, icon: "triangle-exclamation" do %>
+    <%= @error %>
+  <% end %>
+<% elsif @needs_confirmation %>
+  <%= ui_callout_box :warning, icon: "triangle-exclamation" do %>
+    <p class="mb-2">
+      <strong>No statuses are checked.</strong> This will search every account the
+      Clubhouse has ever had, which can be a very long list.
+    </p>
+    <%= button_link "Search Anyway", :warning, people_search_path(filter: @filter, confirmed: 1) %>
+  <% end %>
+<% end %>
+
+<%# Each pair is about one state of the results, so the card is offered only in
+    those states: more than one page of them, or a date column on screen. %>
+<% if paged || dated %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <% if paged %>
+        <dt>Does the CSV export stop at this page?</dt>
+        <dd>The CSV export includes every match.</dd>
+      <% end %>
+      <% if dated %>
+        <dt>Why do some dates show a dash?</dt>
+        <dd>Some columns may be blank for older accounts.</dd>
+      <% end %>
+    </dl>
+  <% end %>
+<% end %>
+
+<%= filter_bar id: "people-search-filters",
+               chips: people_search_filter_chips(@form),
+               clear_url: people_search_path,
+               count: @count_label,
+               url: people_search_path, model: @form, scope: "filter",
+               open: @people.blank?, toggle_label: "Criteria", toggle_icon: "sliders",
+               # Only once a search has actually returned people: before that
+               # there is no result set for the file to correspond to.
+               actions: (export_csv_link(people_search_path(filter: @filter, confirmed: @confirmed,
+                                         format: "csv")) if listed) do |f| %>
+  <%# Each category is a ui_disclosure card, the same in-panel grouping Action
+      Logs uses for its event categories. A category opens when it holds a
+      criterion and names the count when it does not, so re-opening the panel
+      to refine a search shows what was asked for. On a first visit nothing is
+      set, and Status -- the criterion this page is really about -- opens alone. %>
+  <% status_open = @form.status_criteria_count.positive? || !@form.any_criteria?
+     experience_open = @form.experience_criteria_count.positive?
+     account_open = @form.account_criteria_count.positive?
+     columns_open = @form.columns_criteria_count.positive? %>
+  <div class="space-y-3">
+    <%= ui_disclosure people_search_category_title("user-check", "Status"),
+                      variant: :card, id: "people-search-status-category",
+                      open: status_open,
+                      subtitle: people_search_category_subtitle(@form.status_criteria_count, "status", open: status_open) do %>
+      <%= form_row do %>
+        <%= f.select :status_year, @form.status_year_options,
+                     { label: "Status to Match", width: "w-full", wrapper_class: "flex-1" } %>
+      <% end %>
+
+      <p class="mt-3 mb-2 text-base font-semibold text-body">
+        <%= @form.status_year_mode? ? "In #{@form.status_year}, status was updated to one of:" : "Current status is one of:" %>
+      </p>
+
+      <%= render "common/checkbox_grid", name: "#{PersonSearchForm::PARAM_SCOPE}[statuses][]",
+                                         options: PersonSearchForm::STATUS_OPTIONS.map { |status| [status, status] },
+                                         selected: @form.statuses,
+                                         id_prefix: "people-search-status" %>
+    <% end %>
+
+    <%= ui_disclosure people_search_category_title("graduation-cap", "Experience & Readiness"),
+                      variant: :card, id: "people-search-experience-category",
+                      open: experience_open,
+                      subtitle: people_search_category_subtitle(@form.experience_criteria_count, "experience", open: experience_open) do %>
+      <%= form_row do %>
+        <%= f.select :years_worked_op, PersonSearchForm::YEARS_OP_OPTIONS,
+                     { label: "Years Rangered", width: "w-full", wrapper_class: "flex-1" } %>
+        <%= f.number_field :years_worked, label: "Number of Years", min: 0,
+                           width: "w-full", wrapper_class: "flex-1" %>
+      <% end %>
+
+      <%= form_row do %>
+        <%= f.select :photo_status, PersonSearchForm::PHOTO_STATUS_OPTIONS,
+                     { label: "Photo Status", width: "w-full", wrapper_class: "flex-1" } %>
+        <%= f.select :online_course_status, PersonSearchForm::ONLINE_COURSE_OPTIONS,
+                     { label: "#{Current.year} Online Course", width: "w-full", wrapper_class: "flex-1" } %>
+      <% end %>
+
+      <%= form_row do %>
+        <%= f.select :training_status, PersonSearchForm::TRAINING_STATUS_OPTIONS,
+                     { label: "#{Current.year} In-Person Training", width: "w-full", wrapper_class: "flex-1" } %>
+      <% end %>
+
+      <p class="mt-2 text-sm text-stone-muted">
+        Training entries never count toward years rangered. Alpha entries count only
+        from 2025, and only for someone who passed mentoring.
+      </p>
+    <% end %>
+
+    <%= ui_disclosure people_search_category_title("ticket", "Account & Ticketing"),
+                      variant: :card, id: "people-search-account-category",
+                      open: account_open,
+                      subtitle: people_search_category_subtitle(@form.account_criteria_count, "account", open: account_open) do %>
+      <%= form_row do %>
+        <%= f.select :year_created, @form.year_created_options,
+                     { label: "Year Account Created", width: "w-full", wrapper_class: "flex-1" } %>
+        <%= f.select :ticketing_status, PersonSearchForm::TICKETING_OPTIONS,
+                     { label: "Ticketing Status", width: "w-full", wrapper_class: "flex-1" } %>
+      <% end %>
+    <% end %>
+
+    <%= ui_disclosure people_search_category_title("table-columns", "Extra Columns"),
+                      variant: :card, id: "people-search-columns-category",
+                      open: columns_open,
+                      subtitle: people_search_category_subtitle(@form.columns_criteria_count, "column", open: columns_open) do %>
+      <p class="mb-2 text-sm text-stone-muted">
+        Filtering on something adds its column automatically.
+      </p>
+      <%= render "common/checkbox_grid", name: "#{PersonSearchForm::PARAM_SCOPE}[columns][]",
+                                         options: people_search_column_options,
+                                         selected: @form.columns,
+                                         id_prefix: "people-search-column" %>
+    <% end %>
+  </div>
+
+  <%= button_row class: "mt-4" do %>
+    <%= f.submit "Search" %>
+  <% end %>
+<% end %>
+
+<% if results_shown %>
+  <%= ui_section "Results", border: false do %>
+    <% if @people.empty? %>
+      <%= ui_empty_state nil, icon: "magnifying-glass", icon_type: :solid do %>
+        No accounts matched your search criteria.
+        <%= link_to "Clear all criteria", people_search_path %> or adjust the panel above.
+      <% end %>
+    <% else %>
+      <% if paged %>
+        <p class="mb-3 text-body font-semibold">
+          Showing <%= number_with_delimiter(@showing_start) %>–<%= number_with_delimiter(@showing_stop) %> of <%= number_with_delimiter(@people.size) %>.
+        </p>
+      <% end %>
+
+      <%# The bounded container gives the pinned header something to stick to;
+          TableHelper::PINNED_HEADER_CLASSES says why both are lg-only. %>
+      <%= ui_table striped: true,
+                   container_class: "lg:max-h-[70vh] lg:overflow-y-auto" do |t| %>
+        <%= t.header class: TableHelper::PINNED_HEADER_CLASSES do %>
+          <%= t.heading "Callsign" %>
+          <% columns.each do |column| %>
+            <%= t.heading column[:heading], right: column[:right] %>
+          <% end %>
+        <% end %>
+        <%= t.body do %>
+          <% @page_rows.each do |row| %>
+            <%= t.row do %>
+              <%= t.row_header do %><%= callsign_link row.person %><% end %>
+              <% columns.each do |column| %>
+                <%= t.cell people_search_cell(row, column), right: column[:right] %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <% if paged %>
+        <nav class="my-4 flex flex-wrap items-center gap-4" aria-label="Result pages">
+          <%= button_row do %>
+            <% if @page > 1 %>
+              <%= button_link "Previous Page", :secondary,
+                              people_search_path(filter: @filter, confirmed: @confirmed, page: @page - 1),
+                              icon: "arrow-left", icon_type: :solid %>
+            <% end %>
+            <% if @page < @total_pages %>
+              <%= button_link "Next Page", :secondary,
+                              people_search_path(filter: @filter, confirmed: @confirmed, page: @page + 1),
+                              icon: "arrow-right", icon_type: :solid %>
+            <% end %>
+          <% end %>
+          <span class="text-body">Page <%= @page %> of <%= @total_pages %></span>
+        </nav>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

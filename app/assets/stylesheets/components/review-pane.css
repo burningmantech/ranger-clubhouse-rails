@@ -1,0 +1,48 @@
+/*
+ * Review pane -- the sticky history beside the pipeline review list
+ * (app/views/common/unified_flagging/_review_pane.html.erb; the layout is
+ * _review_workspace.html.erb, the placement review_pane_controller.js).
+ *
+ * The split, the stickiness and the selected line are utilities in the
+ * markup. This is the one thing they cannot write without an arbitrary
+ * value: the pane's height ceiling. Stuck at top-4 inside the drawer's
+ * scroller, a history taller than the viewport would otherwise run past the
+ * bottom edge, reachable only once the list had scrolled to its end. Capped,
+ * the pane scrolls inside itself and the list beside it scrolls on its own.
+ *
+ * The ceiling is the viewport less the navbar (64px, which the layout's
+ * drawer comment pins), the pane's top-4 and the same again below it.
+ *
+ * lg only, the same bound as the `lg:` utilities beside it: below the fold
+ * the pane sits under the selected line and takes its natural height.
+ * Layered so a utility at the call site still wins.
+ */
+@media (width >= theme(--breakpoint-lg)) {
+    @layer components {
+        .review-pane {
+            max-height: calc(100dvh - 6rem);
+            overflow-y: auto;
+        }
+    }
+}
+
+/*
+ * The review list's line states, keyed to aria-current: the server sets it on a
+ * full render and review_pane_controller moves it when the pane shows someone
+ * else, without re-rendering the list -- so the highlight cannot disagree with
+ * what a screen reader is told is current. A raised Personnel flag tints the
+ * line red (ruling R4) unless it is the selected one, whose pane repeats the
+ * warning beside the note controls.
+ *
+ * Layered, so the line's hover utility still wins while hovered.
+ */
+@layer components {
+    .review-line[aria-current="true"] {
+        @apply bg-primary/10 border-s-4 border-primary;
+    }
+
+    .review-line-flagged:not([aria-current="true"]) {
+        @apply bg-error/10 border-s-4 border-error/30;
+    }
+}
+

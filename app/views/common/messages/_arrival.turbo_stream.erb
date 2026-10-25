@@ -1,0 +1,8 @@
+<%# locals: (sender_name:, count:) %>
+<%# Broadcast to the recipient when a message arrives (PersonMessage#announce_arrival_to).
+    The envelope is replaced with the new count, and one line is added to the
+    layout's #live-region, which reads out only what is added to it. %>
+<%= turbo_stream.replace "navbar-messages", partial: "application/navbar_messages", locals: { count: } %>
+<%= turbo_stream.append "live-region" do %>
+  <div><%= sender_name %> sent you a message.</div>
+<% end %>

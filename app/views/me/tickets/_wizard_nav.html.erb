@@ -1,0 +1,35 @@
+<%# Footer navigation for one step of the ticketing walkthrough.              %>
+<%# Locals: step (Symbol section key or :review), presenter.                  %>
+<%# Renders the plain "back to hub" button instead when the member is not in  %>
+<%# the walkthrough (finished) or the page isn't one of their steps, so       %>
+<%# section pages can use it unconditionally.                                 %>
+<%
+  steps = presenter.wizard_steps
+  idx = steps.index(step)
+%>
+<% if wizard_mode? && idx %>
+  <%
+    prev_key = idx.positive? ? steps[idx - 1] : nil
+    next_key = steps[idx + 1]
+    blocked = presenter.wizard_blocked?(step)
+  %>
+  <div class="mt-6 border-t border-line pt-4">
+    <p class="text-body font-medium mb-3">Step <%= idx + 1 %> of <%= steps.size %></p>
+    <% if blocked %>
+      <p class="text-body mb-3"><strong>Make your choice above to continue.</strong></p>
+    <% end %>
+    <%= button_row do %>
+      <%= button_link (prev_key ? "Previous Step" : "Back to Tickets & Provisions"), :secondary, (prev_key ? public_send("me_tickets_#{prev_key}_path") : me_tickets_path),
+                      icon: "arrow-left", icon_type: :solid, size: "lg" %>
+      <% if next_key %>
+        <%= button_link (next_key == :review ? "Continue to confirmation" : "Continue"), :primary,
+                        public_send("me_tickets_#{next_key}_path"),
+                        disabled: blocked, icon: "arrow-right", icon_type: :solid, size: "lg" %>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="mt-6">
+    <%= button_link "Back to Tickets & Provisions", :secondary, me_tickets_path, icon: "arrow-left", icon_type: :solid %>
+  </div>
+<% end %>

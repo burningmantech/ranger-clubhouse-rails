@@ -1,0 +1,40 @@
+<%# locals: (blockers:, title:, action_noun:, form_url:, form_method:, form_params:) %>
+<%# Turbo-streamed into the "modal" frame when a check-in or position update is blocked. %>
+<%= modal_dialog id: "shift-blocked-modal", title: title, frame: false do %>
+  <p class="font-semibold text-error mb-2">
+    <%= fa_icon "hand", :solid, end: 1 %>
+    The <%= action_noun %> is blocked for the following reason(s):
+  </p>
+  <ul class="list-disc list-inside mb-3">
+    <% blockers.each do |blocker| %>
+      <li><%= timesheet_blocker_label(blocker) %></li>
+    <% end %>
+  </ul>
+
+  <% if shift_can_force? %>
+    <p class="mb-2">
+      Since you have the Admin or Force Shift Start permission, you can force the
+      <%= action_noun %>.
+    </p>
+    <p class="mb-3 font-semibold text-error">All forced actions are logged and reviewed.</p>
+    <%# _top: escape the "modal" turbo-frame so the success redirect renders the page. %>
+    <%= ui_form(nil, form_url, method: form_method,
+                data: { turbo_frame: "_top" }) do |f| %>
+      <% form_params.each do |name, value| %>
+        <%= hidden_field_tag name, value %>
+      <% end %>
+      <%= hidden_field_tag :force_sign_in, 1 %>
+      <%= f.text_area :signin_force_reason, label: "Reason for Forcing",
+                      required: true, rows: 4 %>
+      <%= modal_form_footer submit: "Confirm Force", variant: :warning %>
+    <% end %>
+  <% else %>
+    <p class="mb-3">
+      Refer the person to the HQ Lead, who has the authority to force the
+      <%= action_noun %>. If no HQ Lead is on duty, contact Khaki on Control 1 for assistance.
+    </p>
+    <%= button_row do %>
+      <%= modal_close_button "Close" %>
+    <% end %>
+  <% end %>
+<% end %>

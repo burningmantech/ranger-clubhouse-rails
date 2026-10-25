@@ -1,0 +1,80 @@
+<%# The two actions share nothing but the callsign in the first column, so the
+    format cannot be stated once under the textarea. Folded away because the
+    ticket codes are a nine-row table and most of the people pasting a list have
+    the format in their fingers already.
+
+    The years and the arrival window are read out loud rather than described:
+    they are the values a line inherits when it does not mention them, and they
+    change with the season and with a setting. %>
+<% source_year, expiry_year = BulkUpload::TicketHandler.default_years %>
+<% day_low, day_high = TicketingManagement.sap_day_range %>
+
+<div class="space-y-2 mb-4">
+  <%= ui_disclosure "Line Format: Create Access Documents",
+                    variant: :card,
+                    subtitle: "callsign,type[,access date][,source year][,expiry year]" do %>
+    <p class="mb-3">
+      <strong>The extra columns are positional and each type takes its own.</strong>
+      An access date comes first, then a source year, then an expiry year — so
+      <code>hubcap,SPT,<%= Current.year - 1 %></code> is a source year while
+      <code>hubcap,CRED,<%= Current.year %>-08-10</code> is an access date.
+      Leave off what you do not need: <code>hubcap,SPT</code> is a whole line.
+    </p>
+
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Type" %>
+        <%= t.heading "Creates" %>
+        <%= t.heading "Extra Columns" %>
+      <% end %>
+      <%= t.body do %>
+        <% BulkUpload::TicketHandler.line_formats.each do |code, creates, extras| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <code><%= code %></code>
+            <% end %>
+            <%= t.cell creates %>
+            <%= t.cell extras.any? ? extras.to_sentence : "nothing else" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <p class="mt-3">
+      <strong>Only <code>SPT</code> and <code>CRED</code> carry forward.</strong>
+      Naming no years, those two use source year <%= source_year %> and expiry year
+      <%= expiry_year %>. Every other type expires in <%= Current.year %>, because it is
+      allocated for this event alone.
+    </p>
+    <p class="mt-2">
+      <strong>Source year <%= Current.year %> is assumed for
+      <code>GIFT</code>, <code>LSD</code>, <code>VPGIFT</code>, <code>VPLSD</code>,
+      <code>WAP</code> and <code>SAP</code>.</strong>
+      A plain <code>VP</code> is the exception: it takes source year <%= source_year %>,
+      and it accepts no source year column to say otherwise.
+    </p>
+  <% end %>
+
+  <%= ui_disclosure "Line Format: Update SAP Dates",
+                    variant: :card,
+                    subtitle: "callsign,date" do %>
+    <dl class="instruction-list">
+      <dt>What goes in the date column?</dt>
+      <dd>
+        An arrival date as <code><%= Current.year %>-08-<%= format("%02d", day_low) %></code>,
+        or the word <code>any</code> for access at any time.
+      </dd>
+      <dt>Which dates are allowed?</dt>
+      <dd>
+        Between <%= Current.year %>-08-<%= format("%02d", day_low) %> and
+        <%= Current.year %>-08-<%= format("%02d", day_high) %>. Anything outside that span is
+        refused.
+      </dd>
+      <dt>Does this create a SAP?</dt>
+      <dd>
+        No. A callsign holding neither a SAP nor a Staff Credential is listed as a problem and
+        nothing is created for them.
+      </dd>
+    </dl>
+  <% end %>
+</div>

@@ -1,0 +1,222 @@
+<%#
+  Everyone turning up before gate opening weekend, with what an arrival packet
+  needs for each of them. The boxes count the whole list; the filter bar narrows
+  only the table below it.
+%>
+<% content_for :title, "Early Arrivals" %>
+
+<%= hero_panel icon: "truck-fast", heading_level: :h1, id: "scheduling-early-arrivals-header",
+               title: "#{@year} Early Arrivals" do |panel| %>
+  <% panel.description do %>
+    Everyone arriving before the Thursday leading up to gate opening, so their
+    SITE Setup arrival packets can be put together ahead of time.
+  <% end %>
+  <%# The selector carries only the year, so the filters ride along as hidden
+      fields. Without them, changing year quietly widens the list back out. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: @filter_params %>
+<% end %>
+
+<% if @report.no_event_dates? %>
+  <%= ui_callout_box :error, title: "The #{@year} Event Dates Are Not Set" do %>
+    <p>
+      This report counts backwards from the start of the event, so it cannot say
+      who arrives early until the dates are on file. Contact the Tech Cadre for help.
+    </p>
+  <% end %>
+<% else %>
+  <% unless @report.live? %>
+    <%# Passes, radio allowances, and the on-playa flag hold no history, so an
+        earlier year cannot be asked about them. Saying so is the whole point of
+        this box: without it the page reads as though no one held a pass. %>
+    <%= ui_callout_box :warning, title: "#{@year} Is Read from Its Shifts Alone" do %>
+      <p>
+        Arrival passes, radio allowances, and who is on playa are only recorded
+        as they stand today, so they cannot be read back for an earlier event.
+        This page therefore lists whoever held a pre-event shift in
+        <%= @year %>, alongside the badges, agreements, and radios recorded at
+        the time. Pick <%= Current.year %> for the full picture.
+      </p>
+    <% end %>
+  <% end %>
+
+  <% if @report.none? %>
+    <%= ui_empty_state "No one is arriving before " \
+                       "#{wday_month_day_format(@report.pre_event_end)}. " \
+                       "#{@report.live? ? "Usually this means no arrival passes have been dated that early yet." : "No pre-event shifts were held that year."}",
+                       icon: "calendar-xmark", icon_type: :solid %>
+  <% else %>
+    <%# The three boxes reading a pass or the on-playa flag are only shown for
+        the event being prepared. On an earlier year they would each report a
+        confident nought against data no one ever recorded. %>
+    <%= ui_stat_row do %>
+      <%= ui_stat_box @report.total.to_s, "People", icon: "users", icon_type: :solid %>
+      <% if @report.live? %>
+        <%= ui_stat_box @report.any_time_count.to_s, "Passes Good Any Time",
+                        icon: "infinity", icon_type: :solid %>
+        <%= ui_stat_box @report.no_sap_count.to_s, "No Arrival Pass",
+                        variant: @report.no_sap_count.positive? ? :error : :secondary,
+                        icon: "ticket", icon_type: :solid %>
+      <% end %>
+      <%= ui_stat_box @report.no_shift_count.to_s, "No Pre-Event Shift",
+                      variant: @report.no_shift_count.positive? ? :warning : :secondary,
+                      icon: "calendar-xmark", icon_type: :solid %>
+      <%= ui_stat_box @report.unsigned_count.to_s, "Radio Agreement Unsigned",
+                      variant: @report.unsigned_count.positive? ? :warning : :secondary,
+                      icon: "file-signature", icon_type: :solid %>
+      <% if @report.live? %>
+        <%= ui_stat_box @report.on_site_count.to_s, "On Site",
+                        variant: @report.on_site_count.positive? ? :success : :secondary,
+                        icon: "location-dot", icon_type: :solid %>
+      <% end %>
+    <% end %>
+
+    <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+      <dl class="instruction-list">
+        <dt>Who is listed?</dt>
+        <dd>
+          <% if @report.live? %>
+            Anyone whose arrival pass lets them on playa before
+            <strong><%= wday_month_day_format(@report.pre_event_end) %></strong>,
+            and anyone holding a shift between
+          <% else %>
+            Anyone holding a shift between
+          <% end %>
+          <strong><%= wday_month_day_format(@report.pre_event_start) %></strong> and
+          <strong><%= wday_month_day_format(@report.pre_event_end) %></strong>.
+          A shift beginning at midnight on that Thursday still counts; anything
+          later that day does not. Trainings do not count as shifts here.
+        </dd>
+
+        <dt>What is it for?</dt>
+        <dd>
+          Each row carries what a SITE Setup arrival packet needs:
+          <% if @report.live? %>
+            when the person may arrive, the first shift they stand, their BMID status,
+            and the radios they may draw against the ones they are already holding.
+          <% else %>
+            the first shift they stand, their BMID status, and the radios issued to
+            them.
+          <% end %>
+        </dd>
+
+        <dt>What needs chasing?</dt>
+        <dd>
+          <% if @report.live? %>
+            A missing arrival pass, a missing pre-event shift, and an unsigned radio
+            agreement
+          <% else %>
+            A missing pre-event shift and an unsigned radio agreement
+          <% end %>
+          are each called out in the table. The boxes above count them across
+          everybody, whatever the filters are set to.
+        </dd>
+      </dl>
+    <% end %>
+
+    <%= filter_bar id: "early-arrivals-filters",
+                   chips: early_arrival_filter_chips(@filter_params, @year),
+                   clear_url: scheduling_early_arrivals_path(year: @year),
+                   count: early_arrival_summary_count(shown: @rows.size,
+                                                      total: @report.total),
+                   # The file is always the whole list, which the label says.
+                   actions: export_csv_link(scheduling_early_arrivals_path(year: @year, format: :csv), "Export All to CSV"),
+                   url: scheduling_early_arrivals_path do |f| %>
+      <%# Year-scoped page: a GET form replaces the whole query string, so
+          without this every Apply would bounce the list back to this year. %>
+      <%= hidden_field_tag :year, @year %>
+      <%# The three filters reading a pass or the on-playa flag are only offered
+          for the event being prepared; an earlier year holds nothing for them
+          to narrow on. "Dated for", not "Arrives on": a pass good at any time
+          names no single day, so its holders are not under any of these. %>
+      <% if @report.live? %>
+        <%= form_row do %>
+          <%= f.select :sap, early_arrival_sap_options,
+                       label: "Arrival Pass", selected: @filter_params[:sap],
+                       width: "w-full", wrapper_class: "flex-1" %>
+          <%= f.select :arrival, early_arrival_date_options(@report.arrival_dates),
+                       label: "Dated For", selected: @filter_params[:arrival],
+                       width: "w-full", wrapper_class: "flex-1" %>
+        <% end %>
+      <% end %>
+
+      <%= form_row do %>
+        <%= f.select :shift, early_arrival_shift_options,
+                     label: "Pre-Event Shift", selected: @filter_params[:shift],
+                     width: "w-full", wrapper_class: "flex-1" %>
+        <%= f.select :shift_date, early_arrival_date_options(@report.shift_dates),
+                     label: "First Shift Day", selected: @filter_params[:shift_date],
+                     width: "w-full", wrapper_class: "flex-1" %>
+      <% end %>
+
+      <%= form_row do %>
+        <%= f.select :agreement, early_arrival_agreement_options,
+                     label: "Radio Agreement", selected: @filter_params[:agreement],
+                     width: "w-full", wrapper_class: "flex-1" %>
+        <% if @report.live? %>
+          <%= f.select :site, early_arrival_site_options,
+                       label: "Location", selected: @filter_params[:site],
+                       width: "w-full", wrapper_class: "flex-1" %>
+        <% end %>
+      <% end %>
+
+      <%= button_row do %>
+        <%= f.submit "Apply Filters", variant: :secondary %>
+      <% end %>
+    <% end %>
+
+    <% if @rows.empty? %>
+      <%= ui_empty_state "No one matches the current filters.",
+                         icon: "filter-circle-xmark", icon_type: :solid %>
+    <% else %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Arrives" %>
+          <%= t.heading "First Pre-Event Shift" %>
+          <%= t.heading "BMID" %>
+          <%= t.heading "Location" %>
+          <%= t.heading "Radio Agreement" %>
+          <%= t.heading "Radios" %>
+        <% end %>
+        <%= t.body do %>
+          <% @rows.each do |row| %>
+            <%= t.row do %>
+              <%= t.row_header person_display_link(row.person, row.person_id) %>
+              <%= t.cell early_arrival_sap_cell(row.sap_date, live: row.live) %>
+              <%= t.cell do %>
+                <% if row.first_shift %>
+                  <div><%= row.first_shift.position_title %></div>
+                  <div class="text-sm"><%= datetime_format(row.first_shift.begins) %></div>
+                  <% if row.first_shift.description.present? %>
+                    <div class="text-sm text-stone-muted"><%= row.first_shift.description %></div>
+                  <% end %>
+                <% else %>
+                  <span class="text-error font-semibold">No pre-event shift</span>
+                <% end %>
+              <% end %>
+              <%= t.cell early_arrival_bmid_cell(row.bmid_status) %>
+              <%= t.cell do %>
+                <% if row.on_site.nil? %>
+                  <span class="text-stone-muted">Not recorded</span>
+                <% elsif row.on_site %>
+                  <%= ui_badge "On site", :success, icon: "location-dot", icon_type: :solid %>
+                <% else %>
+                  <%= ui_badge "Off site", :secondary, icon: "location-crosshairs", icon_type: :solid %>
+                <% end %>
+              <% end %>
+              <%= t.cell do %>
+                <% if row.radio_agreement %>
+                  <%= ui_badge "Signed", :success, icon: "circle-check", icon_type: :solid %>
+                <% else %>
+                  <%= ui_badge "Unsigned", :warning, icon: "circle-exclamation", icon_type: :solid %>
+                <% end %>
+              <% end %>
+              <%= t.cell early_arrival_radios_cell(row) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

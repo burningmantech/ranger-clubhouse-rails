@@ -1,0 +1,143 @@
+<%#
+  Years of service for everyone who has rangered. The distribution comes first
+  because the shape of the roster is the thing the accordion this replaces
+  could not show; the roster below is for acting on it. Both read the same rows,
+  so a bar and its people cannot disagree.
+%>
+<% content_for :title, "Events Rangered" %>
+
+<%= hero_panel icon: "medal", heading_level: :h1, id: "quartermaster-events-rangered-header",
+               title: "Events Rangered" do |panel| %>
+  <% panel.description do %>
+    How many years each person has rangered, the first and last of those years, and whether
+    they have signed up for anything in <%= Current.year %>.
+  <% end %>
+<% end %>
+
+<% if @rows.empty? %>
+  <%= ui_empty_state "No one has rangered a year yet, so there is no service to report.",
+                     icon: "medal", icon_type: :solid %>
+<% else %>
+  <%# The stats describe the status scope, the same rows the distribution counts.
+      The filter bar's own count reports the narrowing below it. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @scoped.size.to_s, "People" %>
+    <%= ui_stat_box @signed_up_count.to_s, "Signed Up for #{Current.year}", variant: :success %>
+    <%# Amber only where a missing sign-up is actionable -- see the helper. %>
+    <%= ui_stat_box (@scoped.size - @signed_up_count).to_s, "Not signed up",
+                    variant: events_rangered_unsigned_variant(@filter_params[:status]) %>
+    <%= ui_stat_box pluralize(@longest_service, "year"), "Longest Service" %>
+  <% end %>
+
+  <%# Out of the hero: who is listed, and what makes a year count. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Who is not listed?</dt>
+      <dd>People who have never rangered are not listed.</dd>
+      <dt>What counts as a year?</dt>
+      <dd>
+        A year only counts once someone has rangered six hours in it, so a light year is absent
+        from all three columns.
+      </dd>
+    </dl>
+  <% end %>
+
+  <%= ui_section "Service Length", icon: "chart-simple", icon_type: :solid, border: false do %>
+    <%= ui_table full_width: true, striped: true, id: "events-rangered-distribution" do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Years" %>
+        <%= t.heading "People", right: true %>
+        <%# Not "Share": the bar is drawn against the largest band, not the
+            roster total, so the biggest band always fills it. %>
+        <%= t.heading "Relative Size" %>
+        <%= t.heading "Signed Up", right: true %>
+      <% end %>
+      <%= t.body do %>
+        <% largest = @distribution.map { |bucket| bucket[:people] }.max %>
+        <% @distribution.each do |bucket| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%= link_to pluralize(bucket[:years], "year"),
+                          events_rangered_url(@filter_params.merge(years: bucket[:years].to_s)),
+                          class: LinkHelper::TABLE_LINK_CLASSES %>
+            <% end %>
+            <%= t.cell bucket[:people], right: true %>
+            <%# Bars scale to the largest bucket, not the roster total -- see the helper. %>
+            <%= t.cell ui_progress_bar(events_rangered_bar_percent(bucket[:people], largest),
+                                       :secondary, size: :sm,
+                                       aria: { label: "#{bucket[:people]} of #{largest} " \
+                                                      "in the largest band" }) %>
+            <%= t.cell bucket[:signed_up], right: true %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= filter_bar id: "events-rangered-filters",
+                 chips: events_rangered_filter_chips(@filter_params),
+                 # No filters at all, which the helper spells as status=all:
+                 # an absent status param would mean Active.
+                 clear_url: events_rangered_url({}),
+                 count: "Showing #{@filtered.size} of #{pluralize(@scoped.size, "person")}",
+                 # In the bar beside the chips: the page arrives scoped to
+                 # Active, and the chips are where that is disclosed, so the
+                 # export cannot read as "the whole census".
+                 actions: export_csv_link(events_rangered_url(@filter_params.merge(format: :csv))),
+                 url: quartermaster_events_rangered_path do |f| %>
+    <%= form_row do %>
+      <%= f.select :status, filter_status_options(@status_counts),
+                   label: "Status", selected: @filter_params[:status],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :years, events_rangered_years_options(@distribution),
+                   label: "Years of Service", selected: @filter_params[:years],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :signed_up, filter_signed_up_options,
+                   label: "Signed Up for #{Current.year}", selected: @filter_params[:signed_up],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Roster", icon: "users", icon_type: :solid, border: false do %>
+    <% if @filtered.empty? %>
+      <div class="px-4 pb-2">
+        <%= ui_empty_state "No one matched the current filters.",
+                           icon: "magnifying-glass", icon_type: :solid %>
+      </div>
+    <% else %>
+      <%= ui_table full_width: true, striped: true, id: "events-rangered-roster" do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Name" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Years", right: true %>
+          <%= t.heading "First Year", right: true %>
+          <%= t.heading "Last Year", right: true %>
+          <%= t.heading "Signed Up #{Current.year}" %>
+        <% end %>
+        <%# Quartermaster and Timesheet Management may read this page but not the
+            person pages it would link to, so they get plain callsigns rather
+            than a roster of links that all bounce. %>
+        <% linked = can_view_person_page? %>
+        <%= t.body do %>
+          <% @filtered.each do |row| %>
+            <%= t.row do %>
+              <%# The report returns value rows, not Person records, so
+                  callsign_link cannot route from the object itself. %>
+              <%= t.row_header linked ? callsign_link(row, person_path(row.id)) : row.callsign %>
+              <%= t.cell row.name %>
+              <%= t.cell row.status %>
+              <%= t.cell row.years, right: true %>
+              <%= t.cell row.first_year, right: true %>
+              <%= t.cell row.last_year, right: true %>
+              <%= t.cell yes_no_badge(row.signed_up) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

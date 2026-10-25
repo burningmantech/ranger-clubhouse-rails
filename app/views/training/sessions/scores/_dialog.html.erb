@@ -1,0 +1,101 @@
+<%# The per-trainee score dialog: prior notes (with author-only edit/delete),
+    then the status/rank/note form. The notes table sits OUTSIDE the score form
+    so its per-note forms never nest. %>
+<% person = trainee.person %>
+<% session = @training_session %>
+
+<%= modal_dialog id: "score-dialog", title: "Score #{person.callsign} — #{trainee.status}", size: :lg, frame: false do %>
+  <% if trainee.personnel_issue %>
+    <%= ui_callout_box :error, title: "Personnel Flag Raised" do %>
+      A personnel flag is raised on <%= person.callsign %>. <strong>Take no actions until it is resolved.</strong>
+    <% end %>
+  <% end %>
+
+  <p class="mb-2">
+    Only the trainer who wrote a note can edit or delete it.
+  </p>
+
+  <% if trainee.notes.any? %>
+    <%= ui_table full_width: true, responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "When" %>
+        <%= t.heading "Trainer" %>
+        <%= t.heading "Note" %>
+      <% end %>
+      <%= t.body do %>
+        <% trainee.notes.each do |note| %>
+          <%= t.row do %>
+            <%= t.cell datetime_format(note.created_at, tz: session.slot.timezone,
+                                       tz_abbr: session.slot.timezone_abbr, year: true) %>
+            <%= t.cell note.person_source&.callsign || "* imported *" %>
+            <%= t.cell do %>
+              <% if note.is_log %>
+                <span class="italic text-stone-muted"><%= note.note %></span>
+              <% else %>
+                <%= nl2br note.note %>
+                <% if note.person_source_id == Current.person.id %>
+                  <div class="mt-1 flex gap-2">
+                    <%= edit_link training_session_edit_note_path(training_slug, session.slot.id, note.id),
+                                  data: { turbo_frame: "modal" } %>
+                    <%= delete_button training_session_note_path(training_slug, session.slot.id, note.id),
+                                      "Delete",
+                                      confirm_modal: {
+                                        title: "Delete Note",
+                                        message: "Delete this note? This cannot be undone.",
+                                        confirm_label: "Delete Note"
+                                      } %>
+                  </div>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <p class="text-stone-muted italic mb-2">No notes yet.</p>
+  <% end %>
+
+  <%= ui_form(score_form, training_session_score_path(training_slug, session.slot.id, person.id)) do |f| %>
+    <%= f.select :status, trainee_status_options,
+                 { label: "Training Result for #{person.callsign}" } %>
+
+    <%= f.select :rank,
+                 [["No rank", ""],
+                  ["1 — Above Average (note required)", 1],
+                  ["2 — Average", 2],
+                  ["3 — Below Average (note required)", 3],
+                  ["4 — FLAG (note required)", 4]],
+                 { label: "Rank for #{person.callsign}",
+                   help_text: trainee.need_ranking ? "#{person.callsign} must be ranked before passing." : nil } %>
+
+    <%= f.text_area :note, label: "Add a Training Note (not shown to #{person.callsign})",
+                    help_text: "Your note is timestamped and appended — it never replaces earlier notes." %>
+
+    <% unless session.art? %>
+      <%= f.collection_radio_buttons :feedback_delivered,
+                                     [["Yes", true], ["No", false]],
+                                     :last, :first,
+                                     { label: "Was feedback delivered to #{person.callsign}?",
+                                       layout: :horizontal, label_position: :stacked } %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Save #{person.callsign}'s Score" %>
+      <%= modal_close_button "Cancel" %>
+      <% if can_adjust_roster? %>
+        <%# _top: the removal redirect must replace the whole page, not just
+            this dialog's frame, so the roster refreshes. %>
+        <%= delete_button training_session_remove_roster_path(training_slug, session.slot.id, person.id, kind: "trainee"),
+                          "Remove from Session",
+                          variant: :secondary,
+                          data: { turbo_frame: "_top" },
+                          confirm_modal: {
+                            title: "Remove from Session",
+                            message: "Remove #{person.callsign} from this training session? They can sign up again.",
+                            confirm_label: "Remove #{person.callsign}"
+                          } %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

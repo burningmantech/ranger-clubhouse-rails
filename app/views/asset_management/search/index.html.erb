@@ -1,0 +1,123 @@
+<%#
+  Barcode lookup for one asset. The form stays at the top and the result renders
+  under it, so the barcode and year in the address bar describe exactly what is
+  on screen: a result can be linked, and Back re-runs the lookup.
+%>
+<% content_for :title, @asset ? "Asset #{@asset.barcode}" : "Asset Search" %>
+
+<%= hero_panel icon: "barcode", heading_level: :h1, id: "asset-search-header",
+               title: "Asset Search" do |panel| %>
+  <% panel.description do %>
+    Look up an asset by barcode to see who has it now and everywhere it has been.
+  <% end %>
+  <%# keep: -- the selector submits its own bare GET, so without it changing the
+      year would drop the barcode and empty the page. %>
+  <% if @available_years.any? %>
+    <% panel.year_selector year: @year,
+                           years: @available_years,
+                           include_current_year: false,
+                           include_year_argument: false,
+                           keep: { barcode: @barcode } %>
+  <% end %>
+<% end %>
+
+<% if @available_years.empty? %>
+  <%= ui_empty_state "No asset records have been added yet.",
+                     icon: "boxes-stacked", icon_type: :solid %>
+<% else %>
+  <%= ui_section "Find an Asset", icon: "magnifying-glass", icon_type: :solid do %>
+    <%= form_with url: asset_management_search_path, method: :get,
+                  builder: AppFormBuilder do |f| %>
+      <%# The year travels with the barcode: the lookup is scoped to one event
+          year, and dropping it here would silently move the reader. %>
+      <%= hidden_field_tag :year, @year %>
+
+      <%= form_row do %>
+        <%# Cleared once the asset is found, kept when it was not. The field is
+            autofocused and a scanner types at the caret, so leaving the last
+            barcode in place would make the next scan read as one long barcode.
+            Keeping it after a miss is what lets a typo be corrected. %>
+        <%= f.search_field :barcode, label: "Barcode", value: (@barcode if @asset.nil?),
+                           required: true, maxlength: 25, autofocus: true,
+                           placeholder: "Scan or type a barcode" %>
+      <% end %>
+
+      <%= button_row do %>
+        <%= f.submit "Search" %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @barcode.nil? %>
+    <%= ui_empty_state "Scan or type a barcode above to look up an asset.",
+                       icon: "barcode", icon_type: :solid %>
+  <% elsif @asset.nil? %>
+    <%= ui_callout_box :error, icon: "circle-exclamation",
+                       title: "Barcode #{@barcode} Was Not Found for #{@year}" do %>
+      <% if @other_years.any? %>
+        <div class="flex flex-wrap items-center gap-2">
+          <span>Barcodes are reused between events. This one belongs to:</span>
+          <%# to_s on the label -- button_link drops an Integer one. %>
+          <% @other_years.each do |year| %>
+            <%= button_link year.to_s, :secondary,
+                            asset_management_search_path(barcode: @barcode, year: year),
+                            aria: { label: "Look up #{@barcode} in #{year}" } %>
+          <% end %>
+        </div>
+      <% else %>
+        No event year has an asset with this barcode.
+      <% end %>
+    <% end %>
+  <% else %>
+    <% if @open_checkout %>
+      <%= ui_callout_box :warning, icon: "triangle-exclamation",
+                         title: "Asset #{@asset.barcode} Is Checked Out by " \
+                                "#{person_display_name(@open_checkout.person, @open_checkout.person_id)}" do %>
+        Out since <%= datetime_format(@open_checkout.checked_out, year: true) %><% if @open_checkout.check_out_person_id.present? %>
+          — handed over by <%= person_display_link(@open_checkout.check_out_person,
+                                                   @open_checkout.check_out_person_id) %><% end %>.
+      <% end %>
+    <% end %>
+
+    <%= ui_stat_row do %>
+      <%= ui_stat_box @history.size.to_s, "Checkouts",
+                      icon: "right-left", icon_type: :solid %>
+      <%# person_id is NOT NULL, so every row counts toward the distinct holders. %>
+      <%= ui_stat_box @history.map(&:person_id).uniq.size.to_s, "People Who Held It",
+                      icon: "users", icon_type: :solid %>
+      <% if @open_checkout %>
+        <%= ui_stat_box hour_minute_words(@open_checkout.duration), "Out For",
+                        variant: :warning, icon: "hourglass-half", icon_type: :solid %>
+      <% end %>
+    <% end %>
+
+    <%= ui_section "Asset #{@asset.barcode} — #{asset_type_label(@asset.type)}",
+                   icon: "barcode", icon_type: :solid do %>
+      <%# No Type row: the section heading above already names it. %>
+      <%= ui_label_value label_width: "10rem", size: :base do |list| %>
+        <% list.row "Assignment", asset_assignment_badge(@asset) %>
+        <% list.row "Description", value_or_dash(@asset.description) %>
+        <% list.row "Entity assignment", value_or_dash(@asset.entity_assignment) %>
+        <% list.row "Asset group", value_or_dash(@asset.group_name) %>
+        <% list.row "Order number", value_or_dash(@asset.order_number) %>
+        <% list.row "Expires on", expires_on_cell(@asset) %>
+        <% list.row "Event year", @asset.year %>
+        <% list.row "Added", datetime_format(@asset.created_at, year: true) %>
+        <% list.row "Notes", value_or_dash(nl2br(@asset.notes)) %>
+      <% end %>
+
+      <%= button_row do %>
+        <%= button_link "Open Asset Record", :secondary,
+                        asset_management_record_path(@asset, year: @asset.year,
+                                                             origin: "search",
+                                                             barcode: @asset.barcode),
+                        icon: "boxes-stacked", icon_type: :solid %>
+      <% end %>
+    <% end %>
+
+    <%= render "common/assets/checkout_history",
+               history: @history,
+               check_in_row: @open_checkout,
+               check_in_path: (asset_management_search_check_in_path(@asset) if @open_checkout) %>
+  <% end %>
+<% end %>

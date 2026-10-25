@@ -1,0 +1,20 @@
+<%# HQ shell header (Ember port/templates/hq.hbs person-manage-header):
+    callsign linking to the /hq/N redirector, status in the person-page
+    angle-bracket style, pronouns, the interface label, and a switch link
+    over to the person-manage pages. %>
+<%= hero_panel icon: "headset", heading_level: :h1, id: "hq-header" do |panel| %>
+  <% panel.title class: "flex flex-row items-center align-middle gap-4" do %>
+    <div><%= @person.callsign %></div>
+    <div class="text-lg">&lt;<%= @person.status %>&gt;</div>
+    <div class="text-base"><%= pronouns_format @person %></div>
+  <% end %>
+  <% panel.description do %>
+    <div class="flex flex-wrap items-center gap-4">
+      <div class="font-semibold">HQ Window Interface</div>
+    </div>
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "Switch to Person Manage", person_path(@person),
+                icon: "right-left", aria_label: "Switch to Person Manage" %>
+  <% end %>
+<% end %>

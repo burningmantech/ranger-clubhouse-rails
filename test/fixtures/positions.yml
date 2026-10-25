@@ -1,0 +1,75 @@
+# Test fixtures for Position model
+
+training_lead:
+  title: "Training Lead"
+  active: true
+  awards_eligible: true
+  awards_auto_grant: false
+  awards_grants_service_year: true
+  new_user_eligible: false
+  all_rangers: false
+  count_hours: true
+
+mentor_lead:
+  title: "Mentor Lead"
+  active: true
+  awards_eligible: true
+  awards_auto_grant: true
+  awards_grants_service_year: true
+  new_user_eligible: false
+  all_rangers: false
+  count_hours: true
+
+ood_position:
+  title: "OOD (Officer of the Day)"
+  active: true
+  awards_eligible: true
+  awards_auto_grant: false
+  awards_grants_service_year: false
+  new_user_eligible: false
+  all_rangers: false
+  count_hours: true
+
+non_eligible_position:
+  title: "Non-Eligible Position"
+  active: true
+  awards_eligible: false
+  awards_auto_grant: false
+  awards_grants_service_year: false
+  new_user_eligible: false
+  all_rangers: false
+  count_hours: true
+
+council_manager:
+  title: "Council Manager"
+  team: council_cadre
+  active: true
+  awards_eligible: true
+  awards_auto_grant: false
+  awards_grants_service_year: true
+  new_user_eligible: false
+  all_rangers: false
+  count_hours: true
+
+khaki_supervisor:
+  title: "Khaki Supervisor"
+  team: khaki_team
+  active: true
+  awards_eligible: true
+  awards_auto_grant: false
+  awards_grants_service_year: true
+  new_user_eligible: false
+  all_rangers: false
+  count_hours: true
+
+mentor_manager:
+  title: "Mentor Team Manager"
+  team: mentor_cadre
+  active: true
+  awards_eligible: true
+  awards_auto_grant: false
+  awards_grants_service_year: true
+  new_user_eligible: false
+  all_rangers: false
+  count_hours: true
+

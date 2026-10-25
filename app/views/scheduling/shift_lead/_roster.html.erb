@@ -1,0 +1,135 @@
+<%# locals: (title:, id:, section:, rangers:, total:, filter_params:, on_duty:) %>
+<%#
+  One roster, rendered twice: a ten-column table on a desktop, one block per
+  Ranger on a phone.
+
+  Ten columns cannot be shown on a phone. Left as a table it measured 659-690px
+  inside a 315px container -- the reader saw under half a row, swiped sideways
+  for the rest, and lost the headings on the way. Stacking every cell into a
+  labelled line (`ui_table responsive: true`) trades that for ten lines per
+  Ranger over a hundred Rangers. So the phone gets its own shape: the three
+  things that identify a Ranger on their own lines, and the flags as chips.
+
+  Both renderings carry the same fields. Nothing is behind a tap, because the
+  questions this roster answers -- is there a qualified Green Dot, who can take
+  a rig out -- are scanned down a list, not looked up one Ranger at a time.
+
+  The two things a shift lead scans for -- a qualified Green Dot, a
+  Troubleshooter -- are labelled chips beside the callsign rather than a tint on
+  a cell, so they survive greyscale, colour blindness and a screen reader.
+%>
+<%= ui_section title, id: id, badge: shift_lead_roster_count(rangers, on_duty, total: total),
+               badge_color: :secondary, border: false do %>
+  <%# Nothing to order when there is nothing, or only one row, to order. %>
+  <% if total > 1 %>
+    <div class="flex justify-end mb-2">
+      <%= render "scheduling/shift_lead/sort_control", section: section, title: title,
+                 filter_params: filter_params %>
+    </div>
+  <% end %>
+
+  <% if rangers.any? %>
+    <% start_heading, end_heading = shift_lead_roster_headings(on_duty) %>
+
+    <%# --- desktop: the full table, now using the width the rail used to take --- %>
+    <div class="hidden lg:block">
+      <%= ui_table full_width: true, striped: true, responsive: false do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Position" %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Pronouns" %>
+          <%= t.heading "Gender" %>
+          <%= t.heading "Yrs", right: true %>
+          <%= t.heading "GTR", center: true %>
+          <%= t.heading "Veh", center: true %>
+          <%= t.heading "Positions / Certifications" %>
+          <%= t.heading start_heading, right: true %>
+          <%= t.heading end_heading, right: true %>
+        <% end %>
+        <%= t.body do %>
+          <% rangers.each do |ranger| %>
+            <%= t.row do %>
+              <%= t.cell ranger.position_title %>
+              <%= t.row_header do %>
+                <div class="flex flex-wrap items-center gap-1">
+                  <%= render "scheduling/shift_lead/callsign", ranger: ranger %>
+                </div>
+              <% end %>
+              <%= t.cell pronouns_format(ranger.person, true).presence || "-" %>
+              <%= t.cell ranger.gender.presence || "-" %>
+              <%= t.cell ranger.years, right: true %>
+              <%= t.cell shift_lead_vehicle_cell(ranger.gtr, "GTR"), center: true %>
+              <%= t.cell shift_lead_vehicle_cell(ranger.vehicle, "VEH"), center: true %>
+              <%= t.cell do %>
+                <%= ranger.positions.any? ? ranger.positions.join(", ") : "-" %>
+                <% if ranger.certifications.any? %>
+                  <div class="mt-1">
+                    <%# A neutral icon: holding a certification is not a status to
+                        be alarmed by, and red here competes with the -BL- and
+                        not-on-site signals a shift lead is actually scanning for. %>
+                    <% ranger.certifications.each do |certification| %>
+                      <span class="whitespace-nowrap me-2">
+                        <%= fa_icon "award", :solid, class: "text-stone-icon" %> <%= certification %>
+                      </span>
+                    <% end %>
+                  </div>
+                <% end %>
+              <% end %>
+              <% if on_duty %>
+                <%= t.cell shift_lead_time(ranger.on_duty), right: true %>
+                <%= t.cell hour_minute_format(ranger.duration), right: true %>
+              <% else %>
+                <%= t.cell "#{"<" if ranger.begins_day_before}#{shift_lead_time(ranger.begins)}", right: true %>
+                <%= t.cell "#{shift_lead_time(ranger.ends)}#{">" if ranger.ends_day_after}", right: true %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# --- phone: one block per Ranger, same fields, no sideways scroll --- %>
+    <div class="lg:hidden rounded-box border border-base-300 divide-y divide-base-300">
+      <% rangers.each do |ranger| %>
+        <div class="p-2 odd:bg-base-100 even:bg-base-200">
+          <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <%= render "scheduling/shift_lead/callsign", ranger: ranger %>
+            <span class="text-sm text-stone-muted"><%= pluralize(ranger.years, "yr") %></span>
+          </div>
+
+          <div class="text-base text-stone-emphasis">
+            <span class="font-semibold"><%= ranger.position_title %></span>
+            &middot; <%= shift_lead_window(ranger) %>
+          </div>
+
+          <% details = [pronouns_format(ranger.person, true).presence, ranger.gender.presence].compact %>
+          <% if details.any? %>
+            <div class="text-sm text-stone-muted"><%= details.join(" · ") %></div>
+          <% end %>
+
+          <div class="mt-1 flex flex-wrap items-center gap-1">
+            <%= shift_lead_vehicle_badge(ranger.gtr, "GTR") %>
+            <%= shift_lead_vehicle_badge(ranger.vehicle, "VEH") %>
+            <% if ranger.positions.any? %>
+              <span class="text-sm text-stone-emphasis"><%= ranger.positions.join(", ") %></span>
+            <% end %>
+            <% ranger.certifications.each do |certification| %>
+              <span class="text-sm text-stone-emphasis whitespace-nowrap">
+                <%= fa_icon "award", :solid, class: "text-stone-icon" %> <%= certification %>
+              </span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <%# Two empty states, saying different things: the filters matched no one, or
+      there was no one on this roster to begin with. One message for both leaves
+      the reader unable to tell whether to clear a filter or pick another shift. %>
+  <% elsif total.positive? %>
+    <%= ui_empty_state "No one on this roster matches the current filters.",
+                       icon: "filter", icon_type: :solid %>
+  <% else %>
+    <%= ui_empty_state on_duty ? "No one is on duty in these positions." : "No one has signed up.",
+                       icon: "user-slash", icon_type: :solid %>
+  <% end %>
+<% end %>

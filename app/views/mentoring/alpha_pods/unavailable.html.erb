@@ -1,0 +1,20 @@
+<%#
+  What a dialog opens into when the thing it was opened for is gone -- someone
+  else took the person out of the pod, or deleted the pod, while this board sat
+  on screen. Rendered into the "modal" frame rather than redirected, so the
+  reader is told rather than left clicking a link that does nothing.
+
+  Locals: message.
+%>
+<%= modal_dialog id: "alpha-pod-unavailable-dialog", title: "That Is No Longer Here" do %>
+  <p class="mb-3"><%= message %></p>
+  <p class="text-sm text-stone-muted mb-3">
+    Someone else has probably changed this shift's pods. Close this and reload the page to see
+    where things stand now.
+  </p>
+  <%= button_row do %>
+    <%= button_link "Reload the Pods", :primary, mentoring_alpha_pods_shift_path(@slot),
+                    icon: "arrows-rotate", icon_type: :solid, data: { turbo_frame: "_top" } %>
+    <%= modal_close_button "Close" %>
+  <% end %>
+<% end %>

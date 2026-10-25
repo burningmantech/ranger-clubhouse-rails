@@ -1,0 +1,57 @@
+description: "Lists the Rangers who may need a Staff Access Pass"
+
+subject: "[Clubhouse] Ranger SAP Candidates {{ report_date }}"
+
+body: |
+  <h2>Ranger SAP Report for {{ report_date }}</h2>
+
+  {%- if rows.size == 0 %}
+    No Rangers found who may need SAPs.
+  {%- else %}
+    The following Rangers may need SAPs:
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Person</th>
+          <th>Status</th>
+          <th>Has SPT?</th>
+          <th>Years with shifts since {{ start_year }}</th>
+          <th>Sign-ups this year</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%- for row in rows %}
+          <tr>
+            <td><a href="{{ row.person_url }}">{{ row.callsign }}</a></td>
+            <td>{{ row.status }}</td>
+            <td>
+              {%- if row.has_spt %}
+                {%- for ticket in row.tickets %}
+                  {{ ticket.reference }} {{ ticket.type_label }} {{ ticket.status }}<br>
+                {%- endfor %}
+              {%- else %}
+                NO SPT
+              {%- endif %}
+            </td>
+            <td>
+              {%- if row.years.size == 0 %}
+                No years
+              {%- else %}
+                {{ row.years | join: ", " }}
+              {%- endif %}
+            </td>
+            <td>
+              {%- if row.schedule.size > 0 %}
+                {{ row.schedule.size }} sign-up{% if row.schedule.size != 1 %}s{% endif %}:<br>
+                {%- for signup in row.schedule %}
+                  {{ signup.begins_label }} {{ signup.position_title }} {{ signup.description }}<br>
+                {%- endfor %}
+              {%- else %}
+                No sign-ups
+              {%- endif %}
+            </td>
+          </tr>
+        {%- endfor %}
+      </tbody>
+    </table>
+  {%- endif %}

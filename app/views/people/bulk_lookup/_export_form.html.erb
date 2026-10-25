@@ -1,0 +1,12 @@
+<%# Posts the list back and downloads one group as CSV.
+    Locals: subset ("found" or "not_found"), lines (the pasted list).
+    Turbo is off so the browser saves the file instead of Turbo swallowing it.
+    The hidden fields drop their ids: the form renders twice on one page, and
+    the textarea already owns the "lines" id. %>
+<% label = subset == "found" ? "Export Found to CSV" : "Export Not Found to CSV" %>
+<%= ui_form(nil, people_run_bulk_lookup_path(format: :csv), method: :post,
+            no_error_summary: true, data: { turbo: false }, class: "my-2") do |f| %>
+  <%= hidden_field_tag :lines, lines, id: nil %>
+  <%= hidden_field_tag :subset, subset, id: nil %>
+  <%= f.submit label, variant: :secondary %>
+<% end %>

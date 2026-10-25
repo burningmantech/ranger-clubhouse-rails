@@ -1,0 +1,59 @@
+<%#
+  What the repair just did, per person. Rendered from the POST because the
+  check page cannot re-derive it: the rows it settled have stopped being
+  findings, which is the point.
+%>
+<div data-controller="scroll-to-top" hidden></div>
+
+<% failed = @results.select(&:error) %>
+
+<% if @results.any? %>
+  <%= ui_callout_box(failed.any? ? :warning : :success,
+                     icon: failed.any? ? "triangle-exclamation" : "circle-check",
+                     icon_type: :solid,
+                     title: pluralize(@results.size - failed.size, "repair") + " made") do %>
+    <ul class="flex flex-col gap-1">
+      <% @results.each do |result| %>
+        <li>
+          <%# Icon as well as colour on both outcomes: red text alone does not
+              survive a greyscale screen or a colour-blind reader, and a
+              success with no marker beside a failure with only a colour is
+              exactly the pair that has to stay apart. %>
+          <% if result.error %>
+            <span class="text-error">
+              <%= fa_icon "circle-exclamation", :solid, end: 1 %>
+              <span class="font-semibold"><%= result.callsign %></span>
+              — <%= result.error %>
+            </span>
+          <% else %>
+            <span>
+              <%= fa_icon "circle-check", :solid, end: 1, class: "text-success" %>
+              <span class="font-semibold"><%= result.callsign %></span>
+              — <%= result.messages.to_sentence %>
+            </span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>
+
+<% if @skipped.positive? %>
+  <%= ui_callout_box :secondary, icon: "circle-info", icon_type: :solid do %>
+    <%# Deliberately does not name a cause. The rows could have been settled by
+        another Admin while this page sat open, or the selection could have come
+        from a stale bookmark — nothing here can tell those apart, and the page
+        used to assert the first one for both. %>
+    <%= pluralize(@skipped, "selected row") %>
+    <%= @skipped == 1 ? "was" : "were" %> no longer
+    <%= @skipped == 1 ? "a finding" : "findings" %>, so nothing was changed for
+    <%= @skipped == 1 ? "it" : "them" %>. Reload to see the current list.
+  <% end %>
+<% end %>
+
+<% if @results.empty? && @skipped.zero? %>
+  <%= ui_callout_box :warning, icon: "hand-point-up", icon_type: :solid,
+                     title: "Nothing Was Selected" do %>
+    Tick the rows you want repaired, then use the button under the table.
+  <% end %>
+<% end %>

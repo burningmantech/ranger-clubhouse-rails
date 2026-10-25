@@ -1,0 +1,86 @@
+<%#
+  Every broadcast of the year, newest first. One line each; open one to read its
+  message, see who it reached, and send anything that failed again.
+%>
+<% content_for :title, "Broadcast History" %>
+
+<%= hero_panel icon: "clipboard-list", heading_level: :h1, id: "rbs-history-header",
+               title: "Broadcast History",
+               description: "Every broadcast sent in the year, who it reached, and anything that failed to send.",
+               back_to: ["Ranger Broadcast System", communication_rbs_root_path] do |panel| %>
+  <% panel.year_selector year: @year, min_year: year_floor %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @broadcast_count.to_s, "Broadcasts", icon: "tower-broadcast", icon_type: :solid %>
+  <%= ui_stat_box @notification_count.to_s, "Message Alerts", icon: "bell", icon_type: :solid %>
+  <%= ui_stat_box @failed_count.to_s, "With Failures",
+                  variant: @failed_count.positive? ? :error : :success,
+                  icon: "triangle-exclamation", icon_type: :solid %>
+<% end %>
+
+<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+  <strong>Most rows are message alerts, not broadcasts.</strong>
+  The Clubhouse sends one every time a Ranger receives a message, so the list starts with the
+  broadcasts someone sent to a group. Use the Kind filter to see the rest.
+<% end %>
+
+<%= filter_bar id: "rbs-history-filters",
+               chips: rbs_history_filter_chips(@filters, @year, @alerts),
+               clear_url: rbs_history_clear_url(@year),
+               count: "Showing #{@broadcasts.size} of #{pluralize(@matching_count, "record")}",
+               url: communication_rbs_history_path do |f| %>
+  <%= hidden_field_tag :year, @year %>
+  <%= form_row do %>
+    <%= f.select :kind, rbs_kind_options, { label: "Kind", selected: @filters[:kind] },
+                 { class: "w-full" } %>
+    <%= f.select :delivery, rbs_delivery_options, { label: "Delivery", selected: @filters[:delivery] },
+                 { class: "w-full" } %>
+    <%= f.select :alert_id, rbs_alert_filter_options(@alerts),
+                 { label: "Alert Type", selected: @filters[:alert_id] }, { class: "w-full" } %>
+  <% end %>
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<% if @matching_count > @broadcasts.size %>
+  <%= ui_callout_box :warning, icon: "list", icon_type: :solid do %>
+    <strong>Only the <%= @broadcasts.size %> most recent are listed.</strong>
+    <%= number_with_delimiter(@matching_count) %> records match. Narrow the filters, or pick another
+    year, to reach the rest.
+  <% end %>
+<% end %>
+
+<% if @broadcasts.empty? %>
+  <%= ui_empty_state "No broadcast matched the current filters.", icon: "filter", icon_type: :solid %>
+<% else %>
+  <%= ui_table striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Sent" %>
+      <%= t.heading "Sender" %>
+      <%= t.heading "Alert" %>
+      <%= t.heading "Subject or Text" %>
+      <%= t.heading "Sent By" %>
+      <%= t.heading "People", right: true %>
+      <%= t.heading "Delivery" %>
+    <% end %>
+    <%= t.body do %>
+      <% @broadcasts.each do |broadcast| %>
+        <%= t.row do %>
+          <%= t.row_header class: "whitespace-nowrap" do %>
+            <%= link_to communication_rbs_history_broadcast_path(broadcast), class: "underline" do %>
+              <%= datetime_format(broadcast.created_at, year: true) %>
+            <% end %>
+          <% end %>
+          <%= t.cell person_display_link(broadcast.sender, broadcast.sender_id) %>
+          <%= t.cell rbs_alert_label(broadcast.alert) %>
+          <%= t.cell rbs_broadcast_summary(broadcast) %>
+          <%= t.cell rbs_channel_icons(broadcast), class: "whitespace-nowrap" %>
+          <%= t.cell broadcast.recipient_count, right: true %>
+          <%= t.cell rbs_delivery_badge(broadcast), class: "whitespace-nowrap" %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

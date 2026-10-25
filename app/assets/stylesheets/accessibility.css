@@ -1,0 +1,106 @@
+/*
+ * Accessibility Styles
+ * Styles for improved accessibility and ADHD-friendly design
+ */
+
+/*
+ * Touch Target Floor
+ * daisyUI sizes its "sm" controls at 8 x --size-field (32px), under the 36px
+ * minimum (min-h-9) that design-foundations sets. Bump them to 9 steps.
+ * Set on --size rather than min-height so btn-circle/btn-square stay square.
+ *
+ * The composed classes are listed because they are built with `@apply btn-sm`,
+ * which inlines daisyUI's 32px value at build time -- their elements carry only
+ * the composed name, so a `.btn-sm` selector never reaches them.
+ *
+ * This lives here, not in a component file, so the floor stays a single number
+ * in a single place across buttons and form controls alike.
+ */
+.btn-sm,
+.select-sm,
+.btn-toast-close,
+.sidebar-close-btn {
+    --size: calc(var(--size-field, 0.25rem) * 9);
+}
+
+/* A plain link that still has to be tappable -- the dashboard task CTAs, which
+   are links rather than buttons and so get none of the sizing above. The floor
+   was written out as three utilities at 25 call sites; naming it means the rule
+   is greppable instead of being a bare number repeated.
+   Deliberately its own utility rather than a height added to
+   inline-flex-center-gap-2, which 13 elements use and which has no business
+   growing one. */
+@utility tap-target-link {
+    @apply inline-flex items-center min-h-9;
+}
+
+/*
+ * Reduced Motion Support
+ * Respect user's motion preferences
+ */
+@media (prefers-reduced-motion: reduce) {
+    .animate-pulse {
+        animation: none;
+    }
+}
+
+/*
+ * Instruction List Pattern
+ * ADHD-friendly definition list for scannable Q&A style content: a bold
+ * question, its answer under it, and enough air between pairs to read as
+ * pairs.
+ *
+ * The "Q:" / "A:" prefixes DESIGN-GUIDE has always described are drawn below.
+ * They were documented for a long time without existing; they exist now.
+ */
+.instruction-list {
+    @apply space-y-1 text-body;
+}
+
+/* 4px inside a pair, 8px before the next question.
+ *
+ * Every one of 111 views wrote `<dt class="mt-2">` for this and none of them
+ * ever rendered: `space-y-1` compiles to `margin-block-start: 0` on each
+ * child, and it sits in unlayered CSS, which beats a `mt-2` utility from
+ * @layer utilities however specific the utility is. So the spacing has to be
+ * stated here, where the rule that was suppressing it lives.
+ *
+ * This must stay unlayered for the same reason, and it needs a real selector
+ * rather than `:where()`, which would tie 0-0-0 with space-y-1's own. */
+.instruction-list dd + dt {
+    margin-block-start: calc(var(--spacing) * 2);
+}
+
+/* The prefixes are DECORATION, and are marked as such.
+ *
+ * A <dl> already says which part is the question and which is the answer, and
+ * a screen reader already announces that. Generated text is announced too, so
+ * a plain content: "Q:" makes it read "Q colon, why do we need this" -- the
+ * same fact twice, on every pair, for the readers least able to skip it. The
+ * `/ ""` is the alt-text form of `content`: it draws the glyphs and gives
+ * assistive tech an empty string. The unsuffixed declaration above it is the
+ * fallback for anything that does not parse the alt form, which loses the
+ * suppression rather than the prefix.
+ *
+ * Logical properties throughout (ps-, start-) to match the rest of this
+ * codebase, so the gutter flips with the writing mode rather than staying
+ * stubbornly on the left. */
+.instruction-list dt {
+    @apply font-bold text-heading relative ps-5;
+}
+
+.instruction-list dt::before {
+    content: "Q:";
+    content: "Q:" / "";
+    @apply absolute start-0 text-primary;
+}
+
+.instruction-list dd {
+    @apply text-body relative ps-5;
+}
+
+.instruction-list dd::before {
+    content: "A:";
+    content: "A:" / "";
+    @apply absolute start-0 text-stone-muted;
+}

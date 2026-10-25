@@ -1,0 +1,31 @@
+<%= hero_panel icon: "laptop", heading_level: :h1, id: "online-course-header",
+               title: "Online Course",
+               description: "Enroll in this year's Online Course and head to the course website.",
+               back_to: :dashboard %>
+
+<%= ui_section "Before You Go", icon: "circle-info", icon_type: :solid do %>
+  <dl class="instruction-list">
+    <dt>How do I sign in on the course website?</dt>
+    <dd>Choose <strong>Login Using The Clubhouse</strong>. Don't use the form that asks for a username and password.
+    </dd>
+    <% if @art %>
+      <dt>Does an Advanced Ranger Training replace the In-Person Training?</dt>
+      <dd>NO! Every Ranger <strong class="text-warning">MUST complete In-Person Training</strong> every year if they
+        wish to Ranger on playa. No exceptions!
+      </dd>
+      <dt>Where is my Advanced Ranger Training course?</dt>
+      <dd>On the same website as the Online Course every Ranger takes. After you sign in, choose your ART's course from
+        the landing page.
+      </dd>
+    <% else %>
+      <dt>Is the course all I need?</dt>
+      <dd>No. You still need to attend an In-Person Training session after you finish the course.</dd>
+    <% end %>
+  </dl>
+
+  <%# A full page load: the answer is a redirect to another site, which a Turbo
+      form submission cannot follow. %>
+  <%= ui_form nil, me_online_course_path(art: (1 if @art)), class: "mt-3", data: { turbo: false } do %>
+    <%= submit_button "Go to Online Course", full_width: true %>
+  <% end %>
+<% end %>

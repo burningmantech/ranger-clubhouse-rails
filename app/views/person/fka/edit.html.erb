@@ -1,0 +1,7 @@
+<%= hero_panel icon: "pen", heading_level: :h1, id: "edit-fka-header",
+               description: "Update this former callsign record.",
+               back_to: ["Edit Callsign", edit_person_callsign_path(@person)] do |panel| %>
+  <% panel.title do %>Edit FKA &mdash; <%= @person.callsign %><% end %>
+<% end %>
+
+<%= render "form", person: @person, person_fka: @person_fka, url: person_fka_path(@person, @person_fka) %>

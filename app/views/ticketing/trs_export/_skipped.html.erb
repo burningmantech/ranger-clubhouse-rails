@@ -1,0 +1,15 @@
+<%#
+  Selected items that could not be included in a TRS commit, with reasons.
+
+  Locals:
+    skipped - [TrsExport::Skipped]
+%>
+<% if skipped.any? %>
+  <%= ui_callout_box :warning, accent: true, title: "#{pluralize(skipped.size, 'Selected Item')} Left Out" do %>
+    <ul class="list-disc ms-5">
+      <% skipped.each do |skip| %>
+        <li><%= skip.ref %> &mdash; <%= skip.reason %></li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>

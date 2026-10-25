@@ -1,0 +1,74 @@
+<%= hero_panel icon: "shield-halved", heading_level: :h1, id: "person-permissions-header",
+               title: "Edit Permissions — #{@person.callsign}",
+               description: "Grant or revoke permissions this person holds directly.",
+               back_to: [@person.callsign, person_path(@person)] %>
+
+<%= ui_callout_box :warning do %>
+  <strong>Manual permission grants are discouraged.</strong>
+  Prefer adding the person to a Clubhouse Team, or granting a position, that carries
+  the permission. A permission already granted through a team or position is listed below.
+<% end %>
+
+<% param_key = @permission_form.model_name.param_key %>
+
+<%= ui_form(@permission_form, person_permissions_path(@person), method: :patch,
+            data: { controller: "permission-editor", action: "submit->permission-editor#submit" }) do |f| %>
+  <%= hidden_field_tag "#{param_key}[role_ids][]", "" %>
+
+  <%= ui_section "Permissions", icon: "shield-halved", icon_type: :solid, border: false do %>
+    <%= ui_table responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Grant", width: "1%" %>
+        <%= t.heading "Permission" %>
+        <%= t.heading "Assigned Through Team(s)" %>
+        <%= t.heading "Assigned Through Position(s)" %>
+      <% end %>
+      <%= t.body do %>
+        <% @permission_presenter.role_items.each do |role| %>
+          <%= t.row do %>
+            <%= t.cell do %>
+              <%= check_box_tag "#{param_key}[role_ids][]",
+                                role.id,
+                                role.selected,
+                                id: "role-#{role.id}",
+                                disabled: role.disabled,
+                                class: AppFormBuilder::CHECKBOX_CLASSES,
+                                data: {
+                                  permission_editor_target: "checkbox",
+                                  action: "permission-editor#toggle",
+                                  role_title: role.title,
+                                  granted: role.granted_elsewhere?,
+                                  council: role.council_approval?
+                                } %>
+            <% end %>
+            <%= t.cell do %>
+              <label for="role-<%= role.id %>" class="inline-flex items-center min-h-9 cursor-pointer font-medium text-heading">
+                <%= role.title %>
+              </label>
+            <% end %>
+            <% if role.disabled %>
+              <%= t.cell colspan: 2, class: "text-stone-muted italic" do %>
+                Contact the Tech Team to assign or remove.
+              <% end %>
+            <% else %>
+              <% [role.team_titles, role.position_titles].each do |titles| %>
+                <%= t.cell do %>
+                  <% if titles.any? %>
+                    <%= safe_join(titles, tag.br) %>
+                  <% else %>
+                    <span class="text-stone-muted italic">None</span>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Permissions" %>
+    <%= cancel_link person_path(@person) %>
+  <% end %>
+<% end %>

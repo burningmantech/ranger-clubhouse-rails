@@ -1,0 +1,127 @@
+#
+# Docker Compose for on playa operations
+#
+# One-time setup:
+#   docker network create ranger
+#   TLS certs at data/certs/live/clubhouse3.dev/{fullchain,privkey}.pem (paths in beta/nginx.conf)
+#   database.env (gitignored, never baked into the image) must define:
+#     MARIADB_ROOT_PASSWORD, MARIADB_DATABASE, MARIADB_USER, MARIADB_PASSWORD   # db service first-run init
+#     RANGER_DB_HOST_NAME=db, RANGER_DB_DATABASE_NAME, RANGER_DB_USER_NAME,
+#     RANGER_DB_PASSWORD                                                        # config/database.yml
+#     RAILS_MASTER_KEY                                                          # contents of config/master.key
+#   ses.env (gitignored too) holds the Amazon SES keys for broadcast email (app/lib/rbs.rb), and for all other
+#   mail too once RANGER_CLUBHOUSE_SES_MAIL_LIVE is on (app/lib/ses_mail_delivery.rb). They are kept out of
+#   database.env because the db service reads that file as well and has no use for them:
+#     AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+#   To use it, list it under the web service only:  env_file: [database.env, ses.env]
+#   An aws: block in credentials.yml.enc would win over these keys (aws-sdk-rails loads it first), so remove it.
+#
+# Migrations are not run automatically. Run them before starting new code:
+#   docker compose run --rm web bin/rails db:migrate
+# Production's db tasks never load db/schema.rb, because of schema_dump: false in config/database.yml (development
+# still loads it). Loading that file drops every table it defines and creates it again empty. Without the line,
+# db:migrate and db:prepare would load it into any database with no schema_migrations table, which is the state of
+# a database restored from Clubhouse 2. The cost: they no longer build a fresh, empty production database, and
+# db:schema:load loads nothing here, so a fresh database needs its schema loaded by hand.
+#
+# Restoring from Clubhouse 2, in this order:
+#   1. Start from an empty database: drop it and create it again.
+#   2. Load the dump.
+#   3. Run db:migrate (above). It runs every migration, from the first.
+#   4. Turn BroadcastMailSandbox back on, before broadcast email can go anywhere: a Clubhouse 2 restore also
+#      replaces the setting table.
+# A dump restored over an existing Clubhouse 3 database without emptying it first leaves schema_migrations saying
+# every migration ran, so none runs. Rehearse a restore on a scratch database before doing one on a live server.
+#
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # Longer than Solid Queue's shutdown_timeout (30 s, config/environments/production.rb), so a broadcast
+    # email job finishes its SES call before Docker's kill: Docker's default is 10 s.
+    stop_grace_period: 45s
+    env_file: database.env
+    environment:
+      - RAILS_ENV=production
+      # ActiveRecord stores datetimes in the process-local zone (config.active_record.default_timezone = :local)
+      # and Clubhouse 2 writes the same tables in America/Phoenix. Without this the container runs in UTC.
+      - TZ=America/Phoenix
+      # Read by both config/puma.rb (threads) and config/database.yml (pool); their defaults differ (8 vs 5).
+      - RAILS_MAX_THREADS=8
+      # Passkey sign-in (app/lib/passkeys.rb): the https address people type to reach this server, with no
+      # trailing slash. Unset keeps passkeys off. A passkey only signs in at the address it was made on, so
+      # this must be the same address the off-playa Clubhouse uses, certificate and all.
+      # - RANGER_CLUBHOUSE_PASSKEY_ORIGIN=https://ranger-clubhouse.burningman.org
+      # Broadcast email (app/lib/rbs.rb) goes out through Amazon SES and reaches Rangers only when this is
+      # "true"; unset, it goes only to the BroadcastMailTestAddress setting's pattern, or nowhere. SES's keys
+      # go in ses.env (see the top), never in this file or in database.env; its region may go here.
+      # After changing any of these, recreate the container (docker compose up -d web): a restart keeps the old
+      # environment, and the live flag fails closed.
+      # - AWS_REGION=<the region the SES account sends from>
+      # - RANGER_CLUBHOUSE_RBS_EMAIL_LIVE=true
+      # All other mail (password resets, VC and photo mail, new-message alerts, the scheduled team mail) goes by
+      # SMTP to mailpit until this is "true"; then it goes through Amazon SES with the same keys and region, and a
+      # missing AWS_REGION or missing keys in ses.env stop the boot.
+      # - RANGER_CLUBHOUSE_SES_MAIL_LIVE=true
+      # While this is set, every one of those emails goes to this one inbox instead, with the real recipients in an
+      # X-Clubhouse-Original-Recipients header (broadcast email has its own test address). A value that is not one
+      # email address stops the boot. Recreate after changing either of these, as above.
+      # - RANGER_CLUBHOUSE_MAIL_TEST_ADDRESS=<an inbox the maintainer reads>
+    volumes:
+      - storage:/app/storage   # Active Storage uploads: person photos, BMID exports
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Web server load balancer/frontend
+  nginx:
+    hostname: nginx
+    image: nginx:1.31-alpine
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    volumes:
+      - ./data/certs:/etc/nginx/certs:ro
+      - ./beta:/etc/nginx/conf.d:ro
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "10025:1025"
+      - "8025:8025"   # web UI for reading caught mail
+
+  # Database Service for the Clubhouse and IMS
+  db:
+    hostname: db
+    image: mariadb:12.3.3
+    env_file: database.env
+    environment:
+      - TZ=America/Phoenix
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "127.0.0.1:8306:3306"
+    volumes:
+      - ./data/mariadb:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "127.0.0.1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  storage:
+
+networks:
+  default:
+    name: ranger
+    external: true

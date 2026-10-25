@@ -1,0 +1,15 @@
+<%= modal_dialog id: "note-delete-dialog", title: "Delete Note" do %>
+  <% if @note.person_id != current_user.id %>
+    <%= ui_callout_box :warning do %>
+      <strong>You did not write this note.</strong> Check with its author before deleting it.
+    <% end %>
+  <% end %>
+  <p class="mb-2">Delete this note? This cannot be undone.</p>
+  <blockquote class="border-s-4 border-line ps-3 mb-3 text-stone-muted">
+    <%= simple_format @note.note %>
+  </blockquote>
+  <%= form_with url: vc_application_note_path(@application, @note), method: :delete,
+                builder: AppFormBuilder, data: { turbo_frame: "_top" } do %>
+    <%= modal_form_footer submit: "Delete Note", variant: :error %>
+  <% end %>
+<% end %>

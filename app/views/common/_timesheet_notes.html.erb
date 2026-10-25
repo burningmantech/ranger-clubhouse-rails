@@ -1,0 +1,12 @@
+<%# locals: (notes:, empty_message: nil) %>
+<% if notes.empty? && empty_message %>
+  <%= ui_empty_state empty_message %>
+<% end %>
+<% notes.each do |row| %>
+  <div class="font-semibold px-2">
+    From <%= row.from_label(current_user.id) %> <span class="ms-2"><%= datetime_format row.created_at %></span>
+  </div>
+  <div class="border border-body-subtle rounded p-2 mb-1">
+    <%= hyperlink_text row.note %>
+  </div>
+<% end %>

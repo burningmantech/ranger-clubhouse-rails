@@ -1,0 +1,30 @@
+<%= hero_panel icon: "tower-broadcast", heading_level: :h1, id: "rbs-alerts-header",
+               title: "RBS Alerts",
+               description: "Edit the wording Rangers read when they choose which alerts to receive." %>
+
+<% can_manage = can?(:manage_rbs_alerts) %>
+
+<%= ui_callout_box :info, title: "What These Rows Control" do %>
+  Each row is one alert a Ranger can subscribe to on their Alert Preferences page, grouped here the
+  way it is grouped there. The title and description are the words they read. The list itself is
+  fixed &mdash; alerts are added and removed in code.
+  <% unless can_manage %>
+    Contact the Tech Team to change an alert.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @alerts.size.to_s, "Alerts" %>
+  <%= ui_stat_box @alerts.count(&:on_playa).to_s, "On Playa" %>
+  <%= ui_stat_box @alerts.count { |alert| !alert.on_playa }.to_s, "Pre & Post Event" %>
+<% end %>
+
+<%= ui_section "On Playa Alerts", icon: "sun", icon_type: :solid, border: false do %>
+  <%= render "group", alerts: @alerts.select(&:on_playa), can_manage: can_manage,
+                      blurb: "Sent while the event is running." %>
+<% end %>
+
+<%= ui_section "Pre & Post Event Alerts", icon: "calendar-days", icon_type: :solid, border: false do %>
+  <%= render "group", alerts: @alerts.reject(&:on_playa), can_manage: can_manage,
+                      blurb: "Sent before or after the event." %>
+<% end %>

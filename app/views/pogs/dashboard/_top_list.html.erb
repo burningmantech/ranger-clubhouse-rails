@@ -1,0 +1,42 @@
+<%# locals: (title:, icon:, rows:, filter:, year:) %>
+<%#
+  One top-ten list: who, and how many pogs. Each name opens Pog Administration
+  for the year, filtered to that person's issued pogs -- the ones counted here,
+  so the list it opens holds as many rows as the number beside the name. filter
+  is :issued_by_id for the issuers and :person_callsign for the recipients, the
+  two filters that page has for a person; a callsign finds its exact holder.
+  Every reader of this page may open that one. A deleted person has no
+  callsign to filter by and stays plain text.
+%>
+<%= ui_section title, icon:, icon_type: :solid, border: false do %>
+  <% if rows.empty? %>
+    <%= ui_empty_state "None in #{year}." %>
+  <% else %>
+    <%# responsive: false -- two short columns already read as a table on a
+        phone, where folding them made ten cards out of ten lines. %>
+    <%= ui_table full_width: true, striped: true, responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Pogs", right: true %>
+      <% end %>
+      <%= t.body do %>
+        <% rows.each do |row| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <% if row.person %>
+                <% value = filter == :issued_by_id ? row.person_id : row.person.callsign %>
+                <%= callsign_link row.person,
+                                  pogs_administration_path(year:, PogFilterForm::PARAM_SCOPE => {
+                                    filter => value, status: PogFilterForm::STATUS_ISSUED
+                                  }) %>
+              <% else %>
+                <%= person_display_name row.person, row.person_id %>
+              <% end %>
+            <% end %>
+            <%= t.cell number_with_delimiter(row.total), right: true %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

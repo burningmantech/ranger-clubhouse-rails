@@ -1,0 +1,6 @@
+<%# locals: (application:, message:) %>
+<% if application.status_created? || application.person_id.present? %>
+  <%= ui_callout_box :error, accent: true do %>
+    <strong>A Clubhouse account has already been created from this application.</strong> <%= message %>
+  <% end %>
+<% end %>

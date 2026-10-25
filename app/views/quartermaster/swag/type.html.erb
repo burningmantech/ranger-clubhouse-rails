@@ -1,0 +1,66 @@
+<% is_shirt = @type == Swag::TYPE_DEPT_SHIRT %>
+
+<%= hero_panel icon: "shirt", heading_level: :h1, id: "quartermaster-swag-type-header",
+               back_to: ["Swag", quartermaster_swag_path] do |panel| %>
+  <% panel.title do %><%= @type_label %><% end %>
+  <% panel.description do %>
+    <% if is_shirt %>
+      Shirts listed here become the shirt choices on every Ranger's Personal Info page.
+    <% else %>
+      Items listed here can be issued to Rangers and recorded on their Swag page.
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @swags.size, "Items" %>
+  <% if @inactive_count.positive? %>
+    <%= ui_stat_box @inactive_count, "Inactive", variant: :warning %>
+  <% end %>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= button_link "Add Swag", :primary, quartermaster_new_swag_path(type: @type),
+                    icon: "plus", icon_type: :solid %>
+  <% end %>
+</div>
+
+<% if @swags.any? %>
+  <%= ui_table do |t| %>
+    <%= t.header do %>
+      <%= t.heading "ID", right: true %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Title" %>
+      <% if is_shirt %>
+        <%= t.heading "Shirt Type" %>
+      <% end %>
+      <%= t.heading "Description" %>
+      <%= t.heading "Actions" %>
+    <% end %>
+    <%= t.body do %>
+      <% @swags.each do |swag| %>
+        <%= t.row id: "swag-#{swag.id}" do %>
+          <%= t.cell swag.id, right: true %>
+          <%= t.cell swag_status_badge(swag) %>
+          <%= t.cell swag.title %>
+          <% if is_shirt %>
+            <%= t.cell swag_shirt_type_label(swag) %>
+          <% end %>
+          <%= t.cell do %>
+            <div class="whitespace-pre-line"><%= swag.description.presence || "—" %></div>
+          <% end %>
+          <%= t.cell do %>
+            <%= edit_link quartermaster_edit_swag_path(swag), "",
+                          title: "Edit", aria: { label: "Edit #{swag.title}" },
+                          class: "btn-square" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state nil, icon: "box-open", icon_type: :solid do %>
+    No items have been added to <%= @type_label %> yet.
+  <% end %>
+<% end %>

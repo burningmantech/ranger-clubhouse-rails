@@ -1,0 +1,68 @@
+<%#
+  Add people to one pod. Three lists, narrowest first: who checked in around
+  this shift's start (nearly always the right answer), who else is checked in,
+  and who holds the position but has not checked in at all. The last two are
+  folded away so the common case is the only thing on screen.
+
+  Someone already in a pod of this kind is listed without a checkbox and says
+  which pod has them -- Pod#add_person! refuses them anyway, and a row that
+  explains itself beats one that fails on submit.
+%>
+<% pod_name = alpha_pod_name(@pod) %>
+<% group_title = AlphaPodBoard::GROUP_TITLES[@pod.type] %>
+<%= modal_dialog id: "alpha-pod-add-dialog", title: "Add #{group_title} to #{pod_name}", size: :xl do %>
+  <% if @pools.any? %>
+    <%# _top: the response is a turbo stream that replaces the board behind
+        this dialog, so the submit must not be scoped to the modal frame. %>
+    <%= form_with url: mentoring_alpha_pods_people_path(@slot, @pod), method: :post,
+                  builder: AppFormBuilder, data: { turbo_frame: "_top" } do %>
+      <%= bulk_select do %>
+        <% if @pod.mentor? %>
+          <%= ui_callout_box :secondary, class: "mb-3" do %>
+            <label class="flex items-center gap-2 min-h-9">
+              <%= check_box_tag :is_lead, "1", false, class: AppFormBuilder::CHECKBOX_CLASSES %>
+              <span>Mark everyone selected as a <strong>lead mentor</strong></span>
+            </label>
+          <% end %>
+        <% end %>
+
+        <%# Scoped to the list below it: the two folded pools opt out, so one
+            click cannot select a hundred people the reader cannot see. %>
+        <%= bulk_select_all label: "Select all checked in around the shift start" %>
+
+        <%# safe_join, not interpolation: datetime_format returns markup (the
+            time carries a local-timezone tooltip), and a plain string would
+            print the tags. %>
+        <%= render "mentoring/alpha_pods/people/pool", candidates: @pools.near, prefix: "near",
+                   title: safe_join(["Checked in around ", datetime_format(@slot.begins)]),
+                   empty: "No one checked in within an hour of the shift start." %>
+
+        <% if @pools.other.any? %>
+          <%= ui_disclosure "Other Checked-In #{group_title} (#{@pools.other.size})", class: "mt-3" do %>
+            <%= render "mentoring/alpha_pods/people/pool", candidates: @pools.other, prefix: "other",
+                       title: nil, empty: nil, skip_select_all: true %>
+          <% end %>
+        <% end %>
+
+        <% if @pools.not_checked_in.any? %>
+          <%= ui_disclosure "Not Checked In (#{@pools.not_checked_in.size})", class: "mt-3" do %>
+            <p class="text-sm text-stone-muted mb-2">
+              Everyone here holds the position but has no open shift. Adding them records no
+              check-in time.
+            </p>
+            <%= render "mentoring/alpha_pods/people/pool", candidates: @pools.not_checked_in,
+                       prefix: "off", title: nil, empty: nil, skip_select_all: true %>
+          <% end %>
+        <% end %>
+
+        <%= modal_form_footer submit: "Add to #{pod_name}", data: { checkbox_select_all_target: "submit" } %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No one is available to add to this pod yet. #{group_title} appear here once they check in.",
+                       icon: "user-clock", icon_type: :solid %>
+    <%= button_row do %>
+      <%= modal_close_button "Close" %>
+    <% end %>
+  <% end %>
+<% end %>

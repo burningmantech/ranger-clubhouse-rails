@@ -1,0 +1,58 @@
+<%= hero_panel icon: "file-circle-question", heading_level: :h1, id: "person-missing-request-new-header",
+               back_to: ["#{@year} Timesheet", person_timesheets_path(@person, year: @year)] do |panel| %>
+  <% panel.title do %>
+    New Missing Timesheet Request &mdash; <%= @person.callsign %>
+  <% end %>
+  <% panel.description do %>
+    Submit a missing timesheet entry request on <%= @person.callsign %>'s behalf.
+  <% end %>
+<% end %>
+
+<%= ui_form @entry, person_missing_requests_path(@person, year: @year) do |f| %>
+  <%= ui_section "Time & Position", icon: "clock", icon_type: :solid do %>
+    <%# What the request leads to, out of the hero. A plain line rather than an
+        instruction-list: `instruction-list mb-3` is at the CSS ratchet's ceiling. %>
+    <p class="mb-3">Approving the request can create the timesheet entry with a full audit trail.</p>
+    <%= form_row do %>
+      <%= f.datetime_field :on_duty, label: "What was the START date & time of the shift?", required: true, wrapper_class: "flex-1" %>
+      <%= f.datetime_field :off_duty, label: "What was the END date & time of the shift?", required: true, wrapper_class: "flex-1" %>
+    <% end %>
+    <%= f.select :position_id, @position_options, { label: "Which position was the shift for?" } %>
+    <%= f.text_field :partner,
+                     label: "Partner(s) for the Shift",
+                     help_text: "Callsign(s) of the shift partner(s) or shift lead. Use \"none\" if this was a solo shift.",
+                     width: "w-full sm:w-96",
+                     maxlength: 60 %>
+  <% end %>
+
+  <%= ui_section "User Notes", icon: "comment", icon_type: :solid do %>
+    <%= f.text_area :additional_notes,
+                    label: "Note to Submit on Behalf of #{@person.callsign} (your callsign & the time will automatically be added)",
+                    help_text: (can?(:manage_timesheets) ? "Either this note or a reviewer note below must be entered." : "A note explaining the missing entry must be entered."),
+                    rows: 2 %>
+  <% end %>
+
+  <% if can?(:manage_timesheets) %>
+    <%= ui_section "Timesheet Reviewer Notes", icon: "user-shield", icon_type: :solid do %>
+      <%= f.text_area :additional_wrangler_notes,
+                      label: "New Note to #{@person.callsign} (your callsign & the time will automatically be added)",
+                      rows: 2 %>
+      <%= f.text_area :additional_admin_notes,
+                      label: "New Note Only Shown to Other Reviewers (your callsign & the time will automatically be added)",
+                      rows: 2 %>
+      <%= f.collection_radio_buttons :review_status,
+                                     [["Request approved: #{@person.callsign} will still need to verify the new entry", TimesheetMissing::STATUS_APPROVED],
+                                      ["Request rejected", TimesheetMissing::STATUS_REJECTED],
+                                      ["Review pending", TimesheetMissing::STATUS_PENDING]],
+                                     :last, :first,
+                                     { label: "Correction Status", layout: :vertical, label_position: :stacked } %>
+      <%= f.check_box :create_entry,
+                      label: "Create the timesheet entry (only takes effect when the request is approved)" %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Request" %>
+    <%= cancel_button person_timesheets_path(@person, year: @year) %>
+  <% end %>
+<% end %>

@@ -1,0 +1,9 @@
+<%# What the two row colours mean: one question and its answer, rendered inside
+    the page's About This Report list. Both pages say it the same way, about
+    their own kind of row. %>
+<dt>What do the row colors mean?</dt>
+<dd>
+  A red row means no one has signed up for the <%= subject %>. An amber row
+  means it has people but less than
+  <%= ShiftSignupsReport::LOW_FILL_PERCENTAGE %>% of its sign-ups are filled.
+</dd>

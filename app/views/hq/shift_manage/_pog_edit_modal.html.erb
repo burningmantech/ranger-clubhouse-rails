@@ -1,0 +1,21 @@
+<%# locals: (pog:) %>
+<%# Update-note dialog (Ember port/components/hq-pogs.hbs pogToEdit modal).
+    Turbo-streamed into the "modal" frame; a note is required. %>
+<%= modal_dialog id: "hq-pog-edit-modal", title: "Edit Pog — #{pog.pog_label}", frame: false do %>
+  <div class="flex gap-6 mb-4">
+    <div>
+      <div class="font-semibold text-heading">Issued On</div>
+      <%= datetime_format pog.issued_at %>
+    </div>
+    <div>
+      <div class="font-semibold text-heading">Pog Type</div>
+      <%= pog.pog_label %>
+    </div>
+  </div>
+  <%= ui_form(pog, hq_shift_manage_update_pog_path(shift_person, pog.id, **shift_context),
+              method: :patch, data: { turbo_frame: "_top" }) do |f| %>
+    <%= hidden_field_tag :pog_op, "note" %>
+    <%= f.text_area :notes, label: "Pog Note", rows: 2, required: true %>
+    <%= modal_form_footer f, submit: "Save Note" %>
+  <% end %>
+<% end %>

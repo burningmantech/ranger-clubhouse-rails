@@ -1,0 +1,14 @@
+<%= hero_panel icon: "eye", heading_level: :h1, id: "person-tickets-dashboard-header",
+               description: "A read-only look at the member's own ticketing page.",
+               back_to: ["Tickets & Provisions", person_tickets_provisions_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Their Tickets &amp; Stuff Page &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= ui_callout_box :info, icon: "eye" do %>
+  <strong>This is how the Me &gt; Tickets &amp; Stuff page appears to <%= @person.callsign %>.</strong>
+  Action buttons are hidden, and viewing this page does not count as a visit by them.
+<% end %>
+
+<%= render "me/tickets/landing", person: @person, admin_view: true %>

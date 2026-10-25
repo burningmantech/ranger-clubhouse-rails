@@ -1,0 +1,112 @@
+<% back_path = @source_position_id ? scheduling_position_credits_position_path(@source_position_id, year: @year) : scheduling_position_credits_path(year: @year) %>
+
+<%= hero_panel icon: "copy", heading_level: :h1, id: "scheduling-position-credit-copy-header",
+               description: "Create new position credits by copying the selected #{@year} credits with their times shifted.",
+               back_to: ["#{@year} Position Credits", back_path] do |panel| %>
+  <% panel.title do %>Copy <%= @year %> Position Credits<% end %>
+<% end %>
+
+<% if @is_current_year %>
+  <div class="my-2">
+    <%= ui_callout_box :warning, title: "Copying from the Current Year" do %>
+      You are about to copy credits from the current year (<%= @year %>) instead of a prior
+      year. Switch the year on the position credits page first if you meant to copy last year's credits.
+    <% end %>
+  </div>
+<% end %>
+
+<% if @orphan_count.positive? %>
+  <div class="my-2">
+    <%= ui_callout_box :warning, title: "Some Credits Cannot Be Copied" do %>
+      Not listed below: <%= pluralize @orphan_count, "credit" %> from <%= @year %>
+      pointing at a position that no longer exists.
+    <% end %>
+  </div>
+<% end %>
+
+<%= ui_form nil, scheduling_position_credit_copies_path(year: @year, position_id: @source_position_id), method: :post do |f| %>
+  <%= ui_section "Times for the New Credits", icon: "clock", icon_type: :solid do %>
+    <p class="mb-3">
+      Labor Day of <%= @year %> is <%= month_day_format(@from_labor_day) %>.
+      Labor Day of <%= current_year %> is <%= month_day_format(@to_labor_day) %>,
+      <%= pluralize @labor_day_diff, "day" %> later.
+    </p>
+    <%= form_row do %>
+      <%= f.number_field :delta_days, label: "Days", value: @delta[:days], width: "w-24" %>
+      <%= f.number_field :delta_hours, label: "Hours", value: @delta[:hours], width: "w-24" %>
+      <%= f.number_field :delta_minutes, label: "Minutes", value: @delta[:minutes], width: "w-24" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Position for the New Credits", icon: "user-group", icon_type: :solid do %>
+    <%= f.select :new_position_id,
+                 options_for_select([["(same position)", ""]] + @position_choices,
+                                    params[:new_position_id]),
+                 { label: "Position", width: "w-full sm:w-72",
+                   help_text: "Only credits from a single position can be copied into a different position." } %>
+  <% end %>
+
+  <%= ui_section "Select Credits to Copy", icon: "list-check", icon_type: :solid,
+                 badge: @copy_groups.sum { |_, credits| credits.size }.to_s do %>
+    <% if @copy_groups.any? %>
+      <p class="mb-3">
+        Each time shows the original credit and the shifted time its copy will get.
+        Use Update Preview to recalculate after changing the shift amounts.
+      </p>
+      <% @copy_groups.each do |position, credits| %>
+        <%= bulk_select class: "mb-2" do %>
+          <%= ui_accordion "#{position.title} (#{pluralize credits.size, "credit"})",
+                           open: @copy_groups.size == 1 do %>
+            <%= bulk_select_all name: "select_all_#{position.id}",
+                                label: "Select all #{position.title} credits",
+                                checked: credits.all? { |credit| @selected_ids.include?(credit.id) },
+                                count: false %>
+            <%= ui_table do |t| %>
+              <%= t.header do %>
+                <%= t.heading "Copy", width: "1%" %>
+                <%= t.heading "Beginning Time" %>
+                <%= t.heading "Ending Time" %>
+                <%= t.heading "Credits per Hour", right: true %>
+                <%= t.heading "Description" %>
+              <% end %>
+              <%= t.body do %>
+                <% credits.each do |credit| %>
+                  <%= t.row do %>
+                    <%= t.cell do %>
+                      <%= bulk_select_checkbox "credit_ids[]", credit.id, checked: @selected_ids.include?(credit.id),
+                                               id: "copy-credit-#{credit.id}",
+                                               aria_label: "Copy credit ##{credit.id} #{credit.description}" %>
+                    <% end %>
+                    <%= t.cell do %>
+                      <%= credit.start_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      <div class="text-stone-subtle">
+                        &rarr; <%= Scheduling::SlotCopier.adjust_time(credit.start_time, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      </div>
+                    <% end %>
+                    <%= t.cell do %>
+                      <%= credit.end_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      <div class="text-stone-subtle">
+                        &rarr; <%= Scheduling::SlotCopier.adjust_time(credit.end_time, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      </div>
+                    <% end %>
+                    <%= t.cell credit_format_short(credit.credits_per_hour), right: true %>
+                    <%= t.cell credit.description %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= ui_empty_state "No copyable position credits were found for #{@year}.",
+                         icon: "coins", icon_type: :solid %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Copy Selected Credits" %>
+    <%= submit_button "Update Preview", name: "preview", variant: :secondary %>
+    <%= cancel_link back_path %>
+  <% end %>
+<% end %>

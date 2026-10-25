@@ -1,0 +1,8 @@
+<%# locals: (step:,facts:)%>
+<p class="text-error font-bold"><%= fa_icon "clock", :solid, class: "icon-error" %> ARRIVE 15 MIN EARLY — late = can't walk!</p>
+<% if facts.cheetah_cub_shift && facts.cheetah_cub_shift["begins"].present? %>
+  <div class="my-2 p-2 bg-default rounded">
+    <%= fa_icon "calendar", :solid %> <b><%= Time.zone.parse(facts.cheetah_cub_shift["begins"]).strftime(DateTimeHelper::MONTH_DAY_TIME) %></b>
+  </div>
+<% end %>
+<p class="text-sm text-stone-muted">Can't make it? Email Mentor Cadre or visit Mentor Shack at HQ.</p>

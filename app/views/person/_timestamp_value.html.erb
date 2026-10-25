@@ -1,0 +1,9 @@
+<%# locals: (at:, none:) %>
+<%# A moment with how long ago it was, or the words for never: the Account
+    group's rows on the person page. %>
+<% if at.present? %>
+  <%= datetime_format at, year: true %>
+  <span class="text-stone-muted">(<%= relative_time_in_words at %>)</span>
+<% else %>
+  <i class="text-stone-muted"><%= none %></i>
+<% end %>

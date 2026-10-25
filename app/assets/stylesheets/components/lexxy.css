@@ -1,0 +1,144 @@
+/*
+ * Lexxy Editor Overrides
+ *
+ * Lexxy takes every colour, font and size from a --lexxy-* custom property
+ * (stylesheets/lexxy-variables.css), so pointing those at the app's own tokens
+ * is the re-theme: the toolbar icons are drawn in currentColor and the dark
+ * theme follows, because the tokens already switch.
+ *
+ * The rest of this file is what a variable cannot say: the editor's focus ring,
+ * the tools that are turned off, the one place where a Tailwind utility and a
+ * Lexxy class share a name, and what a saved document needs that Lexxy's own
+ * sheet does not give it.
+ *
+ * Imported with layer(components), as the vendored sheets are, so that a utility
+ * at a call site beats it -- the error state on a rich text field is a plain
+ * border-error. See components.css.
+ */
+
+/* On :root because that is where Lexxy declares them. The properties it derives
+   from these (--lexxy-color-text, -canvas, -link, the table set) are resolved
+   there too, so an override further down the tree would leave them reading the
+   old values. */
+:root {
+    --lexxy-color-ink: var(--color-body);
+    --lexxy-color-ink-medium: var(--color-body-subtle);
+    --lexxy-color-ink-lighter: var(--color-line);
+    --lexxy-color-ink-lightest: var(--color-default-strong);
+    /* Text on an ink or accent fill: the "Link" button, the floating table
+       tools. Each theme's --color-primary-content is the one that clears
+       contrast on its own primary. */
+    --lexxy-color-ink-inverted: var(--color-primary-content);
+    --lexxy-color-canvas: var(--color-base-100);
+
+    --lexxy-color-accent-dark: var(--color-primary);
+    /* The hover shade of the accent fill: the step daisyUI's own primary button
+       takes on hover, so the "Link" button answers the pointer the way every
+       other primary button here does. */
+    --lexxy-color-accent-medium: color-mix(in oklab, var(--color-primary), #000 7%);
+    --lexxy-color-accent-light: color-mix(in oklab, var(--color-primary) 30%, transparent);
+    --lexxy-color-accent-lightest: color-mix(in oklab, var(--color-primary) 20%, transparent);
+    --lexxy-color-blue: var(--color-primary);
+    --lexxy-color-red: var(--color-error);
+    --lexxy-color-table-cell-remove: color-mix(in oklab, var(--color-error) 10%, transparent);
+
+    /* A code block is set in the text's own colour. Lexxy's token palette is
+       eight light-theme values, one of them (#24292e) near-black. */
+    --lexxy-color-code-token-att: currentColor;
+    --lexxy-color-code-token-comment: currentColor;
+    --lexxy-color-code-token-function: currentColor;
+    --lexxy-color-code-token-operator: currentColor;
+    --lexxy-color-code-token-property: currentColor;
+    --lexxy-color-code-token-punctuation: currentColor;
+    --lexxy-color-code-token-selector: currentColor;
+    --lexxy-color-code-token-variable: currentColor;
+
+    --lexxy-font-mono: var(--font-mono);
+    --lexxy-radius: var(--radius-field);
+    /* The gap under a paragraph, which is this app's mb-2. */
+    --lexxy-content-margin: 0.5rem;
+    /* The 36px touch floor, stated. Lexxy's default is 2lh, which follows
+       whatever line-height the editor happens to be given. */
+    --lexxy-toolbar-button-size: 2.25rem;
+}
+
+/* --- Editor surface: reads as the app's textarea ------------------------- */
+
+lexxy-editor {
+    --lexxy-editor-rows: 16rem;
+    @apply text-base leading-relaxed;
+}
+
+/* Lexxy draws no focus indicator of its own on the editing area. The ring goes
+   around the whole box, and stays while focus is in the toolbar or a menu. */
+lexxy-editor:focus-within {
+    @apply ring-2 ring-primary ring-offset-2 ring-offset-base-100;
+}
+
+/* The table tools size their buttons in lh against Lexxy's 14px line, which is
+   32px, under the 36px floor. The floating controls Lexxy sets smaller for a
+   divider or an inline attachment belong to its attachments, which are off here,
+   and a rule this short would not reach them anyway: they are more specific. */
+.lexxy-floating-controls {
+    --button-size: var(--lexxy-toolbar-button-size);
+}
+
+/* Beside a table or a divider that has no line of text next to it, Lexxy keeps an
+   empty paragraph for the caret to land in, and marks it with a class literally
+   named "hidden" while the caret is elsewhere. Its own sheet keeps that paragraph
+   as a thin strip. In @layer components that rule loses to Tailwind's .hidden
+   utility, the strip has no box, and text typed after a click there lands in
+   another paragraph, or in the table's first cell. !important because nothing
+   else in a components layer outranks a utility. */
+lexxy-editor p.provisional-paragraph.hidden {
+    display: block !important;
+}
+
+/* Tools left off on purpose: coloured text is not part of this design system,
+   and a code block here has no language to pick. Uploads are turned off on the
+   element itself (attachments="false"), which hides their toolbar buttons. */
+lexxy-highlight-dropdown,
+lexxy-code-language-picker {
+    @apply hidden;
+}
+
+/* --- Saved document: what Lexxy's own sheet does not give it -------------- */
+
+/* Lexxy wraps long words in the blocks it writes itself (p, lists, quotes).
+   Text saved by the editor before it is made of <div> blocks, which that rule
+   does not reach, so a long address ran off the side of a phone. On the
+   container, every block inherits it. */
+.lexxy-content {
+    @apply wrap-break-word;
+}
+
+/* Text that was coloured before it met this editor comes back from it as
+   <mark style="color: …">, and Lexxy takes the browser's yellow highlighter off
+   <mark> only inside .lexxy-content. Agreements and the MVR instructions are
+   printed without that wrapper, so it is taken off everywhere. The mailbox
+   search's marks put a tint back with a class (search-hit, messages.css). */
+mark {
+    @apply bg-transparent text-inherit;
+}
+
+.lexxy-content h1 {
+    @apply text-xl font-semibold text-heading mt-4;
+}
+
+.lexxy-content h2 {
+    @apply text-lg font-semibold text-heading mt-4;
+}
+
+.lexxy-content :is(h3, h4, h5, h6) {
+    @apply text-base font-semibold text-heading mt-3 mb-1;
+}
+
+/* Lexxy indents a list by 1.5 x the paragraph gap, which at this app's gap
+   leaves no room for the marker. */
+.lexxy-content :is(ul, ol) {
+    @apply ms-0 ps-6;
+}
+
+.lexxy-content li {
+    @apply mb-1;
+}

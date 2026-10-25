@@ -1,0 +1,23 @@
+<%# locals: (name:, callsigns:, url:, field_id:, box_class:, placeholder:, describedby: nil, invalid: false, max: nil) %>
+<%# AppFormBuilder#callsign_chips_field: the chips, then the autocomplete that
+    adds one (a suggestion taken, a callsign typed and Entered, or one still
+    typed when the form is sent), in one input box. The list's id is what a Find Recipient choice is appended to. `max`
+    caps the chips, a new one replacing the oldest. %>
+<div class="<%= box_class %>"
+     data-controller="callsign-chips"
+     <%= tag.attributes(data: { callsign_chips_max_value: max }) %>
+     data-action="autocomplete.change->callsign-chips#add autocomplete.loadend->callsign-chips#loaded keydown->callsign-chips#keydown">
+  <span id="<%= field_id %>_chips" class="contents" data-callsign-chips-target="list">
+    <%= render partial: "shared/callsign_chip", collection: callsigns, as: :callsign, locals: { name: } %>
+  </span>
+  <%# aria_label: nil, so the field's visible label (To, From) names the input. %>
+  <%= render "shared/autocomplete", url:, input_id: "#{field_id}_lookup", field_id:, describedby:, invalid:, placeholder:,
+                                    aria_label: nil,
+                                    wrapper_class: "flex-1 min-w-32",
+                                    input_class: "w-full min-h-9 bg-transparent outline-none",
+                                    form_field: true,
+                                    input_data: { "callsign-chips-target" => "input" } %>
+  <template data-callsign-chips-target="template">
+    <%= render "shared/callsign_chip", name:, callsign: "" %>
+  </template>
+</div>

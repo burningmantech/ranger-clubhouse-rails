@@ -1,0 +1,61 @@
+<%#
+  The TRS export rows table, shared by the index (nothing checked) and the
+  export results page (everything checked, ready to mark submitted).
+
+  Locals:
+    rows       - [TrsExport::Row]
+    selectable - render the checkbox column; false on the view-only All filter
+    checked    - initial checkbox state
+
+  Rows with problems keep their checkbox but carry data-skip-select-all, so
+  "select all" passes over them while the operator can still pick them by hand.
+  The select-all header renders here too, so it can never drift from the
+  checkboxes it drives. Callers wrap this partial in the
+  bulk_select block.
+%>
+<% if selectable %>
+  <%= bulk_select_all label: "Select every problem-free item", checked: checked,
+                      selected: checked ? rows.size : 0 %>
+<% end %>
+<%= ui_table do |t| %>
+  <%= t.header do %>
+    <% if selectable %>
+      <%= t.heading "Select", width: "1%" %>
+    <% end %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading "Legal Name" %>
+    <%= t.heading "Email" %>
+    <%= t.heading "Delivery" %>
+    <%= t.heading "Note" %>
+  <% end %>
+  <%= t.body do %>
+    <% rows.each do |row| %>
+      <%= t.row do %>
+        <% if selectable %>
+          <%= t.cell do %>
+            <%= bulk_select_checkbox "ids[]", row.id_param, checked: checked,
+                                     id: "trs-row-#{row.documents.first.id}",
+                                     aria_label: "Select #{row.person.callsign}'s items",
+                                     skip_select_all: !row.selectable? %>
+          <% end %>
+        <% end %>
+        <%= t.row_header do %>
+          <% unless row.selectable? %>
+            <%= fa_icon "triangle-exclamation", :solid, class: "text-error me-1" %>
+            <span class="sr-only">Has problems:</span>
+          <% end %>
+          <%= callsign_link row.person, person_tickets_provisions_path(row.person) %>
+        <% end %>
+        <%= t.cell "#{row.person.first_name} #{row.person.last_name}" %>
+        <%= t.cell email_link_or_dash(row.person.email) %>
+        <%= t.cell value_or_dash(row.delivery) %>
+        <%= t.cell do %>
+          <%= row.note %>
+          <% row.errors.each do |error| %>
+            <div class="text-error">Problem: <%= error %></div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

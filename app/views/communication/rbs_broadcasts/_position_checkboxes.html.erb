@@ -1,0 +1,35 @@
+<%# locals: (selected:) %>
+<%# The positions to send to, grouped by team. A list of checkboxes rather than
+    a multiple-choice list: there are hundreds of positions, and every one that
+    is ticked has to stay visible while the sender picks the next. %>
+<div data-controller="position-picker">
+  <div class="flex flex-wrap items-center gap-3 mb-2">
+    <span class="<%= AppFormBuilder::LABEL_CLASSES %> mb-0" id="broadcast-positions-label">Positions</span>
+    <span class="text-sm text-stone-subtle" aria-live="polite"
+          data-position-picker-target="count"><%= position_picker_count_label(@position_groups.flat_map(&:last), selected) %></span>
+    <span class="grow"></span>
+    <%= button_action "Select None", :ghost,
+                      data: { action: "position-picker#selectNone" } %>
+  </div>
+  <%# Sent whatever the boxes say, so clearing them all reads as a choice. %>
+  <%= hidden_field_tag "#{RbsBroadcastForm::PARAM_SCOPE}[position_ids][]", "", id: nil %>
+  <div class="max-h-96 overflow-y-auto rounded-base border border-line p-2"
+       role="group" aria-labelledby="broadcast-positions-label">
+    <% if @position_groups.empty? %>
+      <%= ui_empty_state "You do not manage any team with positions to send to." %>
+    <% end %>
+    <% @position_groups.each do |team, positions| %>
+      <div class="font-semibold text-heading mt-2 mb-1 px-1"><%= team %></div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-1">
+        <% positions.each do |position| %>
+          <%= render layout: "common/checkbox_row",
+                     locals: { name: "#{RbsBroadcastForm::PARAM_SCOPE}[position_ids][]", value: position.id,
+                               checked: selected.include?(position.id), id: "broadcast-position-#{position.id}",
+                               data: { position_picker_target: "checkbox", action: "change->position-picker#refresh" } } do %>
+            <%= position.title %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

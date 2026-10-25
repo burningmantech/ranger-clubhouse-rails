@@ -1,0 +1,40 @@
+<% days_left = dashboard.days_until_mvr_deadline %>
+<%# No deadline configured (blank MVRDeadline setting) means no countdown to
+    show — an empty date under a red "Deadline" heading reads as a bug. %>
+<% if dashboard.mvr_deadline.present? %>
+  <div class="mb-4 rounded-lg" role="timer" aria-label="Deadline countdown: <%= days_left %> days remaining">
+    <div class="flex items-center justify-between gap-4 mb-4">
+      <div>
+        <p class="text-sm font-bold uppercase tracking-wider">
+          Deadline
+        </p>
+        <div class="font-bold text-lg text-error">
+          <%= full_datetime_format dashboard.mvr_deadline %>
+        </div>
+        Pacific Time
+      </div>
+      <% if days_left.positive? %>
+        <div class="text-center px-4 py-2 rounded-lg bg-default">
+          <p class="text-2xl font-bold text-heading">
+            <%= days_left %>
+          </p>
+          <p class="text-sm font-medium">
+            <%= "day".pluralize(days_left) %> left
+          </p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+<%= ui_callout_box :info, accent: true, icon: false, role: "note" do %>
+  <p class="text-sm">
+    <strong>Tip:</strong> Submit only <strong>one</strong> request. Multiple submissions will delay processing.
+  </p>
+<% end %>
+
+<div class="pt-2">
+  <%= button_link nil, :primary, me_vehicles_mvr_submit_path, class: "w-full text-center", "aria-label": "Start or continue the MVR Request submission process" do %>
+    Submit MVR Request
+    <%= fa_icon "arrow-right", :solid %>
+  <% end %>
+</div>

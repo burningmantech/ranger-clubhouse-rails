@@ -1,0 +1,105 @@
+<% content_for :title, "#{@survey.title} — #{@report_title}" %>
+
+<%= hero_panel icon: "square-poll-vertical", heading_level: :h1, id: "survey-report-header" do |panel| %>
+  <% panel.title do %><%= @survey.title %><% end %>
+  <% panel.description do %>
+    <strong><%= @report_title %></strong> &mdash; names appear only where the person agreed to
+    share theirs, and everything else is anonymous.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to surveys_index_label, surveys_index_path %>
+  <% end %>
+<% end %>
+
+<%# Sibling reports of the same survey. One report needs no navigation. %>
+<% if @report_links.size > 1 %>
+  <nav class="my-4" aria-label="Survey reports">
+    <%= button_row do %>
+      <% @report_links.each do |link| %>
+        <% current = link[:id].to_s == params[:report_id] %>
+        <%= button_link link[:title], current ? :primary : :secondary,
+                        survey_report_url(@survey, link[:id]),
+                        aria: { current: current ? "page" : nil } %>
+      <% end %>
+    <% end %>
+  </nav>
+<% end %>
+
+<% if @comment_count.positive? || @rating_count.positive? %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @comment_count.to_s, "Comments", icon: "comments", icon_type: :solid %>
+    <%= ui_stat_box @rating_count.to_s, "Ratings", icon: "star", icon_type: :solid %>
+    <% if @trainers.any? %>
+      <% subject = survey_subject_label(@survey) %>
+      <%= ui_stat_box @trainers.size.to_s,
+                      trainer_survey? ? "#{subject}s rated" : "#{subject}s with feedback",
+                      icon: "chalkboard-user", icon_type: :solid %>
+    <% elsif @session_count.positive? %>
+      <%= ui_stat_box @session_count.to_s, "Sessions with Feedback",
+                      icon: "calendar", icon_type: :solid %>
+    <% end %>
+  <% end %>
+
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link(survey_report_url(@survey, params[:report_id], format: :csv), "Export Comments") %>
+      <% if @rating_count.positive? %>
+        <%= export_csv_link(survey_report_url(@survey, params[:report_id], kind: "ratings", format: :csv), "Export Ratings") %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @comment_count.zero? && @rating_count.zero? %>
+  <%= ui_section @report_title do %>
+    <%= ui_empty_state "No one has answered this part of the survey yet.",
+                       icon: "clipboard-question", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<%# Ranked summaries first: the whole point of a summarized rating is the
+    ordering, so it opens the page rather than hiding behind a disclosure. %>
+<% @summarized_ratings.each_with_index do |summary, index| %>
+  <%= ui_section summary.description, id: "summary-#{index}" do %>
+    <%= render "common/surveys/ratings_table", summary: summary %>
+  <% end %>
+<% end %>
+
+<%# Upstream stacked one collapsed accordion per trainer -- 40+ of them for
+    In-Person Training. The roster is a table, and each trainer's feedback is
+    a page of its own. %>
+<% if @trainers.any? %>
+  <% subject = survey_subject_label(@survey) %>
+  <%= ui_section "#{subject}s", badge: pluralize(@trainers.size, subject.downcase),
+                 badge_color: :success do %>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading subject %>
+        <%= t.heading "Comments" %>
+        <%= t.heading "Ratings" %>
+      <% end %>
+      <%= t.body do %>
+        <% @trainers.each do |trainer| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%# report_id rides along so the person page's back link returns
+                  to this report, not to "main". %>
+              <%= callsign_link trainer,
+                                survey_person_url(trainer_key(trainer),
+                                                  report_id: params[:report_id]) %>
+            <% end %>
+            <%= t.cell survey_comment_count(trainer_questions(trainer)) %>
+            <%= t.cell @trainer_ratings[trainer_key(trainer)] %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# A venue or manual-review report asks the room directly. %>
+<% @report&.questions&.each do |question| %>
+  <%= ui_section question.description do %>
+    <%= render "common/surveys/question", question: question %>
+  <% end %>
+<% end %>

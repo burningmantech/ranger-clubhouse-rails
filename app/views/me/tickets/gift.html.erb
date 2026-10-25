@@ -1,0 +1,142 @@
+<%# /me/tickets/gift — claim a Gift Ticket AND choose delivery in one action,  %>
+<%# or release it. One decision per Gift Ticket, then back to the hub.        %>
+<%
+  gifts = @ticket_package.gift_items
+
+  # Human phrase for a ticket's current delivery method (ported from
+  # ticket-gift-info.js #ticketDelivery).
+  delivery_phrase = lambda do |t|
+    if t.delivery_will_call? then "pick up at Will Call (free)"
+    elsif t.delivery_postal? then "delivery by USPS Standard Mail (free)"
+    elsif t.delivery_priority? then "delivery by USPS Priority Mail (free)"
+    else "no delivery method chosen yet"
+    end
+  end
+%>
+
+<%= hero_panel icon: "gift", heading_level: :h1, id: "gift-header",
+               title: "Gift Tickets",
+               description: "Claim a free Gift Ticket and choose how it reaches you — or release it.",
+               back_to: ["Tickets & Provisions", me_tickets_path] %>
+
+<% if gifts.empty? %>
+  <%= ui_callout_box :secondary, icon: "gift", accent: true, title: "No Gift Ticket to Set Up" do %>
+    <p class="mb-3">You don't have a Gift Ticket to claim right now. If you expected one, the Ranger Ticketing Team can help.</p>
+    <%= button_link "Back to Tickets & Provisions", :secondary, me_tickets_path, icon: "arrow-left", icon_type: :solid %>
+  <% end %>
+
+<% else %>
+  <%# How delivery works — ported from ticket-gift-info.hbs top notice. %>
+  <%= ui_callout_box :info, title: "How Gift Ticket Delivery Works" do %>
+    <ul class="space-y-1">
+      <li>Your Gift Ticket delivery choice is separate from your Staff Credential and Special-Priced Ticket.</li>
+      <li><strong>Gift Tickets ship free this year.</strong> Other ticket types may have a mailing cost.</li>
+      <li><strong>Will Call pickup is always free.</strong></li>
+    </ul>
+  <% end %>
+
+  <% if gifts.many? %>
+    <%= ui_callout_box :secondary, icon: "layer-group" do %>
+      <strong>You have <%= gifts.count %> Gift Tickets.</strong> Make a choice for each one below.
+    <% end %>
+  <% end %>
+
+  <% gifts.each_with_index do |ticket, idx| %>
+    <%
+      claimed = ticket.status == AccessDocument::CLAIMED
+      qualified = ticket.is_qualified?
+      section_title = gifts.many? ? "Gift Ticket #{idx + 1} of #{gifts.count}" : "Your Gift Ticket"
+    %>
+    <%= ui_section section_title, icon: "gift", icon_type: :solid do %>
+      <% if claimed %>
+        <%# --- Claimed: decided, offer delivery switch or release ---------- %>
+        <div class="flex items-center gap-2 mb-2">
+          <%= render "status_chip", state: :decided, label: "Claimed" %>
+        </div>
+        <h3 class="heading-title text-heading mb-1">
+          Claimed — <%= delivery_phrase.call(ticket) %>.
+        </h3>
+        <p class="text-body mb-3">
+          Your <%= ticket.type_label %> is yours for this event. Gift Tickets can't be banked for a future year.
+        </p>
+
+        <%= render "ticket_gift_conditions" %>
+
+        <div class="mt-4">
+          <p class="text-body font-medium mb-2">Change how it reaches you:</p>
+          <%= button_row do %>
+            <% unless ticket.delivery_will_call? %>
+              <%= button_link "Switch to Will Call Pickup", :secondary, me_tickets_delivery_path,
+                    method: :patch, icon: "hand-holding", icon_type: :solid,
+                    params: { delivery_method: "will_call", document_id: ticket.id } %>
+            <% end %>
+            <% unless ticket.delivery_postal? %>
+              <%= button_link "Switch to USPS Standard Mail", :secondary, me_tickets_delivery_path,
+                    method: :patch, icon: "envelope", icon_type: :solid,
+                    params: { delivery_method: "postal", document_id: ticket.id } %>
+            <% end %>
+            <% unless ticket.delivery_priority? %>
+              <%= button_link "Switch to USPS Priority Mail", :secondary, me_tickets_delivery_path,
+                    method: :patch, icon: "truck-fast", icon_type: :solid,
+                    params: { delivery_method: "priority", document_id: ticket.id } %>
+            <% end %>
+          <% end %>
+        </div>
+
+        <div class="mt-4">
+          <p class="text-body mb-2">Plans changed? You can release it — it simply becomes available to claim again.</p>
+          <%= button_link "Release Gift Ticket", :secondary, me_tickets_document_status_path(ticket.id),
+                method: :patch, icon: "arrow-rotate-left", icon_type: :solid,
+                params: { status: "qualified" } %>
+        </div>
+
+        <p class="text-body mt-4">
+          <strong>You can change this until the deadline.</strong> Switch delivery or release your Gift Ticket any time before Ranger ticketing closes.
+        </p>
+
+      <% elsif qualified %>
+        <%# --- Qualified: the decision — claim + pick delivery ------------- %>
+        <div class="flex items-center gap-2 mb-2">
+          <%= render "status_chip", state: :needs_decision, label: "Ready to Claim" %>
+        </div>
+        <h3 class="heading-title text-heading mb-1">
+          A <%= ticket.type_label %> is ready to claim.
+        </h3>
+        <p class="text-body mb-3">
+          Pick how it reaches you and it's claimed in one step. Gift Tickets can't be banked — they're only good for the upcoming event.
+        </p>
+
+        <%= render "ticket_gift_conditions" %>
+
+        <div class="mt-4">
+          <p class="text-body font-medium mb-2">Claim it and choose delivery:</p>
+          <%= button_row do %>
+            <%= button_link "Claim & Pick Up at Will Call", :secondary, me_tickets_delivery_path,
+                  method: :patch, icon: "hand", icon_type: :solid,
+                  params: { delivery_method: "will_call", document_id: ticket.id } %>
+            <%= button_link "Claim & Mail (USPS Standard)", :secondary, me_tickets_delivery_path,
+                  method: :patch, icon: "envelope", icon_type: :solid,
+                  params: { delivery_method: "postal", document_id: ticket.id } %>
+            <%= button_link "Claim & Mail (USPS Priority)", :secondary, me_tickets_delivery_path,
+                  method: :patch, icon: "truck-fast", icon_type: :solid,
+                  params: { delivery_method: "priority", document_id: ticket.id } %>
+          <% end %>
+        </div>
+
+        <p class="text-body mt-4">
+          <strong>Claiming isn't final.</strong> You can change delivery or release the ticket any time before Ranger ticketing closes.
+        </p>
+        <p class="text-body mt-2">
+          Don't want it? Just head back — the Gift Ticket stays available to claim until the deadline.
+        </p>
+
+      <% else %>
+        <%# --- Any other state a member can't act on: get a human --------- %>
+        <%= render "contact_ticketing",
+              message: "Your #{ticket.type_label} is in a state you can't change from here." %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render "wizard_nav", step: :gift, presenter: @presenter %>
+<% end %>

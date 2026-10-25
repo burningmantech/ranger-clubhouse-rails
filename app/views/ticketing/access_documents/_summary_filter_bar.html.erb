@@ -1,0 +1,49 @@
+<%# locals: (filter_params:, active_params:, held_counts:, matching_counts:, count:) %>
+<%# The summary's filters in the standard filter_bar shell. All are plain GET
+    params, applied server-side over the built rows, so a narrowed view is a
+    shareable URL.
+
+    Locals:
+      filter_params   - { status:, type:, person_status:, arrival:, issues: };
+                        "all" means that filter is off
+      active_params   - filter_params without the "all" entries; one chip each
+      held_counts     - { status:, type:, person_status:, arrival: }, each the
+                        { value => people } hash of what the whole page holds:
+                        the choices that select offers
+      matching_counts - the same shape under the other active filters: the
+                        count each choice shows
+      count           - result summary shown at the end of the bar %>
+<%
+  # Statuses alphabetical like the records page; tickets in the page's own order.
+  status_choices = counted_filter_options(:status, AccessDocument::CURRENT_STATUSES.sort,
+                                          held_counts[:status], matching_counts[:status])
+  type_choices = counted_filter_options(:type, Ticketing::AccessDocumentsHelper::SUMMARY_TICKET_TYPES,
+                                        held_counts[:type], matching_counts[:type])
+  person_status_choices = filter_status_options(held_counts[:person_status], matching: matching_counts[:person_status])
+  arrival_choices = arrival_filter_options(held_counts[:arrival], matching_counts[:arrival])
+%>
+<%= filter_bar id: "access-document-summary-filters",
+               chips: summary_filter_chips(active_params),
+               clear_url: ticketing_access_documents_path,
+               count: count,
+               url: ticketing_access_documents_path do |f| %>
+  <%= form_row do %>
+    <%= f.select :status, status_choices, label: "Status", selected: filter_params[:status],
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :type, type_choices, label: "Ticket Type", selected: filter_params[:type],
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :person_status, person_status_choices, label: "Person Status",
+                 selected: filter_params[:person_status], width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :arrival, arrival_choices, label: "Arrival", selected: filter_params[:arrival],
+                 width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%# include_hidden: false -- a GET form, so the companion "0" field would ride
+      along in the URL beside the checked "1". Unchecked simply drops the param. %>
+  <%= f.check_box :issues, label: "Only people with something in Weird Stuff",
+                  include_hidden: false, checked: active_params.key?(:issues) %>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>

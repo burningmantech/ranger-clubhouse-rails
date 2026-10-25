@@ -1,0 +1,72 @@
+<%# locals: (filter_params:, active_params:, base_params:, title_options:, team_options:, meals_offered:, showers_offered:, count: nil, actions: nil) %>
+<%# The category picker plus the five secondary filters, in the standard
+    filter_bar shell. All six are ordinary GET params applied server-side, so a
+    narrowed roster is a shareable URL and the CSV export carries the same
+    query string.
+
+    A category can carry none of a thing -- no titles, no teams, no one fed,
+    no one washed -- and then that select is disabled and says so rather than
+    offering an "All" that narrows nothing.
+
+    Locals:
+      filter_params  - { title:, team:, meals:, showers:, qualified:, q: }; "all" means off
+      active_params  - filter_params without the inactive entries; one chip each
+      base_params    - year, category, and sort; ride on every link
+      title_options  - the distinct titles present in the loaded category
+      team_options   - the distinct team tokens present in the loaded category
+      meals_offered  - whether anyone in the category eats
+      showers_offered- whether anyone in the category showers
+      count          - result summary shown at the end of the bar
+      actions        - the page's Export CSV button, at the end of the row %>
+<%
+  title_choices = title_options.map { |title| [title, title] }
+  team_choices = team_options.map { |team| [team, team] }
+  meals_choices = meals_offered ? Bmid::ManageHelper::MEALS_OPTIONS : []
+  showers_choices = showers_offered ? Bmid::ManageHelper::SHOWERS_OPTIONS : []
+
+  chips = bmid_manage_filter_chips(active_params, base_params)
+%>
+<%= filter_bar id: "bmid-filters",
+               chips: chips,
+               clear_url: bmid_manage_path(base_params.except(:filter)),
+               count: count,
+               actions: actions,
+               url: bmid_manage_path do |f| %>
+  <%# The year, the sort, and which layout is on screen are all chosen
+      elsewhere on the page, but they have to survive an Apply. %>
+  <%= hidden_field_tag :year, base_params[:year] %>
+  <% %i[sort dir mode].each do |key| %>
+    <%= hidden_field_tag key, base_params[key] if base_params[key] %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.select :filter, BmidManagement::FILTER_OPTIONS, label: "Category",
+                 selected: base_params[:filter], width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= bmid_filter_select f, :title, "Title", title_choices, filter_params[:title],
+                           "No badge in this category carries a title." %>
+    <%= bmid_filter_select f, :team, "Team", team_choices, filter_params[:team],
+                           "No badge in this category names a team." %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= bmid_filter_select f, :meals, "Meals", meals_choices, filter_params[:meals],
+                           "No one in this category is being fed." %>
+    <%= bmid_filter_select f, :showers, "Showers", showers_choices, filter_params[:showers],
+                           "No one in this category has shower access." %>
+    <%= bmid_filter_select f, :qualified, "Print qualification",
+                           Bmid::ManageHelper::QUALIFIED_OPTIONS, filter_params[:qualified], nil %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.text_field :q, label: "Search", value: filter_params[:q],
+                     help_text: "Matches any part of a callsign, title, team, or note.",
+                     width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters", variant: :secondary %>
+  <% end %>
+<% end %>

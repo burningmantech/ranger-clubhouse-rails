@@ -1,0 +1,309 @@
+<%#
+  Record which mentors walked with each Alpha, and how the walk ended. Ported
+  from upstream Ember mentor/assignment: the same roster, the same three mentor
+  slots, the same result list. Filtering, validation and the pod fill are
+  server-side here, and the whole sheet saves in one transaction.
+%>
+<% content_for :title, "Alpha Mentor Assignments" %>
+<%= hero_panel icon: "clipboard-check", heading_level: :h1, id: "mentor-assignments-header",
+               title: "#{@year} Alpha Mentor Assignments" do |panel| %>
+  <% panel.description do %>
+    Record the mentors who walked with each Alpha and how it went.
+  <% end %>
+<% end %>
+
+<% if @total.zero? %>
+  <%= ui_empty_state "No one holds Alpha status right now, so there are no walks to record.",
+                     icon: "clipboard-check", icon_type: :solid %>
+<% else %>
+  <%# The stat boxes count every Alpha; the filter bar's count line reports how
+      many are on screen. They differ only while a filter is on. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @total.to_s, "Alphas", icon: "user-group", icon_type: :solid %>
+    <%= ui_stat_box @pending_count.to_s, "Still Pending",
+                    variant: @pending_count.positive? ? :warning : :success,
+                    icon: "hourglass-half", icon_type: :solid %>
+    <%= ui_stat_box @passed_total.to_s, "Passed", variant: :success,
+                    icon: "circle-check", icon_type: :solid %>
+    <%= ui_stat_box @bonked_total.to_s, "Bonked", icon: "hand", icon_type: :solid %>
+    <%= ui_stat_box @checked_in_count.to_s, "Checked In Now", icon: "person-walking", icon_type: :solid %>
+  <% end %>
+
+  <% if @confirm_bonks %>
+    <%= ui_callout_box :warning, accent: true, title: "No Bonks on This Sheet" do %>
+      No bonks on this sheet? You are passing <%= pluralize(@passed_count, "Alpha") %> and bonking no one. If that is right, use
+      <strong>Save, No Bonks</strong> at the bottom of the sheet. If it is not, change the results first.
+      Nothing has been recorded yet.
+    <% end %>
+  <% end %>
+
+  <% if @result && !@result.ok? %>
+    <%= ui_callout_box :error, accent: true, title: "Nothing Was Recorded" do %>
+      <%= pluralize(@result.row_errors.size, "row") %> below still <%= @result.row_errors.one? ? "needs" : "need" %>
+      fixing. The whole sheet is saved together, so no part of it was written.
+    <% end %>
+  <% end %>
+
+  <% if @prefill && !@prefill.pods? %>
+    <%# Told apart from "filled no one" on purpose: an empty result and an
+        unformed shift look identical otherwise. %>
+    <%= ui_callout_box :warning, accent: true, title: "That Shift Has No Pods Yet" do %>
+      No pods have been formed for <%= alpha_mentor_slot_label(@prefill_slot) %>, so there was nothing to
+      copy. Build them on the
+      <%= link_to "Alpha Pods", mentoring_alpha_pods_path(year: @year), class: "underline font-semibold" %>
+      page first, or pick the mentors here by hand.
+    <% end %>
+  <% elsif @prefill %>
+    <%= ui_callout_box :info, accent: true, title: "Mentors Filled In from Pods" do %>
+      <p>
+        Filled <%= pluralize(@prefill.filled.size, "Alpha") %> from the pods on
+        <%= alpha_mentor_slot_label(@prefill_slot) %>.
+        <strong>Nothing is saved yet</strong> &mdash; check the rows, then save the sheet.
+      </p>
+      <% if @prefill.skipped.any? %>
+        <p class="mt-2">
+          Left alone because they already had a mentor: <%= @prefill.skipped.to_sentence %>.
+        </p>
+      <% end %>
+      <% if @prefill.not_listed.any? %>
+        <p class="mt-2">
+          In a pod but not on this sheet (filtered out, or no longer an Alpha):
+          <%= @prefill.not_listed.to_sentence %>.
+        </p>
+      <% end %>
+      <% if @prefill.not_assignable.any? %>
+        <%# A pod is formed from the whole mentor cadre, but only a Mentor-position
+            holder can be recorded here. Naming them is the point: copying them in
+            would put an id in the row that has no option to render. %>
+        <p class="mt-2">
+          Not copied because they do not hold the Mentor position:
+          <%= @prefill.not_assignable.to_sentence %>. Pick a mentor for those rows by hand.
+        </p>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @walking_unknown.any? %>
+    <%= ui_callout_box :warning, accent: true, icon: "hand", icon_type: :solid,
+                       title: "Checked In, but the Shift Is Unclear" do %>
+      <%= @walking_unknown.map { |entry| entry.person.callsign }.to_sentence %>
+      <%= @walking_unknown.one? ? "is" : "are" %> signed in to an Alpha shift that cannot be matched to one of
+      this year's walks &mdash; usually a very early or very late check-in. Filling mentors from a pod will
+      not reach them.
+    <% end %>
+  <% end %>
+
+  <%# Out of the hero, and visible rather than folded away: it is what saving this
+      sheet will NOT do. Below the callouts above, which answer the reader's last
+      action and so come first. Same shape as the note on the Alpha Pods board. %>
+  <%= ui_callout_box :info, icon: "lightbulb", icon_type: :solid, accent: true, class: "my-4" do %>
+    <strong>Recording a pass or a bonk here does not change anyone's account status.</strong>
+    Use
+    <%= link_to "Convert Prospectives", mentoring_convert_prospectives_path, class: "underline font-semibold" %>
+    and the Alpha Status page for that.
+  <% end %>
+
+  <%= filter_bar id: "mentor-assignments-filters",
+                 chips: alpha_mentor_filter_chips(@filter_params, @alpha_slots),
+                 clear_url: mentoring_alpha_mentor_assignments_path,
+                 count: "Showing #{@entries.size} of #{pluralize(@total, "Alpha")}",
+                 url: mentoring_alpha_mentor_assignments_path do |f| %>
+    <%= form_row do %>
+      <%= f.select :status, alpha_mentor_status_options,
+                   label: "Result", selected: @filter_params[:status],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :shift, alpha_mentor_shift_choices(@alpha_slots, @roster, @filter_params[:shift]),
+                   label: "Shift", width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <% if @entries.empty? %>
+    <%= ui_empty_state "No Alphas matched those filters.", icon: "magnifying-glass", icon_type: :solid %>
+  <% else %>
+    <% mentor_groups = alpha_mentor_option_groups(@mentor_pool, @former_mentors) %>
+    <% pod_slots = alpha_mentor_pod_slot_options(@alpha_slots, @pod_counts) %>
+
+    <%# The worksheet form is a SIBLING of the filter bar's GET form -- HTML
+        cannot nest forms. The active filters ride along as hidden fields so a
+        save comes back to the same view; id: nil because the filter bar's own
+        selects already own #status and #shift, and a duplicate id is what lets
+        Turbo's morph silently drop fields. %>
+    <%= ui_form nil, mentoring_alpha_mentor_assignments_path,
+                method: :post, local: true, no_error_summary: true,
+                data: { controller: "unsaved-changes mark-result",
+                        mark_result_selector_value: "[data-result-select]",
+                        mark_result_result_value: PersonMentor::STATUS_PASS } do |f| %>
+      <%= hidden_field_tag :status, @filter_params[:status], id: nil %>
+      <%= hidden_field_tag :shift, @filter_params[:shift], id: nil %>
+
+      <% if mentor_groups.empty? %>
+        <%= ui_callout_box :warning, accent: true do %>
+          No one holds the Mentor position, so there are no mentors to pick. Grant the position first.
+        <% end %>
+      <% end %>
+
+      <%= bulk_select do %>
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+          <%= bulk_select_all label: "Select every Alpha listed" %>
+          <div class="flex flex-wrap items-center gap-2">
+            <%= button_action "Mark Selected as Passed", :secondary,
+                              data: { action: "mark-result#apply",
+                                      checkbox_select_all_target: "submit" } %>
+            <%= button_link "Print This Sheet", :secondary,
+                            mentoring_alpha_mentor_assignments_print_path(@filter_params),
+                            icon: "print", icon_type: :solid %>
+          </div>
+        </div>
+
+        <%# Second submit target on the same form: the sheet is posted as it
+            stands and comes back with blank mentor slots filled from the
+            chosen shift's pods. Nothing is written.
+
+            Shown whenever the year has an Alpha shift at all, pods or not. Each
+            option says how many pods the shift has, and picking a shift without
+            any says so -- hiding the control until pods exist makes the feature
+            look missing, which is how it read before pods were formed. %>
+        <% if pod_slots.any? %>
+          <div class="flex flex-wrap items-end gap-2 mb-3">
+            <%= select_tag :pod_slot_id,
+                           options_for_select(pod_slots, @prefill_slot&.id),
+                           class: "#{AppFormBuilder::SELECT_CLASSES} w-full lg:w-auto",
+                           aria: { label: "Alpha shift to fill mentors from" } %>
+            <%= f.submit "Assign Mentors from Pods", variant: :secondary,
+                         formaction: mentoring_alpha_mentor_assignments_pod_prefill_path %>
+          </div>
+        <% end %>
+
+        <%= ui_table full_width: true, striped: false do |t| %>
+          <%= t.header do %>
+            <%= t.heading "Select", width: "1%" %>
+            <%= t.heading "Callsign" %>
+            <%= t.heading "Signed Up For" %>
+            <%= t.heading "Checked In" %>
+            <%= t.heading "Mentor 1" %>
+            <%= t.heading "Mentor 2" %>
+            <%= t.heading "Mentor 3" %>
+            <%= t.heading "Result" %>
+          <% end %>
+          <%= t.body do %>
+            <% @entries.each do |entry| %>
+              <% person = entry.person %>
+              <% edit = @pending_edits && @pending_edits[person.id] %>
+              <% row_error = @result&.row_errors&.dig(person.id) %>
+              <% status = edit ? edit.status : entry.status %>
+              <% picked = edit ? edit.mentor_ids : entry.mentor_ids %>
+
+              <%= t.row id: "assignment-row-#{person.id}",
+                        state: (:error if row_error),
+                        data: { mark_result_target: "row" } do %>
+                <%= t.cell do %>
+                  <%= bulk_select_checkbox "selected_ids[]", person.id,
+                                           id: "assignment-check-#{person.id}",
+                                           aria_label: "Select #{person.callsign} for the bulk result button" %>
+                <% end %>
+                <%= t.row_header do %>
+                  <%= callsign_link person %>
+                  <% if entry.prior_years.any? %>
+                    <span class="block text-xs text-stone-muted">
+                      Prior:
+                      <%= entry.prior_years.map { |year|
+                            "#{year[:year]} #{mentor_result_label(year[:status]).downcase}<br>#{year[:mentors].to_sentence}".html_safe
+                          }.join("<br>").html_safe %>
+                    </span>
+                  <% end %>
+                <% end %>
+                <%= t.cell do %>
+                  <% if entry.alpha_slots.empty? %>
+                    <span class="text-stone-muted">None</span>
+                  <% else %>
+                    <% entry.alpha_slots.each do |slot| %>
+                      <div><%= alpha_mentor_slot_label(slot) %></div>
+                    <% end %>
+                  <% end %>
+                <% end %>
+                <%# Plain text, deliberately not a badge: being checked in is
+                    context for the row, not a status to shout about. %>
+                <%= t.cell do %>
+                  <% if entry.shift_slot %>
+                    <%= alpha_mentor_slot_label(entry.shift_slot) %>
+                  <% elsif entry.checked_in? %>
+                    <span class="text-warning">Checked in, shift unclear</span>
+                  <% else %>
+                    <%= ui_badge "no", :secondary %>
+                  <% end %>
+                <% end %>
+
+                <%# The three selects share one name -- that is what makes them
+                    an array server-side -- so each needs an explicit id. Left to
+                    itself select_tag derives the id from the name and all three
+                    collide, which Turbo's morph turns into dropped fields. %>
+                <% AlphaMentorAssignment::MENTOR_SLOTS.times do |index| %>
+                  <%= t.cell do %>
+                    <%# min-w keeps the picked callsign readable: without it the
+                        nine columns squeeze every select down to "2Ste". The
+                        table scrolls inside its own container below that. %>
+                    <%= select_tag "alphas[#{person.id}][mentor_ids][]",
+                                   mentor_choices(mentor_groups, picked[index]),
+                                   id: "assignment-#{person.id}-mentor-#{index + 1}",
+                                   class: "#{AppFormBuilder::SELECT_CLASSES} w-full min-w-36",
+                                   aria: { label: "Mentor #{index + 1} for #{person.callsign}" } %>
+                  <% end %>
+                <% end %>
+
+                <%= t.cell do %>
+                  <%= select_tag "alphas[#{person.id}][status]",
+                                 options_for_select(mentor_result_options, status),
+                                 id: "assignment-#{person.id}-result",
+                                 class: "#{AppFormBuilder::SELECT_CLASSES} w-full min-w-32",
+                                 data: { result_select: true },
+                                 aria: { label: "Result for #{person.callsign}" } %>
+                <% end %>
+              <% end %>
+
+              <% if row_error %>
+                <%= t.row id: "assignment-error-#{person.id}", state: :error do %>
+                  <%= t.cell colspan: 9 do %>
+                    <span class="text-error font-semibold">
+                      <%= fa_icon "triangle-exclamation", :solid, end: 2 %><%= row_error %>
+                    </span>
+                  <% end %>
+                <% end %>
+              <% end %>
+
+              <% if entry.overflow? %>
+                <%# More than three mentors are stored for this year. Upstream
+                    hides them and deletes them on the next save; naming them
+                    means nothing disappears without being read first. %>
+                <%= t.row do %>
+                  <%= t.cell colspan: 9 do %>
+                    <span class="text-warning">
+                      <%= fa_icon "circle-info", :solid, end: 2, class: "icon-warning" %>
+                      <%= entry.overflow_mentors.map { |mentor| mentor[:callsign] }.to_sentence %>
+                      also mentored <%= person.callsign %> this year. There are only three slots, so saving this
+                      row will remove <%= entry.overflow_mentors.one? ? "that assignment" : "those assignments" %>.
+                    </span>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%= button_row do %>
+        <% if @confirm_bonks %>
+          <%= hidden_field_tag :confirmed, "1", id: nil %>
+          <%= f.submit "Save, No Bonks", data: { turbo_submits_with: "Recording…" } %>
+        <% else %>
+          <%= f.submit "Save Assignments and Results",
+                       data: { turbo_submits_with: "Recording…" } %>
+        <% end %>
+        <%= cancel_link mentoring_alpha_mentor_assignments_path %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

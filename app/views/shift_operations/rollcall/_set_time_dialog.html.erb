@@ -1,0 +1,35 @@
+<%#
+  Set Check-In Time.
+
+  A GET form: the chosen time lands in the query string and every sign-in on
+  the page carries it from there. That is what makes it survive a reload --
+  which matters, because the operator sets it once and then taps for an hour.
+%>
+<%= modal_dialog id: "rollcall-set-time-modal", title: "Set Check-In Time", frame: false do %>
+  <p class="mb-2">
+    Sign-ins are normally recorded at the moment you tap. Set a time here to record them
+    earlier today instead — for a crew that started before anyone could reach this page.
+  </p>
+  <p class="mb-3 font-semibold text-error">
+    Every manually set check-in time is logged and reviewed.
+  </p>
+
+  <%= ui_callout_box :warning, icon: "hand-point-right", icon_type: :solid do %>
+    A set time is checked against the shift's own timing rules, so it can block a check-in
+    that would have gone through at the current time.
+  <% end %>
+
+  <%# ui_form, not a bare form_tag: this is a real field the operator types
+      into, so it gets the builder's label association and error wiring. The
+      picker form next door stays a form_tag -- it is the year_selector
+      navigation pattern, not a form. %>
+  <%= ui_form(nil, shift_operations_rollcall_sign_in_path, method: :get,
+              class: "mt-3", no_error_summary: true) do |f| %>
+    <%= hidden_field_tag :position_id, @group.id, id: nil %>
+    <%= hidden_field_tag :slot_id, @slot.id, id: nil %>
+    <%= f.time_field :start_time, label: "Check-In Time", value: @start_time,
+                     help_text: "Uses the most recent past occurrence of this time.",
+                     wrapper_class: "mb-3" %>
+    <%= modal_form_footer f, submit: "Use This Time" %>
+  <% end %>
+<% end %>

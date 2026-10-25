@@ -1,0 +1,72 @@
+<%# Export results, rendered at 422 (Turbo drops a 200 form response). The
+    badges are already marked Submitted and the CSV is attached to the batch
+    record, so unlike the TRS export this download also survives the page --
+    it stays available under Previous Exports. %>
+<%# A form-submission render keeps the submitting page's scroll position, and
+    the submit button sits below a long selection table -- without this the
+    reader lands mid-list instead of at the summary. %>
+<div data-controller="scroll-to-top" hidden></div>
+<%= hero_panel icon: "file-export", heading_level: :h1, id: "bmid-export-ready-header",
+               back_to: ["BMID Export", bmid_export_path(year: @year, filter: @category_filter)] do |panel| %>
+  <% panel.title do %>BMID Export Ready<% end %>
+  <% panel.description do %>
+    The badges are marked Submitted and the CSV is ready to download.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @exported.size.to_s, "Exported" %>
+  <% if @skipped.any? %>
+    <%= ui_stat_box @skipped.size.to_s, "Left Out", variant: :warning %>
+  <% end %>
+<% end %>
+
+<%= ui_callout_box :success do %>
+  <strong><%= pluralize(@exported.size, "badge") %> exported and marked Submitted.</strong>
+  Meal and shower provisions were consumed, and each badge carries an export note
+  <% if @export.batch_info.present? %>
+    for batch &ldquo;<%= @export.batch_info %>&rdquo;.
+  <% else %>
+    with no batch information.
+  <% end %>
+<% end %>
+
+<%# Out of the hero, and beside the button it is about. A line of its own rather
+    than a fourth sentence in the callout above. %>
+<p class="mt-4">
+  Download the CSV and upload it to Eventree. The file also stays available under Previous Exports.
+</p>
+
+<%= button_row class: "my-4" do %>
+  <%= export_csv_link(rails_blob_path(@export.csv_file, disposition: "attachment"),
+                      "Download #{@export.filename}", variant: :primary) %>
+  <%= button_link "Back to BMID Export", :secondary,
+                  bmid_export_path(year: @year, filter: @category_filter) %>
+<% end %>
+
+<%= render "skipped", skipped: @skipped %>
+
+<%= ui_section "Exported Badges", icon: "table-list", icon_type: :solid, border: false do %>
+  <%= ui_table do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Title 1" %>
+      <%= t.heading "Showers" %>
+      <%= t.heading "Meals" %>
+      <%= t.heading "Arrival" %>
+    <% end %>
+    <%= t.body do %>
+      <% @exported.each do |badge| %>
+        <%= t.row do %>
+          <%= t.row_header do %>
+            <%= callsign_link badge.person %>
+          <% end %>
+          <%= t.cell value_or_dash(badge.title1) %>
+          <%= t.cell badge.showers_granted ? "Yes" : "—" %>
+          <%= t.cell bmid_meals_short_label(badge) %>
+          <%= t.cell bmid_sap_cell(badge) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

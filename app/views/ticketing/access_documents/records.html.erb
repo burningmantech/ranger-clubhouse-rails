@@ -1,0 +1,81 @@
+<%# Ticketing -> Current Records. Port of the Ember vc/access-documents
+    "Current Records" tab: one row per access document that is still current.
+    Filtering is server-side over plain GET params, so a narrowed view is a
+    shareable URL and the CSV export can carry the same query string. %>
+<%= hero_panel icon: "ticket", heading_level: :h1, id: "ticketing-access-documents-records-header",
+               title: "Current Access Documents" do |panel| %>
+  <% panel.description do %>
+    Every access document still in play: qualified, banked, claimed, or submitted.
+  <% end %>
+<% end %>
+
+<%# Out of the hero, and only while there is a list for it to describe. %>
+<% if @total_count.positive? %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Which documents are left out?</dt>
+      <dd>Expired, cancelled, and used documents are left out.</dd>
+    </dl>
+  <% end %>
+<% end %>
+
+<%= render "records_filter_bar",
+           filter_params: @filter_params,
+           active_params: @index_params,
+           count: "Showing #{@filtered_count} of #{pluralize(@total_count, "access document")}",
+           actions: (export_csv_link(ticketing_access_documents_records_path(@index_params.merge(format: :csv))) if @documents.any?) %>
+
+<%= ui_section "Access Document Records", icon: "table-list", icon_type: :solid do %>
+  <% if @documents.empty? && @index_params.any? %>
+    <%= ui_empty_state "No access documents matched those filters. Try clearing one.",
+                       icon: "magnifying-glass", icon_type: :solid %>
+  <% elsif @documents.empty? %>
+    <%= ui_empty_state "No current access documents were found.", icon: "ticket", icon_type: :solid %>
+  <% else %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "RAD" %>
+        <%= t.heading "Person" %>
+        <%= t.heading "Type" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Arrival" %>
+        <%= t.heading "S.O. Name" %>
+        <%= t.heading "Source Year" %>
+        <%= t.heading "Expires" %>
+      <% end %>
+
+      <%= t.body do %>
+        <% @documents.each do |document| %>
+          <%= t.row do %>
+            <%= t.row_header document.display_ref %>
+            <%= t.cell do %>
+              <% if document.person %>
+                <%# Same treatment as the callsign link on the summary page. %>
+                <%= callsign_link document.person %>
+              <% else %>
+                <%= value_or_dash(nil) %>
+              <% end %>
+            <% end %>
+            <%= t.cell document.short_type_label %>
+            <%= t.cell document.status.humanize %>
+            <%= t.cell do %>
+              <%# Only credentials and setup passes carry an arrival date; the
+                  rest dash. The CSV export shares this rule. %>
+              <% label, missing = arrival_label(document) %>
+              <% if missing %>
+                <strong class="text-error">
+                  <%= fa_icon "triangle-exclamation", :solid, end: 1 %>Missing
+                </strong>
+              <% else %>
+                <%= value_or_dash(label) %>
+              <% end %>
+            <% end %>
+            <%= t.cell document.type == AccessDocument::SAPSO ? value_or_dash(document.name) : value_or_dash(nil) %>
+            <%= t.cell value_or_dash(document.source_year) %>
+            <%= t.cell value_or_dash(document.expiry_date&.year) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

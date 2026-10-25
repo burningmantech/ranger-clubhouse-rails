@@ -1,0 +1,124 @@
+<%# No ink class on the bar itself: every control sets its own (navbar.css) %>
+<%# A person the menu is not offered to (mega_menu_offered?) gets none of it:
+    no button, no dialog, and no mega-menu controller on the bar, so no
+    hotkey either -- the controller would also look for the dialog before
+    every Turbo cache. %>
+<% mega_menu = mega_menu_offered? %>
+<nav class="navbar bg-chrome/80 sticky top-0 z-50" data-controller="theme<%= " mega-menu" if mega_menu %>"
+     <% if mega_menu %>data-action="keydown.ctrl+shift+k@document->mega-menu#hotkey keydown.meta+shift+k@document->mega-menu#hotkey"
+<% end %>>
+  <%# The phone bar is one line and has no width to spare, so below lg its
+      three parts are laid out by what is in them rather than by daisyUI's
+      50% / auto / 50%: each end is as wide as its controls (w-auto), and the
+      brand's slot in the middle takes whatever they leave (flex-1).
+
+      The brand shows only when that slot can hold it: 7rem, the brand's 107px
+      and a little air. With the labelled Bug Report button and the user icon
+      the controls on the right come to 217px, and each of the search button
+      and the unread envelope adds 36px. So the brand shows from about 381px
+      with neither, 417px with one, and 453px with both (measured 2026-10-17);
+      below that it steps aside rather than push the page sideways. With both,
+      a 320px phone is about 21px short: accepted 2026-10-17 to give phones
+      the user menu. That is a container query
+      on the slot, not a breakpoint: the answer depends on who is signed in,
+      and on whether they have unread messages, as well as on the screen.
+
+      What keeps the numbers that small, all below lg only: no gap between the
+      controls on the right, btn-square (36px) icon buttons, and a brand with
+      little padding. test/integration/top_menu_test.rb holds the line. %>
+  <%# sidebar-toggle, menu-open and menu-open-phone are where the first-sign-in
+      tour points (me/dashboard/_onboarding). %>
+  <div class="navbar-start w-auto lg:w-1/2">
+    <label for="sidebar-drawer" id="sidebar-toggle" class="btn btn-square btn-ghost btn-sm lg:hidden" aria-label="Open sidebar">
+      <%= fa_icon "bars", :solid %> Sidebar
+    </label>
+    <%= link_to "Clubhouse", me_root_path, class: "btn btn-ghost text-sm lg:text-xl no-decoration hidden lg:inline-flex" %>
+    <% if mega_menu %>
+      <%# Desktop mega menu trigger %>
+      <%# Keyboard hint matches the search bar's: same kbd styling, same nav row.
+          Chrome tokens, not content tokens -- the navbar is black in both themes, so a
+          base-200 plate glares in light and vanishes in dark. font-sans is a choice, not
+          a fallback: base.css sets kbd in Atkinson's mono cut, which is self-hosted and
+          does render, but this chip is one modifier and one letter on a bar set in the
+          proportional cut, and it reads as part of the bar rather than as code. %>
+      <%= button_action safe_join(["Menu",
+                                   tag.kbd(kbd_shortcut("K", shift: true),
+                                           class: "inline-flex items-center px-2 py-1 rounded border " \
+                                             "font-sans text-xs font-semibold tracking-wide " \
+                                             "text-neutral-content/75 bg-neutral-content/12 " \
+                                             "border-neutral-content/22")]),
+                        :ghost,
+                        icon: "grip", icon_type: :solid,
+                        class: "hidden lg:inline-flex", id: "menu-open",
+                        data: { action: "mega-menu#open" },
+                        aria: { haspopup: "dialog", keyshortcuts: "Control+Shift+K Meta+Shift+K",
+                                label: "Menu (#{kbd_modifier_name}+Shift+K)" } %>
+    <% end %>
+  </div>
+  <%# @min-brand is the brand's own width (107px) and a little air: 7rem, named
+      --container-brand in app/assets/tailwind/application.css. %>
+  <div class="navbar-center lg:hidden @container flex-1 min-w-0 justify-center">
+    <%= link_to "Clubhouse", me_root_path,
+                class: "btn btn-ghost text-xl no-decoration px-1 hidden @min-brand:inline-flex" %>
+  </div>
+  <div class="navbar-end w-auto lg:w-1/2 gap-x-4 gap-y-0">
+    <%= render "application/search_bar_placeholder", enabled: SearchBarPolicy.allowed?(current_user) %>
+
+    <%# Unread messages: only for the people the Messages menu item is for, who
+        alone pay for the count. %>
+    <% if current_user.mailbox_user? %>
+      <%= render "application/navbar_messages", count: PersonMessage.count_unread(current_user.id) %>
+    <% end %>
+
+    <%# Bug Report, labelled at every width -- on a phone it looks as it does
+        on a desktop, and the brand is what makes room for it (see the note at
+        the top). Opens the dialog in the layout's modal frame. Not for a past
+        prospective, whom ApplicationController#confine_past_prospective turns
+        away from it. %>
+    <% if current_user.is_ranger? %>
+      <%= button_link "Bug Report", :ghost, new_bug_report_path,
+                      id: "bug-report",
+                      icon: "bug", icon_type: :solid,
+                      data: { turbo_frame: "modal" } %>
+    <% end %>
+
+    <%# Mobile mega menu trigger. Icon-only: the labelled variant does not fit
+        alongside the brand and sidebar toggle at narrow widths. %>
+    <% if mega_menu %>
+      <%= button_action fa_icon("grip", :solid), :ghost,
+                        class: "lg:hidden btn-square", id: "menu-open-phone",
+                        data: { action: "mega-menu#open" },
+                        aria: { haspopup: "dialog", keyshortcuts: "Control+Shift+K Meta+Shift+K",
+                                label: "Menu (#{kbd_modifier_name}+Shift+K)" } %>
+    <% end %>
+
+    <%# The account menu's list, for both triggers below. The theme switch is
+        not in Menus::USER, which lists pages: it is a button for the theme
+        controller on the <nav>. It names the theme a press brings, and the
+        `dark:` variant shows one label at a time, as _theme_toggle's icons do
+        -- so nothing has to repaint it after a press or a morph. %>
+    <% account_menu = capture do %>
+      <%= dropdown_button safe_join([tag.span("Switch To Dark Theme", class: "dark:hidden"),
+                                     tag.span("Switch To Light Theme", class: "hidden dark:inline")]),
+                          data: { action: "click->theme#toggle" } %>
+      <%= dropdown_divider %>
+      <%= navbar_render_menu(Menus::USER, @menu_context) %>
+    <% end %>
+
+    <%# Desktop user menu %>
+    <%= dropdown_menu "Hello #{current_user.callsign}", variant: :ghost, menu_label: "User menu",
+                      class: "account-menu dropdown-end hidden lg:block" do %>
+      <%= account_menu %>
+    <% end %>
+
+    <%# Phone user menu: the same list behind an icon-only trigger, as the
+        greeting does not fit beside the controls above %>
+    <%= dropdown_menu fa_icon("circle-user", :solid), variant: :ghost,
+                      trigger_label: "User menu", menu_label: "User menu",
+                      summary_class: "btn-square", class: "account-menu dropdown-end lg:hidden" do %>
+      <%= account_menu %>
+    <% end %>
+  </div>
+
+  <%= render "application/mega_menu" if mega_menu %>
+</nav>

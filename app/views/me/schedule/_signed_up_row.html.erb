@@ -1,0 +1,4 @@
+<%= render "common/schedule/signed_up_row",
+           row:,
+           schedule_signups_path_builder: ->(slot, **options) { me_schedule_signups_path(slot_id: slot.id, **options) },
+           schedule_destroy_path_builder: ->(slot, **options) { me_schedule_destroy_path(slot_id: slot.id, **options) } %>

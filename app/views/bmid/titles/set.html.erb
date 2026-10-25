@@ -1,0 +1,79 @@
+<%= hero_panel icon: "wand-magic-sparkles", heading_level: :h1, id: "bmid-set-titles-header",
+               title: "Set BMID Titles",
+               back_to: ["Badge Titles", bmid_titles_path] do |panel| %>
+  <% panel.description do %>
+    What every <%= @year %> badge would say if the titles were written now &mdash; nothing
+    is saved until you set them.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @rows.size, "Badges" %>
+  <%= ui_stat_box @rows.count(&:new_badge?), "New Badges" %>
+<% end %>
+
+<% if @titles.empty? %>
+  <%= ui_empty_state "No badge titles are defined, so there is nothing to set.",
+                     icon: "id-badge", icon_type: :solid %>
+<% elsif @rows.empty? %>
+  <%= ui_empty_state "No one holds a title-earning position and qualifies for a #{@year} badge yet.",
+                     icon: "user-slash", icon_type: :solid %>
+<% else %>
+  <%# Out of the hero. Only where there is a list to explain: both empty states
+      above already say why no one is on it. %>
+  <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Who is listed?</dt>
+      <dd>Only people qualified for a printed badge are listed.</dd>
+    </dl>
+  <% end %>
+
+  <%= ui_callout_box :info, icon: "lightbulb", icon_type: :solid do %>
+    <strong>Every line is editable.</strong> A line opens on the title the person's
+    positions earn, and titles they do not hold are still offered. Choose
+    <em>Custom title</em> to type your own, or leave a line blank to clear it.
+  <% end %>
+
+  <%= ui_form(nil, apply_bmid_titles_path, method: :post) do |f| %>
+    <%= ui_section "Review the Titles", icon: "table-list", icon_type: :solid,
+                   badge: @rows.size.to_s, badge_color: :primary, border: false do %>
+      <%= ui_table striped: true, responsive: false do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Person" %>
+          <%# Equal widths, or the person column's held-positions line starves
+              the last picker of room. %>
+          <% BmidTitle::TITLE_LINES.each do |line| %>
+            <%= t.heading "Title #{line}", width: "22%" %>
+          <% end %>
+        <% end %>
+        <%= t.body do %>
+          <% @rows.each do |row| %>
+            <%= t.row do %>
+              <%= t.cell do %>
+                <%= callsign_link row.person %>
+                <% if row.new_badge? %>
+                  <%= ui_badge "New badge", :primary, size: "xs" %>
+                <% end %>
+                <div class="text-sm text-stone-muted">
+                  <%= row.person.status %> ·
+                  <%= bmid_title_positions_held(@titles, row).to_sentence %>
+                </div>
+              <% end %>
+              <% BmidTitle::TITLE_LINES.each do |line| %>
+                <%= t.cell do %>
+                  <%= render "cell", cell: bmid_title_cell(@titles_by_line[line].to_a, row, line),
+                             line: line, person: row.person %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Set BMID Titles" %>
+      <%= cancel_button bmid_titles_path %>
+    <% end %>
+  <% end %>
+<% end %>

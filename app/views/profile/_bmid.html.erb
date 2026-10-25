@@ -1,0 +1,33 @@
+<%# locals: (person:) %>
+<%= ui_section "BMID Photo",
+               class: "w-auto shrink-0",
+               badge: (person.has_submitted_photo? ? "submitted" : nil),
+               badge_color: :warning,
+               icon: "id-badge",
+               icon_type: :solid do %>
+  <div class="flex flex-col items-center">
+    <% if person.has_submitted_photo? %>
+      <%= photo_tag person.submitted_photo.avatar, class: "rounded-2xl", width: PersonPhoto::AVATAR_WIDTH %>
+    <% elsif person.avatar_photo %>
+      <%= photo_tag person.avatar_photo, class: "rounded-2xl", width: PersonPhoto::AVATAR_WIDTH %>
+    <% else %>
+      <%= render partial: "common/photo_none" %>
+    <% end %>
+
+    <% if can_upload_bmid_photo? %>
+      <div class="flex flex-wrap justify-center gap-2 mt-3">
+        <% if person.has_submitted_photo? %>
+          <%= button_link "Withdraw", :warning,
+                          profile_photo_path(person.submitted_photo),
+                          data: confirm_modal(
+                            title: "Confirm Photo Submission Withdrawal",
+                            message: "Withdraw this photo submission? The previously approved photo, if any, will be used instead.", method: :delete, variant: :error)
+          %>
+          <%= button_link "Adjust", :primary, profile_photo_crop_path(person.submitted_photo) %>
+        <% else %>
+          <%= button_link "Upload Photo", :secondary, profile_photos_new_path %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,52 @@
+<%# One question, and how it is answered. The group it belongs to is fixed:
+    it comes from the page the reader started on, never from the form. %>
+<%= ui_form(@question,
+            @question.persisted? ? communication_survey_question_path(@survey, @question) : communication_survey_questions_path(@survey)) do |f| %>
+  <% unless @question.persisted? %>
+    <%= hidden_field_tag "survey_question[survey_group_id]", @group.id %>
+  <% end %>
+
+  <%= f.fieldset "The question", icon: "clipboard-question", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Which group is this in?</dt>
+      <dd><%= @group.title %></dd>
+      <dt>Which type should I pick?</dt>
+      <dd>
+        Rating for a score out of seven, Options for one pick from a list, Text for a written
+        answer. Only the settings that type uses are kept.
+      </dd>
+    </dl>
+
+    <%= f.select :type, survey_question_type_options,
+                 { label: "Question Type", required: true, width: "w-full lg:w-96" } %>
+
+    <%= f.text_area :description, label: "Question", required: true, rows: 3, width: "w-full",
+                    help_text: "Written exactly as the person answering will read it." %>
+
+    <%= f.check_box :is_required, inline_label: "An answer is required" %>
+  <% end %>
+
+  <%= f.fieldset "Settings for one type of question", icon: "sliders", icon_type: :solid do %>
+    <%= f.text_area :options, label: "Choices, One per Line", rows: 4, width: "w-full",
+                    help_text: "Options questions only. Each line becomes one choice." %>
+
+    <%= f.check_box :summarize_rating,
+                    inline_label: "Summarize this rating as a table, one row per session",
+                    help_text: "Rating questions only." %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit @question.persisted? ? "Save Question" : "Add Question" %>
+    <%= cancel_link communication_survey_path(@survey, group: @group.id) %>
+    <% if @question.persisted? %>
+      <%= delete_button communication_survey_question_path(@survey, @question), "Delete Question",
+                        confirm_modal: {
+                          title: "Confirm Question Deletion",
+                          message: "Delete this question? Every answer given to it is deleted with it. " \
+                                   "This cannot be undone.",
+                          confirm_label: "Delete Question",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,18 @@
+{
+  "family": "clubhouse3-dbshell",
+  "requiresCompatibilities": ["FARGATE"],
+  "networkMode": "awsvpc",
+  "cpu": "256",
+  "memory": "512",
+  "runtimePlatform": {"cpuArchitecture": "ARM64", "operatingSystemFamily": "LINUX"},
+  "executionRoleArn": "arn:aws:iam::407444941814:role/clubhouse3-execution",
+  "taskRoleArn": "arn:aws:iam::407444941814:role/clubhouse3-task",
+  "containerDefinitions": [{
+    "name": "dbshell",
+    "image": "public.ecr.aws/docker/library/mariadb:12.3.3",
+    "command": ["sleep", "3600"],
+    "linuxParameters": {"initProcessEnabled": true},
+    "logConfiguration": {"logDriver": "awslogs", "options": {
+      "awslogs-group": "/ecs/clubhouse3", "awslogs-region": "us-west-2", "awslogs-stream-prefix": "dbshell"}}
+  }]
+}

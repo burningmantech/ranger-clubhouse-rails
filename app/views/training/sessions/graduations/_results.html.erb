@@ -1,0 +1,28 @@
+<%# Per-person outcome of the graduation run. %>
+<%= modal_dialog id: "graduation-results-dialog", title: "Graduation Results", size: :xl, frame: false do %>
+  <%= ui_table full_width: true, responsive: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Result" %>
+    <% end %>
+    <%= t.body do %>
+      <% results.each do |result| %>
+        <%= t.row do %>
+          <%= t.row_header result.callsign || "Person ##{result.person_id}" %>
+          <%= t.cell do %>
+            <% if result.status == "success" %>
+              <%= ui_badge "Graduated", :success, icon: "circle-check", icon_type: :solid %>
+              <span class="ms-1">Granted: <%= graduation.position_titles.to_sentence %></span>
+            <% else %>
+              <%= ui_badge result.status.humanize, :warning %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= modal_close_button "Close" %>
+  <% end %>
+<% end %>

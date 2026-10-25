@@ -1,0 +1,84 @@
+<%# Every language anyone the filter covers speaks. Pick one to see who speaks it. %>
+<% content_for :title, "Languages Known" %>
+
+<%= hero_panel icon: "language", heading_level: :h1, id: "languages-known-header",
+               title: "Languages Known",
+               description: "The languages Rangers speak, and where each speaker is." %>
+
+<%# Typing narrows what is already on the page. Pressing enter asks the server,
+    which reads the whole list and matches typed-in names too. Either way the
+    filter still decides who counts. %>
+<div data-controller="list-filter">
+  <div class="my-4 lg:w-3/4">
+    <%= form_with url: people_languages_known_path, method: :get, data: { turbo_action: "replace" } do |f| %>
+      <div class="flex flex-row gap-2 items-center">
+        <%= f.label :q, "Search languages", class: "sr-only" %>
+        <%= f.search_field :q, value: @query, placeholder: "Search languages",
+                           autocomplete: "off",
+                           class: "input w-full max-w-sm min-h-9",
+                           data: { list_filter_target: "input", action: "input->list-filter#apply" } %>
+        <%= submit_button "Search" %>
+        <% if @query.present? %>
+          <%= button_link "Clear", :ghost,
+                          people_languages_known_path(site: languages_known_carried_site(@site)) %>
+        <% end %>
+      </div>
+      <%# Searching keeps the filter. No id: the filter below names the same
+          field, and two elements sharing one id let Turbo quietly drop one. %>
+      <% if languages_known_carried_site(@site) %>
+        <%= hidden_field_tag :site, @site, id: nil %>
+      <% end %>
+    <% end %>
+
+    <%# Who counts. The page opens counting everybody, so the reader has to ask
+        to be shown a narrower group. %>
+    <div class="mt-4">
+      <%= filter_bar id: "languages-known-filters",
+                     chips: languages_known_filter_chips(@site, people_languages_known_path(q: @query.presence)),
+                     clear_url: people_languages_known_path(q: @query.presence),
+                     url: people_languages_known_path do |f| %>
+        <%# Applying a filter keeps whatever was searched for. No id, for the
+            same reason as the hidden filter above. %>
+        <%= hidden_field_tag :q, @query, id: nil if @query.present? %>
+        <%= form_row do %>
+          <%= f.select :site, languages_known_site_options,
+                       label: "Speakers", selected: @site,
+                       width: "w-full", wrapper_class: "flex-1" %>
+        <% end %>
+        <%= button_row do %>
+          <%= f.submit "Apply Filters", variant: :secondary %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @report.any? %>
+    <div class="text-lg" data-list-filter-target="summary">
+      <% if @query.present? %>
+        Showing <%= pluralize @report.language_count, "language" %> matching &ldquo;<%= @query %>&rdquo;
+      <% else %>
+        <%= languages_known_summary(@report, @site) %>
+      <% end %>
+    </div>
+    <div class="lg:w-3/4">
+      <%# The standard list first: those are the languages the desks are asked for
+          most, and they would otherwise sit alphabetically among the one-off ones. %>
+      <%= render "language_group", title: "Common Languages", languages: @report.common %>
+      <%= render "language_group", title: "Other Languages", languages: @report.other %>
+    </div>
+    <div class="lg:w-3/4" data-list-filter-target="empty" hidden>
+      <%= ui_empty_state "No languages on this page match what you typed. Press enter to run a full search.",
+                         icon: "magnifying-glass", icon_type: :solid %>
+    </div>
+  <% end %>
+</div>
+
+<% unless @report.any? %>
+  <% if @query.present? %>
+    <%= ui_empty_state nil, icon: "magnifying-glass", icon_type: :solid do %>
+      No language matches &ldquo;<%= @query %>&rdquo;<%= " among people #{languages_known_site_phrase(@site)}" if languages_known_site_phrase(@site) %>.
+    <% end %>
+  <% else %>
+    <%= ui_empty_state languages_known_nothing_listed(@site), icon: "language", icon_type: :solid %>
+  <% end %>
+<% end %>

@@ -1,0 +1,55 @@
+<%# locals: (folder:, messages: nil, message: nil, reply_form: nil) %>
+<%#
+  The Mail Desk (design A of .scratch/messaging-rework/PRD.md): the folder tabs
+  and the conversation list on the left, the open conversation in a sticky pane
+  on the right from lg up -- the Review Pane shape (design-layouts Pattern 7).
+  Each row is a link into the pane's frame, so selecting a thread fetches and
+  swaps only the pane; review_pane_controller keeps the selected row's
+  aria-current in step with what the pane shows.
+
+  Below lg the phone flow is today's: the index is the list alone (the pane is
+  hidden) and a thread is its own page (the list is hidden, the hero carries the
+  back link). The controller runs with park=false for that; see its header.
+
+  `messages` is the folder's rows on the index. The thread page passes none: its
+  list loads itself as a lazy frame once the column is on screen, so a phone,
+  where the column is hidden, never pays for it (_list_frame).
+
+  messages-workspace is a hook, not a style: inside the HQ shell, where the
+  summary column takes its share, components/hq-window.css drops the pane under
+  the list while the list would be under 20rem.
+%>
+<div class="messages-workspace">
+  <div class="flex flex-col lg:flex-row gap-4" data-controller="review-pane" data-review-pane-park-value="false">
+    <div class="<%= class_names("lg:w-2/5 lg:shrink-0", "hidden lg:block": message) %>" data-review-pane-target="list">
+      <%# A reply that lands in one of the owner's threads replaces its row and
+          the Unread count wherever this mailbox is on screen: the owner's own
+          page and the Person and HQ pages viewing it
+          (PersonMessage#announce_reply). One stream per namespace, since a
+          row's link is the namespace's path; MailboxStreamsChannel checks the
+          viewer may still see the mailbox. %>
+      <%= turbo_stream_from message_owner, :messages, messages_route_prefix, channel: MailboxStreamsChannel %>
+      <%# Search covers subject, body and the other party's callsign in every
+          folder. It loads the list's frame alone, so a thread open in the pane
+          stays open, and advances the address, so a reload or a hit's back link
+          comes back to the hits. Enter submits; a blank search is the folder,
+          which the tab row's frame adds (_folder_selector). %>
+      <%= ui_form nil, messages_path, method: :get, id: "messages-search", class: "mb-2", html: { role: "search" },
+                  data: { turbo_frame: "messages-conversation-list", turbo_action: "advance" } do |f| %>
+        <%= f.search_field :q, value: search_query, hide_label: true, wrapper: false, width: "w-full",
+                           icon: "magnifying-glass", placeholder: "Search messages", maxlength: 100,
+                           autocomplete: "off", aria: { label: "Search Messages" } %>
+      <% end %>
+      <%# One folder tab row at every width: all four tabs fit at 375px, and a
+          folder switch streams both frames back in place. The Unread tab carries
+          the count. A search's count line stands in for it (_conversation_list). %>
+      <div class="bg-default rounded-lg">
+        <%= turbo_frame_tag "messages-folder-selector", class: "px-2 pt-2" do %>
+          <%= render partial: "common/messages/folder_selector", locals: { folder: } %>
+        <% end %>
+        <%= render partial: "common/messages/list_frame", locals: { folder:, messages:, selected_id: message&.id } %>
+      </div>
+    </div>
+    <%= render partial: "common/messages/pane", locals: { message:, folder:, reply_form: } %>
+  </div>
+</div>

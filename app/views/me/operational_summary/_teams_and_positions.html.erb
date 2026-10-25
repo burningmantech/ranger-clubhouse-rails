@@ -1,0 +1,43 @@
+<%= ui_section "Teams & Positions", icon: "people-group", icon_type: :solid do %>
+  <% if current_user.is_applicant? %>
+    When you become a Ranger, this section will show what positions you are allowed to sign-up for, and what teams you belong to.
+  <% else %>
+    This section shows:
+    <ul class="list-disc list-inside  my-2">
+      <li>The teams you belong to</li>
+      <li>The positions you’ve been granted and can sign up for</li>
+    </ul>
+
+    To volunteer as a Ranger on playa, you must complete an In-Person Training session each year.
+    Some positions also require additional training (such as Advanced Ranger Training) in addition to an In-Person
+    Training session.
+    <div class="font-semibold text-heading my-2">Team Membership (<%= pluralize @membership.teams.size, "team" %>)</div>
+    <% if @membership.teams.empty? %>
+      <%= ui_empty_state "You are not a member of any Ranger team.", icon: "people-group", icon_type: :solid %>
+    <% else %>
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-1 mb-4">
+        <% @membership.teams.each do |team| %>
+          <div>
+            <%= team.title %>
+            <% if team.is_manager %>
+              <%= ui_badge "manager", :success, size: "xs" %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="font-semibold text-heading mb-2 mt-4">
+      Positions Granted (<%= pluralize @membership.positions.size, "position" %>)
+    </div>
+    <% if @membership.positions.empty? %>
+      <%= ui_empty_state "You have no positions granted at this moment.", icon: "user-shield", icon_type: :solid %>
+    <% else %>
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-1">
+        <% @membership.positions.each do |position| %>
+          <div><%= position.title %></div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,14 @@
+<%# locals: (message:, owner:, namespace:, count:) %>
+<%# Broadcast to the owner's mailbox list when a reply lands in the thread
+    +message+ (PersonMessage#announce_reply): its row as the owner now
+    sees it, and the Unread tab's count. The row is morphed where it is,
+    never moved or added, since the broadcast cannot know which folder or
+    search each page shows; a page not listing it has no target, and Turbo
+    skips the stream. Morphed, its link stays the same node, so the reader's
+    focus stays on it (review finding 14). For the same reason its link carries
+    no folder or search, and no mark: review_pane_controller keeps the open
+    row's (keepMark). %>
+<%= turbo_stream.replace dom_id(message, :conversation), method: :morph,
+                         partial: "common/messages/conversation_summary",
+                         locals: { message:, owner:, namespace:, folder: nil } %>
+<%= turbo_stream.replace "messages-unread-count", messages_unread_badge(count) %>

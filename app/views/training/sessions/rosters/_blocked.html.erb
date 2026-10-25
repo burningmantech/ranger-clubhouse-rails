@@ -1,0 +1,45 @@
+<%# A sign-up the scheduling rules refused, with the trainer/admin force
+    option (the upstream shiftManage confirm step). %>
+<% session = @training_session %>
+
+<%= modal_dialog id: "roster-blocked-dialog", title: "Could Not Add #{person.callsign}", frame: false do %>
+  <% message =
+       case verdict
+       when Scheduling::Verdict::Full
+         "The session is full."
+       when Scheduling::Verdict::MissingRequirements
+         "#{person.callsign} has unmet requirements."
+       when Scheduling::Verdict::MultipleEnrollment
+         "#{person.callsign} is already enrolled in another session."
+       when Scheduling::Verdict::NoPosition
+         "#{person.callsign} does not hold the #{verdict.position_title} position."
+       when Scheduling::Verdict::OutsideWindow
+         "The session has #{verdict.ended ? "ended" : "started"}."
+       else
+         "The sign-up was refused [#{status}]."
+       end %>
+
+  <%= ui_callout_box :warning do %>
+    <%= message %>
+  <% end %>
+
+  <% if verdict.is_a?(Scheduling::Verdict::MissingRequirements) && verdict.requirements.present? %>
+    <ul class="list-disc ms-5 mb-3">
+      <% verdict.requirements.each do |requirement| %>
+        <li><%= Scheduling::REQUIREMENT_LABELS[requirement] || requirement %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <%= form_with url: training_session_roster_path(training_slug, session.slot.id),
+                method: :post, builder: AppFormBuilder,
+                data: { turbo_frame: "_top" } do %>
+    <%= hidden_field_tag :person_id, person.id, id: nil %>
+    <%= hidden_field_tag :kind, kind, id: nil %>
+    <% if kind == "trainer" %>
+      <%= hidden_field_tag :trainer_slot_id, slot.id, id: nil %>
+    <% end %>
+    <%= hidden_field_tag :force, "1", id: nil %>
+    <%= modal_form_footer submit: "Add Anyway", variant: :warning %>
+  <% end %>
+<% end %>

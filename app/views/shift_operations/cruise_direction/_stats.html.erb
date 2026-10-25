@@ -1,0 +1,23 @@
+<%# locals: (board:) %>
+<%#
+  What the shift adds up to, sitting beside the picker that chose it.
+
+  Streamed separately from the board because it renders in a different place on
+  the page: the picker row is part of the shell and stays put, so the counts
+  cannot ride along inside the cards partial. Every write replaces both.
+
+  The wrapper renders even with no shift picked, so the stream has a target to
+  land on once one is.
+%>
+<div id="cruise-direction-stats" class="flex flex-row flex-wrap gap-2 lg:gap-4">
+  <% if board %>
+    <%= ui_stat_box board.pod_count.to_s, "Pods", icon: "people-group", icon_type: :solid %>
+    <%= ui_stat_box board.member_count.to_s, "Rangers Out",
+                    variant: :success, icon: "person-walking", icon_type: :solid %>
+    <%# The number this page exists to drive to zero: someone signed in for the
+        shift that no one has put in a pod. %>
+    <%= ui_stat_box board.unassigned_count.to_s, "Signed In, No Pod",
+                    variant: board.unassigned_count.positive? ? :warning : :secondary,
+                    icon: "user-clock", icon_type: :solid %>
+  <% end %>
+</div>

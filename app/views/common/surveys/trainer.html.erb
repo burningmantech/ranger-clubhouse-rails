@@ -1,0 +1,49 @@
+<% content_for :title, "#{@person.callsign} — #{@survey.title}" %>
+
+<%= hero_panel icon: "chalkboard-user", heading_level: :h1, id: "survey-person-header" do |panel| %>
+  <% panel.title do %><%= @person.callsign %><% end %>
+  <% panel.description do %>
+    Feedback for <%= @person.callsign %> from <%= @survey.title %> &mdash; names appear only
+    where the person agreed to share theirs.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "All #{survey_subject_label(@survey).downcase}s", report_path %>
+  <% end %>
+<% end %>
+
+<% if @comment_count.positive? || @rating_count.positive? %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @comment_count.to_s, "Comments", icon: "comments", icon_type: :solid %>
+    <%= ui_stat_box @rating_count.to_s, "Ratings", icon: "star", icon_type: :solid %>
+    <% if @session_count.positive? %>
+      <%= ui_stat_box @session_count.to_s, "Sessions", icon: "calendar", icon_type: :solid %>
+    <% end %>
+  <% end %>
+
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link(survey_person_url(@person.id, format: :csv), "Export Comments") %>
+    <% end %>
+  </div>
+<% end %>
+
+<%# Their own line in each ranked question, so the numbers behind the ranking
+    travel with the person when this page is printed for feedback delivery. %>
+<% @summarized_ratings.each_with_index do |summary, index| %>
+  <%= ui_section summary.description, id: "summary-#{index}" do %>
+    <%= render "common/surveys/ratings_table", summary: summary %>
+  <% end %>
+<% end %>
+
+<% if @questions.empty? && @summarized_ratings.empty? %>
+  <%= ui_section "Feedback" do %>
+    <%= ui_empty_state "No one has given #{@person.callsign} feedback on this survey yet.",
+                       icon: "clipboard-question", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<% @questions.each do |question| %>
+  <%= ui_section question.description do %>
+    <%= render "common/surveys/question", question: question %>
+  <% end %>
+<% end %>

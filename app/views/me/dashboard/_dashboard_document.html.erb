@@ -1,0 +1,8 @@
+<%# locals: (title:, body:, id: nil) %>
+<%# A Milestones document (links or contacts), rendered as authored. lexxy-content
+    puts back the headings and paragraph spacing the saved HTML relies on. %>
+<% if body.present? %>
+  <%= ui_section title, id:, body_class: "lexxy-content" do %>
+    <%= body.html_safe %>
+  <% end %>
+<% end %>

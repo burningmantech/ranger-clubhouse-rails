@@ -1,0 +1,47 @@
+<%# locals: (application:) %>
+<div class="flex flex-wrap items-center gap-2 mb-1">
+  <% case application.why_volunteer_review %>
+  <% when ProspectiveApplication::WHY_VOLUNTEER_REVIEW_OKAY %>
+    <%= ui_badge "Okay", :success, icon: "circle-check", icon_type: :solid %>
+  <% when ProspectiveApplication::WHY_VOLUNTEER_REVIEW_PROBLEM %>
+    <%= ui_badge "Problem", :error, icon: "circle-exclamation", icon_type: :solid %>
+  <% else %>
+    <%= ui_badge "Unreviewed", :warning, icon: "circle-question", icon_type: :solid %>
+  <% end %>
+  <% if application.reviewed_at %>
+    <span class="text-sm text-stone-muted">
+      Reviewed <%= datetime_format application.reviewed_at %> by <%= application.review_person&.callsign || "- unknown -" %>
+    </span>
+  <% end %>
+</div>
+<div class="mb-2"><%= simple_format application.why_volunteer %></div>
+
+<div class="flex flex-wrap items-center gap-2 mb-3">
+  <% unless application.why_volunteer_review == ProspectiveApplication::WHY_VOLUNTEER_REVIEW_OKAY %>
+    <%= form_with url: vc_application_path(application), method: :patch, builder: AppFormBuilder, class: "inline-block" do %>
+      <%= hidden_field_tag "prospective_application[why_volunteer_review]", ProspectiveApplication::WHY_VOLUNTEER_REVIEW_OKAY %>
+      <%= submit_button "Mark Okay" %>
+    <% end %>
+  <% end %>
+  <% unless application.why_volunteer_review == ProspectiveApplication::WHY_VOLUNTEER_REVIEW_PROBLEM %>
+    <%= button_link "Mark as Problem…", :warning, dialog_vc_application_path(application, dialog: "problem_review"),
+                    data: { turbo_frame: "modal" } %>
+  <% end %>
+  <% unless application.finalized? || application.status_hold_why_ranger_question? %>
+    <%= button_link "Raise Issue with Applicant…", :warning,
+                    dialog_vc_application_path(application, dialog: "status_message",
+                                               status: ProspectiveApplication::STATUS_HOLD_WHY_RANGER_QUESTION, ask_for_message: 1),
+                    data: { turbo_frame: "modal" } %>
+  <% end %>
+</div>
+
+<%= ui_label_value label_width: "12rem", size: :base do |list| %>
+  <% list.row "Regional experience" do %>
+    <% if application.regional_experience.present? %>
+      <%= simple_format application.regional_experience %>
+      <div class="mt-1">Regional callsign: <%= application.regional_callsign.presence || content_tag(:span, "none stated", class: "text-stone-muted") %></div>
+    <% else %>
+      <span class="text-stone-muted">none stated</span>
+    <% end %>
+  <% end %>
+<% end %>

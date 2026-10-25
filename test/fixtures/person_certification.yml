@@ -1,0 +1,37 @@
+# PersonCertification fixtures. Reference BY NAME (no fixtures :all ordering assumptions).
+# Table name is singular (person_certification). recorder is optional: the imported
+# record omits it to exercise the "— imported —" branch in the show modal.
+
+active_ranger_cpr:
+  person: active_ranger
+  certification: cpr
+  recorder: auditor_ranger
+  card_number: "CPR-12345"
+  issued_on: "2026-03-01"
+  trained_on: "2026-02-15"
+  notes: "Renewed at spring training."
+  created_at: <%= 3.months.ago %>
+
+active_ranger_ham_imported:
+  person: active_ranger
+  certification: ham_radio
+  issued_on: "2019-06-01"
+
+# Holds CPR with no card number, so the certificates report has both a filled
+# and an empty card column to count.
+retired_ranger_cpr:
+  person: retired_ranger
+  certification: cpr
+  recorder: active_ranger
+  issued_on: "2025-04-10"
+  created_at: <%= 2.months.ago %>
+
+# A bonked person holds CPR too. Bonked is not an active status, so the
+# certificates report must leave this record out of every count and roster.
+bonked_ranger_cpr:
+  person: bonked_ranger
+  certification: cpr
+  recorder: active_ranger
+  card_number: "CPR-BONKED"
+  issued_on: "2025-05-01"
+  created_at: <%= 2.months.ago %>

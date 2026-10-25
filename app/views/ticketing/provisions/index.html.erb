@@ -1,0 +1,75 @@
+<%# Ticketing -> Provisions. Port of the Ember vc/access-documents/provisions
+    page: one row per current provision. Filtering is server-side over plain GET
+    params, so a narrowed view is a shareable URL and the CSV export can carry
+    the same query string. %>
+<%= hero_panel icon: "gear", heading_level: :h1, id: "ticketing-provisions-header",
+               title: "Current Provisions" do |panel| %>
+  <% panel.description do %>
+    Every meal pass, shower pass, and event radio still in play: available, banked,
+    claimed, or submitted.
+  <% end %>
+<% end %>
+
+<%# Out of the hero, and only while there is a list for it to describe. %>
+<% if @total_count.positive? %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Which provisions are left out?</dt>
+      <dd>Expired, cancelled, and used provisions are left out.</dd>
+    </dl>
+  <% end %>
+<% end %>
+
+<%= render "filter_bar",
+           filter_params: @filter_params,
+           active_params: @index_params,
+           count: "Showing #{@filtered_count} of #{pluralize(@total_count, "provision")}",
+           actions: (export_csv_link(ticketing_provisions_path(@index_params.merge(format: :csv))) if @provisions.any?) %>
+
+<%= ui_section "Provision Records", icon: "table-list", icon_type: :solid do %>
+  <% if @provisions.empty? && @index_params.any? %>
+    <%= ui_empty_state "No provisions matched those filters. Try clearing one.",
+                       icon: "magnifying-glass", icon_type: :solid %>
+  <% elsif @provisions.empty? %>
+    <%= ui_empty_state "No current provisions were found.", icon: "gear", icon_type: :solid %>
+  <% else %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "ID" %>
+        <%= t.heading "Person" %>
+        <%= t.heading "Type" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Item Count", right: true %>
+        <%= t.heading "Allocated" %>
+        <%= t.heading "Source Year", right: true %>
+      <% end %>
+
+      <%= t.body do %>
+        <% @provisions.each do |provision| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%# The ID is the way in to editing, as it is on the person pages. %>
+              <%= link_to provision.display_ref,
+                          edit_ticketing_provision_path(provision, @index_params),
+                          class: LinkHelper::TABLE_LINK_CLASSES %>
+            <% end %>
+            <%= t.cell do %>
+              <% if provision.person %>
+                <%# Same treatment as the callsign link on the access documents page. %>
+                <%= callsign_link provision.person %>
+              <% else %>
+                <%= value_or_dash(nil) %>
+              <% end %>
+            <% end %>
+            <%= t.cell provision.type_label %>
+            <%= t.cell provision.status %>
+            <%# Only event radios carry a count; the rest dash. %>
+            <%= t.cell value_or_dash(provision.item_count&.positive? ? provision.item_count : nil), right: true %>
+            <%= t.cell provision.is_allocated ? "Yes" : "No" %>
+            <%= t.cell value_or_dash(provision.source_year), right: true %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

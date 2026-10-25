@@ -1,0 +1,23 @@
+<%# locals: (summary:, lead:) %>
+<%#
+  The gray line under a name: the training outcome as a word, a bonk the lead
+  chip outranks, every latest rank in team order, and which teams have written
+  notes and when. The review pane's second line. `lead` is
+  intake_lead_kind(summary), passed in because the caller reads it too. No
+  training word for a nil status: training does not concern that person.
+%>
+<div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-stone-muted">
+  <%= intake_training_status_text(summary[:training_status]) if summary[:training_status] %>
+  <%# A bonk outranked by a Personnel flag or an uber-bonk is still said, in words. %>
+  <% if summary[:bonk] && lead != :bonk %>
+    <span><%= intake_bonk_label(summary[:bonk]) %></span>
+  <% end %>
+  <% if summary[:ranks].any? %>
+    <span><span class="font-medium">Ranks:</span> <%= intake_ranks_text(summary[:ranks]) %></span>
+  <% elsif !summary[:personnel_issue] %>
+    <span>No ranks recorded yet</span>
+  <% end %>
+  <% if summary[:note_teams].any? %>
+    <span><span class="font-medium">Notes:</span> <%= intake_notes_text(summary[:note_teams]) %></span>
+  <% end %>
+</div>

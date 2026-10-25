@@ -1,0 +1,47 @@
+# Settings needed by the /me/tickets ("Where's My Ticket") flow.
+# The ticketing window must be "open" for the section pages and write actions
+# to be reachable, and the SO SAP cap gates how many Significant-Other SAPs a
+# member may request.
+
+ticketing_period:
+  name: "TicketingPeriod"
+  value: "open"
+
+sapso_max:
+  name: "TAS_SAPSOMax"
+  value: "2"
+
+# Prices rendered by the ticket claim/delivery buttons ("%g" % nil raises).
+spt_cost:
+  name: "TAS_Special_Price_Ticket_Cost"
+  value: "575"
+
+mail_standard_price:
+  name: "TicketMailStandardPrice"
+  value: "12"
+
+mail_priority_price:
+  name: "TicketMailPriorityPrice"
+  value: "17"
+
+# Recording every request is on in production but off here: it would add a row
+# to the request log for each request a test makes.
+request_log_enabled:
+  name: "RequestLogEnabled"
+  value: "false"
+
+# Nothing a test does may leave the building. Every broadcast channel is
+# sandboxed here; the tests that exercise a real send turn one off and stand in
+# for the service themselves.
+broadcast_sms_sandbox:
+  name: "BroadcastSMSSandbox"
+  value: "true"
+
+broadcast_mail_sandbox:
+  name: "BroadcastMailSandbox"
+  value: "true"
+
+broadcast_clubhouse_sandbox:
+  name: "BroadcastClubhouseSandbox"
+  value: "true"
+

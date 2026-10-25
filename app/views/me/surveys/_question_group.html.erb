@@ -1,0 +1,37 @@
+<%# locals: (group:, trainer:, trainer_name:, show_trainer_photo:, is_trainer_survey:, form:) %>
+<%
+  title =  trainer ? "#{trainer_name} #{trainer.callsign}: #{group.title}" : group.title
+  section_id = trainer ? "section-#{group.id}-trainer-#{trainer.id}" : "section-#{group.id}"
+  
+  # Determine icon based on group title
+  icon = case group.title.downcase
+  when /location/
+    "location-dot"
+  when /training|in-person/
+    "chalkboard-user"
+  when /thoughts|comments/
+    "comment"
+  else
+    trainer ? "user-graduate" : "clipboard-list"
+  end
+%>
+<%= ui_section title, id: section_id, icon: icon, icon_type: :solid, class: "mb-6" do %>
+  <% if show_trainer_photo && trainer %>
+    <%= render "trainer_photo", trainer: trainer, trainer_name: trainer_name, is_trainer_survey: is_trainer_survey, form: form %>
+  <% end %>
+
+  <% if group.description.present? %>
+    <%# Descriptions are written with simple formatting -- bold, mostly -- and
+        printing them as text showed the tags themselves. %>
+    <div class="mb-4 text-body">
+      <%= sanitize group.description %>
+    </div>
+  <% end %>
+
+  <% group.survey_questions.each do |question| %>
+    <%= render "question",
+      question: question,
+      trainer: trainer,
+      form: form %>
+  <% end %>
+<% end %>

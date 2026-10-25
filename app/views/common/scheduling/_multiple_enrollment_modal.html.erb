@@ -1,0 +1,32 @@
+<%# locals: (result:, slot:, person:, **) %>
+<%# Clubhouse 2's modal-multiple-enrollment: the position allows one sign-up and the person
+    already holds one. slot is the shift being added, result.verdict.slots the ones already held.
+    Its force variant (modal-confirm-multiple-enrollment) has no caller here: the concern never forces. %>
+<%
+  position = slot.position
+  who = person.id == current_user.id ? "You are" : "#{person.callsign} is"
+  only_one = position.id == Position::ALPHA ? "Alpha shift" : "#{position.title} session"
+%>
+<%= modal do |m| %>
+  <%= m.title "Already Signed Up" %>
+  <%= m.body do %>
+    <p>Only one <%= only_one %> may be signed up for. <%= who %> already signed up for:</p>
+    <ul class="mb-2 list-disc ms-5 font-semibold">
+      <% result.verdict.slots.each do |enrolled| %>
+        <li><%= [enrolled.position.title, enrolled.description].compact_blank.join(" - ") %> <%= slot_shift_time(enrolled) %></li>
+      <% end %>
+    </ul>
+    <p>Remove any shift above that has not started, then add this one.</p>
+    <% if position.id == Position::TRAINING %>
+      <p>
+        If you cannot remove that sign-up, or did not pass the previous session, email the
+        Training Academy to get it sorted out: <%= mail_to EmailAddresses::TRAINING_ACADEMY %>
+      </p>
+    <% else %>
+      <p>
+        If you cannot remove that sign-up, or have questions, email
+        <%= mail_to position.contact_email.presence || EmailAddresses::VOLUNTEER_COORDINATORS_TEAM %>.
+      </p>
+    <% end %>
+  <% end %>
+<% end %>

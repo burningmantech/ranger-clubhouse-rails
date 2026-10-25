@@ -1,0 +1,39 @@
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1, id: "work-history-breakdown-header",
+               description: "Timesheet entries for #{@person.callsign}.",
+               back_to: ["Work History", url_for(action: :index)] do |panel| %>
+  <% panel.title do %>
+    <%= "#{@year} All Positions" %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Hours Breakdown", icon: "clock", icon_type: :solid do %>
+  <div class="flex flex-wrap gap-3 mb-3">
+    <%= ui_badge "#{pluralize @entries.size, 'entry'}", :secondary %>
+    <%= ui_badge "#{hour_format(@entries.sum(&:duration))} total", :primary %>
+    <%= ui_badge "#{'%.2f' % @entries.sum(&:credits)} credits", :success %>
+  </div>
+
+  <%= ui_table responsive: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Time" %>
+      <%= t.heading "Duration", right: true %>
+      <%= t.heading "Credits", right: true %>
+    <% end %>
+    <%= t.body do %>
+      <% @entries.each do |entry| %>
+        <%= t.row do %>
+          <%= t.cell do %>
+            <%= entry.position.title %>
+            <% if entry.is_echelon %>
+              <div class="text-stone-muted text-sm">(as Echelon volunteer)</div>
+            <% end %>
+          <% end %>
+          <%= t.cell datetime_format(entry.on_duty, entry.off_duty || Current.time) %>
+          <%= t.cell hour_format(entry.duration), right: true %>
+          <%= t.cell "%.2f" % entry.credits, right: true %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

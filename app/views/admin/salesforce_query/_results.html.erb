@@ -1,0 +1,56 @@
+<%# locals: (query:) -%>
+<% if query.error %>
+  <%= ui_callout_box :error, accent: true, heading_level: :h3,
+                     title: query.signed_in? ? "Salesforce Could Not Run the Query" : "Could Not Sign In to Salesforce" do %>
+    <%# Mono and pre-wrapped, so Salesforce's caret line sits under the token it
+        marks -- until a line is wider than the block and wraps. The prefix
+        Salesforce#soql_query opens every message with repeats the title. %>
+    <%= ui_data_block query.error.delete_prefix("Salesforce query failed: "), max_height: "max-h-56" %>
+    <% if query.signed_in? %>
+      <p class="mt-2">Check the query, then run it again.</p>
+    <% else %>
+      <p class="mt-2">No query was sent. Ask an Admin to check the Salesforce settings, then run the query again.</p>
+    <% end %>
+  <% end %>
+<% else %>
+  <p class="mb-2">
+    <%= salesforce_query_summary(query) %>
+    <% if query.rows.any? %>
+      <span data-table-sort-target="status">In query order.</span>
+    <% end %>
+  </p>
+
+  <% if query.truncated? %>
+    <%# role status, not alert: it describes the answer, it does not interrupt. %>
+    <%= ui_callout_box :warning, role: "status" do %>
+      <strong>Salesforce has more records than it sent.</strong>
+      Add a WHERE clause or a LIMIT to see the rest; sorting reorders only the records shown.
+    <% end %>
+  <% end %>
+
+  <% if query.rows.any? %>
+    <%# responsive: false -- a ledger sorted from its headings, read by scrolling
+        sideways inside the pane (DESIGN-GUIDE "Pass responsive: false when").
+        The pane and the pinned header are People Search's: 70vh keeps the
+        column names and the horizontal scrollbar on screen together, with the
+        hero and the Query section still above it. %>
+    <%= ui_table responsive: false,
+                 caption: "Records Salesforce returned. The column headings are buttons that sort the table.",
+                 container_class: "lg:max-h-[70vh] lg:overflow-y-auto" do |t| %>
+      <%= t.header class: TableHelper::PINNED_HEADER_CLASSES do %>
+        <% query.columns.each_with_index do |column, index| %>
+          <%= salesforce_query_heading t, column, numeric: query.numeric?(index) %>
+        <% end %>
+      <% end %>
+      <%= t.body do %>
+        <% query.rows.each do |row| %>
+          <%= t.row do %>
+            <% row.each_with_index do |value, index| %>
+              <%= salesforce_query_cell t, value, numeric: query.numeric?(index) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,47 @@
+<%# locals: (type_count:) %>
+<%#
+  One type's claim pipeline. The meter carries the proportions and the chips
+  carry the numbers, so the bar can stay decorative (aria-hidden) and nothing is
+  told by colour alone -- every chip pairs its tint with an icon and a word.
+
+  Tints follow the access-document summary page: claimed is success, banked is
+  warning, submitted is secondary. Unclaimed has no tint there, so it takes a
+  muted neutral here rather than a new colour.
+%>
+<%
+  tints = {
+    AccessDocument::CLAIMED =>
+      { label: "Claimed", icon: "circle-check", bar: "bg-success", text: "text-success" },
+    AccessDocument::QUALIFIED =>
+      { label: "Unclaimed", icon: "hourglass-half", bar: "bg-base-content/30", text: "text-stone-muted" },
+    AccessDocument::BANKED =>
+      { label: "Banked", icon: "piggy-bank", bar: "bg-warning", text: "text-warning" },
+    AccessDocument::SUBMITTED =>
+      { label: "Submitted", icon: "paper-plane", bar: "bg-secondary", text: "text-secondary" }
+  }
+%>
+<div class="card-standard p-4">
+  <div class="flex flex-wrap items-baseline justify-between gap-x-3 mb-2">
+    <h3 class="heading-title text-heading"><%= type_count.label %></h3>
+    <span class="text-base text-stone-muted">
+      <%= pluralize number_with_delimiter(type_count.total), "document" %>
+    </span>
+  </div>
+
+  <div class="stat-meter mb-3" aria-hidden="true">
+    <% type_count.segments.each do |status, percent| %>
+      <span class="stat-meter-segment <%= tints[status][:bar] %>" style="width: <%= percent %>%"></span>
+    <% end %>
+  </div>
+
+  <div class="flex flex-wrap gap-x-4 gap-y-1">
+    <% type_count.counts.each do |status, count| %>
+      <% tint = tints[status] %>
+      <span class="inline-flex items-center gap-2 text-base <%= tint[:text] %>">
+        <%= fa_icon tint[:icon], :solid %>
+        <%= tint[:label] %>
+        <span class="font-semibold"><%= number_with_delimiter count %></span>
+      </span>
+    <% end %>
+  </div>
+</div>

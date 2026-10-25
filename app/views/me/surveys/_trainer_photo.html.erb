@@ -1,0 +1,29 @@
+<%# locals: (trainer:, trainer_name:, is_trainer_survey:, form:) %>
+<div class="mb-4">
+  <% if trainer.photo %>
+    <div class="mb-3">
+      <%= image_tag trainer.photo,
+        alt: "#{trainer_name} #{trainer.callsign}",
+        class: "rounded-lg w-32 h-32 object-cover" %>
+    </div>
+  <% else %>
+    <div class="mb-3">
+      <%= ui_callout_box :secondary, icon: "user" do %>
+        Uh oh, <%= trainer.callsign %> does not have a photo on file. Sorry!
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if is_trainer_survey %>
+    <div class="mb-4">
+      <%= form.fieldset "Share your name with #{trainer.callsign} or leave anonymous comments?" do %>
+        <%= form.radio_button :"share_name_#{trainer.id}", "1",
+          label: "Share my name with #{trainer.callsign}",
+          wrapper: false %>
+        <%= form.radio_button :"share_name_#{trainer.id}", "0",
+          label: "Do not share my name with #{trainer.callsign}",
+          wrapper: false %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

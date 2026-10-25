@@ -1,0 +1,24 @@
+<%# Shown when registration is closed for the season, and on the training
+    server, which never opens accounts. No one reading this is signed in, so it
+    says everything here rather than sending them somewhere else. %>
+<%= ui_section "Registration Is Closed", icon: "hand", icon_type: :solid do %>
+  <%= ui_callout_box :warning, icon: "circle-exclamation", icon_type: :solid do %>
+    <span><strong>New auditor accounts cannot be created right now.</strong></span>
+  <% end %>
+
+  <dl class="instruction-list mb-4">
+    <dt>When does registration open?</dt>
+    <dd>Registration opens in March and runs through late May.</dd>
+    <dt>When are trainings held?</dt>
+    <dd>Trainings run from early April through late August.</dd>
+    <dt>Can I show up on the day?</dt>
+    <dd>No. Walk-ins are never accepted, and Applicant Rangers are seated before Auditors.</dd>
+    <dt>Does auditing make me a Ranger?</dt>
+    <dd>No. To become a Ranger you must apply for and be accepted into the Prospective Ranger program.</dd>
+  </dl>
+
+  <p>
+    While you wait, browse the Ranger Manual at
+    <%= ext_link "rangers.burningman.org", "https://rangers.burningman.org" %>.
+  </p>
+<% end %>

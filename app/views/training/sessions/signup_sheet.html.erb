@@ -1,0 +1,126 @@
+<%#
+  The printable sign-up sheet: one signing block per trainee, then a blank
+  walk-in section for ART sessions (dirt trainings forbid walk-ins).
+
+  Pagination is the browser's: each tbody is break-inside: avoid and the
+  thead repeats, so blocks never tear and every sheet identifies itself.
+%>
+<% content_for :title, "Sign-Up Sheet — #{@training.title}" %>
+<% slot = @training_session.slot %>
+<% session_title = "#{slot.begins_year} #{slot.description}" %>
+<% session_when = training_session_time(slot) %>
+<% doc_label = "#{@training.title} · Sign-up sheet" %>
+<% trainees = @training_session.trainees %>
+
+<%# Page numbers come from CSS counters in a margin box (Chrome renders these
+    -- verified in 151); a PHYSICAL page count cannot be computed server-side,
+    which is why the roster is not sliced into pages here. The rule is named
+    and emitted into the print layout's head: margin boxes on the bare @page
+    there would stamp every print view. Which session a sheet belongs to is
+    the running head's job, so the footer carries the number alone. %>
+<% content_for :page_rules do %>
+  <style>
+    @page signup-sheet {
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 7.5pt;
+        color: #444;
+        font-family: "Atkinson Hyperlegible", sans-serif;
+      }
+    }
+  </style>
+<% end %>
+
+<%= render "print_screen_nav" %>
+
+<section class="signup-sheet">
+  <div class="signup-masthead">
+    <div class="signup-doc-label"><%= doc_label %></div>
+    <div class="flex flex-row justify-between items-center w-full mt-2">
+      <h1 class="signup-session"><%= session_title %></h1>
+      <div class="signup-when"><%= session_when %></div>
+    </div>
+  </div>
+
+  <% if trainees.empty? %>
+    <p class="mt-4">No one is signed up for this session yet.</p>
+  <% else %>
+    <div class="signup-subline">
+      <span><%= trainees.size %> signed up · sorted by callsign</span>
+      <span class="font-bold">Sign next to your callsign to record your attendance</span>
+    </div>
+    <table>
+      <thead>
+      <tr class="signup-running-head">
+        <th colspan="4"><%= session_title %> &middot; Sign-up sheet</th>
+      </tr>
+      <tr>
+        <th><span class="sr-only">Row</span></th>
+        <th>Callsign</th>
+        <th>Name</th>
+        <th>Signature</th>
+      </tr>
+      </thead>
+      <% trainees.each_with_index do |trainee, index| %>
+        <tbody>
+        <tr class="signup-id-row">
+          <td class="signup-num" rowspan="2"><%= index + 1 %></td>
+          <td class="signup-callsign"><%= trainee.person.callsign %></td>
+          <td class="signup-name"><%= trainee.person.first_name %> <%= trainee.person.last_name %></td>
+          <td class="signup-sig"></td>
+        </tr>
+        <tr>
+          <td colspan="3" class="signup-notes-cell"><span class="signup-fill">Notes</span></td>
+        </tr>
+        </tbody>
+      <% end %>
+    </table>
+  <% end %>
+</section>
+
+<% if @training_session.art? %>
+  <section class="signup-sheet break-before-page">
+    <div class="signup-masthead">
+      <div class="signup-doc-label"><%= doc_label %> · Walk-ins</div>
+      <%# The document h1 lives on the roster section above. %>
+      <div class="flex flex-row justify-between items-center w-full mt-2">
+        <h2 class="signup-session"><%= session_title %></h2>
+        <div class="signup-when"><%= session_when %></div>
+      </div>
+    </div>
+    <div class="signup-subline">
+      <span>Not on the roster? Add yourself below.</span>
+      <span>Print clearly — this is how we reach you afterward</span>
+    </div>
+    <table>
+      <thead>
+      <tr class="signup-running-head">
+        <th colspan="4"><%= session_title %> &middot; Walk-ins</th>
+      </tr>
+      <tr>
+        <th><span class="sr-only">Row</span></th>
+        <th>Callsign / Name</th>
+        <th>Contact</th>
+        <th>Signature</th>
+      </tr>
+      </thead>
+      <% @walk_in_rows.times do |walk_in| %>
+        <tbody>
+        <tr class="signup-id-row">
+          <td class="signup-num" rowspan="3"><%= walk_in + 1 %></td>
+          <td class="signup-callsign"><span class="signup-fill">Callsign (if known)</span></td>
+          <td class="signup-name"><span class="signup-fill">Email</span></td>
+          <td class="signup-sig" rowspan="2"><span class="signup-fill">Signature</span></td>
+        </tr>
+        <tr class="signup-contact-row">
+          <td><span class="signup-fill">Name</span></td>
+          <td><span class="signup-fill">Phone</span></td>
+        </tr>
+        <tr>
+          <td colspan="3" class="signup-notes-cell"><span class="signup-fill">Notes</span></td>
+        </tr>
+        </tbody>
+      <% end %>
+    </table>
+  </section>
+<% end %>

@@ -1,0 +1,12 @@
+<%= hero_panel icon: "pen", heading_level: :h1, id: "edit-provision-header",
+               description: "Update this provision.",
+               back_to: [provision_return_label, provision_return_path] do |panel| %>
+  <% panel.title do %>
+    <%# Nothing in the schema stops a provision outliving its person, and the
+        ticketing list is reachable for every provision, so the holder is
+        guarded here the same way the table and the CSV guard it. %>
+    Edit <%= @provision.display_ref %> (<%= @provision.type_label %>) &mdash; <%= @provision.person&.callsign || "unknown person" %>
+  <% end %>
+<% end %>
+
+<%= render "common/provisions/form", provision: @provision %>

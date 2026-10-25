@@ -1,0 +1,176 @@
+<%#
+  Scheduling > Event Statistics.
+
+  How one year turned out, rather than how any one shift did. Numbers that stand
+  alone are stat tiles; numbers that are a share of another number are bars, so
+  a reader can see at a glance how much of the expected turnout showed up and
+  how the Alpha cohort split.
+%>
+<% content_for :title, "Event Statistics" %>
+<% turnout = @report.turnout %>
+<% alphas = @report.alphas %>
+
+<%= hero_panel icon: "chart-simple", heading_level: :h1, id: "scheduling-event-stats-header",
+               title: "#{@year} Event Statistics" do |panel| %>
+  <% panel.description do %>
+    How the event turned out: who signed up, who rangered, how the Alphas fared,
+    and how many people finished a training.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box number_with_delimiter(turnout.people_rangered), "People Rangered" %>
+  <%= ui_stat_box number_with_delimiter(turnout.timesheet_entries), "Timesheet Entries" %>
+  <%= ui_stat_box number_with_delimiter(alphas.passed), "Alphas Passed" %>
+  <%= ui_stat_box number_with_delimiter(@report.people_trained), "People Trained" %>
+<% end %>
+
+<% if @report.empty? %>
+  <%= ui_empty_state "Nothing was recorded for #{@year}: no shifts were signed up for, " \
+                     "no timesheet entries were turned in, and no Alpha walked.",
+                     icon: "chart-simple", icon_type: :solid %>
+<% else %>
+  <%# Every explanation on the page, the sections' own included: a pair about a
+      figure that is not always there keeps that figure's condition. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What counts as rangering?</dt>
+      <dd>A timesheet entry on any position that is neither Alpha nor a training.</dd>
+      <dt>Where do the estimates come from?</dt>
+      <dd>
+        Shift sign-ups, not timesheets &mdash; so they read as a forecast before the
+        event and as a ceiling after it.
+      </dd>
+      <dt>What does &ldquo;training&rdquo; cover?</dt>
+      <dd>Both In-Person Training and the Advanced Ranger Trainings (ARTs).</dd>
+      <dt>Why is the number of Shiny Pennies who did not ranger a difference?</dt>
+      <dd>
+        The number who did not ranger is the number of Alphas who passed minus the
+        number who took a shift. The two come from different records, so treat it
+        as a gap to look into rather than a list of people.
+      </dd>
+      <% unless turnout.on_site %>
+        <dt>Why is &ldquo;still marked on site&rdquo; not a number?</dt>
+        <dd>It is a live flag rather than a record of <%= @year %>, so it only has an answer for the current year.</dd>
+      <% end %>
+      <% if @report.trainings.any? %>
+        <dt>Who counts as finishing a training?</dt>
+        <dd>
+          Everyone who passed a session, plus every trainer who taught one. Teaching
+          a session counts as finishing the training.
+        </dd>
+        <dt>Why is a training's People trained smaller than its Passed plus Taught?</dt>
+        <dd>
+          Most trainers also sit a session, so they appear in both columns. People
+          trained counts each person once.
+        </dd>
+        <dt>What does the Share bar measure?</dt>
+        <dd>Each bar is its training measured against the largest one of the year.</dd>
+      <% end %>
+    </dl>
+  <% end %>
+
+  <%= ui_section "Turnout", icon: "users", icon_type: :solid do %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8">
+      <div>
+        <%= render "share_bar", label: "People Who Rangered",
+                   counts: "#{number_with_delimiter(turnout.people_rangered)} of " \
+                           "#{number_with_delimiter(turnout.estimated_people)} expected",
+                   percentage: turnout.rangered_share, variant: :primary,
+                   caption: "#{turnout.rangered_share}% of the people who signed up for a " \
+                            "non-training shift ended up on a timesheet." %>
+
+        <%# Same colour as the bar above it: both measure against the same
+            expected turnout, so the two lengths compare directly. %>
+        <%= render "share_bar", label: "Returning Rangers Expected",
+                   counts: "#{number_with_delimiter(turnout.estimated_returning)} of " \
+                           "#{number_with_delimiter(turnout.estimated_people)}",
+                   percentage: turnout.returning_share, variant: :primary,
+                   caption: "The rest of the expected turnout is this year's Alphas." %>
+      </div>
+
+      <div>
+        <%= render "share_bar", label: "Newly Minted Shiny Pennies Who Rangered",
+                   counts: "#{number_with_delimiter(turnout.shiny_pennies_rangered)} of " \
+                           "#{number_with_delimiter(turnout.shiny_pennies_minted)}",
+                   percentage: turnout.shiny_penny_share, variant: :success,
+                   caption: "#{number_with_delimiter(turnout.shiny_pennies_not_rangered)} " \
+                            "passed their Alpha shift and never took a shift of their own." %>
+
+        <% on_site = turnout.on_site ? number_with_delimiter(turnout.on_site) : "n/a" %>
+        <div class="grid grid-cols-2 gap-2 mb-4">
+          <%= ui_stat_box number_with_delimiter(turnout.timesheet_entries), "Timesheet Entries",
+                          icon: "clipboard-list", icon_type: :solid %>
+          <%= ui_stat_box on_site, "Still Marked On Site",
+                          icon: "location-dot", icon_type: :solid %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%= ui_section "Alphas", icon: "person-walking", icon_type: :solid do %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8">
+      <%# Only the outcome bars depend on somebody having walked. The two counts
+          beside them come from the timesheet and stand on their own, so they
+          stay on the page when the mentor records are missing. %>
+      <div>
+        <% if alphas.walked.zero? %>
+          <%= ui_empty_state "No Alpha walked with a mentor in #{@year}.",
+                             icon: "person-walking", icon_type: :solid %>
+        <% else %>
+          <p class="font-semibold text-heading mb-2">
+            <%= pluralize number_with_delimiter(alphas.walked), "Alpha" %> walked with a mentor.
+          </p>
+          <%= render "share_bar", label: "Passed", counts: number_with_delimiter(alphas.passed),
+                     percentage: alphas.passed_share, variant: :success %>
+          <%= render "share_bar", label: "Bonked or Self-Bonked",
+                     counts: number_with_delimiter(alphas.bonked),
+                     percentage: alphas.bonked_share, variant: :error %>
+          <%= render "share_bar", label: "Still Walking",
+                     counts: number_with_delimiter(alphas.walking),
+                     percentage: alphas.walking_share, variant: :warning,
+                     caption: "Alphas whose mentors have not recorded an outcome yet." %>
+        <% end %>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 mb-4 content-start">
+        <%= ui_stat_box number_with_delimiter(alphas.timesheet_entries), "Alpha Timesheet Entries",
+                        icon: "clipboard-list", icon_type: :solid %>
+        <%= ui_stat_box number_with_delimiter(alphas.walked), "Alphas Who Walked",
+                        icon: "shoe-prints", icon_type: :solid %>
+      </div>
+    </div>
+  <% end %>
+
+  <%= ui_section "Training Completed", icon: "graduation-cap", icon_type: :solid do %>
+    <% if @report.trainings.empty? %>
+      <%= ui_empty_state "No one finished a training in #{@year}.",
+                         icon: "graduation-cap", icon_type: :solid %>
+    <% else %>
+      <%= ui_table striped: true,
+                   caption: "People who finished each training in #{@year}" do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Training" %>
+          <%= t.heading "Passed", right: true %>
+          <%= t.heading "Taught", right: true %>
+          <%= t.heading "People Trained", right: true %>
+          <%= t.heading "Share", width: "30%" %>
+        <% end %>
+        <%= t.body do %>
+          <% @report.trainings.each do |training| %>
+            <%= t.row do %>
+              <%= t.row_header training.title %>
+              <%= t.cell number_with_delimiter(training.passed), right: true %>
+              <%= t.cell number_with_delimiter(training.taught), right: true %>
+              <%= t.cell tag.span(number_with_delimiter(training.people), class: "font-semibold"),
+                         right: true %>
+              <%= t.cell ui_progress_bar(training.share, :primary, size: :sm,
+                                         aria: { label: "#{training.title}: #{training.share}% of the largest training" }) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,50 @@
+<%# locals: (summary:, history:, year:, extra_chips: nil, extra_meta: nil) %>
+<%#
+  The review pane: the selected person's standing and whole history, beside
+  the list from lg up and under the selected line below it. The aside is what
+  review_pane_controller moves; the uf-pane frame inside it is what a line's
+  link loads (UnifiedFlaggingConcern#render_review_pane answers that request
+  with this partial alone). The frame targets _top, so every link and button in
+  the history -- the note Delete included -- navigates the whole page.
+
+  `extra_chips` and `extra_meta` are partial PATHS a page may hand in for
+  chips and a line of its own -- the post-season page's Alpha-shift chips and
+  mentors line. Fully qualified, because lookup follows the controller's prefixes.
+%>
+<%# review-pane (components/review-pane.css) caps the height from lg up so a long history scrolls inside. %>
+<aside class="review-pane box box-default p-4 lg:flex-1 lg:min-w-0 lg:sticky lg:top-4 lg:self-start"
+       aria-label="Intake history" data-review-pane-target="pane">
+  <%= turbo_frame_tag "uf-pane", target: "_top", data: { turbo_action: "advance" } do %>
+    <% if summary %>
+      <% person = summary[:person] %>
+      <% lead = intake_lead_kind(summary) %>
+      <%# data-review-id is how review_pane_controller knows whom the pane shows. %>
+      <div data-review-id="<%= person.id %>">
+        <% chips = capture do %>
+          <%= intake_lead_signal(summary) %>
+          <%= render extra_chips, summary: summary if extra_chips %>
+        <% end %>
+        <%= render "common/unified_flagging/name_line", person: person, chips: chips %>
+        <%= render "common/unified_flagging/signal_line", summary: summary, lead: lead %>
+        <%= render extra_meta, summary: summary if extra_meta %>
+
+        <%# Beside the controls that act on the person: the page-level warning sits
+            above the whole list, which on a long page is far from here. %>
+        <% if summary[:personnel_issue] %>
+          <%= ui_callout_box :error, icon: "flag", accent: true, class: "mt-3" do %>
+            Personnel flag raised. Take no actions on <%= person.callsign %> until it is resolved.
+          <% end %>
+        <% end %>
+
+        <div class="my-3">
+          <%= render "common/unified_flagging/note_buttons", person: person, year: year %>
+        </div>
+
+        <%= render "common/unified_flagging/history", person: person, history: history, year: year,
+                   note_buttons: false %>
+      </div>
+    <% else %>
+      <%= ui_empty_state "Select a name to read their history.", icon: "hand-pointer", icon_type: :solid %>
+    <% end %>
+  <% end %>
+</aside>

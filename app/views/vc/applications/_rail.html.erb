@@ -1,0 +1,51 @@
+<%# locals: (application:, related_applications:) %>
+<%= ui_section "Known People", icon: "people-group", icon_type: :solid do %>
+  <%= ui_label_value label_width: "8rem", size: :base do |list| %>
+    <% list.row "Rangers" do %>
+      <%= application.known_rangers.presence || content_tag(:span, "none stated", class: "text-stone-muted") %>
+    <% end %>
+    <% list.row "Applicants" do %>
+      <%= application.known_applicants.presence || content_tag(:span, "none stated", class: "text-stone-muted") %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_section do %>
+  <%= render "notes_list", application: application,
+             note_type: ProspectiveApplicationNote::TYPE_VC_COMMENT,
+             title: "VC Only Comments",
+             add_label: "Add Comment",
+             explanation: "Comments are shared between VCs, and are NOT sent to the Unified Flagging system." %>
+<% end %>
+
+<%= ui_section do %>
+  <%= render "notes_list", application: application,
+             note_type: ProspectiveApplicationNote::TYPE_VC,
+             title: "Unified Flagging VC Notes",
+             add_label: "Add Unified Flagging VC Note",
+             explanation: "VC Notes ARE added to the Unified Flagging system when the Clubhouse account is created." %>
+<% end %>
+
+<%= ui_section "Related Applications", icon: "clone", icon_type: :solid, badge: related_applications.size.to_s,
+               id: "section-related", class: "scroll-mt-24" do %>
+  <% if related_applications.empty? %>
+    <%= ui_empty_state "No past and/or duplicate applications found." %>
+  <% else %>
+    <ul class="space-y-2 mb-2">
+      <% related_applications.each do |related| %>
+        <li class="flex flex-wrap items-center gap-2">
+          <%= application_link(related) %>
+          <span><%= related.year %></span>
+          <%= application_status_badge related.status %>
+          <span class="text-sm text-stone-muted"><%= related.salesforce_name %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>
+
+<% if application.updated_by_person %>
+  <p class="text-sm text-stone-muted">
+    Updated <%= datetime_format application.updated_by_person_at %> by <%= application.updated_by_person.callsign %>
+  </p>
+<% end %>

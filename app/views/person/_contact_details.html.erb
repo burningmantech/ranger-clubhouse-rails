@@ -1,0 +1,65 @@
+<%# locals: (person:) %>
+<%= ui_section "Contact Details", icon: "address-card", edit_link: has_role?([Role::ADMIN, Role::VC]) ? person_profile_path(person) : nil do %>
+  <%= ui_label_value label_width: "9rem", class: "space-y-1" do |list| %>
+    <% list.row "Camp" do %>
+      <% if can_view_emergency_contact? %>
+        <% if person.camp_location.present? %>
+          <%= hyperlink_text person.camp_location %>
+        <% else %>
+          <i class="text-stone-muted">None</i>
+        <% end %>
+      <% elsif can_view_emergency_contact_during_event? %>
+        <div class="font-medium">
+          Camp location information is only available to you while the event is running.
+        </div>
+      <% else %>
+        <div class="font-medium">
+          You do not have the permissions to view the camp location.
+        </div>
+      <% end %>
+    <% end %>
+    <% list.row "Emergency Contact" do %>
+      <% if can_view_emergency_contact? %>
+        <% if person.emergency_contact.present? %>
+          <%= hyperlink_text person.emergency_contact %>
+        <% else %>
+          <i class="text-stone-muted">None stated</i>
+        <% end %>
+      <% elsif can_view_emergency_contact_during_event? %>
+        <div class="font-medium">
+          Emergency contact information is only available to you while the event is running.
+        </div>
+      <% else %>
+        <div class="font-medium">
+          You do not have the permissions to view the emergency contact.
+        </div>
+      <% end %>
+    <% end %>
+    <% if can_view_pii? %>
+      <% list.row "Legal Name" do %>
+        <%= clipboard_button "#{person.first_name} #{person.last_name}", label: "Copy legal name" do %>
+          <%= person.first_name %> <%= person.last_name %>
+        <% end %>
+      <% end %>
+      <% list.row "Address" do %>
+        <%
+          street1 = [person.street1, person.apt].select(&:present?).join(" ")
+          address = [street1]
+          address << person.street2 if person.street2.present?
+          area = person.city.to_s
+          area += ", #{person.state}" if country_has_states? person.country
+          area += " #{person.zip} #{CountryStateHelper::COUNTRY_LABELS[person.country] || person.country}"
+          address << area
+          address = address.join("\n")
+        %>
+        <%= clipboard_button address, label: "Copy mailing address", use_flex: true do %>
+          <div><%= street1 %></div>
+          <% if person.street2.present? %>
+            <div><%= person.street2 %></div>
+          <% end %>
+          <div><%= area %></div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

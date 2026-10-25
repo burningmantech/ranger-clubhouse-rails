@@ -1,0 +1,181 @@
+<%#
+  Bulk Prospective -> Alpha conversion. One table holding everyone who passed a
+  training session this year, worst-first (the shared pipeline ordering), each
+  row expandable into the same lazily-loaded intake history the other flagging
+  pages show -- reading a person's ranks and notes is what the decision rests on.
+
+  The convert POST re-renders this same template with @converted set, so the
+  people a mentor just converted stay on screen instead of silently dropping off
+  the roster. See Mentoring::ConvertProspectivesController.
+%>
+<% content_for :title, "Convert Prospectives" %>
+
+<%= hero_panel icon: "user-plus", heading_level: :h1, id: "convert-prospectives-header",
+               title: "Convert Prospectives" do |panel| %>
+  <% panel.description do %>
+    Prospectives who passed training in <%= @year %> and can now become Alphas.
+  <% end %>
+<% end %>
+
+<% if @converted.any? %>
+  <%# Turbo preserves the submitting page's scroll, which on this render would
+      land the reader beside the button rather than on the result. %>
+  <div data-controller="scroll-to-top" hidden></div>
+
+  <%= ui_callout_box :success, icon: "circle-check", icon_type: :solid, accent: true, class: "my-4" do %>
+    <%# The warning above the button already says the Alpha position comes with
+        the status, so this only has to name who it happened to. %>
+    <strong>Converted <%= pluralize(@converted.size, "Prospective") %> to Alpha status:</strong>
+    <%= @converted.map(&:callsign).to_sentence %>.
+  <% end %>
+<% end %>
+
+<% if @skipped_count.positive? %>
+  <%# Says so rather than quietly converting fewer people than were checked. %>
+  <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid, accent: true, class: "my-4" do %>
+    <strong><%= pluralize(@skipped_count, "checked person", plural: "checked people") %> could not be converted.</strong>
+    They are no longer a Prospective, or have no passing <%= @year %> training on record.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @eligible_count.to_s, "Ready to Convert", icon: "user-group", icon_type: :solid %>
+  <%= ui_stat_box @personnel_flag_count.to_s, "Personnel Flags",
+                  variant: @personnel_flag_count.positive? ? :error : :success,
+                  icon: "flag", icon_type: :solid %>
+<% end %>
+
+<% if @personnel_flag_count.positive? %>
+  <%= ui_callout_box :error, icon: "flag", icon_type: :solid, accent: true, class: "my-4" do %>
+    <strong>A Personnel flag is raised on <%= pluralize(@personnel_flag_count, "person") %>.</strong>
+    Select all skips them. Check a flagged person by hand only once the flag is resolved.
+  <% end %>
+<% end %>
+
+<% if @summaries.empty? %>
+  <%= ui_empty_state "No Prospective has passed a #{@year} training session yet, so there is no one to convert.",
+                     icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%# Out of the hero, and only where there are rows to act on. %>
+  <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>How do I convert someone?</dt>
+      <dd>Check the people to convert, then select Convert.</dd>
+      <dt>What should I read first?</dt>
+      <dd>Open Details on a row to read that person&rsquo;s ranks and intake notes first.</dd>
+      <%# This page is a table, not accent cards, so it words the legend for
+          its own row tints. %>
+      <%= render "common/unified_flagging/rank_legend",
+                 question: "What do the row colors and the rank chips mean?",
+                 lead: "A red row is a raised Personnel flag; a green row is someone this page just converted." %>
+    </dl>
+  <% end %>
+
+  <%= ui_form(nil, mentoring_convert_prospectives_path, method: :post) do |f| %>
+    <%= bulk_select do %>
+      <%= bulk_select_all label: "Select everyone without a Personnel flag" %>
+
+      <%# Not striped: the row tint is what groups this table, and stripes would
+          compete with it. %>
+      <%= ui_table striped: false do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Convert", width: "1%" %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Name" %>
+          <%= t.heading "Training" %>
+          <%= t.heading "Concerns" %>
+          <%= t.heading "History", width: "1%" %>
+        <% end %>
+        <%= t.body do %>
+          <% @summaries.each do |summary| %>
+            <% person = summary[:person] %>
+            <% detail_id = uf_detail_id(person) %>
+            <% converted = @converted_ids.include?(person.id) %>
+            <%
+              row_state = if converted
+                            :success
+                          elsif summary[:personnel_issue]
+                            :error
+                          end
+            %>
+            <%= t.row id: "person-#{person.id}", class: "scroll-mt-24", state: row_state do %>
+              <%= t.cell do %>
+                <% if converted %>
+                  <%= ui_badge "Converted", :success, icon: "circle-check" %>
+                <% else %>
+                  <%# skip_select_all is upstream's rule: "select all" leaves a
+                      Personnel-flagged person alone, but they stay checkable. %>
+                  <%= bulk_select_checkbox "person_ids[]", person.id, id: "convert-person-#{person.id}",
+                                           skip_select_all: summary[:personnel_issue],
+                                           aria_label: "Convert #{person.callsign} to Alpha" %>
+                <% end %>
+              <% end %>
+              <%= t.row_header do %>
+                <%= callsign_link person %>
+                <div class="text-sm text-stone-muted">&lt;<%= person.status %>&gt;</div>
+              <% end %>
+              <%= t.cell do %>
+                <%= person.first_name %> <%= person.last_name %>
+                <%# Reads the preloaded association rather than
+                    Person#formerly_known_as_array, which re-queries per row.
+                    is_irrelevant is the stored verdict and is authoritative. %>
+                <% fka = person.person_fka.reject(&:is_irrelevant).map(&:fka) %>
+                <% if fka.any? %>
+                  <div class="text-sm text-stone-muted">FKA: <%= fka.join(", ") %></div>
+                <% end %>
+              <% end %>
+              <%= t.cell intake_training_status_chip(summary[:training_status]) %>
+              <%= t.cell do %>
+                <%# Captured rather than tested chip by chip, so the "nothing
+                    here" fallback cannot fall out of step with what is above it. %>
+                <% chips = capture do %>
+                  <%# Intake drops the Personnel rank chip because the card row's
+                      lead chip already says a flag is raised; this cell has no
+                      lead chip, so the flag is named here instead. %>
+                  <%= ui_badge "Personnel flag", :error, icon: "flag" if summary[:personnel_issue] %>
+                  <%= intake_bonk_chip(summary[:bonk]) if summary[:bonk] %>
+                  <% summary[:ranks].each do |entry| %>
+                    <%= intake_rank_chip(entry) %>
+                  <% end %>
+                  <% summary[:note_teams].each do |entry| %>
+                    <%= intake_note_pill(entry) %>
+                  <% end %>
+                <% end %>
+                <div class="flex flex-wrap items-center gap-2">
+                  <%= chips.presence || tag.span("Nothing raised", class: "text-stone-muted") %>
+                </div>
+              <% end %>
+              <%= t.cell do %>
+                <%= t.detail_row_toggle "Details", id: detail_id, describing: "intake history for #{person.callsign}" %>
+              <% end %>
+            <% end %>
+            <%# No label: -- that names the row for the stacked mobile cards a
+                responsive table makes, and this table is not one. %>
+            <%= t.detail_row id: detail_id do %>
+              <%# Through the concern's hook, like the card rows -- this page
+                  just has no year for it to carry. %>
+              <%= render "common/unified_flagging/detail_frame", person: person,
+                         src: unified_flagging_detail_path(person) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%= ui_callout_box :warning, accent: true, class: "my-4" do %>
+        <strong>Converting makes each checked person an Alpha and grants them the Alpha position.</strong>
+        This page cannot undo a conversion.
+      <% end %>
+
+      <%= button_row do %>
+        <%# The submit target keeps the button disabled until something is checked. %>
+        <%= f.submit "Convert Selected to Alpha",
+                     data: { checkbox_select_all_target: "submit",
+                             turbo_confirm: confirm_modal_dialog(
+                               title: "Confirm Conversion",
+                               message: "Convert the selected Prospectives to Alpha status?",
+                               confirm_label: "Convert to Alpha"
+                             ) } %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

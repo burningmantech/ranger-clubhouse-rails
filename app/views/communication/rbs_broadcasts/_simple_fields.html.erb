@@ -1,0 +1,43 @@
+<%# locals: (f:) %>
+<%# A short broadcast: one message, sent as a text and -- unless it is
+    text-only -- as an email whose subject is that same message. %>
+<% if @receivers %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @receivers.to_s, "People This Would Reach Now",
+                    variant: @receivers.positive? ? :secondary : :warning,
+                    icon: "users", icon_type: :solid %>
+    <%= ui_stat_box rbs_type_channels(@type).to_sentence, "Sent By",
+                    icon: "comment-sms", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<% if @form.has_muster_position? %>
+  <%= ui_section "Team Needing Rangers", icon: "user-group", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Which positions are listed first?</dt>
+      <dd>The ones with a shift running now or starting within a few hours.</dd>
+    </dl>
+    <%= f.select :position_id,
+                 grouped_options_for_select(
+                   [["Shifts Running Now", @in_progress_positions.map { |p| [p.title, p.id] }]] +
+                     @position_groups.map { |team, positions| [team, positions.map { |p| [p.title, p.id] }] },
+                   @form.position_id),
+                 { label: "Position", include_blank: "Choose a position…", required: true },
+                 { class: "w-full lg:w-96" } %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Message", icon: "comment-sms", icon_type: :solid do %>
+  <%= f.text_area :sms_message,
+                  label: @form.sends_email? ? "Message (also used as the email subject)" : "Text message",
+                  rows: 3, maxlength: Rbs::SMS_LIMIT, show_counter: true, required: true,
+                  autofocus: !@form.has_muster_position?,
+                  help_text: "\"#{Rbs::SMS_SUFFIX.strip}\" is added to the end of every text.",
+                  width: "w-full" %>
+
+  <% if @form.expiry_asked_for? %>
+    <%= f.datetime_field :expires_at, label: "No Longer Relevant After",
+                         help_text: "Rangers who read it later are told to ignore it. Twelve hours from now by default.",
+                         width: "w-full lg:w-64" %>
+  <% end %>
+<% end %>

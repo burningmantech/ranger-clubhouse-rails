@@ -1,0 +1,55 @@
+<%#
+  The five proposed status changes and how many people each covers. Counts
+  only: a group's people live on its own page, so no request here ever loads
+  all five lists.
+%>
+<% content_for :title, "Status Change Recommendations" %>
+
+<%= hero_panel icon: "right-left", heading_level: :h1, id: "status-change-recommendations-header",
+               title: "Status Change Recommendations",
+               description: "Status changes to consider now that an event is over." %>
+
+<div class="flex flex-wrap items-center gap-2 my-4">
+  <span class="text-stone-muted">Show proposed changes as of:</span>
+  <%= safe_join(status_change_period_buttons(@period)) %>
+</div>
+
+<%# No stat row, so the card sits under the control that picks what the page
+    reports on. Each cutoff is asked for by the title of the row it decides. %>
+<% inactive_title = RecommendStatusChangeReport.find_group(RecommendStatusChangeReport::INACTIVE).title %>
+<% retired_title = RecommendStatusChangeReport.find_group(RecommendStatusChangeReport::RETIRED).title %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Which event are the proposed changes judged against?</dt>
+    <dd>Judged as if the <strong><%= @year %></strong> event is over.</dd>
+    <dt>Who is under &ldquo;<%= inactive_title %>&rdquo;?</dt>
+    <dd>Inactive candidates have not rangered in <%= @inactive_year %> or later.</dd>
+    <dt>Who is under &ldquo;<%= retired_title %>&rdquo;?</dt>
+    <dd>Retired candidates have not rangered in <%= @retired_year %> or later.</dd>
+  </dl>
+<% end %>
+
+<% if @total.positive? %>
+  <%# The year is said here, as the empty state says it: the period buttons name
+      none, and the card that does is closed. %>
+  <div class="text-lg my-4">
+    <strong><%= status_change_count(@total) %></strong> across
+    <%= pluralize(RecommendStatusChangeReport::GROUPS.size, "proposed change") %> for <%= @year %>
+  </div>
+
+  <div class="lg:w-3/4">
+    <% RecommendStatusChangeReport::GROUPS.each do |group| %>
+      <% count = @counts[group.key] %>
+      <%= ui_drill_down_row people_status_change_recommendations_group_path(group.key,
+                                                                            status_change_query(@period)),
+                            group.title,
+                            meta: status_change_count(count),
+                            blocked: count.zero? do %>
+        <div class="text-stone-muted"><%= group.meaning %></div>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <%= ui_empty_state "Nothing is proposed for #{@year} — every account is already in the status its history calls for.",
+                     icon: "circle-check", icon_type: :solid %>
+<% end %>

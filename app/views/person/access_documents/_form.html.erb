@@ -1,0 +1,89 @@
+<%# locals: (person:, document:, ticketing_info:) %>
+<% if ticketing_info.period == TicketingInfo::PERIOD_OPEN %>
+  <%= ui_callout_box :warning, icon: "clock" do %>
+    <strong>Ticketing is still open.</strong> The person can override the delivery method
+    on any of their un-submitted deliverable items (tickets and vehicle passes).
+  <% end %>
+<% end %>
+
+<%= ui_form(
+      document,
+      document.new_record? ? person_access_documents_path(person) : person_access_document_path(person, document),
+      method: document.new_record? ? :post : :patch
+    ) do |f| %>
+  <%= ui_section "Document Details", icon: "ticket", icon_type: :solid do %>
+    <%= form_row do %>
+      <%= f.select :type, TicketsProvisionsHelper::ACCESS_DOCUMENT_TYPE_OPTIONS,
+                   { label: "Type" }, { class: "w-full sm:w-64" } %>
+      <%= f.select :status, TicketsProvisionsHelper::ACCESS_DOCUMENT_STATUS_OPTIONS,
+                   { label: "Status" }, { class: "w-full sm:w-44" } %>
+      <%= f.select :source_year, access_document_year_options,
+                   { label: "Earned / Source Year", },
+                   { class: "w-full sm:w-32" } %>
+      <%= f.select :expiry_date, access_document_year_options,
+                   { label: "Expires After",
+                     selected: document.expiry_date&.year,
+                   },
+                   { class: "w-full sm:w-32" } %>
+    <% end %>
+    <%= ui_callout_box :info do %>
+      Gift, LSD, vehicle pass, and SAP items always expire after the event. Qualified LSD items are saved as claimed
+    <% end %>
+
+    <%= f.select :delivery_method, TicketsProvisionsHelper::DELIVERY_METHOD_OPTIONS,
+                 { label: "Delivery Method",
+                   help_text: "SAPs always emailed. SCs are always Will Call" },
+                 { class: "w-full sm:w-56" } %>
+  <% end %>
+
+  <%= ui_section "Type-Specific Details", icon: "sliders", icon_type: :solid do %>
+    <%= form_row do %>
+      <%= f.select :admission_date, admission_date_options(document, ticketing_info),
+                   { label: "Event Entry", help_text: "Only applies to SCs, SAPs, and S.O. SAPs." },
+                   { class: "w-full lg:w-40" } %>
+
+      <%= f.text_field :name, label: "Name on Document", width: "w-full",
+                       size: 60,
+                       help_text: "S.O. SAPs, Gift & LSD Tickets only." %>
+
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Comments", icon: "comment", icon_type: :solid do %>
+    <% unless document.new_record? %>
+      <div class="mb-3">
+        <% if document.comments.present? %>
+          <div class="text-body"><%= nl2br document.comments %></div>
+        <% else %>
+          <p class="me-muted">No comments yet.</p>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%= f.text_area :additional_comments, label: "Additional Comments", rows: 4,
+                    help_text: "Your callsign and today's date are automatically added to any comments you leave." %>
+
+    <% unless document.new_record? %>
+      <p class="me-muted mt-3">
+        Created <%= datetime_format(document.created_at, year: true) %>
+        &middot; Last modified <%= datetime_format(document.updated_at, year: true) %>
+      </p>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Access Document" %>
+    <%= cancel_link person_tickets_provisions_path(person) %>
+    <% unless document.new_record? %>
+      <%= delete_button person_access_document_path(person, document),
+                        "Delete",
+                        variant: :error,
+                        confirm_modal: {
+                          title: "Delete",
+                          message: "Delete #{document.display_ref} (#{document.type_label})? This cannot be undone."
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>
+
+

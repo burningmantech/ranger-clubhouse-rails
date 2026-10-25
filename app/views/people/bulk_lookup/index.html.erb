@@ -1,0 +1,126 @@
+<%# One pasted list in, three groups out: the people who matched, the lines
+    that matched no one, and the callsigns that more than one person shares. %>
+<% content_for :title, "Bulk Lookup" %>
+
+<%= hero_panel icon: "magnifying-glass", heading_level: :h1, id: "bulk-lookup-header",
+               title: "Bulk Lookup",
+               description: "Look up person records for a pasted list of callsigns or email addresses." %>
+
+<%= render "people/shared/privacy_notice",
+           shows: "home addresses, phone numbers, and email addresses" %>
+
+<% if @refusal %>
+  <%= ui_callout_box :error, icon: "triangle-exclamation" do %>
+    <%= @refusal %>
+  <% end %>
+<% end %>
+
+<div class="lg:w-1/2">
+  <%= ui_form(nil, people_run_bulk_lookup_path, method: :post, no_error_summary: true) do |f| %>
+    <%= f.text_area :lines, label: "Callsigns or Email Addresses", required: true,
+                    value: @lines, rows: 10,
+                    help_text: "One callsign or email address per line. For callsigns, " \
+                               "capitalisation and punctuation do not matter. An email " \
+                               "address must match the address on file." %>
+    <%= button_row do %>
+      <%= f.submit "Look Up" %>
+    <% end %>
+  <% end %>
+</div>
+
+<% if @results %>
+  <div data-controller="scroll-to-top" hidden></div>
+
+  <% misses = @results.not_found.size + @results.ambiguous.size %>
+
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @results.total.to_s, "Lines Looked Up" %>
+    <%= ui_stat_box @results.found.size.to_s, "Found", variant: :success %>
+    <%= ui_stat_box misses.to_s, "Not Found", variant: :error %>
+  <% end %>
+
+  <% if misses.positive? %>
+    <%= ui_section "Not Found", id: "not-found-section",
+                   badge: pluralize(misses, "line"), badge_color: :error do %>
+      <% if @results.not_found.any? %>
+        <div class="mb-2">
+          These lines did not match anyone. Check the spelling of a callsign, or
+          whether the email address is the one on file.
+        </div>
+        <div class="mb-2">
+          <% @results.not_found.each do |line| %>
+            <div><%= line %></div>
+          <% end %>
+        </div>
+      <% end %>
+      <% if @results.ambiguous.any? %>
+        <div class="mb-2">
+          These lines match more than one person. Use the search bar to pick the
+          right one.
+        </div>
+        <div class="mb-2" id="ambiguous-lines">
+          <% @results.ambiguous.each do |line| %>
+            <div><%= line %></div>
+          <% end %>
+        </div>
+      <% end %>
+      <%= render "export_form", subset: "not_found", lines: @lines %>
+    <% end %>
+  <% end %>
+
+  <% if @results.found.any? %>
+    <%= ui_section "Found", id: "found-section", border: false,
+                   badge: pluralize(@results.found.size, "match"), badge_color: :success do %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Name" %>
+          <%= t.heading "Preferred Name" %>
+          <%= t.heading "Email" %>
+          <%= t.heading "Last Rangered", right: true %>
+          <%= t.heading "Vintage" %>
+          <%= t.heading "Years Rangered", right: true %>
+          <%= t.heading "Address" %>
+          <%= t.heading "City" %>
+          <%= t.heading "State" %>
+          <%= t.heading "Postal Code" %>
+          <%= t.heading "Country" %>
+          <%= t.heading "Home Phone" %>
+        <% end %>
+        <%= t.body do %>
+          <% @results.found.each do |person| %>
+            <% years = person.years_as_ranger %>
+            <%= t.row do %>
+              <%= t.row_header do %><%= callsign_link person %><% end %>
+              <%= t.cell person.status %>
+              <%= t.cell "#{person.first_name} #{person.last_name}" %>
+              <%= t.cell value_or_dash(person.preferred_name) %>
+              <%= t.cell email_link_or_dash(person.email) %>
+              <%= t.cell right: true do %>
+                <% if years.last %>
+                  <%= years.last %>
+                <% else %>
+                  <em>never</em>
+                <% end %>
+              <% end %>
+              <%= t.cell do %><%= yes_no_badge person.vintage %><% end %>
+              <%= t.cell years.size, right: true %>
+              <%= t.cell value_or_dash([[person.street1, person.apt].compact_blank.join(" "),
+                                        person.street2].compact_blank.join(", ")) %>
+              <%= t.cell value_or_dash(person.city) %>
+              <%= t.cell value_or_dash(person.state) %>
+              <%= t.cell value_or_dash(person.zip) %>
+              <%= t.cell value_or_dash(person.country) %>
+              <%= t.cell value_or_dash(person.home_phone_formatted.presence || person.home_phone) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= render "export_form", subset: "found", lines: @lines %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No one on the list matched a person record.",
+                       icon: "magnifying-glass", icon_type: :solid %>
+  <% end %>
+<% end %>

@@ -1,0 +1,46 @@
+<%#
+  One list of people the add dialog can offer.
+
+  Locals: candidates, prefix (unique id stem, so the same person listed in two
+  pools does not produce two elements with one id), title, empty, and
+  skip_select_all for the pools that are folded away -- "Select all" must not
+  reach a hundred names the reader cannot see.
+%>
+<% skip_select_all = local_assigns.fetch(:skip_select_all, false) %>
+<% if title %>
+  <h4 class="heading-title text-heading mt-3 mb-1"><%= title %></h4>
+<% end %>
+
+<% if candidates.empty? %>
+  <% if empty %>
+    <p class="text-sm text-stone-muted"><%= empty %></p>
+  <% end %>
+<% else %>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+    <% candidates.each do |candidate| %>
+      <% person = candidate.person %>
+      <% note = alpha_pod_candidate_note(candidate) %>
+      <div class="flex-center-gap-2">
+        <% if candidate.assigned? %>
+          <%# No checkbox: they are already in a pod on this shift, and adding
+              them to a second one is what the server refuses. %>
+          <span class="inline-flex min-h-9 min-w-9 items-center justify-center text-stone-muted">
+            <%= fa_icon "circle-check", :solid %>
+          </span>
+          <span class="text-stone-muted"><%= person.callsign %><% if note %> &middot; <%= note %><% end %></span>
+        <% else %>
+          <% field_id = "pod-candidate-#{prefix}-#{person.id}" %>
+          <%= bulk_select_checkbox "person_ids[]", person.id, id: field_id,
+                                   aria_label: "Add #{person.callsign}",
+                                   skip_select_all: skip_select_all %>
+          <label for="<%= field_id %>" class="cursor-pointer py-1">
+            <span class="font-medium text-body"><%= person.callsign %></span>
+            <% if note %>
+              <span class="text-sm text-stone-muted">&middot; <%= note %></span>
+            <% end %>
+          </label>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

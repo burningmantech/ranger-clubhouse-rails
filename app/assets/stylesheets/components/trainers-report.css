@@ -1,0 +1,322 @@
+/*
+ * Printable trainer's report (training/sessions#trainers_report).
+ *
+ * Print-first component: fixed ink-on-white colors on purpose -- the report
+ * is a paper document, so it renders as a white "paper" preview on screen in
+ * both themes and prints solid black regardless of the muted theme text
+ * colors.
+ * Greys that match a light-theme token are written as the token instead:
+ * layouts/print pins data-theme="light", so they cannot turn dark with the
+ * screen. The rest have no token close enough and stay literal.
+ *
+ * The roster is one table (thead repeats on every printed page) of two-line
+ * tbody blocks -- glance line + detail line -- zebra-striped per tbody and
+ * never torn across sheets; band-header tbodys carry the darker background.
+ * `page: trainers-report` binds the sheet to the named @page rule the view
+ * emits into layouts/print's :page_rules hook (the footer margin boxes live
+ * there -- @page cannot be scoped by selector in this bundle).
+ */
+
+.trainers-report {
+  background: #fff;
+  color: #111;
+  font-size: 9pt;
+  page: trainers-report;
+}
+
+/* Paper preview on screen; @page margins take over in print. */
+@media screen {
+  .trainers-report {
+    max-width: 8.5in;
+    margin-inline: auto;
+    margin-bottom: 1.5rem;
+    padding: 0.5in;
+    border: 1px solid var(--color-line);
+  }
+}
+
+/* --- masthead ------------------------------------------------------------- */
+
+.trainers-report .report-masthead {
+  border-bottom: 2.5pt solid #111;
+  padding-bottom: 5pt;
+  margin-bottom: 2pt;
+}
+
+.trainers-report .report-doc-label {
+  font-size: 8.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-body);
+}
+
+.trainers-report .report-session-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 2pt;
+}
+
+.trainers-report .report-session {
+  font-size: 16pt;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.trainers-report .report-when {
+  font-size: 10.5pt;
+  color: #222;
+}
+
+.trainers-report .report-subline {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 8.5pt;
+  @apply text-stone-muted;
+  padding: 3pt 0 2pt;
+}
+
+/* --- stat tiles ------------------------------------------------------------ */
+
+.trainers-report .report-stats {
+  display: flex;
+  gap: 5pt;
+  padding: 4pt 0 2pt;
+}
+
+.trainers-report .report-stat {
+  flex: 1 1 0;
+  border: 0.9pt solid #111;
+  border-radius: 2pt;
+  padding: 1.5pt 5pt 2.5pt;
+}
+
+.trainers-report .report-stat b {
+  display: block;
+  font-size: 12pt;
+  line-height: 1.1;
+}
+
+.trainers-report .report-stat-max {
+  font-size: 8.5pt;
+}
+
+.trainers-report .report-stat-label {
+  font-size: 6.5pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-body);
+  white-space: nowrap;
+}
+
+/* --- trainers lines + full-day callout ------------------------------------- */
+
+.trainers-report .report-trainers {
+  font-size: 8.5pt;
+  padding: 1pt 0;
+}
+
+.trainers-report .report-callout {
+  border: 1pt solid #111;
+  border-left: 4pt solid #111;
+  border-radius: 2pt;
+  padding: 3pt 6pt;
+  margin: 3pt 0 5pt;
+  font-size: 8.5pt;
+}
+
+/* --- roster table ----------------------------------------------------------
+ * Cell rules are scoped `.trainers-report .report-*`: the generic
+ * `.trainers-report td` below would beat bare cell classes and silently
+ * break their padding/alignment (the signup-sheet trap). */
+
+.trainers-report table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.trainers-report th {
+  font-size: 8pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-heading);
+  text-align: left;
+  padding: 2pt 4pt;
+  border-bottom: 1.25pt solid #111;
+}
+
+.trainers-report td {
+  padding: 2.5pt 4pt;
+  vertical-align: top;
+}
+
+/* One tbody per trainee: zebra by person, never torn across sheets. */
+.trainers-report tbody {
+  break-inside: avoid;
+}
+
+.trainers-report tbody:nth-of-type(even) td {
+  background: var(--color-base-200);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.trainers-report tbody.report-band-body td {
+  background: var(--color-base-300);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.trainers-report .report-band td {
+  font-weight: 700;
+  font-size: 8.5pt;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-top: 1pt solid #111;
+  border-bottom: 0.75pt solid #999;
+}
+
+.trainers-report .report-num {
+  width: 0.28in;
+  padding-right: 3pt;
+  text-align: right;
+  font-size: 8pt;
+  color: var(--color-body-subtle);
+}
+
+/* Wide enough for "NS" at the sheet's 9pt without wrapping. */
+.trainers-report .report-pass {
+  width: 0.38in;
+  text-align: center;
+}
+
+.trainers-report .report-callsign {
+  width: 1.55in;
+  font-size: 10pt;
+  font-weight: 700;
+}
+
+.trainers-report .report-years {
+  width: 0.62in;
+}
+
+.trainers-report .report-detail-row td {
+  padding-top: 0;
+  padding-bottom: 2.5pt;
+  font-size: 8pt;
+  color: var(--color-body);
+  border-bottom: 0.5pt solid #ccc;
+}
+
+.trainers-report .report-empty-row td {
+  padding: 3pt 4pt;
+  font-size: 8.5pt;
+  color: var(--color-body-subtle);
+  font-style: italic;
+  border-bottom: 0.5pt solid #ccc;
+}
+
+/* --- glance-line pills and chips ------------------------------------------- */
+
+.trainers-report .report-checkbox {
+  display: inline-block;
+  width: 8pt;
+  height: 8pt;
+  border: 0.9pt solid currentColor;
+  @apply text-stone-muted;
+  border-radius: 1pt;
+}
+
+.trainers-report .report-years-pill {
+  display: inline-block;
+  border: 0.9pt solid #111;
+  border-radius: 2pt;
+  padding: 0 3pt;
+  font-size: 8.5pt;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.trainers-report .report-years-pill.report-new {
+  background: #111;
+  color: var(--color-neutral-content);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.trainers-report .report-chip {
+  display: inline-block;
+  border: 0.6pt solid #888;
+  border-radius: 2pt;
+  padding: 0 2.5pt;
+  margin: 0 1pt 1pt 0;
+  font-size: 7.5pt;
+  white-space: nowrap;
+}
+
+.trainers-report .report-full-day {
+  display: inline-block;
+  background: #111;
+  color: var(--color-neutral-content);
+  border-radius: 2pt;
+  padding: 0.5pt 3pt;
+  margin-right: 2pt;
+  font-size: 7pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.trainers-report .report-status {
+  display: inline-block;
+  border: 0.75pt solid #111;
+  border-radius: 2pt;
+  padding: 0 2.5pt;
+  font-size: 7pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.trainers-report .report-fka {
+  font-size: 7.5pt;
+  font-weight: 400;
+  color: var(--color-body-subtle);
+}
+
+/* --- teams legend (bottom of the last sheet, no forced break) --------------- */
+
+.trainers-report .report-legend {
+  break-inside: avoid;
+  margin-top: 6pt;
+  border-top: 1pt solid #111;
+  padding-top: 3pt;
+}
+
+.trainers-report .report-legend-title {
+  font-size: 7.5pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-heading);
+  margin-bottom: 2pt;
+}
+
+.trainers-report .report-legend-cols {
+  columns: 4;
+  column-gap: 12pt;
+  font-size: 7pt;
+  color: var(--color-heading);
+}
+
+.trainers-report .report-legend-cols div {
+  break-inside: avoid;
+}
+
+.trainers-report .report-legend-cols b {
+  font-weight: 700;
+}

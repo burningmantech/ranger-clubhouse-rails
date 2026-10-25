@@ -1,0 +1,132 @@
+<%#
+  One event year of meal and shower pogs, counted: headline numbers, then by
+  type, by day, and who issued and received the most. Every count reads the
+  pogs actually handed over; cancelled pogs are counted on their own.
+%>
+<% content_for :title, "#{@year} Pog Dashboard" %>
+
+<%= hero_panel icon: "utensils", heading_level: :h1, id: "pog-dashboard-header",
+               title: "#{@year} Pog Dashboard" do |panel| %>
+  <% panel.description do %>
+    See how many meal and shower pogs were issued in <%= @year %>, by day and type, and who issued them.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor %>
+<% end %>
+
+<% if @report.empty? %>
+  <%= ui_empty_state "No pogs were issued in #{@year}.", icon: "utensils", icon_type: :solid %>
+<% else %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box number_with_delimiter(@report.issued), "Pogs Issued" %>
+    <%# Amber because it is the number a reader most wants explained, not
+        because a cancellation is bad. %>
+    <%= ui_stat_box number_with_delimiter(@report.cancelled), "Cancelled",
+                    variant: @report.cancelled.positive? ? :warning : :secondary %>
+    <%= ui_stat_box number_with_delimiter(@report.recipient_count), "Recipients" %>
+    <%= ui_stat_box number_with_delimiter(@report.issuer_count), "Issuers" %>
+    <% if (busiest = @report.busiest_day) %>
+      <%= ui_stat_box wday_month_day_format(busiest.date),
+                      "Busiest Day (#{number_with_delimiter(busiest.total)})" %>
+    <% end %>
+    <%= ui_stat_box "#{@report.linked_percent}%", "Linked to a Shift" %>
+  <% end %>
+
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Which pogs count as issued?</dt>
+      <dd>
+        Every pog handed over. A redeemed pog was issued first, so it counts
+        too. A cancelled pog was recorded by mistake and never handed over, so
+        it counts only under Cancelled.
+      </dd>
+      <dt>Which day is a pog counted under?</dt>
+      <dd>The day it was issued, as its timestamp reads. A pog issued after midnight counts for the new day.</dd>
+      <dt>What does Linked to a shift mean?</dt>
+      <dd>
+        The share of issued pogs recorded with the shift they were earned on.
+        HQ links one when it ends a shift; a pog added on a person's Pogs page has no shift.
+      </dd>
+      <dt>How are the top lists counted?</dt>
+      <dd>
+        By pog: someone given two pogs counts twice. Each list shows at most
+        <%= PogStatsReport::TOP_LIMIT %> people, and a name opens their issued pogs
+        on Pog Administration.
+      </dd>
+      <dt>What do the Share bars measure?</dt>
+      <dd>By type, each type against every pog issued. By day, each day against the busiest day.</dd>
+    </dl>
+  <% end %>
+
+  <%= ui_section "Pogs by Type", icon: "utensils", icon_type: :solid, border: false do %>
+    <%# Redeemed shows only in a year that holds a redeemed pog. %>
+    <% show_redeemed = @report.redeemed.positive? %>
+    <%= ui_table full_width: true, striped: true, caption: "Pogs issued in #{@year}, by type" do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Type" %>
+        <%= t.heading "Issued", right: true %>
+        <% if show_redeemed %>
+          <%= t.heading "Redeemed", right: true %>
+        <% end %>
+        <%= t.heading "Cancelled", right: true %>
+        <%= t.heading "Share", width: "30%" %>
+      <% end %>
+      <%= t.body do %>
+        <% @report.types.each do |type| %>
+          <% share = @report.type_share(type) %>
+          <%= t.row do %>
+            <%= t.row_header type.label %>
+            <%= t.cell number_with_delimiter(type.issued), right: true %>
+            <% if show_redeemed %>
+              <%= t.cell number_with_delimiter(type.redeemed), right: true %>
+            <% end %>
+            <%= t.cell number_with_delimiter(type.cancelled), right: true %>
+            <%= t.cell ui_progress_bar(share, :primary, size: :sm,
+                                       aria: { label: "#{type.label}: #{share}% of the pogs issued" }) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Pogs Issued by Day", icon: "calendar-day", icon_type: :solid, border: false do %>
+    <%# Empty when every pog the year holds was cancelled. %>
+    <% if @report.days.empty? %>
+      <%= ui_empty_state "No pogs were issued in #{@year}: every pog recorded was cancelled.",
+                         icon: "calendar-day", icon_type: :solid %>
+    <% else %>
+      <% columns = @report.issued_types %>
+      <%= ui_table full_width: true, striped: true, caption: "Pogs issued each day of #{@year}" do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Day" %>
+          <% columns.each do |type| %>
+            <%= t.heading type.label, right: true %>
+          <% end %>
+          <%= t.heading "Total", right: true %>
+          <%= t.heading "Share", width: "30%" %>
+        <% end %>
+        <%= t.body do %>
+          <% @report.days.each do |day| %>
+            <% label = wday_month_day_format(day.date) %>
+            <% share = @report.day_share(day) %>
+            <%= t.row do %>
+              <%= t.row_header label %>
+              <% columns.each do |type| %>
+                <%= t.cell number_with_delimiter(day.count_for(type.pog)), right: true %>
+              <% end %>
+              <%= t.cell tag.span(number_with_delimiter(day.total), class: "font-semibold"), right: true %>
+              <%= t.cell ui_progress_bar(share, :primary, size: :sm,
+                                         aria: { label: "#{label}: #{share}% of the busiest day" }) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <div class="two-column-lg">
+    <%= render "top_list", title: "Top Issuers", icon: "user-check", rows: @report.issuers,
+                           filter: :issued_by_id, year: @year %>
+    <%= render "top_list", title: "Top Recipients", icon: "users", rows: @report.recipients,
+                           filter: :person_callsign, year: @year %>
+  </div>
+<% end %>

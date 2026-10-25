@@ -1,0 +1,35 @@
+<%#
+  A row per Ranger with more than one Alpha entry, oldest first. Every entry is
+  shown rather than only the extras: which one is the real walk is exactly the
+  question the reader is here to answer.
+
+  Locals: findings (Array<TimesheetSanityCheckReport::PersonFinding>)
+%>
+<%= ui_table full_width: true, striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading "Alpha Entries" %>
+    <%= t.heading "Duration", right: true %>
+  <% end %>
+  <%= t.body do %>
+    <% findings.each do |finding| %>
+      <%= t.row do %>
+        <%= t.row_header person_display_link(finding.person, finding.person_id) %>
+        <%= t.cell do %>
+          <div class="flex flex-col">
+            <% finding.entries.each do |entry| %>
+              <div><%= timesheet_entry_time(entry) %></div>
+            <% end %>
+          </div>
+        <% end %>
+        <%= t.cell right: true do %>
+          <div class="flex flex-col">
+            <% finding.entries.each do |entry| %>
+              <div><%= hour_minute_format(entry.duration) %></div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

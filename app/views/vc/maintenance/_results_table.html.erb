@@ -1,0 +1,46 @@
+<%#
+  Results table shared by both maintenance tasks and their previews.
+
+  The two tables differ only by the status column, which the applicant reset
+  shows and the past prospective reset does not (previews always show it).
+
+  Locals:
+    results          - Array of Hash: { id:, callsign:, status:, callsign_reset:, error: }
+                       callsign is the OLD callsign, status the OLD status, and
+                       callsign_reset the new callsign (nil when error is present).
+    show_status      - true to render the status column.
+    callsign_heading - heading over the old callsign column ("Old Callsign").
+    status_heading   - heading over the status column ("Old Status"). The run
+                       ledgers report the past; the previews describe the present.
+%>
+<% column_count = show_status ? 3 : 2 %>
+
+<%= ui_table responsive: false do |t| %>
+  <%= t.header do %>
+    <%= t.heading local_assigns.fetch(:callsign_heading, "Old Callsign") %>
+    <%= t.heading "New Callsign" %>
+    <% if show_status %>
+      <%= t.heading local_assigns.fetch(:status_heading, "Old Status") %>
+    <% end %>
+  <% end %>
+  <%= t.body do %>
+    <% results.each do |entry| %>
+      <%= t.row do %>
+        <%= t.row_header link_to(entry[:callsign], person_path(entry[:id])) %>
+        <%= t.cell value_or_dash(entry[:callsign_reset]) %>
+        <% if show_status %>
+          <%= t.cell entry[:status] %>
+        <% end %>
+      <% end %>
+      <% if entry[:error].present? %>
+        <%# Icon plus the literal word "Error" so the row does not rely on colour alone. %>
+        <%= t.row do %>
+          <%= t.cell colspan: column_count, class: "text-error font-medium" do %>
+            <%= fa_icon "triangle-exclamation", :solid, end: 2 %>
+            Error: <%= entry[:error] %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

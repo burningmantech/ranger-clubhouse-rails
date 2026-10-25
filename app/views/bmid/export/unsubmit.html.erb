@@ -1,0 +1,75 @@
+<%# Un-submit results, rendered at 422 (Turbo drops a 200 form response). The
+    ledger is transient -- the batch record is already gone, so no GET can
+    rebuild this page. %>
+<div data-controller="scroll-to-top" hidden></div>
+<%= hero_panel icon: "rotate-left", heading_level: :h1, id: "bmid-export-unsubmit-header",
+               back_to: ["BMID Export", bmid_export_path] do |panel| %>
+  <% panel.title do %>Export Batch Un-Submitted<% end %>
+  <% panel.description do %>
+    The batch record and its CSV are removed, and the badges returned to In Prep
+    are ready to export again.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @result[:reverted].size.to_s, "Returned to In Prep" %>
+  <% if @skipped.any? %>
+    <%= ui_stat_box @skipped.size.to_s, "Left as They Are", variant: :warning %>
+  <% end %>
+<% end %>
+
+<% if @result[:reverted].any? %>
+  <%= ui_callout_box :success do %>
+    <strong><%= pluralize(@result[:reverted].size, "badge") %> returned to In Prep
+    and <%= pluralize(@result[:provisions_by_person].values.sum(&:size), "provision") %>
+    made available again.</strong>
+    <% if @export.batch_info.present? %>
+      Batch &ldquo;<%= @export.batch_info %>&rdquo;
+    <% else %>
+      The batch <%= @export.filename %>
+    <% end %>
+    no longer appears under Previous Exports.
+  <% end %>
+<% else %>
+  <%= ui_callout_box :warning, accent: true do %>
+    <strong>No badges were changed.</strong> Every badge in the batch moved on
+    since the export &mdash; the reasons are listed below. The batch record and
+    its CSV were still removed.
+  <% end %>
+<% end %>
+
+<% if @skipped.any? %>
+  <%= ui_callout_box :warning, accent: true, class: "my-4",
+                     title: "#{pluralize(@skipped.size, 'Badge')} Left as They Are" do %>
+    <ul class="list-disc ms-5">
+      <% @skipped.each do |skip| %>
+        <li><%= skip.callsign %> &mdash; <%= skip.reason %></li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>
+
+<% if @result[:reverted].any? %>
+  <%= ui_section "Returned Badges", icon: "table-list", icon_type: :solid, border: false do %>
+    <%= ui_table responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Provisions Returned", right: true %>
+      <% end %>
+      <%= t.body do %>
+        <% @result[:reverted].each do |badge| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%= callsign_link badge.person %>
+            <% end %>
+            <%= t.cell (@result[:provisions_by_person][badge.person_id] || []).size, right: true %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= button_row class: "my-4" do %>
+  <%= button_link "Back to BMID Export", :secondary, bmid_export_path %>
+<% end %>

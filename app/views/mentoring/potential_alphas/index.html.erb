@@ -1,0 +1,107 @@
+<%#
+  Everyone who might become an Alpha this year, split into the two cohorts a
+  mentor treats differently, then by severity within each. The lines, the chips
+  and the review pane holding the selected person's history are the shared
+  pipeline ones -- see UnifiedFlaggingConcern.
+%>
+<% content_for :title, "Potential Alphas" %>
+<%= hero_panel icon: "handshake-angle", heading_level: :h1, id: "potential-alphas-header",
+               title: "Potential Alphas" do |panel| %>
+  <% panel.description do %>
+    Every Prospective who could become an Alpha this year, with the ranks, flags, and notes left by Personnel, RRN,
+    VC, Training, and Mentors.
+  <% end %>
+<% end %>
+
+<% if @total.zero? %>
+  <%= ui_empty_state "No one currently holds Prospective or Alpha status.",
+                     icon: "handshake-angle", icon_type: :solid %>
+<% else %>
+  <%# @cohort_totals describes the roster, while each section's badge below
+      counts the rows it is showing. They differ only while a filter is on. %>
+  <%= ui_stat_row do %>
+    <% Mentoring::PotentialAlphasHelper::COHORTS.each do |cohort, meta| %>
+      <%= ui_stat_box @cohort_totals[cohort].to_s, meta[:title], icon: meta[:icon], icon_type: :solid %>
+      <%# Same label and same count as that cohort's with-issues section below. %>
+      <% issues = @cohort_issue_totals[cohort] %>
+      <%= ui_stat_box issues.to_s, meta[:issue_title],
+                      variant: issues.positive? ? :warning : :success,
+                      icon: "triangle-exclamation", icon_type: :solid %>
+    <% end %>
+    <%= ui_stat_box @personnel_flag_count.to_s, "Personnel Flags",
+                    variant: @personnel_flag_count.positive? ? :error : :success,
+                    icon: "flag", icon_type: :solid %>
+  <% end %>
+
+  <%= render "common/unified_flagging/personnel_warning", callsigns: @personnel_flagged %>
+
+  <%# Out of the hero, then the legend every pipeline page shares. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Where are the people already made Alpha?</dt>
+      <dd>People already made Alpha are listed separately below.</dd>
+      <%= render "common/unified_flagging/review_legend" %>
+      <%= render "common/unified_flagging/lead_legend" %>
+      <%= render "common/unified_flagging/rank_legend" %>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "potential-alphas-filters",
+                 chips: unified_flagging_filter_chips(@filter_params),
+                 clear_url: unified_flagging_path,
+                 count: "Showing #{@shown} of #{pluralize(@total, "person", plural: "people")}",
+                 url: unified_flagging_path do |f| %>
+    <%= form_row do %>
+      <%= f.text_field :q, label: "Search by Callsign, Name, or Former Handle",
+                       value: @filter_params[:q], width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :training, unified_flagging_training_filter_options,
+                   label: "Training", selected: @filter_params[:training],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :flagged, unified_flagging_flagged_filter_options,
+                   label: "Flagged By", selected: @filter_params[:flagged],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @total.positive? && @shown.zero? %>
+  <%= ui_empty_state "No potential Alphas matched those filters.",
+                     icon: "magnifying-glass", icon_type: :solid %>
+<% elsif @total.positive? %>
+  <% pane = render "common/unified_flagging/review_pane", summary: @selected, history: @history, year: @year %>
+  <%= render layout: "common/unified_flagging/review_workspace", locals: { pane: } do %>
+    <% Mentoring::PotentialAlphasHelper::SECTIONS.each do |section| %>
+      <%# slice keeps only the groups this section owns; group_by never leaves an
+          empty bucket behind, so an empty slice means an empty section. %>
+      <% groups = (@cohorts[section[:cohort]] || {}).slice(*section[:groups]) %>
+      <%= ui_section section[:title], icon: section[:icon], icon_type: :solid,
+                     badge: groups.values.sum(&:size).to_s, badge_color: section[:badge_color] do %>
+        <% if groups.empty? %>
+          <p class="text-stone-muted">
+            <%= potential_alpha_empty_message(section, filtering: @filtering,
+                                              cohort_total: @cohort_totals[section[:cohort]]) %>
+          </p>
+        <% else %>
+          <% section[:groups].each do |group| %>
+            <% rows = groups[group] || [] %>
+            <% next if rows.empty? %>
+            <%# Only the with-issues sections hold more than one kind of line, so
+                only they need to say which kind each block is. %>
+            <% if section[:groups].size > 1 %>
+              <% group_meta = UnifiedFlaggingHelper::GROUP_META[group] %>
+              <%= ui_subheading do %>
+                <%= group_meta[:title] %>
+                <%= ui_badge rows.size.to_s, group_meta[:badge_color] %>
+              <% end %>
+            <% end %>
+            <%= render "common/unified_flagging/review_list", rows: rows, year: @year, selected_id: @selected_id %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

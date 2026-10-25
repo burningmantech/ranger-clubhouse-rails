@@ -1,0 +1,18 @@
+<%# locals: (person_asset:) %>
+<%# Person-page-only row actions for common/assets/_table (split out of the
+    former person/assets/_table): per-asset history and the admin-only
+    checkout record deletion. %>
+<%= button_link "History",
+                :secondary,
+                history_person_asset_path(@person, person_asset, year: @year),
+                icon: "clock-rotate-left",
+                icon_type: :solid,
+                data: { turbo_stream: true } %>
+<% if @is_current_year && person_asset.checked_in.nil? && Current.admin? %>
+  <%= delete_button person_asset_path(@person, person_asset, year: @year),
+                    "Delete",
+                    confirm_modal: {
+                      title: "Delete Asset Record",
+                      message: render("person/assets/delete_confirm", ap: person_asset)
+                    } %>
+<% end %>

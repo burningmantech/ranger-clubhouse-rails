@@ -1,0 +1,11 @@
+<%= hero_panel icon: "bullhorn", heading_level: :h1, id: "communication-announcement-new-header",
+               title: "New Announcement" do |panel| %>
+  <% panel.description do %>
+    Write a message for the Clubhouse home page.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "Announcements", communication_announcements_path %>
+  <% end %>
+<% end %>
+
+<%= render "form" %>

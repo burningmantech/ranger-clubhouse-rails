@@ -1,0 +1,36 @@
+<%#
+  A row per Ranger, with each overlapping pair of entries stacked in the second
+  cell. Pairs rather than a flat list of entries: what has to be fixed is the
+  disagreement between two entries, and printing them apart loses which two.
+
+  Locals: findings (Array<TimesheetSanityCheckReport::PersonFinding>)
+%>
+<%= ui_table full_width: true, striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading "Overlapping Entries" %>
+  <% end %>
+  <%= t.body do %>
+    <% findings.each do |finding| %>
+      <%= t.row do %>
+        <%= t.row_header person_display_link(finding.person, finding.person_id) %>
+        <%= t.cell do %>
+          <div class="flex flex-col gap-3">
+            <% finding.pairs.each do |pair| %>
+              <div class="flex flex-col">
+                <% pair.each do |entry| %>
+                  <div>
+                    <span class="font-semibold">
+                      <%= entry.position&.title || "Position ##{entry.position_id}" %>
+                    </span>
+                    <%= timesheet_entry_time(entry) %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

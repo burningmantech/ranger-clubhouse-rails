@@ -1,0 +1,70 @@
+/*
+ * Sidebar/Drawer System
+ * Uses DaisyUI drawer component with custom theming
+ * See: https://daisyui.com/components/drawer/
+ */
+
+/* Sidebar close button (mobile only) */
+@utility sidebar-close-btn {
+    @apply btn btn-ghost btn-sm btn-circle absolute top-2.5 end-2.5 lg:hidden z-20;
+}
+
+/* Sidebar navigation item base */
+@utility sidebar-nav-item {
+    @apply block h-10 flex items-center p-3 text-sm transition-colors no-underline border-t border-sidebar-divider;
+}
+
+/* Sidebar section header */
+@utility sidebar-section-header {
+    @apply px-3 py-1  text-sm uppercase overflow-hidden text-ellipsis;
+}
+
+/* Sidebar badge (notification count) */
+@utility sidebar-badge {
+    @apply badge badge-sm ms-2;
+}
+
+/*
+ * Sidebar Theme Color Variants
+ */
+
+/* HQ/Admin theme colors */
+@utility sidebar-link-hq {
+    @apply text-sidebar-content bg-sidebar-link-hq;
+}
+
+@utility sidebar-group-title-hq {
+    @apply bg-sidebar-title-hq text-sidebar-content;
+}
+
+/* Default theme colors */
+@utility sidebar-link-default {
+    @apply text-sidebar-content bg-sidebar-link;
+}
+
+/* Explicit black bg (same as the aside) so the pinned logo can't bleed
+   through when the list scrolls over it */
+@utility sidebar-group-title-default {
+    @apply text-sidebar-content bg-chrome;
+}
+
+/*
+ * The active item's amber marker.
+ *
+ * This is a rule rather than three !important utilities at the call site, and
+ * the difference is not tidiness. active_links_controller re-derives the active
+ * item after a stream-nav render by adding and removing the `active` class --
+ * it knows nothing about utilities, so the colour stayed on the link the user
+ * had just left and never appeared on the one they opened. Keyed on the class
+ * the controller actually toggles, the marker follows it.
+ *
+ * Not [aria-current]: the controller writes aria-current="false" rather than
+ * removing it, so a bare attribute selector matches every link in the sidebar.
+ *
+ * Unlayered on purpose. It has to beat the colour sidebar-link-default and
+ * sidebar-link-hq apply to every link, which is what the !important was for.
+ */
+.sidebar-nav-item.active {
+    color: var(--color-sidebar-active);
+    border-right: 5px solid var(--color-sidebar-active);
+}

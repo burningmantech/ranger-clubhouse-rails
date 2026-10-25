@@ -1,0 +1,49 @@
+<%#
+  One position's people, either signed up for a shift (began_label "Shift") or
+  on duty now ("Started"). The trailing column is the report's point: prior
+  bonk years for Alphas, rangering history for everyone else.
+%>
+<%= ui_table full_width: true, striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading began_label %>
+    <%= t.heading "Duration", right: true %>
+    <%= t.heading alpha ? "Prior Bonks" : "Rangered Events" %>
+  <% end %>
+  <%= t.body do %>
+    <% entries.each do |entry| %>
+      <%= t.row do %>
+        <%= t.row_header do %>
+          <%= callsign_link entry.person %>
+        <% end %>
+        <%= t.cell do %>
+          <span class="whitespace-nowrap tabular-nums"><%= datetime_format entry.began %></span>
+        <% end %>
+        <%= t.cell right: true do %>
+          <span class="tabular-nums"><%= hour_minute_format entry.duration %></span>
+        <% end %>
+        <%= t.cell do %>
+          <% if alpha %>
+            <% if entry.bonk_years.any? %>
+              <span class="inline-flex flex-wrap gap-1">
+                <% entry.bonk_years.each do |year| %>
+                  <%= ui_badge "Bonked #{year}", :warning %>
+                <% end %>
+              </span>
+            <% else %>
+              <span class="text-stone-muted">&mdash;</span>
+            <% end %>
+          <% else %>
+            <% years = entry.person.years_as_ranger %>
+            <% if years.any? %>
+              <%= pluralize(years.size, "event") %>
+              <span class="text-stone-muted">[<%= year_range(years) %>]</span>
+            <% else %>
+              <span class="text-stone-muted">No rangering history</span>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,109 @@
+<%= hero_panel icon: "graduation-cap", heading_level: :h1, id: "person-training-header",
+               description: "Review in-person training and Advanced Ranger Training status, and manage the online course record for this person.",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    <%= @year %> Training &amp; ARTs &mdash; <%= @person.callsign %>
+  <% end %>
+  <% panel.year_selector year: @year, years: @years %>
+<% end %>
+
+<% if @person.is_echelon? %>
+  <%= ui_callout_box :info, title: "Echelon Volunteer", icon: "hand-point-right" do %>
+    <%= @person.callsign %> is an Echelon Volunteer. Completing the online course or passing an
+    in-person training is not required.
+  <% end %>
+<% end %>
+
+<%= ui_section "Online Course", icon: "laptop", icon_type: :solid do %>
+  <div class="mb-4">
+    <%= render "common/training/online_course_status", event_info: @event_info, year: @year %>
+  </div>
+
+  <% if @can_manage %>
+    <% if @courses.present? %>
+      <%= ui_form(@poc || PersonOnlineCourse.new,
+                  person_training_online_course_path(@person, year: @year),
+                  method: :patch) do |f| %>
+        <%= f.select :online_course_id,
+                     @courses.map { |course| [course.name, course.id] },
+                     { label: "Update Moodle Enrollment",
+                       include_blank: "Select an online course",
+                       help_text: "Changes which course the record points at. This does not enroll #{@person.callsign} under Moodle.",
+                       width: "w-full sm:w-96" },
+                     { name: "online_course_id" } %>
+        <%= button_row do %>
+          <%= f.submit "Save Online Course" %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= ui_empty_state "No online courses defined for #{@year}." %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @can_manage && @is_current_year %>
+  <%= ui_section "Moodle Account Tools", icon: "user-gear", icon_type: :solid do %>
+    <%= ui_callout_box :warning, title: "Use with Care" do %>
+      These actions change the volunteer's Moodle account and are logged for review. Do not
+      force-complete a course or reset a password on someone's behalf without a clear reason.
+    <% end %>
+
+    <%= button_row do %>
+      <% unless @event_info.online_course_passed %>
+        <%= button_link "Force Mark as Completed", :warning,
+                        person_training_mark_completed_path(@person, year: @year),
+                        method: :post,
+                        icon: "circle-check", icon_type: :solid,
+                        data: { turbo_confirm: confirm_modal_dialog(
+                          title: "Confirm Force Completion",
+                          message: "Are you absolutely sure you want to mark #{@person.callsign} as having completed the online course? Your actions will be logged and subject to review.",
+                          confirm_label: "Mark As Completed"
+                        ) } %>
+      <% end %>
+      <%= button_link "Online Course Account Info", :secondary,
+                      person_training_path(@person, year: @year, account_info: 1),
+                      icon: "id-card", icon_type: :solid %>
+      <%= button_link "Sync Account Info with Clubhouse", :secondary,
+                      person_training_sync_path(@person, year: @year),
+                      method: :post,
+                      icon: "arrows-rotate", icon_type: :solid %>
+      <%= button_link "Generate New Moodle Password", :secondary,
+                      person_training_reset_password_path(@person, year: @year),
+                      method: :post,
+                      icon: "key", icon_type: :solid,
+                      data: { turbo_confirm: confirm_modal_dialog(
+                        title: "Confirm New Password",
+                        message: "Generate a new Moodle password for #{@person.callsign}? The new password will be shown to you once. No email is sent to the volunteer.",
+                        confirm_label: "Generate Password"
+                      ) } %>
+    <% end %>
+
+    <% if @moodle_account %>
+      <div class="mt-4">
+        <%= render "moodle_account", account: @moodle_account, person: @person %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_section "In-Person Training", icon: "users", icon_type: :solid do %>
+  <% if @event_info.training %>
+    <%= render "common/training/education_detail", edu: @event_info.training %>
+  <% else %>
+    <%= ui_empty_state "No in-person training information is available for #{@year}." %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Advanced Ranger Trainings (ART)", icon: "medal", icon_type: :solid do %>
+  <% if @event_info.art_trainings.present? %>
+    <div class="two-column-lg">
+      <% @event_info.art_trainings.each do |art| %>
+        <%= ui_accent_card art.position_title, variant: :secondary, heading_level: :h3 do %>
+          <%= render "common/training/education_detail", edu: art %>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= ui_empty_state "No Advanced Ranger Trainings are required for this person." %>
+  <% end %>
+<% end %>

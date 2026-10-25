@@ -1,0 +1,57 @@
+<%= hero_panel icon: "calendar-days", heading_level: :h1, id: "event-dates-header",
+               title: "Event Dates",
+               description: "Review the three date windows that define each event year." %>
+
+<% can_manage = can?(:manage_event_dates) %>
+
+<%= ui_callout_box :info, title: "What These Records Control" do %>
+  Event dates decide which hours the Hours &amp; Credits report counts, restrict non-training slot
+  creation during the pre-event period, and set provision and appreciation qualification.
+  <% unless can_manage %>
+    Contact the Tech Team to change a record.
+  <% end %>
+<% end %>
+
+<% if can_manage %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= button_link "Add Event Date", :primary, new_admin_event_date_path,
+                      icon: "plus", icon_type: :solid %>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @event_dates.empty? %>
+  <%= ui_empty_state "No event dates recorded yet.", icon: "calendar-days", icon_type: :regular %>
+<% else %>
+  <%= ui_section pluralize(@event_dates.size, "event date"), border: false do %>
+    <%= ui_table striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Year" %>
+        <%= t.heading "Event Window" %>
+        <%= t.heading "Credit Period" %>
+        <%= t.heading "Pre-Event Slot Window" %>
+        <%= t.heading "Action" %>
+      <% end %>
+      <%= t.body do %>
+        <% @event_dates.each do |event_date| %>
+          <% year = event_date.event_start&.year %>
+          <%= t.row do %>
+            <%= t.row_header value_or_dash(year) %>
+            <%= t.cell event_date_window(event_date.event_start, event_date.event_end) %>
+            <%= t.cell event_date_window(event_date.pre_event_start, event_date.post_event_end, year: true) %>
+            <%= t.cell event_date_window(event_date.pre_event_slot_start, event_date.pre_event_slot_end) %>
+            <%= t.cell do %>
+              <% if can_manage %>
+                <%= edit_link edit_admin_event_date_path(event_date), "Edit",
+                              aria: { label: "Edit #{year || "undated"} event dates" } %>
+              <% else %>
+                <%= value_or_dash(nil) %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

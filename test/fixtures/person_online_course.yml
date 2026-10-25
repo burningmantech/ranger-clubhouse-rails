@@ -1,0 +1,29 @@
+# Test fixtures for PersonOnlineCourse model.
+#
+# position_id is the raw FK 13 (Position::TRAINING); belongs_to :position is optional on
+# this model. year is pinned to match Current.year (2026) in test. Reference BY NAME.
+# The unique index is (person_id, position_id, year), so the two active_ranger records
+# differ only by year.
+
+# Current-year (2026) enrollment for active_ranger, NOT yet completed. Drives the
+# "Not Completed" badge, the mark_online_course_completed happy path, and the
+# update_online_course happy path (switch away from training_all_2026). Tests that need
+# the already-completed state can set completed_at in-test (mirrors the vehicles test).
+active_ranger_training_2026:
+  person: active_ranger
+  online_course: training_all_2026
+  position_id: 13
+  year: 2026
+  type: "moodle"
+  enrolled_at: "2026-04-01 10:00:00"
+
+# Prior-year (2025) enrollment for active_ranger, completed. Drives completion-date
+# display and did_complete_for_year? == true, and proves year scoping.
+active_ranger_training_2025:
+  person: active_ranger
+  online_course: training_all_2025
+  position_id: 13
+  year: 2025
+  type: "moodle"
+  enrolled_at: "2025-04-01 10:00:00"
+  completed_at: "2025-08-15 12:00:00"

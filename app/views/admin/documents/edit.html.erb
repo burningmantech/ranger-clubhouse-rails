@@ -1,0 +1,10 @@
+<% content_for :title, "Edit Document" %>
+
+<%# tag_was, not tag: a rejected form re-renders the record holding what was
+    typed, and the heading names the document being edited. %>
+<%= hero_panel icon: "file-pen", heading_level: :h1, id: "document-form-header",
+               title: "Edit #{@document.tag_was}",
+               description: "Changes appear as soon as you save.",
+               back_to: ["Documents", admin_documents_path] %>
+
+<%= render "form" %>

@@ -1,0 +1,51 @@
+<%# Auto-shown warning modals (Ember port/templates/hq.hbs) — the dialogs
+    open on connect via the shared modal Stimulus controller. Upstream
+    precedence is preserved: the sign-in warning wins over the hat-rack
+    instructions (if/elsif), while the not-allowed-to-work modal is
+    independent and shows alongside the Account Is Disabled notice.
+    Rendered once per person per session (@show_entry_warnings) so action
+    redirects back to the page do not re-open them. %>
+<% if @show_entry_warnings %>
+<% if !@viewer_on_duty %>
+  <%= modal id: "hq-signin-warning-modal" do |m| %>
+    <%= m.title "Sign In to a Shift" %>
+    <%= m.body do %>
+      <strong class="text-warning"><%= fa_icon "circle-exclamation", :solid, end: 2 %>Heads up:</strong>
+      You are not signed in to any shift. You can still use the HQ Interface,
+      but please sign in to a shift first.
+    <% end %>
+  <% end %>
+<% elsif @person.pnv? && !@viewer_is_mentor %>
+  <%= modal id: "hq-hat-rack-modal" do |m| %>
+    <%= m.title "On-Site Registration Only" %>
+    <%= m.body do %>
+      <p class="mb-2"><%= @person.callsign %> is <%= hq_pnv_noun(@person) %>.</p>
+      <p>
+        You may <strong>only perform an On-Site Registration</strong> for this person.
+        <strong class="text-error"><%= fa_icon "ban", :solid, end: 2 %>Do not start their Alpha shift.</strong>
+        After the On-Site Registration, send the person to the Mentor Shack.
+        The Mentors start their shift.
+      </p>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% unless @person.can_start_shift? %>
+  <%= modal id: "hq-not-allowed-modal" do |m| %>
+    <%= m.title "Person May Not Ranger" %>
+    <%= m.body do %>
+      <p class="mb-2">
+        <strong class="text-error">
+          <%= fa_icon "ban", :solid, end: 2 %><%= @person.callsign %> has the status "<%= @person.status %>".
+          Do not give them a BMID or radios.
+          They are NOT ALLOWED TO PERFORM RANGER SHIFTS.
+        </strong>
+      </p>
+      <p>
+        You cannot use the HQ Window Interface for this person.
+        Contact the HQ Lead, HQ Supervisor, or the Personnel Manager.
+      </p>
+    <% end %>
+  <% end %>
+<% end %>
+<% end %>

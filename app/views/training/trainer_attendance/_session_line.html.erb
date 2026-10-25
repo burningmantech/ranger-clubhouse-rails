@@ -1,0 +1,18 @@
+<%# One teaching sign-up on one line: whether they showed up, when the trainer
+    slot starts, where, and which trainer position. The status badge leads so a
+    column of them scans vertically even though the lines vary in length; the
+    icon carries the same meaning as the color (never color alone). The time
+    links to the SESSION the slot teaches -- that is where attendance is
+    recorded. %>
+<% badge = case row.status
+           when TrainerStatus::STATUS_ATTENDED then ["Attended", :success, "circle-check"]
+           when TrainerStatus::STATUS_NO_SHOW then ["No Show", :error, "circle-xmark"]
+           else ["Pending", :warning, "clock"]
+           end %>
+
+<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+  <%= ui_badge badge[0], badge[1], icon: badge[2], icon_type: :solid %>
+  <%= training_session_link row.slot, session_id: row.session_slot_id do %>
+    <span><%= row.position_title %></span>
+  <% end %>
+</div>

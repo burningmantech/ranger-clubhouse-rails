@@ -1,0 +1,38 @@
+<%#
+  Ledger of documents just marked submitted. @result is transient -- it only
+  exists in the response to the POST that flipped the statuses -- so print it
+  in full (maintenance-results convention).
+%>
+<%# A form-submission render keeps the submitting page's scroll position --
+    without this the reader lands wherever the submit button was instead of
+    at the summary. %>
+<div data-controller="scroll-to-top" hidden></div>
+
+<%= hero_panel icon: "circle-check", heading_level: :h1, id: "ticketing-trs-export-submitted-header",
+               back_to: ["TRS Export", ticketing_trs_export_path(filter: @filter.slug)] do |panel| %>
+  <% panel.title do %>Marked Submitted<% end %>
+  <% panel.description do %>
+    The documents below are now submitted in TRS terms and no longer appear on
+    the TRS Export page.
+  <% end %>
+<% end %>
+
+<% failed = @result[:rows].count { |row| row.error.present? } %>
+<% if failed.positive? %>
+  <%= ui_callout_box :error, accent: true, title: "Some Documents Could Not Be Saved" do %>
+    <%= pluralize failed, "document" %> failed &mdash; each failure is marked
+    with an Error row in the ledger below. The rest were processed.
+  <% end %>
+<% end %>
+
+<%= render "skipped", skipped: @result[:skipped] %>
+
+<div class="text-lg my-4">
+  <strong><%= pluralize @result[:rows].size, "document" %></strong> marked submitted
+</div>
+
+<%= render "common/ticketing_maintenance/results_table", rows: @result[:rows] %>
+
+<%= button_row do %>
+  <%= button_link "Back to TRS Export", :secondary, ticketing_trs_export_path(filter: @filter.slug) %>
+<% end %>

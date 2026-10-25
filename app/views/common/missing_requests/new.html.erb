@@ -1,0 +1,5 @@
+<%= hero_panel icon: "clock", heading_level: :h1, id: "new-missing-request-header",
+               title: "New Missing Timesheet Request",
+               back_to: ["Missing Timesheet Requests", timesheet_missing_requests_path] %>
+
+<%= render partial: "common/missing_requests/form", locals: { entry: @entry, position_options: @position_options } %>

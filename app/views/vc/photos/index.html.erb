@@ -1,0 +1,81 @@
+<%= hero_panel icon: "images", heading_level: :h1, id: "vc-photos-header",
+               title: "Clubhouse Photos" do |panel| %>
+  <% panel.description do %>
+    Every BMID photo in the Clubhouse &mdash; approved, rejected, and awaiting review.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @meta[:total], "Photos" %>
+<% end %>
+
+<% if @meta[:total].zero? %>
+  <%= ui_empty_state "No photos have been uploaded.", icon: "images", icon_type: :regular %>
+<% else %>
+  <%# The thumbnail is a link, which nothing about a thumbnail says. Out of the hero. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>How do I see a photo's details?</dt>
+      <dd>Click a photo to see a larger version, its details, and any rejection messages.</dd>
+    </dl>
+  <% end %>
+
+  <p class="mb-3 me-muted">
+    Page <%= @meta[:page] %> of <%= @meta[:total_pages] %> &mdash; <%= pluralize(@meta[:total], "photo") %>.
+  </p>
+  <%= ui_table do |t| %>
+    <%= t.header do %>
+      <%= t.heading "ID" %>
+      <%= t.heading "Photo" %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Uploaded" %>
+      <%= t.heading "Reviewed" %>
+      <%= t.heading "Edited" %>
+    <% end %>
+    <%= t.body do %>
+      <% @photos.each do |photo| %>
+        <%= t.row do %>
+          <%= t.cell photo.id %>
+          <%= t.cell do %>
+            <%= link_to vc_photos_review_info_path(photo),
+                        data: { turbo_frame: "modal" },
+                        class: "inline-block",
+                        aria: { label: "Photo details for #{photo.person.callsign}" } do %>
+              <%# Explicit height matches the 140x180 avatar aspect so the 100
+                  lazy-loaded thumbnails don't shift the page as they load. %>
+              <%= photo_tag photo.avatar, width: 80, height: 103, class: "rounded object-cover",
+                            alt: "Photo for #{photo.person.callsign}" %>
+            <% end %>
+          <% end %>
+          <%= t.cell do %>
+            <%= callsign_link photo.person %>
+          <% end %>
+          <%= t.cell do %>
+            <%= photo_status_badge(photo.status) %>
+          <% end %>
+          <%= t.cell do %>
+            <%= render "vc/photos_review/attribution", time: photo.uploaded_at, person: photo.upload_person %>
+          <% end %>
+          <%= t.cell do %>
+            <%= render "vc/photos_review/attribution", time: photo.reviewed_at, person: photo.review_person %>
+          <% end %>
+          <%= t.cell do %>
+            <%= render "vc/photos_review/attribution", time: photo.edited_at, person: photo.edit_person %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <% if @meta[:total_pages] > 1 %>
+    <%= button_row class: "mt-4" do %>
+      <% if @meta[:page] > 1 %>
+        <%= button_link "Previous Page", :secondary, vc_photos_path(page: @meta[:page] - 1),
+                        icon: "arrow-left", icon_type: :solid %>
+      <% end %>
+      <% if @meta[:page] < @meta[:total_pages] %>
+        <%= button_link "Next Page", :secondary, vc_photos_path(page: @meta[:page] + 1) %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

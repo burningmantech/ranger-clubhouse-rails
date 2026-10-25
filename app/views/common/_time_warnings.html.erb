@@ -1,0 +1,22 @@
+<%# locals: (warnings:, start_time:, finish_time:, lead_in:) %>
+<% if warnings && warnings.status == "out-of-range" %>
+  <%= ui_callout_box :warning, icon: "hand" do %>
+    <%= lead_in %>
+    <ul class="list-disc ms-5 mt-2 space-y-1">
+      <% { "On Duty" => [start_time, warnings.start_status],
+           "Off Duty" => [finish_time, warnings.finished_status] }.each do |label, (time, status)| %>
+        <% next if status == "success" || time.blank? %>
+        <li>
+          The <%= label %> time <%= datetime_format time %>
+          <% if status == "before-begins" %>
+            <span class="text-error font-semibold">is BEFORE the very first shift of the event</span>
+            starting on <%= datetime_format warnings.begins %>.
+          <% else %>
+            <span class="text-error font-semibold">is AFTER the very last shift of the event</span>
+            ending on <%= datetime_format warnings.ends %>.
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>

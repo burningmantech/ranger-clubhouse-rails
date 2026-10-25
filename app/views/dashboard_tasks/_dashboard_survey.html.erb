@@ -1,0 +1,17 @@
+<%# locals: (survey_type:,surveys:) %>
+<% case survey_type %>
+<% when "student" %>
+  <p><%= fa_icon "clipboard-list", :solid %> <b>Quick training feedback:</b></p>
+<% when "alpha" %>
+  <p><%= fa_icon "clipboard-list", :solid %> <b>Alpha shift feedback:</b></p>
+  <%= link_to "Go To Mentor Survey", me_surveys_path(type: Survey::ALPHA), class: "tap-target-link" %>
+<% else %>
+  <p><%= fa_icon "clipboard-list", :solid %> <b>Trainer feedback:</b></p>
+  <% surveys.each do |slot| %>
+    <p class="my-1">
+      <%= link_to me_surveys_path(slot_id: slot.id, type: Survey::TRAINER) do %>
+        <%= slot.position_title %> - <%= slot.description %> (<%= datetime_format slot.begins %>)
+      <% end %>
+    </p>
+  <% end %>
+<% end %>

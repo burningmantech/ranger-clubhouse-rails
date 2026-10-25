@@ -1,0 +1,36 @@
+<%# locals: (person:, person_certification:, certifications:) %>
+<%= ui_form(
+      person_certification,
+      person_certification.new_record? ? person_certifications_path(person) : person_certification_path(person, person_certification),
+      method: person_certification.new_record? ? :post : :patch
+    ) do |f| %>
+  <%= ui_section "Certification Details", icon: "certificate", icon_type: :solid do %>
+    <%= f.collection_select :certification_id, certifications, :id, :title,
+                            { label: "Certification", prompt: "Select certification", required: true } %>
+
+    <%= f.text_field :card_number, label: "Card / Certificate #",
+                     maxlength: 30, show_counter: true, width: "w-full sm:w-64" %>
+
+    <%= form_row do %>
+      <%= f.date_field :issued_on, label: "Issued On", wrapper_class: "flex-1" %>
+      <%= f.date_field :trained_on, label: "Trained On", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= f.text_area :notes, label: "Notes", rows: 4 %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Certification" %>
+    <%= cancel_link person_certifications_path(person) %>
+    <% unless person_certification.new_record? %>
+      <%= delete_button person_certification_path(person, person_certification),
+                        "Delete certification",
+                        variant: :error,
+                        confirm_modal: {
+                          title: "Delete Certification",
+                          message: "Delete the #{person_certification.certification.title} certification? This cannot be undone."
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>
+

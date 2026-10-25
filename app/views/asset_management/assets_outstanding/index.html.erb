@@ -1,0 +1,113 @@
+<%#
+  Assets still checked out for the year. One barcode-sorted table, matching the
+  upstream report: the reader is chasing specific items, so nothing is grouped
+  or collapsed. The Type filter narrows a radio-heavy list without hiding
+  anything by default.
+%>
+<% content_for :title, "Assets Outstanding" %>
+
+<%= hero_panel icon: "walkie-talkie", heading_level: :h1, id: "assets-outstanding-header",
+               title: "Assets Outstanding" do |panel| %>
+  <% panel.description do %>
+    Assets still checked out for <%= @year || "the event" %> — who has each one, and when it
+    went out.
+  <% end %>
+  <%# keep: -- the selector submits its own bare GET, so without it the type
+      filter silently vanishes the moment someone changes year. %>
+  <% if @available_years.any? %>
+    <% panel.year_selector year: @year,
+                           years: @available_years,
+                           include_current_year: false,
+                           include_year_argument: false,
+                           keep: active_filters(@filter_params) %>
+  <% end %>
+<% end %>
+
+<% if @available_years.empty? %>
+  <%= ui_empty_state "No asset records have been added yet.",
+                     icon: "boxes-stacked", icon_type: :solid %>
+<% elsif @assets.empty? %>
+  <%= ui_empty_state "Nothing is outstanding for #{@year} — every asset has been checked back in.",
+                     icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @assets.size.to_s, "Assets Outstanding", variant: :warning,
+                    icon: "boxes-stacked", icon_type: :solid %>
+    <%= ui_stat_box @radio_count.to_s, "Radios Outstanding",
+                    icon: "walkie-talkie", icon_type: :solid %>
+    <%= ui_stat_box @holder_count.to_s, "People Holding Assets",
+                    icon: "users", icon_type: :solid %>
+  <% end %>
+
+  <%= filter_bar id: "assets-outstanding-filters",
+                 chips: assets_outstanding_filter_chips(@filter_params, @year),
+                 clear_url: asset_management_assets_outstanding_path(year: @year),
+                 count: "Showing #{@filtered_assets.size} of #{pluralize(@assets.size, "asset")}",
+                 actions: export_csv_link(asset_management_assets_outstanding_path(**active_filters(@filter_params),
+                                          year: @year, format: :csv)),
+                 url: asset_management_assets_outstanding_path do |f| %>
+    <%# Year-scoped page: without this the filters snap back to the current year. %>
+    <%= hidden_field_tag :year, @year %>
+
+    <%= form_row do %>
+      <%= f.select :type,
+                   asset_type_filter_options(@assets),
+                   label: "Type",
+                   selected: @filter_params[:type],
+                   width: "w-full",
+                   wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%#
+    No filtered-empty state: a type nothing is outstanding in reads as "all"
+    (see the controller), so a non-empty year always has rows to show.
+  %>
+  <%= ui_section "Outstanding Assets", icon: "table-list", icon_type: :solid do %>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Barcode" %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Type" %>
+        <%= t.heading "Description" %>
+        <%= t.heading "Attachment" %>
+        <%= t.heading "Assignment" %>
+        <%= t.heading "Checked Out" %>
+      <% end %>
+
+      <%= t.body do %>
+        <% @filtered_assets.each do |asset| %>
+          <% checkout = asset.checked_out %>
+          <%= t.row do %>
+            <%# The record page carries the asset's full checkout history, which
+                is the next question after "who has it". origin: sends its Back
+                link here rather than to the inventory. %>
+            <%= t.row_header link_to(asset.barcode,
+                                     asset_management_record_path(asset, **active_filters(@filter_params),
+                                                                  year: @year, origin: "outstanding"),
+                                     class: LinkHelper::TABLE_LINK_CLASSES) %>
+            <%= t.cell person_display_link(checkout&.person, checkout&.person_id) %>
+            <%= t.cell asset_type_label(asset.type) %>
+            <%= t.cell value_or_dash(asset.description) %>
+            <%= t.cell value_or_dash(checkout&.attachment&.description) %>
+            <%= t.cell asset_assignment_badge(asset) %>
+            <%# year: -- the reader browses arbitrary past years here, so a bare
+                "Aug 27 @ 12:47" cannot be placed. %>
+            <%= t.cell do %>
+              <%= datetime_format(checkout&.checked_out, year: true) %>
+              <% if checkout&.check_out_person_id.present? %>
+                <div class="text-body">
+                  by <%= person_display_link(checkout.check_out_person, checkout.check_out_person_id) %>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

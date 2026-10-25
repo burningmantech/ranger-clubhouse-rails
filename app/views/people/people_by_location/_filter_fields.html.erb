@@ -1,0 +1,22 @@
+<%# The filter controls, shared by the countries index and the country pages so
+    the two cannot drift apart.
+    Locals: f (form builder). %>
+<%= form_row do %>
+  <%= f.select :participation, people_by_location_participation_options(@year),
+               label: "Show", selected: @participation,
+               width: "w-full", wrapper_class: "flex-1" %>
+<% end %>
+
+<fieldset class="mt-3">
+  <legend class="font-medium mb-2">Also include</legend>
+  <p class="text-sm text-stone-muted mb-2">
+    People who are not Rangers right now are hidden until you ask for them.
+  </p>
+  <%= render "common/checkbox_grid",
+             name: "statuses[]",
+             options: PeopleByLocationReport::OPTIONAL_STATUSES.map { |status|
+               [status, status]
+             },
+             selected: @statuses,
+             id_prefix: "include-status" %>
+</fieldset>

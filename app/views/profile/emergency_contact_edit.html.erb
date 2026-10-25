@@ -1,0 +1,44 @@
+<%# locals: (person:) %>
+<%= hero_panel icon: "phone", heading_level: :h1, id: "edit-emergency-header",
+               title: "Edit Emergency Contact Information",
+               back_to: ["Profile", profile_index_path] do |panel| %>
+  <% panel.description do %>
+    <% if viewing_self? %>
+      Provide contact details for both on-playa and off-playa emergencies.
+    <% else %>
+      Update <%= person.callsign %>'s emergency contact information.
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_callout_box :info do %>
+  <dl class="instruction-list mb-3">
+    <dt>What should I include for off-playa contact?</dt>
+    <dd>Their name, relationship to you (partner, friend, sibling, parent, etc.), a phone number, and email address.
+    </dd>
+    <dt>What should I include for on-playa contact?</dt>
+    <dd>Their playa name, real-world name, relationship, camp location, and camp description.</dd>
+    <dt>Why do we need both?</dt>
+    <dd>
+      <strong>Emergencies happen.</strong> Having both contacts ensures we can reach someone regardless of where you
+      or they are located.
+    </dd>
+  </dl>
+<% end %>
+<%= ui_section "Emergency Contact Details", icon: "address-book", icon_type: :solid do %>
+  <%= ui_form(person, profile_section_path("emergency-contact")) do |f| %>
+
+    <%= f.text_area :emergency_contact,
+                    label: "Emergency Contact Information",
+                    maxlength: 200,
+                    cols: 60,
+                    rows: 4,
+                    data: input_counter_data
+    %>
+
+    <%= button_row do %>
+      <%= f.submit "Save Changes" %>
+      <%= cancel_link profile_index_path %>
+    <% end %>
+  <% end %>
+<% end %>

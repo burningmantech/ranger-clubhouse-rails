@@ -1,0 +1,56 @@
+<%# Where everyone lives, counted by country. Pick a country to go further in. %>
+<%
+  query = people_by_location_query(year: @year, participation: @participation, statuses: @statuses)
+%>
+<% content_for :title, "People by Location" %>
+
+<%= hero_panel icon: "earth-americas", heading_level: :h1,
+               id: "people-by-location-header",
+               title: "#{@year} People by Location",
+               description: "Where everyone lives, grouped by country." do |panel| %>
+  <%# keep: the selector posts a bare GET carrying only the year, so without
+      this every year change would quietly drop the filters. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: query.except(:year) %>
+<% end %>
+
+<%= render "people/shared/privacy_notice",
+           shows: "home addresses#{" and email addresses" if can_view_email?}" %>
+
+<%= render "status_notice" %>
+
+<%= filter_bar id: "people-by-location-filters",
+               chips: people_by_location_chips(year: @year, participation: @participation,
+                                               statuses: @statuses) { |chip_query|
+                        people_by_location_path(chip_query)
+                      },
+               clear_url: people_by_location_path(year: @year),
+               count: "Showing #{people_by_location_count(@rows.size)} in " \
+                      "#{pluralize(@counts.size, "country")}",
+               actions: export_csv_link(people_by_location_path(query.merge(format: :csv)), "Export All to CSV"),
+               url: people_by_location_path do |f| %>
+  <%# A filter form replaces the whole query string on Apply, so the year has to
+      ride along or every Apply would bounce back to the current year. %>
+  <%= hidden_field_tag :year, @year %>
+  <%= render "filter_fields", f: %>
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<% if @counts.any? %>
+  <div class="lg:w-3/4">
+    <%# Four countries hold nearly everyone, so they get their own run rather
+        than sitting alphabetically among the forty that hold one or two. %>
+    <%= render "country_group", title: "Common Countries",
+               counts: @common_counts, query: %>
+    <%= render "country_group", title: "Everywhere Else",
+               counts: @other_counts, query: %>
+  </div>
+<% elsif @filtered %>
+  <%= ui_empty_state "No one matches these filters.",
+                     icon: "filter-circle-xmark", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No addresses are on file yet.",
+                     icon: "earth-americas", icon_type: :solid %>
+<% end %>

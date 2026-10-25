@@ -1,0 +1,11 @@
+<%= hero_panel icon: "circle-info", heading_level: :h1, id: "event-training-info-header",
+               title: "Event & Training Info for #{current_user.callsign}" %>
+<%= tab_navigation "info-tabs" do |tabs| %>
+  <% tabs.pane("event", "domevent") do %>
+    tab panel 1
+  <% end %>
+  <% tabs.pane("training", "training") do %>
+    Tab panel 2
+  <% end %>
+<% end %>
+

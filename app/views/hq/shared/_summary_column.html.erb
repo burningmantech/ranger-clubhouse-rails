@@ -1,0 +1,25 @@
+<%# Right-hand identity/summary column (Ember port/templates/hq.hbs): photo
+    (profile preferred, original as fallback), earned credits, on-duty hours,
+    and the Tickets & Provisions Progress modal trigger. The button targets
+    the app-wide "modal" turbo frame so the dialog is fetched on demand. %>
+<% photo_image = [@photo.photo&.profile, @photo.photo&.original].find { |attachment| attachment&.attached? } %>
+<div class="hq-summary text-center lg:w-auto">
+  <% if photo_image %>
+    <%= photo_tag photo_image, width: PersonPhoto::AVATAR_WIDTH, class: "rounded-2xl mx-auto",
+                  alt: "Photo of #{@person.callsign}" %>
+  <% else %>
+    <div class="flex justify-center"><%= render "common/photo_none" %></div>
+    <div class="text-stone-muted">No photo uploaded</div>
+  <% end %>
+  <dl class="mt-3 text-left">
+    <dt class="font-bold text-heading">Earned Credits</dt>
+    <dd class="mb-2" id="hq-earned-credits"><%= credit_format @hq_summary.total_credits %></dd>
+    <dt class="font-bold text-heading">On-Duty Time</dt>
+    <dd id="hq-worked-hours"><%= hour_minute_words @hq_summary.counted_duration %></dd>
+  </dl>
+  <div class="mt-3">
+    <%= button_link "Tickets & Provisions Progress", :secondary,
+                    hq_tickets_provisions_path(@person),
+                    data: { turbo_frame: "modal" } %>
+  </div>
+</div>

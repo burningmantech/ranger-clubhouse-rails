@@ -1,0 +1,24 @@
+<%# Single conversation for every audience: self-serve at /me (no @person),
+    management interfaces with @person set. The same workspace as the index
+    with this thread in the pane; below lg the list is hidden and the hero's
+    back link is the way back to it, to the folder the thread was opened from
+    (the Inbox keeps the bare address), or to the search it was a hit of.
+    messages_path resolves to the namespace that rendered this, so the back
+    link needs no local. %>
+<% back_path = messages_path(folder: (@folder unless @folder == PersonMessage::FOLDER_INBOX), q: search_query) %>
+<div class="mb-2">
+  <% if @person %>
+    <%= hero_panel icon: "comments", heading_level: :h1, id: "messages-header",
+                   description: "Viewing this conversation as #{@person.callsign}.",
+                   back_to: ["#{@person.callsign} Messages", back_path] do |panel| %>
+      <% panel.title do %>Messages &mdash; <%= @person.callsign %><% end %>
+    <% end %>
+  <% else %>
+    <%= hero_panel icon: "comments", heading_level: :h1, id: "messages-header",
+                   title: "Messages", back_to: ["Messages", back_path] %>
+  <% end %>
+  <%= render partial: "common/messages/compose_buttons", locals: { person: @person } %>
+</div>
+
+<%= render partial: "common/messages/workspace",
+           locals: { folder: @folder, message: @message, reply_form: @reply_form } %>

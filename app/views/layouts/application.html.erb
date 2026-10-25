@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+
+  <title><%= content_for(:title) || "Ranger Secret Clubhouse" %></title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="turbo-prefetch" content="false">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <%= yield :head %>
+
+  <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+  <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+  <%= favicon_link_tag "favicon-light.ico", media: "(prefers-color-scheme: light)" %>
+  <%= favicon_link_tag "favicon.ico", media: "(prefers-color-scheme: dark)" %>
+  <%= favicon_link_tag "favicon-light16.png", sizes: "16x16", media: "(prefers-color-scheme: dark)" %>
+  <%= favicon_link_tag "favicon-light32.png", sizes: "32x32", media: "(prefers-color-scheme: dark)" %>
+  <%= favicon_link_tag "favicon-32.png", sizes: "32x32" %>
+  <%= favicon_link_tag "favicon-48.png", sizes: "48x48" %>
+  <%= favicon_link_tag "favicon-96.png", sizes: "96x96" %>
+  <%= favicon_link_tag "favicon-144.png", sizes: "144x144" %>
+  <%= favicon_link_tag "favicon-256.png", sizes: "256x256" %>
+
+  <%# The proportional roman latin face is on the critical path for every page. The
+      italic, latin-ext and monospaced faces are declared in fonts.css and fetched
+      only when something actually asks for them. %>
+  <link rel="preload" href="<%= asset_path("atkinson-latin.woff2") %>" as="font" type="font/woff2" crossorigin>
+  <%# The theme, before the first paint. The theme controller on the navbar
+      makes this same decision when it connects and owns the toggle, but it
+      connects only once application.js has loaded, and until then a reader who
+      saved the dark theme, or whose OS prefers it with nothing saved, would see
+      a light frame. Light needs nothing: it is the sheet's default. A plain
+      inline script, like the analytics snippet: no policy header forbids it. %>
+  <script>
+    if (localStorage.getItem("theme") === "dark" ||
+        (!localStorage.getItem("theme") && matchMedia("(prefers-color-scheme: dark)").matches)) {
+      document.documentElement.classList.add("dark")
+      document.documentElement.dataset.theme = "dark"
+    }
+  </script>
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+  <%# Stimulus's own entry modules. They are inside the lazily-pinned controllers
+      directory, so without these two the browser only discovers them after
+      application.js has been fetched and parsed. %>
+  <link rel="modulepreload" href="<%= asset_path("controllers/index.js") %>">
+  <link rel="modulepreload" href="<%= asset_path("controllers/application.js") %>">
+</head>
+<%= google_analytics %>
+<body class="h-screen flex flex-col" data-controller="active-links local-time" data-turbo-prefetch="false">
+<% if authenticated? %>
+  <%= render "application/top_menu" %>
+  <%# This person's live updates over Action Cable, such as a new message
+      (PersonMessage#announce_to_recipient). Each update names the element it
+      changes, so one stream serves them all. %>
+  <%= turbo_stream_from current_user %>
+<% else %>
+  <%= render "application/public_menu" %>
+<% end %>
+<% if content_for? :sidebar %>
+  <%# grid-rows-1 clamps the drawer's single grid row to the drawer height;
+      otherwise the row auto-sizes to the 100dvh drawer-side and pushes the
+      main scroll area 64px (navbar height) past the viewport bottom %>
+  <div class="drawer lg:drawer-open grid-rows-1 flex-1 min-h-0">
+    <input id="sidebar-drawer" type="checkbox" class="drawer-toggle"/>
+    <div class="drawer-content overflow-y-auto app-edge-pad">
+      <%# text-body text-base, as the sidebar-less <main> below has: DESIGN.md's Body
+          (0.9rem). Without it unclassed text fell to the browser's 16px and read
+          larger than the 0.9rem headings (heading-section, heading-title) above it. %>
+      <main class="text-body text-base">
+        <% if content_for?(:main) %>
+          <%= yield :main %>
+        <% else %>
+          <%= yield %>
+        <% end %>
+      </main>
+    </div>
+    <%= content_for :sidebar %>
+  </div>
+<% else %>
+  <div class="flex w-full mx-auto grow min-h-0">
+    <main class="grow min-w-0 min-h-0 overflow-y-auto text-body text-base app-edge-pad">
+      <% if content_for?(:main) %>
+        <%= yield :main %>
+      <% else %>
+        <%= yield %>
+      <% end %>
+    </main>
+  </div>
+<% end %>
+<%= turbo_frame_tag "modal" %>
+<%= tag.div id: "turbo-confirm-modal" %>
+<%# Not aria-atomic: an error toast stays until it is closed, and a new toast
+    is read on its own rather than with every one still showing. %>
+<div aria-live="polite" class="relative">
+  <div class="fixed top-4 right-4 z-50 flex flex-col gap-2">
+    <%= turbo_frame_tag "toast-container" %>
+    <% flash.each do |type, message| %>
+      <%= ui_toast_render(message, type) %>
+    <% end %>
+  </div>
+</div>
+<%# What a Stimulus controller has to tell a screen reader -- the copy control's
+    "Copied", which sighted readers get as a tip on the control. Each message
+    is added as a line of its own and only that line is read, which is why this
+    is not a role="status": that reads the whole region again on every change.
+    It is here from the start because a region that arrives already holding
+    its words is not read out. %>
+<div id="live-region" class="sr-only" aria-live="polite"></div>
+</body>
+</html>
+

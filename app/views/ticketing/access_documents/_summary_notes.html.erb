@@ -1,0 +1,21 @@
+<%# locals: (notes:, errors:) %>
+<%#
+  The Weird Stuff column: the row's own observations first ("2 tickets",
+  "SC+SAP"), then the per-document problems the lib found, which are already
+  formatted as "RAD-42 - missing access date".
+
+  Errors get an icon as well as the error colour so the distinction survives
+  without colour vision.
+%>
+<% if notes.empty? && errors.empty? %>
+  <span class="text-stone-muted">&mdash;</span>
+<% else %>
+  <div class="flex flex-col gap-1">
+    <% notes.each do |note| %>
+      <span class="text-body"><%= note %></span>
+    <% end %>
+    <% errors.each do |error| %>
+      <%= render "summary_error", error: %>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,32 @@
+<%# locals: (report:, filter_params:) %>
+<%#
+  What the report is reporting on, and the six numbers the shift lead scans
+  first, in one compact block at the top of the report.
+
+  This replaces the desktop-only sticky rail. Below the lg breakpoint the rail's
+  contents simply stacked at the top at their full height, which is what put
+  the first Ranger two screens down.
+
+  The band is the same block at every width, and it is not pinned at any of
+  them: it scrolls away with the page.
+%>
+<div class="mb-3 card-standard p-2 shadow-xs lg:p-3"
+     role="region" aria-label="Shift summary">
+  <div class="flex flex-wrap items-center gap-2 mb-2">
+    <p class="text-base"><%= shift_lead_mode_summary(report) %></p>
+    <span class="grow"></span>
+    <%# Carries every filter and sort as well as the shift, so the paper is the
+        roster on the screen rather than a different one. %>
+    <%= button_link "Print", :secondary,
+                    scheduling_shift_lead_print_path(**shift_lead_all_params(filter_params)),
+                    icon: "print", icon_type: :solid %>
+  </div>
+
+  <%# Three across on a phone, six on a desktop. Never a horizontal scroller:
+      a number the reader has to swipe to reach is a number they will not read. %>
+  <div class="grid grid-cols-3 lg:grid-cols-6 gap-2">
+    <% shift_lead_headline_numbers(report).each do |value, label, variant| %>
+      <%= ui_stat_box value.to_s, label, size: :sm, variant: variant %>
+    <% end %>
+  </div>
+</div>

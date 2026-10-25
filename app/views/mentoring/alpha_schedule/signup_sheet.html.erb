@@ -1,0 +1,141 @@
+<%#
+  The Alpha sign-in sheet: one handwriting block per sign-up (the roster's
+  known facts printed, the rest left blank for a mentor's pen), then a blank
+  standby section for Alphas who turn up without a sign-up.
+  Upstream Ember mentor/alpha-signup-sheet.
+
+  Pagination is the browser's: each tbody is break-inside: avoid and the
+  thead repeats, so blocks never tear and every sheet identifies itself.
+%>
+<% slot = @roster.slot %>
+<%# safe_join, not interpolation: a shift with no description is named by its
+    time, which is markup, and a plain string would print the tags. %>
+<% shift_title = safe_join([slot.begins_year, " ", alpha_shift_title(slot)]) %>
+<% shift_when = datetime_format(slot.begins, slot.ends) %>
+<% content_for :title, "Sign-In Sheet — #{alpha_shift_title_text(slot)}" %>
+
+<%= render "print_screen_nav" %>
+
+<section class="alpha-sheet">
+  <%= render "sheet_masthead", doc_label: "Alpha shift · Sign-in sheet",
+             shift_title:, shift_when:, first: true %>
+  <div class="alpha-subline">
+    <span><%= pluralize(@roster.entries.size, "sign-up") %> &middot; sorted by callsign</span>
+    <span class="font-bold">Initial next to your callsign as you sign in</span>
+  </div>
+
+  <% if @roster.entries.empty? %>
+    <p class="mt-4">No one has signed up for this shift yet. The standby list follows.</p>
+  <% else %>
+    <table>
+      <thead>
+        <tr class="alpha-running-head">
+          <th colspan="5"><%= shift_title %> &middot; Sign-in sheet</th>
+        </tr>
+        <tr>
+          <th><span class="sr-only">Flagged</span></th>
+          <th>Handle</th>
+          <th>Shirt Sizes</th>
+          <th>Details</th>
+          <th>Initial Here</th>
+        </tr>
+      </thead>
+      <% @roster.entries.each do |entry| %>
+        <% person = entry.person %>
+        <tbody>
+          <tr class="alpha-write-row">
+            <%# A flag means "a mentor should talk to this person first". %>
+            <td class="alpha-flag-cell" rowspan="3"><%= "⚑" if entry.flagged? %></td>
+            <td>
+              <span class="alpha-fill">Handle</span>
+              <span class="alpha-callsign"><%= person.callsign %></span>
+            </td>
+            <td>
+              <span class="alpha-fill">T-shirt</span>
+              <span class="alpha-value"><%= ShirtTotals.title_for(person, :tshirt_swag) %></span>
+            </td>
+            <td>
+              <span class="alpha-fill">Training</span>
+              <span class="alpha-value">
+                <% if entry.trainings.empty? %>
+                  &mdash;
+                <% else %>
+                  <% entry.trainings.each do |training| %>
+                    <%= mdy_format(training.slot_begins) %> <%= training.slot_description %><br>
+                  <% end %>
+                <% end %>
+              </span>
+            </td>
+            <td class="alpha-initial" rowspan="3"><span class="alpha-fill">Initial</span></td>
+          </tr>
+          <tr class="alpha-write-row">
+            <td>
+              <span class="alpha-fill">Real name</span>
+              <span class="alpha-value"><%= person.desired_full_name %></span>
+            </td>
+            <td>
+              <span class="alpha-fill">Long sleeve</span>
+              <span class="alpha-value"><%= ShirtTotals.title_for(person, :long_sleeve_swag) %></span>
+            </td>
+            <td>
+              <span class="alpha-fill">Home</span>
+              <span class="alpha-value"><%= [person.city, person.state, person.country].compact_blank.join(" ") %></span>
+            </td>
+          </tr>
+          <tr class="alpha-write-row alpha-block-end">
+            <td><span class="alpha-fill">Team</span></td>
+            <td><span class="alpha-fill">Pod</span></td>
+            <td><span class="alpha-fill">Mentors</span></td>
+          </tr>
+        </tbody>
+      <% end %>
+    </table>
+  <% end %>
+</section>
+
+<%# Standby list: the same block, entirely blank, for Alphas who arrive
+    without a sign-up. %>
+<section class="alpha-sheet break-before-page">
+  <%= render "sheet_masthead", doc_label: "Alpha shift · Standby list",
+             shift_title:, shift_when:, first: false %>
+  <div class="alpha-subline">
+    <span>Not on the roster? Add yourself below.</span>
+    <span class="font-bold">Please write legibly</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr class="alpha-running-head">
+        <th colspan="5"><%= shift_title %> &middot; Standby list</th>
+      </tr>
+      <tr>
+        <th><span class="sr-only">Flagged</span></th>
+        <th>Handle</th>
+        <th>Shirt Sizes</th>
+        <th>Details</th>
+        <th>Initial Here</th>
+      </tr>
+    </thead>
+    <% @standby_rows.times do %>
+      <tbody>
+        <tr class="alpha-write-row">
+          <td class="alpha-flag-cell" rowspan="3"></td>
+          <td><span class="alpha-fill">Handle (if known)</span></td>
+          <td><span class="alpha-fill">T-shirt</span></td>
+          <td><span class="alpha-fill">Training</span></td>
+          <td class="alpha-initial" rowspan="3"><span class="alpha-fill">Initial</span></td>
+        </tr>
+        <tr class="alpha-write-row">
+          <td><span class="alpha-fill">Real name</span></td>
+          <td><span class="alpha-fill">Long sleeve</span></td>
+          <td><span class="alpha-fill">Home</span></td>
+        </tr>
+        <tr class="alpha-write-row alpha-block-end">
+          <td><span class="alpha-fill">Team</span></td>
+          <td><span class="alpha-fill">Pod</span></td>
+          <td><span class="alpha-fill">Mentors</span></td>
+        </tr>
+      </tbody>
+    <% end %>
+  </table>
+</section>

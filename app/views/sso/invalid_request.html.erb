@@ -1,0 +1,10 @@
+<% content_for :title, "Sign-In Request Refused | Ranger Secret Clubhouse" %>
+
+<div class="login-panel">
+  <%= render "sessions/heading", title: "Something Went Wrong",
+             lede: "The website that sent you here didn't supply the details the Clubhouse needs " \
+                   "to sign you in there. It may be misconfigured. If this keeps happening, " \
+                   "contact the Ranger Tech Team." %>
+
+  <%= render "sessions/footer_link", label: "Go to your dashboard", path: me_root_path %>
+</div>

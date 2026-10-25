@@ -1,0 +1,105 @@
+/*
+ * Base Element Styles
+ * Global styling for HTML elements
+ */
+
+/* `link` is a utility, so it cannot live inside the layer below -- @utility
+   cannot be nested. It is what `a` applies, and what a call site overrides. */
+@utility link {
+    @apply text-primary underline;
+}
+
+/*
+ * Layered so a utility at the call site can override these. Unlayered CSS
+ * beats every layered rule whatever the specificity, so while these sat
+ * outside a layer a bg-* utility on <main> did nothing -- which is why the
+ * sessions layout had to reach for bg-transparent! -- and `<p class="mb-3">`
+ * rendered at 8px.
+ *
+ * Counted before moving the p and the a, because "several hundred paragraphs"
+ * wanted a number:
+ *
+ *   166 paragraphs get the margin they asked for: mb-3 x109, mb-4 x24,
+ *       mb-1 x15, my-4 x11, my-3 x4, and one each of mb-0, my-1, mb-8.
+ *       The 123 `mb-2` and 23 `my-2` paragraphs do not move -- `my-2` sets the
+ *       same 8px this rule was already forcing, so only its top was ever live.
+ *
+ *     7 links get their real colour: text-stone-muted x6, text-warning x1.
+ *       Of 84,406 rendered <a>, 70,919 already carry no-decoration and opted
+ *       out, and 248 carry `underline`, which is what this applies anyway.
+ *
+ *     0 buttons move: none of 24,353 carries a cursor-* utility.
+ */
+@layer base {
+    /* A custom element is inline until told otherwise, and a frame wrapping a
+       panel wants to be a block. This was `turbo-frame:not(.flex)` and
+       unlayered, which is (0,1,1) and beat every plain utility on the frame --
+       `hidden` included, so `turbo_frame_tag class: "hidden lg:block"`
+       rendered at every width and the messages folder tabs showed on phones.
+       The `:not(.flex)` was the escape hatch someone needed once. Layered, a
+       display utility simply wins and the hatch is redundant: of 11,347 frames
+       in the rendered corpus only 68 carry one at all, `block` (already what
+       this says) and `flex` (which won through the hatch and now wins as a
+       utility), so nothing moves. */
+    turbo-frame {
+        display: block;
+    }
+
+    main {
+        @apply bg-base-100;
+    }
+
+    /* A key legend reads as a literal string, so it takes the design system's
+       monospaced cut like every other literal here. This spelled out a system
+       mono stack instead -- `--font-mono` with "Atkinson Hyperlegible Mono"
+       removed from the front of it -- which made a bare <kbd> the one mono
+       surface in the app not set in the app's own typeface, for no stated
+       reason. A call site that wants the proportional cut says font-sans and
+       wins, which is what the two navbar shortcut chips do. */
+    kbd {
+        @apply font-mono;
+    }
+
+    p {
+        @apply mb-2;
+    }
+
+    a:not(.no-decoration) {
+        @apply link;
+    }
+
+    button {
+        @apply cursor-pointer;
+    }
+
+    /* The gap a ring-offset-* focus ring leaves between an element and its
+       ring is painted in --tw-ring-offset-color, which Tailwind registers with
+       `inherits: false` and an initial value of #fff -- so it has to be set on
+       every element, not once on :root. Left at #fff, every focus:ring-offset-2
+       in views and helpers (8 of them on 2026-10-02) drew a white band round
+       what it focused: glaring in dark mode, off-key against the warm paper in
+       light. base-100 is the surface they sit on. An element on another
+       surface says ring-offset-<surface>, which wins here as a utility. */
+    *, ::before, ::after {
+        --tw-ring-offset-color: var(--color-base-100);
+    }
+}
+
+/*
+ * iOS Safari zooms the page in when a field under 16px takes focus, and stays
+ * zoomed, so the page runs off the right edge. Fields here are 0.9rem. daisyUI
+ * lifts .input and .textarea to 1rem on focus behind this same media and
+ * @supports pair, but not the Lexxy editor's contenteditable, not a field whose
+ * font-size a component rule or a utility sets (.mega-menu-search and
+ * .login-input both did), and not .select (iOS 27 no longer zooms on a select;
+ * older iOS did). Unlayered, so it outranks all of those.
+ */
+@media (pointer: coarse) {
+    @supports (-webkit-touch-callout: none) {
+        :is(input:not([type=checkbox], [type=radio], [type=range], [type=file], [type=color],
+                       [type=submit], [type=button], [type=reset], [type=image]),
+            select, textarea, [contenteditable]):focus {
+            font-size: 1rem;
+        }
+    }
+}

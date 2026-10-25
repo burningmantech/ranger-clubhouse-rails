@@ -1,0 +1,21 @@
+<%# locals: (photo:, person:) %>
+<div class="flex shrink-0 flex-col items-center gap-2">
+  <% if photo&.avatar&.attached? %>
+    <%= photo_tag photo.avatar, class: "rounded-2xl", width: PersonPhoto::AVATAR_WIDTH, height: PersonPhoto::AVATAR_HEIGHT,
+                   alt: "#{person.callsign} profile photo" %>
+    <div>
+      <% case photo.status %>
+      <% when PersonPhoto::APPROVED %>
+        <%= ui_badge "approved", :success, size: "xs" %>
+      <% when PersonPhoto::SUBMITTED %>
+        <%= ui_badge "awaiting approval", :warning, size: "xs" %>
+      <% when PersonPhoto::REJECTED %>
+        <%= ui_badge "rejected", :error, size: "xs" %>
+      <% else %>
+        <span class="text-xs text-body">Status: <%= photo.status %></span>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render partial: "common/photo_none" %>
+  <% end %>
+</div>

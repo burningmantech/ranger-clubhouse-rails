@@ -1,0 +1,103 @@
+<%# ART graduation: pick the passed candidates (plus explicit overrides for
+    those short on requirements) and grant the ART's positions. %>
+<% session = @training_session %>
+
+<%= modal_dialog id: "graduation-dialog", title: "Graduate Trainees", size: :xl, frame: false do %>
+  <% if local_assigns[:error] %>
+    <%= ui_callout_box :error do %><%= local_assigns[:error] %><% end %>
+  <% end %>
+
+  <p class="mb-2">
+    Granting: <strong><%= graduation.position_titles.to_sentence %></strong>
+    <% if graduation.veteran_position %>
+      · people already holding <strong><%= graduation.veteran_position.last %></strong> are skipped.
+    <% end %>
+  </p>
+
+  <div class="flex flex-wrap gap-2 mb-3">
+    <%= ui_badge "#{graduation.ready.size} eligible", :success %>
+    <%= ui_badge "#{graduation.overrides.size} override", :warning %>
+    <%= ui_badge "#{graduation.ineligible.size} ineligible", :secondary %>
+  </div>
+
+  <% if graduation.selectable.any? %>
+    <%= form_with url: training_session_graduation_path(training_slug, session.slot.id),
+                  method: :post, builder: AppFormBuilder do %>
+      <% if graduation.ready.any? %>
+        <%= ui_table full_width: true do |t| %>
+          <%= t.header do %>
+            <%= t.heading "Graduate" %>
+            <%= t.heading "Callsign" %>
+            <%= t.heading "Status" %>
+          <% end %>
+          <%= t.body do %>
+            <% graduation.ready.each do |candidate| %>
+              <%= t.row do %>
+                <%= t.cell do %>
+                  <%= check_box_tag "person_ids[]", candidate.person.id, true,
+                                    id: "graduate-#{candidate.person.id}",
+                                    class: AppFormBuilder::CHECKBOX_CLASSES,
+                                    aria: { label: "Graduate #{candidate.person.callsign}" } %>
+                <% end %>
+                <%= t.row_header candidate.person.callsign %>
+                <%= t.cell candidate.person.status %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <% if graduation.overrides.any? %>
+        <%= ui_callout_box :warning, title: "Requirements Not Met — Override Only" do %>
+          <p class="mb-2">
+            These trainees passed but are short on requirements. Graduating them anyway is
+            strongly discouraged.
+          </p>
+          <% graduation.overrides.each do |candidate| %>
+            <div class="border-t border-line pt-2 mt-2">
+              <label class="inline-flex items-center gap-2 min-h-9 cursor-pointer font-semibold"
+                     for="graduate-<%= candidate.person.id %>">
+                <%= check_box_tag "person_ids[]", candidate.person.id, false,
+                                  id: "graduate-#{candidate.person.id}",
+                                  class: AppFormBuilder::CHECKBOX_CLASSES %>
+                Force graduate <%= candidate.person.callsign %>
+              </label>
+              <ul class="list-disc ms-5">
+                <% candidate.gaps.messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%= modal_form_footer submit: "Graduate Selected Trainees" %>
+    <% end %>
+  <% else %>
+    <p class="text-error font-semibold mb-3">No eligible candidates were found.</p>
+    <%= button_row do %>
+      <%= modal_close_button "Close" %>
+    <% end %>
+  <% end %>
+
+  <% if graduation.ineligible.any? %>
+    <h3 class="heading-title mt-4 mb-1">Not Eligible</h3>
+    <%= ui_table full_width: true, responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Reason" %>
+      <% end %>
+      <%= t.body do %>
+        <% graduation.ineligible.each do |candidate| %>
+          <%= t.row do %>
+            <%= t.row_header candidate.person.callsign %>
+            <%= t.cell candidate.person.status %>
+            <%= t.cell graduation_ineligibility_reason(graduation, candidate) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

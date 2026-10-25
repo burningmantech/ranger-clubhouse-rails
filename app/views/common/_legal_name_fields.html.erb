@@ -1,0 +1,18 @@
+<%# The name as it appears on an ID. See _mailing_address_fields for what
+    autocomplete decides.
+
+    required_label: passed straight to the required fields, so a caller can quiet
+    the marker to a bare asterisk ("") where a page is mostly required and the
+    full "required" pill on every row would only add noise. Left nil here, which
+    is the field default -- the pill -- for every caller that does not ask. %>
+<%# locals: (f:, autocomplete: false, required_label: nil) %>
+<%= form_row do %>
+  <%= f.text_field :first_name, label: "Legal First Name", width: "w-full sm:w-48",
+                   maxlength: 25, required: true, required_label: required_label,
+                   autocomplete: ("given-name" if autocomplete) %>
+  <%= f.text_field :mi, label: "Middle Initial", width: "w-20", maxlength: 10,
+                   autocomplete: ("additional-name" if autocomplete) %>
+  <%= f.text_field :last_name, label: "Legal Last Name", width: "w-full sm:w-48",
+                   maxlength: 25, required: true, required_label: required_label,
+                   autocomplete: ("family-name" if autocomplete) %>
+<% end %>

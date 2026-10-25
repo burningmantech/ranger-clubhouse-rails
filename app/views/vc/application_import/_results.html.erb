@@ -1,0 +1,87 @@
+<%#
+  Results ledger for one preview or import run. locals: import
+  (ProspectiveApplicationImport), committed (Boolean).
+%>
+<% query_failures = import.query_failures
+   create_failures = import.create_failures
+   new_count = import.new_applications.size
+   problem_count = query_failures.size + create_failures.size %>
+
+<% if import.api_error %>
+  <%= ui_callout_box :error, accent: true, title: "The Salesforce Pull Did Not Finish" do %>
+    <p>
+      <strong>The lists below may be incomplete<%= ", and some applications may already have been imported" if committed %>.</strong>
+      Double-check them before running again, and contact the Ranger Tech Cadre if this keeps happening.
+    </p>
+    <p class="mt-2 break-words"><%= import.api_error %></p>
+  <% end %>
+<% elsif committed %>
+  <% if problem_count.zero? %>
+    <%= ui_callout_box :success do %>
+      <strong><%= pluralize(new_count, "application") %> imported into the Clubhouse.</strong>
+      Every Salesforce record was read and saved without problems.
+    <% end %>
+  <% else %>
+    <%= ui_callout_box :warning do %>
+      <strong><%= pluralize(new_count, "application") %> imported into the Clubhouse.</strong>
+      <%= pluralize(problem_count, "record") %> could not be imported &mdash; see the failure sections below.
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_callout_box :info do %>
+    <strong>Preview only &mdash; nothing has been saved.</strong>
+    <%= pluralize(new_count, "application") %> ready to import<% if problem_count.positive? %>,
+    and <%= pluralize(problem_count, "record") %> with problems to review below<% end %>.
+  <% end %>
+<% end %>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 my-4">
+  <%= ui_stat_box new_count.to_s, committed ? "Imported" : "New",
+                  variant: :success, icon: "circle-check", icon_type: :solid %>
+  <%= ui_stat_box import.existing_applications.size.to_s, "Already in Clubhouse",
+                  variant: :secondary, icon: "clone", icon_type: :solid %>
+  <%= ui_stat_box query_failures.size.to_s, "Query Failures",
+                  variant: query_failures.any? ? :warning : :secondary,
+                  icon: "triangle-exclamation", icon_type: :solid %>
+  <%= ui_stat_box create_failures.size.to_s, "Creation Failures",
+                  variant: create_failures.any? ? :error : :secondary,
+                  icon: "circle-exclamation", icon_type: :solid %>
+</div>
+
+<%= render "failures_table", failures: query_failures, id: "query-failures",
+           title: "Salesforce Query Failures",
+           intro: "These Salesforce records could not be read, so their applications were not imported. " \
+                  "Contact BMIT to resolve permission issues with the ranger-tech-cadre account " \
+                  "or on the individual Salesforce records." %>
+
+<%= render "failures_table", failures: create_failures, id: "creation-failures",
+           title: "Clubhouse Creation Failures",
+           intro: "These applications were read from Salesforce but could not be saved in the Clubhouse. " \
+                  "Contact the Ranger Tech Cadre for help." %>
+
+<%= ui_section committed ? "Imported Applications" : "Applications Ready to Import",
+               icon: "file-import", icon_type: :solid, id: "new-applications" do %>
+  <% if import.new_applications.any? %>
+    <p class="mb-3">
+      Showing <%= pluralize(new_count, "application") %><%= " — preview only, nothing saved yet" unless committed %>.
+    </p>
+    <%= render "applications_table", applications: import.new_applications,
+               download: committed ? "imported-applications" : "preview-applications" %>
+  <% else %>
+    <%= ui_empty_state "Salesforce has no new applications ready to import.",
+                       icon: "inbox", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Already in the Clubhouse", icon: "clone", icon_type: :solid, id: "existing-applications" do %>
+  <% if import.existing_applications.any? %>
+    <p class="mb-3">
+      These Salesforce applications already exist in the Clubhouse for <%= Current.year %>
+      and were left untouched.
+    </p>
+    <%= render "applications_table", applications: import.existing_applications,
+               download: "existing-applications" %>
+  <% else %>
+    <%= ui_empty_state "None of the pulled Salesforce applications are in the Clubhouse yet." %>
+  <% end %>
+<% end %>

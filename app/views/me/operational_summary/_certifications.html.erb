@@ -1,0 +1,11 @@
+<%= ui_section "Certifications", icon: "certificate", icon_type: :solid do %>
+  <% if @certifications.any? %>
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-1">
+      <% @certifications.each do |certification| %>
+        <div><%= certification.title %></div>
+      <% end %>
+    </div>
+  <% else %>
+    <%= ui_empty_state "No certifications are on file currently." %>
+  <% end %>
+<% end %>

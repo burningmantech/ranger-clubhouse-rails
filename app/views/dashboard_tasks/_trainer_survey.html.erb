@@ -1,0 +1,11 @@
+<%# locals: (step:,facts:)%>
+<%= fa_icon "chalkboard-teacher", :solid %> <b>Thanks for teaching!</b> Quick feedback on fellow trainers:
+<ul class="list-disc list-inside mt-1 space-y-1">
+<% facts.surveys.trainers.each do |slot| %>
+  <li>
+    <%= link_to me_surveys_path(slot_id: slot.id, type: Survey::TRAINER) do %>
+      <%= slot.position_title %> - <%= slot.description %> (<%= datetime_format slot.begins %>)
+    <% end %>
+  </li>
+<% end %>
+</ul>

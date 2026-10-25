@@ -1,0 +1,22 @@
+<%# locals: (step:,facts:)%>
+<% unless facts.is_applicant %>
+  <% if !facts.is_echelon && facts.online_course_passed %>
+    <p class="text-error font-medium">
+      Yearly check: Confirm your info is still correct.
+    </p>
+  <% else %>
+    <p>Yearly check: Confirm your info is still correct.</p>
+  <% end %>
+
+  <% if !facts.is_echelon && !facts.is_auditor %>
+    <p class="font-semibold text-lg">
+      <%= fa_icon "shirt", :solid %> Double-check your shirt sizes!
+    </p>
+  <% end %>
+<% end %>
+<b>Steps:</b>
+<ol class="list-decimal list-inside mb-2">
+  <li>Go to <%= link_to "Personal Info", me_profile_path %></li>
+  <li>Review &amp; fix anything outdated</li>
+  <li>Click <b>"My Information Is Correct"</b> at the bottom</li>
+</ol>

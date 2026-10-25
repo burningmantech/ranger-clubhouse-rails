@@ -1,0 +1,55 @@
+<%= ui_form(@announcement,
+            @announcement.persisted? ? communication_announcement_path(@announcement) : communication_announcements_path) do |f| %>
+  <%= f.fieldset "Who sees it", icon: "users", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Can I choose more than one?</dt>
+      <dd>Yes. Everyone in every group you check will see the announcement.</dd>
+      <dt>What happens if I check none?</dt>
+      <dd>The announcement cannot be saved, because no one would ever see it.</dd>
+    </dl>
+
+    <%= f.check_box :for_rangers, label: "Rangers" %>
+    <%= f.check_box :for_pnvs, label: "Prospectives & Alphas" %>
+    <%= f.check_box :for_auditors, label: "Auditors" %>
+  <% end %>
+
+  <%= f.fieldset "What it says", icon: "bullhorn", icon_type: :solid do %>
+    <%= f.text_field :subject, label: "Subject", required: true,
+                     maxlength: 191, show_counter: true, width: "w-full",
+                     help_text: "The heading readers see first. Lead with the point." %>
+
+    <%= f.rich_text_area :message, label: "Message", required: true,
+                         help_text: "Keep it short. Bold the key point, and put steps in a list." %>
+  <% end %>
+
+  <%= f.fieldset "When it stops showing", icon: "hourglass-half", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Is an end date required?</dt>
+      <dd>Yes, and it has to be in the future.</dd>
+      <dt>What happens after that date?</dt>
+      <dd>Readers see it marked as expired, and it is deleted overnight.</dd>
+    </dl>
+
+    <%= f.datetime_field :expires_at, label: "Ends On", required: true,
+                         width: "w-full sm:w-64",
+                         help_text: "Uses Clubhouse time, the same as shift times." %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit @announcement.persisted? ? "Save Announcement" : "Post Announcement" %>
+    <%= cancel_link communication_announcements_path %>
+    <% if @announcement.persisted? %>
+      <%= delete_button communication_announcement_path(@announcement),
+                        confirm_modal: {
+                          title: "Confirm Announcement Deletion",
+                          # The subject goes in as text only. strip_tags escapes as it
+                          # strips and the confirmation escapes again, so an "&" would
+                          # reach the reader as "&amp;" -- undo the stripper's escaping
+                          # and let the confirmation do it once.
+                          message: "Delete the announcement \"#{CGI.unescapeHTML(strip_tags(@announcement.subject))}\"? This cannot be undone.",
+                          confirm_label: "Delete Announcement",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

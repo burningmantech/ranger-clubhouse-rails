@@ -1,0 +1,32 @@
+<%= modal_dialog id: "reject-photo-dialog", size: :xl, title: "Reject Photo for #{@person_photo.person.callsign}" do %>
+  <%= ui_form(@person_photo, vc_photos_review_reject_path(@person_photo),
+              no_error_summary: true, data: { turbo_frame: "_top" }) do |f| %>
+    <div class="stack-to-row-lg">
+      <div class="shrink-0">
+        <%= photo_tag @person_photo.profile, width: 175, class: "rounded-lg",
+                      alt: "Submitted photo for #{@person_photo.person.callsign}" %>
+      </div>
+      <div class="flex-1 min-w-0">
+        <%= f.fieldset "Rejection reasons" do %>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-4">
+            <% PersonPhoto::REJECTIONS.each do |key, info| %>
+              <%= f.check_box :reject_reasons, { label: info[:label], multiple: true }, key, nil %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    <div class="mt-4">
+      <%= f.text_area :reject_message, label: "Custom Message to Include in the Rejection Email",
+                      rows: 5,
+                      help_text: "Optional. All email addresses and links in the message will be hyperlinked." %>
+    </div>
+    <%= button_row do %>
+      <%= submit_button "Reject Photo", variant: :error %>
+      <%= submit_button "Preview Email", variant: :secondary,
+                        formaction: vc_photos_review_reject_preview_path(@person_photo),
+                        formmethod: "get", formtarget: "_blank" %>
+      <%= modal_close_button "Cancel" %>
+    <% end %>
+  <% end %>
+<% end %>

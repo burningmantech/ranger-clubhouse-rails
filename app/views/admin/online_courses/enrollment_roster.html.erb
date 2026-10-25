@@ -1,0 +1,52 @@
+<%= turbo_frame_tag "online-course-enrollment", target: "_top" do %>
+  <% if @error_message %>
+    <%= render "moodle_error" %>
+  <% elsif @people.blank? %>
+    <%= ui_empty_state "No one is enrolled in this course yet." %>
+  <% else %>
+    <%= ui_stat_row do %>
+      <%= ui_stat_box @people.size.to_s, "Enrolled" %>
+      <%= ui_stat_box @people.count { |p| p.completed_at.present? }.to_s, "Completed", variant: :success %>
+      <%= ui_stat_box @people.count { |p| p.person.nil? }.to_s, "No Clubhouse Account", variant: :warning %>
+    <% end %>
+
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Moodle ID", right: true %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "ID Number", right: true %>
+        <%= t.heading "Username" %>
+        <%= t.heading "Email" %>
+        <%= t.heading "Completed" %>
+      <% end %>
+      <%= t.body do %>
+        <% @people.each do |student| %>
+          <%= t.row do %>
+            <%= t.cell student.id, right: true %>
+            <%= t.row_header do %>
+              <% if student.person %>
+                <%= person_display_link(student.person, student.person.id, path: person_path(student.person.id)) %>
+              <% else %>
+                <strong class="text-error">* unknown *</strong>
+              <% end %>
+            <% end %>
+            <%= t.cell value_or_dash(student.idnumber), right: true %>
+            <%= t.cell student.username %>
+            <%= t.cell student.email %>
+            <%= t.cell do %>
+              <% if student.is_teacher %>
+                <%= ui_badge "Not enrolled as student", :warning, size: "sm" %>
+              <% elsif student.completed_at.present? %>
+                <%# The LMS reports completion in Phoenix time; naming the zone
+                    keeps the printed clock the same as the one it sent. %>
+                <%= datetime_format(student.completed_at, tz: "America/Phoenix") %>
+              <% else %>
+                <span class="text-stone-subtle">not yet</span>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

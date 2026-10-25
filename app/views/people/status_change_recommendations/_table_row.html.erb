@@ -1,0 +1,37 @@
+<%# locals: (t:, row:) %>
+<%#
+  One person. A row whose change has just landed keeps its place, tinted and
+  badged, with no checkbox: it is here to show what happened, not to be picked
+  again.
+%>
+<% changed = @converted_ids.include?(row.id) %>
+<%= t.row id: "status-change-row-#{row.id}", class: "scroll-mt-24",
+          state: (:success if changed) do %>
+  <%= t.cell do %>
+    <% if changed %>
+      <%= ui_badge "Done", :success, icon: "circle-check", icon_type: :solid %>
+    <% else %>
+      <%= bulk_select_checkbox "person_ids[]", row.id,
+                               id: "status-change-person-#{row.id}",
+                               aria_label: "#{@group.title}: #{row.callsign}" %>
+    <% end %>
+  <% end %>
+  <%# A value row rather than a Person record, so the path is spelled out --
+      the link cannot route from the object itself. %>
+  <%= t.row_header do %>
+    <%= callsign_link row, person_path(row.id) %>
+  <% end %>
+  <%= t.cell row.status %>
+  <% if @group.sets_status? %>
+    <%= t.cell @group.target_status %>
+  <% end %>
+  <% if @group.shows_history? %>
+    <%= t.cell value_or_dash(row.last_year), right: true %>
+    <%= t.cell row.years.to_s, right: true %>
+    <%= t.cell value_or_dash(row.alpha_year), right: true %>
+  <% end %>
+  <%= t.cell email_link_or_dash(row.email) %>
+  <% if @group.shows_vintage? %>
+    <%= t.cell status_change_vintage(row.vintage) %>
+  <% end %>
+<% end %>

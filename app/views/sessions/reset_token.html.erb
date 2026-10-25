@@ -1,0 +1,75 @@
+<%
+  # The welcome email's link (?welcome=1) opens this page worded as a welcome.
+  # Only the words change: the token is checked the same way.
+  if @form.welcome
+    page_title = "Welcome"
+    heading = "Welcome to the Ranger Secret Clubhouse"
+    lede = "The first step is to set a password for your Clubhouse account."
+    submit_label = "Set Password"
+    submit_aria_label = "Set password for your Clubhouse account"
+  else
+    page_title = heading = "Set New Password"
+    lede = "Choose a new password for your account."
+    submit_label = "Reset Password"
+    submit_aria_label = "Set your new password"
+  end
+%>
+<% content_for :title, "#{page_title} | Ranger Secret Clubhouse" %>
+
+<div class="login-panel">
+  <%= render "sessions/heading", title: heading, lede: %>
+
+  <%= ui_form @form, update_password_path,
+              method: :post,
+              html: { role: "form", "aria-label": "Set new password form" } do |f| %>
+
+    <%= f.hidden_field :token %>
+    <%= f.hidden_field :welcome if @form.welcome %>
+
+    <%= f.password_field :password,
+                         label: "New Password",
+                         required: true,
+                         required_label: "",
+                         autofocus: true,
+                         autocomplete: "new-password",
+                         placeholder: "Enter your new password",
+                         minlength: 8,
+                         maxlength: 80,
+                         icon: "key",
+                         icon_type: :solid,
+                         icon_class: "absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-warning",
+                         replace_class: true,
+                         class: "login-input",
+                         wrapper_class: "login-field",
+                         help_text: "Must be 8 to 80 characters",
+                         hide_label: false %>
+
+    <%= f.password_field :password_confirmation,
+                         label: "Confirm New Password",
+                         required: true,
+                         required_label: "",
+                         autocomplete: "new-password",
+                         placeholder: "Re-enter your new password",
+                         minlength: 8,
+                         maxlength: 80,
+                         icon: "key",
+                         icon_type: :solid,
+                         icon_class: "absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-warning",
+                         replace_class: true,
+                         class: "login-input",
+                         wrapper_class: "login-field",
+                         hide_label: false %>
+
+    <div>
+      <%= submit_button submit_label,
+                        variant: :warning,
+                        size: "lg",
+                        class: "login-submit-button",
+                        data: { pending_label: "Saving…" },
+                        "aria-label": submit_aria_label %>
+    </div>
+
+    <%= render "sessions/footer_link", label: "Back to sign in", path: root_path,
+               aria_label: "Return to sign in page" %>
+  <% end %>
+</div>

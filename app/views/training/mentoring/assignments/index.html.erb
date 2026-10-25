@@ -1,0 +1,84 @@
+<%#
+  Mentor Assignment, the picker: every mentoring shift of the year as a card
+  that opens its roster -- the Alpha Sign-Out / Shift Report shape. Nothing is
+  edited here. The shifts on now and still to come only exist this year.
+%>
+<% content_for :title, "#{@training.title} Mentor Assignment" %>
+
+<%= hero_panel icon: "handshake", heading_level: :h1, id: "mentor-assignment-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> Mentor Assignment<% end %>
+  <% panel.description do %>
+    Pick a mentoring shift to pair its mentees with mentors and record how it went.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "Mentoring", training_mentoring_path(training_slug, year: @year) %>
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2008, skip_pandemic: true %>
+<% end %>
+
+<%= render "training/mentoring/missing_positions", shifts: @shifts %>
+
+<%= ui_stat_row do %>
+  <% if @is_current_year %>
+    <%= ui_stat_box @shifts.on_shift.size.to_s, "Mentees on Shift Now", icon: "person-walking", icon_type: :solid %>
+  <% end %>
+  <%= art_need_mentor_box(@shifts.needing_mentor_count) %>
+  <%= art_awaiting_verdict_box(@shifts.awaiting_verdict_count) %>
+  <% if @is_current_year %>
+    <%= ui_stat_box @shifts.upcoming_signup_count.to_s, "Upcoming Sign-Ups", icon: "calendar", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <%= render "training/mentoring/shift_rule", shifts: @shifts %>
+    <% if @shifts.groups.any?(&:unmatched?) %>
+      <dt>What does <%= Training::MentoringHelper::CHECK_SIGN_IN %> mean?</dt>
+      <dd>Those mentees signed in with no mentee shift starting within an hour. Their entries may need correcting.</dd>
+    <% end %>
+  </dl>
+<% end %>
+
+<% if @is_current_year %>
+  <%= ui_section "On Shift Now", icon: "person-walking", icon_type: :solid, border: false,
+                 badge: @shifts.in_progress.size.to_s, badge_color: :success do %>
+    <% if @shifts.in_progress.empty? %>
+      <%= ui_empty_state "No mentee is on shift right now.", icon: "person-walking", icon_type: :solid %>
+    <% else %>
+      <div class="two-column-lg">
+        <% @shifts.in_progress.each do |group| %>
+          <%= render "shift_card", group: %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Completed Shifts", icon: "clipboard-check", icon_type: :solid, border: false, class: "mt-6",
+               badge: @shifts.completed.size.to_s do %>
+  <% if @shifts.completed.empty? %>
+    <%= ui_empty_state "No mentee shift has ended in #{@year}.", icon: "clipboard-check", icon_type: :solid %>
+  <% else %>
+    <%# Newest first, and each card prints its own date, so no day headings. %>
+    <div class="two-column-lg">
+      <% @shifts.completed.each do |group| %>
+        <%= render "shift_card", group: %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+
+<% if @is_current_year %>
+  <%= ui_section "Upcoming Sign-Ups", icon: "calendar", icon_type: :solid, border: false, class: "mt-6",
+                 badge: @shifts.upcoming.size.to_s do %>
+    <% if @shifts.upcoming.empty? %>
+      <%= ui_empty_state "No one has signed up for a mentee shift still to come.", icon: "calendar", icon_type: :solid %>
+    <% else %>
+      <div class="two-column-lg">
+        <% @shifts.upcoming.each do |shift| %>
+          <%= render "upcoming_card", shift: %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

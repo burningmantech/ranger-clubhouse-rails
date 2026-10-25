@@ -1,0 +1,49 @@
+<%# locals: (applications:) %>
+<% if applications.empty? %>
+  <div class="p-4">
+    <%= ui_empty_state "No applications match the current filters." %>
+  </div>
+<% else %>
+  <%= ui_table do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Application" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Name" %>
+      <%= t.heading "Email" %>
+      <%= t.heading "Assigned To" %>
+      <%= t.heading "Age" %>
+      <%= t.heading "BRC Events" %>
+      <%= t.heading "Last Updated" %>
+      <%= t.heading "Actions" %>
+    <% end %>
+    <%= t.body do %>
+      <% applications.each do |application| %>
+        <%= t.row do %>
+          <%= t.row_header application.application_id %>
+          <%= t.cell application_status_badge(application.status) %>
+          <%= t.cell "#{application.first_name} #{application.last_name}" %>
+          <%= t.cell email_link_or_dash(application.email) %>
+          <%= t.cell application.assigned_person&.callsign || content_tag(:span, "Unassigned", class: "text-stone-muted") %>
+          <%= t.cell do %>
+            <% if application.is_over_18 %>
+              <%= fa_icon "check", :solid, class: "icon-success" %><span class="sr-only">18 or older</span>
+            <% else %>
+              <%= fa_icon "xmark", :solid, class: "icon-error" %> <span class="text-error">Under 18</span>
+            <% end %>
+          <% end %>
+          <%= t.cell do %>
+            <% if application.brc_experience_okay? %>
+              <%= fa_icon "check", :solid, class: "icon-success" %><span class="sr-only">qualified</span>
+            <% elsif application.all_events.empty? %>
+              <%= fa_icon "ban", :solid, class: "icon-error" %> <span class="text-error">none</span>
+            <% else %>
+              <%= fa_icon "xmark", :solid, class: "icon-error" %> <span class="text-error">issue</span>
+            <% end %>
+          <% end %>
+          <%= t.cell application.updated_by_person_at ? datetime_format(application.updated_by_person_at) : "-" %>
+          <%= t.cell edit_link vc_application_path(application) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

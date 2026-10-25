@@ -1,0 +1,10 @@
+<%# One headed run of countries on the index. Renders nothing when a filter has
+    emptied the group, so no heading is left standing over an empty space. %>
+<% if counts.any? %>
+  <%= ui_section_title title, class: "mt-4" %>
+  <% counts.each do |code, count| %>
+    <%= ui_drill_down_row people_by_location_country_path(code, query),
+                          people_by_location_country_label(code),
+                          meta: people_by_location_count(count) %>
+  <% end %>
+<% end %>

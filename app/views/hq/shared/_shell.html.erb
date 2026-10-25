@@ -1,0 +1,25 @@
+<%# Shared HQ shell chrome (Ember port/templates/hq.hbs) rendered as a
+    partial layout by layouts/hq.html.erb — the block is the child page.
+    Expects the ivars loaded by HqConcern#load_hq_shell. The photo/summary
+    column leads on mobile (the HQ worker verifies the face first) and trails
+    on desktop, matching the upstream responsive reordering.
+
+    .hq-shell is the scope every rule in components/hq-window.css hangs off:
+    the window runs on a tablet at the window and on a screen the shift crew
+    reads together, and neither is served by the app-wide phone/desktop split
+    at lg. Nothing else keys off these two class names. %>
+<div class="hq-shell">
+  <%= render "hq/shared/header" %>
+  <%= render "person/banners", person: @person, person_banners: @banners,
+                               email_suppression: @hq_email_suppression %>
+  <div class="stack-to-row-lg">
+    <div class="hq-shell-content order-2 lg:order-1 flex-1 min-w-0">
+      <%= render "hq/shared/danger_notices" %>
+      <%= yield %>
+    </div>
+    <div class="order-1 lg:order-2 shrink-0 print:hidden">
+      <%= render "hq/shared/summary_column" %>
+    </div>
+  </div>
+  <%= render "hq/shared/warning_modals" %>
+</div>

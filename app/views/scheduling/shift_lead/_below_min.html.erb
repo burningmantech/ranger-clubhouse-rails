@@ -1,0 +1,70 @@
+<%# locals: (report:) %>
+<%#
+  The positions running short.
+
+  A table now that this sits in the full page width rather than a 288px rail --
+  what is short, when, how many there are and how many were asked for, lined up
+  in columns so the reader compares down them instead of reading each entry.
+
+  Folded by default at both widths. Open, it measured ~500px, which on a phone
+  put the first Ranger 2.1 screens down -- the very problem this rework exists
+  to fix. The alarm itself never hides: the status band carries the count in
+  warning colour at all times, and this is the detail behind it, one tap away.
+
+  Not a width-dependent default, because there is no honest way to write one.
+  `open` is an attribute, so CSS can only hide the content below a breakpoint,
+  never re-open it -- a phone reader could then never reach the list at all.
+
+  The count says "none" rather than "0": zero is the number a shift lead is
+  scanning for, and a word carries it to a reader who is not seeing the colour.
+%>
+<% have_heading = report.on_duty? ? "On duty" : "Signed up" %>
+<div id="shift-lead-below-min" class="mb-4 lg:max-w-3xl">
+  <% if report.fully_staffed? %>
+    <%= ui_section "Below Minimum", icon: "circle-check", icon_type: :solid,
+                   badge: "0", badge_color: :success do %>
+      <p class="text-success font-semibold">
+        <%= fa_icon "circle-check", :solid, end: 1 %>
+        Every position has enough Rangers.
+      </p>
+    <% end %>
+  <% else %>
+    <%# A rich summary controls its own weight -- ui_disclosure only bolds plain
+        strings, so the span carries font-semibold itself.
+
+        role=heading on the span, not on the <summary>: ui_section gives every
+        section title an aria-level 2 heading, and swapping to a disclosure for
+        the shortfall branch alone dropped this page's alarm out of the heading
+        outline while the fully-staffed branch below kept its heading. The role
+        goes inside the summary so the summary keeps its own button semantics. %>
+    <%= ui_disclosure safe_join([fa_icon("triangle-exclamation", :solid, class: "icon-warning", end: 1),
+                                 tag.span("#{pluralize(report.below_min.size, "position")} below minimum",
+                                          class: "font-semibold", role: "heading", "aria-level": "2")]),
+                      variant: :card, class: "mb-4" do %>
+      <%= ui_table full_width: true, striped: true, responsive: false do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Position" %>
+          <%= t.heading "Window" %>
+          <%= t.heading have_heading, right: true %>
+          <%= t.heading "Needed", right: true %>
+        <% end %>
+        <%= t.body do %>
+          <% report.below_min.each do |row| %>
+            <%= t.row do %>
+              <%= t.row_header row.title %>
+              <%= t.cell "#{shift_lead_time(row.begins)} - #{shift_lead_time(row.ends)}" %>
+              <%= t.cell right: true do %>
+                <% if row.count.zero? %>
+                  <span class="font-bold text-error">none</span>
+                <% else %>
+                  <span class="font-semibold"><%= row.count %></span>
+                <% end %>
+              <% end %>
+              <%= t.cell row.need, right: true %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

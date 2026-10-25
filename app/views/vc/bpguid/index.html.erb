@@ -1,0 +1,79 @@
+<%= hero_panel icon: "link", heading_level: :h1, id: "vc-bpguid-header",
+               title: "BPGUID Lookup",
+               description: "Look up a person by callsign, find their Burner Profile among the Salesforce Accounts, and link its BPGUID to their account." %>
+
+<%= ui_section "Choose a Person", icon: "magnifying-glass", icon_type: :solid do %>
+  <%= ui_form(nil, vc_bpguid_path, method: :get) do |f| %>
+    <%= f.text_field :callsign, label: "Callsign", value: @callsign, required: true, maxlength: 64,
+                     width: "w-full sm:w-72", autofocus: @person.nil? %>
+    <%= button_row do %>
+      <%# name: nil keeps commit= out of the GET URL. %>
+      <%= f.submit "Look Up Callsign", name: nil %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# Both forms are always here. The search form's heading names the person, so
+    the autofocused field does not move a screen reader past whose BPGUID it is.
+    With no person shown, a search still runs, but no row can be linked. %>
+<%= ui_section(@person ? "Search Salesforce for #{@person.callsign}" : "Search Salesforce",
+               icon: "magnifying-glass", icon_type: :solid) do %>
+  <%= ui_form(nil, vc_bpguid_search_path(@person)) do |f| %>
+    <%= f.text_field :last_name_or_email, label: "Name, Email, or Phone", value: @person&.email,
+                     required: true, maxlength: SalesforceContactSearch::MAX_LENGTH, width: "w-full sm:w-96",
+                     autofocus: @person.present?, spellcheck: false, autocapitalize: "off",
+                     help_text: "Enter a name, email address, or phone number. To match the start of one, end it with *, as in smi* or sunny.d*." %>
+    <%= button_row do %>
+      <%= f.submit "Search Salesforce", data: { turbo_submits_with: "Searching Salesforce…" } %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @person %>
+  <%= ui_section @person.callsign, icon: "user", icon_type: :solid do %>
+    <%# Photo beside the details while they fit, stacked when they do not. %>
+    <div class="flex flex-wrap items-start gap-4">
+      <%= render "person/photo", photo: @person.avatar_photo_attachment, person: @person %>
+      <%= ui_label_value label_width: "9rem", size: :base do |list| %>
+        <% list.row "Status" do %><%= person_status_badge @person.status %><% end %>
+        <% list.row "Name", [@person.first_name, @person.mi, @person.last_name].compact_blank.join(" ") %>
+        <% list.row "Preferred Name" do %><%= @person.preferred_name.presence || none_stated %><% end %>
+        <% list.row "Address" do %>
+          <%
+            street = [@person.street1, @person.apt].compact_blank.join(" ")
+            # D13 (c): a country stored by name ("United States") resolves to its code first.
+            country_code = CountryStateHelper::COUNTRY_LABELS.key(@person.country) || @person.country
+            state = @person.state if country_has_states?(country_code)
+            area = [[@person.city, state].compact_blank.join(", "), @person.zip].compact_blank.join(" ")
+            # COUNTRY_LABELS[""] is "Choose Country", so a blank country prints nothing.
+            country = @person.country.presence && (CountryStateHelper::COUNTRY_LABELS[@person.country] || @person.country)
+            lines = [street, @person.street2, area, country].compact_blank
+          %>
+          <% if lines.any? %>
+            <% lines.each do |line| %><div><%= line %></div><% end %>
+          <% else %>
+            <%= none_stated %>
+          <% end %>
+        <% end %>
+        <% list.row "Home Phone" do %>
+          <%= @person.home_phone.present? ? phone_format(@person.home_phone) : none_stated %>
+        <% end %>
+        <% if @person.alt_phone.present? %>
+          <% list.row "Alt. Phone", phone_format(@person.alt_phone) %>
+        <% end %>
+        <%# D5 (beyond spec): the current link and the Clubhouse email, to judge a search against. %>
+        <% list.row "Email" do %><%= @person.email.presence || none_stated %><% end %>
+        <% list.row "BPGUID" do %>
+          <%= @person.bpguid.presence || tag.i("None on file", class: "text-stone-muted") %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+
+<%= ui_section "Salesforce Accounts", icon: "table", icon_type: :solid,
+               badge: ("Mock Data" if salesforce_mock?), badge_color: :warning do %>
+  <div id="vc-bpguid-results">
+    <%= ui_empty_state "Search Salesforce to see the contacts that match." %>
+  </div>
+<% end %>

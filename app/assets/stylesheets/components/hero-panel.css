@@ -1,0 +1,73 @@
+/*
+ * Hero Panel Component
+ * Special desert-themed header component for /me pages
+ */
+.me-hero-panel {
+    @apply shadow-[0px_0px_6px_4px_rgba(0,0,0,0.1)] block rounded mb-4;
+    /* The amber ring stays: design-foundations records it as documented legacy
+       rather than a palette to extend -- it is now --color-signature-edge, which is
+       that same ring with its dark twin folded in. The surface under it does not --
+       bg-stone-100 and dark:bg-stone-800/60 sit within a couple of L of
+       base-200 and base-300, which follow the theme instead of pinning it. */
+    @apply relative rounded-lg bg-base-200 dark:bg-base-300 ring-1 ring-signature-edge px-4 py-2;
+}
+
+/* The panel's secondary line. Its dark value was stone-300 (L=87), brighter
+   than the body text it sat beside, which is not what muted means. */
+.me-muted {
+    @apply text-stone-muted;
+}
+
+/*
+ * Hero stat badges that carry their own hue: Burns reads as flame, Service
+ * Years as an award. Utilities cannot express a theme-derived color-mix ink
+ * or a two-stop heat gradient, so these live here rather than in markup.
+ * Every mix is `in oklab` -- oklch takes the long way round the hue circle
+ * between a warm accent and a neutral and lands on purple.
+ */
+.hero-stat {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    min-width: 5.5rem;
+    text-align: center;
+    background: color-mix(in oklab, var(--hero-stat-hue) 10%, var(--color-base-100));
+    border: 1px solid color-mix(in oklab, var(--hero-stat-hue) 42%, transparent);
+}
+
+/* Warm at the tip, deep at the base. Both tokens already flip with the theme. */
+.hero-stat-flame {
+    --hero-stat-hue: color-mix(in oklab, var(--color-warning) 68%, var(--color-error));
+
+    background: linear-gradient(155deg,
+        color-mix(in oklab, var(--color-warning) 11%, var(--color-base-100)) 0%,
+        color-mix(in oklab, var(--color-error) 10%, var(--color-base-100)) 100%);
+}
+
+/* The stat gold, unlike the panel outline above, stays a pinned amber ramp:
+   it is a hue this component alone uses, with no second call site to share. */
+.hero-stat-award {
+    --hero-stat-hue: oklch(50% 0.13 85);
+}
+
+.dark .hero-stat-award {
+    --hero-stat-hue: oklch(83% 0.17 90);
+}
+
+.hero-stat-label {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    color: color-mix(in oklab, var(--hero-stat-hue) 34%, var(--color-heading));
+}
+
+.hero-stat-label i {
+    color: var(--hero-stat-hue);
+}
+
+.hero-stat-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+    color: color-mix(in oklab, var(--hero-stat-hue) 46%, var(--color-heading));
+}

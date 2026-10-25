@@ -1,0 +1,18 @@
+<%# locals: (people:, kind:) %>
+<%# kind prefixes each row id, so the two tables on the page never share one. %>
+<%= ui_table full_width: true, striped: true do |t| %>
+  <%# Fixed width: the page draws this table twice, and auto-sized columns put
+      the same heading in a different place in each one. %>
+  <%= t.header do %>
+    <%= t.heading "Callsign", width: "50%" %>
+    <%= t.heading "Status" %>
+  <% end %>
+  <%= t.body do %>
+    <% people.each do |person| %>
+      <%= t.row id: "#{kind}-#{person.id}" do %>
+        <%= t.row_header { callsign_link person } %>
+        <%= t.cell { person_status_label person } %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

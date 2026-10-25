@@ -1,0 +1,81 @@
+<%= hero_panel icon: "shirt", heading_level: :h1, id: "person-swag-header",
+               description: "Shirts, service pins, and patches issued to this Ranger.",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Swag &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<% if @is_shiny_penny %>
+  <%= ui_callout_box :warning do %>
+    <%= @person.callsign %> is a Shiny Penny.
+  <% end %>
+<% end %>
+<div class="mb-4">
+  <%= years_breakdown @person %>
+</div>
+
+<%= render partial: "common/event_summary_counts", locals: { summary: @summary } %>
+
+<% if swag_manager? %>
+  <div class="my-3 flex flex-wrap gap-2" role="group" aria-label="Add swag for <%= @person.callsign %>">
+    <% [["T-Shirt", "t-shirt", "shirt"],
+        ["Long Sleeve Shirt", "long-sleeve", "shirt"],
+        ["Ranger Pin", "dept-pin", "map-pin"],
+        ["Ranger Patch", "dept-patch", "medal"],
+        ["Org Patch", "org-patch", "location-dot"],
+        ["Org Pin", "org-pin", "location-dot"],
+        ["Other Swag", "other", "star"]].each do |label, swag_type, icon| %>
+      <%= button_link label, :primary, new_person_swag_path(@person, swag_type:), icon:, icon_type: "solid" %>
+    <% end %>
+  </div>
+<% end %>
+
+
+<%= ui_section "Swag History", icon: "shirt", icon_type: :solid do %>
+  <div class="mb-2 text-base-content/80">
+    Showing <%= pluralize(@person_swags.size, "item") %>
+  </div>
+  <% if @person_swags.any? %>
+    <%= ui_table caption: "Swag issued to #{@person.callsign}" do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Swag" %>
+        <%= t.heading "Type" %>
+        <%= t.heading "Issued" %>
+        <%= t.heading "Notes" %>
+        <% if swag_manager? %>
+          <%= t.heading "Actions", right: true %>
+        <% end %>
+      <% end %>
+      <%= t.body do %>
+        <% @person_swags.each do |ps| %>
+          <% swag_name = ps.swag&.title || "unknown #{ps.swag_id}" %>
+          <%= t.row do %>
+            <%= t.row_header(swag_name) %>
+            <%= t.cell(swag_type_label(ps.swag)) %>
+            <%= t.cell(ps.year_issued.presence || "-", right: true) %>
+            <%= t.cell class: "whitespace-pre-line" do %>
+              <%= ps.notes.presence || "-" %>
+            <% end %>
+            <% if swag_manager? %>
+              <%= t.cell right: true do %>
+                <%= button_row do %>
+                  <%= edit_link edit_person_swag_path(@person, ps), aria: { label: "Edit #{swag_name}" } %>
+                  <%= delete_button person_swag_path(@person, ps),
+                                    "Delete",
+                                    aria: { label: "Delete #{swag_name}" },
+                                    confirm_modal: {
+                                      title: "Delete Swag Record",
+                                      message: "Delete this swag for #{@person.callsign}? This cannot be undone."
+                                    } %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No swag has been recorded yet.", icon: "shirt", icon_type: :solid %>
+  <% end %>
+<% end %>

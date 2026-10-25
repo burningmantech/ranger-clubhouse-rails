@@ -1,0 +1,29 @@
+<%#
+  Every account, grouped by the status it holds right now. Counts only: a
+  status opens onto its own page of callsigns, so this page never has to
+  load all of them at once.
+%>
+<% content_for :title, "People by Status" %>
+
+<%= hero_panel icon: "users-rectangle", heading_level: :h1, id: "people-by-status-header",
+               title: "People by Status",
+               description: "Every Clubhouse account, grouped by the status it holds right now." %>
+
+<div class="text-lg my-4">
+  <strong><%= number_with_delimiter(@total) %> people</strong> across
+  <%= pluralize(@counts.values.count(&:positive?), "status") %> in use
+</div>
+
+<div class="lg:w-3/4">
+  <% @counts.each do |status, count| %>
+    <% if count.positive? %>
+      <%= ui_drill_down_row people_by_status_detail_path(PeopleByStatusReport.slug(status)),
+                            status, meta: pluralize(number_with_delimiter(count), "person") %>
+    <% else %>
+      <%# A status no one holds still gets a row, so its absence reads as a fact
+          rather than a gap. blocked: keeps it off the pointer and out of the tab
+          order -- there is no page for it to open. %>
+      <%= ui_drill_down_row nil, status, meta: "no one", blocked: true %>
+    <% end %>
+  <% end %>
+</div>

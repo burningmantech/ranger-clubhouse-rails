@@ -1,0 +1,55 @@
+<%= turbo_frame_tag "modal" do %>
+  <%= modal id: "photo-info-dialog", size: :lg do |m| %>
+    <%= m.title "Photo Information" %>
+    <%= m.body do %>
+      <div class="stack-to-row-lg">
+        <div class="shrink-0">
+          <%= photo_tag @person_photo.profile, width: 175, class: "rounded-lg",
+                        alt: "Photo for #{@person_photo.person.callsign}" %>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="heading-title text-heading mb-2">
+            ID #<%= @person_photo.id %> &mdash;
+            <%= link_to @person_photo.person.callsign, person_path(@person_photo.person) %>
+          </h3>
+          <dl class="space-y-2">
+            <dt class="font-semibold">Status</dt>
+            <dd><%= photo_status_badge(@person_photo.status) %></dd>
+            <dt class="font-semibold">Dimensions (W x H)</dt>
+            <dd>
+              <% if (dimensions = @person_photo.profile_dimensions) %>
+                <%= dimensions.join(" x ") %>
+              <% else %>
+                <i>unknown</i>
+              <% end %>
+            </dd>
+            <dt class="font-semibold">Uploaded</dt>
+            <dd><%= render "attribution", time: @person_photo.uploaded_at, person: @person_photo.upload_person %></dd>
+            <dt class="font-semibold">Reviewed</dt>
+            <dd><%= render "attribution", time: @person_photo.reviewed_at, person: @person_photo.review_person %></dd>
+            <dt class="font-semibold">Edited</dt>
+            <dd><%= render "attribution", time: @person_photo.edited_at, person: @person_photo.edit_person %></dd>
+            <% if @person_photo.status == PersonPhoto::REJECTED %>
+              <dt class="font-semibold">Rejection reasons</dt>
+              <dd>
+                <% if (labels = @person_photo.reject_labels) %>
+                  <%= labels.join(", ") %>
+                <% else %>
+                  <i>none given</i>
+                <% end %>
+              </dd>
+              <dt class="font-semibold">Rejection message</dt>
+              <dd>
+                <% if @person_photo.reject_message.present? %>
+                  <%= nl2br(@person_photo.reject_message) %>
+                <% else %>
+                  <i>none given</i>
+                <% end %>
+              </dd>
+            <% end %>
+          </dl>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

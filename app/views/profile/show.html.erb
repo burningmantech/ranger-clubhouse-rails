@@ -1,0 +1,169 @@
+<%# locals: (person:) %>
+<%= hero_panel icon: "user", heading_level: :h1, id: "profile-header",
+               back_to: (viewing_self? ? back_to_dashboard : back_to("Overview", person_path(person))) do |panel| %>
+  <% panel.title do %>
+    <% if viewing_self? %>Profile
+    <% else %><%= person.callsign %> Profile
+    <% end %>
+  <% end %>
+  <% panel.description do %>
+    <% if viewing_self? %>
+      Keep your information up to date to ensure a smooth volunteer experience.
+    <% else %>
+      Administrative view of <%= person.callsign %>'s profile information.
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if viewing_self? %>
+  <div class="my-2 flex flex-wrap gap-2">
+    <%= button_link "Change Password",
+                    :secondary,
+                    profile_password_edit_path,
+                    icon: "key",
+                    icon_type: :solid,
+                    class: "whitespace-nowrap",
+                    aria: { label: "Change password" } %>
+    <%# Nothing where this Clubhouse offers no passkeys. %>
+    <% if profile_passkeys_path %>
+      <%= button_link "Manage Passkeys",
+                      :secondary,
+                      profile_passkeys_path,
+                      icon: "fingerprint",
+                      icon_type: :solid,
+                      class: "whitespace-nowrap" %>
+    <% end %>
+  </div>
+<% end %>
+
+<% if can_view_bmid? && person.has_submitted_photo? %>
+  <%= ui_callout_box :warning,
+                     title: "Photo Under Review",
+                     icon: "hourglass-half", accent: true do %>
+    <dl class="instruction-list">
+      <dt>Status</dt>
+      <dd>Sent to Photo Wranglers — usually <strong class="text-heading">2–3 days</strong>, often faster.</dd>
+
+      <% if can_upload_bmid_photo? %>
+        <dt>Want to change it?</dt>
+        <dd>Click <strong class="text-heading">Withdraw Photo</strong> below, then upload a new one.</dd>
+      <% end %>
+    </dl>
+  <% end %>
+<% end %>
+
+<% if viewing_self? && person.sms_number.blank? && !person.is_auditor? %>
+  <%= ui_callout_box :warning,
+                     title: "No SMS Number",
+                     icon: "phone", accent: true do %>
+
+    <dl class="instruction-list">
+      <dt>Receive new Clubhouse Messages &amp; Broadcasts notifications via texts</dt>
+      <dd>Be alerted when to when new Clubhouse Message are received or important broadcasts are sent.</dd>
+
+      <dt>How to setup?</dt>
+      <dd><%= link_to "Scroll down", "#alerts" %> to the Alerts section and edit.</dd>
+    </dl>
+  <% end %>
+<% end %>
+
+<% if viewing_self? %>
+  <% if !@person_event.pii_started_at %>
+    <%= ui_callout_box :warning,
+                       title: "Yearly Review Required",
+                       icon: "clipboard-check", accent: true do %>
+      <dl class="instruction-list">
+        <dt>What's needed?</dt>
+        <dd>Review your personal information below and confirm it's correct.</dd>
+
+        <% unless current_user.is_auditor? %>
+          <dt class="text-error">Pay special attention to:</dt>
+          <dd class="text-error">
+            <strong>Mailing Address</strong> and <strong>Shirt Sizes</strong> — critical for budget and Quartermaster
+            inventory.
+          </dd>
+        <% end %>
+
+        <dt>When done</dt>
+        <dd>Scroll down and click <strong class="text-heading">"My Information Is Correct"</strong>.</dd>
+      </dl>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_label_value label_width: "7rem", class: "my-2 space-y-1" do |list| %>
+    <%= list.row "Last PII Update" do %>
+      <% if @person.reviewed_pi_at %>
+        <%= datetime_format @person.reviewed_pi_at %>
+        <span class="text-stone-muted">(<%= relative_time_in_words @person.reviewed_pi_at %>)</span>
+      <% else %>
+        <i>never updated</i>
+      <% end %>
+    <% end %>
+    <%= list.row "Last PII Review" do %>
+      <% if @person.pi_reviewed_for_dashboard_at %>
+        <%= datetime_format @person.pi_reviewed_for_dashboard_at %>
+        <span class="text-stone-muted">(<%= relative_time_in_words @person.pi_reviewed_for_dashboard_at %>)</span>
+      <% else %>
+        <i>never reviewed</i>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<div class="w-full">
+  <div class="flex flex-col lg:flex-row lg:gap-x-4">
+    <% if can_view_bmid? && person.is_contributor_or_applicant? %>
+      <%= render partial: "profile/bmid", locals: { person: } %>
+    <% end %>
+    <% if can_view_identity_basics? %>
+      <%= render partial: "profile/identity_info", locals: { person: } %>
+    <% end %>
+    <% if can_view_mailing_address? %>
+      <%= render partial: "profile/mailing_address", locals: { person: } %>
+    <% end %>
+  </div>
+</div>
+
+<% if person.is_contributor_or_applicant? %>
+  <div class="w-full">
+    <div class="flex flex-col lg:flex-row gap-y-4 lg:gap-x-4">
+      <% if can_view_camp? %>
+        <%= render partial: "profile/camp", locals: { person: } %>
+      <% end %>
+      <% if can_view_emergency_contact_section? %>
+        <%= render partial: "profile/emergency_contact", locals: { person: } %>
+      <% elsif should_show_emergency_contact_denial? %>
+        <%= render partial: "profile/emergency_contact_denied" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="w-full">
+    <div class="flex flex-col lg:flex-row gap-y-4 lg:gap-x-4">
+      <% if can_view_languages? %>
+        <%= render partial: "profile/languages", locals: { person: } %>
+      <% end %>
+      <% if can_view_clothing? %>
+        <%= render partial: "profile/clothing", locals: { person: } %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<% if can_view_alert_preferences? && @alerts %>
+  <div id="alerts" class="w-full">
+    <%= render partial: "profile/alerts", locals: { person:, alerts: @alerts } %>
+  </div>
+<% end %>
+
+<% if viewing_self? && !@person_event.pii_started_at %>
+  <div class="mt-4">
+    <%= button_link "My Information Is Correct",
+                    :primary,
+                    profile_mark_reviewed_path,
+                    size: "xl",
+                    method: :patch,
+                    icon: "circle-check",
+                    icon_type: :solid %>
+  </div>
+<% end %>

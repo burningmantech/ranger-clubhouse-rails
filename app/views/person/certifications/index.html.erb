@@ -1,0 +1,49 @@
+<%= hero_panel icon: "certificate", heading_level: :h1, id: "person-certifications-header",
+               title: "Certifications — #{@person.callsign}",
+               description: "Record and review certifications for this person.",
+               back_to: [@person.callsign, person_path(@person)] %>
+
+<%= ui_section do %>
+  <% if @can_manage %>
+    <div class="my-4">
+      <%= button_link "Add Certification", :primary,
+                      new_person_certification_path(@person),
+                      icon: "plus", icon_type: :solid %>
+    </div>
+  <% else %>
+    <%= ui_callout_box :info do %>
+      Contact a Clubhouse Admin or Certification Manager to administer certification records.
+    <% end %>
+  <% end %>
+
+  <% if @person_certifications.any? %>
+    <p class="mb-3 me-muted">Showing <%= pluralize(@person_certifications.size, "certification") %>.</p>
+
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Certification" %>
+        <%= t.heading "Issued On" %>
+        <%= t.heading "Actions" %>
+      <% end %>
+      <%= t.body do %>
+        <% @person_certifications.each do |pc| %>
+          <%= t.row do %>
+            <%= t.row_header pc.certification.title %>
+            <%= t.cell pc.issued_on.presence || "—" %>
+            <%= t.cell do %>
+              <%= button_row do %>
+                <% if @can_manage %>
+                  <%= edit_link edit_person_certification_path(@person, pc) %>
+                <% end %>
+                <%= button_link "Show Details", :secondary,
+                                person_certification_path(@person, pc) %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No certifications recorded yet.", icon: "certificate", icon_type: :solid %>
+  <% end %>
+<% end %>

@@ -1,0 +1,126 @@
+<%#
+  TRS export (Ember vc/access-documents/trs port). Claimed access documents,
+  filtered into vendor batches: the operator picks a filter, selects rows,
+  exports the CSV for upload to the ticket vendor's Ticket Request System,
+  then marks the accepted items submitted. Both actions POST and render their
+  results at 422 (Turbo drops a 200 form response).
+%>
+
+<%= hero_panel icon: "file-export", heading_level: :h1, id: "ticketing-trs-export-header",
+               title: "TRS Export" do |panel| %>
+  <% panel.description do %>
+    Send claimed tickets, passes, and credentials to the ticket vendor's
+    Ticket Request System, then mark them submitted once TRS accepts them.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box number_with_delimiter(@rows.size), "Items" %>
+  <%= ui_stat_box number_with_delimiter(TrsExport::MAX_BATCH_SIZE), "Batch Limit" %>
+  <% if @bad_documents.any? %>
+    <%= ui_stat_box @bad_documents.size, "Problems", variant: :warning %>
+  <% end %>
+<% end %>
+
+<%= ui_callout_box :info do %>
+  <strong>Three steps, in order.</strong>
+  <ol class="list-decimal ms-5 mt-1">
+    <li>Pick an export filter &mdash; each filter fills one TRS spreadsheet format.</li>
+    <li>Select items and export. Every exported item gets an audit comment, and the CSV
+      downloads for upload to TRS.</li>
+    <li>Once TRS accepts the upload, uncheck anything TRS rejected and mark the rest submitted.</li>
+  </ol>
+<% end %>
+
+<% if @bad_documents.any? %>
+  <%= ui_section "#{pluralize(@bad_documents.size, 'Item')} with Problems",
+                 icon: "triangle-exclamation", icon_type: :solid, border: false do %>
+    <p class="my-2">
+      <strong>These items are passed over by &ldquo;select all&rdquo;.</strong>
+      Fix them from the holder's Tickets &amp; Provisions page, or select them
+      individually if TRS should get them as they are.
+    </p>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Item" %>
+        <%= t.heading "Type" %>
+        <%= t.heading "Access Date" %>
+        <%= t.heading "Problem" %>
+      <% end %>
+      <%= t.body do %>
+        <% @bad_documents.each do |bad| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%= callsign_link bad.document.person, person_tickets_provisions_path(bad.document.person) %>
+            <% end %>
+            <%= t.cell bad.document.display_ref %>
+            <%= t.cell bad.document.type_label %>
+            <%= t.cell bad.document.access_any_time ? "Any" : value_or_dash(wday_month_day_format(bad.document.access_date, year: true).presence) %>
+            <%= t.cell bad.errors.join("; ") %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%
+  chips = @filter.exportable? ? [{ label: "Filter: #{@filter.label}", url: ticketing_trs_export_path }] : []
+%>
+<%= filter_bar id: "trs-export-filters", chips: chips, clear_url: ticketing_trs_export_path,
+               count: "Showing #{pluralize(@rows.size, 'item')}",
+               url: ticketing_trs_export_path do |f| %>
+  <%= f.select :filter, trs_filter_choices(@filter.slug),
+               label: "Export Filter", width: "w-full lg:w-96",
+               help_text: "Each filter matches one TRS spreadsheet format." %>
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<% if @rows.empty? %>
+  <%= ui_empty_state "No claimed items match this filter. Try another filter, or come back when more items are claimed.",
+                     icon: "circle-check", icon_type: :solid %>
+<% elsif @filter.exportable? %>
+  <%= ui_form(nil, ticketing_trs_export_export_path, method: :post) do |f| %>
+    <%# id: nil -- the filter_bar select above already owns id="filter". %>
+    <%= hidden_field_tag :filter, @filter.slug, id: nil %>
+    <div data-controller="checkbox-select-all">
+      <%= ui_section @filter.label, icon: "table-list", icon_type: :solid, border: false do %>
+        <%= render "rows_table", rows: @rows, selectable: true, checked: false %>
+      <% end %>
+
+      <%= ui_callout_box :warning, accent: true, class: "my-4" do %>
+        <strong>Exporting stamps an audit comment on every selected item.</strong>
+        Mark items submitted only after TRS has accepted the uploaded CSV.
+      <% end %>
+
+      <%= button_row do %>
+        <%= f.submit "Export Selected Items",
+                     data: { checkbox_select_all_target: "submit",
+                             turbo_confirm: confirm_modal_dialog(
+                               title: "Confirm TRS Export",
+                               message: "Add an export comment to every selected item and build the TRS CSV?",
+                               confirm_label: "Export"
+                             ) } %>
+        <%= f.submit "Mark Selected as Submitted", variant: :secondary,
+                     formaction: ticketing_trs_export_mark_submitted_path,
+                     data: { checkbox_select_all_target: "submit",
+                             turbo_confirm: confirm_modal_dialog(
+                               title: "Confirm Mark Submitted",
+                               message: "Mark the selected items as submitted? " \
+                                        "Only do this after TRS has accepted them.",
+                               confirm_label: "Mark Submitted"
+                             ) } %>
+      <% end %>
+    </div>
+  <% end %>
+<% else %>
+  <%= ui_section "All Claimed Items", icon: "table-list", icon_type: :solid, border: false do %>
+    <p class="my-2">
+      The All view is a read-only overview. Pick a specific export filter to select and export items.
+    </p>
+    <%= render "rows_table", rows: @rows, selectable: false, checked: false %>
+  <% end %>
+<% end %>

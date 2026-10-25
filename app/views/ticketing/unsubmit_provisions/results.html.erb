@@ -1,0 +1,39 @@
+<%#
+  Ledger of provisions just returned to available.
+
+  @rows is transient -- it only exists in the response to the POST that ran the
+  un-submit, so this page cannot be reached again by a GET. Print it in full.
+
+  Rendered at 422 (Turbo drops a 200 form response), which keeps the submitting
+  page's scroll position -- the marker sends the reader to the top instead of
+  wherever the button was.
+%>
+<div data-controller="scroll-to-top" hidden></div>
+
+<%= hero_panel icon: "circle-check", heading_level: :h1, id: "ticketing-unsubmit-results-header",
+               description: "The provisions returned to available are listed below.",
+               back_to: ["Un-Submit Provisions", ticketing_unsubmit_provisions_path] do |panel| %>
+  <% panel.title do %>Un-Submit Provisions<% end %>
+<% end %>
+
+<% if @rows.any? %>
+  <% failed = @rows.count { |row| row.error.present? } %>
+  <% if failed.positive? %>
+    <%= ui_callout_box :error, accent: true, title: "Some Provisions Could Not Be Saved" do %>
+      <%= pluralize failed, "provision" %> failed -- each failure is marked with
+      an Error row in the ledger below. The rest were processed.
+    <% end %>
+  <% end %>
+
+  <div class="text-lg my-4">
+    <strong><%= pluralize @rows.size, "provision" %></strong> returned to available
+  </div>
+
+  <%= render "common/ticketing_maintenance/results_table", rows: @rows %>
+<% else %>
+  <%= ui_empty_state "The selected people had no earned claimed or submitted provisions. Nothing changed.",
+                     icon: "circle-check", icon_type: :solid %>
+  <%= button_row do %>
+    <%= button_link "Back to Un-Submit Provisions", :secondary, ticketing_unsubmit_provisions_path %>
+  <% end %>
+<% end %>

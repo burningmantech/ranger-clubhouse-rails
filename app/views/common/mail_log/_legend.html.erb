@@ -1,0 +1,17 @@
+<%# locals: () %>
+<%#
+  How to read the mail log table and what its two row icons mean: two questions
+  and their answers, rendered inside the page's About This Report list. Shared
+  by the person and system-wide pages. Each icon is named by the word its row
+  carries, because the icon itself is hidden from a screen reader, and drawn in
+  the colour its row takes.
+%>
+<dt>How do I read a message?</dt>
+<dd>Expand a subject line to view the message.</dd>
+<dt>What do the icons mean?</dt>
+<dd>
+  <%= fa_icon "triangle-exclamation", :solid, class: "text-error" %> <%= MailLogHelper::BOUNCED_LABEL %>:
+  the address doesn't exist or the mailbox is full.
+  <%= fa_icon "bell", :solid, class: "text-warning" %> <%= MailLogHelper::SPAM_LABEL %>: the
+  recipient's mail provider marked the email as spam.
+</dd>

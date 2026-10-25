@@ -1,0 +1,9 @@
+<%# locals: () %>
+<%#
+  Why a report's years jump from 2019 to 2022: one question and its answer,
+  rendered inside the page's About This Report list. The page says it only when
+  it applies (`if @report.skips_years?`) -- the years read end to end everywhere
+  else on it, so two quietly missing from the middle need explaining.
+%>
+<dt>Why are 2020 and 2021 missing?</dt>
+<dd>There was no event in 2020 or 2021, so neither year is counted or shown.</dd>

@@ -1,0 +1,15 @@
+<%= hero_panel icon: "pen", heading_level: :h1, id: "edit-person-access-document-header",
+               description: "Update this access document.",
+               back_to: ["Tickets & Provisions", person_tickets_provisions_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Edit <%= @document.display_ref %> (<%= @document.type_label %>) &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<div class="my-4">
+  <%= button_link "View Change History", :secondary,
+                  history_person_access_document_path(@person, @document),
+                  icon: "clock-rotate-left", icon_type: :solid %>
+</div>
+
+<%= render "form", person: @person, document: @document, ticketing_info: @ticketing_info %>

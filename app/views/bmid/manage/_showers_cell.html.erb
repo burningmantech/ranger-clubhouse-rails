@@ -1,0 +1,23 @@
+<%# Whether the badge gets a shower, in both Table View and Edit Mode.
+
+    Read-only in both: showers come from the person's provisions, not from the
+    badge, so they are never a field in the bulk form. The wrapper carries a
+    stable id so a provision change can replace this one cell with a
+    turbo_stream, and Edit Mode adds a button that opens the provision dialog.
+
+    Nothing in here is a form field, deliberately: the cell sits inside the
+    bulk-edit form, and an input would let a provision change mark the badge
+    row as edited.
+
+    Locals:
+      bmid       - the badge (saved or synthesized)
+      provisions - the person's usable shower provisions. There can be more
+                   than one, so the button opens the list of them rather than
+                   any one record
+      editable   - Edit Mode, where the cell offers the provision dialog %>
+<span id="<%= bmid_showers_cell_id(bmid) %>" class="inline-flex items-center gap-2">
+  <span><%= bmid.showers_granted ? "Yes" : "—" %></span>
+  <% if local_assigns[:editable] %>
+    <%= bmid_provision_cell_action(bmid, Provision::WET_SPOT, local_assigns[:provisions]) %>
+  <% end %>
+</span>

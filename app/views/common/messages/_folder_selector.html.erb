@@ -1,0 +1,26 @@
+<%# locals: (folder:) %>
+<%# A search spans every folder, so no tab is the one showing: the row goes,
+    and the hits' count line says where they came from. %>
+<% unless search_query %>
+  <div role="tablist" class="tabs tabs-lift">
+    <%= messages_folder_tab "Inbox", PersonMessage::FOLDER_INBOX, folder %>
+    <%= messages_folder_tab "Unread", PersonMessage::FOLDER_UNREAD, folder, badge: unread_message_count %>
+    <%= messages_folder_tab "Sent", PersonMessage::FOLDER_SENT, folder %>
+    <%= messages_folder_tab "Archived", PersonMessage::FOLDER_ARCHIVED, folder %>
+  </div>
+<% end %>
+<%# What the list shows, for the pane's Mark Read and Archive forms
+    (_messages_panel_header): the form attribute makes each field theirs from
+    here, so a toggle streams back the folder or search on screen, not the one
+    the thread was opened from. This frame is rendered with every change of the
+    list: a folder switch, a search, a toggle. %>
+<% %w[messages-toggle-read messages-toggle-archive].each do |form| %>
+  <%= hidden_field_tag :folder, folder, form:, id: nil %>
+  <%= hidden_field_tag :q, search_query, form:, id: nil if search_query %>
+<% end %>
+<%# And for the search field (_workspace), so Clear Search and a blank search
+    come back to the folder the search started from; Inbox, the default, is
+    left out of the address, as Clear Search leaves it. %>
+<% unless folder == PersonMessage::FOLDER_INBOX %>
+  <%= hidden_field_tag :folder, folder, form: "messages-search", id: nil %>
+<% end %>

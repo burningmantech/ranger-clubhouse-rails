@@ -1,0 +1,64 @@
+<%#
+  The Shift Lead Report: who is covering a shift period.
+
+  One column at every width. The summary a shift lead reads first -- which
+  shift, how many of each kind of Ranger -- sits in a compact band above the
+  rosters instead of a desktop-only rail, because the phone needs it just as
+  much and a rail could only ever stack at the top there at its full height.
+
+  Losing the rail also gives the rosters back the 288px it held, which lands on
+  the Positions / Certifications column, the one that was being squeezed.
+%>
+<% content_for :title, "Shift Lead Report" %>
+
+<%= hero_panel icon: "clipboard-list", heading_level: :h1, id: "shift-lead-header",
+               title: "Shift Lead Report" do |panel| %>
+  <% panel.description do %>
+    Who is covering a shift period and which positions are short.
+  <% end %>
+  <%# keep: — the selector submits its own bare GET, so without these, changing
+      the year throws away the shift being reported on (or the live mode) and
+      drops the reader back on the empty picker. Every filter and sort rides
+      along too: the live report ignores the year, so on that page a year change
+      would otherwise leave the roster standing while silently resetting how it
+      is narrowed and ordered. :year is dropped because the selector emits it. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: shift_lead_all_params(@filter_params).except(:year) %>
+<% end %>
+
+<%= render "scheduling/shift_lead/picker",
+           shifts: @shifts, slot: @slot, year: @year, on_duty: @on_duty_mode,
+           filter_params: @filter_params %>
+
+<% if @report %>
+  <%= render "scheduling/shift_lead/status_band", report: @report, filter_params: @filter_params %>
+
+  <%= render "scheduling/shift_lead/legend" %>
+
+  <%= render "scheduling/shift_lead/filters", options: @filter_options, filter_params: @filter_params,
+             shown: @shown_count, total: @total_count, on_duty: @report.on_duty? %>
+
+  <%# The shortfalls describe the shift, not the filtered view, so they are not
+      narrowed: a position is short whether or not the reader is currently
+      looking at Green Dots. Same reason the headline numbers above stay whole. %>
+  <%= render "scheduling/shift_lead/below_min", report: @report %>
+
+  <% rosters = [
+       { title: "DIRT / GREEN DOTS", id: "shift-lead-dirt", section: :dirt,
+         rangers: @dirt, all: @report.dirt },
+       { title: "COMMAND STAFF", id: "shift-lead-command", section: :command,
+         rangers: @command, all: @report.command },
+       { title: "SPECIAL TEAMS", id: "shift-lead-special", section: :special,
+         rangers: @special, all: @report.special }
+     ] %>
+
+  <% shift_lead_visible_rosters(rosters, @filter_params).each do |roster| %>
+    <%= render "scheduling/shift_lead/roster", title: roster[:title], id: roster[:id],
+               section: roster[:section], rangers: roster[:rangers], total: roster[:all].size,
+               filter_params: @filter_params, on_duty: @report.on_duty? %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "Pick a shift period to see who signed up for it, or choose " \
+                     "\"Currently on duty\" for whoever is signed in right now.",
+                     icon: "clipboard-list", icon_type: :solid %>
+<% end %>

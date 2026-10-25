@@ -1,0 +1,187 @@
+<%# locals: (back_link:, description_text:, schedule_path_builder:, schedule_export_path_builder:, schedule_signup_summary_path_builder:, schedule_qualifications_path_builder:, available_sign_ups_path_builder:, schedule_signups_path_builder:, schedule_destroy_path_builder:, show_year_selector: true, sidebar_actions: true) %>
+<%# sidebar_actions: false folds the scheduling actions into the main column at
+    every width instead of parking them in a desktop side rail. The HQ layout
+    already wraps its children in a right-hand person/summary column, so keeping
+    the rail there would put three columns beside the sidebar and squeeze the
+    shift rows onto three lines. Same buttons either way — the mobile treatment
+    below simply stops being mobile-only. %>
+<% blocked = @is_current_year && @permission.present? && (@permission.requirements.any? || !@permission.training_signups_allowed) %>
+<%# An applicant without the Online Course: the controller hands over the
+    year's Training sessions for a preview, and the sign-up, qualifications
+    and hours links stay off the page. %>
+<% training_preview = !@training_preview_entries.nil? %>
+<% show_actions = @person.can_work? && !training_preview %>
+
+<%= hero_panel icon: "calendar", heading_level: :h1, id: "schedule-header",
+               title: "#{@year} Schedule / Sign-Ups",
+               description: "#{description_text}", back_to: back_link do |panel| %>
+  <% if show_year_selector %>
+    <% panel.year_selector year: @year, years: @person.years_combined %>
+  <% end %>
+<% end %>
+
+<% if blocked %>
+  <%= render partial: "common/scheduling/signup_blockers", locals: { permission: @permission } %>
+<% end %>
+
+<% if training_preview %>
+  <%= ui_callout_box :info, title: "In-Person Training Sessions" do %>
+    Training months and locations are listed to help you plan ahead. Once you complete the Online Course,
+    you’ll be able to see exact training dates and sign up for a session.
+  <% end %>
+  <% if @training_preview_entries.any? %>
+    <div class="my-4">
+      <%= render partial: "common/available_sign_ups/training_months", locals: { entries: @training_preview_entries } %>
+    </div>
+  <% else %>
+    <%= ui_empty_state "No In-Person Training sessions have been posted yet.", icon: "calendar-xmark", icon_type: :solid %>
+  <% end %>
+<% else %>
+<%# A blocked schedule opens closed: the warning stands on its own until the
+    reader clicks past it, so nothing on the page can be acted on before it has
+    been read. Native <details> -- no controller, no request, keyboard-operable
+    for free -- and the toggle hides itself once open, the way upstream drops
+    its View Schedule button. Unblocked schedules render open, toggle hidden. %>
+
+  <%= ui_disclosure "View Schedule", id: "schedule-gate", class: "group", open: !blocked,
+                    summary_class: "#{button_classes({ full_width: true }, :primary)} group-open:hidden list-none [&::-webkit-details-marker]:hidden text-base py-3 my-4" do %>
+    <% if @is_current_year && @recommend_burn_shift %>
+      <%= render partial: "common/scheduling/burn_weekend_shift_recommendation" %>
+    <% end %>
+
+    <div class="<%= token_list "mt-4 flex flex-row flex-wrap gap-3", { "md:hidden": sidebar_actions } %>">
+      <% if (@person.can_work? || !sidebar_actions) && !training_preview %>
+        <%= button_link "#{@is_current_year ? "Available" : "Past"} Sign-Up",
+                        :primary,
+                        available_sign_ups_path_builder.call(year: @year),
+                        icon: "calendar-plus",
+                        icon_type: :solid,
+                        full_width: true, class: "text-base py-3" %>
+      <% end %>
+
+      <% if show_actions %>
+        <% if @is_current_year %>
+          <%= button_link "Qualifications",
+                          :secondary,
+                          schedule_qualifications_path_builder.call(year: @year),
+                          icon: "ticket",
+                          icon_type: :solid,
+                          full_width: true, class: "text-base py-3" %>
+        <% end %>
+
+        <%= button_link "Hours & Credits",
+                        :secondary,
+                        schedule_signup_summary_path_builder.call(year: @year),
+                        icon: "clock",
+                        icon_type: :solid,
+                        full_width: true, class: "text-base py-3" %>
+      <% end %>
+    </div>
+    <div class="<%= token_list "my-4", { "md:hidden": sidebar_actions } %>">
+      <%= button_link "Export to Calendar", :secondary, schedule_export_path_builder.call(format: :ics),
+                      icon: "download",
+                      icon_type: :solid,
+                      full_width: true, class: "text-base py-3",
+                      data: confirm_modal(
+                        message: render(partial: "common/schedule/export_warning"),
+                        confirm_label: "Download Schedule",
+                        title: "Calendar Export Warning",
+                        method: :get
+                      ) %>
+    </div>
+
+    <div class="flex flex-col md:flex-row md:gap-6">
+      <div class="flex-1 min-w-0 order-2 md:order-1">
+        <% if @is_current_year %>
+          <% if @overlapping_entries.any? %>
+            <%= render partial: "common/scheduling/overlapping_sign_ups_list", locals: { overlapping_entries: @overlapping_entries } %>
+          <% end %>
+
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
+            <%= ui_section_title "Upcoming Shifts (#{pluralize @upcoming_entries.size, "sign-up"})" %>
+          </div>
+
+          <% if @upcoming_entries.any? %>
+            <div class="w-full space-y-2">
+              <%= render partial: "common/schedule/signed_up_row",
+                         collection: @upcoming_entries,
+                         as: :row,
+                         locals: { schedule_signups_path_builder:, schedule_destroy_path_builder: } %>
+            </div>
+          <% else %>
+            <%= ui_empty_state "No upcoming scheduled sign-ups were found.", icon: "calendar-xmark", icon_type: :solid %>
+          <% end %>
+        <% end %>
+        <% if @past_entries.any? %>
+          <div class="<%= token_list "flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2", { "mt-2": @upcoming_entries.any? } %>">
+            <%= ui_section_title "Past Sign-Ups (#{pluralize @past_entries.size, "sign-up"})" %>
+          </div>
+          <div class="w-full space-y-2">
+            <%= render partial: "common/schedule/signed_up_row",
+                       collection: @past_entries,
+                       as: :row,
+                       locals: { schedule_signups_path_builder:, schedule_destroy_path_builder: } %>
+          </div>
+        <% else %>
+          <%= ui_empty_state "No past sign-ups were found." %>
+        <% end %>
+      </div>
+
+      <% if sidebar_actions %>
+        <div class="md:w-60 lg:w-72 shrink-0 order-1 md:order-2 mb-4 md:mb-0 md:sticky md:top-4 md:self-start">
+          <div class="hidden md:block mb-3">
+            <%= ui_section_title "Scheduling Actions" %>
+          </div>
+
+          <div class="hidden md:flex flex-col gap-3">
+            <% if @schedule_entries.any? %>
+              <%= button_link "Export to Calendar", :secondary, schedule_export_path_builder.call(format: :ics),
+                              icon: "download",
+                              icon_type: :solid,
+                              class: "w-full justify-center",
+                              data: confirm_modal(
+                                message: render(partial: "common/schedule/export_warning"),
+                                confirm_label: "Download Schedule",
+                                title: "Calendar Export Warning",
+                                method: :get
+                              ) %>
+            <% end %>
+            <% unless training_preview %>
+              <%= action_box(
+                    title: "#{@year} #{@is_current_year ? "Available" : "Past"} Sign-Ups",
+                    description: @is_current_year ? "Find shifts & training to sign up for" : "View shifts available in #{@year}",
+                    url: available_sign_ups_path_builder.call(year: @year),
+                    icon: "calendar-plus",
+                    icon_type: :solid,
+                    button_label: @is_current_year ? "View & Sign Up" : "View Past",
+                    options: { class: "ring-2 ring-warning" }
+                  ) %>
+            <% end %>
+
+            <% if show_actions %>
+              <% if @is_current_year %>
+                <%= action_box(
+                      title: "Qualifications",
+                      description: "Track your earnings progress",
+                      url: schedule_qualifications_path_builder.call(year: @year),
+                      icon: "ticket",
+                      icon_type: :solid,
+                      button_variant: :secondary
+                    ) %>
+              <% end %>
+
+              <%= action_box(
+                    title: "Hours & Credits",
+                    description: "View scheduled hours breakdown",
+                    url: schedule_signup_summary_path_builder.call(year: @year),
+                    icon: "clock",
+                    icon_type: :solid,
+                    button_variant: :secondary
+                  ) %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

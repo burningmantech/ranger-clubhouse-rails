@@ -1,0 +1,14 @@
+<%# locals: (schedule_signups_path_builder:, sign_up_slot_path_builder:) %>
+<% @entries.each do |entry| %>
+  <%= turbo_stream.update(entry.slot) do %>
+    <%= render partial: "common/available_sign_ups/slot",
+               locals: {
+                 entry:,
+                 schedule_signups_path_builder:,
+                 sign_up_slot_path_builder:
+               } %>
+  <% end %>
+<% end %>
+<% if @message %>
+  <%= ui_toast_stream @message, @status %>
+<% end %>

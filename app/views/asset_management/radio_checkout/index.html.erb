@@ -1,0 +1,150 @@
+<%#
+  Radios held past the fourteen-hour limit, split by whether their holder is
+  allowed to keep one. The overdue list leads because it is the only part of
+  this report anyone has to act on; the eligible holders below are the audit
+  trail for the people who are fine.
+
+  Upstream puts both cohorts in one table behind a checkbox that hides the
+  overdue half by default -- see RadioCheckoutReport for that bug.
+%>
+<% content_for :title, "Radio Checkout Report" %>
+
+<%= hero_panel icon: "walkie-talkie", heading_level: :h1, id: "radio-checkout-header",
+               title: "Radio Checkout Report" do |panel| %>
+  <%# Two different questions, so two different sentences. The chase list is
+      defined by the limit, so everything on it really is overdue. The event
+      summary also carries every radio still unaccounted for however briefly it
+      has been out, and calling a two-hour checkout overdue would be a lie. %>
+  <% panel.description do %>
+    <% if @summary_view %>
+      Every handheld radio held past <%= RadioCheckoutReport::HOUR_LIMIT %> hours in
+      <%= @year || "the event" %>, plus every one still unaccounted for.
+    <% else %>
+      Handheld radios out for more than <%= RadioCheckoutReport::HOUR_LIMIT %> hours in
+      <%= @year || "the event" %>.
+    <% end %>
+  <% end %>
+  <%# keep: -- the selector submits its own bare GET, so without it the
+      after-action view silently vanishes the moment someone changes year. %>
+  <% if @available_years.any? %>
+    <% panel.year_selector year: @year,
+                           years: @available_years,
+                           include_current_year: false,
+                           include_year_argument: false,
+                           keep: @index_params.except(:year) %>
+  <% end %>
+<% end %>
+
+<% if @available_years.empty? %>
+  <%= ui_empty_state "No radios have ever been checked out.",
+                     icon: "walkie-talkie", icon_type: :solid %>
+<% else %>
+  <%# The sidebar carries the year from the sibling pages, which browse every
+      year holding any asset. Without this the year would change under the
+      reader with nothing on screen admitting it. %>
+  <% if @requested_year %>
+    <div class="my-4">
+      <%= ui_callout_box :info do %>
+        <strong>No radios were checked out in <%= @requested_year %>.</strong>
+        Showing <%= @year %> instead — the most recent year with radio checkouts.
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= ui_stat_row do %>
+    <%# All three count radios, not people -- a report row is one checkout, and
+        one Ranger can hold several -- so the first two sum to the third. The
+        overdue count is the only actionable one, so it is the only
+        warning-toned one; only its words change between the views, because the
+        summary's set is not "over the limit". %>
+    <%= ui_stat_box @overdue_rows.size.to_s,
+                    @summary_view ? "No event radio provision" : "Overdue radios",
+                    variant: @overdue_rows.any? ? :warning : :secondary,
+                    icon: "triangle-exclamation", icon_type: :solid %>
+    <%= ui_stat_box @eligible_rows.size.to_s, "Eligible Radios",
+                    icon: "circle-check", icon_type: :solid %>
+    <%= ui_stat_box @rows.size.to_s,
+                    @summary_view ? "Radios flagged" : "Radios out too long",
+                    icon: "walkie-talkie", icon_type: :solid %>
+  <% end %>
+
+  <%# Out of the hero. The answer still differs by view, for the reason the hero's
+      two sentences do: only the chase list may call its first section overdue. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Who may keep a radio this long?</dt>
+      <dd>
+        Rangers with an event radio provision may keep one for the whole event; everyone else is
+        <%= @summary_view ? "listed first" : "overdue and listed first" %>.
+      </dd>
+    </dl>
+  <% end %>
+
+  <div class="my-4">
+    <%# Both views are always offered, in the same order, each in its own fixed
+        place -- a single button that swapped its own label between "Still Out
+        Now" and "Event Summary" left the reader no way to tell which of the two
+        they were reading without deciphering the button that would take them
+        away from it. The one you are on is filled in and marked aria-current;
+        the other is the way out. %>
+    <%= button_row do %>
+      <%= radio_checkout_view_button "Still Out Now",
+                                     icon: "clock",
+                                     current: !@summary_view,
+                                     url: asset_management_radio_checkout_path(
+                                       @index_params.except(:view)
+                                     ) %>
+      <%# The after-action view: everything unaccounted for, plus everything
+          already handed back that was held too long. %>
+      <%= radio_checkout_view_button "Event Summary",
+                                     icon: "clipboard-list",
+                                     current: @summary_view,
+                                     url: asset_management_radio_checkout_path(
+                                       @index_params.merge(
+                                         view: AssetManagement::RadioCheckoutController::SUMMARY_VIEW
+                                       )
+                                     ) %>
+      <%# The export carries the view, so it always matches the tables below. %>
+      <%= export_csv_link(asset_management_radio_checkout_path(@index_params.merge(format: :csv))) %>
+    <% end %>
+  </div>
+
+  <% if @rows.empty? %>
+    <%= ui_empty_state radio_checkout_empty_message(@summary_view, @year),
+                       icon: "circle-check", icon_type: :solid %>
+  <% else %>
+    <%# Rendered even when empty: "no one is overdue" is the answer the reader
+        came for, and a page that simply omitted the section would leave them
+        counting the rows below it to work that out. %>
+    <%= ui_section(@summary_view ? "No Event Radio Provision" : "Overdue — No Event Radio Provision",
+                   icon: "triangle-exclamation", icon_type: :solid) do %>
+      <% if @overdue_rows.empty? %>
+        <%# Phrased for both views: "out too long" would not be true of the
+            summary's still-out arm. %>
+        <%= ui_empty_state "Every radio listed is held by someone entitled to keep it.",
+                           icon: "circle-check", icon_type: :solid %>
+      <% else %>
+        <%= render "checkout_table", rows: @overdue_rows, summary_view: @summary_view %>
+      <% end %>
+    <% end %>
+
+    <%# No empty state for this one: an event where no one drew an event radio
+        provision has nothing to audit, and an empty box would only ask the
+        reader to wonder what is missing. %>
+    <% if @eligible_rows.any? %>
+      <%= ui_section "Event Radio Eligible Holders",
+                     icon: "circle-check", icon_type: :solid do %>
+        <%= render "checkout_table", rows: @eligible_shown, summary_view: @summary_view %>
+        <%# Bounded, and says so: the audit list runs to hundreds of rows in the
+            summary view, and every one of them becomes its own card on a phone.
+            Nothing is hidden without a way to reach it -- the export is whole. %>
+        <% if @eligible_rows.size > @eligible_shown.size %>
+          <p class="text-body mt-4">
+            Showing the <%= @eligible_shown.size %> longest-held of
+            <%= pluralize(@eligible_rows.size, "radio") %>. Export the CSV for all of them.
+          </p>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

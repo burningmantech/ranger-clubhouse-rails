@@ -1,0 +1,308 @@
+<%# app/views/profile_photos/new.html.erb %>
+<%# Upload form for BMID photo with error display and loading state %>
+<%# Supports file upload and camera selfie capture %>
+<%# ADHD-friendly design with chunked requirements checklist %>
+
+<%= hero_panel icon: "image", heading_level: :h1, id: "upload-photo-header",
+               title: "Upload BMID Photo",
+               back_to: ["Profile", profile_index_path] do |panel| %>
+  <% panel.description do %>
+    <% if selfie_enabled? %>
+      Upload a photo or take a selfie, then you'll be able to adjust the crop before submitting.
+    <% else %>
+      Upload a photo for <%= subject_person.callsign %>, then adjust the crop before submitting.
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# DESIGN DEVIATION: "Color Usage & Visual Restraint" - using green/red icons for checklist
+    Reason: Color-coded do/don't indicators significantly improve scannability for ADHD users
+    and provide instant visual feedback about photo requirements. This is a standard UX pattern
+    for requirement checklists that users immediately understand. %>
+
+<%# Photo Requirements - scannable do/don't checklist %>
+<div class="mb-4 card-standard p-4">
+  <h2 class="heading-section text-heading mb-3">
+    <%= fa_icon "camera", :solid, class: "mr-2" %>Photo Requirements
+  </h2>
+
+  <% possessive = selfie_enabled? ? "Your" : "The" %>
+  <p class="mb-2 font-medium text-success"><%= fa_icon "circle-check", :solid, class: "mr-1" %> <%= possessive %> photo
+    must
+    have:</p>
+  <ul class="text-success">
+    <li>
+      <%= fa_icon "check", :solid, end: 2 %>
+      Face the camera directly with full face in view
+    </li>
+    <li>
+      <%= fa_icon "check", :solid, end: 2 %> Even lighting with no shadows on your face
+    </li>
+    <li>
+      <%= fa_icon "check", :solid, end: 2 %> Color photo only (no black & white)
+    </li>
+  </ul>
+  <div class="font-medium text-error mt-4"><%= fa_icon "circle-xmark", :solid, class: "mr-1" %>
+    <%= possessive %> photo must NOT have:
+  </div>
+  <ul class="space-y-1">
+    <li class="text-error">
+      <%= fa_icon "xmark", :solid, end: 2 %> Sunglasses, goggles, face paint, or masks
+    </li>
+    <li class="text-error">
+      <%= fa_icon "xmark", :solid, end: 2 %> Hats, horns, wreaths, or head coverings (religious attire OK)
+    </li>
+    <li class="text-error">
+      <%= fa_icon "xmark", :solid, end: 2 %> Other people in the photo
+    </li>
+  </ul>
+</div>
+
+<%# Review time disclaimer %>
+<%= ui_callout_box :info, icon: "clock", icon_type: :regular, class: "mb-4" do %>
+  <strong>Review
+    Time:</strong> Photos are reviewed by Photo Wranglers within 2-3 days. You'll be notified once your photo is approved or if changes are needed.
+<% end %>
+
+<%# Main container. photo-upload lives here so its error/loading targets resolve;
+    camera (tab switching + selfie capture) is layered on only for the self-service
+    page, and hands a taken selfie to photo-upload as a camera:captured event -- or
+    a capture that went wrong as camera:failed, for the error box. %>
+<div data-controller="<%= selfie_enabled? ? "camera photo-upload" : "photo-upload" %>"
+     <% if selfie_enabled? %>
+     data-action="camera:captured->photo-upload#capture camera:failed->photo-upload#failed"
+     <% end %>
+     data-photo-upload-create-url-value="<%= profile_photos_path %>"
+     data-photo-upload-max-file-size-value="<%= PersonPhoto::MAX_FILE_SIZE %>"
+     data-photo-upload-type-error-value="<%= PhotoUploadConcern::PHOTO_TYPE_ERROR %>">
+
+  <%# Error Display (shared between upload and camera, hidden by default) %>
+  <div class="mb-4" data-photo-upload-target="error" hidden>
+    <%= ui_callout_box :error, accent: true, role: "alert" do %>
+      <span data-photo-upload-target="errorMessage"></span>
+    <% end %>
+  </div>
+
+  <%# Tab Navigation (self-service only; admins upload a file for the person) %>
+  <% if selfie_enabled? %>
+    <div class="tabs tabs-border mb-4" role="tablist" aria-label="Photo source">
+      <button type="button"
+              id="tab-upload"
+              class="tab tab-active gap-1"
+              role="tab"
+              aria-selected="true"
+              aria-controls="panel-upload"
+              tabindex="0"
+              data-camera-target="tabUpload"
+              data-action="click->camera#showUpload">
+        <%= fa_icon "cloud-arrow-up", :solid %> Upload File
+      </button>
+      <button type="button"
+              id="tab-camera"
+              class="tab gap-1"
+              role="tab"
+              aria-selected="false"
+              aria-controls="panel-camera"
+              tabindex="-1"
+              data-camera-target="tabCamera"
+              data-action="click->camera#showCamera">
+        <%= fa_icon "camera", :solid %> Take Selfie
+      </button>
+    </div>
+  <% end %>
+
+  <%# ===== Upload File Panel ===== %>
+  <div id="panel-upload"
+       <% if selfie_enabled? %> role="tabpanel" aria-labelledby="tab-upload" data-camera-target="uploadPanel"
+       <% end %>>
+    <%= ui_section "Photo Upload" do %>
+
+      <!-- Upload Form -->
+      <div data-photo-upload-target="uploadForm">
+        <%= ui_form false, profile_photos_path,
+                    method: :post,
+                    multipart: true,
+                    local: false,
+                    data: {
+                      "photo-upload-target": "submitForm",
+                      turbo: false
+                    },
+                    no_error_summary: true do |f| %>
+
+          <%# Dropzone upload area %>
+          <div class="mb-4 w-full lg:w-[50%]">
+            <label for="photo-dropzone"
+                   class="flex h-48 w-auto cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-base-300 bg-base-200 transition-colors hover:bg-base-300"
+                   data-photo-upload-target="dropzone"
+                   data-action="dragover->photo-upload#dragover dragleave->photo-upload#dragleave drop->photo-upload#drop">
+              <div class="flex flex-col items-center justify-center pt-5 pb-6 text-body">
+                <%= fa_icon "cloud-arrow-up", :solid, class: "w-12 h-12 mb-3 text-stone-muted" %>
+                <div class="mb-2 text-lg">
+                  <span class="font-semibold">Click to upload</span> or drag and drop
+                </div>
+                <p class="text-sm text-stone-muted text-center">
+                  JPG, PNG, HEIC (iOS/MacOS) <br>
+                  Max image size <%= number_to_human_size(PersonPhoto::MAX_FILE_SIZE) %>
+                </p>
+              </div>
+              <%# No `required`: the input is display:none, so native validation can't focus
+                  it and silently blocks submit; photo_upload_controller shows the error instead.
+                  accept is also the list photo_upload_controller checks a dropped file against;
+                  the server's own check is PhotoUploadConcern#accepted_photo?. %>
+              <input id="photo-dropzone"
+                     name="photo"
+                     type="file"
+                     class="hidden"
+                     accept="image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif"
+                     data-photo-upload-target="fileInput"
+                     data-action="change->photo-upload#fileSelected"/>
+            </label>
+          </div>
+
+          <%# Selected file info (hidden by default) %>
+          <div class="mb-4 rounded-lg border border-success/30 bg-success/10 p-3 text-success" data-photo-upload-target="fileInfo" hidden>
+            <div class="flex items-start gap-3">
+              <div class="shrink-0" data-photo-upload-target="preview">
+                <%# Thumbnail preview will be inserted here %>
+              </div>
+              <%# Stands in for the thumbnail when the browser can't decode the file (HEIC outside Safari). %>
+              <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-line bg-base-200 text-stone-muted"
+                   data-photo-upload-target="previewFallback" hidden>
+                <%= fa_icon "image", :regular, size: "xl" %>
+              </div>
+              <div class="shrink-0">
+                <%= fa_icon "circle-check", :solid, class: "mt-0.5" %>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-heading">File selected</p>
+                <p class="text-sm text-body break-all" data-photo-upload-target="fileName"></p>
+                <p class="text-xs text-stone-muted" data-photo-upload-target="fileSize"></p>
+                <p class="mt-1 text-sm text-body" data-photo-upload-target="previewNote" hidden>
+                  Your browser can't show a preview of this file type. You'll see the photo after uploading.
+                </p>
+              </div>
+             </div>
+          </div>
+
+          <%= button_row do %>
+            <%= submit_button "Upload & Adjust",
+                              icon: "upload",
+                              icon_type: :solid,
+                              data: { "photo-upload-target": "submitButton" } %>
+            <%= cancel_button profile_index_path %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div class="text-center" data-photo-upload-target="loading" hidden>
+        <div class="animate-spin inline-block w-8 h-8 border-[3px] border-current border-t-transparent text-primary rounded-full" role="status" aria-label="loading">
+          <span class="sr-only">Uploading image…</span>
+        </div>
+        <div class="mt-2 text-stone-muted">Converting to JPEG and uploading…</div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# ===== Camera Selfie Panel (self-service only) ===== %>
+  <% if selfie_enabled? %>
+    <div id="panel-camera" role="tabpanel" aria-labelledby="tab-camera" data-camera-target="cameraPanel" hidden>
+      <%= ui_section nil do %>
+
+        <%# Browser not supported error %>
+        <div class="mb-4" data-camera-target="unsupportedError" hidden>
+          <%= ui_callout_box :warning do %>
+            <strong>Camera Not Supported</strong>
+            <p class="mt-1">Your browser doesn't support camera access. Please use a modern browser (Chrome, Firefox,
+              Safari, or Edge) or use the <strong>Upload File</strong> tab instead.</p>
+          <% end %>
+        </div>
+
+        <%# Permission denied error %>
+        <div class="mb-4" data-camera-target="permissionError" hidden>
+          <%= ui_callout_box :error, icon: "lock" do %>
+            <strong>Camera Access Denied</strong>
+            <p class="mt-1">Camera permission was denied. To use the selfie feature:</p>
+            <ol class="mt-2 ml-4 list-decimal space-y-1 text-sm">
+              <li>Open your browser's site settings</li>
+              <li>Allow camera access for this site</li>
+              <li>Reload the page and try again</li>
+            </ol>
+            <p class="mt-2 text-sm">Or use the <strong>Upload File</strong> tab to upload a photo from your device.</p>
+          <% end %>
+        </div>
+
+        <%# No camera detected error %>
+        <div class="mb-4" data-camera-target="noCameraError" hidden>
+          <%= ui_callout_box :warning, icon: "video-slash" do %>
+            <strong>No Camera Detected</strong>
+            <p class="mt-1">No camera was found on this device. Please use the <strong>Upload File</strong> tab to
+              upload
+              a photo instead.</p>
+          <% end %>
+        </div>
+
+        <%# Camera in use by another app error %>
+        <div class="mb-4" data-camera-target="cameraInUseError" hidden>
+          <%= ui_callout_box :warning, icon: "video-slash" do %>
+            <strong>Camera Unavailable</strong>
+            <p class="mt-1">The camera is being used by another application. Please close other apps using the camera
+              and
+              try again, or use the <strong>Upload File</strong> tab instead.</p>
+          <% end %>
+        </div>
+
+        <%# Loading state while camera initializes %>
+        <div class="text-center py-8" data-camera-target="loading" hidden>
+          <div class="animate-spin inline-block w-8 h-8 border-[3px] border-current border-t-transparent text-primary rounded-full" role="status" aria-label="loading">
+            <span class="sr-only">Starting camera…</span>
+          </div>
+          <div class="mt-2 text-stone-muted">Starting camera…</div>
+        </div>
+
+        <%# Camera preview area (shown when camera is active) %>
+        <div data-camera-target="previewArea" hidden>
+
+          <%# Camera selector (shown only when multiple cameras are available) %>
+          <div class="mb-4 text-center" data-camera-target="cameraSelectWrapper" hidden>
+            <label for="camera-select" class="text-sm text-stone-muted mr-2">
+              <%= fa_icon "camera-rotate", :solid, class: "mr-1" %>Camera:
+            </label>
+            <select id="camera-select"
+                    class="camera-select inline-block w-auto"
+                    data-camera-target="cameraSelect"
+                    data-action="change->camera#switchCamera"
+                    aria-label="Select camera">
+            </select>
+          </div>
+
+          <%# Video preview %>
+          <div class="camera-preview mb-4">
+            <video data-camera-target="video"
+                   autoplay
+                   playsinline
+                   muted
+                   class="camera-video"
+                   aria-label="Camera preview"></video>
+          </div>
+
+          <%# Hidden canvas for photo capture %>
+          <canvas data-camera-target="canvas" class="hidden" aria-hidden="true"></canvas>
+
+          <%# Capture button and cancel %>
+          <%= button_row class: "justify-center" do %>
+            <button type="button"
+                    class="camera-capture-btn"
+                    data-action="click->camera#capturePhoto"
+                    title="Take photo"
+                    aria-label="Take photo">
+              <%= fa_icon "camera", :solid, class: "text-xl text-primary-content" %>
+            </button>
+          <% end %>
+          <p class="text-center text-sm text-stone-muted mt-2">Tap the button to take your photo</p>
+        </div>
+
+      <% end %>
+    </div>
+  <% end %>
+</div>

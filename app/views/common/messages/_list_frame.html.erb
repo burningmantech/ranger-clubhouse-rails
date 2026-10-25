@@ -1,0 +1,24 @@
+<%# locals: (folder:, messages: nil, selected_id: nil, streams: []) %>
+<%#
+  The conversation list's frame. With `messages` it holds the folder's rows (the
+  index, and MessagesConcern#index's answer to this frame's own request). With
+  none it is the thread page's lazy frame: Turbo fetches its src only once the
+  frame is on screen, which the list column never is below lg, so a phone
+  opening a thread never loads the folder. refresh: morph reloads it after a
+  morphing page refresh, which would otherwise leave the placeholder behind.
+  Either way it lists a search's hits instead while there is one (?q=).
+
+  `streams` ride inside the frame's own answer and run as it renders: the tab
+  row, which a search takes away (MessagesConcern#index).
+%>
+<% if messages %>
+  <%= turbo_frame_tag "messages-conversation-list" do %>
+    <%= render partial: "common/messages/conversation_list", locals: { messages:, folder:, selected_id: } %>
+    <%= safe_join(streams) %>
+  <% end %>
+<% else %>
+  <%= turbo_frame_tag "messages-conversation-list", src: messages_path(folder:, selected: selected_id, q: search_query),
+                                                    loading: :lazy, refresh: :morph do %>
+    <%= render "shared/frame_spinner", label: "Loading conversations…" %>
+  <% end %>
+<% end %>

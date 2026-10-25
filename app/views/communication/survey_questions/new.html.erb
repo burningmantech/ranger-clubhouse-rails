@@ -1,0 +1,8 @@
+<% content_for :title, "Add Question" %>
+
+<%= hero_panel icon: "clipboard-question", heading_level: :h1, id: "question-form-header",
+               title: "Add Question",
+               description: "Write the question and choose how it is answered.",
+               back_to: [@survey.title, communication_survey_path(@survey, group: @group.id)] %>
+
+<%= render "form" %>

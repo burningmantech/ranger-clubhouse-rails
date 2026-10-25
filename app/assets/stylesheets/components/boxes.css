@@ -1,0 +1,98 @@
+/*
+ * Box Components
+ * Base box container with rounded corners and shadow
+ */
+/*
+ * Layered so a call site can override the geometry. These carry w-full, and
+ * unlayered they beat every width utility whatever its specificity -- which is
+ * why the BMID panel had to say !w-auto to shrink-wrap a box in a flex row.
+ *
+ * Only the geometry moves. The colour rules below stay unlayered on purpose:
+ * see the note above .box-warning *.
+ */
+@layer components {
+    .box {
+        @apply shadow-[0px_0px_6px_4px_rgba(0,0,0,0.1)] border rounded-lg w-full;
+    }
+
+    .box-accent {
+        @apply border-l-4 rounded-lg w-full;
+    }
+}
+
+.box-hover {
+    @apply hover:bg-base-300 hover:text-base-content;
+}
+
+.box-default {
+    @apply bg-base-100 border-line;
+}
+
+
+/*
+ * Box Theme Variants
+ * Colored box themes for different status/message types
+ */
+@utility box-theme-success {
+    @apply bg-success/5 text-success border-success/20;
+}
+
+.box-success,
+.box-accent-success {
+    @apply box-theme-success;
+}
+
+@utility box-theme-warning {
+    @apply bg-warning/10 border-warning text-warning;
+}
+
+.box-warning,
+.box-accent-warning {
+    @apply box-theme-warning;
+    opacity: 1;
+}
+
+/* Keep muted/secondary text from washing out inside warning boxes, but leave
+   components that carry their own colour alone.
+   Deliberately outside @layer: this has to beat a text-* utility on a
+   descendant, and only unlayered CSS does that. Layering it would let
+   text-stone-muted wash out inside a warning box again, which is the exact
+   thing it was written to stop. */
+/* The ::before pair is the instruction list's Q:/A: prefixes. `*` matches
+   elements only, so without naming them the Q: kept its brand blue while the
+   question it prefixes went amber -- the one thing in the box not obeying the
+   box. */
+.box-warning *:not(.btn, .badge),
+.box-accent-warning *:not(.btn, .badge),
+.box-warning .instruction-list :is(dt, dd)::before,
+.box-accent-warning .instruction-list :is(dt, dd)::before {
+    color: inherit;
+    opacity: 1;
+}
+
+@utility box-theme-error {
+    @apply bg-error/5 text-error border-error/20;
+}
+
+.box-error,
+.box-accent-error {
+    @apply box-theme-error;
+}
+
+@utility box-theme-info {
+    @apply bg-info/10 text-base-content border-info/30;
+}
+
+.box-info,
+.box-accent-info {
+    @apply box-theme-info;
+}
+
+@utility box-theme-secondary {
+    @apply bg-base-300/90 text-base-content;
+}
+
+.box-secondary,
+.box-accent-secondary {
+    @apply box-theme-secondary;
+}

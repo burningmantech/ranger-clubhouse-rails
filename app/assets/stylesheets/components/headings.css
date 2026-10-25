@@ -1,0 +1,18 @@
+/*
+ * Heading Levels
+ * One style per level, whatever page it is on (DESIGN.md > Hierarchy,
+ * design-foundations > Heading Levels). Nothing inside a section outweighs the
+ * section's title: on a phone the two match, and from lg up the section title
+ * is a step larger. Colour stays at the call site -- a status heading may be
+ * text-success or text-error.
+ */
+
+/* DESIGN.md Headline: every level-2 heading, ui_section's title included. */
+@utility heading-section {
+    @apply text-base lg:text-lg font-semibold;
+}
+
+/* DESIGN.md Title: every <h3> and <h4>. */
+@utility heading-title {
+    @apply text-base font-semibold;
+}

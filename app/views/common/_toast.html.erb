@@ -1,0 +1,16 @@
+<%# locals: (attrs:,toast_message:,countdown:,icon:,icon_type:) %>
+<%= content_tag :div, attrs.merge({ "data-action": "mouseenter->toast#pause mouseleave->toast#resume" }) do %>
+  <div class="inline-flex items-center justify-center shrink-0">
+    <%= fa_icon icon, icon_type %>
+  </div>
+  <div class="ms-3 text-base font-normal w-full">
+    <%= toast_message %>
+  </div>
+  <button type="button" class="btn-toast-close" data-action="click->toast#close" aria-label="Close">
+    <%= fa_icon "xmark", :solid %>
+  </button>
+  <% if countdown %>
+    <div class="toast-progress" data-toast-target="progress"></div>
+  <% end %>
+<% end %>
+

@@ -1,0 +1,32 @@
+# Test fixtures for the OauthClient model.
+#
+# The secrets here are made up. Reference these BY NAME.
+#
+# Named so `ordered` (by client_id) puts osticket first and moodle second --
+# the opposite of the order they are declared in, so a test that asserts the
+# sort cannot pass by accident.
+#
+# The times are written as expressions so each carries its offset. A bare
+# "2023-12-09 20:09:33" is read in whatever zone the machine keeps, so the
+# same fixture would stand for a different moment here than on the build
+# machine, and would move again across a daylight-saving change.
+#
+# They also have to be well in the past. Stamped with the moment the tests
+# start, a save in that same second changes nothing the log can see, which
+# hides whether a change was recorded at all.
+
+moodle:
+  client_id: "ranger-moodle"
+  description: "Ranger Moodle Server"
+  secret: "TestMoodleSecretAAAAAAAAAAAAAAAA"
+  redirect_uri: "https://learn.example.org/admin/oauth2callback.php"
+  created_at: <%= Time.zone.local(2023, 12, 9, 20, 9, 33) %>
+  updated_at: <%= Time.zone.local(2023, 12, 9, 20, 9, 33) %>
+
+osticket:
+  client_id: "ranger-hq-osticket"
+  description: "HQ Window OSTicket"
+  secret: "TestOSTicketSecretBBBBBBBBBBBBBB"
+  redirect_uri: "https://tickets.example.org/api/auth/ext"
+  created_at: <%= Time.zone.local(2024, 3, 11, 19, 19, 8) %>
+  updated_at: <%= Time.zone.local(2024, 3, 11, 19, 19, 8) %>

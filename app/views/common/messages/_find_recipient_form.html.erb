@@ -1,0 +1,40 @@
+<%# locals: (people:nil,find_form:) %>
+<%= ui_form find_form, search_callsigns_messages_path(**direction_params), no_error_summary: true do |f| %>
+  <%= f.text_field :query,
+                   label: "Callsign",
+                   maxlength: 50,
+                   width: "w-full",
+                   help_text: "Shows the top 5 matching Rangers.",
+                   data: { controller: "autofocus" } %>
+  <%= modal_form_footer f, submit: "Search", close: "Close" %>
+<% end %>
+
+<% if people.present? %>
+  <ul class="mt-4 space-y-3" role="list" aria-label="Search results">
+    <% people.each do |person| %>
+      <li class="border border-line rounded-lg p-3">
+        <div class="flex items-start gap-3">
+          <% if person.avatar_photo %>
+            <%= photo_tag person.avatar_photo, width: 48, height: 48, alt: "", class: "w-12 h-12 rounded-lg object-cover shrink-0" %>
+          <% else %>
+            <div class="messages-avatar-placeholder shrink-0"><%= fa_icon "user", :solid, size: "xl" %></div>
+          <% end %>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-lg text-heading"><%= person.callsign %></div>
+            <%# The search lists only people who can be messaged (Person.messageable), so everyone has signed in. %>
+            <div class="text-stone-muted text-sm">Last seen <%= distance_of_time_in_words_to_now person.last_seen_at %> ago</div>
+          </div>
+        </div>
+        <%# A form, not a data-turbo-method link: Turbo submits those links from a
+            requestAnimationFrame callback, which a hidden document never runs, while a
+            native submit reaches fetch synchronously. Same shape as the thread toggles. %>
+        <%= button_to "Select #{lookup_role_label}", select_callsign_messages_path(callsign: person.callsign, **direction_params),
+                      method: :post,
+                      form_class: "mt-3",
+                      class: button_classes({ class: "w-full" }, :primary),
+                      data: { turbo_stream: true },
+                      aria: { label: "Select #{person.callsign}" } %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

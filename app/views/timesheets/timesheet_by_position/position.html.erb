@@ -1,0 +1,109 @@
+<%#
+  One position's year: every timesheet turned in for it, oldest first, with the
+  shift each one was signed up for.
+%>
+<% content_for :title, "#{@position.title} Timesheets" %>
+
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1,
+               id: "timesheet-by-position-position-header",
+               title: "#{@year} #{@position.title} Timesheets",
+               back_to: ["#{@year} Timesheet by Position",
+                         timesheets_timesheet_by_position_path(year: @year)] do |panel| %>
+  <% panel.description do %>
+    Every timesheet turned in for <%= @position.title %> this year, oldest
+    first, with the shift each one was signed up for.
+  <% end %>
+  <%# The selector posts an action-less GET, so it stays on this position and
+      only swaps the year. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box hour_minute_format(@detail.total_duration), "Hours",
+                  icon: "clock", icon_type: :solid %>
+  <%= ui_stat_box credit_format_short(@detail.total_credits), "Credits",
+                  variant: :success, icon: "circle-check", icon_type: :solid %>
+  <%= ui_stat_box @detail.people_count.to_s, "Rangers",
+                  variant: :secondary, icon: "users", icon_type: :solid %>
+<% end %>
+
+<%# The two notices describe the position itself, so they stand whether or not
+    it collected hours this year -- they come before the entries rather than
+    inside the branch that has them. %>
+<% unless @position.active %>
+  <%= ui_callout_box :secondary, icon: "circle-pause", title: "This Position Is Inactive" do %>
+    No one can sign up for it or start a shift on it now. Any hours here were
+    collected while it was in use.
+  <% end %>
+<% end %>
+
+<% unless @position.count_hours %>
+  <%# Named, not left to a badge alone: color and shape are not information on
+      their own, and this is the whole position rather than some of its rows. %>
+  <%= ui_callout_box :warning, icon: "ban",
+                     title: "These Hours Do Not Count Toward Provisions" do %>
+    Hours in <%= @position.title %> still earn credits and count toward tickets,
+    but they do not count toward provisions and appreciations.
+  <% end %>
+<% end %>
+
+<% if @detail.entries.any? %>
+  <div class="my-4">
+    <%= export_csv_link(timesheets_timesheet_by_position_position_path(@position.id, year: @year,
+                        format: :csv)) %>
+  </div>
+
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Time" %>
+      <%= t.heading "Duration", right: true %>
+      <%= t.heading "Credits", right: true %>
+      <%= t.heading "Shift Begins" %>
+      <%= t.heading "Shift Duration", right: true %>
+      <%= t.heading "Shift Description" %>
+      <% if Current.can_view_email? %>
+        <%= t.heading "Email" %>
+      <% end %>
+    <% end %>
+    <%= t.body do %>
+      <% @detail.entries.each do |entry| %>
+        <%= t.row do %>
+          <%# Timesheet Management reads this report but cannot open the person
+              pages, so the callsign is a link only for readers who may follow
+              it -- otherwise every row is a link that bounces to /me. %>
+          <%= t.row_header person_display_link(entry.person, entry.person_id) %>
+          <%= t.cell timesheet_entry_time(entry) %>
+          <%= t.cell hour_minute_format(entry.duration), right: true %>
+          <%# The report's own credits, not entry.credits: the model recomputes
+              against the year's credit cache on every call, and this table is
+              one of many rows. %>
+          <%= t.cell credit_format_short(@detail.credits.fetch(entry.id, 0.0)), right: true %>
+          <% if entry.slot %>
+            <%= t.cell timesheet_shift_time(entry.slot) %>
+            <%# hour_minute_format, matching the Duration column beside it: two
+                duration columns in one row reading "5:00" and "6.50" cannot be
+                compared without first noticing they are in different units. %>
+            <%= t.cell hour_minute_format(entry.slot.duration), right: true %>
+            <%= t.cell entry.slot.description %>
+          <% else %>
+            <%# Not signed up for a shift -- an on-the-spot start, which is
+                normal, so it reads as absent rather than as missing. %>
+            <%= t.cell "—" %>
+            <%= t.cell "—", right: true %>
+            <%= t.cell "—" %>
+          <% end %>
+          <% if Current.can_view_email? %>
+            <%= t.cell email_link_or_dash(entry.person&.email) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%# Either a full-report reader, or a scoped reader whose own team owns this
+      position -- the controller turns everyone else back. Both are entitled to
+      the claim this makes. %>
+  <%= ui_empty_state "No #{@year} timesheets were turned in for #{@position.title}.",
+                     icon: "clock", icon_type: :solid %>
+<% end %>

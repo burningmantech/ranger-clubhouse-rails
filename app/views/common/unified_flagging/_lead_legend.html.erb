@@ -1,0 +1,14 @@
+<%# locals: () %>
+<%#
+  What the one colored chip on a pipeline entry means, and where everything
+  else went. One pair, rendered inside each pipeline page's About This Report
+  list beside the rank legend, so the six pages sharing the row describe it
+  in the same words.
+%>
+<dt>What is the colored chip on an entry?</dt>
+<dd>
+  The most serious mark against that person: a raised Personnel flag, else an uber-bonk, else a bonk, else their
+  worst rank of 3 or 4; none when their latest ranks are calm. Select a name for every other rank and note, with the
+  teams always in the same order:
+  <%= Intake::TEAM_ORDER.map { |team| intake_team_label(team) }.join(", ") %>.
+</dd>

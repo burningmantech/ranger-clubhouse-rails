@@ -1,0 +1,5 @@
+<%# Opened into the manage page's one "modal" turbo-frame: the frame is
+    updated, never appended to, so a second dialog can never stack. %>
+<%= bmid_modal_frame do %>
+  <%= render "bmid/provisions/modal", provision: @provision, person: provision_person %>
+<% end %>

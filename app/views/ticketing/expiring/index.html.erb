@@ -1,0 +1,111 @@
+<%# Ticketing -> Expiring Tickets. Port of the Ember vc/access-documents/expiring
+    page, which drew one flat table titled "Unclaimed Expiring Tickets" while
+    its query also returned banked tickets — the opposite of unclaimed. The two
+    statuses are now counted and filtered separately, and a ticket that lapsed
+    in an earlier year is flagged as stale data rather than blending in with the
+    people still worth chasing. %>
+<%= hero_panel icon: "ticket", heading_level: :h1, id: "ticketing-expiring-header",
+               title: "Expiring Tickets" do |panel| %>
+  <% panel.description do %>
+    Special price tickets and staff credentials that lapse at the end of the
+    coming event.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%# Already expired is the only tint: those rows are past saving and want a
+      different response from the rest of the list. %>
+  <%= ui_stat_box number_with_delimiter(@total_count), "Expiring Tickets" %>
+  <%= ui_stat_box number_with_delimiter(@expiring_count), "Expires This Year" %>
+  <%= ui_stat_box number_with_delimiter(@expired_count),
+                  "Already Expired",
+                  variant: @expired_count.positive? ? :warning : :secondary %>
+<% end %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <%# Out of the hero. %>
+    <dt>Which tickets are listed?</dt>
+    <dd>Both the ones never claimed and the ones sitting in the bank are listed.</dd>
+    <dt>Which rows need attention?</dt>
+    <dd>
+      <strong>The banked ones.</strong> That person parked the ticket believing it
+      was safe, and it runs out at the end of this event.
+    </dd>
+    <dt>Why are already-expired tickets here?</dt>
+    <dd>
+      They lapsed in an earlier year and were never cleared out. Those are records
+      to tidy up, not people to contact.
+    </dd>
+    <dt>What does qualified mean?</dt>
+    <dd>The person earned the ticket but has not claimed it yet.</dd>
+  </dl>
+<% end %>
+
+<%# The copy button is all that is left here -- the export moved into the filter
+    bar below, which is what scopes it. %>
+<% if @emails.any? %>
+  <p class="my-4">
+    <%# Upstream printed the whole address list on the page. One button that
+        copies it keeps the same job off the screen. %>
+    <%= clipboard_button @emails.join(", ") do %>
+      Copy <%= pluralize(@emails.size, "email address") %>
+    <% end %>
+  </p>
+<% end %>
+
+<%= render "filter_bar",
+           filter_params: @filter_params,
+           active_params: @index_params,
+           count: "Showing #{@filtered_count} of #{pluralize(@total_count, "expiring ticket")}",
+           actions: (export_csv_link(ticketing_expiring_path(@index_params.merge(format: :csv))) if @total_count.positive?) %>
+
+<%= ui_section "Expiring Tickets", icon: "table-list", icon_type: :solid do %>
+  <% if @rows.empty? && @index_params.any? %>
+    <%= ui_empty_state "No expiring tickets matched those filters. Try clearing one.",
+                       icon: "magnifying-glass", icon_type: :solid %>
+  <% elsif @rows.empty? %>
+    <%= ui_empty_state "No tickets expire this year. Nothing to chase.",
+                       icon: "circle-check", icon_type: :solid %>
+  <% else %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Email" %>
+        <%= t.heading "Type" %>
+        <%= t.heading "RAD" %>
+        <%= t.heading "Ticket Status" %>
+        <%= t.heading "Source Year" %>
+        <%= t.heading "Expires After" %>
+      <% end %>
+
+      <%= t.body do %>
+        <% @rows.each do |row| %>
+          <% document = row.document %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%# Straight to the page where the ticket can be acted on, as upstream. %>
+              <%= callsign_link row.person, person_tickets_provisions_path(row.person) %>
+              <%# The person's own status rides under the callsign rather than
+                  taking a column of its own — with two statuses in the table,
+                  side-by-side columns invite reading the wrong one. %>
+              <div class="text-stone-muted font-normal"><%= row.person.status %></div>
+            <% end %>
+            <%= t.cell email_link_or_dash(row.person.email) %>
+            <%= t.cell document.type_label %>
+            <%= t.cell document.display_ref %>
+            <%= t.cell document.status %>
+            <%= t.cell document.source_year, class: "text-right" %>
+            <%= t.cell class: "text-right" do %>
+              <%= document.expiry_date.year %>
+              <% if row.expired %>
+                <%= ui_badge "Already expired", :warning,
+                             icon: "triangle-exclamation", icon_type: :solid %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

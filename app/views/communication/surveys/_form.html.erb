@@ -1,0 +1,77 @@
+<%# The survey itself: who answers it, what it says, and whether it is shown.
+    Its groups and questions are built on the survey's own page. %>
+<%= ui_form(@survey,
+            @survey.persisted? ? communication_survey_path(@survey) : communication_surveys_path(year: @year)) do |f| %>
+  <%= f.fieldset "Who answers, and about what", icon: "users", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Which position do I pick?</dt>
+      <dd>
+        The one the people answering hold: the training they attended, or the mentor or mentee
+        position they held. Only the positions you manage surveys for are listed.
+      </dd>
+      <dt>Can I change this later?</dt>
+      <dd>
+        Yes, until people start answering. Changing it afterwards leaves their answers filed under
+        a survey they were never shown.
+      </dd>
+    </dl>
+
+    <%= form_row do %>
+      <%= f.select :type, survey_type_options(@type_options),
+                   { label: "Who Answers", required: true, prompt: "Choose who answers",
+                     width: "w-full", wrapper_class: "flex-1" } %>
+      <%= f.select :position_id, survey_position_options(@manageable_positions, @survey.position_id),
+                   { label: "Position", required: true, prompt: "Choose a position",
+                     width: "w-full", wrapper_class: "flex-1" } %>
+    <% end %>
+
+    <%= f.select :mentoring_position_id, survey_mentoring_position_options(@mentoring_positions, @survey.mentoring_position_id),
+                 { label: "About", include_blank: "Not a mentoring survey",
+                   width: "w-full lg:w-96",
+                   help_text: "Only for a survey where one cadre rates another: the position being rated." } %>
+
+    <%= f.text_field :title, label: "Title", required: true, maxlength: 190,
+                     show_counter: true, width: "w-full",
+                     help_text: "Shown at the top of the survey and on its reports. Put the year in it." %>
+  <% end %>
+
+  <%= f.fieldset "What it says", icon: "align-left", icon_type: :solid do %>
+    <%# Neither is required. Every survey on file has both, and a survey reads
+        poorly without them, but a row saved without one has to stay editable. %>
+    <%= f.rich_text_area :prologue, label: "Prologue",
+                         help_text: "Shown before the first question. Say what the feedback is for and who reads it." %>
+    <%= f.rich_text_area :epilogue, label: "Epilogue",
+                         help_text: "Shown after the last question. A thank-you, and who to contact." %>
+  <% end %>
+
+  <%# A new survey has no questions yet, so it has nothing to show anyone.
+      The setting appears once the survey exists and can be built. %>
+  <% if @survey.persisted? %>
+    <%= f.fieldset "Whether it is shown", icon: "eye", icon_type: :solid do %>
+      <dl class="instruction-list mb-3">
+        <dt>When should I switch it on?</dt>
+        <dd>
+          Once the questions are final. An active survey appears on the Clubhouse dashboard of
+          everyone it applies to.
+        </dd>
+      </dl>
+
+      <%= f.check_box :active, inline_label: "Active - show this survey on the Clubhouse dashboard" %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit @survey.persisted? ? "Save Survey" : "Create Survey" %>
+    <%= cancel_link @survey.persisted? ? communication_survey_path(@survey) : communication_surveys_path(year: @year) %>
+    <% if @survey.persisted? %>
+      <%= delete_button communication_survey_path(@survey), "Delete Survey",
+                        confirm_modal: {
+                          title: "Confirm Survey Deletion",
+                          message: "Delete \"#{@survey.title}\"? Every group, question, and answer it " \
+                                   "holds is deleted with it. This cannot be undone.",
+                          confirm_label: "Delete Survey",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

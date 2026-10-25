@@ -1,0 +1,22 @@
+<%= hero_panel icon: "circle-check", heading_level: :h1, id: "final-confirmation-header",
+               title: "Final Confirmation", back_to: back_to_timesheet_dashboard %>
+
+<%= ui_section "Finishing the Event" do %>
+  <div class="mb-2 text-success">
+    Congratulations — your final timesheet entry has been marked as correct, and there are no pending updates.
+  </div>
+  <div class="mb-2">
+    Finished for the event? Click the <strong>Confirm Final Confirmation</strong> button only if you have completed all shifts for the year
+    and do not intend to submit any additional corrections or missing-entry requests.
+  </div>
+  <div class="mb-2">
+    If you are not ready to finalize, click the Back to <strong>Timesheet</strong> button.
+  </div>
+
+  <%= button_row do %>
+    <%= button_link "Confirm Final Confirmation", :primary,
+                    final_confirmation_me_timesheet_index_path,
+                    method: :post %>
+    <%= back_to "Timesheet", me_timesheet_index_path %>
+  <% end %>
+<% end %>

@@ -1,0 +1,180 @@
+<%# HQ Window shift page (Ember port/templates/hq/shift.hbs). Renders inside
+    the hq layout/shell; the hq-shift Stimulus controller owns the todo
+    checklist state machine, skip-review flags, and the leave-page guards.
+
+    Guided flow: the controller hands down @section_states so exactly one
+    section is open (see _section.html.erb) and the rest fold to status rows.
+    Advisory callouts live inside the section they concern rather than stacking
+    above it — only a genuine stop-sign gets a full-width box, so the operator's
+    first screen is the next action instead of a wall of colour. %>
+<%
+  is_shiny_penny = @person.status == Person::ACTIVE &&
+                   @timesheets.any? { |t| t.position_id == Position::ALPHA }
+  recommend_burn_weekend = BurnWeekendShiftRecommendation.recommend?(@person)
+  choreograph = if @shift_started && @on_duty_entry.position_id != Position::BURN_PERIMETER
+                  "assets"
+                else
+                  ""
+                end
+%>
+<div data-controller="hq-shift"
+     data-hq-shift-labels-value="<%= HqTodo::LABELS.to_json %>"
+     data-hq-shift-shift-handled-value="<%= @shift_handled == true %>"
+     data-hq-shift-ended-entry-value="<%= @ended_entry&.id.to_i %>"
+     data-hq-shift-off-duty-value="<%= @on_duty_entry.nil? %>"
+     data-hq-shift-choreograph-value="<%= choreograph %>">
+
+  <%= render "hq/shift_manage/todo_list", todos: @todos, ask_if_done: @ask_if_done,
+             on_duty_entry: @on_duty_entry, person: @person %>
+
+  <% unless @person.on_site %>
+    <%# The one blocking gate on this page: nothing below can proceed until
+        On-Site Registration runs, so every section renders collapsed and this
+        card is the only thing to act on. %>
+    <%= ui_callout_box :warning, title: "#{@person.callsign} Is Marked Off Site",
+                       icon: "hand-point-right" do %>
+      <p class="mb-2">
+        Follow the Site Registration procedures before you sign this person into a shift.
+      </p>
+      <%= button_link "Begin On-Site Registration", :primary,
+                      hq_site_registration_path(@person) %>
+    <% end %>
+  <% end %>
+
+  <%# Page level, not inside the shift section: these say whether this person may
+      be signed in at all, and the sections around them fold. An off-site person
+      collapses every section, which would bury "Shift Check-In Blocked" behind a
+      row reading "Not on duty". A stop-sign that folds is not a stop-sign. %>
+  <%= render "common/shift_manage/alerts" %>
+
+  <% if @unread_message_count.to_i.positive? %>
+    <%# Also page level: "Deliver Messages" is a checklist task in its own right
+        and often the next action, but the shift section is folded at exactly the
+        end-of-shift moment the messages get handed over. %>
+    <%= ui_callout_box :info, accent: true,
+                       title: pluralize(@unread_message_count, "Unread Message"),
+                       icon: "envelope" do %>
+      <p class="mb-2">
+        <%= @person.callsign %> has
+        <%= pluralize(@unread_message_count, "unread Clubhouse message") %>.
+      </p>
+      <%= button_link "Read #{pluralize(@unread_message_count, "Message")}", :primary,
+                      hq_messages_path(@person) %>
+    <% end %>
+  <% end %>
+
+  <%= render layout: "hq/shift_manage/section",
+             locals: { id: "hq-shift-section",
+                       title: @on_duty_entry ? "End The Shift" : "Start A Shift",
+                       state: @section_states[:shift],
+                       summary: hq_shift_summary(@on_duty_entry, @ended_entry,
+                                                 @unreviewed_count) } do %>
+    <% if is_shiny_penny || recommend_burn_weekend %>
+      <%= ui_callout_box :info, accent: true, icon: "face-smile-beam", icon_type: :regular do %>
+        <% if is_shiny_penny %>
+          <div><%= @person.callsign %> is a Shiny Penny. Welcome them to the department!</div>
+        <% end %>
+        <% if recommend_burn_weekend %>
+          <div>
+            Ask <%= @person.callsign %> if they are interested in rangering a Burn Weekend shift.
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <div id="hq-verification" class="mb-4">
+      <%= render "hq/shift_manage/verification", entries: @timesheets_to_review, person: @person %>
+    </div>
+    <% if @on_duty_entry %>
+      <%# End Shift & Submit Correction now renders inside the on-duty panel's
+          button row, gated on allow_correction_on_end?. %>
+      <%= render "common/shift_manage/on_duty" %>
+    <% elsif shift_person.can_work? %>
+      <%# Start Shift stays withheld until every unverified entry is
+          verified, pending, or skipped — the hq-shift controller reveals it. %>
+      <div data-hq-shift-target="startPanel"
+           <%= "hidden" if @timesheets_to_review.any?(&:verification_required?) %>>
+        <%= render "common/shift_manage/start_shift" %>
+      </div>
+    <% end %>
+
+    <%= render "hq/shift_manage/other_entries", person: @person %>
+  <% end %>
+
+  <%= render "hq/shift_manage/assets_section", person: @person,
+             person_event: @person_event, event_info: @event_info,
+             radio_accounting: @radio_accounting, on_duty_entry: @on_duty_entry,
+             assets_checked_out: @assets_checked_out, attachments: @attachments,
+             checkout_form: @checkout_form, state: @section_states[:assets] %>
+
+  <%= render layout: "hq/shift_manage/section",
+             locals: { id: "hq-pogs-section", title: "Meals & Showers",
+                       state: @section_states[:pogs],
+                       summary: hq_pogs_summary(@pogs) } do %>
+    <div id="hq-pogs">
+      <%= render "hq/shift_manage/pogs", pogs: @pogs, ended_entry: @ended_entry,
+                 on_duty_entry: @on_duty_entry, half_pog_enabled: @half_pog_enabled %>
+    </div>
+    <div class="mt-4">
+      <%= render "hq/shared/provision_info", event_periods: @event_periods, showers: @event_info&.showers %>
+    </div>
+  <% end %>
+
+  <%= render layout: "hq/shift_manage/section",
+             locals: { id: "hq-offsite-section", title: "Mark Off Site",
+                       state: @section_states[:offsite],
+                       summary: hq_off_site_summary(@person, @off_site_pending) } do %>
+    <% if @person.on_site %>
+      <% if @off_site_pending.any? %>
+        <%= ui_callout_box :warning, accent: true,
+                           title: pluralize(@off_site_pending.size, "Pending Item"),
+                           icon: "hand" do %>
+          Handle <%= pluralize(@off_site_pending.size, "item") %> before you mark this person
+          off site:
+          <ul class="list-disc ms-5 my-2">
+            <% @off_site_pending.each do |item| %>
+              <li><%= item %></li>
+            <% end %>
+          </ul>
+          You can ignore this warning and mark the person off site. Clearing the items above
+          first is better.
+        <% end %>
+      <% else %>
+        <p class="text-success mb-3">
+          <%= fa_icon "circle-check", :solid, end: 2 %><%= @person.callsign %> has no
+          outstanding items. You can mark them off site.
+        </p>
+      <% end %>
+      <%= button_link "Mark as Off Site", :secondary,
+                      hq_shift_manage_off_site_path(@person),
+                      data: confirm_modal(
+                        title: "Confirm Marking Person Off Site",
+                        message: "Mark #{@person.callsign} as off site? They can be marked on site again later.",
+                        confirm_label: "Mark as Off Site",
+                        method: :post
+                      ) %>
+    <% else %>
+      <p><%= @person.callsign %> is already marked off site.</p>
+    <% end %>
+  <% end %>
+
+  <% if @show_no_radios_modal %>
+    <%# Auto-shows on connect via the modal Stimulus controller. %>
+    <%= modal id: "hq-no-radios-modal" do |m| %>
+      <%= m.title "No Radios Checked Out" %>
+      <%= m.body do %>
+        The Clubhouse shows no radios checked out for this shift. Ask whether they have a
+        radio to return. If they hold an authorized Event Radio, record it now.
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @open_correction_entry %>
+    <%# End-shift-and-submit-correction flow: the dialog opens for the
+        just-ended entry as soon as the page renders. %>
+    <%= render "hq/shift_manage/correction_modal", entry: @open_correction_entry,
+               desired_position_options: @desired_position_options %>
+  <% end %>
+
+  <%= render "hq/shift_manage/signal", data: {} %>
+</div>

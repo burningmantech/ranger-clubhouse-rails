@@ -1,0 +1,106 @@
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1, id: "person-site-log-header",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Site Log &mdash; <%= @person.callsign %>
+  <% end %>
+  <% panel.description do %>
+    When this person was marked on site or off site, and who marked them.
+  <% end %>
+<% end %>
+
+<%# Where the history starts: the card says it, and so does either empty
+    state -- a person with no changes has no card to open, and a filter set
+    before that date finds nothing for that reason alone. %>
+<% history_start = "The history starts in April 2019; earlier changes are not included." %>
+
+<%# The legend and the filters are for the rows, so only while there are rows --
+    counted before filtering, so a filter that matches nothing can be cleared. %>
+<% if @total.positive? %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>How far back does this go?</dt>
+      <dd><%= history_start %></dd>
+      <dt>Why is someone marked off site months after the event?</dt>
+      <dd>A yearly reset marks everyone still on site as off site, under the name of the admin who ran it.</dd>
+      <dt>What does System mean?</dt>
+      <dd>No one was signed in: the Clubhouse made the change itself, for example while building a training copy.</dd>
+      <dt>What does Duration measure?</dt>
+      <dd>How long the person was on site: the time from an On Site mark to the Off Site mark that ended it.</dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "person-site-log-filters",
+                 chips: person_site_log_filter_chips(@person, @form, @creators),
+                 clear_url: person_site_log_path(@person),
+                 count: ("Showing #{@rows.size} of #{pluralize(@total, "change")}" if @form.active.any?),
+                 url: person_site_log_path(@person), model: @form,
+                 scope: PersonOnSiteFilterForm::PARAM_SCOPE do |f| %>
+    <% days = PersonOnSiteFilterForm::DATE_RANGE %>
+    <%= form_row do %>
+      <%= f.date_field :starts_on, label: person_site_log_filter_label(:starts_on),
+                       min: days.begin, max: days.end, width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.date_field :ends_on, label: person_site_log_filter_label(:ends_on),
+                       min: days.begin, max: days.end, width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.select :marked, person_site_log_marked_options,
+                   label: person_site_log_filter_label(:marked), width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :creator, person_site_log_creator_options(@creator_counts, @creators, matching: @matching_counts),
+                   label: person_site_log_filter_label(:creator), width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :sort, PersonOnSiteFilterForm::SORT_OPTIONS,
+                   label: person_site_log_filter_label(:sort), width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @rows.any? %>
+  <%# One section per year, in the order the rows already have: a person is
+      marked on site and off site about once a year, so each year reads as the
+      pair it usually is. %>
+  <% @rows.group_by { it.created_at.year }.each do |year, rows| %>
+    <%= ui_section year.to_s, border: false do %>
+      <%= ui_table do |t| %>
+        <%= t.header do %>
+          <%= t.heading "When" %>
+          <%= t.heading "Marked" %>
+          <%= t.heading "Duration" %>
+          <%= t.heading "Marked By" %>
+        <% end %>
+        <%= t.body do %>
+          <% rows.each do |row| %>
+            <%= t.row do %>
+              <%# A timestamp on the server's clock, not a shift's Pacific wall clock:
+                  without tz: the hover title reads an hour late all winter. %>
+              <%= t.cell datetime_format(row.created_at, year: true, tz: Time.zone.name) %>
+              <%= t.cell do %>
+                <%# The same pair as the person overview's hero. %>
+                <% if row.on_site? %>
+                  <%= ui_badge "On Site", :success, icon: "person-walking" %>
+                <% else %>
+                  <%= ui_badge "Off Site", :secondary, icon: "moon", icon_type: "regular" %>
+                <% end %>
+              <% end %>
+              <%= t.cell person_site_log_duration(row, @durations) %>
+              <%= t.cell person_site_log_creator_link(row.creator_person_id, @creators) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_section do %>
+    <% if @total.positive? %>
+      <%= ui_empty_state "No changes match the current filters. #{history_start}",
+                         icon: "filter", icon_type: :solid %>
+    <% else %>
+      <%= ui_empty_state "No on-site or off-site changes are recorded for this person. #{history_start}",
+                         icon: "clock-rotate-left", icon_type: :solid %>
+    <% end %>
+  <% end %>
+<% end %>

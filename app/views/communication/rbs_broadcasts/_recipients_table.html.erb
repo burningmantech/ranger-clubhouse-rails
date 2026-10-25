@@ -1,0 +1,40 @@
+<%# locals: (people:, sms:, email:, reached:) %>
+<%# Who a broadcast would reach, and by which channel. A broadcast can reach
+    thousands of people, which is more rows than a page can usefully show, so
+    the list stops where the rest of the feature's lists stop. sms: and email:
+    are the channels the broadcast uses; one it doesn't reads "not used" in
+    every row, as the sent table reads "not sent". reached: is how many of them
+    a channel reaches -- fewer than the list when an emergency lists people
+    none does (Rbs.unreachable) -- and the note past the cap counts it. %>
+<% shown = people.first(Broadcast::RECIPIENT_LIMIT) %>
+<% if people.size > shown.size %>
+  <p class="px-3 pb-2">
+    Showing the first <%= shown.size %> of <%= number_with_delimiter(people.size) %> people, in
+    callsign order.
+    <% if reached == people.size %>
+      All <%= number_with_delimiter(people.size) %> receive the broadcast.
+    <% else %>
+      <%= number_with_delimiter(reached) %> of them receive the broadcast.
+    <% end %>
+  </p>
+<% end %>
+<%= ui_table striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading "Status" %>
+    <%= t.heading "Name" %>
+    <%= t.heading "Text" %>
+    <%= t.heading "Email" %>
+  <% end %>
+  <%= t.body do %>
+    <% shown.each do |person| %>
+      <%= t.row do %>
+        <%= t.row_header person.callsign %>
+        <%= t.cell person.status %>
+        <%= t.cell "#{person.first_name} #{person.last_name}" %>
+        <%= t.cell sms ? rbs_channel_cell(person.use_sms, person.sms_status) : rbs_not_used %>
+        <%= t.cell email ? rbs_channel_cell(person.use_email, person.email_status) : rbs_not_used %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

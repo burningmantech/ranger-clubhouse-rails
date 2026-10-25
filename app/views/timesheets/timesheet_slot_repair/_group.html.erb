@@ -1,0 +1,54 @@
+<%#
+  One group of proposed changes. The "was linked to" column carries the shift's
+  own position, not the entry's: an entry pointing at some other position's
+  shift is exactly what this column has to be able to show.
+%>
+<%= ui_table striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading width: "1%" do %>
+      <span class="sr-only">Apply</span>
+    <% end %>
+    <%= t.heading "Ranger" %>
+    <%= t.heading "Position and Check-In" %>
+    <%= t.heading "Was Linked To" %>
+    <%= t.heading "Will Be Linked To" %>
+  <% end %>
+
+  <%= t.body do %>
+    <% changes.each do |change| %>
+      <%= t.row do %>
+        <%= t.cell do %>
+          <%# The entry is named in the label as well as the row: one ranger can
+              hold several entries in a group, and two checkboxes announcing the
+              same callsign are one control to a screen reader. %>
+          <%= bulk_select_checkbox "timesheet_ids[]", change.timesheet_id,
+                                   checked: change.offered?,
+                                   skip_select_all: !change.offered?,
+                                   id: "repair-#{change.timesheet_id}",
+                                   aria_label: "Apply the change for #{change.callsign}, " \
+                                               "entry #{change.timesheet_id}" %>
+        <% end %>
+        <%= t.row_header do %>
+          <%# Guarded rather than linked bare: Timesheet Management is not one
+              of PersonConcern::VIEW_ROLES, so its readers get plain callsigns. %>
+          <%= person_display_link(change, change.person_id,
+                                  path: person_path(change.person_id)) %>
+          <div class="text-sm text-stone-muted"><%= change.status %></div>
+        <% end %>
+        <%= t.cell do %>
+          <%= change.position_title || "Unknown position" %>
+          <div class="text-sm text-stone-muted"><%= datetime_format change.on_duty %></div>
+        <% end %>
+        <%= t.cell do %>
+          <%= render "shift", shift: change.old_shift, blank: "No shift" %>
+        <% end %>
+        <%= t.cell do %>
+          <%= render "shift", shift: change.new_shift, blank: "No matching shift" %>
+          <% if change.reason %>
+            <div class="text-sm text-stone-muted"><%= slot_repair_reason(change.reason) %></div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

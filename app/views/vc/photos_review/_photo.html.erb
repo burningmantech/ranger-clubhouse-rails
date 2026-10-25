@@ -1,0 +1,98 @@
+<%# locals: (photo:) -%>
+<%= ui_card id: dom_id(photo), class: "mb-4" do %>
+  <%= ui_card_body do %>
+    <div class="stack-to-row-lg">
+      <div class="shrink-0">
+        <%= photo_tag photo.profile, width: 175, class: "rounded-lg p-2", alt: "Submitted photo for #{photo.person.callsign}" %>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h3 class="heading-title text-heading mb-2">
+          <%= callsign_link photo.person %>
+          <span class="text-stone-muted font-normal">&lt;<%= photo.person.status %>&gt;</span>
+        </h3>
+
+        <%= ui_table striped: false do |t| %>
+          <%= t.header do %>
+            <%= t.heading "Status" %>
+            <%= t.heading "ID" %>
+            <%= t.heading "Uploaded" %>
+            <%= t.heading "Reviewed" %>
+            <%= t.heading "Edited" %>
+          <% end %>
+          <%= t.body do %>
+            <%= t.row do %>
+              <%= t.cell do %>
+                <%= photo_status_badge(photo.status) %>
+              <% end %>
+              <%= t.cell photo.id %>
+              <%= t.cell do %>
+                <%= render "attribution", time: photo.uploaded_at, person: photo.upload_person %>
+              <% end %>
+              <%= t.cell do %>
+                <%= render "attribution", time: photo.reviewed_at, person: photo.review_person %>
+              <% end %>
+              <%= t.cell do %>
+                <%= render "attribution", time: photo.edited_at, person: photo.edit_person %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+
+        <%# A reviewed card keeps the opposite decision so a mistake can be undone. %>
+        <%= button_row class: "mt-4" do %>
+          <% unless photo.status == PersonPhoto::APPROVED %>
+            <%= button_link "Approve", :success, vc_photos_review_approve_path(photo),
+                            icon: "check", icon_type: :solid,
+                            data: confirm_modal(title: "Approve Photo",
+                                                message: "Approve this photo for #{photo.person.callsign}? It becomes their current photo — an approval email will be sent, and all of their other photos will be removed.",
+                                                confirm_label: "Approve Photo",
+                                                method: :patch) %>
+          <% end %>
+          <% unless photo.status == PersonPhoto::REJECTED %>
+            <%= button_link "Reject", :error, vc_photos_review_reject_dialog_path(photo),
+                            icon: "xmark", icon_type: :solid, data: { turbo_frame: "modal" } %>
+          <% end %>
+          <% if photo.is_pending? %>
+            <%= button_link "Edit Photo", :secondary, vc_photos_review_crop_path(photo),
+                            icon: "crop", icon_type: :solid %>
+          <% end %>
+        <% end %>
+
+        <div class="mt-4">
+          <% if photo.reject_history.present? %>
+            <div class="font-semibold mb-2">
+              <%= pluralize(photo.reject_history.size, "previously rejected photo") %>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <% photo.reject_history.each do |reject| %>
+                <%= link_to vc_photos_review_info_path(reject),
+                            data: { turbo_frame: "modal" },
+                            class: "block text-center text-sm",
+                            aria: { label: "Rejected photo details for #{photo.person.callsign}" } do %>
+                  <%= photo_tag reject.avatar, width: 70, class: "rounded" %>
+                  <div><%= mdy_format(reject.uploaded_at || reject.created_at) %></div>
+                <% end %>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="font-semibold">No prior rejected photos.</div>
+          <% end %>
+        </div>
+        <% if photo.status == PersonPhoto::REJECTED %>
+          <dl class="mt-4 space-y-2">
+            <dt class="font-semibold">Rejection reasons</dt>
+            <dd><%= photo.reject_labels.to_a.join(", ") %></dd>
+            <dt class="font-semibold">Rejection message</dt>
+            <dd>
+              <% if photo.reject_message.present? %>
+                <%= nl2br(photo.reject_message) %>
+              <% else %>
+                <i>none given</i>
+              <% end %>
+            </dd>
+          </dl>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

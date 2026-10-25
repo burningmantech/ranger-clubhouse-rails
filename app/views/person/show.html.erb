@@ -1,0 +1,10 @@
+<% content_for :title, "Overview — #{@person.callsign}" %>
+<%= render partial: "hero", locals: { person: @person } %>
+<%= render partial: "banners", locals: { person: @person, person_banners: @person_banners,
+                                         email_suppression: @email_suppression } %>
+<%= render partial: "summary_strip", locals: { person: @person, person_fkas: @person_fkas, photo: @photo } %>
+<%= render partial: "teams_positions", locals: { person: @person, person_membership: @person_membership } %>
+<%= render partial: "permissions", locals: { rows: @permission_rows, nda_blocked: @nda_blocked } %>
+<% if can_see_contact_info? %>
+  <%= render partial: "contact_details", locals: { person: @person } %>
+<% end %>

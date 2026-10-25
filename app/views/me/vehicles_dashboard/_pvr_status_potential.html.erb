@@ -1,0 +1,24 @@
+<div class="space-y-6">
+  <%= ui_callout_box :info, accent: true, title: "Not Yet Eligible", icon: "info-circle",
+                  role: "status", "aria-label": "Steps required to become eligible" do %>
+    <p class="text-warning">
+      Follow the steps below to become eligible.
+    </p>
+  <% end %>
+
+  <div class="pl-2">
+    <%= render partial: "eligible_positions", locals: {
+      positions: dashboard.pvr_eligible_positions,
+      name: "PVR",
+      full_name: "Personal Vehicle Request"
+    } %>
+  </div>
+
+  <div class="pt-2">
+    <%= button_link nil, :primary, me_schedule_path,
+        class: "w-full justify-center",
+        "aria-label": "Go to Schedule page to sign up for qualifying shifts" do %>
+      Go to Schedule / Sign-Ups <%= fa_icon "arrow-right", :solid %>
+    <% end %>
+  </div>
+</div>

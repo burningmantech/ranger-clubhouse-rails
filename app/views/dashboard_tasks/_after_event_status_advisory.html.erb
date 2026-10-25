@@ -1,0 +1,23 @@
+<%# locals: (step:,facts:)%>
+<% if facts.status == Person::INACTIVE %>
+  <p class="text-warning font-semibold"><%= fa_icon "circle-info", :solid, class: "icon-warning" %> Status: <b>Inactive</b> (3+ events missed)</p>
+  <p class="font-semibold mt-2">To reactivate:</p>
+  <ol class="list-decimal list-inside mb-2">
+    <li>Attend <b>full day</b> In-Person Training</li>
+    <li>Walk a regular shift (Dirt, etc.)</li>
+  </ol>
+  <p class="text-sm text-stone-muted"><%= fa_icon "info-circle", :solid, class: "icon-info" %> Training/mentee shifts don't count. Status auto-restores after regular shift.</p>
+  <p class="mt-2">Questions? Contact Volunteer Coordinators.</p>
+<% else %>
+  <% is_retired = (facts.status == Person::RETIRED) %>
+  <% if is_retired %>
+    <p class="text-warning font-semibold"><%= fa_icon "circle-info", :solid, class: "icon-warning" %> Status: <b>Retired</b> (5+ events missed)</p>
+  <% end %>
+  <p class="font-semibold mt-2">To return to active status:</p>
+  <ol class="list-decimal list-inside mb-2">
+    <li>Attend <b>full day</b> In-Person Training</li>
+    <li>Walk a Cheetah Cub shift with Mentor</li>
+  </ol>
+  <p class="text-sm text-stone-muted">Mentor Cadre restores status after Cheetah Cub if approved.</p>
+  <p class="mt-2">Questions? Contact Volunteer Coordinators.</p>
+<% end %>

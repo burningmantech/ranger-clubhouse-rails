@@ -1,0 +1,103 @@
+<%= hero_panel icon: "faucet", heading_level: :h1, id: "vc-spigot-flow-report-header",
+               title: "#{@year} Spigot Flow",
+               description: "Day-by-day counts of applicants moving through the intake pipeline." do |panel| %>
+  <% panel.year_selector year: @year, min_year: 2010, skip_pandemic: true %>
+<% end %>
+
+<% if @days.any? %>
+  <% stage_help = {
+       imported: "Application imported from Salesforce or submitted to the Clubhouse.",
+       created: "A Clubhouse account was created for the applicant.",
+       first_login: "First login after the account was created.",
+       photo_approved: "BMID photo was approved.",
+       online_trained: "Completed the online course.",
+       training_signups: "Signed up for In-Person Training.",
+       training_passed: "Passed In-Person Training.",
+       dropped: "Converted to Past Prospective status.",
+       alpha_signups: "Signed up for an Alpha shift."
+     } %>
+  <%# The label on the row for milestones carried over from an earlier intake,
+      read by the row and by the question about it. %>
+  <% previous_label = "Previous year(s)" %>
+
+  <%# Every pair explains a row or a column of the table, so the card is offered
+      only where the table is. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Which days are listed?</dt>
+      <dd>Each row is a day when one or more Prospectives completed a milestone.</dd>
+      <dt>How do I see who reached a milestone?</dt>
+      <dd>
+        Select a count to see who reached that milestone. The
+        &ldquo;<%= SpigotFlowReport::STAGE_LABELS.fetch(:imported) %>&rdquo; column and the
+        totals are numbers only.
+      </dd>
+      <%# fetch: a column added without its line here should fail, not print a
+          question over an empty answer. %>
+      <% SpigotFlowReport::STAGE_LABELS.each do |stage, label| %>
+        <dt>What does &ldquo;<%= label %>&rdquo; count?</dt>
+        <dd><%= stage_help.fetch(stage) %></dd>
+      <% end %>
+      <%# That row is drawn only when a milestone was carried forward. %>
+      <% if @days.any? { |day| day[:day] == SpigotFlowReport::PREVIOUS_YEAR_KEY } %>
+        <dt>What is the &ldquo;<%= previous_label %>&rdquo; row?</dt>
+        <dd>The milestone was reached in a prior intake cycle and carried forward. Currently only applies to approved photos.</dd>
+      <% end %>
+    </dl>
+  <% end %>
+
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link(vc_spigot_flow_report_path(year: @year, format: :csv)) %>
+    <% end %>
+  </div>
+
+  <div class="text-lg mb-2">
+    Showing <%= pluralize @days.size, "day" %>
+  </div>
+
+  <%# Not responsive: a card per day would be a season of days at ten labelled
+      lines apiece, and the counts are read down their columns. The grid scrolls
+      inside its own box instead, which the people popovers escape. %>
+  <%= ui_table responsive: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Date" %>
+      <% SpigotFlowReport::STAGE_LABELS.each_value do |label| %>
+        <%= t.heading label, right: true %>
+      <% end %>
+    <% end %>
+    <%= t.body do %>
+      <%= t.row do %>
+        <%= t.row_header "Totals" %>
+        <% SpigotFlowReport::STAGES.each do |stage| %>
+          <%= t.cell @totals[stage], center: true %>
+        <% end %>
+      <% end %>
+      <% @days.each do |day| %>
+        <% day_label = day[:day] == SpigotFlowReport::PREVIOUS_YEAR_KEY ? previous_label : day[:day] %>
+        <%= t.row do %>
+          <%= t.row_header day_label %>
+          <% SpigotFlowReport::STAGES.each do |stage| %>
+            <% if stage == :imported %>
+              <%# Imported can include applicants with no account, so it is a count only. %>
+              <%= t.cell day[:imported]&.size || "-", center: true %>
+            <% elsif day[stage].present? %>
+              <%= t.cell center: true do %>
+                <%= render "callsign_cell", people: day[stage],
+                           dom_id: "spigot-#{day[:day]}-#{stage}",
+                           label: "#{SpigotFlowReport::STAGE_LABELS[stage]} — #{day_label}" %>
+              <% end %>
+            <% else %>
+              <%= t.cell "-", center: true %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state nil, icon: "faucet", icon_type: :solid do %>
+    No applicant activity was found for <%= @year %>.
+    To view another intake cycle, select a year above.
+  <% end %>
+<% end %>

@@ -1,0 +1,53 @@
+<%= hero_panel icon: "bullhorn", heading_level: :h1, id: "announcements-header",
+               description: "Important updates and news for Rangers.",
+               back_to: :dashboard do |panel| %>
+  <% panel.title do %>Announcements<% end %>
+<% end %>
+
+<% if @announcements.any? %>
+  <%= render "unread_count", count: @unread_count %>
+<% end %>
+
+<div class="mb-6 p-4 border border-line rounded-lg">
+  <% if current_user.is_ranger? %>
+    <h3 class="heading-title text-heading mb-2 flex items-center gap-2">
+      <%= fa_icon "info-circle", :solid, class: "icon-info" %>
+      Stay Informed
+    </h3>
+    <ul class="space-y-1">
+      <%= ui_icon_item "check", :solid, tone: "icon-success" do %>
+        Check the <strong>Ranger Announce mailing list</strong> regularly for important updates
+      <% end %>
+      <%= ui_icon_item "check", :solid, tone: "icon-success" do %>
+        Clubhouse announcements supplement (not replace) official communications
+      <% end %>
+    </ul>
+  <% elsif current_user.is_applicant? %>
+    <h3 class="heading-title text-heading mb-2 flex items-center gap-2">
+      <%= fa_icon "info-circle", :solid, class: "icon-info" %>
+      Important for Applicants
+    </h3>
+    <ul class="space-y-1">
+      <%= ui_icon_item "check", :solid, tone: "icon-success" do %>
+        Watch for <strong>Ranger Applicant Newsletter</strong> emails from Volunteer Coordinators
+      <% end %>
+      <%= ui_icon_item "check", :solid, tone: "icon-success" do %>
+        These may affect your application or onboarding steps
+      <% end %>
+    </ul>
+  <% end %>
+</div>
+
+<% if @announcements.any? %>
+  <div aria-live="polite" aria-label="Announcements list">
+    <%= render partial: "announcement", collection: @announcements %>
+  </div>
+<% else %>
+  <div class="my-8 p-6 text-center rounded-lg border border-dashed border-line">
+    <div class="mb-2">
+      <%= fa_icon "inbox", :solid, class: "text-3xl text-stone-icon" %>
+    </div>
+    <p class="text-lg font-medium text-heading">No Announcements</p>
+    <p class=" text-body mt-1">There are currently no Clubhouse announcements to display.</p>
+  </div>
+<% end %>

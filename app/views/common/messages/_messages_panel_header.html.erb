@@ -1,0 +1,94 @@
+<%# locals: (message:, folder:) %>
+<%# The two toggles post the folder the list beside the pane shows, and its
+    search if it shows one, so their answer can stream that list back in step
+    (MessagesConcern#render_message_flags). Those fields are not here but in the
+    tab row's frame (_folder_selector), which every change of the list renders
+    anew; their form attribute names these forms. %>
+<% is_read = message.thread_read?(message_owner.id) %>
+<% is_sender = message.sender?(message_owner.id) %>
+<% is_archived = message.archived?(message_owner.id) %>
+
+<% case message.group? ? :group : message.sender_type %>
+<% when :group %>
+  <div class="messages-avatar-team"><%= fa_icon "user-group", :solid, size: "xl" %></div>
+<% when PersonMessage::SENDER_TYPE_PERSON %>
+  <% avatar = is_sender ? message.recipient_avatar : message.sender_avatar %>
+  <% if avatar %>
+    <%= photo_tag avatar, width: 48, height: 48, alt: "", class: "w-12 h-12 rounded-lg object-cover" %>
+  <% else %>
+    <div class="messages-avatar-placeholder"><%= fa_icon "user", :solid, size: "xl" %></div>
+  <% end %>
+<% when PersonMessage::SENDER_TYPE_RBS %>
+  <div class="messages-avatar-rbs"><%= fa_icon "bullhorn", :solid, size: "xl" %></div>
+<% when PersonMessage::SENDER_TYPE_TEAM %>
+  <div class="messages-avatar-team"><%= fa_icon "people-group", :solid, size: "xl" %></div>
+<% else %>
+  <div class="messages-avatar-placeholder"><%= fa_icon "user", :solid, size: "xl" %></div>
+<% end %>
+
+<div class="flex-1 min-w-0">
+  <%# The other party, weighted like the list row this was opened from %>
+  <div class="text-lg font-semibold text-heading">
+    <% if (label = message_address_label(message, message_owner)) %>
+      <span class="text-stone-subtle font-normal"><%= label %></span>
+      <%= message_party_name(message, message_owner) %>
+    <% elsif message.from_other? %>
+      <span class="text-stone-subtle font-normal">From:</span>
+      "<%= message.sender_name %>"
+    <% else %>
+      <%= message.sender_name %>
+    <% end %>
+  </div>
+
+  <div class="text-body mt-1">
+    <%= message.subject %>
+    <% if is_archived %>
+      <%= ui_badge "Archived", :secondary %>
+    <% end %>
+  </div>
+
+  <div class="mt-3 flex flex-wrap gap-2">
+    <%# An expired message always reads as read (PersonMessage#read?), so the
+        toggle would change nothing anyone sees. %>
+    <% unless message.has_expired? %>
+      <%= button_to toggle_read_message_path(message),
+                    method: :post,
+                    form: { id: "messages-toggle-read" },
+                    class: button_classes({}, :secondary),
+                    data: { turbo_stream: true },
+                    aria: { label: is_read ? "Mark as unread" : "Mark as read" } do %>
+        <% if is_read %>
+          <%= fa_icon "envelope", :regular %>Mark Unread
+        <% else %>
+          <%= fa_icon "envelope-open", :regular %>Mark Read
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= button_to toggle_archive_message_path(message),
+                  method: :post,
+                  form: { id: "messages-toggle-archive" },
+                  class: button_classes({}, :secondary),
+                  data: { turbo_stream: true },
+                  aria: { label: is_archived ? "Move to inbox" : "Archive message" } do %>
+      <% if is_archived %>
+        <%= fa_icon "inbox", :solid %>Move to Inbox
+      <% else %>
+        <%= fa_icon "box-archive", :solid %>Archive
+      <% end %>
+    <% end %>
+
+    <%# The HQ window's loop -- hand over, mark read, next (PRD §5) -- where
+        opening a thread leaves it unread. Into the pane like a row's link (a
+        page visit below lg); with none left, back to the list. %>
+    <% unless mark_read_on_view? %>
+      <% if (next_unread = next_unread_id(message)) %>
+        <%= button_link "Next Unread", :secondary, message_path(next_unread, folder:, q: search_query),
+                        icon: "arrow-right", icon_type: :solid, data: { turbo_frame: "messages-pane" } %>
+      <% else %>
+        <%= button_link "Back to Messages", :secondary, messages_path(folder:, q: search_query),
+                        icon: "arrow-left", icon_type: :solid, data: { turbo_frame: "_top" } %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

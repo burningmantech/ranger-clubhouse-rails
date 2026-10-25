@@ -1,0 +1,95 @@
+<%# /me/tickets/vehicle-pass — one decision: claim or release the Vehicle Pass. %>
+<%# Only reachable by an eligible member in the open period (see controller).  %>
+<%
+  info      = @ticketing_info
+  presenter = TicketOverviewPresenter.new(@ticket_package, info)
+  vp        = presenter.vehicle_pass_doc
+  gift_vp   = vp&.type == AccessDocument::VEHICLE_PASS_GIFT
+  ticket_claimed = presenter.ticket.present?
+%>
+
+<%= hero_panel icon: "car-side", heading_level: :h1, id: "vehicle-pass-header",
+               title: "Vehicle Pass",
+               description: "Claim or release your Vehicle Pass — the pass that lets you drive into the event.",
+               back_to: ["Tickets & Provisions", me_tickets_path] %>
+
+<% if vp.nil? %>
+  <%# ---- No Vehicle Pass issued: didn't qualify ----------------------------- %>
+  <%= ui_callout_box :info, accent: true, title: "No Vehicle Pass This Year" do %>
+    <p class="mb-1"><strong>You didn't qualify for a Vehicle Pass this year.</strong></p>
+    <p>Vehicle Passes go to Rangers who qualified for a Staff Credential or a Special-Priced Ticket. If you believe this is a mistake, the Ranger Ticketing Team can help.</p>
+  <% end %>
+
+<% elsif !ticket_claimed %>
+  <%# ---- Locked: must claim a ticket first --------------------------------- %>
+  <%= ui_section "Claim Your Event Ticket First", icon: "lock", icon_type: :solid do %>
+    <div class="mb-3"><%= render "status_chip", state: :locked %></div>
+    <p class="text-body mb-2">
+      <strong>Your Vehicle Pass unlocks once you claim your event ticket.</strong>
+    </p>
+    <p class="text-body mb-4">A pass is no use on its own — you need a ticket to get into the event.</p>
+    <%= button_link "Go to Your Event Ticket", :primary, me_tickets_ticket_path,
+                    size: "lg", icon: "ticket", icon_type: :solid %>
+    <p class="text-body mt-4"><strong>Come back here right after you claim your ticket.</strong></p>
+  <% end %>
+
+<% elsif vp.is_qualified? %>
+  <%# ---- Needs decision: claim it ------------------------------------------ %>
+  <%= ui_section "Claiming a Vehicle Pass", icon: "car-side", icon_type: :solid do %>
+    <div class="mb-3"><%= render "status_chip", state: :needs_decision, label: "Your Choice" %></div>
+    <p class="text-body mb-4">Do you want a Vehicle Pass? A Vehicle Pass lets you drive your vehicle into the event and keep it there.</p>
+
+    <%= ui_callout_box :warning, accent: true,
+                       title: "Only Claim It If You'll Really Use It" do %>
+      <p>Vehicle Passes are very limited. Each one directly affects ticket prices and our Bureau of Land Management event permit.</p>
+    <% end %>
+
+    <% if gift_vp %>
+      <%= ui_callout_box :success do %>
+        <strong>Free.</strong> You qualified for a Staff Credential, so your Vehicle Pass costs nothing.
+      <% end %>
+    <% else %>
+      <%= ui_callout_box :secondary, icon: "dollar-sign" do %>
+        <strong>Cost: <%= dollars(info.sp_vp_cost) %> (USD).</strong> This is the price of a Vehicle Pass claimed with a claimed or banked Special-Priced Ticket.
+      <% end %>
+    <% end %>
+
+    <%= button_link "Claim Vehicle Pass", :primary, me_tickets_document_status_path(vp.id),
+                    method: :patch, params: { status: AccessDocument::CLAIMED },
+                    size: "lg", icon: "check", icon_type: :solid %>
+    <p class="text-body mt-4">
+      <strong>You can change this until the ticketing deadline<% if info.submit_date %> (<%= full_datetime_format(info.submit_date) %> Pacific)<% end %>.</strong>
+    </p>
+  <% end %>
+
+<% else %>
+  <%# ---- Decided: already using it, offer release -------------------------- %>
+  <%= ui_section "You're Using Your Vehicle Pass", icon: "car-side", icon_type: :solid do %>
+    <div class="mb-3"><%= render "status_chip", state: :decided %></div>
+    <p class="text-body mb-4">You've claimed a Vehicle Pass, so you can drive your vehicle into the event.</p>
+
+    <%= ui_callout_box :warning, accent: true,
+                       title: "Releasing Your Vehicle Pass" do %>
+      <p>Not going to use it? Vehicle Passes are very limited. If your plans change, release yours so another Ranger can use it.</p>
+    <% end %>
+
+    <% if gift_vp %>
+      <%= ui_callout_box :success do %>
+        <strong>Free.</strong> You qualified for a Staff Credential, so your Vehicle Pass costs nothing.
+      <% end %>
+    <% else %>
+      <%= ui_callout_box :secondary, icon: "dollar-sign" do %>
+        <strong>Cost: <%= dollars(info.sp_vp_cost) %> (USD),</strong> charged with your Special-Priced Ticket.
+      <% end %>
+    <% end %>
+
+    <%= button_link "Release Vehicle Pass", :secondary, me_tickets_document_status_path(vp.id),
+                    method: :patch, params: { status: AccessDocument::QUALIFIED },
+                    size: "lg", icon: "rotate-left", icon_type: :solid %>
+    <p class="text-body mt-4">
+      <strong>You can re-claim it any time before the deadline<% if info.submit_date %> (<%= full_datetime_format(info.submit_date) %> Pacific)<% end %> if plans change.</strong>
+    </p>
+  <% end %>
+<% end %>
+
+<%= render "wizard_nav", step: :vehicle_pass, presenter: presenter %>

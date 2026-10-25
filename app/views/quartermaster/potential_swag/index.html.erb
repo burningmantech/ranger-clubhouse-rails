@@ -1,0 +1,163 @@
+<%#
+  Who might earn a service pin or patch at the coming event. The milestone
+  summary comes first because those counts are the order the report exists to
+  produce; the roster below is upstream's table, kept whole so looking one
+  person up still works. Both read the same rows, so a summary line and its
+  people cannot disagree.
+%>
+<% content_for :title, "Potential Swag" %>
+
+<%= hero_panel icon: "award", heading_level: :h1, id: "quartermaster-potential-swag-header",
+               title: "Potential Swag" do |panel| %>
+  <% panel.description do %>
+    Who might earn a service pin or patch at the <%= Current.year %> event.
+  <% end %>
+<% end %>
+
+<% if @rows.empty? %>
+  <%= ui_empty_state "No one holds an active, inactive, inactive extension, or retired " \
+                     "status yet, so there is no swag to order.",
+                     icon: "award", icon_type: :solid %>
+<% else %>
+  <%# The stats describe the status scope, the same rows the summary counts.
+      The filter bar's own count reports the narrowing below it. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @scoped.size.to_s, "People" %>
+    <%= ui_stat_box @milestone_count.to_s, "At a Milestone", variant: :warning %>
+    <%= ui_stat_box @milestone_signed_up_count.to_s, "Milestone and Signed Up",
+                    variant: :success %>
+  <% end %>
+
+  <%# Out of the hero, where these six sentences were the longest description in
+      the app. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Who is a candidate?</dt>
+      <dd>
+        Someone is a candidate when their years rangered plus one lands on a five-year mark.
+        A Ranger with four years is up for a 5-year pin.
+      </dd>
+      <dt>What does the sign-up column mean?</dt>
+      <dd>Sign-ups leave out trainings, so the column answers whether they are coming out to ranger.</dd>
+      <dt>Who is listed?</dt>
+      <dd>
+        Everyone who is active, inactive, on inactive extension, or retired is listed.
+        Prospectives, Alphas, and closed accounts are not.
+      </dd>
+      <dt>What counts as a year?</dt>
+      <dd>
+        A year only counts once someone has rangered six hours in it, so a light year is absent
+        from Years, First Year, and Last Rangered — and from the milestone drawn from them.
+      </dd>
+    </dl>
+  <% end %>
+
+  <%= ui_section "Service Swag to Order", icon: "medal", icon_type: :solid, border: false do %>
+    <% if @milestones.empty? %>
+      <div class="px-4 pb-2">
+        <%= ui_empty_state "No one in this scope reaches a five-year mark at the " \
+                           "#{Current.year} event.",
+                           icon: "medal", icon_type: :solid %>
+      </div>
+    <% else %>
+      <%= ui_table full_width: true, striped: true, id: "potential-swag-milestones" do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Service Swag" %>
+          <%= t.heading "Candidates", right: true %>
+          <%= t.heading "Signed Up", right: true %>
+        <% end %>
+        <%= t.body do %>
+          <% @milestones.each do |line| %>
+            <%= t.row do %>
+              <%# The link drops the signed-up filter rather than carrying it:
+                  this row's counts describe every candidate at the milestone,
+                  so a link that kept the filter would advertise one number and
+                  deliver another. Narrowing to the signed-up ones is what the
+                  filter bar below is for, and the chip there says it is off. %>
+              <%= t.row_header do %>
+                <%= link_to "#{line[:milestone]}-year service",
+                            potential_swag_url(@filter_params.except(:signed_up).merge(
+                              milestone: line[:milestone].to_s)),
+                            class: LinkHelper::TABLE_LINK_CLASSES %>
+              <% end %>
+              <%= t.cell line[:people], right: true %>
+              <%= t.cell line[:signed_up], right: true %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= filter_bar id: "potential-swag-filters",
+                 chips: potential_swag_filter_chips(@filter_params),
+                 clear_url: potential_swag_url({}),
+                 count: "Showing #{@filtered.size} of #{pluralize(@scoped.size, "person")}",
+                 # In the bar beside the chips, which are where the current
+                 # scope is disclosed -- so the export cannot read as "everyone".
+                 actions: export_csv_link(potential_swag_url(@filter_params.merge(format: :csv))),
+                 url: quartermaster_potential_swag_path do |f| %>
+    <%= form_row do %>
+      <%= f.select :status, filter_status_options(@status_counts, matching: @status_matching),
+                   label: "Status", selected: @filter_params[:status],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :milestone, potential_swag_milestone_options(@milestones),
+                   label: "Service Swag", selected: @filter_params[:milestone],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :signed_up, filter_signed_up_options,
+                   label: "Signed Up for #{Current.year}", selected: @filter_params[:signed_up],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Roster", icon: "users", icon_type: :solid, border: false do %>
+    <% if @filtered.empty? %>
+      <div class="px-4 pb-2">
+        <%= ui_empty_state "No one matched the current filters.",
+                           icon: "magnifying-glass", icon_type: :solid %>
+      </div>
+    <% else %>
+      <%= ui_table full_width: true, striped: true,
+                   id: "potential-swag-roster" do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Years", right: true %>
+          <%= t.heading "First Year", right: true %>
+          <%= t.heading "Last Rangered", right: true %>
+          <%= t.heading "Signed Up #{Current.year}" %>
+          <%# "Service swag", the words the summary, the filter and the chip all
+              use. Upstream's column reads "Potential Swag?", which is the name
+              of the whole page here. %>
+          <%= t.heading "Service Swag" %>
+        <% end %>
+        <%# Quartermaster and Edit Swag may read this page but not the person
+            pages it would link to, so they get plain callsigns rather than a
+            roster of links that all bounce. %>
+        <% linked = can_view_person_page? %>
+        <%= t.body do %>
+          <% @filtered.each do |row| %>
+            <%= t.row do %>
+              <%# The report returns value rows, not Person records, so
+                  callsign_link cannot route from the object itself. %>
+              <%= t.row_header linked ? callsign_link(row, person_path(row.id)) : row.callsign %>
+              <%= t.cell row.status %>
+              <%= t.cell row.years, right: true %>
+              <%# Someone with no service has no first or last year to show. %>
+              <%= t.cell row.first_year || "—", right: true %>
+              <%= t.cell row.last_year || "—", right: true %>
+              <%= t.cell yes_no_badge(row.signed_up) %>
+              <%# Icon as well as colour, like yes_no_badge above it: the badge
+                  has to survive a greyscale screen. %>
+              <%= t.cell row.milestone ? ui_badge(row.service_label, :warning,
+                                                  icon: "medal", icon_type: :solid) : "—" %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

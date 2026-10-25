@@ -1,0 +1,6 @@
+<%# locals: (person:) %>
+<% if person && person.avatar_photo.present? %>
+  <%= photo_tag person.avatar_photo, width: 84 %>
+<% else %>
+  <%= fa_icon "user", :solid, size: "3x" %>
+<% end %>

@@ -1,0 +1,6 @@
+<%# The row is kept rather than removed, matching upstream: the grant years
+    stay readable as the record of what was just revoked, and the action cell
+    becomes a "Positions revoked" badge plus the undo. @mentee was captured
+    BEFORE the delete, so those years are still there to show. %>
+<%= mentees_row_stream @mentee, revoked: true %>
+<%= ui_toast_render "#{@mentee.callsign}'s mentee positions have been revoked.", :success, true %>

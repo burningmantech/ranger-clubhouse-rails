@@ -1,0 +1,9 @@
+<%# locals: (title:, state:, label: nil) %>
+<%# The heading-and-chip row every SAP state opens with. state is one of      %>
+<%# :decided, :needs_decision, :locked, :not_applicable; label overrides the  %>
+<%# chip's default word. status_chip is named by full path because partial    %>
+<%# lookup follows the controller's prefixes, not this file's directory.      %>
+<div class="flex items-start justify-between gap-3 mb-3">
+  <h2 class="heading-section text-heading"><%= title %></h2>
+  <%= render "me/tickets/status_chip", state: state, label: label %>
+</div>

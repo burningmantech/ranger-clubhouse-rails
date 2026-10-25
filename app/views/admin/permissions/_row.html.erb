@@ -1,0 +1,46 @@
+<% show_type = local_assigns.fetch(:show_type, false) %>
+<% teams = permission.teams.to_a %>
+<% positions = permission.positions.to_a %>
+<% granted = teams.any? || positions.any? %>
+
+<%= t.row do %>
+  <%= t.cell permission.id, right: true, class: "font-mono text-sm whitespace-nowrap" %>
+  <%= t.row_header do %>
+    <%= permission.title %>
+    <% if permission.new_user_eligible? %>
+      <%= ui_badge "New user eligible", :primary, size: "xs" %>
+    <% end %>
+  <% end %>
+  <% if show_type %>
+    <%= t.cell value_or_dash(permission.art_role_title) %>
+  <% end %>
+  <%= t.cell do %>
+    <% if granted %>
+      <%= t.detail_row_toggle permission_grant_summary(teams.size, positions.size),
+                              id: detail_id, describing: permission.title %>
+    <% else %>
+      <span class="text-stone-muted">Direct grant only</span>
+    <% end %>
+  <% end %>
+  <% if can_manage %>
+    <%= t.cell do %>
+      <%= edit_link edit_admin_permission_path(permission), "Edit",
+                    aria: { label: "Edit #{permission.title}" } %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if granted %>
+  <%= t.detail_row id: detail_id do %>
+    <div class="flex flex-col lg:flex-row gap-4 py-2">
+      <div class="w-full lg:w-1/2">
+        <div class="mb-1 text-sm font-semibold text-heading">Teams</div>
+        <%= value_list teams.map(&:title) %>
+      </div>
+      <div class="w-full lg:w-1/2">
+        <div class="mb-1 text-sm font-semibold text-heading">Positions</div>
+        <%= value_list positions.map(&:title) %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

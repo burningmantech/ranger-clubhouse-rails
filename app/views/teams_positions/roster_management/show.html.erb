@@ -1,0 +1,215 @@
+<%= hero_panel icon: "people-group", heading_level: :h1, id: "roster-header",
+               title: "#{@team.title} Roster",
+               description: "Review who is on this team and which of its positions they hold.",
+               back_to: ["Roster Management", teams_positions_roster_management_path] %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @report.people.size.to_s, "People" %>
+  <%= ui_stat_box @report.member_count.to_s, "Members" %>
+  <%# Flagged only when there is something to flag: an amber zero says a healthy
+      roster needs attention. %>
+  <% idle = @report.never_rangered_count %>
+  <%= ui_stat_box idle.to_s, "Never Rangered", **(idle.positive? ? { variant: :warning } : {}) %>
+  <%= ui_stat_box @report.columns.size.to_s, "Positions" %>
+<% end %>
+
+<% if @report.people.any? %>
+  <%= ui_section "Positions on This Team", icon: "list-check", icon_type: :solid do %>
+    <p class="mb-3">
+      Counts cover the <%= pluralize @report.people.size, "person" %> on this roster,
+      not the whole organization.
+    </p>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-2 lg:gap-3">
+      <% @report.columns.each do |column| %>
+        <%= ui_card class: "p-3" do %>
+          <div class="text-sm text-stone-muted">
+            <%= roster_category_heading(column.category) %>
+          </div>
+          <div class="font-semibold text-heading"><%= column.title %></div>
+          <div class="mt-1">
+            <span class="font-semibold"><%= column.granted_count %></span> granted
+            <% if column.never_count.positive? %>
+              &middot;
+              <span class="text-warning font-semibold">
+                <%= column.never_count %> never <%= roster_kind_verb(column.kind) %>
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= filter_bar id: "roster-filters",
+                 chips: roster_filter_chips(@team, @filter_params, @report),
+                 clear_url: teams_positions_roster_management_team_path(@team),
+                 count: "Showing #{@people.size} of #{pluralize(@report.people.size, "person")}",
+                 url: teams_positions_roster_management_team_path(@team) do |f| %>
+    <%= form_row do %>
+      <%= f.select :view, options_for_select(roster_view_options(@report), @filter_params[:view]),
+                   { label: "View", width: "w-full lg:w-96" } %>
+      <%= f.select :position,
+                   grouped_options_for_select(roster_position_options(@report), @filter_params[:position]),
+                   { label: "Position Held", width: "w-full lg:w-64",
+                     prompt: UiComponents::FilterBarHelper::ALL_FILTER_OPTION.first } %>
+    <% end %>
+    <%= form_row do %>
+      <%= f.select :year, options_for_select(roster_year_options(@report), @filter_params[:year]),
+                   { label: "Last Activity", width: "w-full lg:w-48",
+                     prompt: UiComponents::FilterBarHelper::ALL_FILTER_OPTION.first } %>
+      <%= f.select :status,
+                   options_for_select(filter_status_options(@report.status_counts), @filter_params[:status]),
+                   { label: "Status", width: "w-full lg:w-48" } %>
+      <%= f.text_field :callsign, value: @filter_params[:callsign],
+                       label: "Callsign Contains", width: "w-full lg:w-48" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+
+  <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+    <p class="mb-1">
+      <strong>Each cell is one position grant.</strong> The year is the last year that person
+      rangered, trained at, or taught it. "Since" is the date the position was granted, shown
+      when the Clubhouse recorded it — most older grants predate the record.
+    </p>
+    <p>
+      <%= ui_badge "NS", :warning, size: "sm", icon: "circle-half-stroke" %> means granted but
+      never used.
+      <%= ui_badge "NS", :error, size: "sm", icon: "ban" %> in the Last Rangered column means no
+      activity on any position on this team. A dash means the position is not granted.
+    </p>
+  <% end %>
+
+  <% if @blocked_roles.any? %>
+    <%= ui_callout_box :warning, icon: "lock", icon_type: :solid do %>
+      <strong>This roster is read-only for you.</strong>
+      Membership of this team grants <%= @blocked_roles.map(&:title).to_sentence %>, and removing
+      someone would take that away. Only a person who holds it can do that.
+    <% end %>
+  <% end %>
+
+  <p class="my-3">
+    This roster lists team members and anyone holding a Recommended or Optional position.
+    People whose only tie is a Public position are left out.
+  </p>
+<% end %>
+
+<% if @people.any? %>
+  <%= ui_form(nil, teams_positions_roster_management_preview_path(@team, **@return_params),
+              method: :post, local: true, no_error_summary: true) do |f| %>
+    <%= bulk_select class: "roster-grid" do %>
+      <%# container_class bounds the scrollport: a sticky header sticks to the
+          nearest scrolling ancestor, and for a table that is the container, so
+          without a height it has nothing to stick to. %>
+      <%= ui_table striped: true, container_class: "roster-grid-pane" do |t| %>
+        <%# Hand-built thead: the grid needs two header rows -- a band naming each
+            position group over the columns it covers -- and the builder's own
+            header helper renders exactly one. The whole thead is sticky, so both
+            rows travel together without hand-tuned row offsets. %>
+        <thead class="<%= TableHelper::HEADER_CLASSES %> sticky top-0 z-20">
+        <tr>
+          <%= t.heading rowspan: 2, class: "roster-col-select roster-frozen-heading" do %>
+            <%= bulk_select_all aria_label: "Select everyone shown" %>
+          <% end %>
+          <%= t.heading "Callsign", rowspan: 2, class: "roster-col-callsign roster-frozen-heading" %>
+          <%= t.heading "Member", center: true, rowspan: 2 %>
+          <%= t.heading "Last Rangered", center: true, rowspan: 2, class: "max-w-20" %>
+          <%# The band over each group is the one heading the builder cannot make:
+              it spans its group's columns, so it is scoped to the colgroup while
+              t.heading always scopes to a single column. %>
+          <% @report.columns.group_by(&:category).each do |category, columns| %>
+            <th class="<%= TableHelper::HEADING_CLASSES %> text-center border-l-2 border-line uppercase"
+                colspan="<%= columns.size %>" scope="colgroup">
+              <%= roster_category_heading(category) %>
+            </th>
+          <% end %>
+        </tr>
+        <tr>
+          <% @report.columns.each do |column| %>
+            <%= t.heading column.title, center: true,
+                          class: class_names("align-bottom min-w-24 max-w-32 whitespace-normal",
+                                             "border-l-2 border-line" => @report.group_start_ids.include?(column.id)) %>
+          <% end %>
+        </tr>
+        </thead>
+        <%= t.body do %>
+          <% @people.each do |person| %>
+            <%= t.row id: "roster-person-#{person.id}" do %>
+              <%= t.cell class: "roster-col-select roster-frozen-cell" do %>
+                <%= bulk_select_checkbox "person_ids[]", person.id,
+                                         id: "select-person-#{person.id}",
+                                         aria_label: "Select #{person.callsign}" %>
+              <% end %>
+              <%= t.cell class: "roster-col-callsign roster-frozen-cell" do %>
+                <div class="font-semibold">
+                  <%= person_display_link(person, person.id, path: person_path(person.id)) %>
+                </div>
+                <div class="text-sm text-stone-muted"><%= person.status %></div>
+              <% end %>
+              <%= t.cell center: true do %>
+                <% if person.member? %>
+                  <%= ui_badge "Member", :success, icon: "check", size: "sm" %>
+                <% else %>
+                  <%= ui_badge "Not a member", :error, icon: "xmark", size: "sm" %>
+                <% end %>
+              <% end %>
+              <%= t.cell center: true do %>
+                <%= roster_last_year(person) %>
+              <% end %>
+              <% @report.columns.each do |column| %>
+                <%= t.cell center: true,
+                           class: ("border-l-2 border-line" if @report.group_start_ids.include?(column.id)) do %>
+                  <%= roster_grant_cell(person, column) %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%# Each button submits the same checked set with its own action_type.
+          None of them writes anything: they all land on a preview first. The
+          buttons are disabled until something is checked, and stay disabled
+          when the team's role grants put this roster out of reach. %>
+      <% disabled = @blocked_roles.any? %>
+      <%= ui_section "Act on the Selected People", icon: "user-gear", icon_type: :solid do %>
+        <p class="mb-3">
+          <%= bulk_select_count %> — every action shows you what will change before anything is saved.
+        </p>
+        <%= form_row do %>
+          <%= f.select :position_id,
+                       options_from_collection_for_select(@report.columns, :id, :title),
+                       { label: "Position to Grant or Revoke", width: "w-full lg:w-72" } %>
+        <% end %>
+        <%# Out of the hero, where it was the whole description: what the red
+            button below does, said beside it. %>
+        <%= ui_callout_box :warning, icon: "user-minus", icon_type: :solid, accent: true, class: "my-4" do %>
+          <strong>Removing someone takes them off the team and revokes the team's Recommended
+          and Optional positions.</strong> Public positions are left alone.
+        <% end %>
+        <%= button_row do %>
+          <%= button_action "Grant Position", :primary,
+                            type: "submit", name: "action_type", value: RosterAction::GRANT_POSITION,
+                            icon: "plus", icon_type: :solid, disabled: disabled,
+                            data: { checkbox_select_all_target: "submit" } %>
+          <%= button_action "Revoke Position", :secondary,
+                            type: "submit", name: "action_type", value: RosterAction::REVOKE_POSITION,
+                            icon: "minus", icon_type: :solid, disabled: disabled,
+                            data: { checkbox_select_all_target: "submit" } %>
+          <%= button_action "Remove from Team", :error,
+                            type: "submit", name: "action_type", value: RosterAction::REMOVE_FROM_TEAM,
+                            icon: "user-minus", icon_type: :solid, disabled: disabled,
+                            data: { checkbox_select_all_target: "submit" } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif @report.people.any? %>
+  <%= ui_empty_state "No one on this roster matches the current filters.",
+                     icon: "filter", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "#{@team.title} has no members, and none of its positions have been granted.",
+                     icon: "user-plus", icon_type: :solid %>
+<% end %>

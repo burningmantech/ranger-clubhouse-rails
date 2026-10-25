@@ -1,0 +1,40 @@
+<%# locals: (group:) %>
+<%#
+  One mentoring shift on the picker: its time (or that its sign-ins matched no
+  shift), who is mentoring, what still needs doing, and how many of its mentees
+  have a mentor. The button opens the shift's roster.
+%>
+<% total = group.mentee_entries.size %>
+<% needing = group.needing_mentor.size %>
+<% awaiting = group.awaiting_verdict.size %>
+<% assigned = group.walks.size %>
+<% chips = capture do %>
+  <div class="flex flex-wrap items-center gap-2 mb-2">
+    <%= ui_badge pluralize(total, "mentee"), :secondary, icon: "user-group", icon_type: :solid %>
+    <% if needing.positive? %>
+      <%= ui_badge "#{needing} need a mentor", :warning, icon: "user-clock", icon_type: :solid %>
+    <% end %>
+    <% if awaiting.positive? %>
+      <%= ui_badge "#{awaiting} awaiting a verdict", :warning, icon: "hourglass-half", icon_type: :solid %>
+    <% end %>
+  </div>
+<% end %>
+<%= render "common/mentoring/shift_card",
+           title: art_mentoring_shift_label(group),
+           badges: [
+             (ui_badge("In Progress", :success, icon: "person-walking", icon_type: :solid) if group.in_progress?),
+             (if group.unmatched?
+                ui_badge(Training::MentoringHelper::CHECK_SIGN_IN, :warning, icon: "triangle-exclamation", icon_type: :solid)
+              end)
+           ],
+           subtitle: (if group.unmatched?
+                        safe_join(["First signed in ", datetime_format(group.begins), "."])
+                      else
+                        "Mentors on shift: #{group.mentors.any? ? group.mentors.map(&:callsign).to_sentence : "none signed in"}."
+                      end),
+           extra: chips,
+           meter: { label: "Mentors Assigned", value: "#{assigned} of #{total}",
+                    percent: total.zero? ? 0 : assigned * 100 / total, variant: assigned == total ? :success : :warning,
+                    aria_label: "#{assigned} of #{total} mentees have a mentor" },
+           url: training_mentoring_assignment_shift_path(training_slug, group.key, year: @year),
+           label: "Manage" %>

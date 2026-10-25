@@ -1,0 +1,105 @@
+<%#
+  Who is signed up around one Alpha shift -- or on duty right now -- across
+  every mentor-family position, in the four groups the mentor cadre staffs
+  with. Alphas carry prior bonks, everyone else their rangering history. The
+  grouping and window rules live in MentorShiftReport; both modes arrive in
+  the same shape, so one render path serves both.
+%>
+<% content_for :title, "Mentor Shift Report" %>
+<%= hero_panel icon: "clipboard-user", heading_level: :h1, id: "shift-report-header",
+               title: "Mentor Shift Report" do |panel| %>
+  <% panel.description do %>
+    Who is signed up for an Alpha shift &mdash; or on duty right now &mdash; across every mentor
+    position.
+  <% end %>
+  <% if @report %>
+    <%# The picker is a whole card grid, so it gives way to the report rather
+        than sitting above it. This link is the way back to it. %>
+    <% panel.back_to do %>
+      <%= back_to "Choose another shift", mentoring_shift_report_path(year: @year) %>
+    <% end %>
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @report.nil? %>
+  <div class="print:hidden">
+    <%= button_row do %>
+      <%# Carries the year so coming back from on-duty mode does not silently
+          reset the year selector. %>
+      <%= button_link "Currently On Duty", :secondary, mentoring_shift_report_path(on_duty: 1, year: @year),
+                      icon: "tower-broadcast", icon_type: :solid %>
+    <% end %>
+  </div>
+
+  <% if @shifts.empty? %>
+    <%= ui_empty_state "No Alpha shifts are scheduled for #{@year}. Pick another year, or use Currently On Duty to see who is on shift right now.",
+                       icon: "calendar-xmark", icon_type: :solid %>
+  <% else %>
+    <% alpha_schedule_days(@shifts).each do |day, shifts| %>
+      <h2 class="heading-section text-heading mt-6 mb-2"><%= mdy_format(day, full: true) %></h2>
+
+      <div class="two-column-lg">
+        <% shifts.each do |shift| %>
+          <%= render "common/mentoring/alpha_shift_card", shift: shift, label: "View Shift Report",
+                     url: mentoring_shift_report_path(slot_id: shift.slot.id, year: @year) %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% else %>
+  <% if @report.on_duty? %>
+    <%# The red banner is deliberate (approved mockup): it flags "live data",
+        matching upstream's red On Duty heading, not an error state. %>
+    <%= ui_callout_box :error, icon: "tower-broadcast", icon_type: :solid, accent: true, class: "my-4" do %>
+      <strong>On duty now</strong> &mdash; open shifts as of
+      <%= datetime_format @report.now %>, current year.
+    <% end %>
+  <% else %>
+    <%= ui_callout_box :success, icon: "flag", icon_type: :solid, accent: true, class: "my-4" do %>
+      <strong>Scheduled for the Alpha shift</strong> &mdash;
+      <%= datetime_format @report.slot.begins %><% if @report.slot.description.present? %> &middot;
+      <%= @report.slot.description %><% end %>. Shifts beginning up to
+      <%= MentorShiftReport::HOURS_PRIOR %> hour before and
+      <%= MentorShiftReport::HOURS_AFTER %> hours after are included.
+    <% end %>
+  <% end %>
+
+  <% if @report.on_duty? && @report.groups.all? { |group| group.positions.empty? } %>
+    <%# Upstream prints a single line here too -- four empty sections would
+        say the same thing eight times. %>
+    <%= ui_empty_state "No one is currently on duty.", icon: "tower-broadcast", icon_type: :solid %>
+  <% else %>
+    <%# The stat boxes count the whole report; each section badge repeats its
+        own group's figure next to the rows. %>
+    <%= ui_stat_row do %>
+      <% @report.groups.each do |group| %>
+        <%= ui_stat_box @report.group_counts[group.key].to_s, group.title,
+                        icon: Mentoring::ShiftReportHelper::GROUP_ICONS[group.key], icon_type: :solid %>
+      <% end %>
+      <% unless @report.on_duty? %>
+        <%= ui_stat_box @report.unfilled_count.to_s, "Unfilled Shifts",
+                        variant: @report.unfilled_count.positive? ? :warning : :success,
+                        icon: "triangle-exclamation", icon_type: :solid %>
+      <% end %>
+    <% end %>
+
+    <%# Out of the hero, and only on the report: it is a key to rows the shift
+        picker does not have. %>
+    <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+      <dl class="instruction-list">
+        <dt>What does each row show?</dt>
+        <dd>Alphas show their prior bonks; everyone else shows their rangering history.</dd>
+      </dl>
+    <% end %>
+
+    <% @report.groups.each do |group| %>
+      <%= ui_section group.title, id: "shift-report-#{group.key}",
+                     icon: Mentoring::ShiftReportHelper::GROUP_ICONS[group.key], icon_type: :solid,
+                     badge: @report.group_counts[group.key].to_s, badge_color: :secondary do %>
+        <%= render "group_positions", group: group,
+                                      began_label: @report.on_duty? ? "Started" : "Shift" %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

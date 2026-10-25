@@ -1,0 +1,59 @@
+<%#
+  Everyone who turned in hours this year, one row each, counting only
+  positions that count hours. Pick a callsign to see the positions behind
+  their total.
+%>
+<% content_for :title, "Timesheet Totals" %>
+
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1,
+               id: "timesheet-totals-report-header",
+               title: "#{@year} Timesheet Totals" do |panel| %>
+  <% panel.description do %>
+    Everyone who was on duty this year, with hours and credits totaled by
+    position -- counting only positions marked to count hours.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @people.any? %>
+  <%= filter_bar id: "timesheet-totals-report-filters",
+                 chips: timesheet_totals_report_chips(@filter_params, @year),
+                 clear_url: timesheets_timesheet_totals_report_path(year: @year),
+                 count: "Showing #{@filtered_people.size} of #{pluralize(@people.size, "person")}",
+                 actions: export_csv_link(timesheets_timesheet_totals_report_path(year: @year, format: :csv), "Export All to CSV"),
+                 url: timesheets_timesheet_totals_report_path do |f| %>
+    <%# Year-scoped page: a GET form replaces the whole query string, so without
+        this every Apply would bounce the roster back to the current year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.text_field :callsign, label: "Callsign Contains",
+                       value: @filter_params[:callsign],
+                       width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :status, filter_status_options(@status_counts,
+                                                  matching: @matching_status_counts),
+                   label: "Status", selected: @filter_params[:status],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <% if @filtered_people.any? %>
+    <div class="lg:w-3/4">
+      <% @filtered_people.each do |row| %>
+        <%= ui_drill_down_row timesheets_timesheet_totals_report_person_path(row.person_id,
+                                                                             year: @year),
+                              row.callsign,
+                              meta: timesheet_totals_report_meta(row),
+                              badges: timesheet_totals_report_badges(row) %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= ui_empty_state "No callsign matches these filters.",
+                       icon: "filter-circle-xmark", icon_type: :solid %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No #{@year} timesheets were turned in for positions that count hours.",
+                     icon: "clock", icon_type: :solid %>
+<% end %>

@@ -1,0 +1,33 @@
+description: "Lists the shifts the Clubhouse closed on someone's behalf"
+
+subject: "[Clubhouse] Automatic sign out report"
+
+body: |
+  <h2>Automatic Timesheet Sign Outs</h2>
+
+  <p>
+    The following timesheet entries have been automatically signed out of and the duration capped at {{ hour_cap }} hours.
+  </p>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Person</th>
+        <th>Position</th>
+        <th>On Duty</th>
+        <th>Off Duty</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for entry in entries %}
+        <tr>
+          <td>
+            <a href="{{ entry.person_url }}">{{ entry.callsign }}</a>
+          </td>
+          <td>{{ entry.position_title }}</td>
+          <td>{{ entry.on_duty }}</td>
+          <td>{{ entry.off_duty }}</td>
+        </tr>
+      {%- endfor %}
+    </tbody>
+  </table>

@@ -1,0 +1,53 @@
+<%= ui_form(@swag,
+            @swag.persisted? ? quartermaster_swag_item_path(@swag) : quartermaster_create_swag_path) do |f| %>
+  <%= f.fieldset "Swag Details", icon: "shirt", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What does the type do?</dt>
+      <dd>It decides which page the item is listed on and which records it can be issued for.</dd>
+      <dt>What does Active do?</dt>
+      <dd>Only active items can be issued. Deactivate an item to retire it without losing its history.</dd>
+    </dl>
+
+    <%= f.text_field :title, label: "Title", required: true,
+                     maxlength: 80, show_counter: true, width: "w-full sm:w-96" %>
+
+    <%= form_row do %>
+      <%# What the New and Edit heroes used to say about the type, on the field
+          it is about -- one line that is true on both pages. %>
+      <%= f.select :type,
+                   @type_options,
+                   label: "Type", required: true, width: "w-full sm:w-64",
+                   prompt: "Select a type",
+                   help_text: "Decides which type's page lists this item; changing it moves the item there.",
+                   data: {
+                     controller: "conditional-show",
+                     conditional_show_id_value: "swag-shirt-type",
+                     conditional_show_reveal_value: Swag::TYPE_DEPT_SHIRT
+                   } %>
+      <%= f.select :shirt_type,
+                   @shirt_type_options,
+                   label: "Shirt Type", width: "w-full sm:w-44",
+                   include_blank: "Not set",
+                   wrapper_id: "swag-shirt-type",
+                   hidden: @swag.type != Swag::TYPE_DEPT_SHIRT %>
+    <% end %>
+
+    <%= f.check_box :active, label: "Active" %>
+
+    <%= f.text_area :description, label: "Description", rows: 4,
+                    help_text: "Optional. Shown alongside the item in the catalog." %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Swag" %>
+    <%= cancel_link @cancel_path %>
+    <% if @swag.persisted? %>
+      <%= delete_button quartermaster_swag_item_path(@swag),
+                        confirm_modal: {
+                          title: "Confirm Swag Deletion",
+                          message: swag_delete_message(@swag, @issued_count),
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

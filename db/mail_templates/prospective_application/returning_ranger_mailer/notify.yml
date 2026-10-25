@@ -1,0 +1,23 @@
+description: "Tells someone already a Ranger that they need not apply again"
+
+subject: "Hey {{ application.first_name }}, concerning your Ranger Application."
+
+body: |
+  <p>
+    Hey {{ application.first_name }},
+  </p>
+  <p>
+    We received your Ranger application, however, it appears you are already a Black Rock Ranger!
+    Any returning Ranger does not need to re-apply to the department.
+  </p>
+  <p>
+    Every year, all Rangers must complete the Online Course, and attend an In-Person Training session
+    before being allowed to ranger. The Clubhouse dashboard will guide you through all the steps required.
+  </p>
+  <p>
+    <a href="{{ clubhouse_url }}">{{ clubhouse_url }}</a>
+  </p>
+  <p>
+    Your Friendly Black Rock Ranger Volunteer Coordinators
+  </p>
+  {% render "shared/mailer/application_footer", application: application %}

@@ -1,0 +1,78 @@
+<%# Meal pog guidelines — ported from port/components/hq-pog-guidelines.hbs with
+    the ReadMore expanders rebuilt on the existing read-more Stimulus pattern.
+    Rendered inside the pog issue dialog for meal-type pogs only (suppressed for
+    shower pogs, as upstream). Each row comes from the pog_guideline partial,
+    which wires its id to the toggle's aria-controls. %>
+Meal pog guidelines:
+<div class="my-2 mx-3">
+  <%= render layout: "hq/shift_manage/pog_guideline",
+             locals: { icon: "utensils", id: "hq-pog-guideline-1",
+                       heading: "One pog for 6+ hours, two for 10+ hours — for one of " \
+                                "the next three meals, not 24-hour period" } do %>
+    Issue a pog only for one of the three meals after the shift ends &mdash; not for a
+    24-hour window. Example: a shift ending at 18:15 earns a pog for that night&rsquo;s
+    dinner, or the next day&rsquo;s breakfast or lunch. Two pogs may cover two different
+    meals in that window.
+  <% end %>
+
+  <%= render layout: "hq/shift_manage/pog_guideline",
+             locals: { icon: "ban", id: "hq-pog-guideline-2", emphasis: "text-error",
+                       heading: "No pog for a shift under 6 hours — unless they rangered " \
+                                "two back-to-back shifts totaling 6+ hours" } do %>
+    <p class="mb-2">
+      Two back-to-back shifts totaling over 6 hours are eligible for one pog. Example: a
+      Burn Perimeter shift followed straight by a Dirt shift earns one pog for the 6+
+      combined hours, not one per shift.
+    </p>
+    If the combined time exceeds 10 hours, issue two pogs.
+  <% end %>
+
+  <%= render layout: "hq/shift_manage/pog_guideline",
+             locals: { icon: "people-group", id: "hq-pog-guideline-3",
+                       heading: "Mentors, Sandman, and Gerlach Patrol handle their own " \
+                                "— no pogs issued" } do %>
+    <p class="mb-2">
+      Mentors and Sandman receive pogs directly from their Cadres. Gerlach Patrol gets to
+      eat at Bruno&rsquo;s for free.
+    </p>
+    A Ranger may walk up to the HQ Window and claim they were approved for a pog. The HQ Lead
+    must confirm that authorization with the right Cadre before you issue it.
+  <% end %>
+
+  <%= render layout: "hq/shift_manage/pog_guideline",
+             locals: { icon: "shuffle", id: "hq-pog-guideline-4",
+                       heading: "Pog swaps — only for the same three-meal window and " \
+                                "only one swap allowed" } do %>
+    <p class="mb-2">
+      You may swap a pog for a different meal. The new meal must fall inside the original
+      three-meal window after the shift ended &mdash; not inside a 24-hour period.
+    </p>
+    Count from the shift, not from when the Ranger returns to ask. Grant only one
+    replacement pog per shift.
+  <% end %>
+
+  <%= render layout: "hq/shift_manage/pog_guideline",
+             locals: { icon: "person-walking-arrow-loop-left", id: "hq-pog-guideline-5",
+                       heading: "Forgotten Pog — only for the three-meal window after " \
+                                "the shift" } do %>
+    <p class="mb-2">
+      You may issue a pog later. It still has to fall inside the three-meal window after
+      the shift ended &mdash; count from the shift, not from when the Ranger comes back
+      to ask.
+    </p>
+    The Ranger, not HQ, is responsible for getting a pog.
+  <% end %>
+
+  <%= render layout: "hq/shift_manage/pog_guideline",
+             locals: { icon: "question", id: "hq-pog-guideline-6",
+                       heading: "Questions and Exceptions" } do %>
+    <p class="mb-2">
+      For questions, talk with the HQ Short or HQ Lead. For exceptions, refer the person to
+      the HQ Lead.
+    </p>
+    <em>Ranger Commissary Meals Policy</em> sets the pog rules. Find it in the
+    <em>Ranger Department Policies, Protocols, and Procedures</em> folder on Google Drive.
+    The Clubhouse Homepage links to the Ranger Google Drive in its
+    <em>Links &amp; Things</em> section.
+  <% end %>
+</div>

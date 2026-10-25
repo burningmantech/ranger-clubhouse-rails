@@ -1,0 +1,47 @@
+<%= hero_panel icon: "file-lines", heading_level: :h1, id: "person-applications-header",
+               title: "Prospective Applications — #{@person.callsign}",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.description do %>
+    The prospective applications this person has submitted.
+  <% end %>
+<% end %>
+
+<% if @created_prior_to_2015 %>
+  <%= ui_callout_box :warning do %>
+    The account was created prior to 2015. An application may not be on file.
+  <% end %>
+<% end %>
+
+
+<%= ui_section do %>
+  <p class="my-3">
+    <% if @person.sfuid.present? %>
+      Burner Profile record
+      <%= ext_link @person.sfuid, salesforce_record_url(@person.sfuid) %>
+    <% else %>
+      Link to Burner Profile record not available.
+    <% end %>
+  </p>
+  <% if @applications.any? %>
+    <p class="mb-3 me-muted">Showing <%= pluralize(@applications.size, "application") %>.</p>
+
+    <%= ui_table full_width: false, responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Application" %>
+        <%= t.heading "Year" %>
+        <%= t.heading "Status" %>
+      <% end %>
+      <%= t.body do %>
+        <% @applications.each do |application| %>
+          <%= t.row do %>
+            <%= t.row_header application_link(application) %>
+            <%= t.cell application.year %>
+            <%= t.cell application_status_badge(application.status) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No applications were found for 2015 or later.", icon: "file-lines", icon_type: :solid %>
+  <% end %>
+<% end %>

@@ -1,0 +1,47 @@
+<%# locals: (application:) %>
+<% if application.audit_logs.empty? %>
+  <%= ui_empty_state "No audit entries recorded yet." %>
+<% else %>
+  <% assigned_callsigns = ProspectiveApplicationLog.assigned_callsign_map(application.audit_logs) %>
+  <%= ui_table do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Timestamp" %>
+      <%= t.heading "Who" %>
+      <%= t.heading "Action" %>
+      <%= t.heading "Changes" %>
+    <% end %>
+    <%= t.body do %>
+      <% application.audit_logs.sort_by(&:created_at).reverse.each do |log| %>
+        <%= t.row do %>
+          <%= t.cell datetime_format(log.created_at, year: true) %>
+          <%= t.cell log.person&.callsign || "- unknown -" %>
+          <%= t.cell content_tag(:strong, log.action) %>
+          <%= t.cell do %>
+            <% if log.data.is_a?(Hash) %>
+              <%# wrap-anywhere: a change can be a long id list with no space in it,
+                  which held the column wider than the page at every width. %>
+              <ul class="space-y-1 wrap-anywhere">
+                <% log.data.each do |column, change| %>
+                  <li>
+                    <strong><%= ProspectiveApplication::COLUMN_LABELS[column] || column %>:</strong>
+                    <% if column == "assigned_person_id" && (meta = log.meta(assigned_callsigns)) %>
+                      <% from, to = meta[:assigned_person] %>
+                      <%= from || content_tag(:em, "blank") %> &rarr; <%= to || content_tag(:em, "blank") %>
+                    <% elsif change.is_a?(Array) %>
+                      <% from, to = change %>
+                      <% from = ProspectiveApplication::STATUS_LABELS[from] || from if column == "status" %>
+                      <% to = ProspectiveApplication::STATUS_LABELS[to] || to if column == "status" %>
+                      <%= from.presence || content_tag(:em, "blank") %> &rarr; <%= to.presence || content_tag(:em, "blank") %>
+                    <% else %>
+                      <%= change %>
+                    <% end %>
+                  </li>
+                <% end %>
+              </ul>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

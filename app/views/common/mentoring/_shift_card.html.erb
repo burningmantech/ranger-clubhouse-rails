@@ -1,0 +1,36 @@
+<%# locals: (title:, url:, label:, badges: [], subtitle: nil, extra: nil, meter: nil, button: :primary) %>
+<%#
+  A mentoring shift as a picker card: its title and badges, a line under them,
+  whatever the caller adds, an optional fill meter, and one button. The Alpha
+  pages (common/mentoring/_alpha_shift_card) and an ART's Mentor Assignment
+  picker (training/mentoring/assignments) draw their cards from this one, so
+  the card's class strings live in one place.
+
+  badges: rendered ui_badge markup; nils are skipped.
+  meter: { label:, value:, percent:, variant:, aria_label: }
+%>
+<%= ui_card do %>
+  <%= ui_card_body class: "py-3" do %>
+    <div class="flex flex-wrap items-start gap-2 mb-1">
+      <h3 class="heading-title text-heading grow"><%= title %></h3>
+      <%= safe_join(badges.compact) %>
+    </div>
+
+    <% if subtitle %>
+      <p class="text-sm text-stone-muted mb-2"><%= subtitle %></p>
+    <% end %>
+
+    <%= extra %>
+
+    <% if meter %>
+      <div class="flex items-center justify-between text-sm mb-1">
+        <span class="text-stone-muted"><%= meter[:label] %></span>
+        <span class="font-semibold text-body"><%= meter[:value] %></span>
+      </div>
+      <%= ui_progress_bar meter[:percent], meter[:variant], aria: { label: meter[:aria_label] } %>
+    <% end %>
+  <% end %>
+  <%= ui_card_footer class: "justify-start pb-3" do %>
+    <%= button_link label, button, url, icon: "arrow-right", icon_type: :solid %>
+  <% end %>
+<% end %>

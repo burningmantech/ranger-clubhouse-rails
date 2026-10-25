@@ -1,0 +1,4 @@
+<%# Back to shift check-in rather than the person page — the HQ shell is the
+    operator's home, matching hq/scheduling. %>
+<%= render template: "common/messages/index",
+           locals: { back_link: back_to("Shift Check In/Out", hq_shift_manage_path(@person)) } %>

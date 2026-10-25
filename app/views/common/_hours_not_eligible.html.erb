@@ -1,0 +1,16 @@
+<%# locals: (is_training:)%>
+<%= ui_callout_box :info,
+                   title: "#{is_training ? "Training" : "Shift"} Hours & Provisions", accent: true do %>
+  <dl class="instruction-list">
+    <dt>What's NOT counted?</dt>
+    <dd>
+        This <%= is_training ? "training" : "position" %> does not count toward provisions:
+      Meals, Showers, Clothing, Event radio.
+    </dd>
+
+    <dt>What's unaffected?</dt>
+    <dd>Your <b class="text-heading-primary">credits</b> and
+      <b class="text-heading-primary">ticket eligibility</b> — those stay the same.
+    </dd>
+  </dl>
+<% end %>

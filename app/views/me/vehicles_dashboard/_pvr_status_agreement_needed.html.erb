@@ -1,0 +1,42 @@
+<% if dashboard.mvr_approved? %>
+  <div class="text-center py-4 mb-4" role="status" aria-label="Personal Vehicle Agreement required">
+    <%= render "common/status_medallion", icon: "file-signature", state: :warning %>
+    <h3 id="pvr-agreement-title" class="heading-title text-heading mb-2">
+      Agreement Required
+    </h3>
+    <p class="me-muted max-w-sm mx-auto">
+      You must sign the <strong>Personal Vehicle Agreement</strong> before you can submit a request.
+    </p>
+  </div>
+
+  <% if dashboard.pvr_eligible_positions.any? %>
+    <%= ui_callout_box :info, accent: true, title: "Note", icon: "info-circle", role: "note" do %>
+      <p>
+        The agreement will become available after you sign up for a qualifying shift.
+      </p>
+      <div class="mt-3 pl-4 border-l-2 border-info/30">
+        <%= render partial: "eligible_positions", locals: {
+          positions: dashboard.pvr_eligible_positions,
+          name: "PVR",
+          full_name: "Personal Vehicle Request"
+        } %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= button_link nil, :warning, me_agreements_path,
+                  class: "w-full text-center",
+                  "aria-label": "Sign the Personal Vehicle Agreement to enable vehicle requests" do %>
+    Sign Agreement <%= fa_icon "arrow-right", :solid %>
+  <% end %>
+<% else %>
+  <div class="text-center py-4" role="status" aria-label="Personal Vehicle Agreement required">
+    <%= render "common/status_medallion", icon: "clock", icon_type: :regular, state: :warning %>
+    <h3 id="pvr-agreement-title" class="heading-title text-heading mb-2">
+      MVR Approval Required First
+    </h3>
+    <p class="me-muted max-w-sm mx-auto">
+      A MVR Request must be approved first before you are allowed to submit a Personal Vehicle Request.
+    </p>
+  </div>
+<% end %>

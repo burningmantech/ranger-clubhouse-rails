@@ -1,0 +1,20 @@
+<%# The notes filed on one (person, session) pair, oldest first. Several notes
+    on one session are a conversation over time -- trainers correct and add to
+    each other -- so each gets its number and date. Note text carries real
+    newlines. %>
+<% unless entry.notes? %>
+  <span class="text-stone-muted italic">no notes</span>
+<% else %>
+  <div class="flex flex-col gap-y-2">
+    <% entry.notes.each_with_index do |note, index| %>
+      <div>
+        <% if entry.notes.size > 1 %>
+          <div class="text-stone-muted text-sm">
+            Note #<%= index + 1 %> &middot; <%= note.created_at.to_date.strftime("%b %-d") %>
+          </div>
+        <% end %>
+        <div class="whitespace-pre-line"><%= note.note %></div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

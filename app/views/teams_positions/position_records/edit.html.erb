@@ -1,0 +1,6 @@
+<%= hero_panel icon: "id-badge", heading_level: :h1, id: "position-record-form-header",
+               title: "Edit #{@position.title}",
+               description: "#{position_record_type_label(@position.type)} ##{@position.id} — #{pluralize(@counts[:grant_count], "person")} granted it, #{pluralize(@counts[:slot_count], "shift")}.",
+               back_to: ["Position Records", @cancel_path] %>
+
+<%= render "form" %>

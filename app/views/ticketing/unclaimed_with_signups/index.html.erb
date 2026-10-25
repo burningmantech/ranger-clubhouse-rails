@@ -1,0 +1,86 @@
+<%# Ticketing -> Unclaimed with Sign-Ups. Port of the Ember
+    vc/access-documents/unclaimed-with-signups page, which drew one flat table
+    and left the reader to scan a Yes/No column. The sign-up split is now a pair
+    of header counts and a filter, so the rows worth chasing are one click away.
+
+    The cutoff date comes from the report class, which is also what the query
+    uses — upstream hardcoded it separately here and in the API, where the two
+    could drift apart silently. %>
+<%= hero_panel icon: "ticket", heading_level: :h1, id: "ticketing-unclaimed-header",
+               title: "Unclaimed Tickets with Sign-Ups" do |panel| %>
+  <% panel.description do %>
+    Special price tickets and staff credentials that were earned but never claimed.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%# All three stay the default tint. Unclaimed tickets are ordinary for most
+      of the year, so a coloured badge here would cry wolf. %>
+  <%= ui_stat_box number_with_delimiter(@total_count), "Unclaimed Tickets" %>
+  <%= ui_stat_box number_with_delimiter(@signed_up_count), "Signed Up for a Shift" %>
+  <%= ui_stat_box number_with_delimiter(@no_signup_count), "No Sign-Up" %>
+<% end %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Which rows need attention?</dt>
+    <dd>
+      <strong>The ones with a sign-up.</strong> That person plans to be there but has
+      not claimed their ticket, so it may expire before they use it.
+    </dd>
+    <dt>What does unclaimed mean?</dt>
+    <dd>The person earned the ticket but has not claimed it. Its status is &ldquo;qualified&rdquo;.</dd>
+    <%# Out of the hero: the one line that carries the cutoff date. %>
+    <dt>What counts as a sign-up?</dt>
+    <dd>
+      Each row shows whether that person has signed up for a shift starting on or after
+      <%= month_day_format(@cutoff) %>.
+    </dd>
+  </dl>
+<% end %>
+
+<%= render "filter_bar",
+           filter_params: @filter_params,
+           active_params: @index_params,
+           count: "Showing #{@filtered_count} of #{pluralize(@total_count, "unclaimed ticket")}",
+           actions: (export_csv_link(ticketing_unclaimed_with_signups_path(@index_params.merge(format: :csv))) if @total_count.positive?) %>
+
+<%= ui_section "Unclaimed Tickets", icon: "table-list", icon_type: :solid do %>
+  <% if @rows.empty? && @index_params.any? %>
+    <%= ui_empty_state "No unclaimed tickets matched those filters. Try clearing one.",
+                       icon: "magnifying-glass", icon_type: :solid %>
+  <% elsif @rows.empty? %>
+    <%= ui_empty_state "Every ticket has been claimed. Nothing to chase.",
+                       icon: "circle-check", icon_type: :solid %>
+  <% else %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Email" %>
+        <%= t.heading "Type" %>
+        <%= t.heading "RAD" %>
+        <%= t.heading "Expires On" %>
+        <%= t.heading "Signed Up" %>
+      <% end %>
+
+      <%= t.body do %>
+        <% @rows.each do |row| %>
+          <% document = row.document %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%# Same treatment as the callsign link on the other ticketing pages. %>
+              <%= callsign_link row.person %>
+            <% end %>
+            <%= t.cell row.person.status %>
+            <%= t.cell email_link_or_dash(row.person.email) %>
+            <%= t.cell document.type_label %>
+            <%= t.cell document.display_ref %>
+            <%= t.cell value_or_dash(document.expiry_date&.iso8601) %>
+            <%= t.cell yes_no_badge(row.has_signup) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,44 @@
+<%# The badges set aside from the selection table, one disclosure per
+    non-empty bucket, each listing callsigns so a surprise can be chased down
+    without leaving the page. Long buckets stop at BUCKET_PREVIEW_LIMIT and
+    defer to the manage roster: an entire category can land in one bucket, and
+    a collapsed list of thousands of links would still ship in the page.
+
+    Locals:
+      buckets - { do_not_print:, issues:, unusual:, submitted: } => [Bmid]
+      year    - the event year, for the manage-roster link %>
+<% shown = buckets.select { |_key, badges| badges.any? } %>
+<% if shown.any? %>
+  <div class="my-4 grid grid-cols-1 lg:grid-cols-2 gap-2">
+    <% shown.each do |key, badges| %>
+      <% bucket = Bmid::ExportHelper::BUCKETS.fetch(key) %>
+      <%# A rich summary controls its own weight, so the title span carries
+          the bold a plain-string summary would have received. %>
+      <%= ui_disclosure safe_join([
+                          tag.span(bucket[:label], class: "font-semibold"),
+                          " ",
+                          ui_badge(badges.size.to_s, bucket[:variant], size: "sm")
+                        ]),
+                        variant: :card,
+                        subtitle: bucket[:reason] do %>
+        <div class="flex flex-wrap gap-x-4 gap-y-1">
+          <% badges.first(Bmid::ExportHelper::BUCKET_PREVIEW_LIMIT).each do |badge| %>
+            <span class="inline-flex items-center">
+              <%= callsign_link badge.person %>
+              <% if key == :unusual %>
+                <span class="ms-1 text-stone-muted">(<%= badge.person.status %>)</span>
+              <% end %>
+            </span>
+          <% end %>
+        </div>
+        <% overflow = badges.size - Bmid::ExportHelper::BUCKET_PREVIEW_LIMIT %>
+        <% if overflow.positive? %>
+          <p class="mt-2 text-stone-muted">
+            And <%= pluralize(overflow, "more badge") %> &mdash; the full list is on
+            <%= link_to "Manage Badges", bmid_manage_path(year: year), class: "link link-primary" %>.
+          </p>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

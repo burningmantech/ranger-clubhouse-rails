@@ -1,0 +1,164 @@
+<%# Shared timesheet dashboard, rendered by Me::TimesheetController (self-serve)
+    and Hq::TimesheetsController (window operator acting for the person).
+    The subject, voice, and every path come from the TimesheetConcern contract
+    (timesheet_person, timesheet_self_serve?, timesheet_*_path). The /me-only
+    features — year selector, final confirmation banner, qualifications, and
+    work history — are gated on timesheet_self_serve?. %>
+<%= hero_panel icon: "clipboard-list", heading_level: :h1, id: "timesheet-header",
+               back_to: (timesheet_self_serve? ? back_to_dashboard : back_to("Shift Check In/Out", hq_shift_manage_path(timesheet_person))) do |panel| %>
+  <% panel.title do %><%= @year %> Timesheet
+  <% end %>
+  <% panel.description do %>
+    <% if timesheet_self_serve? %>
+      Review your recorded hours, credits, and verification status for <%= @year %>.
+    <% else %>
+      Review <%= timesheet_person.callsign %>'s recorded hours, credits, and verification status for <%= @year %>.
+    <% end %>
+  <% end %>
+  <% if timesheet_self_serve? %>
+    <% panel.year_selector year: @year, years: current_user.years_combined %>
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @timesheets.size, "ENTRIES" %>
+  <% if @corrections_enabled %>
+    <%= ui_stat_box @timesheets_verified, "VERIFIED" %>
+    <%= ui_stat_box @timesheets_unverified,
+                    "UNVERIFIED",
+                    variant: (@timesheets_unverified.positive? ? :warning : :secondary) %>
+    <%= ui_stat_box @timesheets_pending,
+                    "PENDING",
+                    variant: (@timesheets_pending.positive? ? :warning : :secondary) %>
+  <% end %>
+<% end %>
+
+<% if timesheet_self_serve? %>
+  <% if @timesheets.any? %>
+    <%= render partial: "common/timesheet_confirm" %>
+  <% end %>
+<% elsif !@have_outstanding && @timesheets.any? %>
+  <%= ui_callout_box :success do %>
+    All of <%= timesheet_person.callsign %>'s timesheet entries are verified and no requests are pending.
+    <% if @final_confirmation %>
+      <%= timesheet_person.callsign %> has already confirmed their entire <%= @year %> timesheet as accurate.
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# Quick Actions - visible on mobile only (hidden on desktop where sidebar appears) %>
+<div class="md:hidden mt-4 flex flex-row flex-wrap gap-3">
+  <% if @corrections_enabled %>
+    <%= button_link "Missing Requests",
+                    :secondary,
+                    timesheet_missing_requests_path,
+                    icon: "file-circle-question",
+                    icon_type: :solid,
+                    full_width: true, class: "text-base py-3" %>
+  <% end %>
+
+  <%= button_link "Hours & Credits",
+                  :secondary,
+                  timesheet_event_summary_path,
+                  icon: "chart-bar",
+                  icon_type: :solid,
+                  full_width: true, class: "text-base py-3" %>
+
+  <% if timesheet_self_serve? %>
+    <% if @is_current_year %>
+      <%= button_link "Qualifications",
+                      :secondary,
+                      me_timesheet_dashboard_qualifications_path(year: @year),
+                      icon: "trophy",
+                      icon_type: :solid,
+                      full_width: true, class: "text-base py-3" %>
+    <% end %>
+
+    <%= button_link "Work History",
+                    :secondary,
+                    me_work_history_path,
+                    icon: "clock-rotate-left",
+                    icon_type: :solid,
+                    full_width: true, class: "text-base py-3" %>
+  <% end %>
+</div>
+
+<%# Main two-column layout: Entries (left/primary) | Quick Actions (right/sidebar) %>
+<div class="flex flex-col md:flex-row md:gap-4">
+  <%# LEFT COLUMN: Primary content - Timesheet Entries (wider, appears first on desktop) %>
+  <div class="flex-1 min-w-0 order-2 md:order-1">
+    <% if @corrections_enabled %>
+      <% if @timesheets_unverified.positive? || @timesheets_pending.positive? %>
+        <div class="mb-3">
+          <%= ui_section_title "#{fa_icon "circle-exclamation", :solid, end: 2}Action Required Or Pending Correction Review".html_safe, class: "text-warning" %>
+        </div>
+        <% if @timesheets_unverified.positive? %>
+          <%= render partial: "common/timesheet/listing_with_actions", locals: { entries: @unverified_entries } %>
+        <% end %>
+        <% if @timesheets_pending.positive? %>
+          <%= render partial: "common/timesheet/listing_with_actions", locals: { entries: @pending_entries } %>
+        <% end %>
+      <% end %>
+
+      <% if @verified_entries.any? %>
+        <%= ui_section_title "Verified Entries", class: "mb-1" %>
+        <%= render partial: "common/timesheet/listing_with_actions", locals: { entries: @verified_entries } %>
+      <% end %>
+
+      <% if @timesheets.empty? %>
+        <%= ui_empty_state "No timesheet entries were found for this selected year." %>
+      <% end %>
+    <% else %>
+      <%= render partial: "common/timesheet/listing", locals: { entries: @timesheets } %>
+    <% end %>
+  </div>
+
+  <%# RIGHT COLUMN: Quick Actions sidebar (fixed width, appears first on mobile via order) %>
+  <div class="md:w-60 lg:w-72 shrink-0 order-1 md:order-2 mb-4 md:mb-0 md:sticky md:top-4 md:self-start">
+    <div class="hidden md:block mb-3">
+      <%= ui_section_title "Quick Actions" %>
+    </div>
+
+    <div class="hidden md:flex flex-col gap-3">
+      <% if @corrections_enabled %>
+        <%= action_box(
+              title: "Missing Timesheet Requests",
+              description: "#{pluralize(@missing_requests.size, 'request')} submitted",
+              url: timesheet_missing_requests_path,
+              icon: "file-circle-question",
+              icon_type: :solid,
+              button_label: "View / Submit",
+              options: { class: "ring-2 ring-warning" }
+            ) %>
+      <% end %>
+
+      <%= action_box(
+            title: "#{@year} Hours & Credits",
+            description: "Detailed breakdown of hours & credits",
+            url: timesheet_event_summary_path,
+            icon: "chart-bar",
+            icon_type: :solid
+          ) %>
+
+      <% if timesheet_self_serve? %>
+        <% if @is_current_year %>
+          <%= action_box(
+                title: "Qualifications",
+                description: "Tickets, Provisions,<br>& Appreciations progress".html_safe,
+                url: me_timesheet_dashboard_qualifications_path(year: @year),
+                icon: "ticket",
+                icon_type: :solid
+              ) %>
+        <% end %>
+
+        <%= action_box(
+              title: "Work History",
+              description: "Hours breakdown by<br> event and position".html_safe,
+              url: me_work_history_path,
+              icon: "clock-rotate-left",
+              icon_type: :solid
+            ) %>
+      <% end %>
+    </div>
+  </div>
+</div>

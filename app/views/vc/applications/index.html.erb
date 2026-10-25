@@ -1,0 +1,97 @@
+<%= hero_panel icon: "clipboard-user", heading_level: :h1, id: "vc-applications-header",
+               title: "Prospective Applications" do |panel| %>
+  <% panel.description do %>
+    Review and process volunteer applications.
+  <% end %>
+  <% panel.year_selector year: @year, years: @years %>
+<% end %>
+
+<% unless @is_current_year %>
+  <%= ui_callout_box :warning do %>
+    <strong>You are viewing a prior year.</strong> Application changes should only happen for the current year.
+  <% end %>
+<% end %>
+
+<%# The VC's own email reference, out of the hero. Not tied to the rows, so it
+    shows whether or not the year has applications. %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What is my assignment id?</dt>
+    <dd>
+      For application emails, your assignment id is <strong><%= current_user.id %></strong> with
+      the first letter of your callsign &ldquo;<strong><%= current_user.callsign.first %></strong>&rdquo;.
+    </dd>
+  </dl>
+<% end %>
+
+<%= form_with url: search_vc_applications_path, method: :get, builder: AppFormBuilder,
+              data: { turbo_frame: "_top" }, class: "mb-4" do |f| %>
+  <%= form_row do %>
+    <%= f.search_field :query, label: "Search All Years", width: "w-full sm:w-96",
+                       placeholder: "A-nnnn, R-nnnn, name, email, or BPGUID" %>
+    <div class="lg:mt-6">
+      <%= f.submit "Search Applications",  variant: :secondary %>
+    </div>
+  <% end %>
+<% end %>
+
+<% if @applications.any? %>
+  <%# Status dashboard - each box filters the table %>
+  <%= ui_stat_row class: "print:hidden" do %>
+    <% status_dashboard_groups(@status_counts).each do |group| %>
+      <% active = @filter.status == group[:filter] %>
+      <%= ui_stat_link vc_applications_path(year: @year,
+                                            Vc::ApplicationFilterForm::PARAM_SCOPE => @filter.filter_values.merge("status" => active ? "all" : group[:filter])),
+                       active:, aria_label: "Filter by #{group[:label]}, #{group[:count]} applications" do %>
+        <%= ui_stat_box group[:count], group[:label], variant: group[:variant], class: "w-20" %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Workflow presets %>
+  <div class="flex flex-wrap gap-2 mb-4 print:hidden">
+    <% Vc::ApplicationFilterForm::PRESETS.each do |preset, meta| %>
+      <%= button_link meta[:label], (@active_preset == preset ? :primary : :secondary),
+                      vc_applications_path(year: @year, preset:),
+                      icon: meta[:icon], icon_type: :solid %>
+    <% end %>
+    <% unless @filter.default? %>
+      <%= button_link "Reset Filters", :ghost, vc_applications_path(year: @year), icon: "rotate-left", icon_type: :solid %>
+    <% end %>
+  </div>
+
+  <%# Filter bar %>
+  <%= form_with url: vc_applications_path, method: :get, builder: AppFormBuilder,
+                data: { controller: "form" }, class: "mb-4" do |f| %>
+    <%= hidden_field_tag :year, @year %>
+    <div class="flex flex-wrap gap-2 lg:gap-4">
+      <%= f.select "filter[status]", grouped_filter_options(@filter.status_options, @filter.status),
+                   label: "Status", width: "w-full sm:w-56", data: { action: "change->form#submit" } %>
+      <%= f.select "filter[assigned_to]", grouped_filter_options(@filter.assigned_to_options(@vcs), @filter.assigned_to),
+                   label: "Assigned To", width: "w-full sm:w-44", data: { action: "change->form#submit" } %>
+      <%= f.select "filter[name]", options_for_select(@filter.name_options(@applications), @filter.name),
+                   label: "Last Name", width: "w-24", data: { action: "change->form#submit" } %>
+      <%= f.select "filter[experience]", options_for_select(Vc::ApplicationFilterForm::EXPERIENCE_OPTIONS, @filter.experience),
+                   label: "BRC Experience", width: "w-full sm:w-40", data: { action: "change->form#submit" } %>
+      <%= f.select "filter[age]", options_for_select(Vc::ApplicationFilterForm::AGE_OPTIONS, @filter.age),
+                   label: "Age", width: "w-full sm:w-32", data: { action: "change->form#submit" } %>
+    </div>
+  <% end %>
+
+  <%= ui_section "Applications", border: false do %>
+    <%# The export carries the filters, so the file holds exactly the rows this line counts. %>
+    <div class="flex flex-wrap items-center gap-2 px-4 py-2">
+      <p class="mb-0 text-stone-muted">
+        Showing <%= pluralize(@filtered_applications.size, "application") %> &mdash; <%= @filter.description(@vcs) %>.
+        Least recently updated appear first.
+      </p>
+      <% if @filtered_applications.any? %>
+        <%= export_csv_link vc_applications_path(year: @year, format: :csv, **@filter.query_params), class: "ms-auto" %>
+      <% end %>
+    </div>
+    <%= render "applications_table", applications: @filtered_applications %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No applications have been imported for #{@year}.",
+                     icon: "inbox", icon_type: :solid %>
+<% end %>

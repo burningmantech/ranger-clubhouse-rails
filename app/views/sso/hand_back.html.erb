@@ -1,0 +1,21 @@
+<% content_for :title, "Signed In | Ranger Secret Clubhouse" %>
+<%# The browser goes back on its own at once: a zero delay is the one timed
+    refresh the accessibility rules allow, and it keeps the page out of the
+    history. The page itself stays as the landmark if the refresh is blocked. %>
+<% content_for :head do %>
+  <meta http-equiv="refresh" content="0;url=<%= @callback_url %>">
+<% end %>
+
+<div class="login-panel">
+  <%= render "sessions/heading", title: "Signed In", lede_role: "status",
+             lede: safe_join([fa_icon("spinner", :solid, class: "animate-spin motion-reduce:animate-none", end: 2),
+                              "Sending you back to #{@client.description}…"]) %>
+
+  <p class="text-center text-body text-base">
+    If nothing happens in a few seconds, continue by hand.
+  </p>
+  <div class="pt-4">
+    <%= button_link "Continue to #{@client.description}", :warning, @callback_url,
+                    size: "lg", class: "login-submit-button", data: { turbo: false } %>
+  </div>
+</div>

@@ -1,0 +1,35 @@
+<%# locals: (f:, bmid:, ticketing_info:, link: nil) %>
+
+<%= ui_section "Status & SAP", icon: "print", icon_type: :solid, link: local_assigns[:link] do %>
+  <%= form_row do %>
+    <%= f.select :status, BmidHelper::BMID_STATUS_OPTIONS,
+                 { label: "Status",
+                   help_text: "Only Prep and Ready-to-Print statuses are sent to the printer.", layout: :auto },
+                 { class: "w-full lg:w-60" } %>
+
+    <%= f.select :admission_date, admission_date_options(bmid, ticketing_info),
+                 { label: "SAP Date", selected: bmid.admission_date,
+                   help_text: bmid_sap_help_text(bmid), layout: :auto },
+                 { class: "w-full", disabled: bmid.sap_disabled? } %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Badge Titles", icon: "id-badge", icon_type: :solid do %>
+  <dl class="instruction-list mb-3">
+    <dt>What are these?</dt>
+    <dd>Optional lines printed on the badge for positions held (for example "Shift Lead").</dd>
+  </dl>
+  <%= f.text_field :title1, label: "Title 1", width: "w-full sm:w-96", layout: :auto, maxlength: 64, show_counter: true %>
+  <%= f.text_field :title2, label: "Title 2", width: "w-full sm:w-96", layout: :auto, maxlength: 64, show_counter: true %>
+  <%# All three title columns are varchar(64). Title 3 holds short marks like
+      "007", so the field is narrow, but the limit stays the column's -- the
+      roster's Edit Mode allows 64 and two editors of one column must not
+      disagree about what fits. %>
+  <%= f.text_field :title3, label: "Title 3", width: "w-20", layout: :auto, maxlength: 64, show_counter: true %>
+<% end %>
+
+<%= ui_section "Teams & Notes", icon: "note-sticky", icon_type: :solid do %>
+  <%= f.text_field :team, label: "Team", width: "w-full sm:w-96", layout: :auto, maxlength: 35, show_counter: true %>
+  <%= f.text_area :notes, label: "Notes", rows: 4,
+                  help_text: "Internal notes about this badge. Not printed." %>
+<% end %>

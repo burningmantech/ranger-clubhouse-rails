@@ -1,0 +1,64 @@
+<%= hero_panel icon: "file-signature", heading_level: :h1, id: "agreements-header",
+               description: "Review and sign required agreements to complete your Ranger eligibility.",
+               back_to: :dashboard do |panel| %>
+  <% panel.title do %>Agreements<% end %>
+  <% if @agreements.any? && @total_count > 1 %>
+    <% panel.progress completed: @signed_count, total: @total_count, aria_label: "Agreement signing progress: #{@signed_count} of #{@total_count} signed" %>
+    <% panel.progress_status do %>
+      <% if @pending_count > 0 %>
+        <div class="inline-flex-center-gap-2 icon-warning">
+          <%= fa_icon "pen-to-square", :solid, { class: "animate-pulse" } %>
+          <span class="font-medium"><%= @pending_count %> action needed</span>
+        </div>
+      <% elsif @signed_count == @total_count %>
+        <div class="inline-flex-center-gap-2 icon-success">
+          <%= fa_icon "circle-check", :solid %>
+          <span class="font-medium">All agreements signed!</span>
+        </div>
+      <% else %>
+        <div class="text-sm text-stone-subtle">
+          <%= progress_count_of(@signed_count, @total_count, "agreements signed") %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+
+<% if @agreements.any? %>
+  <% @agreements.each do |agreement| %>
+    <article class="mb-4 rounded-lg border-l-4 <%= agreement_border_class(agreement) %> <%= agreement_bg_class(agreement) %> p-4 transition-all duration-200 hover:shadow-sm" aria-labelledby="agreement-<%= agreement.tag %>-title">
+      <div class="flex flex-col lg:flex-row lg:items-center gap-2">
+        <h3 id="agreement-<%= agreement.tag %>-title" class="flex-1 text-base font-semibold flex items-center gap-2 text-heading">
+          <span class="shrink-0"><%= agreement_icon(agreement) %></span>
+          <span><%= agreement.title %></span>
+        </h3>
+        <div class="shrink-0"><%= agreement_badge(agreement) %></div>
+      </div>
+
+      <div class="mt-3 pl-6 me-muted">
+        <% if agreement.signed %>
+          <div class="mb-3 text-success">
+            <%= fa_icon "check", :solid, { end: 2 } %>Agreement has been signed.
+          </div>
+        <% elsif !agreement.available %>
+          <div class="italic mb-3">
+            The document is being prepared. Check back later to sign.
+          </div>
+        <% end %>
+
+        <% if agreement.available %>
+          <%= button_link((agreement.signed ? "View" : "View & Sign"), :secondary, me_agreement_path(agreement.tag)) %>
+        <% end %>
+      </div>
+    </article>
+  <% end %>
+<% else %>
+  <div class="text-center py-12 bg-base-100 rounded-lg border border-dashed border-line">
+    <%= render "common/status_medallion", icon: "file-circle-check", state: :warning %>
+    <h3 class="heading-title mb-2 text-heading">No Agreements Required</h3>
+    <p class="text-stone-subtle max-w-md mx-auto">
+      There are no agreements currently requiring your attention.
+    </p>
+  </div>
+<% end %>

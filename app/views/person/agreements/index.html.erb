@@ -1,0 +1,46 @@
+<%= hero_panel icon: "file-signature", heading_level: :h1, id: "person-agreements-header",
+               title: "#{@year} Agreements — #{@person.callsign}",
+               description: "Review the agreements #{@person.callsign} has signed, and whether each is available for them to sign.",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.year_selector year: @year, years: @years %>
+<% end %>
+
+<% if @can_admin %>
+  <%= ui_callout_box :warning, title: "Do Not Sign Agreements on a Ranger's Behalf" do %>
+    Doing so may expose the Ranger Department and the Org to legal liability.
+  <% end %>
+<% end %>
+
+<% unless @is_current_year %>
+  <%= ui_callout_box :secondary, icon: "clock-rotate-left" do %>
+    Viewing a previous event year. Agreements may only be changed for the current year.
+  <% end %>
+<% end %>
+
+<%= ui_form(nil, person_agreements_path(@person, year: @year), method: :patch, scope: :agreements) do |f| %>
+  <%= ui_section "Annual Agreements - #{@year}", icon: "calendar-check", icon_type: :solid do %>
+    <% if @annual_agreements.any? %>
+      <%= render partial: "agreement_row", collection: @annual_agreements, as: :agreement,
+                 locals: { f:, can_edit: @can_edit, show_availability: @is_current_year } %>
+    <% else %>
+      <%= ui_empty_state "No annual agreements for this year." %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Lifetime Agreements", icon: "infinity", icon_type: :solid do %>
+    <p class="text-sm text-base-content/70 mb-3">Signed once and applies to every event year.</p>
+    <% if @lifetime_agreements.any? %>
+      <%= render partial: "agreement_row", collection: @lifetime_agreements, as: :agreement,
+                 locals: { f:, can_edit: @can_edit, show_availability: @is_current_year } %>
+    <% else %>
+      <%= ui_empty_state "No lifetime agreements." %>
+    <% end %>
+  <% end %>
+
+  <% if @can_edit %>
+    <%= button_row do %>
+      <%= f.submit "Save Agreements" %>
+      <%= cancel_button person_path(@person) %>
+    <% end %>
+  <% end %>
+<% end %>

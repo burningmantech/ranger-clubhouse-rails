@@ -1,0 +1,107 @@
+<% content_for :title, "#{@training.title} All Trainee Notes" %>
+
+<%= hero_panel icon: "note-sticky", heading_level: :h1, id: "training-all-notes-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> &mdash; All Trainee Notes<% end %>
+  <% panel.description do %>
+    Everyone marked as passed in <%= @year %>, with the notes trainers left on each session.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "#{@year} Sessions", training_path(training_slug, year: @year) %>
+  <% end %>
+  <%# Trainee notes only go back to 2018; the sibling reports start at 2008. %>
+  <% panel.year_selector year: @year, min_year: 2018, skip_pandemic: true %>
+<% end %>
+
+<% if @report.empty? %>
+  <%= ui_empty_state "No one has passed #{@training.title} in #{@year} yet.",
+                     icon: "graduation-cap", icon_type: :solid %>
+<% else %>
+  <%# Season totals: the whole report, not the filtered view. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @report.size.to_s, "People" %>
+    <%= ui_stat_box @report.count(&:notes?).to_s, "With Notes", variant: :warning %>
+    <%= ui_stat_box @report.sum(&:note_count).to_s, "Notes" %>
+    <% Training::TraineeNotesReport::STANDINGS.each do |standing| %>
+      <% count = @standing_counts.fetch(standing, 0) %>
+      <%= ui_stat_box count.to_s, standing.capitalize if count.positive? %>
+    <% end %>
+  <% end %>
+
+  <%# The legend for the Standing column and its stat boxes, out of the hero. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What does someone's standing mean?</dt>
+      <dd>
+        <strong>Veteran</strong> = passed the mentee shift &middot;
+        <strong>mentee</strong> = holds a mentee position &middot;
+        <strong>prospective</strong> = no mentee position yet.
+      </dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "all-notes-filters",
+                 chips: all_notes_filter_chips(@filter_params, training_slug, @year),
+                 clear_url: training_all_notes_path(training_slug, year: @year),
+                 count: "Showing #{@people.size} of #{pluralize(@report.size, "person")}",
+                 # The CSV is the whole report, not the narrowed page, so the label
+                 # says so -- it sits beside chips that narrow the view.
+                 actions: export_csv_link(training_all_notes_path(training_slug, year: @year, format: :csv),
+                                          "Export All to CSV"),
+                 url: training_all_notes_path(training_slug) do |f| %>
+    <%# The year rides the filter form -- a GET form replaces the query string,
+        so without this every Apply would bounce the page back to this year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :standing, all_notes_standing_options(@standing_counts),
+                   label: "Standing", selected: @filter_params[:standing],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%# Most people who pass are never written about -- 60% of the 2026 Green Dot
+        list -- so this collapses the report to just the feedback. %>
+    <%# include_hidden: false -- this is a GET form, so the companion "0" field
+        would ride along in the URL beside the checked "1". Unchecked simply
+        drops the parameter. %>
+    <%= f.check_box :notes, label: "Only people with notes", include_hidden: false,
+                    checked: @notes_only %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Trainees" do %>
+    <% if @people.empty? %>
+      <%= ui_empty_state "No one matched the current filters.",
+                         icon: "magnifying-glass", icon_type: :solid %>
+    <% else %>
+      <%# responsive: for the labeled row stacking at phone widths -- six columns
+          of prose do not fit side by side. %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Standing" %>
+          <%= t.heading "Session" %>
+          <%= t.heading "Rank" %>
+          <%= t.heading "Notes" %>
+        <% end %>
+        <%= t.body do %>
+          <% @people.each do |trainee| %>
+            <%# One row per session. The person's cells repeat rather than
+                spanning rows: a rowspan would break the responsive row
+                stacking, and only a handful of people ever pass twice. %>
+            <% trainee.sessions.each do |entry| %>
+              <%= t.row do %>
+                <%= t.row_header do %><%= person_display_link trainee.person, trainee.person.id %><% end %>
+                <%= t.cell trainee.status %>
+                <%= t.cell do %><%= all_notes_standing_badge trainee.standing %><% end %>
+                <%= t.cell do %><%= render "session", entry: entry, year: @year %><% end %>
+                <%= t.cell do %><%= all_notes_rank_badge entry.rank %><% end %>
+                <%= t.cell do %><%= render "notes", entry: entry %><% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

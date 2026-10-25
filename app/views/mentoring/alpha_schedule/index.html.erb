@@ -1,0 +1,29 @@
+<%#
+  A year's Alpha shifts, grouped by the day they run on -- the Day/Swing pairs
+  the mentor cadre staffs. Each card opens that shift's roster page, where the
+  sign-ups are managed and the three sheets are printed.
+%>
+<% content_for :title, "Alpha Schedule" %>
+<%= hero_panel icon: "calendar-days", heading_level: :h1, id: "alpha-schedule-header",
+               title: "Alpha Schedule" do |panel| %>
+  <% panel.description do %>
+    Every Alpha shift this year &mdash; open one to manage its sign-ups and print its sheets.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @shifts.empty? %>
+  <%= ui_empty_state "No Alpha shifts are scheduled for #{@year}. Pick another year, or create the shifts in Scheduling.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% else %>
+  <% alpha_schedule_days(@shifts).each do |day, shifts| %>
+    <h2 class="heading-section text-heading mt-6 mb-2"><%= mdy_format(day, full: true) %></h2>
+
+    <div class="two-column-lg">
+      <% shifts.each do |shift| %>
+        <%= render "common/mentoring/alpha_shift_card", shift: shift, label: "Open Roster",
+                   url: mentoring_alpha_schedule_shift_path(shift.slot) %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

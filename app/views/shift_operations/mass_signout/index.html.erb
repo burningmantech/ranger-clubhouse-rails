@@ -1,0 +1,131 @@
+<%#
+  Everyone still on duty, in one selectable list, longest out first.
+
+  The sort is not cosmetic: this page is the only place a never-closed entry
+  from a past event can be seen, because the On Duty board hides anything older
+  than fourteen days so a forgotten sign-in cannot bury whoever is actually out.
+  Those rows are red, unchecked, skipped by "select all", and named in a
+  callout -- signing one out would stamp off duty as now and record a shift tens
+  of thousands of hours long.
+%>
+<% content_for :title, "Mass Sign-Out" %>
+
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1,
+               id: "shift-operations-mass-signout-header",
+               title: "Mass Sign-Out" do |panel| %>
+  <% panel.description do %>
+    Everyone still on duty, longest out first.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @report.total.to_s, "Still on Duty",
+                  variant: :secondary, icon: "users", icon_type: :solid %>
+  <%= ui_stat_box @report.long_count.to_s, "Out over a Day",
+                  variant: @report.long_count.positive? ? :warning : :secondary,
+                  icon: "hourglass-half", icon_type: :solid %>
+  <%= ui_stat_box @report.stale_count.to_s, "From a Past Event",
+                  variant: @report.stale_count.positive? ? :error : :secondary,
+                  icon: "triangle-exclamation", icon_type: :solid %>
+<% end %>
+
+<% if @report.stale_count.positive? %>
+  <%# stale_people, not stale_rows: one Ranger can have left two events open,
+      and this sentence names people -- "Hubcap, Hubcap" reads as a bug. The
+      grammar keys off the number of names for the same reason, and the copy
+      avoids counting entries so it stays true either way. %>
+  <%= ui_callout_box :error, accent: true, title: "Do Not Sign These Out" do %>
+    <% people = @report.stale_people %>
+    <p>
+      <%= safe_join(people.map { |row| person_display_link(row.person, row.person_id) }, ", ") %>
+      <%= (people.size == 1) ? "is" : "are" %> still on duty from a past event.
+      Signing <%= (people.size == 1) ? "that entry" : "those entries" %> out now would
+      record a shift tens of thousands of hours long.
+    </p>
+    <p class="mt-2">
+      <strong>Fix each one on the Ranger's own timesheet instead</strong>, where the real
+      off-duty time can be entered. These rows start unchecked and “Select every current
+      entry” passes over them.
+    </p>
+  <% end %>
+<% end %>
+
+<% if @report.empty? %>
+  <%= ui_empty_state "No one is on duty right now.", icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%# Out of the hero, and in plain sight above the form it is about: what a
+      sign-out from this page records. The confirm dialog says it too, but only
+      after the reader has chosen. Below the stale-entries warning, which is the
+      more urgent of the two. %>
+  <%= ui_callout_box :warning, icon: "clock-rotate-left", icon_type: :solid, accent: true, class: "my-4" do %>
+    <strong>Signing a Ranger out records them as going off duty right now</strong> — not when
+    they actually stopped, so their shift runs to this moment and earns credit for all of it.
+  <% end %>
+
+  <%= ui_form(nil, shift_operations_mass_signout_path, method: :post) do |f| %>
+    <%= bulk_select do %>
+      <%# "every current entry", not "all" -- a bare "Select all" over a table
+          whose red rows deliberately stay unchecked reads as a bug. %>
+      <%= bulk_select_all label: "Select every current entry", selected: @report.rows.count(&:offered?) %>
+
+      <%= ui_table striped: true, caption: "Timesheet entries still open" do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Select", width: "1%" %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "On Duty Since" %>
+          <%= t.heading "Time on Duty", right: true %>
+          <%= t.heading "Credits", right: true %>
+          <%= t.heading "Position" %>
+        <% end %>
+        <%= t.body do %>
+          <% @report.rows.each do |row| %>
+            <%# align: :middle -- the tallest cell in the row is the checkbox
+                and its 36px touch floor, so top-aligning the rest of the row
+                leaves the text floating above it. %>
+            <%= t.row id: "mass-signout-row-#{row.timesheet.id}", align: :middle,
+                      state: mass_signout_row_state(row) do %>
+              <%= t.cell do %>
+                <%# The accessible name carries the warning too. The tint and
+                    the icon say "past event" to anyone who can see them; the
+                    label is what says it to anyone who cannot. %>
+                <%= bulk_select_checkbox "ids[]", row.timesheet.id,
+                                         checked: row.offered?,
+                                         id: "mass-signout-check-#{row.timesheet.id}",
+                                         aria_label: mass_signout_checkbox_label(row),
+                                         skip_select_all: !row.offered? %>
+              <% end %>
+              <%# person_display_link, not callsign_link: the person row can be
+                  gone while the timesheet keeps its id, and callsign_link
+                  raises on nil -- one orphaned entry would take the whole
+                  board down, which is how the On Duty page learned this. %>
+              <%= t.row_header do %>
+                <%= person_display_link row.person, row.person_id %>
+              <% end %>
+              <%= t.cell mass_signout_on_duty_cell(row) %>
+              <%= t.cell mass_signout_elapsed_label(row), right: true %>
+              <%= t.cell credit_format_short(row.credits), right: true %>
+              <%# No FK on position_id in the Laravel-shared schema, so a
+                  position can be missing even though the association is not
+                  optional. %>
+              <%= t.cell value_or_dash(row.position&.title) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%= button_row do %>
+        <%# The submit target disables the button at zero selected; the confirm
+            is the last chance to notice a red row was hand-checked. %>
+        <%= f.submit "Sign Out Selected Rangers",
+                     data: { checkbox_select_all_target: "submit",
+                             turbo_confirm: confirm_modal_dialog(
+                               title: "Confirm Mass Sign-Out",
+                               message: "Every selected Ranger is recorded as going off duty " \
+                                        "right now. Anyone whose status is Inactive is " \
+                                        "converted back to Active and emailed.",
+                               confirm_label: "Sign Them Out"
+                             ) } %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

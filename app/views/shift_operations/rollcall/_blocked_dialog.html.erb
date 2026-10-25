@@ -1,0 +1,36 @@
+<%# locals: (callsign:, blockers:, start_time: nil) %>
+<%#
+  Streamed into the modal frame when a check-in is refused.
+
+  No force affordance, deliberately, and not because the operator lacks the
+  privilege -- upstream never offers one from this page either. Rollcall is run
+  at a staging area with a queue behind each Ranger; resolving a blocker is
+  desk work, and the desk is the HQ window.
+%>
+<%= modal_dialog id: "rollcall-blocked-modal", title: "Check In Is Blocked", frame: false do %>
+  <p class="font-semibold text-error mb-2">
+    <%= fa_icon "hand", :solid, end: 1 %>
+    <%= callsign %> cannot be signed in for the following reason(s):
+  </p>
+  <ul class="list-disc list-inside mb-3">
+    <% blockers.each do |blocker| %>
+      <li><%= timesheet_blocker_label(blocker) %></li>
+    <% end %>
+  </ul>
+
+  <% if start_time.present? %>
+    <%= ui_callout_box :warning, icon: "clock", icon_type: :solid do %>
+      The check-in time was set to <strong><%= start_time %></strong>. That time is part of what
+      was checked here — clearing it may change the result.
+    <% end %>
+  <% end %>
+
+  <p class="my-3">
+    <strong>Send <%= callsign %> to an HQ window.</strong> Blockers cannot be overridden from
+    roll call, and the HQ Lead there has the authority to resolve this one.
+  </p>
+
+  <%= button_row do %>
+    <%= modal_close_button "Close" %>
+  <% end %>
+<% end %>

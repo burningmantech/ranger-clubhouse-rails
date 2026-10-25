@@ -1,0 +1,10 @@
+<%# locals: (counts:, mode:) %>
+<%#
+  The headline count, and the second thing every tap replaces. It lives in its
+  own element so the stream can update it without redrawing the roster around
+  it -- which would undo the callsign filter and cost the operator their place
+  in the list.
+%>
+<span id="rollcall-count" class="text-lg font-semibold text-heading tabular-nums">
+  <%= rollcall_count_label(counts, mode) %>
+</span>

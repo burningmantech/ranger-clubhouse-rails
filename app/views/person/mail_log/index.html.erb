@@ -1,0 +1,62 @@
+<%= hero_panel icon: "envelope", heading_level: :h1, id: "person-mail-log-header",
+               title: "Mail Log & Email History — #{@person.callsign}",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.description do %>
+    Emails the Clubhouse has sent to or from this account, and the history of email address changes.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @stats[:last_24], "Last 24 Hours" %>
+  <%= ui_stat_box @stats[:week], "Last 7 Days" %>
+  <%= ui_stat_box @stats[:retained], mail_log_retained_label %>
+<% end %>
+
+<%# The legend is about the messages, so it is offered only while there are some. %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>How far back does the log go?</dt>
+    <dd><%= mail_log_retention_note %></dd>
+    <%= render "common/mail_log/legend" if @logs.any? %>
+  </dl>
+<% end %>
+
+<%= ui_section "Mail Log", icon: "envelope", icon_type: :solid do %>
+  <% if @logs.any? %>
+    <% pager = ui_pager(@meta, noun: "message") { |page| person_mail_log_path(@person, page:) } %>
+    <div class="mb-3">
+      <%= pager %>
+    </div>
+    <%= render "common/mail_log/table", logs: @logs,
+               body_path: ->(mail) { person_mail_log_body_path(@person, mail) } %>
+    <div class="mt-4">
+      <%= pager %>
+    </div>
+  <% else %>
+    <%= ui_empty_state "No mail logs were found. #{mail_log_retention_note}",
+                       icon: "envelope", icon_type: :regular %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Email Change History", icon: "clock-rotate-left", icon_type: :solid do %>
+  <% if @email_history.any? %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Old Email" %>
+        <%= t.heading "Changed By" %>
+        <%= t.heading "Changed On (Pacific)" %>
+      <% end %>
+      <%= t.body do %>
+        <% @email_history.each do |history| %>
+          <%= t.row do %>
+            <%= t.cell history.email %>
+            <%= t.cell person_display_link(history.source_person, nil, blank: "-") %>
+            <%= t.cell datetime_format(history.created_at, year: true) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "The email address has not changed since the account was originally created." %>
+  <% end %>
+<% end %>

@@ -1,0 +1,16 @@
+<%# locals: (error: nil) -%>
+<%# Client mode: the accounts and the password form live on another Clubhouse.
+    One door, and a line saying where it leads. %>
+<% if error %>
+  <%= ui_callout_box :error, title: "Sign-In Didn't Complete", accent: true, heading_level: :h2 do %>
+    <%= error %>
+  <% end %>
+<% end %>
+
+<%= button_link "Sign In with the Ranger Clubhouse", :warning, sso_login_path,
+                size: "lg", class: "login-submit-button mt-2 mb-4",
+                icon: "arrow-right-to-bracket", icon_type: :solid,
+                data: { turbo: false } %>
+<p class="text-center text-body text-base mb-4">
+  You'll go to <%= Sso.server_host %> to sign in and come straight back here.
+</p>

@@ -1,0 +1,33 @@
+description: "Tells the vehicle reviewers what is waiting for them"
+
+subject: "[Clubhouse] {{ count }} {% if count == 1 %}vehicle{% else %}vehicles{% endif %} pending review"
+
+body: |
+  <p>
+    Hello Vehicle Request Reviewer,
+  </p>
+
+  <p>
+    One or more vehicles are <a href="{{ registry_url }}">pending review.</a>
+  </p>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Person</th>
+        <th>Vehicle</th>
+        <th>Submitted</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for vehicle in vehicles %}
+        <tr>
+          <td>{{ vehicle.callsign }}</td>
+          <td>{{ vehicle.description }}</td>
+          <td>{{ vehicle.submitted_at }}</td>
+        </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+
+  {% render "shared/mailer/bot_sign_off" %}

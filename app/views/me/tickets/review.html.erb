@@ -1,0 +1,93 @@
+<%# /me/tickets/review — final walkthrough step: confirm the ticketing        %>
+<%# choices. Summarizes claimed / banked / passed-on items from the presenter %>
+<%# and POSTs the existing finish action.                                     %>
+<%
+  presenter = @presenter
+  tasks     = presenter.outstanding_tasks
+  claimed   = presenter.claimed_items
+  banked    = presenter.banked_items
+  unclaimed = presenter.unclaimed_items
+  delivery_note = presenter.delivery_summary
+%>
+
+<%= hero_panel icon: "flag-checkered", heading_level: :h1, id: "review-header",
+               title: "Confirm Your Choices",
+               description: "One last look at what you're claiming, banking, and passing on before you confirm.",
+               back_to: ["Tickets & Provisions", me_tickets_path] %>
+
+<% if tasks.any? %>
+  <%= ui_callout_box :warning, icon: "list-check", accent: true, title: "#{pluralize(tasks.count, "Thing")} #{tasks.one? ? "Needs" : "Need"} You" do %>
+    <ul class="space-y-1">
+      <% tasks.each do |task| %>
+        <%= ui_icon_item "circle-exclamation", :solid, tone: "icon-warning" do %>
+          <%= task %>
+        <% end %>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>
+
+<%= ui_section "You're Claiming", icon: "circle-check", icon_type: :solid do %>
+  <% if claimed.any? %>
+    <ul class="space-y-1">
+      <% claimed.each do |item| %>
+        <%= ui_icon_item "check", :solid, tone: "icon-success" do %>
+          <%= item %>
+        <% end %>
+      <% end %>
+      <% if delivery_note %>
+        <%= ui_icon_item "truck", :solid, tone: "text-stone-icon" do %>
+          <%= delivery_note %>
+        <% end %>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-body"><strong>Nothing claimed.</strong> You're not using any ticketing items this year.</p>
+  <% end %>
+
+  <% if presenter.has_paid_items? %>
+    <div class="mt-4">
+      <p class="text-body font-medium mb-1">What you'll be invoiced:</p>
+      <ul class="space-y-1">
+        <% presenter.pricing_summary.each do |line| %>
+          <li><%= line[:label] %> — <%= dollars(line[:cost]) %></li>
+        <% end %>
+        <li class="font-semibold text-heading">Total: <%= dollars(presenter.total_cost) %> (USD)</li>
+      </ul>
+    </div>
+  <% end %>
+<% end %>
+
+<% if banked.any? %>
+  <%= ui_section "Banked for a Future Year", icon: "box-archive", icon_type: :solid do %>
+    <ul class="space-y-1">
+      <% banked.each do |item| %>
+        <li>
+          <%= item[:name] %><% if item[:expires] %> <span class="text-stone-muted">— expires after <%= item[:expires] %></span><% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>
+
+<% if unclaimed.any? %>
+  <%= ui_section "You're Passing On", icon: "ban", icon_type: :solid do %>
+    <ul class="space-y-1">
+      <% unclaimed.each do |item| %>
+        <li><%= item %></li>
+      <% end %>
+    </ul>
+    <p class="text-body mt-3">Changed your mind? Use Back to revisit any step before you confirm.</p>
+  <% end %>
+<% end %>
+
+<%= ui_section "Finish Up", icon: "check", icon_type: :solid do %>
+  <p class="text-body mb-3">
+    All set? <strong>Confirming records your choices</strong> so the Ranger Ticketing Team knows you're done.
+    You can still come back and adjust anything before the deadline.
+  </p>
+  <%= button_link "Confirm My Choices", :success, me_tickets_finish_path, method: :post,
+                  size: "lg", icon: "check", icon_type: :solid %>
+<% end %>
+
+<%= render "wizard_nav", step: :review, presenter: presenter %>

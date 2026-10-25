@@ -1,0 +1,10 @@
+<%# locals: (group:, facts:) %>
+
+<%= ui_section nil, class: class_names("text-error": group.is_urgent) do %>
+  <%= render "common/dashboard_section_header", title: group.title, is_urgent: group.is_urgent %>
+
+  <%= render partial: "common/dashboard_step",
+             collection: group.steps,
+             as: :step,
+             locals: { group:, facts:, total_steps: group.steps.length } %>
+<% end %>

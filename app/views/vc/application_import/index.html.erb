@@ -1,0 +1,83 @@
+<%#
+  Salesforce application import. The page is static until a button is
+  pressed: Preview runs the full Salesforce pull and shows what would happen,
+  Import writes the applications. Both POSTs render their results here at 422
+  (the results are transient and Turbo drops a 200 form response) — the
+  maintenance-task / reserved-handle-upload idiom.
+%>
+
+<%= hero_panel icon: "cloud-arrow-down", heading_level: :h1, id: "vc-application-import-header",
+               title: "Salesforce Application Import" do |panel| %>
+  <% panel.description do %>
+    Pull new Ranger applications out of Salesforce and into the Clubhouse.
+  <% end %>
+<% end %>
+
+<% if @auth_error %>
+  <%= ui_callout_box :error, accent: true, title: "Could Not Sign In to Salesforce" do %>
+    <p><%= @auth_error %></p>
+    <p class="mt-2">
+      No applications were retrieved. Check the Salesforce credentials with the Ranger Tech Cadre,
+      then try again.
+    </p>
+  <% end %>
+<% end %>
+
+<%# Results sit above the actions so the verdict is the first thing on
+    screen when the page re-renders after a run. %>
+<% if @import && !@auth_error %>
+  <%= render "results", import: @import, committed: @committed %>
+<% end %>
+
+<%= ui_section "Run the Import", icon: "cloud-arrow-down", icon_type: :solid do %>
+  <p class="mb-3">
+    <strong>Preview is always safe.</strong> It runs the exact same Salesforce pull as an import
+    and shows what would happen, without saving anything.
+  </p>
+
+  <%= button_row do %>
+    <%= ui_form(nil, vc_application_import_preview_path, method: :post) do |f| %>
+      <%= f.submit "Preview Import", variant: :secondary,
+                   data: { turbo_submits_with: "Contacting Salesforce…" } %>
+    <% end %>
+    <%= ui_form(nil, vc_application_import_commit_path, method: :post) do |f| %>
+      <%= f.submit "Import Applications", variant: :primary,
+                   data: {
+                     turbo_submits_with: "Importing from Salesforce…",
+                     turbo_confirm: confirm_modal_dialog(
+                       title: "Confirm Salesforce Import",
+                       message: "This imports every new Salesforce application into the Clubhouse. " \
+                                "Preview first if you have not already.",
+                       confirm_label: "Import Applications"
+                     )
+                   } %>
+    <% end %>
+  <% end %>
+  <p class="mt-2 text-stone-subtle">
+    Contacting Salesforce can take a little while &mdash; leave the page open until the results appear.
+  </p>
+<% end %>
+
+<%= ui_accent_card "How the Import Behaves", variant: :info, icon: "circle-question", icon_type: :solid,
+                   heading_level: :h2, options: { id: "import-help" } do %>
+  <dl class="instruction-list">
+    <dt>Which Salesforce applications are pulled?</dt>
+    <dd>
+      Everything in &ldquo;View 1 - Check Qualifications&rdquo;: applications with a VC status of
+      Not Yet Started or In VC Intake Process whose qualifications are marked Needs Checking.
+      Imports always land in the current event year.
+    </dd>
+    <dt>What does an import write?</dt>
+    <dd>
+      One application record per new Salesforce application, an audit log entry, and any Salesforce
+      VC comments as application notes. Applications already in the Clubhouse are listed and left untouched,
+      so running the import twice is safe.
+    </dd>
+    <dt>What does this page not do?</dt>
+    <dd>
+      It never creates Clubhouse accounts, sends email, or changes anything in Salesforce.
+      Creating accounts from approved applications is a separate, later step &mdash; see
+      <%= link_to "Create Prospectives", vc_create_prospectives_path, class: "underline" %>.
+    </dd>
+  </dl>
+<% end %>

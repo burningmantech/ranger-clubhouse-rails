@@ -1,0 +1,45 @@
+description: "Tells someone a passkey was added to their account, by them or by an Admin"
+
+subject: "A passkey was added to your Ranger Clubhouse account"
+
+body: |
+  <p>
+    {{ greeting }},
+  </p>
+  <p>
+    A passkey named <b>{{ nickname }}</b> was added to your Ranger Clubhouse account
+    {% if by_you %}by you{% else %}by {{ by_callsign }}, a Clubhouse Admin{% endif %}.
+    A passkey signs in to the Clubhouse without your password.
+  </p>
+  {%- if by_you %}
+    <p>
+      <b>If that was you, there is nothing to do.</b>
+    </p>
+  {%- else %}
+    <p>
+      <b>If you were expecting it, there is nothing to do.</b> An Admin adds a passkey when the Tech Team
+      hands someone a security key.
+    </p>
+  {%- endif %}
+  <hr style="border: none; border-top: 1px solid #eeeeee; margin: 16px 0;">
+  <p style="font-size: 14px; color: #666666;">
+    <b>Not expecting this?</b> Sign in to the Clubhouse, open the Account menu, choose Passkeys, and remove
+    {{ nickname }}. Then change your password and write to
+    <a href="mailto:{{ support_email }}" style="color: #d97706;">{{ support_email }}</a>.
+  </p>
+  <p style="font-size: 14px; color: #999999;">
+    The Black Rock Ranger Tech Team<br>
+    <a href="mailto:{{ support_email }}" style="color: #d97706;">{{ support_email }}</a>
+  </p>
+
+text_body: |
+  {{ greeting }},
+
+  A passkey named "{{ nickname }}" was added to your Ranger Clubhouse account {% if by_you %}by you{% else %}by {{ by_callsign }}, a Clubhouse Admin{% endif %}. A passkey signs in to the Clubhouse without your password.
+
+  {% if by_you %}If that was you, there is nothing to do.{% else %}If you were expecting it, there is nothing to do. An Admin adds a passkey when the Tech Team hands someone a security key.{% endif %}
+
+  Not expecting this? Sign in to the Clubhouse, open the Account menu, choose Passkeys, and remove {{ nickname }}. Then change your password and write to {{ support_email }}.
+
+  The Black Rock Ranger Tech Team
+  {{ support_email }}

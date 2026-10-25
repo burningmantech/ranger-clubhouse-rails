@@ -1,0 +1,141 @@
+description: "The nightly summary of what the Clubhouse logged"
+
+subject: "[Clubhouse] Daily Report {{ report_date }}"
+
+body: |
+  <h2>Daily Report for {{ report_date }}</h2>
+
+  <p>
+    Report generated at {{ generated_at }} (server time UTC-7)
+  </p>
+
+  {%- for section in sections %}
+    {%- if section.unavailable %}
+      <h3>{{ section.title }}</h3>
+      <p>{{ section.unavailable }}</p>
+    {%- else %}
+      <h3>{{ section.title }} ({{ section.rows.size }})</h3>
+      {%- if section.rows.size > 0 %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              {%- for header in section.headers %}
+                <th>{{ header }}</th>
+              {%- endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {%- for row in section.rows %}
+              <tr>
+                {%- for cell in row %}
+                  <td>{{ cell }}</td>
+                {%- endfor %}
+              </tr>
+            {%- endfor %}
+          </tbody>
+        </table>
+      {%- else %}
+        <p>{{ section.empty }}</p>
+      {%- endif %}
+    {%- endif %}
+  {%- endfor %}
+
+  <table class="data-table" style="margin-top: 1vh;">
+    <thead>
+      <tr>
+        <th>Clubhouse Setting</th>
+        <th>Value / Indicator</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Dashboard Period</td>
+        <td>
+          {%- if settings.dashboard_period != "auto" %}
+            <b style='color: red'>FORCED: {{ settings.dashboard_period }}</b>
+          {%- else %}
+            {{ dashboard_period }}
+          {%- endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Online Course</td>
+        <td>
+          {%- if dashboard_period == "after-event" or dashboard_period == "post-event" %}
+            {% if settings.online_course_enabled %}Enabled{% else %}Disabled{% endif %}
+            (ok for After Event period)
+          {%- else %}
+            {%- if settings.online_course_enabled %}
+              Enabled (normal for pre-event/event)
+            {%- else %}
+              <b style="color: red">DISABLED (NOT NORMAL)</b>
+            {%- endif %}
+          {%- endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Photo Uploading</td>
+        <td>
+          {% if settings.photo_upload_enable %}Enabled{% else %}Disabled{% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Signups without OT</td>
+        <td>
+          {%- if settings.online_course_disabled_allow_signups %}
+            <b style="color: red">ENABLED (NOT NORMAL)</b>
+          {%- else %}
+            Disabled (normal)
+          {%- endif %}
+        </td>
+      </tr>
+      <tr>
+        <td style="width: 25%;">Ticketing Period</td>
+        <td>
+          {% if settings.ticketing_period %}{{ settings.ticketing_period }}{% else %}NOT SET{% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td style="width: 25%;">Timesheet Corrections</td>
+        <td>
+          {% if settings.timesheet_correction_enable %}Enabled{% else %}Disabled{% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Training Seasonal</td>
+        <td>
+          {%- if dashboard_period == "after-event" or dashboard_period == "post-event" %}
+            {%- if settings.training_seasonal_role_enabled %}
+              <b style="color: red">ENABLED (NOT NORMAL for post / after event)</b>
+            {%- else %}
+              Disabled (normal for after event)
+            {%- endif %}
+          {%- else %}
+            {%- if settings.training_seasonal_role_enabled %}
+              Enabled (normal)
+            {%- else %}
+              <b style="color: red">DISABLED (NOT NORMAL for pre-event/event)</b>
+            {%- endif %}
+          {%- endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Event Mgmt On Playa</td>
+        <td>
+          {%- if dashboard_period == "event" %}
+            {%- if settings.event_management_on_playa_enabled %}
+              Enabled (normal for event)
+            {%- else %}
+              <b style="color: red">DISABLED (NOT NORMAL)</b>
+            {%- endif %}
+          {%- else %}
+            {%- if settings.event_management_on_playa_enabled %}
+              <b style="color: red">ENABLED (NOT NORMAL)</b>
+            {%- else %}
+              Disabled (normal for pre-event/after-event)
+            {%- endif %}
+          {%- endif %}
+        </td>
+      </tr>
+    </tbody>
+  </table>

@@ -1,0 +1,103 @@
+<%# locals: (signups:) %>
+
+<div class="transition-discrete">
+  <% if signups.parent %>
+    <div class="mb-2">
+      This shift is linked to a parent shift. The combined sign-up counts for both this shift and the parent shift
+      may not exceed the parent shift's <%= signups.combined_max %> sign-up limit.
+      <% if signups.parent.max == signups.parent.signed_up %>
+        <div class="text-error mt-1">
+          That limit has been reached. No more sign-ups are allowed in either shift at this time.
+        </div>
+      <% else %>
+        The combined count is currently <%= signups.parent.signed_up %>.
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if signups.child %>
+    <div class="mb-2">
+      This shift is linked to a child shift. The combined sign-up counts for both this shift and the child shift
+      may not exceed this shift's <%= signups.combined_max %> sign-up limit.
+      <% if signups.max == signups.signed_up %>
+        <div class="text-error mt-1">
+          That limit has been reached. No more sign-ups are allowed in either shift at this time.
+        </div>
+      <% else %>
+        The combined count is currently <%= signups.signed_up %>.
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if signups.people.present? %>
+    <div class="font-semibold my-2">
+      <%= pluralize(signups.people.length, "signup") %> in this shift:
+    </div>
+    <div class="callsign-list mt-2">
+      <% signups.people.each do |person| %>
+        <div><%= person.callsign %></div>
+      <% end %>
+    </div>
+  <% else %>
+    No one is signed up for this shift. Be the first!
+  <% end %>
+
+  <% if signups.parent %>
+    <div class="font-semibold my-2">
+      <%= pluralize(signups.parent.people.length, "signup") %> in the parent <%= signups.parent.position_title %> shift:
+    </div>
+    <% if signups.parent.people.present? %>
+      <div class="callsign-list">
+        <% signups.parent.people.each do |person| %>
+          <div><%= person.callsign %></div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="font-semibold my-2">
+        No one has signed up for the parent shift.
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if signups.child %>
+    <div class="font-semibold my-2">
+      <%= pluralize(signups.child.people.length, "signup") %> in the <%= signups.child.position_title %> child shift:
+    </div>
+    <% if signups.child.people.present? %>
+      <div class="callsign-list">
+        <% signups.child.people.each do |person| %>
+          <div><%= person.callsign %></div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="font-semibold my-2">
+        No one has signed up for the child shift.
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if signups.assoc_signups.present? %>
+    <% if signups.parent || signups.child %>
+      <div class="my-2">
+        The sign-up counts for the following corresponding shift(s) are not combined with those of the parent or child
+        shifts.
+      </div>
+    <% end %>
+    <% signups.assoc_signups.each do |assoc| %>
+      <div class="font-semibold mt-2">
+        <%= pluralize(assoc.people.length, "signup") %> in the corresponding <%= assoc.position_title %> shift:
+      </div>
+      <div class="mt-2">
+        <% if assoc.people.present? %>
+          <div class="callsign-list">
+            <% assoc.people.each do |person| %>
+              <div><%= person.callsign %></div>
+            <% end %>
+          </div>
+        <% else %>
+          No one has signed up for corresponding shift.
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,155 @@
+<% back_path = @source_position_id ? scheduling_slots_position_path(@source_position_id, year: @year) : scheduling_slots_path(year: @year) %>
+
+<%= hero_panel icon: "copy", heading_level: :h1, id: "scheduling-slot-copy-header",
+               description: "Create new slots by copying the selected #{@year} slots with their times shifted.",
+               back_to: ["#{@year} Slots", back_path] do |panel| %>
+  <% panel.title do %>Copy <%= @year %> Slots<% end %>
+<% end %>
+
+<% if @is_current_year %>
+  <div class="my-2">
+    <%= ui_callout_box :warning, title: "Copying from the Current Year" do %>
+      You are about to copy slots from the current year (<%= @year %>) instead of a prior
+      year. Switch the year on the slots page first if you meant to copy last year's slots.
+    <% end %>
+  </div>
+<% end %>
+
+<% if @total_count.positive? %>
+  <%= filter_bar id: "copy-slot-filters",
+                 chips: slot_copy_filter_chips(@source_position_id, @year, @filter),
+                 clear_url: scheduling_new_slot_copy_path(position_id: @source_position_id, year: @year),
+                 count: @filtering ? "Showing #{@shown_count} of #{@total_count} slots" : pluralize(@total_count, "slot"),
+                 url: scheduling_new_slot_copy_path, scope: :filter do |f| %>
+    <%= hidden_field_tag :year, @year %>
+    <%= hidden_field_tag :position_id, @source_position_id %>
+    <%# Keep the current shift preview across a filter change. %>
+    <%= hidden_field_tag :delta_days, @delta[:days] %>
+    <%= hidden_field_tag :delta_hours, @delta[:hours] %>
+    <%= hidden_field_tag :delta_minutes, @delta[:minutes] %>
+    <%= form_row do %>
+      <%= f.select :description,
+                   options_for_select([["All descriptions", ""]] + @description_options,
+                                      @filter[:description]),
+                   { label: "Description", width: "w-full sm:w-64" } %>
+      <%= f.select :date,
+                   options_for_select([["All dates", ""]] + @date_options.map { |date| [wday_month_day_format(date), date.iso8601] },
+                                      @filter[:date]),
+                   { label: "Date", width: "w-full sm:w-44" } %>
+      <%= f.select :time,
+                   options_for_select([["All times", ""]] + @time_options.map { |time| [time, time] },
+                                      @filter[:time]),
+                   { label: "Time", width: "w-full sm:w-40" } %>
+      <%= f.select :datetime,
+                   options_for_select([["Any start", ""]] + @datetime_options.map { |dt| [dt.strftime(DateTimeHelper::MONTH_DAY_TIME), dt.iso8601] },
+                                      @filter[:datetime]),
+                   { label: "Date/Time", width: "w-full sm:w-56" } %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_form nil, scheduling_slot_copies_path(year: @year, position_id: @source_position_id, filter: @filter.presence), method: :post do |f| %>
+  <%= ui_section "Shift Times for the New Slots", icon: "clock", icon_type: :solid do %>
+    <p class="mb-3">
+      Labor Day of <%= @year %> is <%= month_day_format(@from_labor_day) %>.
+      Labor Day of <%= current_year %> is <%= month_day_format(@to_labor_day) %>,
+      <%= pluralize @labor_day_diff, "day" %> later.
+    </p>
+    <%= form_row do %>
+      <%= f.number_field :delta_days, label: "Days", value: @delta[:days], width: "w-24" %>
+      <%= f.number_field :delta_hours, label: "Hours", value: @delta[:hours], width: "w-24" %>
+      <%= f.number_field :delta_minutes, label: "Minutes", value: @delta[:minutes], width: "w-24" %>
+    <% end %>
+    <p class="mt-2 text-stone-subtle">
+      Training and mentor/mentee slots cannot be copied yet, so they are not listed below.
+    </p>
+  <% end %>
+
+  <%= ui_section "Set New Slot Attributes", icon: "sliders", icon_type: :solid do %>
+    <p class="mb-3">
+      The new slots are cloned as-is apart from the shifted times. Fill in a field below to
+      override that value on every new slot; leave it blank to keep the original values.
+    </p>
+    <%= f.select :new_position_id,
+                 options_for_select([["(same position)", ""]] + @position_choices,
+                                    params[:new_position_id]),
+                 { label: "Position", width: "w-full sm:w-72" } %>
+    <%= form_row do %>
+      <%= f.text_field :description, label: "Description", value: params[:description],
+                       maxlength: 40, show_counter: true, width: "w-full sm:w-64" %>
+      <%= f.number_field :max, label: "Max Sign-Ups", value: params[:max], min: 0, width: "w-24" %>
+    <% end %>
+    <%= f.text_area :url, label: "Additional Information", value: params[:url], rows: 3,
+                    maxlength: 512, show_counter: true %>
+    <%= f.check_box :activate, label: "Activate the new slots", checked: params[:activate] == "1",
+                    help_text: "Leave unchecked to create the copies deactivated for review." %>
+  <% end %>
+
+  <%= ui_section "Select Slots to Copy", icon: "list-check", icon_type: :solid do %>
+    <% if @copy_groups.any? %>
+      <p class="mb-3">
+        Each time shows the original slot and the shifted time its copy will get.
+        Use Update Preview to recalculate after changing the shift amounts.
+      </p>
+      <% @copy_groups.each do |position, slots| %>
+        <%= bulk_select class: "mb-2" do %>
+          <%= ui_accordion "#{position.title} (#{pluralize slots.size, "slot"})",
+                           open: @copy_groups.size == 1 do %>
+            <%= bulk_select_all name: "select_all_#{position.id}",
+                                label: "Select all #{position.title} slots",
+                                checked: slots.all? { |slot| @selected_ids.include?(slot.id) },
+                                count: false %>
+            <%= ui_table do |t| %>
+              <%= t.header do %>
+                <%= t.heading "Copy", width: "1%" %>
+                <%= t.heading "Start Time" %>
+                <%= t.heading "Ending Time" %>
+                <%= t.heading "Max", right: true %>
+                <%= t.heading "Description" %>
+              <% end %>
+              <%= t.body do %>
+                <% slots.each do |slot| %>
+                  <%= t.row do %>
+                    <%= t.cell do %>
+                      <%= bulk_select_checkbox "slot_ids[]", slot.id, checked: @selected_ids.include?(slot.id),
+                                               id: "copy-slot-#{slot.id}",
+                                               aria_label: "Copy slot ##{slot.id} #{slot.description}" %>
+                    <% end %>
+                    <%= t.cell do %>
+                      <%= slot.begins.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      <div class="text-stone-subtle">
+                        &rarr; <%= Scheduling::SlotCopier.adjust_time(slot.begins, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      </div>
+                    <% end %>
+                    <%= t.cell do %>
+                      <%= slot.ends.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      <div class="text-stone-subtle">
+                        &rarr; <%= Scheduling::SlotCopier.adjust_time(slot.ends, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      </div>
+                    <% end %>
+                    <%= t.cell slot.max, right: true %>
+                    <%= t.cell slot.description %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% elsif @filtering %>
+      <%= ui_empty_state "No slots match the current filters.", icon: "filter", icon_type: :solid %>
+    <% else %>
+      <%= ui_empty_state "No copyable slots were found for #{@year}.",
+                         icon: "calendar-xmark", icon_type: :solid %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Copy Selected Slots" %>
+    <%= submit_button "Update Preview", name: "preview", variant: :secondary %>
+    <%= cancel_link back_path %>
+  <% end %>
+<% end %>

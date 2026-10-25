@@ -1,0 +1,29 @@
+<%# locals: (person:, field:) %>
+<%#
+  Renders one autocomplete person row. `field` is the group key the person matched
+  under: callsign / name / fka / email / old-email / last / phone / id.
+
+  The name line — "<status> preferred_name‖first_name last_name" — is shown for ALL
+  person groups, not just the name group. Per-group extras:
+    name      -> "Legal first name: <first_name>" when a preferred name exists
+    fka       -> "FKA: <matched fka>" via the standardized person.fka_match accessor
+    email     -> "Email match"
+    old-email -> "Old email match"
+    phone     -> "Phone: <the number that matched>" via person.phone_match
+%>
+<%
+  lines = ["<#{person.status}> #{person.desired_full_name}"]
+  lines << "• Legal first name: #{person.first_name}" if field == "name" && person.preferred_name.present?
+  lines << "• FKA: #{person.fka_match}" if person.try(:fka_match).present?
+  lines << "• Email match" if field == "email"
+  lines << "• Old email match" if field == "old-email"
+  lines << "• Phone: #{phone_format(person.phone_match)}" if field == "phone"
+
+  # Host-relative path: this partial is pre-rendered server-side (outside a
+  # request) by PersonAdapter, so an absolute URL would inherit the renderer's
+  # default "example.org" host and 404. only_path keeps it host-independent.
+  photo = if person.avatar_photo
+            rails_blob_path(person.avatar_photo, only_path: true)
+          end
+%>
+<%= render "autocomplete/item", icon: :user, title: person.callsign, photo:, lines: %>

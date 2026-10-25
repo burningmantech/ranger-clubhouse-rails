@@ -1,0 +1,153 @@
+<%= hero_panel icon: "calendar-days", heading_level: :h1, id: "scheduling-position-slots-header",
+               description: "Edit, repeat, or delete this position's slots, or apply bulk changes.",
+               back_to: ["#{@year} Slots", scheduling_slots_path(year: @year)] do |panel| %>
+  <% panel.title do %><%= @year %> <%= @position.title %> Slots
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @total_count, "Slots" %>
+  <% if @inactive_count.positive? %>
+    <%= ui_stat_box @inactive_count, "Inactive", variant: :warning %>
+  <% end %>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= button_link "Add Slot", :primary,
+                    scheduling_new_slot_path(position_id: @position.id, year: @year),
+                    icon: "plus", icon_type: :solid %>
+    <% if @total_count.positive? %>
+      <%= button_link "Activate All", :secondary,
+                      scheduling_slots_position_active_path(@position.id, active: 1, year: @year),
+                      method: :post, icon: "circle-check" %>
+      <%= button_link "Deactivate All", :secondary,
+                      scheduling_slots_position_active_path(@position.id, active: 0, year: @year),
+                      method: :post, icon: "circle-pause" %>
+      <%= button_link "Bulk Copy", :secondary,
+                      scheduling_new_slot_copy_path(position_id: @position.id, year: @year),
+                      icon: "copy" %>
+      <%= button_link "Bulk Edit", :secondary,
+                      scheduling_new_slot_bulk_edit_path(@position.id, year: @year),
+                      icon: "pen-to-square" %>
+    <% end %>
+  <% end %>
+</div>
+
+<% if @total_count.positive? %>
+  <%= filter_bar id: "slot-filters",
+                 chips: slot_filter_chips(@position, @year),
+                 clear_url: scheduling_slots_position_path(@position.id, year: @year),
+                 count: "Showing #{@slots.size} of #{@total_count} slots",
+                 url: scheduling_slots_position_path(@position.id) do |f| %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :day,
+                   options_for_select([["All days", ""]] + @day_options.map { |day| [wday_month_day_format(day), day.iso8601] },
+                                      params[:day]),
+                   { label: "Day", width: "w-full sm:w-44" } %>
+      <%= f.select :active,
+                   options_for_select([["All slots", ""], ["Active", "active"], ["Inactive", "inactive"]],
+                                      params[:active]),
+                   { label: "Status", width: "w-full sm:w-44" } %>
+      <%= f.select :description,
+                   options_for_select([["All descriptions", ""]] + @description_options,
+                                      params[:description]),
+                   { label: "Description", width: "w-full sm:w-64" } %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @slots.any? %>
+  <%= ui_form(nil, scheduling_slots_position_bulk_delete_path(@position.id, year: @year),
+              method: :delete, local: true, no_error_summary: true) do |f| %>
+    <%= bulk_select do %>
+      <%= ui_table do |t| %>
+        <%= t.header do %>
+          <%= t.heading width: "1%" do %>
+            <%= bulk_select_all aria_label: "Select all slots" %>
+          <% end %>
+          <%= t.heading "ID", right: true %>
+          <%= t.heading "Active", center: true %>
+          <%= t.heading "Time", width: "12rem" %>
+          <%= t.heading "Duration" %>
+          <%= t.heading "Sign-Ups", right: true %>
+          <%= t.heading "Credits", right: true %>
+          <%= t.heading "Description" %>
+          <%= t.heading "Actions" %>
+        <% end %>
+        <%= t.body do %>
+          <% @slots.each do |slot| %>
+            <%= t.row id: "slot-#{slot.id}" do %>
+              <%= t.cell do %>
+                <%= bulk_select_checkbox "slot_ids[]", slot.id, id: "select-slot-#{slot.id}",
+                                         aria_label: "Select slot ##{slot.id} #{slot.description}" %>
+              <% end %>
+              <%= t.cell slot.id, right: true %>
+              <%= t.cell center: true do %>
+                <%= slot_status_badge(slot) %>
+              <% end %>
+              <%= t.cell do %>
+                <%= datetime_format slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr %>
+                <% { "Multiplier" => slot.trainer_slot,
+                     "Parent" => slot.parent_signup_slot,
+                     "Child" => slot.child_signup_slot }.each do |label, linked| %>
+                  <% next unless linked %>
+                  <div class="mt-1 text-stone-subtle">
+                    <%= label %>: #<%= linked.id %> <%= linked.position_title %>
+                  </div>
+                <% end %>
+              <% end %>
+              <%= t.cell right: true do %>
+                <%= hour_minute_format slot.duration %>
+              <% end %>
+              <%= t.cell "#{slot.signed_up} of #{slot.max}", right: true, class: "whitespace-nowrap" %>
+              <%= t.cell credit_format_short(slot.credits), right: true %>
+              <%= t.cell do %>
+                <%= slot.description %>
+                <%= render "common/scheduling/slot_additional_info", slot: slot, collapsed: true %>
+              <% end %>
+              <%= t.cell do %>
+                <%# Icon-only: the labelled variant overflows the table at the xl breakpoint.
+                    Icons ride in the label slot so ButtonHelper's icon: margin is not added. %>
+                <div class="flex-center-gap-2">
+                  <%= button_link fa_icon("clone"), :secondary,
+                                  scheduling_repeat_slot_path(slot, year: @year),
+                                  method: :post, title: "Repeat", aria: { label: "Repeat" },
+                                  class: "btn-square" %>
+                  <%= button_link fa_icon("clone") + tag.span("+24h", class: "text-xs"), :secondary,
+                                  scheduling_repeat_slot_path(slot, add24: 1, year: @year),
+                                  method: :post, title: "Repeat +24h", aria: { label: "Repeat +24h" } %>
+                  <%= edit_link scheduling_edit_slot_path(slot, year: @year), "",
+                                title: "Edit", aria: { label: "Edit" }, class: "btn-square" %>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= button_row do %>
+        <%= f.submit "Delete Selected Slots", variant: :error,
+                     data: {
+                       turbo_confirm: confirm_modal_dialog(
+                         title: "Confirm Slot Deletion",
+                         message: "Delete the selected slots? " \
+                           "Anyone signed up will be removed from those shifts. This cannot be undone.",
+                         confirm_label: "Delete Slots",
+                         variant: :error
+                       ),
+                       checkbox_select_all_target: "submit"
+                     } %>
+        <%= bulk_select_count class: "text-stone-subtle" %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif @total_count.positive? %>
+  <%= ui_empty_state "No slots match the current filters.", icon: "filter", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No #{@position.title} slots were found for #{@year}.",
+                     icon: "calendar-plus", icon_type: :solid %>
+<% end %>

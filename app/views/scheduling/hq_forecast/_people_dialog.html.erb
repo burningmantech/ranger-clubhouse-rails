@@ -1,0 +1,59 @@
+<%# locals: (title:, people:, empty:, starts: true) %>
+<%#
+  Who is signed up at one HQ desk, in the dialog a staffing count or a shift's
+  bar opens. Everyone on one shift starts together, so a shift's list leaves
+  the start out rather than repeat the title on every row. Each row says whether
+  the person is marked on site and which HQ desks they have years at, so the
+  reader can tell a seasoned window from a first-timer.
+%>
+<% hq_desks = HqForecastReport::DESKS.sort_by(&:title) %>
+<%= modal_dialog title:, id: "hq-forecast-people", size: :lg do %>
+  <% if people.any? %>
+    <%= ui_table full_width: true, striped: true, responsive: false do |t| %>
+      <%= t.header do %>
+        <% if starts %>
+          <%= t.heading "Shift Start" %>
+        <% end %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "On Site" %>
+        <%= t.heading "HQ Years" %>
+      <% end %>
+      <%= t.body do %>
+        <% people.each do |signup| %>
+          <%= t.row do %>
+            <% if starts %>
+              <%= t.cell signup.begins.strftime(DateTimeHelper::MONTH_DAY_TIME) %>
+            <% end %>
+            <%= t.cell person_display_link(signup, signup.person_id, path: person_path(signup.person_id), in_turbo_frame: true) %>
+            <%= t.cell do %>
+              <% if signup.on_site %>
+                <%= ui_badge "On Site", :success, icon: "person-walking" %>
+              <% else %>
+                <%= ui_badge "Off Site", :secondary, icon: "moon", icon_type: "regular" %>
+              <% end %>
+            <% end %>
+            <%= t.cell do %>
+              <% if signup.hq_years.any? %>
+                <ul>
+                  <% hq_desks.each do |desk| %>
+                    <% years = signup.hq_years[desk.position_id] %>
+                    <% next if years.blank? %>
+                    <li><%= desk.title %> (<%= pluralize(years.size, "year") %>): <%= year_range(years) %></li>
+                  <% end %>
+                </ul>
+              <% else %>
+                <span class="text-stone-muted">No years at an HQ desk</span>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state empty, icon: "user-slash", icon_type: :solid %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= modal_close_button %>
+  <% end %>
+<% end %>

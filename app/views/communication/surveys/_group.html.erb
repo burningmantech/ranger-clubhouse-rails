@@ -1,0 +1,67 @@
+<%# locals: (survey:, group:, first:, last:) %>
+<%# One group of the survey: what it is called, how it is reported, and the
+    questions under it in the order people answer them. %>
+<%= ui_section group.title, id: "group-#{group.id}", icon: "layer-group", icon_type: :solid,
+               badge: group.survey_questions.size.to_s,
+               action: { partial: "communication/surveys/group_actions",
+                         locals: { survey: survey, group: group, first: first, last: last } } do %>
+  <% badge = survey_group_type_badge(group, survey) %>
+  <% if badge || group.description.present? %>
+    <div class="flex flex-col lg:flex-row lg:items-center gap-2 mb-3">
+      <%= badge %>
+      <% if group.description.present? %>
+        <div class="text-stone-muted"><%= sanitize group.description %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% questions = group.survey_questions.to_a %>
+  <% if questions.any? %>
+    <%= ui_table striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "#" %>
+        <%= t.heading "Question" %>
+        <%= t.heading "Type" %>
+        <%= t.heading "Answer" %>
+        <%= t.heading "Actions" %>
+      <% end %>
+      <%= t.body do %>
+        <% questions.each_with_index do |question, index| %>
+          <%= t.row do %>
+            <%= t.row_header (index + 1).to_s, class: "w-10 tabular-nums" %>
+            <%= t.cell do %>
+              <%= question.description %>
+              <% if question.type == SurveyQuestion::TYPE_OPTIONS && question.option_list.any? %>
+                <div class="text-stone-muted mt-1">
+                  Choices: <%= question.option_list.to_sentence %>
+                </div>
+              <% end %>
+            <% end %>
+            <%= t.cell survey_question_type_badges(question) %>
+            <%= t.cell do %>
+              <% if question.is_required %>
+                <%= ui_badge "Required", :warning, icon: "asterisk", icon_type: :solid %>
+              <% else %>
+                <span class="text-stone-muted">Optional</span>
+              <% end %>
+            <% end %>
+            <%= t.cell class: "whitespace-nowrap" do %>
+              <div class="flex-center-gap-2">
+                <%= edit_link edit_communication_survey_question_path(survey, question), "Edit",
+                              aria: { label: "Edit question #{index + 1} of #{group.title}" } %>
+                <%= render "common/move_buttons",
+                           up_url: move_communication_survey_question_path(survey, question, direction: "up"),
+                           down_url: move_communication_survey_question_path(survey, question, direction: "down"),
+                           label: "question #{index + 1} of #{group.title}",
+                           first: index.zero?, last: index == questions.size - 1 %>
+              </div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No questions in this group yet. Add the first one.",
+                       icon: "clipboard-question", icon_type: :solid %>
+  <% end %>
+<% end %>

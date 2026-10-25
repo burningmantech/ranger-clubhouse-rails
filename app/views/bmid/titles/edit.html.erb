@@ -1,0 +1,7 @@
+<%= hero_panel icon: "id-badge", heading_level: :h1, id: "bmid-titles-form-header",
+               description: "Printed on badge line #{@title.title_line}, earned by #{bmid_title_position_name(@title)}.",
+               back_to: ["Badge Titles", bmid_titles_path] do |panel| %>
+  <% panel.title do %>Edit <%= @title.title %><% end %>
+<% end %>
+
+<%= render "form" %>

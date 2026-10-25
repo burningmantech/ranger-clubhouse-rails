@@ -1,0 +1,45 @@
+<%#
+  Move one Ranger to another pod, or take them out of this one.
+
+  The select is the same move as dragging their card between pods, and sends
+  the same request -- it is the path for a keyboard, a screen reader, and a
+  phone in the dark, where dragging is the worst possible gesture.
+
+  Taking someone out has no confirmation on purpose: the membership row is kept
+  with removed_at stamped, so it is undone by adding them back. Deleting a
+  whole pod does ask, because that one is not recoverable.
+%>
+<% pod_name = cruise_direction_pod_name(@pod) %>
+<% options = @pods.map { |pod| [cruise_direction_pod_name(pod), pod.id] } %>
+<%= modal_dialog id: "cruise-direction-member-dialog", title: "#{@person.callsign} in #{pod_name}" do %>
+  <% if options.size > 1 %>
+    <%= form_with url: shift_operations_cruise_direction_person_path(@pod, @person, year: @year),
+                  method: :patch, builder: AppFormBuilder, data: { turbo_frame: "_top" } do %>
+      <div class="mb-3">
+        <label for="cruise-direction-new-pod" class="font-medium block mb-1">Pod</label>
+        <%= select_tag :new_pod_id, options_for_select(options, @pod.id), id: "cruise-direction-new-pod",
+                       class: "#{AppFormBuilder::SELECT_CLASSES} w-full sm:w-44" %>
+        <p class="text-sm text-stone-muted mt-1">
+          Moving someone keeps a record that they were in <%= pod_name %> first.
+        </p>
+      </div>
+
+      <%= modal_form_footer submit: "Move" %>
+    <% end %>
+  <% else %>
+    <p class="text-stone-muted mb-3">
+      This is the only pod out on the shift, so there is nowhere to move <%= @person.callsign %> to.
+    </p>
+  <% end %>
+
+  <div class="border-t border-base-300 mt-4 pt-3">
+    <%= button_row do %>
+      <%= delete_button shift_operations_cruise_direction_person_path(@pod, @person, year: @year),
+                        "Take out of #{pod_name}", variant: :error, size: "sm",
+                        data: { turbo_frame: "_top" } %>
+      <% if options.size <= 1 %>
+        <%= modal_close_button "Close" %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

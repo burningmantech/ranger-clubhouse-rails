@@ -1,0 +1,12 @@
+<%# locals: (person:) %>
+<%= ui_section "Camp Name & Location",
+               icon: :campground,
+               icon_type: :solid,
+               edit_link: (can_edit_profile? ? profile_edit_section_path(:camp) : nil) do %>
+  <% if viewing_self? %>
+    <p>
+      Don't worry if your camp's placement is not known yet.
+    </p>
+  <% end %>
+  <%= person.camp_location.present? ? simple_format(person.camp_location) : none_stated %>
+<% end %>

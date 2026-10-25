@@ -1,0 +1,15 @@
+<%#
+  The Bug Report dialog, opened from the top menu. It is also what a refused
+  report comes back as, with the problem spelled out above the field.
+
+  autofocus is here on purpose: a dialog puts focus on the first thing that
+  can take it, and without this that is the close button in the title bar.
+%>
+<%= modal_dialog id: "bug-report-dialog", title: "Report a Bug" do %>
+  <%= ui_form(@bug_report, bug_reports_path) do |f| %>
+    <%= f.text_area :description, label: "What went wrong?", rows: 6,
+                    required: true, autofocus: true, maxlength: BugReport::DESCRIPTION_LIMIT,
+                    help_text: "Say what you were doing and what happened instead. The page you are on, your browser, and your IP address are sent with the report." %>
+    <%= modal_form_footer f, submit: "Send Bug Report" %>
+  <% end %>
+<% end %>

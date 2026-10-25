@@ -1,0 +1,71 @@
+<%# The trainee roster: guidance, the action row (button_row stacks on
+    mobile), the email list, and one card per trainee. Re-rendered wholesale
+    after a score so the counts stay truthful. %>
+<% session = @training_session %>
+<% slot = session.slot %>
+<% graduation = TrainingSession::Graduation.new(session) if session.art? %>
+<% offers_graduation = session.art? && graduation.offered? && can_graduate? && session.trainees.any? %>
+<% emails = session.trainees.map { |t| t.person.email }.compact_blank %>
+
+<%= ui_section "Trainees — #{session.trainees.size} Signed Up · #{session.passed_count} Passed",
+               icon: "users", icon_type: :solid do %>
+  <% if session.art? %>
+    <% if graduation.offered? %>
+      <p class="mb-3">
+        <% if can_graduate? %>
+          Use <strong>Graduate Trainees</strong> to grant
+        <% else %>
+          Contact your cadre to grant
+        <% end %>
+        <%= graduation.position_titles.to_sentence %> to trainees who passed.
+      </p>
+    <% end %>
+  <% else %>
+    <%= ui_callout_box :warning, icon: "hand", icon_type: :solid do %>
+      <strong>Walk-ins are not allowed, including auditors.</strong>
+      Everyone must be signed up before the session starts.
+      <% unless can_adjust_roster? %>
+        Only the Training Academy may add trainees here.
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# One action row -- .button-row stacks below lg (the me/shift-manage
+      pattern), so mobile needs no separate arrangement. %>
+  <div class="mb-3">
+    <%= button_row do %>
+      <%= button_link "Trainer's Report", :secondary,
+                      training_session_trainers_report_path(training_slug, slot.id),
+                      icon: "list-check", icon_type: :solid %>
+      <%= button_link "Sign-Up Sheet", :secondary,
+                      training_session_signup_sheet_path(training_slug, slot.id),
+                      icon: "clipboard-check", icon_type: :solid %>
+      <% if can_adjust_roster? %>
+        <%= button_link "Add Person", :secondary,
+                        training_session_new_roster_path(training_slug, slot.id, kind: "trainee"),
+                        icon: "plus", icon_type: :solid, data: { turbo_frame: "modal" } %>
+      <% end %>
+      <% if emails.any? %>
+        <%= button_action "Copy Email List", :secondary, controller: "copy-to-clipboard",
+                          icon: "copy", icon_type: :regular,
+                          data: { action: "copy-to-clipboard#copy",
+                                  copy_to_clipboard_content_value: emails.join(", "),
+                                  copy_to_clipboard_success_class: "btn-copy-success" } %>
+      <% end %>
+      <% if offers_graduation %>
+        <%= button_link "Graduate Trainees", :secondary,
+                        training_session_graduation_path(training_slug, slot.id),
+                        icon: "graduation-cap", icon_type: :solid, data: { turbo_frame: "modal" } %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if session.trainees.any? %>
+    <div>
+      <%= render partial: "training/sessions/trainee_card",
+                 collection: session.trainees, as: :trainee %>
+    </div>
+  <% else %>
+    <%= ui_empty_state "No one is signed up for this session yet." %>
+  <% end %>
+<% end %>

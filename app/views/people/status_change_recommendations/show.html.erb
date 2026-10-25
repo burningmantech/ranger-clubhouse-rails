@@ -1,0 +1,116 @@
+<%#
+  One proposed change: the people it covers, and the single button that carries
+  it out. Also the page the convert POST renders at 422, with the people whose
+  change has just landed held on the list.
+%>
+<% content_for :title, @group.title %>
+
+<% if @converted.any? %>
+  <%# Turbo keeps the submitting page's scroll, which on this render would land
+      the reader beside the button rather than on the result. %>
+  <div data-controller="scroll-to-top" hidden></div>
+<% end %>
+
+<%= hero_panel icon: "right-left", heading_level: :h1, id: "status-change-recommendations-group-header",
+               title: @group.title,
+               description: @group.meaning,
+               back_to: ["Status Change Recommendations",
+                         people_status_change_recommendations_path(status_change_query(@period))] %>
+
+<% if @converted.any? %>
+  <%= ui_callout_box :success, icon: "circle-check", icon_type: :solid, accent: true, class: "my-4" do %>
+    <strong>Changed <%= status_change_count(@converted.size) %>:</strong>
+    <%= @converted.to_sentence %>.
+  <% end %>
+<% end %>
+
+<% if @unchanged.any? %>
+  <%# Named one by one, with the reason for each: the causes are different
+      problems and a single count would tell the reader none of them. %>
+  <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid, accent: true, class: "my-4" do %>
+    <strong><%= status_change_count(@unchanged.size) %> could not be changed.</strong>
+    <ul class="list-disc ms-6 mt-1">
+      <% @unchanged.each do |callsign, reason| %>
+        <li><strong><%= callsign %></strong> — <%= reason %>.</li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @proposed_count.to_s, "Proposed", icon: "users", icon_type: :solid %>
+  <% if @group.shows_vintage? %>
+    <%= ui_stat_box @all_rows.count(&:vintage).to_s, "Already Vintage", icon: "award", icon_type: :solid %>
+  <% end %>
+  <% if @group.shows_history? %>
+    <%= ui_stat_box value_or_dash(@all_rows.filter_map(&:last_year).max),
+                    "Most Recent Year Rangered", icon: "calendar", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<% if @all_rows.any? %>
+  <%= filter_bar id: "status-change-filters",
+                 chips: status_change_chips(@group, @period, @filters),
+                 clear_url: people_status_change_recommendations_group_path(@group.key,
+                                                                            status_change_query(@period)),
+                 count: "Showing #{@rows.size} of #{status_change_count(@all_rows.size)}",
+                 actions: export_csv_link(people_status_change_recommendations_group_path(@group.key,
+                                          status_change_query(@period, @filters,
+                                                              format: :csv))),
+                 url: people_status_change_recommendations_group_path(@group.key) do |f| %>
+    <%# The period rides along, or Apply would drop back to the current one. %>
+    <% if @period == RecommendStatusChangeReport::PERIOD_NEXT %>
+      <%= hidden_field_tag :period, @period %>
+    <% end %>
+    <%= render "filter_fields", f: %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @rows.any? %>
+  <%= ui_form(nil, people_status_change_recommendations_convert_path(@group.key,
+                                                                     status_change_query(@period, @filters)),
+              method: :post) do |f| %>
+    <%= bulk_select do %>
+      <%= bulk_select_all label: "Select all #{status_change_count(@rows.size)} shown" %>
+
+      <%# Not striped: the tint on a row whose change has just landed is what
+          this table has to make obvious, and stripes would compete with it. %>
+      <%= ui_table striped: false do |t| %>
+        <%= render "table_head", t: %>
+        <%= t.body do %>
+          <% @rows.each do |row| %>
+            <%= render "table_row", t:, row: %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid,
+                         accent: true, class: "my-4" do %>
+        <strong><%= @group.consequence %></strong>
+        This page cannot undo a change.
+        <% if @period == RecommendStatusChangeReport::PERIOD_NEXT %>
+          <%# The forecast period lists people who are not eligible yet. The
+              change it makes is real and immediate all the same. %>
+          <strong>This list is a forecast for <%= @year %>, an event that has not happened yet</strong>,
+          but any change made here takes effect today.
+        <% end %>
+      <% end %>
+
+      <%= button_row do %>
+        <%# The submit target keeps the button off until something is checked. %>
+        <%= f.submit @group.title, variant: :error,
+                     data: { checkbox_select_all_target: "submit",
+                             turbo_confirm: confirm_modal_dialog(**status_change_confirm(@group, @year, @period)) } %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif @all_rows.any? %>
+  <%= ui_empty_state "No one in this group matches these filters.",
+                     icon: "filter-circle-xmark", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No one is proposed for this change in #{@year}.",
+                     icon: "circle-check", icon_type: :solid %>
+<% end %>

@@ -1,0 +1,46 @@
+<%#
+  One Alpha shift's pods. The page shell -- header, guidance, and the toolbar
+  that adds a pod -- stays put; everything that changes lives in the board
+  partial below, which every write replaces wholesale.
+%>
+<% shift_title = alpha_shift_title(@slot) %>
+<% content_for :title, "#{shift_title} — Alpha Pods" %>
+
+<%= hero_panel icon: "people-group", heading_level: :h1, id: "alpha-pods-shift-header",
+               title: "Pods — #{shift_title}" do |panel| %>
+  <% panel.description do %>
+    Form the pods going out on <%= datetime_format(@slot.begins, @slot.ends) %>,
+    <%= @slot.begins_year %>.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "Alpha Pod Management", mentoring_alpha_pods_path(year: @slot.begins_year) %>
+  <% end %>
+<% end %>
+
+<%= ui_callout_box :info, icon: "lightbulb", icon_type: :solid, accent: true, class: "my-4" do %>
+  <strong>Pods are formed here; mentoring outcomes are recorded elsewhere.</strong>
+  Use Alpha Mentors Assignment to pair mentors with their Alphas and to mark an Alpha as passed
+  or bonked.
+<% end %>
+
+<%# Out of the hero, and above the toolbar and board it describes. %>
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>How do I build a pod?</dt>
+    <dd>
+      Create a pod for each group going out, then add the mentors, MITtens, and Alphas who have
+      checked in.
+    </dd>
+    <dt>How do I move someone?</dt>
+    <dd>Select a callsign to move someone or take them out again.</dd>
+  </dl>
+<% end %>
+
+<%= button_row do %>
+  <%= button_link "Add Pod", :primary, mentoring_alpha_pods_pods_path(@slot), method: :post,
+                  icon: "plus", icon_type: :solid %>
+  <%= button_link "Print Pod Sheet", :secondary, mentoring_alpha_pods_print_path(@slot),
+                  icon: "print", icon_type: :solid %>
+<% end %>
+
+<%= render "mentoring/alpha_pods/board", board: @board, slot: @slot %>

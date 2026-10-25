@@ -1,0 +1,14 @@
+<%# locals: (callsigns:) %>
+<%#
+  One warning for the page in place of one per row, the shape
+  mentoring/convert_prospectives already uses: it names whoever carries a raised
+  Personnel flag among the rows shown. Their lines keep a red tint and the lead
+  chip, and the review pane repeats the warning for whoever is selected. A
+  filter that hides them hides this with them.
+%>
+<% if callsigns.any? %>
+  <%= ui_callout_box :error, icon: "flag", icon_type: :solid, accent: true, class: "my-4" do %>
+    <strong>A Personnel flag is raised on <%= callsigns.to_sentence %>.</strong>
+    Take no actions on them until <%= callsigns.one? ? "it is" : "those flags are" %> resolved.
+  <% end %>
+<% end %>

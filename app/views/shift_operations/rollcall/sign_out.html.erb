@@ -1,0 +1,48 @@
+<%#
+  Sign a crew out by tapping names.
+
+  One picker, not two: there is no shift to choose, only the position whose
+  crew is coming off. Tapping a Ranger ends their shift with no confirmation --
+  unlike the sign-in roster, where the same gesture means the opposite thing.
+  Here ending shifts is the entire reason the page was opened, and a
+  confirmation on every tap of a forty-person crew is a prompt no one reads.
+  The undo is the second tap, which resumes the shift.
+%>
+<% content_for :title, "Roll Call — Sign Out" %>
+
+<%= hero_panel icon: "bed", heading_level: :h1,
+               id: "shift-operations-rollcall-sign-out-header",
+               title: "Roll Call — Sign Out" do |panel| %>
+  <% panel.description do %>
+    Pick a position, then tap each Ranger as they come off shift.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "Roll Call", shift_operations_rollcall_path %>
+  <% end %>
+<% end %>
+
+<% if @groups.empty? %>
+  <%= ui_empty_state "No one is on duty right now.", icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%= ui_section "Position", icon: "users", icon_type: :solid do %>
+    <%# Same picker as Sign In, minus the shift select -- there is no shift to
+        choose here, only the position whose crew is coming off. %>
+    <%= render "shift_operations/rollcall/pickers", shift: false %>
+  <% end %>
+
+  <% if @group.nil? %>
+    <%= ui_empty_state "Pick a position to see who is on duty.",
+                       icon: "hand-pointer", icon_type: :solid %>
+  <% else %>
+    <%# Out of the hero, and only above the roster it is about. %>
+    <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+      <dl class="instruction-list">
+        <dt>Tapped someone by mistake?</dt>
+        <dd>Tap them again to put them back on shift.</dd>
+      </dl>
+    <% end %>
+
+    <%= render "shift_operations/rollcall/roster",
+               rows: @rows, counts: @counts, mode: :sign_out, position_id: @group.id %>
+  <% end %>
+<% end %>

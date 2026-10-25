@@ -1,0 +1,61 @@
+<% persisted = @client.persisted? %>
+
+<%= ui_form(@client,
+            persisted ? admin_oauth_client_path(@client) : admin_oauth_clients_path) do |f| %>
+  <%= f.fieldset "Client details", icon: "key", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Where do these values go?</dt>
+      <dd>Into the website's own sign-in settings. Change them there too, or it stops signing people in.</dd>
+      <% unless persisted %>
+        <dt>What about the secret?</dt>
+        <dd>
+          The Clubhouse makes one of <%= OauthClient::SECRET_LENGTH %> characters when the client is
+          created, and shows it in the list.
+        </dd>
+      <% end %>
+    </dl>
+
+    <%= f.text_field :client_id, label: "Client ID", required: true, width: "w-full sm:w-72",
+                     maxlength: OauthClient::TEXT_COLUMN_LIMIT,
+                     help_text: "The name the website sends when it asks the Clubhouse to sign someone in. Must be unique." %>
+    <%= f.text_field :description, label: "Description", required: true, width: "w-full sm:w-96",
+                     maxlength: OauthClient::TEXT_COLUMN_LIMIT,
+                     help_text: "What the website is, for the Tech Team's reference." %>
+    <% if persisted %>
+      <%# autocomplete off so the browser never files this away as a password. %>
+      <%= f.text_field :secret, label: "Secret", required: true, width: "w-full sm:w-96",
+                       maxlength: OauthClient::TEXT_COLUMN_LIMIT, autocomplete: "off",
+                       help_text: "The shared key the website presents with its Client ID. Keep it private." %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Client" %>
+    <% if persisted %>
+      <%# formnovalidate: this button fills the Secret box itself, so the browser
+          must not block it for being empty. %>
+      <%= f.submit "Save with New Secret", variant: :secondary, name: "new_secret",
+                   formnovalidate: true,
+                   data: {
+                     turbo_confirm: confirm_modal_dialog(
+                       title: "Confirm New Secret",
+                       message: "The Clubhouse will make a new secret and save it now, " \
+                         "replacing whatever the Secret box holds. The website keeps " \
+                         "signing people in only after its settings get the new one.",
+                       confirm_label: "Save with New Secret"
+                     )
+                   } %>
+    <% end %>
+    <%= cancel_link admin_oauth_clients_path %>
+    <% if persisted %>
+      <%= delete_button admin_oauth_client_path(@client), "Delete Client",
+                        confirm_modal: {
+                          title: "Confirm Client Deletion",
+                          message: "Delete #{@client.client_id_was}? " \
+                            "That website will no longer be able to sign anyone in. This cannot be undone.",
+                          confirm_label: "Delete Client",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,242 @@
+<%# app/views/profile_photos/crop.html.erb %>
+<%# Photo cropping interface using CropperJS 2.0 with headshot overlay guide %>
+<%# ADHD-friendly design with chunked instructions and responsive side panel layout %>
+
+<%= hero_panel icon: "crop", heading_level: :h1, id: "crop-photo-header",
+               title: "Adjust Photo for Submission",
+               back_to: [profile_index_label, profile_index_path] %>
+
+<%# DESIGN DEVIATION: "Interface Density" - using more whitespace in side panel layout
+    Reason: Photo cropping requires focus on a single task; the side panel approach 
+    separates instructions from the interactive cropper, reducing cognitive load. %>
+
+<div class="flex flex-col lg:flex-row gap-6">
+  
+  <%# Instructions Panel - shown first on mobile, right side on desktop %>
+  <div class="order-first lg:order-last lg:w-72 lg:shrink-0">
+    
+    <%# Mobile: Condensed single instruction %>
+    <div class="lg:hidden">
+      <%= ui_callout_box :info, accent: true, icon: "hand-pointer", icon_type: :regular do %>
+        <strong>One thing to do:</strong> Drag your photo until your face <span class="bg-primary/10 px-1 rounded font-medium">fills the outline completely</span>.
+      <% end %>
+    </div>
+    
+    <%# Desktop: Full instruction panel %>
+    <div class="hidden lg:block">
+      <div class="card-standard p-4">
+        <h2 class="heading-section text-heading mb-4">
+          <%= fa_icon "lightbulb", :solid, class: "mr-2 text-primary" %>Quick Guide
+        </h2>
+        
+        <dl class="instruction-list">
+          <dt>What do I do?</dt>
+          <dd>Drag and zoom your photo so your face fills the outline.</dd>
+          
+          <dt>What are the buttons for?</dt>
+          <dd>
+            <ul class="mt-1 space-y-1 text-sm">
+              <li><%= fa_icon "magnifying-glass-plus", :solid, class: "mr-1 text-stone-muted" %> Zoom in closer</li>
+              <li><%= fa_icon "magnifying-glass-minus", :solid, class: "mr-1 text-stone-muted" %> Zoom out wider</li>
+              <li><%= fa_icon "rotate-left", :solid, class: "mr-1 text-stone-muted" %> Rotate left</li>
+              <li><%= fa_icon "rotate-right", :solid, class: "mr-1 text-stone-muted" %> Rotate right</li>
+              <li><%= fa_icon "arrows-rotate", :solid, class: "mr-1 text-stone-muted" %> Start over</li>
+            </ul>
+          </dd>
+          
+          <dt>How do I know I'm done?</dt>
+          <dd>No orange checkerboard pattern should be visible. Your face should fill the outline.</dd>
+        </dl>
+        
+        <%# Review reminder %>
+        <div class="mt-4 pt-4 border-t border-line text-sm text-stone-muted">
+          <%= fa_icon "clock", :regular, class: "mr-1" %>
+          Photos are reviewed within 2-3 days.
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <%# Cropper Panel - main content %>
+  <div class="flex-1">
+    <%= form_with model: @person_photo,
+                  url: profile_photo_crop_save_path(@person_photo),
+                  local: false,
+                  html: {
+                    data: {
+                      controller: "photo-cropper",
+                      action: "submit->photo-cropper#beforeSubmit",
+                      photo_cropper_canvas_width_value: PersonPhoto::PROFILE_WIDTH,
+                      photo_cropper_canvas_height_value: PersonPhoto::PROFILE_HEIGHT,
+                      photo_cropper_cropping_value: (@person_photo.has_cropping_data? ? @person_photo.crop_data.to_json : "{}"),
+                      turbo: false,
+                    }
+                  } do |f| %>
+
+      <%# Crop tools: icon-only below lg, labelled from lg up. The label carries
+          the gap, so a lone icon stays centred, and aria-label names the button
+          in full at every width. Secondary, because Submit Photo is the page's
+          one primary action. %>
+      <div class="flex flex-wrap justify-center gap-2 lg:gap-3 mb-4 mx-auto max-w-sm lg:max-w-none">
+        <% [["magnifying-glass-plus", "In", "Zoom In", "zoomIn"],
+            ["magnifying-glass-minus", "Out", "Zoom Out", "zoomOut"],
+            ["rotate-left", "Left", "Rotate Left", "rotateLeft"],
+            ["rotate-right", "Right", "Rotate Right", "rotateRight"],
+            ["arrows-rotate", "Reset", "Reset to Original", "reset"]].each do |icon, label, name, action| %>
+          <%= button_action safe_join([fa_icon(icon, :solid), tag.span(label, class: "hidden lg:inline")]),
+                            :secondary,
+                            title: name, aria: { label: name },
+                            data: { action: "click->photo-cropper##{action}" } %>
+        <% end %>
+      </div>
+
+      <!-- CropperJS Canvas with Headshot Overlay -->
+      <div class="cropper-wrapper mb-4">
+        <div class="cropper-container bg-gray-800">
+          <cropper-canvas
+            class="bg-gray-500"
+            style="width: <%= PersonPhoto::PROFILE_WIDTH %>px; height: <%= PersonPhoto::PROFILE_HEIGHT %>px;"
+            data-photo-cropper-target="canvas">
+            
+            <!-- Image is draggable via manual implementation in controller -->
+            <cropper-image
+              src="<%= url_for(@person_photo.original) %>"
+              alt="Photo to crop"
+              data-photo-cropper-target="image"
+              initial-center-size="cover"
+              translatable
+              rotatable
+              scalable
+              class="cursor-move"></cropper-image>
+            
+            <!-- Shade hidden to allow full image visibility -->
+            <cropper-shade hidden></cropper-shade>
+            
+            <!-- Selection with headshot overlay guide -->
+            <cropper-selection
+              initial-coverage="1.0"
+              aspect-ratio="<%= PersonPhoto::PROFILE_WIDTH.to_f / PersonPhoto::PROFILE_HEIGHT.to_f %>"
+              data-photo-cropper-target="selection">
+              
+              <!-- Crosshair for alignment -->
+              <cropper-crosshair centered></cropper-crosshair>
+              
+              <!-- Headshot overlay guide -->
+              <div class="selection-overlay">
+                <%= image_tag "headshot-overlay.png", alt: "alignment guide", class: "overlay-image" %>
+              </div>
+            </cropper-selection>
+          </cropper-canvas>
+        </div>
+      </div>
+      
+      <%# Mobile: Tip shown below cropper %>
+      <div class="lg:hidden mb-4 text-sm text-stone-muted text-center">
+        <strong>Tip:</strong> No orange checkerboard should be visible when you're done.
+      </div>
+
+      <!-- Submit and Cancel Controls - stack on mobile, side-by-side on desktop -->
+      <%= button_row class: "flex-col sm:flex-row gap-3 sm:justify-between mt-0 mb-2" do %>
+        <%# Reviewers only return to the queue; the uploader flows abandon the pending photo. %>
+        <% if crop_cancel_deletes? %>
+          <%= button_link "Cancel & Delete",
+                          :error,
+                          profile_photo_path(@person_photo),
+                          data: confirm_modal(message: "Delete this photo? This cannot be undone.", method: :delete, variant: :error),
+                          icon: "trash",
+                          icon_type: :solid,
+                          full_width: true %>
+        <% else %>
+          <%= cancel_button profile_index_path, full_width: true %>
+        <% end %>
+        <%= submit_button "Submit Photo",
+                          full_width: true,
+                          data: { photo_cropper_target: :submit } %>
+      <% end %>
+
+    <% end %>
+  </div>
+</div>
+
+<style>
+  /* CropperJS 2.0 Web Components Integration Styles */
+  /* Mobile-first approach - canvas stays at fixed 350x450, container scales with CSS zoom */
+
+  .cropper-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+    position: relative;
+    padding: 0 1rem;
+  }
+
+  /* Desktop: remove horizontal padding */
+  @media (min-width: 1024px) {
+    .cropper-wrapper {
+      padding: 0;
+    }
+  }
+
+  .cropper-container {
+    border-radius: 0.5rem;
+    margin: auto;
+    /* Mobile: Use CSS zoom to scale down entire container (doesn't affect CropperJS coordinates) */
+    /* Clamp zoom between the calculated mobile scale and 1.0 (100%) */
+    /* Divisor must be a length: length/length yields the unitless number min() needs */
+    zoom: min(1, calc((100vw - 2rem) / <%= PersonPhoto::PROFILE_WIDTH %>px));
+  }
+
+  /* Desktop: ensure full size */
+  @media (min-width: 400px) {
+    .cropper-container {
+      zoom: 1;
+    }
+  }
+
+  /* CropperJS canvas with checkered background pattern */
+  cropper-canvas {
+    display: block;
+    background-color: #ffffff;
+    background-image: conic-gradient(#fbbf24 90deg, transparent 90deg 180deg, #f59e0b 180deg 270deg, transparent 270deg);
+    background-size: 15px 15px;
+  }
+
+  /* Image is draggable */
+  cropper-image {
+    position: relative;
+    cursor: move;
+    /* Touch-action for better mobile dragging */
+    touch-action: none;
+  }
+
+  /* Make shade and selection non-interactive to allow image dragging */
+  cropper-shade {
+    pointer-events: none !important;
+    display: none !important;
+  }
+
+  cropper-selection,
+  cropper-selection * {
+    pointer-events: none !important;
+  }
+
+  /* Headshot overlay guide */
+  .selection-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none !important;
+    z-index: 1;
+  }
+
+  .overlay-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0.7;
+  }
+</style>

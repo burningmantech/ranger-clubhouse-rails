@@ -1,0 +1,44 @@
+<%#
+  Every position holding shifts this year, one row each. Pick a position to see
+  its shifts and who signed up for them.
+%>
+<% content_for :title, "Schedule by Position" %>
+
+<%= hero_panel icon: "calendar-days", heading_level: :h1,
+               id: "schedule-by-position-header",
+               title: "#{@year} Schedule by Position" do |panel| %>
+  <% panel.description do %>
+    Every shift of this year, grouped by the position it belongs to.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @rows.any? %>
+  <%# Over a hundred positions is more than a reader scrolls through, so the
+      shared jump control goes above the list: pick a letter, then the position,
+      and land on that row. Only offered when there is more than one to choose
+      between. %>
+  <% if @rows.many? %>
+    Jump to a position starting with the letter:
+    <%= dropdown_scroll_list schedule_by_position_scroll_items(@rows) %>
+  <% end %>
+
+  <div class="lg:w-3/4">
+    <% @rows.each do |row| %>
+      <%# scroll-mt: the navbar is sticky and 64px tall, and the page sets no
+          scroll-padding, so a jumped-to row would otherwise land at the very
+          top of the scrollport and sit behind it. %>
+      <%= ui_drill_down_row scheduling_schedule_by_position_position_path(
+                              row.position_id, year: @year
+                            ),
+                            row.title,
+                            id: schedule_by_position_anchor(row),
+                            class: "scroll-mt-20",
+                            meta: schedule_by_position_meta(row),
+                            badges: schedule_by_position_badges(row) %>
+    <% end %>
+  </div>
+<% else %>
+  <%= ui_empty_state "No #{@year} shifts were found.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

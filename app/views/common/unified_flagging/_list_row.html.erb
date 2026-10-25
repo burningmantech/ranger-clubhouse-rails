@@ -1,0 +1,47 @@
+<%# locals: (summary:, year:, selected_id: nil, extra: nil) %>
+<%#
+  One line of the review list: who, what stands out, and the one coloured chip
+  for the most serious mark. Selecting the line puts that person's history in
+  the review pane (?person=, carrying the page's filters). Status and former
+  handles wait in the pane's header so the list stays one line per person.
+
+  `extra` is a partial PATH a page may hand in for a word of its own on the
+  line -- the post-season page's Alpha-shift state. Fully qualified, as the
+  card row's extras are, because lookup follows the controller's prefixes.
+%>
+<% person = summary[:person] %>
+<% selected = person.id == selected_id %>
+<%# A note with no timestamp (the column allows it) never counts as the latest. %>
+<% latest_note = summary[:note_teams].select { |entry| entry[:latest_at] }.max_by { |entry| entry[:latest_at] } %>
+<%# The line is also where review_pane_controller parks the pane below lg. %>
+<li id="person-<%= person.id %>" class="scroll-mt-24">
+  <%# A link into the pane's frame: selecting a line swaps only the pane. Its
+      states -- selected (aria-current) and a raised Personnel flag -- are styled
+      in components/review-pane.css, keyed to aria-current, which
+      review_pane_controller moves without re-rendering the list. %>
+  <%= link_to unified_flagging_path(**active_filters(@filter_params), year: year, person: person.id),
+              class: class_names("review-line no-decoration flex items-center gap-3 px-4 py-2 min-h-9 " \
+                                 "hover:bg-base-200",
+                                 "review-line-flagged" => summary[:personnel_issue]),
+              data: { turbo_frame: "uf-pane", review_id: person.id, review_pane_target: "line" },
+              aria: { current: (selected ? "true" : nil), controls: "uf-pane" } do %>
+    <span class="flex flex-wrap items-center gap-x-2 min-w-0 flex-1">
+      <span class="font-semibold text-heading"><%= person.callsign %></span>
+      <span class="text-stone-muted"><%= person.first_name %> <%= person.last_name %></span>
+      <%# Only an exception earns a word here; "Trained" is the expected state.
+          A nil status -- training does not concern this person, which only
+          /people/unified-flagging says of anyone -- earns none either. %>
+      <% if summary[:training_status] && summary[:training_status] != "trained" %>
+        <span class="text-sm"><%= intake_training_status_text(summary[:training_status]) %></span>
+      <% end %>
+      <%= render extra, summary: summary if extra %>
+      <% if latest_note %>
+        <span class="text-sm text-stone-muted whitespace-nowrap">
+          <%= fa_icon("note-sticky", :regular, end: 1) %><%= intake_team_chip_label(latest_note[:team]) %>
+          <%= mdy_format(latest_note[:latest_at]) %>
+        </span>
+      <% end %>
+    </span>
+    <%= intake_lead_signal(summary) %>
+  <% end %>
+</li>

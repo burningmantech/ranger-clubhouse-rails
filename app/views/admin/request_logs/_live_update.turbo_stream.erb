@@ -1,0 +1,7 @@
+<%# locals: (rows:, action:) %>
+<%# What RequestLogLiveChannel transmits: the rows newest first. A prepend puts
+    them on top of the list; an update, sent when more were waiting than one
+    tick carries, replaces the list with the newest rows. %>
+<%= turbo_stream.action action, "request-log-live-rows" do %>
+  <%= render "admin/request_logs/live_rows", rows: %>
+<% end %>

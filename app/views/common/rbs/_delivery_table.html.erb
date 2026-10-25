@@ -1,0 +1,28 @@
+<%# locals: (result:) %>
+<%# What happened to each person's message, one row each. Capped like every
+    other list here -- a broadcast can reach thousands of people. %>
+<% shown = result.people.first(Broadcast::RECIPIENT_LIMIT) %>
+<% if result.people.size > shown.size %>
+  <p class="px-3 pb-2">
+    Showing the first <%= shown.size %> of
+    <%= number_with_delimiter(result.people.size) %> people, in callsign order.
+  </p>
+<% end %>
+<%= ui_table striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading "Text" %>
+    <%= t.heading "Email" %>
+    <%= t.heading "Clubhouse" %>
+  <% end %>
+  <%= t.body do %>
+    <% shown.each do |person| %>
+      <%= t.row do %>
+        <%= t.row_header person.callsign %>
+        <%= t.cell result.sent_sms ? rbs_delivery_cell(person.sms_status) : rbs_not_sent %>
+        <%= t.cell result.sent_email ? rbs_queued_cell(person.use_email, person.email_status) : rbs_not_sent %>
+        <%= t.cell result.sent_clubhouse ? rbs_queued_cell(true) : rbs_not_sent %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

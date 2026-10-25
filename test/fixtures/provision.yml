@@ -1,0 +1,50 @@
+# Provision fixtures for the /me/tickets provisions flow.
+#
+# active_ranger has earned (non-allocated) provisions -- meals, an event radio,
+# and a shower -- so they can be banked or claimed in one shot.
+#
+# ranger_with_custom_gender has an allocated provision, which locks earned
+# provisions from being adjusted (the allocated-guard path).
+
+# --- active_ranger: earned (non-allocated) -------------------------------
+
+ar_meals:
+  person: active_ranger
+  type: "meals"
+  status: "available"
+  is_allocated: false
+  event_week_meals: true
+  pre_event_meals: false
+  post_event_meals: false
+  source_year: <%= Time.zone.now.year %>
+  expires_on: <%= "#{Time.zone.now.year}-09-15" %>
+
+ar_radio:
+  person: active_ranger
+  type: "event_radio"
+  status: "available"
+  is_allocated: false
+  item_count: 1
+  source_year: <%= Time.zone.now.year %>
+  expires_on: <%= "#{Time.zone.now.year}-09-15" %>
+
+ar_shower:
+  person: active_ranger
+  type: "wet_spot"
+  status: "available"
+  is_allocated: false
+  source_year: <%= Time.zone.now.year %>
+  expires_on: <%= "#{Time.zone.now.year}-09-15" %>
+
+# --- ranger_with_custom_gender: allocated --------------------------------
+
+cg_allocated_meals:
+  person: ranger_with_custom_gender
+  type: "meals"
+  status: "available"
+  is_allocated: true
+  event_week_meals: true
+  pre_event_meals: false
+  post_event_meals: false
+  source_year: <%= Time.zone.now.year %>
+  expires_on: <%= "#{Time.zone.now.year}-09-15" %>

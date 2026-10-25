@@ -1,0 +1,83 @@
+<%#
+  Results ledger for one preview or commit run. locals: results
+  (Array<ProspectiveClubhouseAccountFromApplication>), committed (Boolean),
+  send_welcome_email (Boolean), sf_writebacks (Boolean).
+%>
+<% summary = create_prospectives_summary(results) %>
+
+<% if committed %>
+  <% if summary[:created].zero? && summary[:failed].positive? %>
+    <%= ui_callout_box :error, accent: true do %>
+      <strong>No accounts were created.</strong>
+      Every ready application failed &mdash; see Creation Failures below, and send those messages
+      to the Ranger Tech Cadre.
+    <% end %>
+  <% elsif summary[:created].zero? %>
+    <%= ui_callout_box :info do %>
+      <strong>No accounts were created.</strong>
+      No approved applications were ready<%= ", and #{needs_attention_phrase(summary[:blocked])} below" if summary[:blocked].positive? %>.
+    <% end %>
+  <% elsif summary[:failed].zero? %>
+    <%= ui_callout_box :success do %>
+      <strong><%= pluralize(summary[:created], "prospective account") %> created.</strong>
+      <%= send_welcome_email ? "Welcome emails were sent." : "No welcome emails were sent — the SendWelcomeEmail setting is off." %>
+      <%= sf_writebacks ? "Salesforce records were updated." : "Salesforce records were not updated — the SFEnableWritebacks setting is off." %>
+    <% end %>
+  <% else %>
+    <%= ui_callout_box :warning do %>
+      <strong><%= pluralize(summary[:created], "prospective account") %> created.</strong>
+      <%= pluralize(summary[:failed], "application") %> could not be created &mdash; see Creation Failures below.
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_callout_box :info do %>
+    <strong>Preview only &mdash; nothing has been created.</strong>
+    <%= pluralize(summary[:ready], "application") %> ready to become
+    <%= summary[:ready] == 1 ? "an account" : "accounts" %><% if summary[:blocked].positive? %>,
+    and <%= pluralize(summary[:blocked], "application") %> needing attention below<% end %>.
+  <% end %>
+<% end %>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 my-4">
+  <% if committed %>
+    <%= ui_stat_box summary[:created].to_s, "Accounts Created",
+                    variant: summary[:created].positive? ? :success : :secondary,
+                    icon: "circle-check", icon_type: :solid %>
+    <%= ui_stat_box summary[:failed].to_s, "Creation Failures",
+                    variant: summary[:failed].positive? ? :error : :secondary,
+                    icon: "triangle-exclamation", icon_type: :solid %>
+  <% else %>
+    <%= ui_stat_box summary[:ready].to_s, "Ready to Create",
+                    variant: summary[:ready].positive? ? :success : :secondary,
+                    icon: "user-plus", icon_type: :solid %>
+    <%= ui_stat_box summary[:reassign].to_s, "Callsign Reassignments",
+                    variant: summary[:reassign].positive? ? :warning : :secondary,
+                    icon: "arrow-right-arrow-left", icon_type: :solid %>
+  <% end %>
+  <%= ui_stat_box summary[:blocked].to_s, "Need Attention",
+                  variant: summary[:blocked].positive? ? :warning : :secondary,
+                  icon: "circle-exclamation", icon_type: :solid %>
+  <%= ui_stat_box summary[:total].to_s, "Applications Checked",
+                  variant: :secondary, icon: "list-check", icon_type: :solid %>
+</div>
+
+<% create_prospectives_groups(results).each do |group| %>
+  <%= render "group", group: group %>
+<% end %>
+
+<%# The page's central question deserves an answer even when the answer is
+    "nothing to do", so this section appears when no other one covers it. It
+    says why nothing is ready, which differs when applications did turn up. %>
+<% if summary[:created].zero? && summary[:ready].zero? %>
+  <%= ui_section committed ? "Accounts Created" : "Ready to Create",
+                 icon: "user-plus", icon_type: :solid, id: "group-ready" do %>
+    <% if summary[:total].zero? %>
+      <%= ui_empty_state "No approved applications are awaiting account creation.",
+                         icon: "inbox", icon_type: :solid %>
+    <% else %>
+      <%= ui_empty_state "Every approved application needs attention first — none is ready " \
+                         "to become an account. Work through the sections above.",
+                         icon: "inbox", icon_type: :solid %>
+    <% end %>
+  <% end %>
+<% end %>

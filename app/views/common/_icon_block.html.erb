@@ -1,0 +1,21 @@
+<%# locals: (icon:, icon_type: :solid, icon_class: nil) %>
+<%# An icon beside a block of content -- a title and one or more paragraphs,
+    sometimes a button. The sibling of ui_icon_item, which is for a single
+    line: this one keeps the icon on the first line of a block that can be any
+    height, so the icon sits in its own shrink-0 column rather than being a
+    flex item that stretches.
+
+    Rendered with `render layout:` because the content column is free-form.
+    Nothing here assumes a title element: two callers lead with a <p> and one
+    with an <h4>, and folding that in would need a knob per caller.
+
+    gap-3, which is what two of the three callers already wrote. The block is
+    taller than ui_icon_item's one line and reads better with the extra 4px. %>
+<div class="flex items-start gap-3">
+  <div class="shrink-0 mt-0.5">
+    <%= fa_icon icon, icon_type, class: icon_class %>
+  </div>
+  <div class="flex-1 min-w-0">
+    <%= yield %>
+  </div>
+</div>

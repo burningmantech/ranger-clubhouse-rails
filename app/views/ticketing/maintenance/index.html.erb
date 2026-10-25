@@ -1,0 +1,57 @@
+<%#
+  Ticketing maintenance launcher (Ember vc/access-documents/maintenance port).
+
+  Nothing on this page mutates: each task card is a plain link to that task's
+  preview page, which lists every record the task will touch and holds the
+  actual commit button. See Ticketing::MaintenanceController.
+%>
+
+<%= hero_panel icon: "screwdriver-wrench", heading_level: :h1, id: "ticketing-maintenance-header",
+               title: "Ticketing Maintenance Tasks" do |panel| %>
+  <% panel.description do %>
+    Seasonal bulk operations on tickets and provisions, grouped by when in the
+    year to run them.
+  <% end %>
+<% end %>
+
+<%= ui_callout_box :warning, accent: true, title: "Every Task Previews First" do %>
+  <strong>Each task changes every matching record, all at once, and cannot be undone.</strong>
+  Opening a task is safe: it shows every record the task will touch, and nothing
+  changes until you confirm on that preview page.
+<% end %>
+
+<% @groups.each do |group| %>
+  <%= ui_section group[:title], icon: "calendar-check", icon_type: :solid do %>
+    <p class="mb-3"><%= group[:blurb] %></p>
+
+    <div class="two-column-lg">
+      <% group[:entries].each_with_index do |entry, index| %>
+        <% title = group[:ordered] ? "#{index + 1}. #{entry.title}" : entry.title %>
+        <%= ui_card do %>
+          <%= ui_card_title title %>
+          <%= ui_card_body do %>
+            <p class="mb-2"><%= entry.description %></p>
+            <% if entry.link? %>
+              <%= ui_badge "Opens its own page", :secondary %>
+            <% elsif (blocked = entry.blocked_reason) %>
+              <%= ui_badge "Setting required", :error, icon: "triangle-exclamation", icon_type: :solid %>
+              <p class="mt-2 text-error"><%= blocked %></p>
+            <% elsif entry.card_note %>
+              <p class="font-medium"><%= entry.card_note %></p>
+            <% end %>
+          <% end %>
+          <%= ui_card_footer do %>
+            <% if entry.link? %>
+              <%= button_link "Open #{entry.title}", :primary, send(entry.path_helper),
+                              full_width: true %>
+            <% else %>
+              <%= button_link "Preview #{entry.title}", :primary,
+                              ticketing_maintenance_preview_path(entry.slug),
+                              full_width: true %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

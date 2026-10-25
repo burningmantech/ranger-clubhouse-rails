@@ -1,0 +1,11 @@
+<%# One session on one row: when it started, then where. %>
+<div class="flex flex-col gap-y-1">
+  <%= training_session_link entry.slot, year: year do %>
+    <%# Notes are filed per session, so a note on a session the person did not
+        pass is real history -- it is labeled here rather than hidden, and never
+        shown under a session they did pass (upstream's bug). %>
+    <% unless entry.passed %>
+      <div><%= ui_badge "did not pass this session", :error %></div>
+    <% end %>
+  <% end %>
+</div>

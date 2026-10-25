@@ -1,0 +1,45 @@
+<% status = params[:status] %>
+<% ask_for_message = params[:ask_for_message].present? %>
+<% sends_email = ProspectiveApplication::STATUSES_THAT_SEND_EMAIL.include?(status) %>
+<%= modal_dialog id: "status-message-dialog", size: :lg, title: "Update Status" do %>
+  <% if status == ProspectiveApplication::STATUS_HANDLE_CHECK &&
+        @application.why_volunteer_review != ProspectiveApplication::WHY_VOLUNTEER_REVIEW_OKAY %>
+    <%= ui_callout_box :warning do %>
+      <strong>Paragraph issue.</strong> The &ldquo;Why Ranger?&rdquo; paragraph review is
+      <%= @application.why_volunteer_review_label %>. Make sure you want to clear this application
+      for callsign processing anyway.
+    <% end %>
+  <% end %>
+  <% if status == ProspectiveApplication::STATUS_REJECT_RETURNING_RANGER && !@application.returning_ranger? %>
+    <%= ui_callout_box :warning do %>
+      <strong>May not be a returning Ranger.</strong> This application does not appear to be associated
+      with a returning Ranger. Make absolutely sure you wish to continue.
+    <% end %>
+  <% end %>
+  <p class="mb-2">
+    Update the status to <strong><%= ProspectiveApplication::STATUS_LABELS[status] || status %></strong>.
+  </p>
+  <% if sends_email %>
+    <p class="mb-2"><%= fa_icon "envelope", :solid %> <strong>This action will email the applicant</strong>
+      from <%= EmailAddresses::VOLUNTEER_COORDINATORS_TEAM %>.</p>
+  <% else %>
+    <p class="mb-2">No emails will be sent to the applicant for this status.</p>
+  <% end %>
+  <%= form_with url: status_vc_application_path(@application), method: :post,
+                builder: AppFormBuilder, data: { turbo_frame: "_top" } do |f| %>
+    <%= hidden_field_tag :status, status %>
+    <% if ask_for_message %>
+      <%= f.text_area :message, label: "Message to the Applicant", required: true,
+                      help_text: "This reason is included in the email sent to the applicant." %>
+    <% end %>
+    <%= button_row do %>
+      <%= submit_button "Save Status" %>
+      <% if sends_email %>
+        <%= submit_button "Preview Email", variant: :secondary,
+                          formaction: preview_email_vc_application_path(@application),
+                          formmethod: "get", formtarget: "_blank" %>
+      <% end %>
+      <%= modal_close_button "Cancel" %>
+    <% end %>
+  <% end %>
+<% end %>

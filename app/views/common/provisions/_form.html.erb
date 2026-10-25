@@ -1,0 +1,103 @@
+<%# locals: (provision:, modal: false) %>
+<%# Shared by every page that administers provisions. Where the form posts and
+    where it returns to are the controller's business — see
+    ProvisionCrudConcern — so this partial only needs the record.
+
+    modal: the same form inside a dialog, where the only differences are how it
+    is dismissed and where its buttons sit (BMID manage grid). %>
+<%= ui_form(
+      provision,
+      provision_form_path(provision),
+      method: provision.new_record? ? :post : :patch
+    ) do |f| %>
+  <%= ui_section "Provision Details", icon: "gear", icon_type: :solid do %>
+    <%= form_row do %>
+      <%= f.select :type, TicketsProvisionsHelper::PROVISION_TYPE_OPTIONS,
+                   { label: "Type", required: true }, { class: "w-full sm:w-48" } %>
+      <%= f.select :status, TicketsProvisionsHelper::PROVISION_STATUS_OPTIONS,
+                   { label: "Status", required: true }, { class: "w-full sm:w-44" } %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.select :source_year, provision_year_options,
+                   { label: "Source Year",
+                     help_text: "The year the provision was earned or issued." },
+                   { class: "w-full sm:w-32" } %>
+      <%= f.select :expires_on, provision_year_options,
+                   { label: "Expires After",
+                     selected: provision.expires_on&.year,
+                     help_text: "Expires September 15 of this year. Allocated provisions always expire after the event." },
+                   { class: "w-full sm:w-32" } %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Type-Specific Details", icon: "sliders", icon_type: :solid do %>
+    <%= f.number_field :item_count, label: "Radio Count",
+                       width: "w-24", min: 1,
+                       help_text: "Only applies to Event Radios." %>
+
+    <p class="mb-1 font-medium text-heading">Meal periods</p>
+    <p class="mb-2 me-muted">Only apply to Meals — pick at least one period.</p>
+    <%# The three periods read as one choice, so they sit on a single row and
+        wrap only when they have to. wrapper_class drops the per-field mb-3
+        that would otherwise pad a row that needs no vertical rhythm. %>
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-1">
+      <%= f.check_box :pre_event_meals, label: "Pre-event", wrapper_class: "" %>
+      <%= f.check_box :event_week_meals, label: "Event week", wrapper_class: "" %>
+      <%= f.check_box :post_event_meals, label: "Post-event", wrapper_class: "" %>
+    </div>
+  <% end %>
+
+  <%= ui_section "Allocation", icon: "hand-holding", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What is an allocated provision?</dt>
+      <dd>One issued for a position (for example, meals and showers for SITE Setup) rather than earned. It cannot be banked and expires at the end of the event.</dd>
+      <dt>What happens when one is set?</dt>
+      <dd>All of the person's provisions — including earned ones that were banked — will be used this event.</dd>
+    </dl>
+    <%= f.check_box :is_allocated, label: "Is an allocated provision" %>
+  <% end %>
+
+  <%= ui_section "Comments", icon: "comment", icon_type: :solid do %>
+    <% unless provision.new_record? %>
+      <div class="mb-3">
+        <% if provision.comments.present? %>
+          <div class="text-body"><%= nl2br provision.comments %></div>
+        <% else %>
+          <p class="me-muted">No comments yet.</p>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%= f.text_area :additional_comments, label: "Additional Comments", rows: 4,
+                    help_text: "Your callsign and today's date are automatically added to any comments you leave." %>
+
+    <% unless provision.new_record? %>
+      <p class="me-muted mt-3">
+        Created <%= datetime_format(provision.created_at, year: true) %>
+        &middot; Last modified <%= datetime_format(provision.updated_at, year: true) %>
+      </p>
+    <% end %>
+  <% end %>
+
+  <%# A dialog already ends where the page does not, and a bar fixed to the
+      bottom of the viewport would sit over the dialog rather than under its
+      fields — so a modal keeps its buttons in the flow. %>
+  <%= button_row sticky: !modal do %>
+    <%= f.submit "Save Provision" %>
+    <% if modal %>
+      <%= modal_close_button "Cancel" %>
+    <% else %>
+      <%= cancel_link provision_return_path %>
+    <% end %>
+    <% unless provision.new_record? %>
+        <%= delete_button provision_form_path(provision),
+                          "Delete",
+                          variant: :error,
+                          confirm_modal: {
+                            title: "Delete Provision",
+                            message: "Delete #{provision.display_ref} (#{provision.type_label})? This cannot be undone."
+                          } %>
+    <% end %>
+  <% end %>
+<% end %>

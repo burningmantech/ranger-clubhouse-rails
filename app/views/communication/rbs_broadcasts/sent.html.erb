@@ -1,0 +1,35 @@
+<%#
+  Step three: what was handed over for delivery, and to whom. Rendered from the
+  send itself -- reloading this page cannot repeat it.
+%>
+<div data-controller="scroll-to-top" hidden></div>
+
+<% info = rbs_type(@type) %>
+<% content_for :title, "#{info[:title]} Sent" %>
+
+<%= hero_panel icon: info[:icon], heading_level: :h1, id: "rbs-sent-header",
+               title: info[:title],
+               description: "What was handed over for delivery, and to whom.",
+               back_to: ["Ranger Broadcast System", communication_rbs_root_path] do |panel| %>
+  <% panel.progress completed: 3, total: 3, start_label: "Write", end_label: "Sent" %>
+<% end %>
+
+<%# The records are open to Admins and the Tech Team, so the sender is only
+    pointed at them when they may actually follow the link. %>
+<% can_read_records = has_role?([Role::ADMIN, Role::TECH_NINJA]) %>
+<%= render "common/rbs/delivery_summary", result: @result, sandboxes: @sandboxes,
+           test_address: @email_test_address,
+           history_path: (communication_rbs_history_broadcast_path(@result.broadcast) if can_read_records) %>
+
+<%= ui_section "Delivery (#{@result.people.size})", icon: "paper-plane", icon_type: :solid, border: false do %>
+  <%= render "common/rbs/delivery_table", result: @result %>
+<% end %>
+
+<%= button_row do %>
+  <%= button_link "Send Another Broadcast", :primary, communication_rbs_root_path,
+                  icon: "tower-broadcast", icon_type: :solid %>
+  <% if can_read_records %>
+    <%= button_link "Broadcast History", :secondary, communication_rbs_history_path,
+                    icon: "clipboard-list", icon_type: :solid %>
+  <% end %>
+<% end %>

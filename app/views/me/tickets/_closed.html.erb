@@ -1,0 +1,81 @@
+<%# Ticketing period: CLOSED. Ported from port/components/ticketing-closed.hbs plus %>
+<%# the full claimed detail from port/components/ticket-overview.hbs.                 %>
+<% if person.is_applicant? %>
+  <%# An applicant's SAP comes with a training sign-up: no In-Person Training %>
+  <%# signed up for or passed this year means no SAP.                          %>
+  <%
+    training = Training.retrieve_education(person.id, Position.find(Position::TRAINING), Current.year)
+    sap_eligible = [Training::PASS, Training::PENDING].include?(training.status)
+  %>
+  <%= ui_section "Setup Access Pass", icon: "passport", icon_type: :solid do %>
+    <% if sap_eligible %>
+      <p class="text-body mb-3">
+        <strong>You get a Setup Access Pass (SAP).</strong>
+        You <%= training.status == Training::PASS ? "completed" : "signed up for" %> In-Person Training, so you can enter early for your Alpha shift.
+      </p>
+      <p class="text-body mb-3">
+        <strong>Earliest entry: <%= mdy_format @ticketing_info.sap_alpha_default_date, full: true %> at 00:01.</strong>
+        Arrive earlier and you will be turned away.
+      </p>
+      <ul class="space-y-1 text-body">
+        <li><strong>A SAP is not a ticket.</strong> Bring your own event ticket.</li>
+        <li><strong>A SAP is not a Vehicle Pass.</strong></li>
+        <li><strong>A SAP covers only you.</strong> Not a partner, not a passenger.</li>
+        <li><strong>Watch your email, spam folder included.</strong> Burning Man Ticketing sends your SAP between late July and early August.</li>
+      </ul>
+    <% else %>
+      <%= ui_callout_box :warning, icon: "calendar-xmark", accent: true, title: "No Setup Access Pass This Year" do %>
+        <p class="mb-2"><strong>You will not receive a Setup Access Pass (SAP).</strong></p>
+        <p class="mb-2">
+          A SAP goes to Alphas and Prospective Rangers who signed up for or completed In-Person Training and plan to
+          attend an Alpha shift. You have no training sign-up this year.
+        </p>
+        <p class="mb-1"><strong>To fix this:</strong></p>
+        <ol class="list-decimal pl-5 space-y-1 mb-3">
+          <li>Complete the <%= link_to "Online Course", me_online_course_path %>, if you haven't yet.</li>
+          <li>Sign up for an In-Person Training session on your <%= link_to "Schedule", me_schedule_path %>.</li>
+        </ol>
+        <p class="mb-1"><strong>What a SAP does:</strong></p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>
+            <strong>Lets you enter early.</strong>
+            On or any day after <%= mdy_format @ticketing_info.sap_alpha_default_date, full: true %> at 00:01, one minute after midnight.
+          </li>
+          <li><strong>It is not a ticket or a Vehicle Pass.</strong> Bring your own Burning Man ticket.</li>
+          <li><strong>It covers only you.</strong> Not a partner, not a traveling companion.</li>
+        </ul>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <% presenter = TicketOverviewPresenter.new(@ticket_package, @ticketing_info) %>
+
+  <%= ui_callout_box :warning, icon: "lock", accent: true, title: "Ranger Ticketing Is Closed" do %>
+    <strong>You can't make changes here anymore.</strong> Your claimed items will be submitted to Burning Man Ticketing. Here's what's on file:
+  <% end %>
+
+  <% if presenter.has_entry_date_restrictions? %>
+    <%= ui_callout_box :error, accent: true, title: "Entry Date Restriction" do %>
+      <strong>Do not enter the event before <%= full_datetime_format(presenter.earliest_entry_date) %>.</strong>
+      You will be turned away if you arrive early. No exceptions.
+    <% end %>
+  <% end %>
+
+  <% if presenter.has_paid_items? %>
+    <%= ui_callout_box :info, icon: "credit-card", title: "Payment Required" do %>
+      <% if presenter.pricing_summary %>
+        <div class="mb-2">
+          <% presenter.pricing_summary.each do |item| %>
+            <div><strong><%= item[:label] %>:</strong> <%= dollars(item[:cost]) %></div>
+          <% end %>
+          <div class="mt-2 pt-2 border-t border-line"><strong>Total:</strong> <%= dollars(presenter.total_cost) %></div>
+        </div>
+      <% end %>
+      <p class="text-body">
+        Handled through <strong><%= @ticketing_info.ticket_vendor_name %></strong>, not the Clubhouse. Watch for an email from <%= @ticketing_info.ticket_vendor_email %>.
+      </p>
+    <% end %>
+  <% end %>
+
+  <%= render "me/tickets/claimed_overview", presenter:, person: %>
+<% end %>

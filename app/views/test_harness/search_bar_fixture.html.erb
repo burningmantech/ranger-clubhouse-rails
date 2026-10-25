@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+</head>
+<body class="bg-primary text-body">
+  <div class="p-8">
+    <h1 class="text-xl font-bold mb-4">Search Bar Test Fixture</h1>
+
+    <%# Search bar with enabled=true for hotkey testing %>
+    <%= render "application/search_bar_placeholder", enabled: true %>
+
+    <%# A contenteditable area for editor-intercept testing %>
+    <div id="test-editor" contenteditable="true" class="mt-8 p-4 border border-line rounded min-h-[100px]">
+      Editable content area
+    </div>
+  </div>
+</body>
+</html>

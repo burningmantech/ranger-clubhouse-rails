@@ -1,0 +1,17 @@
+<%# Count that opens an anchored popover listing the people who reached the
+    milestone. Uses the daisyUI popover-API dropdown so the panel escapes the
+    table's horizontal scroll container. Only rendered for populated cells. %>
+<%= button_action people.size.to_s, :ghost,
+                  popovertarget: dom_id,
+                  style: "anchor-name: --#{dom_id}",
+                  aria: { label: "#{pluralize(people.size, 'person')}: #{label}" } %>
+<div class="dropdown dropdown-end bg-base-100 rounded-box shadow-lg border border-base-300 p-3 max-h-80 max-w-xs lg:max-w-md overflow-y-auto text-start"
+     popover id="<%= dom_id %>" style="position-anchor: --<%= dom_id %>">
+  <div class="font-semibold mb-2"><%= label %></div>
+  <div class="columns-2 lg:columns-3 gap-x-6">
+    <% people.each do |person| %>
+      <% next if person[:callsign].blank? %>
+      <div><%= link_to person[:callsign], person_path(person[:id]) %></div>
+    <% end %>
+  </div>
+</div>

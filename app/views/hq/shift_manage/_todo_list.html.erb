@@ -1,0 +1,71 @@
+<%# locals: (todos:, ask_if_done:, on_duty_entry:, person:) %>
+<%# Suggested-task checklist block (Ember port/templates/hq/shift.hbs
+    #todo-list, whose .hq-todo-block was pinned). The count line, chips, and
+    all-done message are all hq-shift Stimulus targets — the controller
+    recounts after every checklist transition.
+
+    Pinned to the top of the scroll area (.drawer-content) so the checklist
+    stays readable while the operator moves down through the sections. It
+    must stay a direct child of the page-root hq-shift element: sticky
+    travel ends with the parent, so nesting it in a section would unpin it
+    almost immediately.
+
+    -top-3/pt-5 rather than top-0/py-2: a sticky offset resolves against the
+    scroller's content box, so top-0 pins 12px (its p-3) below the padding
+    edge and page content scrolls visibly through the strip above. Pinning
+    12px higher covers it, and the extra top padding keeps the chips sitting
+    where they would without the offset. %>
+<%
+  open_todos = todos.reject { |todo| todo.completed || todo.ignore }
+  open_todos << ask_if_done if ask_if_done && !ask_if_done.completed && !ask_if_done.ignore
+  open_count = open_todos.size
+%>
+<div id="hq-todo-list" class="sticky -top-3 z-30 mb-4 p-5 bg-base-200 shadow-lg">
+  <%# The single next action, spelled out. The chip row below still carries the
+      whole checklist, but a tired operator with a line waiting should not have
+      to parse it to learn what to do — the controller keeps this in step with
+      every checklist transition. %>
+  <div class="text-lg font-semibold text-heading mb-1" data-hq-shift-target="nextAction"
+       <%= "hidden" if open_count.zero? %>>
+    <%= fa_icon "arrow-right", :solid, end: 2, class: "text-primary" %>Next:
+    <span data-hq-shift-target="nextActionLabel"><%= open_todos.first&.label %></span>
+  </div>
+  <div class="flex flex-wrap items-center">
+    <div class="shrink-0 me-2 font-medium" data-hq-shift-target="todoCount"
+         <%= "hidden" if open_count.zero? %>>
+      <%= pluralize(open_count, "suggested task") %>:
+    </div>
+    <div class="flex flex-wrap items-center gap-y-1" data-hq-shift-target="todoList">
+      <%# next_up marks the one chip the "Next:" line above is naming. Compared
+          by identity, not value: two Todo structs with the same fields are ==,
+          and a row where two chips both claimed to be next would be worse than
+          none claiming it. %>
+      <% next_up = open_todos.first %>
+      <% todos.each do |todo| %>
+        <%= render "hq/shift_manage/todo_chip", todo: todo, next_up: todo.equal?(next_up) %>
+      <% end %>
+      <% if ask_if_done %>
+        <%= render "hq/shift_manage/todo_chip", todo: ask_if_done, ask_if_done: true,
+                   next_up: ask_if_done.equal?(next_up) %>
+      <% end %>
+    </div>
+  </div>
+  <% if on_duty_entry %>
+    <div class="mt-2 font-semibold">
+      <%= fa_icon "person-walking", :solid, end: 2 %><%= person.callsign %> is signed into
+      <%= on_duty_entry.position.title %>.
+    </div>
+  <% end %>
+  <div class="text-success text-lg mt-2" data-hq-shift-target="allDone"
+       <%= "hidden" if open_count.positive? %>>
+    <%= fa_icon "check", :solid, end: 2 %>All suggested tasks are complete.
+  </div>
+  <template data-hq-shift-target="todoTemplate">
+    <div class="inline-flex items-center gap-2 me-4 text-base"
+         data-hq-shift-target="todo" data-task="" data-completed="false"
+         data-ignore="false" data-blink="false">
+      <i class="fa-regular fa-circle" aria-hidden="true"></i>
+      <span></span>
+    </div>
+  </template>
+</div>

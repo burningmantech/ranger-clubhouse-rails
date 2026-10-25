@@ -1,0 +1,6 @@
+<%= hero_panel icon: "boxes-stacked", heading_level: :h1, id: "ops-assets-edit-header",
+               title: "Edit Asset",
+               description: "Update assignment details, expiration, and notes for asset #{@asset.barcode}.",
+               back_to: [@cancel_label, @cancel_path] %>
+
+<%= render "form" %>

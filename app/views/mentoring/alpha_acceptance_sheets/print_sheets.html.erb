@@ -1,0 +1,268 @@
+<%#
+  The Alpha To Dirt Ranger Acceptance Form, one page per selected Alpha.
+
+  A deliberate as-is port of upstream's acceptance-sheets-print component: the
+  same sections in the same order, the same wording, the same fill-in lines.
+  Only the styling is this app's (see components/acceptance-sheet.css) and the
+  rank chips are the shared intake_rank_badge, so a rank means the same thing
+  here as everywhere else in the Clubhouse.
+
+  The count in each masthead is "n of the printed selection", not a physical
+  page number -- a long notes box can push one form onto a second sheet, and
+  the paper count is the browser's to know. Upstream numbers it the same way.
+%>
+<% content_for :title, "#{@year} Alpha Acceptance Sheets" %>
+
+<div class="print:hidden mb-4">
+  <%= back_to "Alpha selection", mentoring_alpha_acceptance_sheets_path(@back_params) %>
+  <p class="text-stone-muted mt-1">
+    Use your browser's print command. This message and the navigation are left off the paper.
+  </p>
+</div>
+
+<% @entries.each_with_index do |entry, index| %>
+  <% person = entry.person %>
+  <%# data-theme: the rank badges are shared screen components whose meaning is
+      carried by their colors, and daisyUI would give them dark-theme colors on
+      this deliberately white sheet. Pinning the paper surface to the light
+      theme keeps the on-screen preview matching what actually prints. %>
+  <section class="acceptance-sheet" data-theme="light">
+    <div class="acceptance-masthead">
+      <%= image_tag "ranger-logo-bw.png", alt: "Black Rock Rangers", class: "acceptance-logo" %>
+      <div class="acceptance-title">
+        <%= @year %> Alpha To Dirt Ranger Acceptance Form
+        (<%= index + 1 %> / <%= @entries.size %>)
+      </div>
+    </div>
+
+    <div class="acceptance-band">
+      <div>Alpha Information</div>
+      <div class="acceptance-band-note">Clubhouse Record # <%= person.id %></div>
+    </div>
+
+    <div class="acceptance-columns">
+      <div class="acceptance-details">
+        <div class="acceptance-line">
+          <div class="acceptance-label">Ranger Handle:</div>
+          <div class="acceptance-value">
+            <div class="acceptance-handle">
+              <%= person.callsign %>
+              <small>
+                <% pronouns = pronouns_format(person) %>
+                <% if pronouns.present? %>
+                  <%= pronouns %>
+                <% else %>
+                  <i>(Pronouns not stated)</i>
+                <% end %>
+              </small>
+            </div>
+            <% fkas = person.formerly_known_as_array(true) %>
+            <% if fkas.any? %>
+              <div class="acceptance-fka">FKA: <%= fkas.join(", ") %></div>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="acceptance-line">
+          <div class="acceptance-label">Real Name:</div>
+          <div class="acceptance-value"><%= person.desired_full_name %></div>
+        </div>
+
+        <div class="acceptance-line">
+          <div class="acceptance-label">Training Location (<%= entry.trainings.size %>):</div>
+          <%# Every training sign-up, not only this year's -- upstream lists the
+              whole history here, and a repeat Alpha's earlier attempt is part
+              of what the mentors are deciding on. A blank rule when there are
+              none, so the shift can still be written in by hand. %>
+          <% if entry.trainings.any? %>
+            <div class="acceptance-value">
+              <% entry.trainings.each do |training| %>
+                <div><%= ymd_format(training.slot_begins) %> <%= training.slot_description %></div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="acceptance-blank">&nbsp;</div>
+          <% end %>
+        </div>
+
+        <div class="acceptance-line">
+          <div class="acceptance-label">Schedule Shift:</div>
+          <% if entry.alpha_slots.any? %>
+            <div class="acceptance-value">
+              <% entry.alpha_slots.each do |slot| %>
+                <div><%= alpha_acceptance_slot_label(slot) %></div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="acceptance-blank">&nbsp;</div>
+          <% end %>
+        </div>
+
+        <div class="acceptance-line">
+          <div class="acceptance-label">Actual Shift:</div>
+          <div class="acceptance-blank">&nbsp;</div>
+        </div>
+      </div>
+
+      <div class="acceptance-photo">
+        <div class="acceptance-headshot">
+          <% if person.profile_photo %>
+            <%= photo_tag person.profile_photo, alt: "#{person.callsign} headshot" %>
+          <% else %>
+            <div class="acceptance-no-photo">
+              <%= fa_icon "user", :regular %><br>No approved photo
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="acceptance-band">Mentoring Information</div>
+
+    <div class="acceptance-pair">
+      <div class="acceptance-line">
+        <div class="acceptance-label">Known Rangers:</div>
+        <% known_rangers = person.known_rangers_array %>
+        <% if known_rangers.any? %>
+          <div class="acceptance-value"><%= known_rangers.join(", ") %></div>
+        <% else %>
+          <div class="acceptance-blank">&nbsp;</div>
+        <% end %>
+      </div>
+      <div class="acceptance-line">
+        <div class="acceptance-label">Known PNVs:</div>
+        <% known_pnvs = person.known_pnvs_array %>
+        <% if known_pnvs.any? %>
+          <div class="acceptance-value"><%= known_pnvs.join(", ") %></div>
+        <% else %>
+          <div class="acceptance-blank">&nbsp;</div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="acceptance-pair">
+      <div class="acceptance-line">
+        <div class="acceptance-label">Prior Mentors:</div>
+        <div class="acceptance-value">
+          <% if entry.mentor_years.empty? %>
+            None
+          <% else %>
+            <% entry.mentor_years.each do |history| %>
+              <div>
+                <%= history[:year] %> (<%= mentor_short_status(history[:status]) %>)
+                <%= history[:mentors].join(" / ") %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+      <div class="acceptance-line">
+        <div class="acceptance-label">Pass/Bonk:</div>
+        <div class="acceptance-blank">&nbsp;</div>
+      </div>
+    </div>
+
+    <table class="acceptance-signoff">
+      <thead>
+        <tr>
+          <th>&nbsp;</th>
+          <th><%= @year %> MENTOR NAME</th>
+          <th>ACCEPT</th>
+          <th>ACCEPT W/RESERV.</th>
+          <th>REJECT</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% AlphaAcceptanceSheets::MENTOR_SIGNOFF_ROWS.times do |row| %>
+          <tr>
+            <td class="acceptance-signoff-number"><%= row + 1 %>.</td>
+            <td class="acceptance-signoff-rule">&nbsp;</td>
+            <td class="acceptance-signoff-rule">&nbsp;</td>
+            <td class="acceptance-signoff-rule">&nbsp;</td>
+            <td class="acceptance-signoff-rule">&nbsp;</td>
+          </tr>
+        <% end %>
+        <tr>
+          <td colspan="5" class="acceptance-legend">
+            Legend: <b>ACCEPT</b> = Accept Alpha into the Rangers.
+            <b>ACCEPT W/RESERV.</b> = Accept Alpha into the Rangers. Other feedback outweighs my concerns.
+            <b>REJECT</b> = Bonk Alpha
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="acceptance-line">
+      <span class="acceptance-label acceptance-label-auto">For bonked Alpha (check one):</span>
+      <span class="acceptance-value">
+        <%= fa_icon "square", :regular %> Asked to return
+        <span class="ms-3"><%= fa_icon "square", :regular %> Discourage from returning</span>
+      </span>
+    </div>
+
+    <div class="acceptance-rank-legend">
+      Legend for VC, Mentor, &amp; Training rankings: 1/Green = Above Avg., 2/Normal = Average,
+      3/Yellow = Below Avg., 4/FLAG = Major issue.
+    </div>
+
+    <div class="acceptance-band">Volunteer Coordinators (VC) Notes/Flags</div>
+    <div class="acceptance-notes">
+      <% if entry.vc_team.empty? %>
+        No VC notes
+      <% else %>
+        <% entry.vc_team.each do |team_year| %>
+          <div>Year <%= team_year[:year] %> <%= intake_rank_badge(team_year[:rank]) %></div>
+          <% team_year[:notes].each do |note| %>
+            <div class="acceptance-note-line">&mdash; <%= note.note %></div>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="acceptance-band">Training Notes/Ranking</div>
+    <%# Passed sessions only, as upstream: an unpassed session is already
+        listed under Training Location, and its notes belong to a training the
+        mentors are not accepting this person on. %>
+    <div class="acceptance-notes">
+      <% entry.passed_trainings.each do |training| %>
+        <div class="acceptance-training-entry">
+          <div>
+            <%= ymd_format(training.slot_begins) %> <%= training.slot_description %>
+            <%= intake_rank_badge(training.training_rank) %>
+            <% if training.feedback_delivered %>
+              (<%= fa_icon "check", :solid %> feedback delivered):
+            <% else %>
+              <span class="acceptance-alert">(<%= fa_icon "bell", :solid %> FEEDBACK NOT DELIVERED)</span>:
+            <% end %>
+          </div>
+          <%# retrieve_training_history_for_ids leaves training_notes nil when a
+              session has none, so this cannot iterate the raw value. %>
+          <% notes = Array(training.training_notes).reject(&:is_log) %>
+          <% if notes.empty? %>
+            <div class="acceptance-note-line"><i>No notes given.</i></div>
+          <% else %>
+            <% notes.each do |note| %>
+              <div class="acceptance-note-line">&mdash; <%= note.note %></div>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="acceptance-band">Mentor Notes/Ranking</div>
+    <div class="acceptance-notes">
+      <% if entry.mentor_team.empty? %>
+        No prior mentor notes
+      <% else %>
+        <%# Every mentor-team year, not only the ones carrying notes: a year
+            with a rank and no note still tells a mentor something. %>
+        <% entry.mentor_team.each do |team_year| %>
+          <div><%= team_year[:year] %> <%= intake_rank_badge(team_year[:rank]) %></div>
+          <% team_year[:notes].each do |note| %>
+            <div class="acceptance-note-line">&mdash; <%= note.note %></div>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+<% end %>

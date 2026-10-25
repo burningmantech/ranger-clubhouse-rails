@@ -1,0 +1,90 @@
+<%# locals: (title:, rows:, target:, group:, check_label:, select_all_label:, submit_label:, button_variant:, consequence:, confirm:, empty_message:, empty_icon:, converted_ids:) %>
+<%#
+  One outcome's worth of the page: a table of the Alphas whose verdict points at
+  `target`, and the single button that carries it out. Rendered twice -- once for
+  the mint, once for the bonk -- so the two cannot drift apart.
+
+  Each render is its own form and its own bulk_select scope, which is the whole
+  point of the two-section layout: mint and bonk are separately selected,
+  separately warned about, and separately confirmed. `group` ("mint"/"bonk")
+  keeps every id in this partial distinct between the two renders -- two
+  elements sharing an id let Turbo silently drop one of their fields, and both
+  the select-all checkbox and the hidden target field take their id from a name
+  that would otherwise be identical in both forms.
+%>
+<%= ui_section title, id: "#{group}-section" do %>
+  <% if rows.empty? %>
+    <%= ui_empty_state empty_message, icon: empty_icon, icon_type: :solid %>
+  <% else %>
+    <%= ui_form(nil, mentoring_alphas_convert_path, method: :post) do |f| %>
+      <%= hidden_field_tag :target, target, id: "target-#{group}" %>
+
+      <%= bulk_select do %>
+        <%= bulk_select_all label: select_all_label, name: "select_all_#{group}" %>
+
+        <%# Not striped: the green tint on a just-converted row is what this
+            table has to make obvious, and stripes would compete with it. That
+            tint is also the only row tint here -- upstream additionally tinted a
+            row while its box was checked, which is dropped rather than ported:
+            it needs a Stimulus controller to restate what the checked box beside
+            it already says. %>
+        <%= ui_table striped: false do |t| %>
+          <%= t.header do %>
+            <%= t.heading check_label, width: "1%" %>
+            <%= t.heading "Callsign" %>
+            <%= t.heading "Name" %>
+            <%= t.heading "Status" %>
+            <%= t.heading "Mentor Verdict" %>
+            <%= t.heading "Mentors" %>
+          <% end %>
+          <%= t.body do %>
+            <% rows.each do |row| %>
+              <% person = row.person %>
+              <% converted = converted_ids.include?(person.id) %>
+              <%= t.row id: "#{group}-row-#{person.id}", class: "scroll-mt-24",
+                        state: (:success if converted) do %>
+                <%= t.cell do %>
+                  <% if converted %>
+                    <%= ui_badge "Converted", :success, icon: "circle-check" %>
+                  <% else %>
+                    <%= bulk_select_checkbox "person_ids[]", person.id,
+                                             id: "#{group}-person-#{person.id}",
+                                             aria_label: "#{check_label} #{person.callsign}" %>
+                  <% end %>
+                <% end %>
+                <%= t.row_header do %>
+                  <%= callsign_link person %>
+                <% end %>
+                <%= t.cell person.desired_full_name %>
+                <%= t.cell person.status %>
+                <%= t.cell alpha_verdict_badge(row.verdict) %>
+                <%= t.cell do %>
+                  <% if row.mentors.any? %>
+                    <%= row.mentors.to_sentence %>
+                  <% else %>
+                    <%= tag.span "No mentor on record", class: "text-stone-muted" %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+
+        <%# Always a warning, whichever outcome this is: both are irreversible
+            from here. Only the button takes the outcome's own colour. %>
+        <%= ui_callout_box :warning, accent: true, class: "my-4" do %>
+          <%= consequence %>
+          This page cannot undo a conversion.
+        <% end %>
+
+        <%= button_row do %>
+          <%# The submit target keeps the button disabled until this section has
+              something checked. %>
+          <%= f.submit submit_label, variant: button_variant,
+                       data: { checkbox_select_all_target: "submit",
+                               turbo_confirm: confirm_modal_dialog(**confirm) } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

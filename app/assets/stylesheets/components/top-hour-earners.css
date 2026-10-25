@@ -1,0 +1,52 @@
+/*
+ * Top Hour Earners' ranger x year grid.
+ *
+ * A span can run to fifteen years, so the grid is wider than the screen and
+ * scrolls sideways. The rank and callsign are frozen at the start edge: scroll
+ * the years away from them and the reader still knows whose row they are on.
+ *
+ * Frozen at every width, unlike the coverage grid: this table never folds into
+ * cards, so there is always something to scroll past it.
+ */
+.top-hour-earners-grid th.top-hour-earners-person {
+    /*
+     * z-0, not higher: being positioned at all already lifts the cell above the
+     * plain year cells sliding under it, and the sidebar drawer sits at 10. A
+     * frozen column that outranked the drawer would show through it on a phone.
+     */
+    @apply sticky start-0 z-0;
+    /*
+     * The frozen cell takes its row's own background -- striping included -- so
+     * the years pass behind it rather than through it.
+     */
+    background-color: inherit;
+}
+
+/*
+ * The heading cannot inherit its background the way the rows do: a row of
+ * headings carries none of its own, and the years would slide straight through
+ * the words.
+ */
+.top-hour-earners-grid thead th.top-hour-earners-person {
+    @apply bg-base-200;
+}
+
+/*
+ * The border is what tells the reader the callsigns are pinned rather than
+ * merely first, once the years start sliding under them.
+ */
+.top-hour-earners-grid tbody th.top-hour-earners-person {
+    @apply border-e border-base-300;
+}
+
+/*
+ * Paper does not scroll, so there is nothing for a frozen column to stay still
+ * against -- it would only paint over the first year the sheet has room for.
+ * The other grids get this for free by folding to cards at print widths; this
+ * one never folds, so it has to say it.
+ */
+@media print {
+    .top-hour-earners-grid th.top-hour-earners-person {
+        position: static;
+    }
+}

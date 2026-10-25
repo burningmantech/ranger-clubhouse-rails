@@ -1,0 +1,200 @@
+# Files in the config/locales directory are used for internationalization and
+# are automatically loaded by Rails. If you want to use locales other than
+# English, add the necessary files in this directory.
+#
+# To use the locales, use `I18n.t`:
+#
+#     I18n.t "hello"
+#
+# In views, this is aliased to just `t`:
+#
+#     <%= t("hello") %>
+#
+# To use a different locale, set it with `I18n.locale`:
+#
+#     I18n.locale = :es
+#
+# This would use the information in config/locales/es.yml.
+#
+# To learn more about the API, please read the Rails Internationalization guide
+# at https://guides.rubyonrails.org/i18n.html.
+#
+# Be aware that YAML interprets the following case-insensitive strings as
+# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
+# must be quoted to be interpreted as strings. For example:
+#
+#     en:
+#       "yes": yup
+#       enabled: "ON"
+
+en:
+  errors:
+    format: "%{message}"
+
+    # errors.format prints a message alone -- beside its field and in the
+    # form's error summary -- so every message is a sentence that names its
+    # field (design-content > The Message Names Its Field). %{attribute} is the
+    # model's human_attribute_name; a column that reads badly as words gets a
+    # name under activerecord.attributes below. Rails' own wording otherwise.
+    messages:
+      inclusion: "%{attribute} is not included in the list."
+      exclusion: "%{attribute} is reserved."
+      invalid: "%{attribute} is invalid."
+      confirmation: "%{attribute} and its confirmation don't match."
+      accepted: "%{attribute} must be accepted."
+      empty: "%{attribute} can't be empty."
+      blank: "%{attribute} can't be blank."
+      present: "%{attribute} must be blank."
+      too_long:
+        one: "%{attribute} is too long (maximum is 1 character)."
+        other: "%{attribute} is too long (maximum is %{count} characters)."
+      password_too_long: "%{attribute} is too long."
+      too_short:
+        one: "%{attribute} is too short (minimum is 1 character)."
+        other: "%{attribute} is too short (minimum is %{count} characters)."
+      wrong_length:
+        one: "%{attribute} is the wrong length (should be 1 character)."
+        other: "%{attribute} is the wrong length (should be %{count} characters)."
+      not_a_number: "%{attribute} is not a number."
+      not_an_integer: "%{attribute} must be an integer."
+      greater_than: "%{attribute} must be greater than %{count}."
+      greater_than_or_equal_to: "%{attribute} must be greater than or equal to %{count}."
+      equal_to: "%{attribute} must be equal to %{count}."
+      less_than: "%{attribute} must be less than %{count}."
+      less_than_or_equal_to: "%{attribute} must be less than or equal to %{count}."
+      other_than: "%{attribute} must be other than %{count}."
+      in: "%{attribute} must be in %{count}."
+      odd: "%{attribute} must be odd."
+      even: "%{attribute} must be even."
+      required: "%{attribute} must exist."
+      taken: "%{attribute} has already been taken."
+      # Person::PHONE_MESSAGE and Person::EMAIL_MESSAGE. Keys, not strings:
+      # phonelib adds a string message as it stands, so %{attribute} would
+      # print as written.
+      phone_invalid: "%{attribute} must be only a phone number, with its country code, like +1 775 555 0199."
+      email_invalid: "%{attribute} must be a full address that mail can reach, like name@example.com."
+
+  activerecord:
+    attributes:
+      # The names the forms give these fields, for the messages above.
+      person:
+        street1: "Street line 1"
+        street2: "Street line 2"
+        mi: "Middle initial"
+        zip: "Postal code"
+        home_phone: "Primary phone"
+        alt_phone: "Alternative phone"
+        callsign_pronounce: "Pronunciation"
+        gender_custom: "Gender"
+      person_fka:
+        fka: "Former callsign"
+      person_language:
+        language_custom: "Language name"
+      handle_reservation:
+        twii_year: "TWII year"
+      slot:
+        begins: "Start time"
+        ends: "End time"
+        url: "Additional information"
+        max: "Max sign-ups"
+        parent_signup_slot_id: "Parent slot"
+      position:
+        min: "Minimum"
+        max: "Maximum"
+      event_date:
+        event_start: "Event start"
+        event_end: "Event end"
+        pre_event_start: "Pre-event start"
+        pre_event_slot_start: "Pre-event slot start"
+        pre_event_slot_end: "Pre-event slot end"
+        post_event_end: "Post-event end"
+      person_position_log:
+        joined_on: "Joined on date"
+        left_on: "Left on date"
+      person_team_log:
+        joined_on: "Joined on date"
+        left_on: "Left on date"
+      online_course:
+        course_for: "Audience"
+      survey_group:
+        sort_index: "Sort order"
+      survey_question:
+        sort_index: "Sort order"
+      bmid_title:
+        sort_index: "Sort order"
+        title_line: "Title line"
+      prospective_application:
+        bpguid: "BPGUID"
+      motd:
+        expires_at: "End date"
+      timesheet:
+        desired_on_duty: "Requested start time"
+        desired_off_duty: "Requested end time"
+        desired_position_id: "Requested position"
+        on_duty: "On Duty"
+        off_duty: "Off Duty"
+        position_id: "Position"
+        additional_notes: "Reason for correction"
+      timesheet_missing:
+        on_duty: "Start Time"
+        off_duty: "End Time"
+        position_id: "Requested position"
+
+    errors:
+      models:
+        # errors.format above drops the attribute name, so the message has to
+        # name the field itself.
+        document:
+          attributes:
+            body:
+              blank: "Write the document text before saving."
+        role:
+          attributes:
+            title:
+              blank: "Enter a title for the permission."
+        alert:
+          attributes:
+            title:
+              blank: "Enter a title for the alert."
+              too_long: "The alert title is too long. Use %{count} characters or fewer."
+            description:
+              blank: "Describe what the alert tells a Ranger."
+        oauth_client:
+          attributes:
+            client_id:
+              blank: "Enter the Client ID the website sends."
+              taken: "Another client already uses that Client ID."
+              too_long: "The Client ID is too long. Use %{count} characters or fewer."
+            description:
+              blank: "Describe which website this is."
+              too_long: "The description is too long. Use %{count} characters or fewer."
+            secret:
+              blank: "Enter the secret the website presents."
+              too_long: "The secret is too long. Use %{count} characters or fewer."
+            redirect_uri:
+              blank: "Enter the address the website is sent back to."
+              invalid: "The Redirect URI must be a full web address starting with http:// or https://, with nothing after a #."
+              too_long: "The Redirect URI is too long. Use %{count} characters or fewer."
+        shift_coverage_group:
+          attributes:
+            slug:
+              blank: "Enter a slug for the shift type."
+              taken: "Another shift type already uses that slug."
+              too_long: "The slug is too long. Use %{count} characters or fewer."
+              invalid: "The slug may hold only lowercase letters, numbers and single dashes between them."
+            title:
+              blank: "Enter a title for the shift type."
+              taken: "Another shift type already uses that title."
+              too_long: "The shift type title is too long. Use %{count} characters or fewer."
+        shift_coverage_position:
+          attributes:
+            title:
+              blank: "Enter a title for the post."
+              too_long: "The post title is too long. Use %{count} characters or fewer."
+              taken: "This shift type already has a post with that title."
+            count_only:
+              inclusion: "Choose whether the post shows a headcount or callsigns."
+            shift_coverage_group:
+              required: "Choose the shift type this post belongs to."
+
+

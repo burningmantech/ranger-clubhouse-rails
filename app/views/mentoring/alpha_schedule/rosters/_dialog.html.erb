@@ -1,0 +1,71 @@
+<%# The add-person search dialog. The search form GETs back into the modal
+    frame; each eligible result row is its own add form. People who cannot be
+    added are still listed, with their status in place of the button, so a
+    search that finds the right person explains itself rather than coming back
+    empty. %>
+<%= modal_dialog id: "alpha-roster-dialog", title: "Add Person to #{alpha_shift_title_text(@slot)}", size: :xl, frame: false do %>
+  <p class="mb-3">
+    Only <strong>Alpha</strong> and <strong>Prospective</strong> accounts may be added to an Alpha shift.
+  </p>
+
+  <%= form_with url: mentoring_new_alpha_schedule_roster_path(@slot),
+                method: :get, builder: AppFormBuilder,
+                data: { turbo_frame: "modal" } do %>
+    <div class="flex flex-wrap items-end gap-2 mb-3">
+      <div class="grow">
+        <label for="alpha-roster-search" class="font-medium block mb-1">
+          Callsign, name, or email
+        </label>
+        <%= text_field_tag :q, query, id: "alpha-roster-search", autofocus: true,
+                           class: "#{AppFormBuilder::INPUT_CLASSES} w-full" %>
+      </div>
+      <%= submit_button "Search" %>
+    </div>
+  <% end %>
+
+  <% if results %>
+    <% if results.any? %>
+      <%= ui_table full_width: true, responsive: false do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Name" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Add" %>
+        <% end %>
+        <%= t.body do %>
+          <% results.each do |found| %>
+            <%= t.row do %>
+              <%= t.row_header found.callsign %>
+              <%= t.cell found.desired_full_name %>
+              <%= t.cell found.status %>
+              <%= t.cell do %>
+                <% if AlphaShiftRoster.addable?(found) %>
+                  <%# _top: a successful add redirects to the shift page, and
+                      that visit must replace the WHOLE page (a frame-scoped
+                      submit would only blank the dialog and leave the roster
+                      stale). Blocked verdicts still 422 back into the frame. %>
+                  <%= form_with url: mentoring_alpha_schedule_roster_path(@slot),
+                                method: :post, builder: AppFormBuilder,
+                                data: { turbo_frame: "_top" } do %>
+                    <%= hidden_field_tag :person_id, found.id, id: nil %>
+                    <%= submit_button "Add #{found.callsign}" %>
+                  <% end %>
+                <% else %>
+                  <span class="text-stone-muted text-sm">Not an Alpha or Prospective</span>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <p class="text-error font-semibold">No one matched "<%= query %>".</p>
+    <% end %>
+  <% elsif query.present? %>
+    <p class="text-stone-muted">Type at least <%= PersonSearch::MIN_QUERY_LENGTH %> characters and search.</p>
+  <% end %>
+
+  <%= button_row do %>
+    <%= modal_close_button "Cancel" %>
+  <% end %>
+<% end %>

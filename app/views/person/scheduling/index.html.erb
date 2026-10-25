@@ -1,0 +1,12 @@
+<%= render template: "common/schedule/index",
+           locals: {
+             back_link: back_to(@person.callsign, person_path(@person)),
+             description_text: "View and manage shifts, training sessions, and sign-ups for #{@person.callsign} in #{@year}.",
+             schedule_path_builder: ->(**options) { person_scheduling_path(@person, **options) },
+             schedule_export_path_builder: ->(**options) { person_scheduling_export_path(@person, **options) },
+             schedule_signup_summary_path_builder: ->(**options) { person_scheduling_signup_summary_path(@person, **options) },
+             schedule_qualifications_path_builder: ->(**options) { person_scheduling_qualifications_path(@person, **options) },
+             available_sign_ups_path_builder: ->(**options) { person_scheduling_sign_ups_path(@person, **options) },
+             schedule_signups_path_builder: ->(slot, **options) { person_scheduling_signups_path(@person, slot_id: slot.id, **options) },
+             schedule_destroy_path_builder: ->(slot, **options) { person_scheduling_destroy_path(@person, slot_id: slot.id, **options) }
+           } %>

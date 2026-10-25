@@ -1,0 +1,9 @@
+<%# locals: (error:) %>
+<%#
+  One per-document problem in the Weird Stuff column, already formatted as
+  "RAD-42 - missing access date". The icon carries the meaning alongside the
+  colour. Shared with the legend so the two cannot drift apart.
+%>
+<span class="text-error font-semibold">
+  <%= fa_icon "circle-exclamation", :solid, end: 1 %><%= error %>
+</span>

@@ -1,0 +1,17 @@
+<%= ui_callout_box :info, title: "Ticketing Help", class: "mb-4", icon: "circle-question", id: "ticketing-help" do %>
+  <p>Have ticketing questions? The following documents have answers to your questions (opens in new tab):</p>
+  <ul class="text-base space-y-1">
+    <% unless person.is_applicant? %>
+      <li><%= ext_link "Tickets: Most questions answered here", @ticketing_info.faqs[:ticketing] %></li>
+      <li><%= ext_link "Vehicle Passes: Who qualifies? How to request?", @ticketing_info.faqs[:vp] %></li>
+      <li><%= ext_link "Provisions & Appreciations: Meals, showers, shirts, radios", @ticketing_info.faqs[:provisions] %></li>
+    <% end %>
+    <li>
+      <% if person.is_applicant? %>
+        <%= ext_link "Setup Access Passes (SAP): Early entry for Applicants", @ticketing_info.faqs[:alpha] %>
+      <% else %>
+        <%= ext_link "Setup Access Passes (SAP): Early entry info", @ticketing_info.faqs[:sap] %>
+      <% end %>
+    </li>
+  </ul>
+<% end %>

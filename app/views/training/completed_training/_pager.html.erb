@@ -1,0 +1,26 @@
+<%# Walk the year's sessions without going back to the index. Both ends of
+    the list simply drop their button. training_session_time returns markup
+    (the time carries a local-timezone tooltip), which a title would print as
+    tags, so the tooltips take strip_tags. %>
+<% if @previous_session || @next_session %>
+  <nav class="my-4" aria-label="Session navigation">
+    <%= button_row do %>
+      <% if @previous_session %>
+        <%= button_link "Previous Session", :secondary,
+                        training_completed_training_session_path(training_slug,
+                                                                 @previous_session.slot.id,
+                                                                 year: @year),
+                        icon: "arrow-left", icon_type: :solid,
+                        title: strip_tags(training_session_time(@previous_session.slot)) %>
+      <% end %>
+      <% if @next_session %>
+        <%= button_link "Next Session", :secondary,
+                        training_completed_training_session_path(training_slug,
+                                                                 @next_session.slot.id,
+                                                                 year: @year),
+                        icon: "arrow-right", icon_type: :solid,
+                        title: strip_tags(training_session_time(@next_session.slot)) %>
+      <% end %>
+    <% end %>
+  </nav>
+<% end %>

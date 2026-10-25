@@ -1,0 +1,50 @@
+<%# locals: (person_assets:) %>
+<%# Checked-out asset table (Ember port/components/hq-asset-table.hbs).
+    A sibling of common/assets/_table kept local for its different column set:
+    only open checkouts are listed, so it adds the Description column and
+    drops the checked-in / duration columns. Check-in and change-attachment
+    targets come from the AssetManagementConcern path helpers. %>
+<%= ui_table full_width: false do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Type" %>
+    <%= t.heading "Barcode" %>
+    <%= t.heading "Attachment" %>
+    <%= t.heading "Description" %>
+    <%= t.heading "Checked Out" %>
+    <%= t.heading "Action" %>
+  <% end %>
+  <%= t.body do %>
+    <% person_assets.each do |person_asset| %>
+      <%= t.row do %>
+        <%= t.cell do %>
+          <%= person_asset.asset.type %>
+          <%= render "common/assets/duration_label", asset: person_asset.asset %>
+        <% end %>
+        <%= t.cell person_asset.asset.barcode %>
+        <%= t.cell do %>
+          <%= person_asset.attachment&.description || "—" %>
+          <div class="mt-2">
+            <%= button_link "Change Attachment", :secondary,
+                            assets_change_attachment_path(person_asset),
+                            data: { turbo_stream: true } %>
+          </div>
+        <% end %>
+        <%= t.cell [person_asset.asset.description, person_asset.asset.group_name]
+                     .compact_blank.join(" — ").presence || "—" %>
+        <%= t.cell datetime_format(person_asset.checked_out) %>
+        <%= t.cell do %>
+          <%= button_link "Check In", :primary,
+                          assets_check_in_path(person_asset),
+                          method: :patch, icon: "rotate-left", icon_type: :solid %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <% if person_assets.empty? %>
+      <%= t.row do %>
+        <%= t.cell colspan: 6 do %>
+          <%= ui_empty_state "No assets are currently checked out." %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

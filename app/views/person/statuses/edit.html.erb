@@ -1,0 +1,29 @@
+<%= hero_panel icon: "id-badge", heading_level: :h1, id: "status-edit-header",
+               description: "Manage the person's status.",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Edit Status &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Update Status", icon: "id-badge", icon_type: :solid do %>
+  <%= ui_form(
+        @person,
+        person_status_path(@person),
+        method: :patch,
+        data: {
+          controller: "status-warning",
+          action: "submit->status-warning#submit",
+          status_warning_old_status_value: @person.status,
+          status_warning_warnings_value: status_warning_modals_for(@person.status)
+        }, class: "mb-2"
+      ) do |f| %>
+    <%= form_row do %>
+      <%= f.select :status, Person::ALL_STATUSES, label: "Status", layout: :horizontal %>
+    <% end %>
+    <%= button_row class: "mt-4" do %>
+      <%= f.submit "Save Status" %>
+      <%= cancel_link person_path(@person) %>
+    <% end %>
+  <% end %>
+<% end %>

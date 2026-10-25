@@ -1,0 +1,12 @@
+<%# locals: (asset:, year:) %>
+<%#
+  Renders one autocomplete asset row:
+  "Year <year> #<barcode> <type> <description>". Description is nullable
+  (asset.description allows nil), so it is guarded with .present?.
+
+  D2: every value comes from the asset table; the person table is never touched.
+%>
+<%= render "autocomplete/item",
+           icon: "barcode",
+           title: "Year #{asset.year} ##{asset.barcode}",
+           lines: ["#{asset.type}#{" #{asset.description}" if asset.description.present?}"] %>

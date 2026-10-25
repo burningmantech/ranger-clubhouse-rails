@@ -1,0 +1,17 @@
+<%# Upstream's own caveat about this action, on the page instead of buried in
+    the help text under the textarea: the two team pages read alike from the
+    menu, and only one of them changes anything about today. %>
+<%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid do %>
+  <strong>This records history only.</strong>
+  It does not change who is on the team now.
+  <%# Bulk Grant / Revoke also demands the Event Management role, and this page
+      admits a plain Clubhouse Team Manager. Named either way, but linked only
+      when the link would open rather than bounce the reader to the dashboard. %>
+  <% if Team.manageable_by?(Current.person) %>
+    To add or remove people, use
+    <%= link_to "Bulk Grant / Revoke a Team", teams_positions_bulk_teams_path %>.
+  <% else %>
+    Adding and removing people is done on Bulk Grant / Revoke a Team, which needs the
+    Event Management role.
+  <% end %>
+<% end %>

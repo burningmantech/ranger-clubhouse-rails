@@ -1,0 +1,567 @@
+# Test fixtures for Person model
+# Password for all test users is "password"
+
+active_ranger:
+  callsign: "TestRanger"
+  callsign_normalized: "testranger"
+  callsign_soundex: "TSTRNKR"
+  first_name: "Test"
+  last_name: "Ranger"
+  mi: ""
+  preferred_name: ""
+  email: "testranger@example.com"
+  bpguid: "TESTRANGER-BPGUID-0001"
+  status: "active"
+  status_date: <%= Current.today %>
+  password: "$argon2id$v=19$m=8192,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  gender_identity: "cis-male"
+  gender_custom: ""
+  pronouns: "male"
+  pronouns_custom: ""
+  home_phone: "+17755550101"
+  alt_phone: ""
+  street1: "123 Main St"
+  apt: ""
+  street2: ""
+  city: "San Francisco"
+  state: "California"
+  zip: "94102"
+  country: "United States"
+  camp_location: "Camp Test, 9:00 & E, Plaza"
+  emergency_contact: "Jane Doe, Partner, 555-5678, jane@example.com"
+  callsign_pronounce: ""
+  callsign_approved: true
+
+  behavioral_agreement: true
+  on_site: false
+  vehicle_blacklisted: false
+  years_as_ranger: "[2023, 2024]"
+  years_as_contributor: "[]"
+  years_of_service: "[2023, 2024]"
+  years_of_awards: "[]"
+  years_of_signups: "[]"
+  years_seen: "[]"
+  years_combined: "[2023, 2024]"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+ranger_with_custom_gender:
+  callsign: "CustomGender"
+  callsign_normalized: "customgender"
+  callsign_soundex: "KSTMKNTR"
+  first_name: "Custom"
+  last_name: "Gender"
+  mi: "A"
+  preferred_name: "Cus"
+  email: "customgender@example.com"
+  bpguid: "CUSTOMGENDER-BPGUID-0002"
+  status: "active"
+  status_date: <%= Current.today %>
+  password: "$argon2id$v=19$m=8192,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  gender_identity: "custom"
+  gender_custom: "Genderflux"
+  pronouns: "custom"
+  pronouns_custom: "xe/xem/xyr"
+  home_phone: "+17755550102"
+  alt_phone: "+17755550103"
+  street1: "456 Oak Ave"
+  apt: "Apt 2B"
+  street2: "Suite 100"
+  city: "Portland"
+  state: "Oregon"
+  zip: "97201"
+  country: "United States"
+  camp_location: "Camp Diverse, 3:00 & C"
+  emergency_contact: "Emergency Person\nRelation: Friend\nPhone: 555-0000"
+  callsign_pronounce: "CUSS-tum JEN-der"
+  callsign_approved: true
+
+  behavioral_agreement: true
+  on_site: false
+  vehicle_blacklisted: false
+  years_as_ranger: "[]"
+  years_as_contributor: "[]"
+  years_of_service: "[]"
+  years_of_awards: "[]"
+  years_of_signups: "[]"
+  years_seen: "[]"
+  years_combined: "[]"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+prospective_ranger:
+  callsign: "ProspectiveNewbie"
+  callsign_normalized: "prospectivenewbie"
+  callsign_soundex: "PRSPKTVNWB"
+  first_name: "Prospect"
+  last_name: "Newbie"
+  mi: ""
+  preferred_name: ""
+  email: "newbie@example.com"
+  status: "prospective"
+  status_date: <%= Current.today %>
+  password: "$argon2id$v=19$m=8192,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  gender_identity: ""
+  gender_custom: ""
+  pronouns: ""
+  pronouns_custom: ""
+  home_phone: "+17755550104"
+  alt_phone: ""
+  street1: "789 Pine St"
+  apt: ""
+  street2: ""
+  city: "Austin"
+  state: "Texas"
+  zip: "78701"
+  country: "United States"
+  camp_location: ""
+  emergency_contact: ""
+  callsign_pronounce: ""
+  callsign_approved: false
+
+  behavioral_agreement: true
+  on_site: false
+  vehicle_blacklisted: false
+  years_as_ranger: "[]"
+  years_as_contributor: "[]"
+  years_of_service: "[]"
+  years_of_awards: "[]"
+  years_of_signups: "[]"
+  years_seen: "[]"
+  years_combined: "[]"
+  created_at: <%= 6.months.ago %>
+  updated_at: <%= 1.day.ago %>
+
+auditor_ranger:
+  callsign: "AuditorTest"
+  callsign_normalized: "auditortest"
+  callsign_soundex: "DTRTTST"
+  first_name: "Auditor"
+  last_name: "Tester"
+  mi: ""
+  preferred_name: ""
+  email: "auditor@example.com"
+  status: "auditor"
+  status_date: <%= Current.today %>
+  password: "$argon2id$v=19$m=8192,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  gender_identity: "non-binary"
+  gender_custom: ""
+  pronouns: "neutral"
+  pronouns_custom: ""
+  home_phone: "+17755550105"
+  alt_phone: ""
+  street1: "321 Elm St"
+  apt: ""
+  street2: ""
+  city: "Seattle"
+  state: "Washington"
+  zip: "98101"
+  country: "United States"
+  camp_location: "Camp Audit, 6:00 & J"
+  emergency_contact: "Emergency Contact, Sibling, 555-1357"
+  callsign_pronounce: ""
+  callsign_approved: true
+
+  behavioral_agreement: true
+  on_site: false
+  vehicle_blacklisted: false
+  years_as_ranger: "[2024]"
+  years_as_contributor: "[]"
+  years_of_service: "[2024]"
+  years_of_awards: "[]"
+  years_of_signups: "[]"
+  years_seen: "[]"
+  years_combined: "[2024]"
+  created_at: <%= 2.years.ago %>
+  updated_at: <%= 1.day.ago %>
+
+echelon_ranger:
+  callsign: "EchelonTest"
+  callsign_normalized: "echelontest"
+  callsign_soundex: "XLNTST"
+  first_name: "Echelon"
+  last_name: "Elite"
+  mi: ""
+  preferred_name: ""
+  email: "echelon@example.com"
+  status: "echelon"
+  status_date: <%= Current.today %>
+  password: "$argon2id$v=19$m=8192,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  gender_identity: "cis-female"
+  gender_custom: ""
+  pronouns: "female"
+  pronouns_custom: ""
+  home_phone: "+17755550106"
+  alt_phone: ""
+  street1: "654 Maple Dr"
+  apt: ""
+  street2: ""
+  city: "Denver"
+  state: "Colorado"
+  zip: "80201"
+  country: "United States"
+  camp_location: "Camp Echelon, 12:00 & A"
+  emergency_contact: "Emergency Contact, Parent, 555-2468"
+  callsign_pronounce: ""
+  callsign_approved: true
+
+  behavioral_agreement: true
+  on_site: false
+  vehicle_blacklisted: false
+  years_as_ranger: "[]"
+  years_as_contributor: "[2024]"
+  years_of_service: "[2024]"
+  years_of_awards: "[]"
+  years_of_signups: "[]"
+  years_seen: "[]"
+  years_combined: "[2024]"
+  created_at: <%= 3.years.ago %>
+  updated_at: <%= 1.day.ago %>
+
+past_prospective_ranger:
+  callsign: "PastProspective"
+  callsign_normalized: "pastprospective"
+  callsign_soundex: "PSTPRSPKTV"
+  first_name: "Past"
+  last_name: "Prospective"
+  mi: ""
+  preferred_name: ""
+  email: "pastprospective@example.com"
+  status: "past prospective"
+  status_date: <%= Current.today %>
+  password: "$argon2id$v=19$m=8192,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  gender_identity: "cis-male"
+  gender_custom: ""
+  pronouns: "male"
+  pronouns_custom: ""
+  home_phone: "+17755550107"
+  alt_phone: ""
+  street1: "987 Cedar Ln"
+  apt: ""
+  street2: ""
+  city: "Phoenix"
+  state: "Arizona"
+  zip: "85001"
+  country: "United States"
+  camp_location: ""
+  emergency_contact: ""
+  callsign_pronounce: ""
+  callsign_approved: false
+
+  behavioral_agreement: true
+  on_site: false
+  vehicle_blacklisted: false
+  years_as_ranger: "[]"
+  years_as_contributor: "[]"
+  years_of_service: "[]"
+  years_of_awards: "[]"
+  years_of_signups: "[]"
+  years_seen: "[]"
+  years_combined: "[]"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+bonked_ranger:
+  callsign: "BonkedTest"
+  callsign_normalized: "bonkedtest"
+  callsign_soundex: "BNKTTST"
+  first_name: "Bonked"
+  last_name: "Person"
+  mi: ""
+  preferred_name: ""
+  email: "bonked@example.com"
+  status: "bonked"
+  status_date: <%= Current.today %>
+  password: "$argon2id$v=19$m=8192,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  gender_identity: "non-binary"
+  gender_custom: ""
+  pronouns: "neutral"
+  pronouns_custom: ""
+  home_phone: "+17755550108"
+  alt_phone: ""
+  street1: "135 Birch Ave"
+  apt: ""
+  street2: ""
+  city: "Boston"
+  state: "Massachusetts"
+  zip: "02101"
+  country: "United States"
+  camp_location: ""
+  emergency_contact: "Emergency Contact, Friend, 555-3344"
+  callsign_pronounce: ""
+  callsign_approved: true
+
+  behavioral_agreement: false
+  on_site: false
+  vehicle_blacklisted: false
+  years_as_ranger: "[]"
+  years_as_contributor: "[]"
+  years_of_service: "[]"
+  years_of_awards: "[]"
+  years_of_signups: "[]"
+  years_seen: "[]"
+  years_combined: "[]"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+deceased_ranger:
+  callsign: "DeceasedRanger"
+  callsign_normalized: "deceasedranger"
+  callsign_soundex: "DSSTRNKR"
+  first_name: "Deceased"
+  last_name: "Ranger"
+  mi: ""
+  preferred_name: ""
+  email: "deceased@example.com"
+  status: "deceased"
+  status_date: <%= Current.today %>
+  password: "$argon2id$v=19$m=8192,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  gender_identity: "cis-male"
+  gender_custom: ""
+  pronouns: "male"
+  pronouns_custom: ""
+  home_phone: "+17755550109"
+  alt_phone: ""
+  street1: "123 St"
+  apt: ""
+  street2: ""
+  city: "City"
+  state: "State"
+  zip: "12345"
+  country: "United States"
+  camp_location: ""
+  emergency_contact: ""
+  callsign_pronounce: ""
+  callsign_approved: true
+
+  behavioral_agreement: false
+  on_site: false
+  vehicle_blacklisted: false
+  years_as_ranger: "[]"
+  years_as_contributor: "[]"
+  years_of_service: "[]"
+  years_of_awards: "[]"
+  years_of_signups: "[]"
+  years_seen: "[]"
+  years_combined: "[]"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+deceased_test:
+  callsign: "DeceasedTest"
+  callsign_normalized: "deceasedtest"
+  callsign_soundex: "DSSTTST"
+  first_name: "Deceased"
+  last_name: "Test"
+  mi: ""
+  preferred_name: ""
+  email: "deceasedtest@example.com"
+  status: "deceased"
+  status_date: <%= Current.today %>
+  password: "$argon2id$v=19$m=8192,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  gender_identity: "cis-male"
+  gender_custom: ""
+  pronouns: "male"
+  pronouns_custom: ""
+  home_phone: "+17755550110"
+  alt_phone: ""
+  street1: "123 St"
+  apt: ""
+  street2: ""
+  city: "City"
+  state: "State"
+  zip: "12345"
+  country: "United States"
+  camp_location: ""
+  emergency_contact: ""
+  callsign_pronounce: ""
+  callsign_approved: true
+
+  behavioral_agreement: false
+  on_site: false
+  vehicle_blacklisted: false
+  years_as_ranger: "[]"
+  years_as_contributor: "[]"
+  years_of_service: "[]"
+  years_of_awards: "[]"
+  years_of_signups: "[]"
+  years_seen: "[]"
+  years_combined: "[]"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+alpha_ranger:
+  callsign: "AlphaNewbie"
+  callsign_normalized: "alphanewbie"
+  callsign_soundex: "LFNWB"
+  first_name: "Alpha"
+  last_name: "Newbie"
+  mi: ""
+  preferred_name: ""
+  email: "alpha@example.com"
+  status: "alpha"
+  status_date: <%= Current.today %>
+  password: "$argon2id$v=19$m=8192,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  gender_identity: "cis-female"
+  gender_custom: ""
+  pronouns: "female"
+  pronouns_custom: ""
+  home_phone: "+17755550111"
+  alt_phone: ""
+  street1: "123 Alpha Way"
+  apt: ""
+  street2: ""
+  city: "Oakland"
+  state: "California"
+  zip: "94601"
+  country: "United States"
+  camp_location: ""
+  emergency_contact: "Emergency Contact, Parent, 555-7890"
+  callsign_pronounce: ""
+  callsign_approved: false
+
+  behavioral_agreement: true
+  on_site: false
+  vehicle_blacklisted: false
+  years_as_ranger: "[]"
+  years_as_contributor: "[]"
+  years_of_service: "[]"
+  years_of_awards: "[]"
+  years_of_signups: "[]"
+  years_seen: "[]"
+  years_combined: "[]"
+  created_at: <%= 3.months.ago %>
+  updated_at: <%= 1.day.ago %>
+
+inactive_ranger:
+  callsign: "InactiveRanger"
+  callsign_normalized: "inactiveranger"
+  callsign_soundex: "NKTVRNKR"
+  first_name: "Inactive"
+  last_name: "Ranger"
+  mi: ""
+  preferred_name: ""
+  email: "inactive@example.com"
+  status: "inactive"
+  status_date: <%= Current.today %>
+  password: "$argon2id$v=19$m=8192,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  gender_identity: "cis-male"
+  gender_custom: ""
+  pronouns: "male"
+  pronouns_custom: ""
+  home_phone: "+17755550112"
+  alt_phone: ""
+  street1: "456 Inactive Lane"
+  apt: ""
+  street2: ""
+  city: "Los Angeles"
+  state: "California"
+  zip: "90001"
+  country: "United States"
+  camp_location: "Camp Inactive, 4:00 & F"
+  emergency_contact: "Emergency Contact, Spouse, 555-8901"
+  callsign_pronounce: ""
+  callsign_approved: true
+
+  behavioral_agreement: true
+  on_site: false
+  vehicle_blacklisted: false
+  years_as_ranger: "[2020, 2021]"
+  years_as_contributor: "[]"
+  years_of_service: "[2020, 2021]"
+  years_of_awards: "[]"
+  years_of_signups: "[]"
+  years_seen: "[]"
+  years_combined: "[2020, 2021]"
+  created_at: <%= 4.years.ago %>
+  updated_at: <%= 1.day.ago %>
+
+retired_ranger:
+  callsign: "RetiredRanger"
+  callsign_normalized: "retiredranger"
+  callsign_soundex: "RTRTRNKR"
+  first_name: "Retired"
+  last_name: "Ranger"
+  mi: ""
+  preferred_name: ""
+  email: "retired@example.com"
+  status: "retired"
+  status_date: <%= Current.today %>
+  password: "$argon2id$v=19$m=8192,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  gender_identity: "cis-female"
+  gender_custom: ""
+  pronouns: "female"
+  pronouns_custom: ""
+  home_phone: "+17755550113"
+  alt_phone: ""
+  street1: "789 Retired Road"
+  apt: ""
+  street2: ""
+  city: "Miami"
+  state: "Florida"
+  zip: "33101"
+  country: "United States"
+  camp_location: ""
+  emergency_contact: "Emergency Contact, Child, 555-3456"
+  callsign_pronounce: ""
+  callsign_approved: true
+
+  behavioral_agreement: true
+  on_site: false
+  vehicle_blacklisted: false
+  years_as_ranger: "[2010, 2011, 2012, 2013, 2014, 2015]"
+  years_as_contributor: "[]"
+  years_of_service: "[2010, 2011, 2012, 2013, 2014, 2015]"
+  years_of_awards: "[]"
+  years_of_signups: "[]"
+  years_seen: "[]"
+  years_combined: "[2010, 2011, 2012, 2013, 2014, 2015]"
+  created_at: <%= 10.years.ago %>
+  updated_at: <%= 1.day.ago %>
+
+# Callsign "RANGER1" deliberately collides with the vehicle.license_number and
+# asset.barcode used by the Phase 2 D2 guard tests. callsign_normalized/_soundex are
+# populated so a PERSON search would match it — which is exactly what the vehicle/asset
+# adapters must NEVER do (D2: match only the vehicle/asset tables, never person).
+plate_collision_ranger:
+  callsign: "RANGER1"
+  callsign_normalized: "ranger1"
+  callsign_soundex: "RNJR"
+  first_name: "Plate"
+  last_name: "Collision"
+  mi: ""
+  preferred_name: ""
+  email: "plate.collision@example.com"
+  status: "active"
+  status_date: <%= Current.today %>
+  password: "$argon2id$v=19$m=8192,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  gender_identity: "cis-male"
+  gender_custom: ""
+  pronouns: "male"
+  pronouns_custom: ""
+  home_phone: "+17755550114"
+  alt_phone: ""
+  street1: "1 Collision Ct"
+  apt: ""
+  street2: ""
+  city: "Reno"
+  state: "Nevada"
+  zip: "89501"
+  country: "United States"
+  camp_location: ""
+  emergency_contact: ""
+  callsign_pronounce: ""
+  callsign_approved: true
+
+  behavioral_agreement: true
+  on_site: false
+  vehicle_blacklisted: false
+  years_as_ranger: "[2024, 2025]"
+  years_as_contributor: "[]"
+  years_of_service: "[2024, 2025]"
+  years_of_awards: "[]"
+  years_of_signups: "[]"
+  years_seen: "[]"
+  years_combined: "[2024, 2025]"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>

@@ -1,0 +1,29 @@
+description: "Tells someone their badge photo passed review"
+
+subject: "Ranger Clubhouse photo submission APPROVED."
+
+body: |
+  <p>
+    Hello from the Ranger Volunteer Coordinators,
+  </p>
+
+  <p>
+    Congratulations! The uploaded photo for your BMID has been APPROVED!
+  </p>
+
+  {%- if is_applicant %}
+    <p>
+      Visit the <a href="{{ clubhouse_url }}">Ranger Secret Clubhouse</a> to see what additional
+      tasks you need to complete in order to become a Black Rock Ranger.
+    </p>
+  {%- endif %}
+
+  <p>
+    <b>Questions?</b> Contact the Ranger Volunteer Coordinators at
+    {% render "shared/mailer/vc_email" %}
+  </p>
+
+  <p>
+    Yours sincerely,<br>
+    The Volunteer Coordinators
+  </p>

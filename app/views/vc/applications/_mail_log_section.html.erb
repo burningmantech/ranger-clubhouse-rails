@@ -1,0 +1,28 @@
+<%# locals: (application:) %>
+<% if application.mail_logs.empty? %>
+  <%= ui_empty_state "No emails have been sent for this application." %>
+<% else %>
+  <%= ui_table do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Sent At" %>
+      <%= t.heading "Sender" %>
+      <%= t.heading "To" %>
+      <%= t.heading "Subject" %>
+    <% end %>
+    <%= t.body do %>
+      <% application.mail_logs.each do |log| %>
+        <%= t.row do %>
+          <%= t.cell datetime_format(log.created_at, year: true) %>
+          <%= t.cell log.sender&.callsign || "- system -" %>
+          <%= t.cell log.to_email %>
+          <%= t.cell do %>
+            <%= ui_disclosure log.subject do %>
+              <iframe sandbox="" srcdoc="<%= mail_body_srcdoc(log) %>" class="w-full min-h-96 border border-line rounded-lg mt-2"
+                      title="Email body: <%= log.subject %>"></iframe>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

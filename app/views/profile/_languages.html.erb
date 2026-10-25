@@ -1,0 +1,35 @@
+<%# locals: (person:) %>
+<%= ui_section "Languages (Optional)",
+               icon: :comments,
+               icon_type: :solid,
+               edit_link: (can_edit_profile? ? profile_languages_path : nil) do %>
+  <% if viewing_self? %>
+    <div class="text-stone-muted mb-3">
+      <dl class="instruction-list">
+        <dt>Why we ask</dt>
+        <dd>Khaki may occasionally need a Ranger to help translate during a shift.</dd>
+
+        <dt>What to do</dt>
+        <dd>Add any languages you're comfortable translating while on duty.</dd>
+      </dl>
+    </div>
+  <% end %>
+  <% if person.person_language.present? %>
+    <%= ui_table full_width: false, striped: false, responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Language" %>
+        <%= t.heading "Proficiency" %>
+      <% end %>
+      <%= t.body do %>
+        <% person.person_language.sort_by(&:actual_name).each do |row| %>
+          <%= t.row do %>
+            <%= t.cell row.actual_name %>
+            <%= t.cell row.proficiency_label %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <span class="text-stone-muted">No languages have been stated.</span>
+  <% end %>
+<% end %>

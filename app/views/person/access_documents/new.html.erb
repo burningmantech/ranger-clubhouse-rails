@@ -1,0 +1,9 @@
+<%= hero_panel icon: "plus", heading_level: :h1, id: "new-person-access-document-header",
+               description: "Create a ticket, vehicle pass, or Setup Access Pass for this person.",
+               back_to: ["Tickets & Provisions", person_tickets_provisions_path(@person)] do |panel| %>
+  <% panel.title do %>
+    New Access Document &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= render "form", person: @person, document: @document, ticketing_info: @ticketing_info %>

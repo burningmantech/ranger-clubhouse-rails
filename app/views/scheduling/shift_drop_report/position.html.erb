@@ -1,0 +1,93 @@
+<%#
+  One position's year, a section per shift that lost someone close to its start.
+  The shifts that kept everyone are counted, not listed.
+%>
+<% content_for :title, "#{@position.title} Shift Drops" %>
+
+<%= hero_panel icon: "user-minus", heading_level: :h1,
+               id: "scheduling-shift-drop-report-position-header",
+               title: "#{@year} #{@position.title} Shift Drops",
+               back_to: ["#{@year} Shift Drop Report",
+                         scheduling_shift_drop_report_path(@index_params)] do |panel| %>
+  <% panel.description do %>
+    Every sign-up for this position removed within
+    <%= pluralize(@hours, "hour") %> of its shift's start, newest shift last.
+  <% end %>
+  <%# The selector posts an action-less GET, so it stays on this position and
+      swaps only the year -- and keeps the window with it. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: @index_params.except(:year) %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @detail.drop_count.to_s, "Drops",
+                  variant: @detail.drop_count.positive? ? :warning : :secondary,
+                  icon: "user-minus", icon_type: :solid %>
+  <%= ui_stat_box @detail.slot_count.to_s, "Shifts Affected",
+                  icon: "calendar-xmark", icon_type: :solid %>
+  <%# Rangers, not drops: 108 people accounted for 519 drops in 2025, so the two
+      numbers answer different questions and the gap between them is the point. %>
+  <%= ui_stat_box @detail.person_count.to_s, "Rangers",
+                  icon: "users", icon_type: :solid %>
+<% end %>
+
+<%# No count here: the stat boxes above already carry the numbers this page has. %>
+<%= render "window_filter", id: "shift-drop-position-filters", hours: @hours, year: @year,
+                           default_url: scheduling_shift_drop_report_position_path(@position.id,
+                                                                                   year: @year),
+                           url: scheduling_shift_drop_report_position_path(@position.id) %>
+
+<% if @detail.slot_drops.any? %>
+  <% @detail.slot_drops.each do |slot_drops| %>
+    <%= ui_section shift_drop_shift(slot_drops.slot), icon: "clock", icon_type: :solid,
+                   border: false do %>
+      <%# The count sits here rather than in a section badge: the badge shares a
+          flex row with the shift's date range and is squeezed onto two
+          unreadable lines on a phone. %>
+      <p class="text-base text-body mb-2"><%= pluralize slot_drops.drops.size, "drop" %></p>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%# Fixed widths: every shift is its own table, and auto-sized columns
+            put the same heading in a different place in each one. %>
+        <%= t.header do %>
+          <%= t.heading "Callsign", width: "30%" %>
+          <%= t.heading "Dropped", width: "40%" %>
+          <%= t.heading "Notice Given" %>
+        <% end %>
+        <%= t.body do %>
+          <% slot_drops.drops.each do |drop| %>
+            <%= t.row do %>
+              <%# person_display_link, not callsign_link: Timesheet Management
+                  may read this page but not open person pages, and unguarded
+                  links all bounce that reader to /me. %>
+              <%= t.row_header person_display_link(drop.person, drop.person_id) %>
+              <%# year: and the shift's own tz, matching the heading above. A
+                  12-hour window on a January shift catches removals logged in
+                  December of the previous year, and undated they read as having
+                  happened after the shift they are filed under. %>
+              <%= t.cell datetime_format(drop.dropped_at, year: true,
+                                         tz: slot_drops.slot.timezone,
+                                         tz_abbr: slot_drops.slot.timezone_abbr) %>
+              <%= t.cell shift_drop_notice(drop, @hours) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%# Both halves are window-qualified. A shift that lost five people five days
+      out did not "keep everyone" -- it is a shift this window does not reach,
+      and saying otherwise is the one line on the page a reader takes away. %>
+  <p class="mt-2 text-base text-body">
+    <%= pluralize @detail.slot_count, "shift" %> lost someone within
+    <%= pluralize @hours, "hour" %> of its start ·
+    <%= pluralize @detail.total_slot_count - @detail.slot_count, "shift" %> did not
+  </p>
+<% elsif @detail.total_slot_count.positive? %>
+  <%= ui_empty_state "No #{@year} shift of this position lost anyone within " \
+                     "#{pluralize(@hours, "hour")} of its start." +
+                     shift_drop_widen_hint(@hours),
+                     icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No #{@year} shifts have been scheduled for this position.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

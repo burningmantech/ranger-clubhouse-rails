@@ -1,0 +1,13 @@
+<%# locals: (summary:) %>
+<%#
+  A trainer's note written in the viewed year, said on the line. The shared
+  line names the latest intake-team note; a trainer's note is the other thing
+  that lists a person here, and without this a trainee with nothing else
+  recorded has a line that says nothing. Rendered through _list_row's `extra`.
+%>
+<% note = summary[:year_notes].find { |entry| entry[:team] == "training" } %>
+<% if note %>
+  <span class="text-sm text-stone-muted whitespace-nowrap">
+    <%= fa_icon("note-sticky", :regular, end: 1) %><%= intake_notes_text([note]) %>
+  </span>
+<% end %>

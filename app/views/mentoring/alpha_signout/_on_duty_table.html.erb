@@ -1,0 +1,65 @@
+<%# locals: (roster:, results:, selectable:) %>
+<%#
+  The work list. Rendered twice from index.html.erb -- once inside the form with
+  a checkbox column, once read-only for a Mentor without the Shift Management
+  role -- so the two cannot describe the same roster differently.
+
+  Not striped: the tint on a row this request just acted on is what the table has
+  to make obvious, and stripes would compete with it. That tint is also the only
+  row tint here; upstream additionally tinted a row while its box was checked,
+  which is dropped rather than ported -- it needs a Stimulus controller to
+  restate what the checked box beside it already says.
+%>
+<%= ui_table striped: false do |t| %>
+  <%= t.header do %>
+    <% if selectable %>
+      <%= t.heading "Sign Out", width: "1%" %>
+    <% end %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading "On Duty" %>
+    <%= t.heading "Duration", right: true %>
+    <%= t.heading results.any? ? "Result" : "Flags" %>
+  <% end %>
+  <%= t.body do %>
+    <% roster.on_duty.each do |entry| %>
+      <% result = results[entry.id] %>
+      <%
+        row_state = if result == :signed_out
+                      :success
+                    elsif result.present?
+                      :error
+                    end
+      %>
+      <%= t.row id: "alpha-signout-row-#{entry.id}", class: "scroll-mt-24", state: row_state do %>
+        <% if selectable %>
+          <%= t.cell do %>
+            <% if result %>
+              <%# A row this request already acted on has nothing left to check. %>
+              <%= fa_icon(result == :signed_out ? "circle-check" : "circle-xmark", :solid,
+                          class: result == :signed_out ? "text-success" : "text-error") %>
+            <% else %>
+              <%= bulk_select_checkbox "entry_ids[]", entry.id,
+                                       id: "sign-out-entry-#{entry.id}",
+                                       aria_label: "Sign out #{entry.person.callsign}" %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <%= t.row_header do %>
+          <%= callsign_link entry.person %>
+        <% end %>
+        <%= t.cell datetime_format(entry.on_duty) %>
+        <%= t.cell hour_minute_format(entry.duration), right: true %>
+        <%= t.cell do %>
+          <% if result %>
+            <%= alpha_signout_result_badge(result) %>
+          <% elsif entry.too_short? %>
+            <%# Badged, not blocked -- ShiftManageConcern's per-person "too
+                short?" modal cannot interrupt a bulk action, so the reader is
+                shown which rows to uncheck instead. %>
+            <%= ui_badge "Very short shift", :error, icon: "stopwatch", icon_type: :solid %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

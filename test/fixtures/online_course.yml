@@ -1,0 +1,54 @@
+# Test fixtures for OnlineCourse model.
+#
+# position_id is the raw FK 13 (Position::TRAINING) — no position fixture has id 13,
+# and OnlineCourse.active_for_position_year filters by position_id only, so a matching
+# position row is not required. year is pinned to 2026 to match Current.year in test
+# (groundhog-day time is 2026). Reference these BY NAME.
+
+# Primary current-year (2026) course for Position::TRAINING, audience "all". Active.
+training_all_2026:
+  active: true
+  course_for: "all"
+  course_id: "ALL2026"
+  name: "2026 Online Course (All Rangers)"
+  position_id: 13
+  year: 2026
+
+# Second active current-year course (audience "returning") so the manage <select> has
+# more than one option and update_online_course can switch between two valid courses.
+training_returning_2026:
+  active: true
+  course_for: "returning"
+  course_id: "RET2026"
+  name: "2026 Online Course (Returning Rangers)"
+  position_id: 13
+  year: 2026
+
+# Inactive current-year course — active_for_position_year must exclude it.
+training_new_2026_inactive:
+  active: false
+  course_for: "new"
+  course_id: "NEW2026"
+  name: "2026 Online Course (New Rangers)"
+  position_id: 13
+  year: 2026
+
+# Prior-year (2025) course for Position::TRAINING — proves year scoping and gives the
+# 2025 person_online_course fixture something to point at.
+training_all_2025:
+  active: true
+  course_for: "all"
+  course_id: "ALL2025"
+  name: "2025 Online Course (All Rangers)"
+  position_id: 13
+  year: 2025
+
+# Course for a different position (9, Mentor) — update_online_course must reject
+# pointing a Position::TRAINING record at this because its position_id != 13.
+other_position_2026:
+  active: true
+  course_for: "all"
+  course_id: "OTHER2026"
+  name: "2026 Mentor Online Course"
+  position_id: 9
+  year: 2026

@@ -1,0 +1,13 @@
+<%# locals: (survey:, group:, first:, last:) %>
+<%= button_row do %>
+  <%= button_link "Add Question", :primary,
+                  new_communication_survey_question_path(survey, group_id: group.id),
+                  icon: "plus", icon_type: :solid,
+                  aria: { label: "Add a question to #{group.title}" } %>
+  <%= edit_link edit_communication_survey_group_path(survey, group), "Edit Group",
+                aria: { label: "Edit group #{group.title}" } %>
+  <%= render "common/move_buttons",
+             up_url: move_communication_survey_group_path(survey, group, direction: "up"),
+             down_url: move_communication_survey_group_path(survey, group, direction: "down"),
+             label: "group #{group.title}", first:, last: %>
+<% end %>

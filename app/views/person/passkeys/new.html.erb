@@ -1,0 +1,60 @@
+<%= hero_panel icon: "fingerprint", heading_level: :h1, id: "person-passkey-new-header",
+               description: "Enroll the hardware security key you are handing to #{@person.callsign}.",
+               back_to: ["Passkeys", person_passkeys_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Add Security Key &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= ui_callout_box :warning, title: "Before You Start", heading_level: :h2 do %>
+  <ul class="list-disc pl-5">
+    <li>Plug in the key you are handing over. Never use your own phone or password manager: the Clubhouse refuses passkeys that can be copied between devices.</li>
+    <li>The key needs a PIN. Set a starter PIN, hand it over with the key, and ask <%= @person.callsign %> to change it.</li>
+    <li><%= @person.callsign %> gets an email saying you added this key, and it is recorded in the action log.</li>
+  </ul>
+<% end %>
+
+<%# The same script and the same two requests as a person adding their own
+    passkey (me/passkeys/new), with the Admin's password in place of theirs. %>
+<%= ui_form(@form, person_passkeys_path(@person),
+            data: { turbo: false,
+                    controller: "passkey",
+                    passkey_ceremony_value: "create",
+                    passkey_options_url_value: options_person_passkeys_path(@person),
+                    action: "submit->passkey#run" }) do |f| %>
+  <%# Shown by the script when the browser cannot make a passkey. %>
+  <div data-passkey-target="unsupported" hidden>
+    <%= ui_callout_box :warning, title: "This Browser Can't Make Passkeys", heading_level: :h2 do %>
+      Update your browser, or use a current Chrome, Edge, Firefox or Safari.
+    <% end %>
+  </div>
+
+  <%# What goes wrong between the browser and the key, filled in by the script. %>
+  <div data-passkey-target="error" hidden>
+    <%= ui_callout_box :error, accent: true do %>
+      <span data-passkey-target="errorMessage"></span>
+    <% end %>
+  </div>
+
+  <%= ui_section "Security Key Details", icon: "key", icon_type: :solid do %>
+    <%= f.text_field :nickname,
+                     label: "Nickname",
+                     required: true,
+                     width: "w-full sm:w-64",
+                     maxlength: PersonPasskey::NICKNAME_LIMIT,
+                     help_text: "#{@person.callsign} sees this name on their Passkeys page." %>
+    <%= f.password_field :current_password,
+                         label: "Your Current Password",
+                         required: true,
+                         width: "w-full sm:w-64",
+                         autocomplete: "current-password",
+                         data: { passkey_target: "password" },
+                         help_text: "Enter your own password, not #{@person.callsign}'s." %>
+    <%= f.hidden_field :credential, data: { passkey_target: "credential" } %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Add Security Key", data: { passkey_target: "submit", pending_label: "Waiting for the Key…" } %>
+    <%= cancel_link person_passkeys_path(@person) %>
+  <% end %>
+<% end %>

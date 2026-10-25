@@ -1,0 +1,46 @@
+<%= hero_panel icon: "key", heading_level: :h1, id: "permission-form-header",
+               title: "Edit Permission",
+               description: "Change what this permission is called, and whether a new account may hold it.",
+               back_to: ["Permissions", admin_permissions_path] %>
+
+<%= ui_section "Permission ##{@permission.id}", icon: "circle-info", icon_type: :solid do %>
+  <dl class="instruction-list">
+    <dt>Does renaming this change who holds it?</dt>
+    <dd>No. The title is a label. Grants follow the ID number, which cannot be changed.</dd>
+    <% if @permission.protected_role? %>
+      <dt>Can this one be deleted?</dt>
+      <dd>
+        No. It grants admin access, so removing it would lock everyone out of the pages
+        that could put it back.
+      </dd>
+    <% end %>
+    <dt>Who holds it now?</dt>
+    <dd>
+      <%= permission_grant_summary(@permission.teams.size, @permission.positions.size).presence ||
+            "No team or position grants it." %>
+      <%= pluralize(@held_by_people, "person") %> <%= @held_by_people == 1 ? "holds" : "hold" %>
+      it directly.
+    </dd>
+  </dl>
+<% end %>
+
+<%= ui_form(@permission, admin_permission_path(@permission)) do |f| %>
+  <%= f.fieldset "Permission", icon: "key", icon_type: :solid do %>
+    <%= f.text_field :title, label: "Title", required: true, maxlength: 40 %>
+    <%= f.check_box :new_user_eligible, label: "A brand new account may hold this permission" %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Permission" %>
+    <%= cancel_link admin_permissions_path %>
+    <% unless @permission.protected_role? %>
+      <%= delete_button admin_permission_path(@permission), "Delete Permission",
+                        confirm_modal: {
+                          title: "Confirm Permission Deletion",
+                          message: permission_delete_warning(@permission, @held_by_people),
+                          confirm_label: "Delete Permission",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

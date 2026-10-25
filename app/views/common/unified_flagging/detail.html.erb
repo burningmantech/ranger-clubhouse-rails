@@ -1,0 +1,9 @@
+<%#
+  One person's full intake history, lazily fetched into the Convert
+  Prospectives table's collapsed turbo frame -- the frame id is the contract
+  with _detail_frame.html.erb. The history itself is _history.html.erb, which
+  the review pane renders too.
+%>
+<%= turbo_frame_tag "uf-frame-#{@person.id}", target: "_top" do %>
+  <%= render "common/unified_flagging/history", person: @person, history: @history, year: @year %>
+<% end %>

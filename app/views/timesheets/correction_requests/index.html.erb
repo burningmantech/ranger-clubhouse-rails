@@ -1,0 +1,136 @@
+<%#
+  Corrections and missing-entry requests still waiting on a decision, merged
+  into one table because they are one question: a ranger says their hours are
+  wrong, what should they be?
+
+  Each row opens onto the reason it was asked for. Upstream returned those notes
+  and never drew them, which made every row a trip to a person page.
+%>
+<% content_for :title, "Correction Requests" %>
+
+<%= hero_panel icon: "pen-to-square", heading_level: :h1,
+               id: "timesheets-correction-requests-header",
+               title: "#{@year} Timesheet Correction Requests" do |panel| %>
+  <% panel.description do %>
+    Corrections and missing-entry requests still waiting on a decision.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @report.empty? %>
+  <%= ui_empty_state "Nothing is waiting: every #{@year} correction and " \
+                     "missing-entry request has been decided.",
+                     icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%# The rollups follow the filter, so the page totals what it is showing --
+      which is why every label counts what is on screen rather than making a
+      claim about the year. Under a letter filter "Waiting: 1" would say one
+      request is outstanding for the year when two are. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @entries.size.to_s, "Requests Shown", variant: :warning %>
+    <%= ui_stat_box @entries.count { |entry| !entry.missing? }.to_s, "Corrections" %>
+    <%= ui_stat_box @entries.count(&:missing?).to_s, "Missing Entries" %>
+    <%= ui_stat_box @entries.map(&:person_id).uniq.size.to_s, "Rangers" %>
+  <% end %>
+
+  <%# Out of the hero: the one step a row does not announce. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Where is the reason for a request?</dt>
+      <dd>Open a row's reason to read what was asked for before deciding it.</dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "correction-requests-filters",
+                 chips: correction_request_filter_chips(@letter, @year),
+                 clear_url: timesheets_correction_requests_path(year: @year),
+                 count: "Showing #{@entries.size} of " \
+                        "#{pluralize(@report.entries.size, "request")}",
+                 # Carries the letter so the file and the page agree about
+                 # what is in it.
+                 actions: export_csv_link(timesheets_correction_requests_path(year: @year, letter: @letter,
+                                          format: :csv)),
+                 url: timesheets_correction_requests_path do |f| %>
+    <%# Year-scoped page: without this, applying a filter snaps back to the
+        current year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= f.select :letter, correction_request_letter_options(@report.letters),
+                 label: "Callsign Starts With", selected: @letter,
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%# No "nothing matched your filter" state: the select offers only letters the
+      report actually holds, and the controller drops any other, so a filtered
+      table always has at least one row. A second filter would break that. %>
+  <%# striped: false -- the striped variant is odd:/even:, which is :nth-child,
+      and a closed detail row still counts. Rows carrying a reason would shift
+      every row after them onto the other parity, so the stripes would stop
+      telling requests apart. The row borders separate them. %>
+  <%= ui_table full_width: true, striped: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Type" %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Time" %>
+      <%= t.heading "Duration", right: true %>
+      <%= t.heading "Credits", right: true %>
+      <%= t.heading "Reason" %>
+    <% end %>
+
+    <%= t.body do %>
+      <% @entries.each do |entry| %>
+        <%# align: :middle against the table-wide top default. The reason
+            control is a button carrying the 36px touch-target floor, and it
+            centres its own label inside that height -- topped against
+            single-line cells it sits a third of a line below every other value
+            in its row. %>
+        <%= t.row align: :middle do %>
+          <%# person_display_link, not callsign_link: Timesheet Management is
+              not among the roles that may open a person page, so a bare link
+              would hand half this page's readers links that bounce to /me. %>
+          <%= t.row_header do %>
+            <%= person_display_link entry.person, entry.person_id %>
+          <% end %>
+          <%= t.cell do %><%= correction_request_type_badge entry %><% end %>
+          <%= t.cell entry.position_title || "—" %>
+          <%# nowrap: left to wrap, "Thu Aug 21 @ 10:15" breaks over three
+              lines and the time column reads taller than the rest of the row. %>
+          <%= t.cell class: "whitespace-nowrap" do %>
+            <%= timesheet_entry_time entry %>
+          <% end %>
+          <%# Said in days once it runs past one: a request often exists because
+              the entry never ended, and "686:27" is not a span a reader can
+              place. %>
+          <%= t.cell hour_minute_or_day_format(entry.duration), right: true,
+                     class: "whitespace-nowrap" %>
+          <%= t.cell credit_format_short(entry.credits), right: true %>
+          <%= t.cell do %><%= correction_request_reason_toggle t, entry %><% end %>
+        <% end %>
+
+        <% if entry.notes.any? %>
+          <%# label: -- below lg every row becomes its own card, so the opened
+              reason needs to say whose request it belongs to. %>
+          <%= t.detail_row id: correction_request_detail_id(entry),
+                           label: entry.callsign do %>
+            <div class="flex flex-col gap-3">
+              <% entry.notes.each do |note| %>
+                <div>
+                  <%# whitespace-pre-line: these are typed by hand, and the line
+                      breaks are how the ranger laid the argument out. %>
+                  <div class="whitespace-pre-line"><%= note.note %></div>
+                  <div class="text-sm text-stone-muted mt-1">
+                    <%= correction_request_note_author note %> ·
+                    <%= datetime_format note.created_at %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

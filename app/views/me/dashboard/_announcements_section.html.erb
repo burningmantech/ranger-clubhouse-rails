@@ -1,0 +1,89 @@
+<%# locals: (announcements:) %>
+<%
+  unread_count = announcements.count { |a| !a.has_read }
+  max_display = 5
+  display_announcements = announcements.first(max_display)
+  has_more = announcements.size > max_display
+%>
+<% if unread_count > 0 %>
+  <div class="mb-6 card-standard p-4" role="region" aria-label="Clubhouse Announcements">
+    <%# Header with title, unread count, and view all link %>
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 mb-3">
+      <div class="flex-center-gap-2">
+        <%= fa_icon "bullhorn", :solid, class: "icon-warning" %>
+        <h2 class="heading-section text-heading">Clubhouse Announcements</h2>
+        <span class="inline-flex items-center justify-center min-w-[1.5rem] px-2 py-1 font-bold rounded-full bg-warning text-warning-content" aria-label="<%= unread_count %> unread">
+          <%= unread_count %>
+        </span>
+      </div>
+      <%= link_to me_announcements_path, class: "inline-flex-center-gap-2 font-medium text-stone-muted hover:text-heading transition-colors" do %>
+        View All
+        <%= fa_icon "arrow-right", :solid %>
+      <% end %>
+    </div>
+
+    <%# Compact announcement list %>
+    <div class="divide-y divide-line">
+      <% display_announcements.each do |announcement| %>
+        <%
+          is_read = announcement.has_read
+          is_expired = announcement.expired?
+        %>
+        <% unless is_read %>
+          <%= link_to me_announcements_path(anchor: dom_id(announcement)),
+                      class: "flex items-center gap-3 py-3 px-2 -mx-2 rounded-md hover:bg-base-200 transition-colors group no-decoration",
+                      aria: { label: "#{announcement.subject} - #{is_read ? 'read' : 'unread'}" } do %>
+            <%# Status icon %>
+            <div class="shrink-0">
+              <% if is_expired %>
+                <%= fa_icon "clock", :solid, class: "text-stone-icon" %>
+              <% elsif is_read %>
+                <%= fa_icon "circle-check", :solid, class: "icon-success" %>
+              <% else %>
+                <%= fa_icon "circle-exclamation", :solid, class: "icon-warning" %>
+              <% end %>
+            </div>
+
+            <div class="flex-1 min-w-0 text-lg">
+              <p class="font-medium truncate <%= is_read ? 'text-body' : 'text-heading' %> <%= is_expired ? 'line-through opacity-60' : '' %>">
+                <%= announcement.subject %>
+              </p>
+              <div class="text-sm text-stone-subtle mt-1">
+                Posted <%= mdy_format(announcement.created_at) %>
+                <% if announcement.expires_at && !is_expired %>
+                  <span class="mx-1">·</span>
+                  Expires <%= mdy_format(announcement.expires_at) %>
+                <% end %>
+              </div>
+            </div>
+
+            <%# Status badge (mobile-friendly) %>
+            <div class="shrink-0 hidden lg:block">
+              <% if is_expired %>
+                <span class="text-stone-muted">Expired</span>
+              <% elsif is_read %>
+                <span class="icon-success">Read</span>
+              <% else %>
+                <span class="font-medium icon-warning">Unread</span>
+              <% end %>
+            </div>
+
+            <%# Arrow indicator %>
+            <div class="shrink-0 text-stone-icon group-hover:text-stone-muted transition-colors">
+              <%= fa_icon "chevron-right", :solid %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# Show more indicator %>
+    <% if has_more %>
+      <div class="mt-3 pt-3 border-t border-line">
+        <%= link_to me_announcements_path, class: "text-stone-muted hover:text-heading transition-colors" do %>
+          + <%= announcements.size - max_display %> more announcements
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

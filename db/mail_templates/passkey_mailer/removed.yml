@@ -1,0 +1,39 @@
+description: "Tells someone a passkey was removed from their account, by them or by an Admin"
+
+subject: "A passkey was removed from your Ranger Clubhouse account"
+
+body: |
+  <p>
+    {{ greeting }},
+  </p>
+  <p>
+    The passkey named <b>{{ nickname }}</b> was removed from your Ranger Clubhouse account
+    {% if by_you %}by you{% else %}by {{ by_callsign }}, a Clubhouse Admin{% endif %}.
+    It can no longer sign in to the Clubhouse. Your password and any other passkeys still can.
+  </p>
+  <p>
+    <b>One more step:</b> delete {{ nickname }} from your device or password manager too, so it stops
+    being offered when you sign in.
+  </p>
+  <hr style="border: none; border-top: 1px solid #eeeeee; margin: 16px 0;">
+  <p style="font-size: 14px; color: #666666;">
+    <b>Not expecting this?</b> Write to
+    <a href="mailto:{{ support_email }}" style="color: #d97706;">{{ support_email }}</a>.
+    {% if by_you %}If you did not remove it, change your password as well.{% endif %}
+  </p>
+  <p style="font-size: 14px; color: #999999;">
+    The Black Rock Ranger Tech Team<br>
+    <a href="mailto:{{ support_email }}" style="color: #d97706;">{{ support_email }}</a>
+  </p>
+
+text_body: |
+  {{ greeting }},
+
+  The passkey named "{{ nickname }}" was removed from your Ranger Clubhouse account {% if by_you %}by you{% else %}by {{ by_callsign }}, a Clubhouse Admin{% endif %}. It can no longer sign in to the Clubhouse. Your password and any other passkeys still can.
+
+  One more step: delete {{ nickname }} from your device or password manager too, so it stops being offered when you sign in.
+
+  Not expecting this? Write to {{ support_email }}.{% if by_you %} If you did not remove it, change your password as well.{% endif %}
+
+  The Black Rock Ranger Tech Team
+  {{ support_email }}

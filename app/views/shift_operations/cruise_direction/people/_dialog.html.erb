@@ -1,0 +1,60 @@
+<%# locals: (pod:, pools:, year:, frame: "modal") %>
+<%#
+  Add Rangers to a pod. Two lists: everyone checked in for this shift, and --
+  folded away -- the ones who checked in an hour or more before it started and
+  are probably still out on the shift before.
+
+  Shared by the add dialog and the answer to creating a pod, which opens this
+  straight away: a pod is made in order to put people in it. The frame local is
+  what tells the two apart -- opened on its own it carries the turbo frame, and
+  streamed into the frame it must not carry a second one.
+%>
+<% pod_name = cruise_direction_pod_name(pod) %>
+<%= modal_dialog id: "cruise-direction-add-dialog", title: "Add Rangers to #{pod_name}",
+                 size: :xl, frame: frame do %>
+  <% if pools.any? %>
+    <%# _top: the answer is a turbo stream that replaces the board behind this
+        dialog, so the submit must not be scoped to the modal frame. %>
+    <%= form_with url: shift_operations_cruise_direction_people_path(pod, year: year), method: :post,
+                  builder: AppFormBuilder, data: { turbo_frame: "_top" } do %>
+      <%= bulk_select do %>
+        <%# Outside the branch below: this is the only element carrying the
+            select-all controller's toggle target, and the controller reads it
+            on connect. Left inside, a dialog with nothing but earlier
+            check-ins -- the ordinary case at the top of a shift -- would
+            connect the controller with no toggle and throw. %>
+        <%= bulk_select_all label: "Select everyone checked in for this shift" %>
+
+        <% if pools.current.any? %>
+          <%= render "shift_operations/cruise_direction/people/pool",
+                     candidates: pools.current, prefix: "current" %>
+        <% else %>
+          <p class="text-stone-muted">
+            No one checked in for this shift is waiting for a pod.
+          </p>
+        <% end %>
+
+        <% if pools.prior.any? %>
+          <%# Folded, and out of reach of "select all": these are probably
+              somebody else's shift, and one press must not sweep them in. %>
+          <%= ui_disclosure "Checked In Earlier -- May Be on the Shift Before (#{pools.prior.size})",
+                            class: "mt-3" do %>
+            <p class="text-sm text-stone-muted mb-2">
+              Everyone here checked in an hour or more before this shift started.
+            </p>
+            <%= render "shift_operations/cruise_direction/people/pool",
+                       candidates: pools.prior, prefix: "prior", skip_select_all: true %>
+          <% end %>
+        <% end %>
+
+        <%= modal_form_footer submit: "Add to #{pod_name}", data: { checkbox_select_all_target: "submit" } %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No one is waiting for a pod. Rangers appear here once they check in for a Cruise Direction position.",
+                       icon: "user-clock", icon_type: :solid %>
+    <%= button_row do %>
+      <%= modal_close_button "Close" %>
+    <% end %>
+  <% end %>
+<% end %>

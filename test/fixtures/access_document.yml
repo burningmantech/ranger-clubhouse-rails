@@ -1,0 +1,114 @@
+# Access-document fixtures for the /me/tickets port and the
+# AccessDocumentStatusChange cascade tests.
+#
+# active_ranger carries a full ticketing package: a Staff Credential, an SP
+# ticket, both vehicle-pass types, an own SAP, a Gift ticket, and one existing
+# SO SAP. The vehicle passes start CLAIMED so the cascade/anti-gaming logic has
+# something to release.
+#
+# ranger_with_custom_gender holds two SO SAPs so it sits at the SO SAP cap
+# (TAS_SAPSOMax = 2) for the over-limit path.
+#
+# inactive_ranger holds a single (claimed) regular ticket plus a claimed vehicle
+# pass to exercise the "bank the last available ticket reverts the pass"
+# anti-gaming rule in isolation.
+
+# --- active_ranger: full package -----------------------------------------
+
+ar_staff_credential:
+  person: active_ranger
+  type: "staff_credential"
+  status: "qualified"
+  delivery_method: "will_call"
+  source_year: <%= Time.zone.now.year %>
+  expiry_date: <%= (Time.zone.now + 3.years).to_date %>
+  created_at: <%= Time.zone.now %>
+
+ar_spt:
+  person: active_ranger
+  type: "special_price_ticket"
+  status: "qualified"
+  delivery_method: "none"
+  source_year: <%= Time.zone.now.year %>
+  expiry_date: <%= (Time.zone.now + 3.years).to_date %>
+  created_at: <%= Time.zone.now %>
+
+ar_vp_sp:
+  person: active_ranger
+  type: "vehicle_pass_sp"
+  status: "claimed"
+  delivery_method: "will_call"
+  source_year: <%= Time.zone.now.year %>
+  created_at: <%= Time.zone.now %>
+
+ar_vp_gift:
+  person: active_ranger
+  type: "vehicle_pass_gift"
+  status: "claimed"
+  delivery_method: "none"
+  source_year: <%= Time.zone.now.year %>
+  created_at: <%= Time.zone.now %>
+
+ar_sap:
+  person: active_ranger
+  type: "work_access_pass"
+  status: "qualified"
+  delivery_method: "email"
+  source_year: <%= Time.zone.now.year %>
+  created_at: <%= Time.zone.now %>
+
+ar_gift:
+  person: active_ranger
+  type: "gift_ticket"
+  status: "qualified"
+  name: "Gift Recipient"
+  delivery_method: "none"
+  source_year: <%= Time.zone.now.year %>
+  created_at: <%= Time.zone.now %>
+
+ar_sapso:
+  person: active_ranger
+  type: "work_access_pass_so"
+  status: "claimed"
+  name: "Original SO"
+  delivery_method: "email"
+  source_year: <%= Time.zone.now.year %>
+  created_at: <%= Time.zone.now %>
+
+# --- ranger_with_custom_gender: at the SO SAP cap ------------------------
+
+cg_sapso1:
+  person: ranger_with_custom_gender
+  type: "work_access_pass_so"
+  status: "claimed"
+  name: "SO One"
+  delivery_method: "email"
+  source_year: <%= Time.zone.now.year %>
+  created_at: <%= Time.zone.now %>
+
+cg_sapso2:
+  person: ranger_with_custom_gender
+  type: "work_access_pass_so"
+  status: "claimed"
+  name: "SO Two"
+  delivery_method: "email"
+  source_year: <%= Time.zone.now.year %>
+  created_at: <%= Time.zone.now %>
+
+# --- inactive_ranger: anti-gaming isolation ------------------------------
+
+ig_staff_credential:
+  person: inactive_ranger
+  type: "staff_credential"
+  status: "claimed"
+  delivery_method: "will_call"
+  source_year: <%= Time.zone.now.year %>
+  created_at: <%= Time.zone.now %>
+
+ig_vp_sp:
+  person: inactive_ranger
+  type: "vehicle_pass_sp"
+  status: "claimed"
+  delivery_method: "will_call"
+  source_year: <%= Time.zone.now.year %>
+  created_at: <%= Time.zone.now %>

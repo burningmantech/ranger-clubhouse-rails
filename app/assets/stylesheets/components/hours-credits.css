@@ -1,0 +1,84 @@
+/*
+ * Hours & Credits ledger.
+ *
+ * Four groups of paired hour and credit columns, so the grid runs wider than
+ * the screen. The callsign is frozen at the start edge and the two heading rows
+ * are pinned: scroll either way and the reader still knows whose row they are
+ * on and which part of the season a number belongs to.
+ */
+
+@utility hours-credits-callsign {
+    /*
+     * z-10 keeps the frozen cell over the numbers sliding under it while
+     * staying below the sidebar drawer. The cell takes its row's own
+     * background -- striping and hover included -- so the columns pass behind
+     * it rather than through it.
+     */
+    @apply sticky start-0 w-36 min-w-36 z-10;
+    background-color: inherit;
+}
+
+/*
+ * A sticky heading sticks to its nearest scrolling ancestor, which for a table
+ * is its container. Left to grow, the container never scrolls vertically, so
+ * the heading has nothing to hold to and rolls away above a roster of a
+ * thousand rangers -- leaving eight columns of bare numbers with no labels.
+ * A short roster never reaches the bound and is unaffected.
+ */
+@utility hours-credits-pane {
+    @apply overflow-y-auto;
+    max-height: 70vh;
+}
+
+/*
+ * Every heading cell needs its own background, not just the frozen one: a `th`
+ * is transparent by default and the thead's background does not paint behind
+ * it, so rows scrolling under a pinned heading show straight through the words.
+ */
+.hours-credits-grid thead th {
+    @apply bg-base-200;
+    /*
+     * Browsers drop backgrounds when printing unless asked not to, and without
+     * the fill the heading rows are the same white as the numbers under them --
+     * thirteen columns with nothing marking where the labels end.
+     */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/*
+ * The frozen heading has to outrank both the pinned heading row and the frozen
+ * column it sits above.
+ */
+.hours-credits-grid thead th.hours-credits-callsign {
+    @apply z-30;
+}
+
+/*
+ * The rule opening each group is what separates one part of the season from the
+ * next. Without it the eight number columns read as one undivided block and the
+ * reader has to count across to the heading to place a figure.
+ */
+.hours-credits-grid .hours-credits-group {
+    @apply border-s-2 border-line;
+}
+
+/*
+ * Paper does not scroll, so a frozen column has nothing to hold still against
+ * and would only paint over the first columns the sheet has room for, while a
+ * bounded pane clips to its height and prints one screenful of a long roster.
+ */
+@media print {
+    .hours-credits-pane {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .hours-credits-grid thead {
+        position: static;
+    }
+
+    .hours-credits-grid .hours-credits-callsign {
+        position: static;
+    }
+}

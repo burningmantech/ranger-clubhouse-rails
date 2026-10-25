@@ -1,0 +1,35 @@
+<%= hero_panel icon: "award", heading_level: :h1, id: "awards-header",
+               title: "Service Recognition",
+               back_to: :dashboard %>
+
+<%= ui_callout_box :info, title: "What These Awards Recognize", icon: "info-circle", accent: true do %>
+  <ul class="list-disc pl-4 space-y-1">
+    <li>Year-round volunteer efforts and special roles.</li>
+    <li>Honorary recognition only — no impact on tickets, shirts, meal passes, or Ranger status.</li>
+  </ul>
+<% end %>
+
+<%= ui_callout_box :warning, title: "Data Completeness Notice", icon: "exclamation-triangle", accent: true do %>
+  <strong>What to know:</strong> Awards are being backfilled from historical records. Many currently reflect activity
+  only from 2020 onward. Your full contribution history may not appear yet.
+<% end %>
+
+<% if @special.empty? && @teams.empty? && @positions.empty? %>
+  <%= ui_empty_state "No service recognition awards have been granted yet.", class: "text-lg" %>
+<% else %>
+  <%= render partial: "common/trophies", locals: {
+    title: "Cadre / Delegation and Selected Team Recognition", icon: "users", icon_type: :solid,
+    entity: "teams / delegations", trophies: @teams
+  } %>
+
+  <%= render partial: "common/trophies", locals: {
+    title: "Special Service Recognition", icon: "star", icon_type: :solid,
+    trophies: @special, entity: "special service"
+  } %>
+
+  <%= render partial: "common/trophies", locals: {
+    title: "Special Position Recognition", icon: "person-walking", icon_type: :solid,
+    trophies: @positions, entity: "special positions"
+  } %>
+
+<% end %>

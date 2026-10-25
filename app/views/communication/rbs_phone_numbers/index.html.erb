@@ -1,0 +1,71 @@
+<%#
+  Which Rangers can be reached by text, and which cannot: the counts per account
+  status, then the two lists that need doing something about.
+%>
+<% content_for :title, "Phone Numbers" %>
+
+<%= hero_panel icon: "mobile-screen", heading_level: :h1, id: "rbs-phone-numbers-header",
+               title: "Phone Numbers",
+               description: "Which Rangers' numbers can receive a text, and which cannot.",
+               back_to: ["Ranger Broadcast System", communication_rbs_root_path] %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @total_numbers.to_s, "Numbers on File", icon: "mobile-screen", icon_type: :solid %>
+  <%= ui_stat_box @total_verified.to_s, "Confirmed", variant: :success,
+                  icon: "circle-check", icon_type: :solid %>
+  <%= ui_stat_box @unverified.size.to_s, "Not Confirmed",
+                  variant: @unverified.any? ? :warning : :secondary,
+                  icon: "clock", icon_type: :solid %>
+  <%= ui_stat_box @stopped.size.to_s, "Asked to Stop",
+                  variant: @stopped.any? ? :error : :secondary,
+                  icon: "ban", icon_type: :solid %>
+<% end %>
+
+<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+  <dl class="instruction-list">
+    <dt>What does &ldquo;not confirmed&rdquo; mean?</dt>
+    <dd>The number is on file, but the code texted to it was never sent back, so nothing can be
+      delivered to it.</dd>
+    <dt>What does &ldquo;asked to stop&rdquo; mean?</dt>
+    <dd>The owner replied STOP. They receive nothing until they reply START from that number.</dd>
+  </dl>
+<% end %>
+
+<%= ui_section "By Account Status", icon: "table-list", icon_type: :solid, border: false do %>
+  <%= ui_table striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Status" %>
+      <%= t.heading "People", right: true %>
+      <%= t.heading "With a Number", right: true %>
+      <%= t.heading "Confirmed", right: true %>
+      <%= t.heading "Not Confirmed", right: true %>
+      <%= t.heading "Asked to Stop", right: true %>
+    <% end %>
+    <%= t.body do %>
+      <% @counts.each do |row| %>
+        <%= t.row do %>
+          <%= t.row_header row.status %>
+          <%= t.cell row.people, right: true %>
+          <%= t.cell row.numbers, right: true %>
+          <%= t.cell row.verified, right: true %>
+          <%= t.cell rbs_count_cell(row.unverified, :warning), right: true %>
+          <%= t.cell rbs_count_cell(row.stopped, :error), right: true %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<div class="stack-to-row-lg">
+  <%= ui_section "Not Confirmed (#{@unverified.size})", icon: "clock", icon_type: :solid,
+                 border: false do %>
+    <%= render "list", people: @unverified,
+               empty: "Every number on file has been confirmed." %>
+  <% end %>
+
+  <%= ui_section "Asked to Stop (#{@stopped.size})", icon: "ban", icon_type: :solid,
+                 border: false do %>
+    <%= render "list", people: @stopped,
+               empty: "No one has asked us to stop texting them." %>
+  <% end %>
+</div>

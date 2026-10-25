@@ -1,0 +1,4 @@
+<%= turbo_frame_tag "modal" do %>
+  <%= render "training/sessions/rosters/dialog",
+             kind: @kind, query: @query, results: @results, trainer_slot_id: @trainer_slot_id %>
+<% end %>

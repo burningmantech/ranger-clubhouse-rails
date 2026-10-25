@@ -1,0 +1,36 @@
+<%= hero_panel icon: "flag", heading_level: :h1, id: "intake-note-new-header",
+               title: "Add #{intake_team_label(@form.type)} Note / Rank — #{@person.callsign}",
+               back_to: [intake_notes_return_label, intake_notes_return_path] %>
+
+<%= render "person/unified_flagging/team_notes",
+           person: @person,
+           team_key: @form.type,
+           label: intake_team_label(@form.type),
+           icon: intake_team_icon(@form.type),
+           entries: @team_history,
+           can_write: true,
+           show_add_button: false %>
+
+<%= ui_form(@form, person_intake_notes_path(@person, intake_notes_origin_params)) do |f| %>
+  <%= ui_section "Add Note / Rank", icon: intake_team_icon(@form.type), icon_type: :solid do %>
+    <p class="text-body mb-3">
+      <strong>Your note will be timestamped, and appended to any existing notes.</strong>
+    </p>
+
+    <%= f.hidden_field :type %>
+
+    <%= form_row do %>
+      <%= f.select :year, (2010..current_year).to_a.reverse,
+                   label: "Event Year", required: true, width: "w-full sm:w-32" %>
+      <%= f.select :ranking, intake_ranking_options(@form.type),
+                   label: "#{intake_team_label(@form.type)} Ranking", width: "w-full sm:w-72" %>
+    <% end %>
+
+    <%= f.text_area :note, label: "Note", rows: 5 %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Note" %>
+    <%= cancel_link intake_notes_return_path %>
+  <% end %>
+<% end %>

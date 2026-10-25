@@ -1,0 +1,8 @@
+<% content_for :title, "New Post" %>
+
+<%= hero_panel icon: "table-cells", heading_level: :h1, id: "shift-coverage-position-form-header",
+               title: "New Post",
+               description: "Choose the positions this post reads and how it shows them.",
+               back_to: [@group.title, admin_shift_coverage_group_path(@group)] %>
+
+<%= render "form" %>

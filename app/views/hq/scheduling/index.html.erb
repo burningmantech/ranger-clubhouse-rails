@@ -1,0 +1,18 @@
+<%# Thin HQ wrapper around the shared schedule page. The year selector is
+    suppressed because the HQ shell is locked to the current year, and every
+    path builder stays inside /hq so the window operator never leaves the
+    shell. %>
+<%= render template: "common/schedule/index",
+           locals: {
+             back_link: back_to("Shift Check In/Out", hq_shift_manage_path(@person)),
+             description_text: "View and manage shifts, training sessions, and sign-ups for #{@person.callsign} in #{@year}.",
+             show_year_selector: false,
+             sidebar_actions: false,
+             schedule_path_builder: ->(**options) { hq_scheduling_path(@person, **options) },
+             schedule_export_path_builder: ->(**options) { hq_scheduling_export_path(@person, **options) },
+             schedule_signup_summary_path_builder: ->(**options) { hq_scheduling_signup_summary_path(@person, **options) },
+             schedule_qualifications_path_builder: ->(**options) { hq_scheduling_qualifications_path(@person, **options) },
+             available_sign_ups_path_builder: ->(**options) { hq_scheduling_sign_ups_path(@person, **options) },
+             schedule_signups_path_builder: ->(slot, **options) { hq_scheduling_signups_path(@person, slot_id: slot.id, **options) },
+             schedule_destroy_path_builder: ->(slot, **options) { hq_scheduling_destroy_path(@person, slot_id: slot.id, **options) }
+           } %>

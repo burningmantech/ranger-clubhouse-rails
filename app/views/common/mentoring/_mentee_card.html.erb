@@ -1,0 +1,36 @@
+<%# locals: (name:, avatar:, badge:, contact:, message_path:) %>
+<%#
+  One person as a mentoring card: photo, name (already a link or plain
+  text), a result badge (nil for none), whatever the caller puts in the
+  body, and -- when `contact` -- a Send Message footer with `message_path`,
+  or "no contact allowed" when that is nil. Every card on Me/Person ›
+  Mentoring (the Alpha mentors and mentees, the ART cards in
+  common/mentoring/_art_section) is drawn from this one.
+%>
+<%= ui_card width: (PersonPhoto::AVATAR_WIDTH + 20) do %>
+  <% if avatar %>
+    <%= ui_card_image image: avatar, height: PersonPhoto::AVATAR_HEIGHT %>
+  <% else %>
+    <%= ui_card_image do %>
+      <%= render "common/photo_none" %>
+    <% end %>
+  <% end %>
+  <%= ui_card_title name, class: "break-words" %>
+  <% if badge %>
+    <div class="text-center mb-2">
+      <%= badge %>
+    </div>
+  <% end %>
+  <%= ui_card_body class: "flex-grow text-sm" do %>
+    <%= yield %>
+  <% end %>
+  <% if contact %>
+    <%= ui_card_footer class: "mt-auto" do %>
+      <% if message_path %>
+        <%= button_link "Send Message", :secondary, message_path %>
+      <% else %>
+        <%= no_contact_allowed %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

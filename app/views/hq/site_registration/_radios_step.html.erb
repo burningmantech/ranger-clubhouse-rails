@@ -1,0 +1,56 @@
+<%# locals: (person:, person_event:, event_info:, active_assets:, attachments:, checkout_form:, notice: nil, notice_type: nil) %>
+<%# Wizard step — Radios (site-checkin.hbs step 3; never rendered for
+    Alphas/Prospectives). Eligibility branches mirror the upstream template;
+    the checkout form and asset table are the shared common/assets partials
+    posting to this controller's own asset endpoints. Their outcome message
+    arrives as the notice locals and renders inline — the step lives inside
+    the wizard dialog, where a page toast would be dimmed behind the top
+    layer. "Next" runs the radio_check interstitial guard instead of
+    advancing directly. %>
+<% if notice %>
+  <%= ui_callout_box notice_type do %><%= notice %><% end %>
+<% end %>
+<% if event_info.radio_info_available %>
+  <% if event_info.radio_eligible %>
+    <% if person_event.asset_authorized %>
+      <p class="font-semibold text-success">
+        <%= fa_icon "tower-broadcast", :solid, end: 2 %>Authorized for <%= pluralize(event_info.radio_max, "Event Radio") %>
+      </p>
+      <p class="mb-3">
+        Check the radio out now or at the start of their first shift.
+      </p>
+      <%= render "common/assets/checkout_form",
+                 checkout_form: checkout_form, attachments: attachments %>
+      <% if active_assets.any? %>
+        <p class="my-3"><%= pluralize(active_assets.size, "asset") %> checked out.</p>
+        <%= render "common/assets/table",
+                   person_assets: active_assets, allow_attachment_change: true %>
+      <% end %>
+    <% else %>
+      <p class="text-error">
+        <%= fa_icon "ban", :solid, end: 2 %><%= person.callsign %> is authorized for
+        <%= pluralize(event_info.radio_max, "Event Radio") %>.
+        Do not issue radios or gear until they sign the Radio Checkout Agreement.
+      </p>
+    <% end %>
+  <% else %>
+    <h4 class="heading-title text-heading mb-2">Shift Radios Only</h4>
+    <p>
+      <%= person.callsign %> is only authorized for a shift radio.
+      Check out a radio for each shift and collect it when the shift ends.
+    </p>
+  <% end %>
+<% else %>
+  <%= ui_callout_box :warning do %>
+    Event radio information is not posted yet, so the Clubhouse cannot tell whether
+    <%= person.callsign %> is radio eligible. Check with the HQ Lead before issuing
+    a radio.
+  <% end %>
+<% end %>
+<%= button_row class: "mt-4" do %>
+  <%= button_link "Next", :primary, hq_site_registration_radio_check_path(person),
+                  data: { turbo_stream: true } %>
+  <%= button_action "Previous Step", :secondary, icon: "arrow-left", icon_type: :solid,
+                    data: { action: "hq-wizard#back" } %>
+  <%= button_action "Cancel", :secondary, data: { action: "hq-wizard#cancel" } %>
+<% end %>

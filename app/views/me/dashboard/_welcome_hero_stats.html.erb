@@ -1,0 +1,29 @@
+<%= hero_panel(
+      icon: "shield-halved",
+      heading_level: :h1,
+      id: "welcome-heading"
+    ) do |panel| %>
+  <% panel.title do %>
+    Welcome <%= person.is_ranger? ? "Ranger" : "Echelon Volunteer" %> <%= person.callsign %>
+  <% end %>
+  <%# The countdown alone. days_until_man_burn always returns an Integer -- it
+      rolls over to next year once the burn has passed -- so there is no branch
+      without one. %>
+  <% panel.description do %>
+    <% days = EventDate.days_until_man_burn %>
+    <% if days.zero? %>
+      <div class="font-semibold">The Man burns today!</div>
+    <% else %>
+      <div class="font-semibold"><%= days %> <%= "day".pluralize(days) %> until the Man burns.</div>
+    <% end %>
+  <% end %>
+  <% panel.hero_stats(class: "flex gap-3 mb-1 shrink-0") do %>
+    <%= panel.stat_badge "Burns", person.years_as_ranger.size, icon: "fire-flame-curved", color: :flame %>
+    <%= panel.stat_badge "Service Years", person.years_of_service.size, icon: "star", color: :award %>
+  <% end %>
+<% end %>
+
+<%# The thank-you, first line of the body (decided 2026-09-20). Here rather than
+    in the dashboard template so it stays inside the ranger/echelon branch that
+    renders this banner, and lands above the progress summary. %>
+<p class="mb-4">Thank you for your volunteer efforts and dedication to the Ranger community and Burning Man.</p>

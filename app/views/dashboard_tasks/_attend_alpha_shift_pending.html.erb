@@ -1,0 +1,37 @@
+<%# locals: (step:,facts:)%>
+<p><%= fa_icon "book", :solid %> Read: <a href="<%= facts.alpha_shift_prep_link %>" target="_blank" rel="noopener noreferrer">Becoming a Ranger: On-playa Alpha Shifts</a></p>
+
+<div class="my-2 p-3 bg-default dark:bg-default rounded">
+  <p class="font-bold text-lg">
+    <%= fa_icon "calendar", :solid %> <%= datetime_format facts.alpha_shift[:begins] %>
+  </p>
+  <p class="text-error font-bold">
+    <%= fa_icon "clock", :solid, class: "icon-error" %> ARRIVE 20 MIN EARLY — late = turned away
+  </p>
+  <p class="mt-1">
+    <%= fa_icon "location-dot", :solid %> <b>The Hat Rack</b> (right of HQ Windows)<br>
+    <span class="text-sm">Ranger HQ: Esplanade &amp; 6:31</span>
+  </p>
+</div>
+
+<p class="font-semibold">What to expect (~10 hours):</p>
+<ul class="list-disc list-inside text-base mb-2">
+  <li>2 hrs review &amp; practice</li>
+  <li>6 hrs fieldwork with Mentors (breaks included)</li>
+  <li>2+ hrs evaluations (some waiting)</li>
+</ul>
+
+<p class="font-semibold">Bring:</p>
+<ul class="list-disc list-inside text-base mb-2">
+  <li>Snacks + meal</li>
+  <li>Layers, hat, sunglasses, sunscreen</li>
+  <li>Comfy walking shoes</li>
+  <li>Water bottle</li>
+  <li>Pen &amp; notebook</li>
+  <li>Flashlight/headlamp (for swing shift 2pm–midnight)</li>
+</ul>
+
+<div class="text-base text-stone-muted space-y-1">
+  <div>Can't make it? Email Mentor Cadre ASAP or visit Ranger HQ on playa.</div>
+  <%= mail_to EmailAddresses::MENTOR_CADRE %>
+</div>

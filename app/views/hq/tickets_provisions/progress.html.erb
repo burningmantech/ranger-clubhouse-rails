@@ -1,0 +1,62 @@
+<%# Lazy-loaded body of the Tickets & Provisions Progress modal — the four
+    progress tables (Ember port/components/hq-tickets-and-provisions.hbs).
+    Deliberate fixes from the upstream component: the "Needs ... more on duty"
+    line only renders when there is on-duty time left to serve, the shiny-penny
+    row spans the table's actual 4 columns (was colspan=5), the dead per-item
+    width computation is dropped, and the non-counting duration is rendered
+    as a proper duration instead of raw seconds. %>
+<%= turbo_frame_tag HqHelper::TICKETS_PROVISIONS_FRAME do %>
+  <% items = @progress.items %>
+
+  <% if @progress.ineligible_duration.to_i.positive? %>
+    <%= ui_callout_box :info, title: "Some Hours Do Not Count" do %>
+      The timesheet has <%= hour_minute_words @progress.ineligible_duration, full: true %> that do
+      not count toward provisions and appreciations. Training sessions and On Call positions fall
+      into this category.
+    <% end %>
+  <% end %>
+
+  <%= render layout: "hq/tickets_provisions/table", locals: { title: "Tickets" } do |t| %>
+    <% unless items[:staff_credential]&.has_earned %>
+      <%= render "hq/tickets_provisions/row", t:, item: items[:spt], name: "Special Price Ticket" %>
+    <% end %>
+    <%= render "hq/tickets_provisions/row", t:, item: items[:staff_credential], name: "Staff Credential" %>
+  <% end %>
+
+  <%= render layout: "hq/tickets_provisions/table", locals: { title: "Meal Passes" } do |t| %>
+    <% unless items[:all_eats]&.has_earned %>
+      <%= render "hq/tickets_provisions/row", t:, item: items[:event_week_eats],
+                 name: "Event Week Eat Pass", subtext: "(Event week hours only)" %>
+    <% end %>
+    <%= render "hq/tickets_provisions/row", t:, item: items[:all_eats],
+               name: "All Eat Meal Pass", subtext: "(Pre/Event Week/Post hours)" %>
+  <% end %>
+
+  <%= render layout: "hq/tickets_provisions/table", locals: { title: "Ranger Clothing" } do |t| %>
+    <% if @progress.is_shiny_penny %>
+      <%= t.row do %>
+        <%= t.cell colspan: 4 do %>
+          <%= @person.callsign %> is a Shiny Penny and <strong>not</strong> eligible to earn
+          additional Ranger clothing this year.
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= render "hq/tickets_provisions/row", t:, item: items[:t_shirt],
+                 name: "Ranger T-Shirt", subtext: "(Pre-event & Event week hours only)" %>
+      <%= render "hq/tickets_provisions/row", t:, item: items[:long_sleeve_shirt],
+                 name: "Ranger Long Sleeve Shirt", subtext: "(Pre-event & Event week hours only)" %>
+    <% end %>
+  <% end %>
+
+  <%= render layout: "hq/tickets_provisions/table",
+             locals: { title: "Wet Spot (Burning Man Org Showers)" } do |t| %>
+    <%= render "hq/tickets_provisions/row", t:, item: items[:shower_pog],
+               name: "Wet Spot Pog for this event", subtext: "(Event week hours only)" %>
+    <%# The two "next event" rows differ only by which hours qualify, so the
+        qualifier is folded into the name to keep them apart at a glance. %>
+    <%= render "hq/tickets_provisions/row", t:, item: items[:shower_access_event_week],
+               name: "Wet Spot Access for next event (event week hours only)" %>
+    <%= render "hq/tickets_provisions/row", t:, item: items[:shower_access_entire_event],
+               name: "Wet Spot Access for next event (pre-event, event week, and post-event hours)" %>
+  <% end %>
+<% end %>

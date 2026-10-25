@@ -1,0 +1,56 @@
+<%# locals: (title:, icon:, entries:, show_count:, emails:) %>
+<%#
+  One cohort of unconfirmed rangers. Rendered twice: the group that still has
+  entries to verify carries a count column, the group that only owes a click
+  does not.
+%>
+<%= ui_section "#{pluralize(entries.size, "Ranger")} — #{title}",
+               icon: icon, icon_type: :solid, border: false do %>
+  <%# Four or five columns of contact detail: desktop-first, scrolling sideways
+      on a narrow screen rather than restacking, so a chaser can read the
+      callsign column straight down. %>
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Name" %>
+      <%= t.heading "Email" %>
+      <%= t.heading "Phone" %>
+      <%= t.heading "Entries to Verify", right: true if show_count %>
+    <% end %>
+    <%= t.body do %>
+      <% entries.each do |entry| %>
+        <% person = entry.person %>
+        <%= t.row do %>
+          <%= t.row_header do %>
+            <%= person_display_link person, person.id %>
+          <% end %>
+          <%= t.cell entry.name %>
+          <%= t.cell email_link_or_dash(person.email) %>
+          <%= t.cell class: "whitespace-nowrap" do %>
+            <% if person.home_phone.blank? %>
+              <span class="text-stone-muted italic">No phone</span>
+            <% else %>
+              <%# The column holds E.164, already a tel: URI; stripping it to
+                  digits would drop the + that every number abroad needs. %>
+              <%= link_to phone_format(person.home_phone),
+                          "tel:#{person.home_phone}",
+                          class: LinkHelper::TABLE_LINK_CLASSES %>
+            <% end %>
+          <% end %>
+          <%= t.cell entry.unverified_count, right: true if show_count %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if emails.any? %>
+    <p class="mt-3">
+      <%# Upstream printed the whole address list under the table. One button
+          that copies this group's addresses keeps the same job off the screen,
+          and keeps the two groups' lists apart. %>
+      <%= clipboard_button emails.join(", ") do %>
+        Copy <%= pluralize(emails.size, "email address") %>
+      <% end %>
+    </p>
+  <% end %>
+<% end %>

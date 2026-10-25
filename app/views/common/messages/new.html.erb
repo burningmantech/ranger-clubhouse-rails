@@ -1,0 +1,26 @@
+<%# Compose form for every audience: self-serve at /me (no @person, composes
+    as the signed-in user), two-way for the management interfaces (@person
+    and @direction set). messages_path resolves to the namespace that
+    rendered this, so the back link needs no local. %>
+<div class="mb-2">
+  <% if @person %>
+    <%= hero_panel icon: "comments", heading_level: :h1, id: "messages-header",
+                   back_to: ["#{@person.callsign} Messages", messages_path] do |panel| %>
+      <% panel.title do %>
+        Send Message <%= @direction == "to" ? "to" : "from" %> <%= @person.callsign %>
+      <% end %>
+      <% panel.description do %>
+        <% if @direction == "to" %>
+          Deliver a message to <%= @person.callsign %> from another Ranger.
+        <% else %>
+          Compose a message sent as <%= @person.callsign %>.
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= hero_panel icon: "comments", heading_level: :h1, id: "messages-header",
+                   title: "New Message", back_to: ["Messages", messages_path] %>
+  <% end %>
+</div>
+
+<%= render partial: "common/messages/compose", locals: { message: @message_form } %>

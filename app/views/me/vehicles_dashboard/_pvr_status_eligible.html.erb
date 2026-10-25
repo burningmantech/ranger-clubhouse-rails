@@ -1,0 +1,16 @@
+<div class="space-y-6">
+  <%= ui_callout_box :info do %>
+    <b class="me-2">Annual Requirement:</b> You must submit a new request every year, even for previously approved
+    vehicles.
+  <% end %>
+  <%= render partial: "pvr_requests", locals: { vehicles: dashboard.vehicles } %>
+
+  <div class="pt-2">
+    <%= button_link nil, :primary,
+                    new_me_vehicles_personal_vehicle_path,
+                    class: "w-full text-center",
+                    "aria-label": "Submit a new personal vehicle request" do %>
+      <%= fa_icon "plus", :solid %> New Vehicle Request
+    <% end %>
+  </div>
+</div>

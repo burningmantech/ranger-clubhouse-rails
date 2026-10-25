@@ -1,0 +1,153 @@
+<%#
+  Who may earn a shirt for the selected year. The order lines come first
+  because ordering shirts is the job; the roster below is for chasing the
+  near-misses. Both read sizes through ShirtTotals, and lines count by full
+  swag title -- different styles share sizes, so a bare size letter would
+  merge products that are ordered separately. No rolled-up total is shown
+  anywhere: it is not a number anyone can order with.
+%>
+<% content_for :title, "Potential Shirts" %>
+
+<%= hero_panel icon: "shirt", heading_level: :h1, id: "quartermaster-potential-shirts-header",
+               title: "Potential Shirts" do |panel| %>
+  <% panel.description do %>
+    Who may earn a t-shirt (<%= @threshold_ss %> hours) or long sleeve (<%= @threshold_ls %> hours)
+    for <%= @year %>, counting rangered hours on counted positions.
+  <% end %>
+  <%# keep: -- the selector submits its own bare GET, so without these every
+      active filter silently vanishes the moment someone changes year. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: active_filters(@filter_params) %>
+<% end %>
+
+<% if @rows.empty? %>
+  <%= ui_empty_state "No one has hours toward a shirt in #{@year}.",
+                     icon: "shirt", icon_type: :solid %>
+<% else %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @rows.size.to_s, "Candidates" %>
+    <%= ui_stat_box @earned_ss_count.to_s, "Earned T-Shirt", variant: :success,
+                    icon: "circle-check", icon_type: :solid %>
+    <%= ui_stat_box @earned_ls_count.to_s, "Earned Long Sleeve", variant: :success,
+                    icon: "circle-check", icon_type: :solid %>
+    <% if @below_count.positive? %>
+      <%= ui_stat_box @below_count.to_s, "Below T-Shirt Threshold", variant: :warning,
+                      icon: "circle-question", icon_type: :solid %>
+    <% end %>
+  <% end %>
+
+  <%# Out of the hero: the scheduled-hours column, and who is counted elsewhere.
+      Then what the order lines export carries. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What do the scheduled hours show?</dt>
+      <dd>Scheduled hours show who is still likely to cross a line.</dd>
+      <dt>Where are the Alphas?</dt>
+      <dd>Alphas are counted on the Alpha Shirts page, not here.</dd>
+      <dt>Do the filters narrow the order lines export?</dt>
+      <dd>The order lines export is always the whole report.</dd>
+    </dl>
+  <% end %>
+
+  <%# Order lines describes the shirt-kind tables below, so it stays with them;
+      the roster export rides the filter bar that scopes it. %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link(quartermaster_potential_shirts_counts_path(year: @year), "Export Order Lines CSV") %>
+    <% end %>
+  </div>
+
+  <%# One column per shirt kind so the runs read against each other. Earned is
+      the firm number; Pending is candidates still short of the threshold.
+      Unlike Alpha Shirts' bare sizes, full titles need the width: two columns
+      at most, or the counts clip at the card edge even on wide screens. %>
+  <%# items-start so a short run does not stretch to match the longest column. %>
+  <div class="grid grid-cols-1 lg:grid-cols-2 items-start gap-0 lg:gap-4">
+    <% @kinds.each do |kind| %>
+      <%= ui_section kind.name, icon: "shirt", icon_type: :solid, border: false do %>
+        <%= ui_table full_width: true, striped: true do |t| %>
+          <%= t.header do %>
+            <%= t.heading "Shirt" %>
+            <%= t.heading "Earned", right: true %>
+            <%= t.heading "Pending", right: true %>
+          <% end %>
+          <%= t.body do %>
+            <% kind.lines.each do |line| %>
+              <%= t.row do %>
+                <%= t.row_header shirt_size_title(line.title) %>
+                <%= t.cell line.earned, right: true %>
+                <%= t.cell line.pending, right: true %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# The filters narrow the roster only. The order lines and the stats stay
+      whole -- they are what gets ordered against. %>
+  <%= filter_bar id: "potential-shirts-filters",
+                 chips: potential_shirts_filter_chips(@filter_params, @year),
+                 clear_url: quartermaster_potential_shirts_path(year: @year),
+                 count: "Showing #{@filtered_rows.size} of #{pluralize(@rows.size, "person")}",
+                 actions: export_csv_link(quartermaster_potential_shirts_path(**active_filters(@filter_params),
+                                          year: @year, format: :csv), "Export Roster CSV"),
+                 url: quartermaster_potential_shirts_path do |f| %>
+    <%# Year-scoped page: without this, applying a filter snaps back to the
+        current year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :earned, potential_shirts_earned_options,
+                   label: "Earned", selected: @filter_params[:earned],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <% @kinds.each do |kind| %>
+        <%= f.select kind.param, potential_shirts_title_options(kind, @filter_params[kind.param]),
+                     label: kind.name, selected: @filter_params[kind.param],
+                     width: "w-full", wrapper_class: "flex-1" %>
+      <% end %>
+    <% end %>
+    <%= f.check_box :missing, label: "Only people missing a size",
+                    checked: @filter_params[:missing] == ShirtFilterConcern::MISSING_ON %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Candidates", icon: "users", icon_type: :solid, border: false do %>
+    <% if @filtered_rows.empty? %>
+      <div class="px-4 pb-2">
+        <%= ui_empty_state "No one matched the current filters.",
+                           icon: "magnifying-glass", icon_type: :solid %>
+      </div>
+    <% else %>
+      <%# Quartermasters may read this page but not the person pages a
+          callsign would link to, so links only render when they resolve. %>
+      <% linked = can_view_person_page? %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Name" %>
+          <%= t.heading "Scheduled Hrs", right: true %>
+          <%= t.heading "Rangered Hrs", right: true %>
+          <%= t.heading "T-Shirt (#{@threshold_ss} hrs)" %>
+          <%= t.heading "T-Shirt Backup" %>
+          <%= t.heading "Long Sleeve (#{@threshold_ls} hrs)" %>
+        <% end %>
+        <%= t.body do %>
+          <% @filtered_rows.each do |row| %>
+            <%= t.row do %>
+              <%= t.row_header linked ? callsign_link(row.person) : row.person.callsign %>
+              <%= t.cell row.person.desired_full_name %>
+              <%= t.cell number_with_precision(row.estimated_hours, precision: 2), right: true %>
+              <%= t.cell number_with_precision(row.actual_hours, precision: 2), right: true %>
+              <% @kinds.each do |kind| %>
+                <%= t.cell potential_shirts_shirt_cell(row, kind) %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

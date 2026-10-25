@@ -1,0 +1,22 @@
+<% content_for :title, @document.description %>
+
+<%# The timer sits outside the frame so it keeps running while the document is
+    swapped out beneath it. The frame is given no address to start with: the
+    document is already drawn inside it, and a frame naming a source fetches it
+    the moment it arrives, drawing the page twice. The timer fills the address
+    in when it first comes round.
+
+    refresh-seconds of 0 means the document says not to refresh -- the clock
+    still ticks, but the page is left alone.
+
+    The measure is capped at the design system's page width. These machines are
+    sometimes wide monitors, and a document left to run the full width of one
+    sets a line of instructions two hundred characters long. %>
+<main class="bookmark-page mx-auto w-full max-w-[90rem]"
+      data-controller="bookmark"
+      data-bookmark-source-value="<%= bookmark_document_path(params[:tag]) %>"
+      data-bookmark-refresh-seconds-value="<%= @document.refresh_time.to_i * 60 %>">
+  <%= turbo_frame_tag "bookmark", data: { bookmark_target: "frame" } do %>
+    <%= render "document", document: @document %>
+  <% end %>
+</main>

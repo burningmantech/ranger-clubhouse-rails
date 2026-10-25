@@ -1,0 +1,122 @@
+<%# The single-badge editor, opened from one row of the BMID roster and handed
+    back to that same row.
+
+    Every param that decides what the roster is showing -- the year, the
+    category, the five secondary filters, the sort, and which of the two
+    layouts was on screen -- rides in on the Edit link and back out again on
+    the form's action, the back link, the Cancel button, and the redirect after
+    a save. The anchor names the row, so the browser restores the reading
+    position instead of dropping the admin at the top of the table.
+
+    The warnings and the badge fields are shared with the person's own badge
+    page (app/views/person/bmids/show.html.erb) so the two cannot drift. %>
+<% is_new = @bmid.new_record? %>
+<% save_label = "Save Badge" %>
+
+<%= hero_panel icon: "id-card", heading_level: :h1, id: "bmid-badge-header",
+               back_to: ["BMID Management", badge_return_path] do |panel| %>
+  <% panel.title do %>
+    <%= @year %> BMID &mdash; <%= @person.callsign %>
+  <% end %>
+  <% panel.description do %>
+    Prepare this person's Burning Man ID badge for printing.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @bmid.status, "Status", variant: (@bmid.will_not_print? ? :warning : :secondary) %>
+  <%= ui_stat_box @bmid.has_approved_photo ? "On file" : "Missing",
+                  "Photo",
+                  variant: (@bmid.has_approved_photo ? :secondary : :warning) %>
+  <%= ui_stat_box bmid_sap_badge_value(@bmid),
+                  "SAP Date",
+                  variant: (@bmid.sap.nil? ? :warning : :secondary) %>
+<% end %>
+
+<% unless @is_current_year %>
+  <%= ui_callout_box :warning do %>
+    <strong>You are editing <%= @year %>, a previous year.</strong>
+    These badges have already been through the printer.
+  <% end %>
+<% end %>
+
+<%= render "common/bmids/warnings", bmid: @bmid, person: @person, save_label: save_label %>
+
+<%# None of these are badge columns: meals and showers are printed from the
+    person's provisions, the vehicle record comes from their event record.
+
+    The two provision cells are the roster's own, buttons and all, so a badge
+    edited from here offers exactly what Edit Mode offers -- and the dialog's
+    turbo_stream, which replaces the cells by id, lands on this page unchanged.
+
+    This section sits OUTSIDE the badge form below, and the cells hold no fields.
+    That is what keeps a provision save from touching the badge edits in
+    progress: a provision is a separate record that commits on its own, and the
+    dialog's buttons are links, so nothing here can mark the form as changed.
+
+    Deliberately terse (three-up grid chosen from mockups, 2026-07-28): the
+    explanatory paragraph lived here and pushed the badge form down the page,
+    while the provision dialog restates the whole story at the moment it
+    matters. The one line kept is the only behavior that surprises. %>
+<%= ui_section "Meals, Showers & Vehicle Record", icon: "utensils", icon_type: :solid do %>
+  <div class="grid gap-3 lg:grid-cols-3">
+    <div>
+      <div class="text-sm text-stone-muted">Meals</div>
+      <div class="flex min-h-9 items-center font-medium">
+        <%= render "bmid/manage/meals_cell", bmid: @bmid, editable: true,
+                   provisions: @provisions_by_type[Provision::MEALS] %>
+      </div>
+    </div>
+    <div>
+      <div class="text-sm text-stone-muted">Showers</div>
+      <div class="flex min-h-9 items-center font-medium">
+        <%= render "bmid/manage/showers_cell", bmid: @bmid, editable: true,
+                   provisions: @provisions_by_type[Provision::WET_SPOT] %>
+      </div>
+    </div>
+    <div>
+      <div class="text-sm text-stone-muted">Motor Vehicle Record</div>
+      <div class="min-h-9">
+        <span class="font-medium"><%= @bmid.org_vehicle_insurance ? "Yes" : "No" %></span>
+        <span class="text-sm text-stone-muted">(Read-only)</span>
+      </div>
+    </div>
+  </div>
+  <p class="mt-2 text-base text-stone-muted">
+    Provision changes save immediately — they don't join the badge save below.
+  </p>
+<% end %>
+
+<%# PATCH whether or not a row exists yet: the badge is identified by person and
+    year, so it has one address either way (see Bmid::BadgesController#update).
+
+    turbo: false is what makes the save land on the row it came from, and it is
+    not decoration. Turbo Drive follows the redirect with fetch and reads the
+    new address off Response#url, which the Fetch standard defines as excluding
+    the fragment -- so the #bmid-row-N the server sent is thrown away and the
+    admin arrives at the top of a several-hundred-row table. Turbo offers no
+    header to carry it (there is no Turbo-Location). Submitting natively lets
+    the browser follow the redirect itself, fragment intact, and it scrolls.
+
+    The back link and Cancel are ordinary links, so they stay on Turbo: it
+    scrolls to an anchor on a visit perfectly well. Only the redirect is the
+    problem. %>
+<%= ui_form(@bmid, bmid_badge_path(bmid_view_params(person_id: @person.id)),
+            method: :patch, data: { controller: "unsaved-changes", turbo: false }) do |f| %>
+  <%= render "common/bmids/fields", f: f, bmid: @bmid, ticketing_info: @ticketing_info %>
+
+  <% unless is_new %>
+    <p class="me-muted mb-4">
+      Created <%= datetime_format(@bmid.created_at, year: true) %>
+      &middot; Last modified <%= datetime_format(@bmid.updated_at, year: true) %>
+    </p>
+  <% end %>
+
+  <%# Out of the hero, and beside the button it is about. %>
+  <p class="mb-4">Saving brings you back to the roster, on this row.</p>
+
+  <%= button_row do %>
+    <%= f.submit save_label %>
+    <%= cancel_link badge_return_path %>
+  <% end %>
+<% end %>

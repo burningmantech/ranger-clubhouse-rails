@@ -1,0 +1,35 @@
+<%#
+  One report group's positions: an h3 per position shift (with the shift time
+  when there is a slot -- on-duty rows have none) over the people table. The
+  two "no shifts" / "no sign-ups" lines only arise in scheduled mode; on-duty
+  positions exist only when someone is on duty.
+%>
+<% if group.positions.empty? %>
+  <p class="text-stone-muted">No one is on duty in these positions right now.</p>
+<% else %>
+  <% group.positions.each do |position| %>
+    <% if position.slots.empty? %>
+      <p class="text-stone-muted mt-4 first:mt-0">
+        No <%= position.title %> shifts are scheduled around this Alpha shift.
+      </p>
+    <% else %>
+      <% position.slots.each do |slot_sign_ups| %>
+        <%= ui_subheading do %>
+          <%= position.title %>
+          <% if slot_sign_ups.slot %>
+            <span class="font-normal text-stone-muted">&mdash;
+              <span class="whitespace-nowrap tabular-nums"><%= datetime_format slot_sign_ups.slot.begins %></span><% if slot_sign_ups.slot.description.present? %>
+              &middot; <%= slot_sign_ups.slot.description %><% end %></span>
+          <% end %>
+          <%= ui_badge slot_sign_ups.entries.size.to_s, :secondary %>
+        <% end %>
+        <% if slot_sign_ups.entries.empty? %>
+          <p class="text-stone-muted">No sign-ups yet for this shift.</p>
+        <% else %>
+          <%= render "people_table", entries: slot_sign_ups.entries, alpha: position.alpha?,
+                                     began_label: began_label %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

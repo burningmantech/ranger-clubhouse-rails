@@ -1,0 +1,26 @@
+<%#
+  One Alpha shift as a picker card. Shared by /mentoring/alpha-schedule (opens
+  the shift's roster) and /mentoring/shift-report (opens that shift's report),
+  so the two pages cannot drift into describing the same shift differently.
+  The card itself is common/mentoring/_shift_card.
+
+  Locals: shift (AlphaShiftRoster::Shift), url, label, and an optional
+  extra_badge of already-rendered markup for whatever the calling page counts
+  (Alpha Pods puts its pod count there).
+%>
+<%= render "common/mentoring/shift_card",
+           title: alpha_shift_title(shift.slot),
+           badges: [
+             (ui_badge("Inactive", :warning, icon: "circle-pause", icon_type: :solid) unless shift.slot.active),
+             (ui_badge("Full", :warning, icon: "circle-exclamation", icon_type: :solid) if shift.full?),
+             # Signed-in only appears while people are actually on duty, so a
+             # past year's cards do not all read "0 signed in".
+             (ui_badge("#{shift.signed_in} signed in", :success, icon: "user-check", icon_type: :solid) if shift.signed_in.positive?),
+             local_assigns[:extra_badge]
+           ],
+           subtitle: datetime_format(shift.slot.begins, shift.slot.ends),
+           meter: { label: "Sign-Ups",
+                    value: shift.slot.max.to_i.positive? ? "#{shift.signed_up} of #{shift.slot.max}" : shift.signed_up.to_s,
+                    percent: alpha_shift_fill_percentage(shift), variant: alpha_shift_fill_variant(shift),
+                    aria_label: "#{shift.signed_up} of #{shift.slot.max} signed up" },
+           url:, label: %>

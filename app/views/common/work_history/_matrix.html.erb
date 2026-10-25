@@ -1,0 +1,47 @@
+<%# locals: (history:) %>
+<%# The links reach the drill-downs of whichever WorkHistoryConcern controller
+    renders this, as the drill-downs' back links do. %>
+<% if history.years.empty? %>
+  <%= ui_empty_state "No countable timesheet entries were found." %>
+<% else %>
+  <%= ui_table do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Total Hours", right: true %>
+      <% history.years.each do |year| %>
+        <%= t.heading year, right: true %>
+      <% end %>
+    <% end %>
+    <%= t.body do %>
+      <%= t.row state: :total do %>
+        <%= t.cell "All Positions" %>
+        <%= t.cell hour_format(history.total_duration), right: true %>
+        <% history.years.each do |year| %>
+          <%= t.cell right: true do %>
+            <%= link_to hour_format(history.year_totals[year].duration),
+                        url_for(action: :entire_year, year:) %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <% history.positions.each do |position| %>
+        <%= t.row do %>
+          <%= t.cell position.title %>
+          <%= t.cell right: true do %>
+            <%= link_to hour_format(position.duration),
+                        url_for(action: :position_all, position_id: position.id) %>
+          <% end %>
+          <% history.years.each do |year| %>
+            <%= t.cell right: true do %>
+              <% if (entry = position.years[year]) %>
+                <%= link_to hour_format(entry.duration),
+                            url_for(action: :position_summary, position_id: position.id, year:) %>
+              <% else %>
+                <span class="text-stone-muted">—</span>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

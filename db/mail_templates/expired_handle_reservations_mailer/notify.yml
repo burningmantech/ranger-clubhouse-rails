@@ -1,0 +1,35 @@
+description: "Lists the reserved handles that have been let go"
+
+subject: "Expired Handle Reservations"
+
+body: |
+  <p>
+    Hello Volunteer Coordinators,
+  </p>
+
+  <p>
+    The following expired reserved handles have been deleted.
+  </p>
+
+  <table class="data-table" style="margin-bottom: 20px">
+    <thead>
+      <tr>
+        <th>Handle</th>
+        <th>Type</th>
+        <th>Reason</th>
+        <th>Expired On</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for row in handles %}
+        <tr>
+          <td>{{ row.handle }}</td>
+          <td>{{ row.type }}</td>
+          <td>{{ row.reason }}</td>
+          <td>{{ row.expires_on }}</td>
+        </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+
+  {% render "shared/mailer/bot_sign_off" %}

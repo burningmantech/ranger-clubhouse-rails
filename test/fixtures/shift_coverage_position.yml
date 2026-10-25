@@ -1,0 +1,193 @@
+# Test fixtures for ShiftCoveragePosition: the 29 posts of the four shift types
+# in shift_coverage_group.yml, copied from what the migration seeds. Reference
+# these BY NAME, <shift type>_<post>.
+#
+# Every post spells out its sort_index, 1 to N in the report's column order:
+# the column is NOT NULL with no default, so one left out fails the load of
+# every fixture in the suite. The ids are hashed from the labels, so the
+# order the report shows can only come from sort_index.
+#
+# position_ids is JSON text, in single quotes: [position id] or
+# [position id,"label"] per position, spelled the way the app writes it (no
+# space after a comma). A YAML list here would be dumped as YAML text and fail
+# the column's json_valid check, and a spaced spelling would load every
+# multi-entry row as already changed.
+
+command_ood:
+  shift_coverage_group: command
+  title: "OOD"
+  position_ids: '[[10]]'
+  sort_index: 1
+
+command_dood:
+  shift_coverage_group: command
+  title: "DOOD"
+  position_ids: '[[87]]'
+  sort_index: 2
+
+command_rsl:
+  shift_coverage_group: command
+  title: "RSL"
+  position_ids: '[[12]]'
+  sort_index: 3
+
+command_rsci:
+  shift_coverage_group: command
+  title: "RSCI"
+  position_ids: '[[25]]'
+  sort_index: 4
+
+command_rscim:
+  shift_coverage_group: command
+  title: "RSCIM"
+  position_ids: '[[93]]'
+  sort_index: 5
+
+command_wesl:
+  shift_coverage_group: command
+  title: "WESL"
+  position_ids: '[[109]]'
+  sort_index: 6
+
+command_opr:
+  shift_coverage_group: command
+  title: "Opr"
+  position_ids: '[[56],[142,"Smooth"]]'
+  sort_index: 7
+
+command_ts:
+  shift_coverage_group: command
+  title: "TS"
+  position_ids: '[[91],[127,"Mentee"],[147,"TSLEAL"]]'
+  sort_index: 8
+
+command_leal:
+  shift_coverage_group: command
+  title: "LEAL"
+  position_ids: '[[7],[116,"Partner"]]'
+  sort_index: 9
+
+command_gdl:
+  shift_coverage_group: command
+  title: "GDL"
+  position_ids: '[[14],[126,"Intern"]]'
+  sort_index: 10
+
+command_tow:
+  shift_coverage_group: command
+  title: "Tow"
+  position_ids: '[[20],[69,"Mentee"]]'
+  sort_index: 11
+
+command_sanc:
+  shift_coverage_group: command
+  title: "Sanc"
+  position_ids: '[[54],[123,"Mentee"]]'
+  sort_index: 12
+
+command_gerpatld:
+  shift_coverage_group: command
+  title: "GerPatLd"
+  position_ids: '[[76]]'
+  sort_index: 13
+
+command_gerpat:
+  shift_coverage_group: command
+  title: "GerPat"
+  position_ids: '[[75],[122]]'
+  sort_index: 14
+
+command_dirt:
+  shift_coverage_group: command
+  title: "Dirt"
+  position_ids: '[[2],[107]]'
+  count_only: true
+  sort_index: 15
+
+command_gd:
+  shift_coverage_group: command
+  title: "GD"
+  position_ids: '[[4]]'
+  count_only: true
+  sort_index: 16
+
+command_rnr:
+  shift_coverage_group: command
+  title: "RNR"
+  position_ids: '[[11],[115]]'
+  count_only: true
+  sort_index: 17
+
+command_burn:
+  shift_coverage_group: command
+  title: "Burn"
+  position_ids: '[[19],[125],[99],[114],[61]]'
+  count_only: true
+  sort_index: 18
+
+echelon_lead:
+  shift_coverage_group: echelon
+  title: "Echelon Lead"
+  position_ids: '[[81]]'
+  sort_index: 1
+
+echelon_field:
+  shift_coverage_group: echelon
+  title: "Echelon Field"
+  position_ids: '[[17]]'
+  sort_index: 2
+
+echelon_lead_training:
+  shift_coverage_group: echelon
+  title: "Lead Training"
+  position_ids: '[[111]]'
+  sort_index: 3
+
+hq_lead:
+  shift_coverage_group: hq
+  title: "Lead"
+  position_ids: '[[32],[118]]'
+  sort_index: 1
+
+hq_short:
+  shift_coverage_group: hq
+  title: "Short"
+  position_ids: '[[33]]'
+  sort_index: 2
+
+hq_window:
+  shift_coverage_group: hq
+  title: "Window"
+  position_ids: '[[3],[117]]'
+  sort_index: 3
+
+hq_runner:
+  shift_coverage_group: hq
+  title: "Runner"
+  position_ids: '[[18]]'
+  sort_index: 4
+
+intercept_dispatch:
+  shift_coverage_group: intercept
+  title: "Dispatch"
+  position_ids: '[[6]]'
+  sort_index: 1
+
+intercept_operator:
+  shift_coverage_group: intercept
+  title: "Operator"
+  position_ids: '[[66],[56]]'
+  sort_index: 2
+
+intercept_interceptors:
+  shift_coverage_group: intercept
+  title: "Interceptors"
+  position_ids: '[[5]]'
+  sort_index: 3
+
+intercept_count:
+  shift_coverage_group: intercept
+  title: "Count"
+  position_ids: '[[5]]'
+  count_only: true
+  sort_index: 4

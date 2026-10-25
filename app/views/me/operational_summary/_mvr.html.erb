@@ -1,0 +1,30 @@
+<%= ui_section "Ranger Rental Fleet Vehicles", icon: "truck-pickup", icon_type: :solid do %>
+  <% if @person_event.org_vehicle_insurance %>
+    <%= ui_badge "Authorized", :success, icon: "circle-check", icon_type: :solid %>
+    <p class="text-body mt-2">
+      You are authorized to operate cars and trucks on the playa for Ranger business. This includes your own personal vehicle with an approved Personal Vehicle Request.
+    </p>
+    <p class="text-sm text-stone-muted mt-2">
+      <strong>Required:</strong> Vehicle must have a valid Burning Man driving permit for the current event. Permits are not transferable between years.
+    </p>
+  <% elsif @person_event.mvr_eligible %>
+    <%= ui_badge "MVR Eligible", :success, icon: "circle-check", icon_type: :solid %>
+    <p class="text-body mt-2">
+      You are eligible to submit a Motor Vehicle Record (MVR) request.
+    </p>
+    <p class="text-body mt-2">
+      See the <%= link_to "Vehicle Dashboard", me_vehicles_dashboard_path, class: "underline font-semibold" %> for more information.
+    </p>
+  <% else %>
+    <%= ui_badge "Not Authorized", :warning, icon: "circle-exclamation", icon_type: :solid %>
+    <p class="text-body mt-2">
+      You are not authorized to operate larger Ranger vehicles (cars or trucks) on playa for Ranger business.
+    </p>
+    <p class="text-body mt-2">
+      Use of your personal vehicle for Ranger purposes is also prohibited.
+    </p>
+    <p class="text-sm text-stone-muted mt-2">
+      If vehicle access is essential to your Ranger duties, obtain prior approval from your manager.
+    </p>
+  <% end %>
+<% end %>

@@ -1,0 +1,27 @@
+<%#
+  Results of the "Reset Applicants to Past Prospective" task.
+
+  @results is transient — it only exists in the response to the POST that ran the
+  task, so this page cannot be reached again by a GET. Print it in full here.
+%>
+<%# A form-submission render keeps the submitting page's scroll position --
+    without this the reader lands wherever the submit button was instead of
+    at the summary. %>
+<div data-controller="scroll-to-top" hidden></div>
+
+<%= hero_panel icon: "circle-check", heading_level: :h1, id: "vc-maintenance-reset-pnvs-header",
+               description: "This task has finished, and the accounts it changed are listed below.",
+               back_to: ["Maintenance Tasks", vc_maintenance_path] do |panel| %>
+  <% panel.title do %><%= @title %><% end %>
+<% end %>
+
+<% if @results.any? %>
+  <div class="text-lg my-4">
+    <strong><%= pluralize @results.size, "applicant" %></strong> reset to Past Prospective
+  </div>
+
+  <%= render "results_table", results: @results, show_status: true %>
+<% else %>
+  <%= ui_empty_state "Odd, no qualified applicants were found.",
+                     icon: "user-slash", icon_type: :solid %>
+<% end %>

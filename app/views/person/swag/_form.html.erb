@@ -1,0 +1,46 @@
+<%# locals: (person:, person_swag:, form_path:, form_method:, swag_type:, swag_title:, swag_options:, submit_label:, show_delete:) %>
+<%= ui_form(person_swag, form_path, method: form_method) do |f| %>
+  <%= hidden_field_tag :swag_type, swag_type %>
+
+  <% if swag_options.empty? %>
+    <%= ui_callout_box :warning, title: "No Active Swag Options" do %>
+      No active <%= swag_title %> options exist in the catalog. Add one in the Swag admin before recording.
+    <% end %>
+  <% else %>
+    <%= form_row do %>
+      <%= f.collection_radio_buttons :swag_id,
+                                     swag_options,
+                                     :id,
+                                     :title,
+                                     {
+                                       label: swag_title,
+                                       required: true,
+                                       layout: :horizontal,
+                                       label_position: :stacked,
+                                       wrapper_class: "w-full"
+                                     },
+                                     { required: true } %>
+    <% end %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.number_field :year_issued, label: "Year Issued", maxlength: 4 %>
+  <% end %>
+  <%= form_row do %>
+    <%= f.text_area :notes, label: "Notes (optional)", rows: 2, cols: 80 %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit submit_label %>
+    <%= button_link "Cancel", :secondary, person_swag_index_path(person) %>
+    <% if show_delete %>
+      <%= delete_button person_swag_path(person, person_swag),
+                        "Delete",
+                        confirm_modal: {
+                          title: "Delete Swag Record",
+                          message: "Delete this swag? This cannot be undone."
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>
+

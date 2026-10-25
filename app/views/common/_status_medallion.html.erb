@@ -1,0 +1,22 @@
+<%# locals: (icon:, state:, size: :md, icon_type: :solid) %>
+<%# A circular tinted badge holding one decorative icon, used above the heading
+    of a status or empty state. size drives the box, the icon and the gap under
+    it together, so the three cannot drift apart the way they had.
+    Both lookups hold complete literal class strings: a name built by
+    interpolation would never be compiled. %>
+<%
+  box, icon_size, gap = {
+    md: ["h-16 w-16", "text-3xl", "mb-4"],
+    lg: ["h-20 w-20", "text-4xl", "mb-6"]
+  }.fetch(size)
+
+  tint = {
+    warning: "bg-warning/10 text-warning",
+    error: "bg-error/10 text-error",
+    success: "bg-success/10 text-success",
+    info: "bg-info/10 text-info"
+  }.fetch(state)
+%>
+<div class="inline-flex items-center justify-center rounded-full <%= box %> <%= tint %> <%= gap %>" aria-hidden="true">
+  <%= fa_icon icon, icon_type, class: icon_size %>
+</div>

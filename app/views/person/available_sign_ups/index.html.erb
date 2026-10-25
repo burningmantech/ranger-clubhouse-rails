@@ -1,0 +1,6 @@
+<%= render template: "common/available_sign_ups/index",
+           locals: {
+             back_link: back_to("Schedule", person_scheduling_path(@person, year: @year)),
+             description_text: @is_current_year ? "Browse available shifts and training sessions for #{@person.callsign}." : "View shifts and training sessions available in #{@year} for #{@person.callsign}.",
+             sign_ups_position_path_builder: ->(position_id, **options) { person_scheduling_sign_ups_position_path(@person, position_id:, **options) }
+           } %>

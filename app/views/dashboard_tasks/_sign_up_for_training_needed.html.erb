@@ -1,0 +1,7 @@
+<%# locals: (step:,facts:)%>
+<% if facts.is_applicant %>
+  <b>Required:</b> Pass In-Person Training → then sign up for Alpha shift.
+<% else %>
+  <b>Yearly requirement:</b> You must complete In-Person Training each year in order to ranger on playa for the event.
+<% end %>
+<div class="mt-2"><%= link_to "Go To Schedule / Sign-Ups", me_schedule_path, class: "tap-target-link" %></div>

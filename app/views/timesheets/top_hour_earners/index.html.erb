@@ -1,0 +1,104 @@
+<%#
+  The rangers with the biggest single year of hours in a span, most hours first,
+  with every year of the span beside them.
+%>
+<% content_for :title, "Top Hour Earners" %>
+
+<%= hero_panel icon: "trophy", heading_level: :h1,
+               id: "timesheets-top-hour-earners-header",
+               title: "Top Hour Earners" do |panel| %>
+  <% panel.description do %>
+    The rangers with the most hours in a single year, across the span you choose.
+  <% end %>
+<% end %>
+
+<%# How the ranking is decided, out of the hero -- and only while there is a
+    ranking to explain. %>
+<% if @report.any? %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>How is the ranking decided?</dt>
+      <dd>
+        <strong>Ranked by one year, not by the span.</strong> Each ranger's biggest single
+        year decides their place, so a ranger who carried one year comes ahead of one who
+        spread the same hours over several.
+      </dd>
+      <dt>Who is counted?</dt>
+      <dd>Only positions that earn hours are counted, and only active and inactive rangers are listed.</dd>
+      <%= render "common/skipped_years_pair" if @report.skips_years? %>
+    </dl>
+  <% end %>
+<% end %>
+
+<%# No chips: a span is what the report is about rather than something narrowing
+    it, so there is nothing a reader could remove and nowhere for it to land.
+    The count line below carries the span instead. %>
+<%= filter_bar id: "top-hour-earners-filters",
+               count: top_hour_earners_count(@report),
+               # The export carries the report on screen, so it travels with the
+               # same span -- and only while there is a report to carry.
+               actions: (export_csv_link(timesheets_top_hour_earners_path(start_year: @report.start_year,
+                                         end_year: @report.end_year,
+                                         limit: @report.limit, format: :csv)) if @report.any?),
+               url: timesheets_top_hour_earners_path do |f| %>
+  <%= form_row do %>
+    <%= f.select :start_year, EventYearSpan.year_options, label: "Start Year",
+                 selected: @report.start_year, width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :end_year, EventYearSpan.year_options, label: "End Year",
+                 selected: @report.end_year, width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :limit, TopHourEarnersReport::LIMITS, label: "Show Top",
+                 selected: @report.limit, width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+  <%= button_row do %>
+    <%= f.submit "Run Report" %>
+  <% end %>
+<% end %>
+
+<% if @report.any? %>
+  <%# Not a responsive table: folded into one card per ranger this becomes twenty
+      labelled lines apiece, and two hundred of those is a page no one reaches the
+      end of. The grid scrolls sideways at every width instead, with the callsign
+      frozen at the start edge. %>
+  <%= ui_table full_width: true, striped: true, responsive: false,
+               container_class: "top-hour-earners-grid",
+               caption: "Rangers ranked by their biggest single year of hours" do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Rank and Callsign", class: "top-hour-earners-person" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Top Hours", right: true %>
+      <%= t.heading "Top Year", right: true %>
+      <% @report.years.each do |year| %>
+        <%= t.heading year, right: true %>
+      <% end %>
+    <% end %>
+    <%= t.body do %>
+      <% @report.rows.each_with_index do |row, index| %>
+        <%= t.row do %>
+          <%# The rank rides in the frozen cell rather than a column of its own:
+              two frozen columns need the first one's width pinned in CSS, and
+              this way the reader keeps both while the years scroll past. %>
+          <%= t.row_header class: "top-hour-earners-person" do %>
+            <span class="text-stone-muted tabular-nums me-1"><%= index + 1 %>.</span>
+            <%= person_display_link row.person, row.person.id %>
+          <% end %>
+          <%= t.cell person_status_label(row.person) %>
+          <%= t.cell hour_format(row.top_duration), right: true, class: "font-semibold" %>
+          <%= t.cell row.top_year, right: true %>
+          <% @report.years.each do |year| %>
+            <%# The ranking is decided on these same years, so the marked cell
+                is always one of the ones drawn here. %>
+            <%= t.cell hour_format(row.duration_for(year)), right: true,
+                       class: top_hour_earners_year_class(row, year) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%# "No active or inactive ranger", not "no hours": a span far enough back can
+      be full of hours whose earners have all since retired, and saying nothing
+      was turned in would be untrue. %>
+  <%= ui_empty_state "No active or inactive ranger earned hours on a counted position " \
+                     "for #{EventYearSpan.in_words(@report.start_year, @report.end_year)}.",
+                     icon: "trophy", icon_type: :solid %>
+<% end %>

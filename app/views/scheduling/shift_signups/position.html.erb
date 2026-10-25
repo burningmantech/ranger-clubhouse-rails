@@ -1,0 +1,94 @@
+<%#
+  One position's year: every active shift, earliest first, and how full each one
+  is.
+%>
+<% content_for :title, "#{@position.title} Shift Sign-Ups" %>
+
+<%= hero_panel icon: "clipboard-check", heading_level: :h1,
+               id: "shift-signups-detail-header",
+               title: "#{@year} #{@position.title} Shift Sign-Ups",
+               back_to: ["#{@year} Shift Sign-Ups",
+                         scheduling_shift_signups_path(year: @year)] do |panel| %>
+  <% panel.description do %>
+    Every active <%= @position.title %> shift this year and how full it is,
+    earliest first.
+  <% end %>
+  <%# Stays on this position and only swaps the year. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @detail.shift_count.to_s, "Shifts",
+                  icon: "calendar-check", icon_type: :solid %>
+  <%= ui_stat_box shift_signups_count(@detail.sign_up_count, @detail.seat_count),
+                  "Signed Up", variant: :secondary, icon: "users", icon_type: :solid %>
+  <%# The same figure the list showed against this position, so the reader who
+      clicked a row lands on the number they clicked. %>
+  <% fill = @detail.fill_percentage %>
+  <%= ui_stat_box fill ? "#{fill}%" : "No limit", "Full",
+                  variant: :secondary, icon: "chart-simple", icon_type: :solid %>
+  <%# Amber only while there is something to act on. %>
+  <%= ui_stat_box @detail.empty_count.to_s, "Empty Shifts",
+                  variant: (@detail.empty_count.positive? ? :warning : :success),
+                  icon: "user-slash", icon_type: :solid %>
+<% end %>
+
+<%# A legend for rows is all the card holds, so it is offered only when there
+    are rows to read. %>
+<% if @detail.shifts.any? %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <%= render "legend", subject: "shift" %>
+    </dl>
+  <% end %>
+<% end %>
+
+<div class="my-4 flex flex-wrap gap-2">
+  <%# This page counts the sign-ups; the schedule report names the people behind
+      the counts. %>
+  <% if shift_signups_can_view_schedule? %>
+    <%= button_link "Who Signed Up", :secondary,
+                    scheduling_schedule_by_position_position_path(@position.id, year: @year),
+                    icon: "users", icon_type: :solid %>
+  <% end %>
+  <% if @detail.shifts.any? %>
+    <%= export_csv_link(scheduling_shift_signups_position_path(@position.id, year: @year,
+                        format: :csv)) %>
+  <% end %>
+</div>
+
+<% if @detail.shifts.any? %>
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Time" %>
+      <%= t.heading "Shift" %>
+      <%= t.heading "Sign-Ups", right: true %>
+      <%= t.heading "Fill" %>
+    <% end %>
+    <%= t.body do %>
+      <% @detail.shifts.each do |shift| %>
+        <% signed_up = shift_signups_count(shift.sign_up_count, shift.seat_count) %>
+        <%= t.row state: shift_signups_row_state(shift) do %>
+          <%= t.row_header do %>
+            <%= slot_shift_time(shift.slot) %>
+          <% end %>
+          <%= t.cell do %>
+            <%= value_or_dash(shift.slot.description) %>
+            <%# On a coverage report a shift no one has taken is the finding, so
+                it is named rather than left to the row's colour. %>
+            <% if shift.empty? %>
+              <%= ui_badge "Empty", :error, icon: "user-slash", icon_type: :solid %>
+            <% end %>
+          <% end %>
+          <%= t.cell signed_up, right: true, class: "whitespace-nowrap" %>
+          <%= t.cell do %>
+            <%= render "fill_meter", counts: shift, label: "#{signed_up} signed up" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "#{@position.title} has no active #{@year} shifts.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

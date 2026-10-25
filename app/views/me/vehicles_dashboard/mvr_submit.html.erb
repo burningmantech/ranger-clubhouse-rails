@@ -1,0 +1,13 @@
+<% dashboard = @vehicle_dashboard %>
+<%= hero_panel icon: "file-lines", heading_level: :h1, id: "mvr-request-header",
+               title: "Submit a MVR Request",
+               back_to: ["Vehicle Dashboard", me_vehicles_dashboard_path] %>
+
+<%= ui_section "Motor Vehicle Record Request Instructions" do %>
+  <% if @instructions.present? %>
+    <%= @instructions.html_safe %>
+  <% else %>
+    <h3 class="heading-title text-error mb-2">Instructions Not Found</h3>
+    <p>Uh oh, I cannot find the MVR Request instructions! Please contact the Vehicle Administrator for help.</p>
+  <% end %>
+<% end %>

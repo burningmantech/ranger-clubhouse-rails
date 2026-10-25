@@ -1,0 +1,18 @@
+<%# The door pages: sign in, forgot password, reset password, and the single
+    sign-on pages. One narrow column, centred under the bar, on the
+    application layout -- which draws the signed-out bar (brand and theme
+    toggle) for every page no one is signed in on, and no sidebar.
+
+    login-submit sits on the wrapper so it covers every form on every one of
+    these pages. login-column is the sign-in page's hook: login.css widens the
+    column from lg up when the page sets its doors beside the panel. %>
+<% content_for :head do %>
+  <meta name="description" content="Sign in to the Ranger Secret Clubhouse - Your portal to the playa">
+<% end %>
+<% content_for :main do %>
+  <div class="login-column mx-auto w-full max-w-md min-h-full flex flex-col justify-center py-8"
+       data-controller="login-submit" data-action="submit->login-submit#pending">
+    <%= yield %>
+  </div>
+<% end %>
+<%= render template: "layouts/application" %>

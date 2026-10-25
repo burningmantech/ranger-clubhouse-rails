@@ -1,0 +1,20 @@
+<%# Grid of checkboxes submitting an array parameter.
+    name:       parameter name, including the trailing []
+    options:    [[value, label], ...]
+    selected:   values that should be checked
+    id_prefix:  prefix for each input's id
+    align:      where the box sits when a label wraps -- :center (default) or
+                :start, which also nudges the box onto the first line's optical
+                centre. Long labels want :start; short ones look wrong in it. %>
+<% align = local_assigns.fetch(:align, :center) %>
+<div class="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+  <% options.each do |value, label| %>
+    <%= render layout: "common/checkbox_tile", locals: { align: } do %>
+      <%= check_box_tag name, value, selected.include?(value),
+                        id: "#{id_prefix}-#{value.parameterize}",
+                        class: class_names(AppFormBuilder::CHECKBOX_CLASSES, "shrink-0",
+                                           "mt-0.5" => align == :start) %>
+      <span class="text-sm text-body leading-snug"><%= label %></span>
+    <% end %>
+  <% end %>
+</div>

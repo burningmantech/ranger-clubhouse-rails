@@ -1,0 +1,72 @@
+<%# locals: (rows:, summary_view:) %>
+<%#
+  One cohort's radios -- rows is an Array<RadioCheckoutReport::Row>. Both
+  sections render this, so a column added for the overdue list can never go
+  missing from the eligible one beneath it.
+%>
+<%= ui_table full_width: true, striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading "Barcode" %>
+    <%= t.heading "Duration", right: true %>
+    <%= t.heading "Checked Out / By" %>
+    <%# Only the after-action view can hold a check-in: in the chase list every
+        radio on screen is still out, so the column would read "Still out" on
+        every row. %>
+    <% if summary_view %>
+      <%= t.heading "Checked In / By" %>
+    <% end %>
+    <%# "Assignment", as the Asset History and Assets Outstanding siblings head
+        this same badge -- every row here is already a radio. %>
+    <%= t.heading "Assignment" %>
+  <% end %>
+
+  <%= t.body do %>
+    <% rows.each do |row| %>
+      <% checkout = row.checkout %>
+      <%= t.row do %>
+        <%= t.row_header person_display_link(row.person, checkout.person_id) %>
+        <%= t.cell row.asset.barcode %>
+        <%= t.cell radio_checkout_duration(row), right: true %>
+        <%# year: -- the reader browses arbitrary past years here, so a bare
+            "Aug 27 @ 12:47" cannot be placed. %>
+        <%= t.cell do %>
+          <%= datetime_format(checkout.checked_out, year: true) %>
+          <% if checkout.check_out_person_id.present? %>
+            <div class="text-body">
+              by <%= person_display_link(checkout.check_out_person,
+                                         checkout.check_out_person_id) %>
+            </div>
+          <% end %>
+          <%# Someone overrode a block to hand this radio over -- worth seeing
+              beside a checkout that then ran long. %>
+          <% if checkout.check_out_forced? %>
+            <div class="mt-1">
+              <%= ui_badge "Check-out forced", :warning,
+                           icon: "triangle-exclamation", icon_type: :solid %>
+            </div>
+          <% end %>
+        <% end %>
+        <% if summary_view %>
+          <%= t.cell do %>
+            <% if checkout.checked_in.present? %>
+              <%= datetime_format(checkout.checked_in, year: true) %>
+              <% if checkout.check_in_person_id.present? %>
+                <div class="text-body">
+                  by <%= person_display_link(checkout.check_in_person,
+                                             checkout.check_in_person_id) %>
+                </div>
+              <% end %>
+            <% else %>
+              <%= ui_badge "Still out", :warning,
+                           icon: "circle-exclamation", icon_type: :solid %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <%# Whether the RADIO is an event radio, which is not whether its holder
+            may keep one -- that verdict is the section this row is in. %>
+        <%= t.cell asset_assignment_badge(row.asset) %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

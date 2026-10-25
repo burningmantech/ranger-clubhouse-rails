@@ -1,0 +1,200 @@
+<% on_duty = @entry.off_duty.nil? %>
+<% can_manage = can?(:manage_timesheets) %>
+
+<%= hero_panel icon: "pen-to-square", heading_level: :h1, id: "person-timesheet-edit-header",
+               back_to: ["#{@year} Timesheet", person_timesheets_path(@person, year: @year)] do |panel| %>
+  <% panel.title do %>
+    Timesheet Entry #<%= @entry.id %> &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<% unless on_duty %>
+  <% if @entry.status_pending? %>
+    <%= ui_callout_box :error, title: "Correction Request Review Required", icon: "arrow-right" do %>
+      Entry has a correction request and needs to be reviewed.
+    <% end %>
+  <% elsif @entry.status_verified? %>
+    <%= ui_callout_box :success, title: "Entry Verified - No Review Required" do %>
+      Review is not needed at this time.
+      Verified on <%= datetime_format @entry.verified_at %> by <%= @entry.verified_person&.callsign || "-" %>.
+    <% end %>
+  <% elsif @entry.status_approved? %>
+    <%= ui_callout_box :warning, title: "Verification Needed - No Review Required", icon: "hourglass" do %>
+      Review is not needed at this time. The correction request was approved.
+      However, the correction still needs to be reviewed by <%= @person.callsign %>.
+    <% end %>
+  <% elsif !@entry.status_rejected? %>
+    <%= ui_callout_box :secondary, title: "Unverified - No Review Required", icon: "hourglass" do %>
+      No review action required at this time. <%= @person.callsign %> needs to verify this entry.
+    <% end %>
+  <% end %>
+<% end %>
+
+<% unless can_manage %>
+  <%= ui_section "User & Timesheet Reviewer Notes", icon: "comment", icon_type: :solid do %>
+    <%= render partial: "common/timesheet_notes",
+               locals: { notes: @entry.notes, empty_message: "No notes have been entered." } %>
+  <% end %>
+
+  <%= ui_section "Time & Position", icon: "clock", icon_type: :solid do %>
+    <%= ui_table striped: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Position" %>
+        <%= t.heading "Time" %>
+        <%= t.heading "Duration" %>
+        <%= t.heading "Credits", right: true %>
+      <% end %>
+      <%= t.body do %>
+        <%= t.row do %>
+          <%= t.cell "#{@entry.position.title}#{" (as Echelon volunteer)" if @entry.is_echelon}" %>
+          <%= t.cell datetime_format(@entry.on_duty, @entry.off_duty) %>
+          <%= t.cell hour_minute_words(@entry.duration, full: true) %>
+          <%= t.cell credit_format(@entry.credits), right: true %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <div class="mt-3">
+      <span class="font-semibold text-heading">Review status:</span> <%= @entry.review_status || "-" %>
+    </div>
+  <% end %>
+
+  <%= button_row do %>
+    <%= back_to "#{@year} Timesheet", person_timesheets_path(@person, year: @year) %>
+  <% end %>
+<% else %>
+  <%= ui_form @entry, person_timesheet_path(@person, @entry, year: @year), method: :patch do |f| %>
+    <%= ui_section "User & Timesheet Reviewer Notes", icon: "comment", icon_type: :solid do %>
+      <%= render partial: "common/timesheet_notes",
+                 locals: { notes: @entry.notes, empty_message: "No notes have been entered." } %>
+      <%= f.text_area :additional_wrangler_notes,
+                      label: "New Note to #{@person.callsign} (your callsign & the time will automatically be added)",
+                      rows: 2 %>
+    <% end %>
+
+    <%= ui_section "Confidential Reviewer Notes (Not Shown to User)", icon: "user-shield", icon_type: :solid do %>
+      <%= render partial: "common/timesheet_notes",
+                 locals: { notes: @entry.admin_notes, empty_message: "No reviewer-only notes have been entered." } %>
+      <%= f.text_area :additional_admin_notes,
+                      label: "New Note Only Shown to Other Reviewers (your callsign & the time will automatically be added)",
+                      rows: 2 %>
+    <% end %>
+
+    <%= ui_section "Time & Position", icon: "clock", icon_type: :solid do %>
+      <% unless on_duty || @entry.suppress_duration_warning %>
+        <% if timesheet_too_short?(@entry) %>
+          <%= ui_callout_box :warning do %>
+            Entry might be too short. Duration is less than 15 minutes.
+          <% end %>
+        <% elsif timesheet_too_long?(@entry) %>
+          <%= ui_callout_box :warning do %>
+            Entry might be too long. Duration is over 1.5x the scheduled shift of
+            <%= hour_minute_words timesheet_slot_duration(@entry.slot), full: true %>.
+          <% end %>
+        <% end %>
+        <%= render partial: "common/time_warnings",
+                   locals: { warnings: @entry.time_warnings,
+                             start_time: @entry.on_duty,
+                             finish_time: @entry.off_duty,
+                             lead_in: "The entry's times fall outside the scheduled sign-up times for the entire
+                                       event. This could be due to an incorrect previous correction, an accidental
+                                       shift start, or selecting the wrong position during shift check-in. It's also
+                                       possible that this was an authorized check-in and the times are correct." } %>
+      <% end %>
+
+      <div class="mb-1">
+        <% if @entry.slot %>
+          For reference, the scheduled sign-up is:
+          <%= ui_table striped: false, class: "my-2", responsive: false do |t| %>
+            <%= t.header do %>
+              <%= t.heading "Scheduled Time" %>
+              <%= t.heading "Duration" %>
+              <%= t.heading "Slot ID", right: true %>
+            <% end %>
+            <%= t.body do %>
+              <%= t.row do %>
+                <%= t.cell datetime_format(@entry.slot.begins, @entry.slot.ends) %>
+                <%= t.cell hour_minute_words(timesheet_slot_duration(@entry.slot), full: true) %>
+                <%= t.cell @entry.slot.id, right: true %>
+              <% end %>
+            <% end %>
+          <% end %>
+          The actual time volunteered might be longer or shorter than the scheduled sign-up.
+        <% else %>
+          Entry does not appear to be associated with a scheduled sign-up.
+        <% end %>
+      </div>
+
+      <% unless on_duty %>
+        <% if @entry.desired_position_id.present? || @entry.desired_on_duty.present? || @entry.desired_off_duty.present? %>
+          <%= render partial: "desired_changes" %>
+        <% else %>
+          <div class="text-error font-semibold mb-3">The person has not entered any desired changes.</div>
+        <% end %>
+      <% end %>
+
+      <%= form_row do %>
+        <%= f.datetime_field :on_duty, label: "On Duty", required: true %>
+        <% unless on_duty %>
+          <%= f.datetime_field :off_duty, label: "Off Duty", required: true %>
+        <% end %>
+        <%= f.select :position_id, @position_options, { label: "Position" } %>
+      <% end %>
+      <% unless on_duty %>
+        <div class="font-medium mt-2">
+          Timesheet duration: <%= hour_minute_words @entry.duration, full: true %>
+          <span class="text-stone-muted">(before any unsaved changes)</span>
+        </div>
+      <% end %>
+    <% end %>
+
+    <% unless on_duty %>
+      <%= ui_section "Attributes", icon: "sliders", icon_type: :solid do %>
+        <%= f.check_box :is_echelon,
+                        label: "Entry is for an Echelon volunteer - time will not count towards service years" %>
+        <%= f.check_box :suppress_duration_warning,
+                        label: "Suppress duration warnings (too short / too long), and date/time warnings" %>
+      <% end %>
+
+      <%= ui_section "Entry Status", icon: "list-check", icon_type: :solid do %>
+        <% if @person.id == Current.person_id %>
+          <%= ui_accent_card "Note When Editing Your Own Entries", variant: :info do %>
+            When correcting your own timesheet entries, use <strong>Entry Verified</strong>, not <i>Correction approved</i>.
+            The later is only intended to be used by the Timesheet Wranglers.
+          <% end %>
+        <% end %>
+        <%= f.collection_radio_buttons :review_status,
+                                       [["Correction approved: #{@person.callsign} will still need to verify the applied corrections", Timesheet::STATUS_APPROVED],
+                                        ["Correction rejected", Timesheet::STATUS_REJECTED],
+                                        ["Correction requested", Timesheet::STATUS_PENDING],
+                                        ["Entry verified: all information is correct. No further action needed.", Timesheet::STATUS_VERIFIED],
+                                        ["Entry unverified: awaiting verification by #{@person.callsign}", Timesheet::STATUS_UNVERIFIED]],
+                                       :last, :first,
+                                       { layout: :vertical } %>
+      <% end %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Save Entry" %>
+      <%= cancel_button person_timesheets_path(@person, year: @year) %>
+      <% unless on_duty %>
+        <%= button_link "Delete Entry", :error, person_timesheet_path(@person, @entry, year: @year),
+                        class: "ms-auto",
+                        data: confirm_modal(
+                          title: "Confirm Timesheet Deletion",
+                          message: "Are you certain you want to permanently delete this entry? Unsaved edits will be lost.",
+                          confirm_label: "Delete Entry",
+                          method: :delete,
+                          variant: :error
+                        ) %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Audit Log", icon: "clock-rotate-left", icon_type: :solid, class: "mt-4" do %>
+  <% if @entry_logs.any? %>
+    <%= render partial: "log_table", locals: { logs: @entry_logs } %>
+  <% else %>
+    <%= ui_empty_state "No audit log entries were found for this entry." %>
+  <% end %>
+<% end %>

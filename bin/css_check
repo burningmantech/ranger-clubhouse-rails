@@ -1,0 +1,178 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Checks a CSS refactor against the baseline (docs/css-dry-rules.md §3).
+#
+#   bin/css_check                        run the snapshot suite, rebuild the stylesheet, diff both
+#   bin/css_check test/controllers/me    only these tests; the HTML diff covers what ran
+#   bin/css_check --css                  skip the tests, diff the stylesheet only
+#   bin/css_check --baseline             capture a new baseline (after an accepted change)
+#
+# Prints the normalized HTML diff against tmp/css_snapshots_base (empty means a
+# pure refactor) and the selectors the compiled stylesheet lost or gained.
+#
+# Exits 1 when a selector disappeared while its class is still written somewhere
+# in the code: Tailwind stopped seeing a class the app still uses, which is how a
+# page quietly loses its styling in production.
+#
+# Exits 1 as well when an @utility this app declares has no rule in the compiled
+# utilities layer while the code still writes its name. That is asked of the
+# build, not of the diff: a hand-written rule elsewhere can keep a class name in
+# the stylesheet after its utility has stopped compiling, and then no selector
+# ever disappears.
+
+require "fileutils"
+require "open3"
+require "set"
+require_relative "../lib/css_matchers"
+
+Dir.chdir(File.expand_path("..", __dir__))
+
+SNAPSHOTS = "tmp/css_snapshots"
+BASE_SNAPSHOTS = "tmp/css_snapshots_base"
+BASE_CSS = "tmp/css-audit/tailwind.base.css"
+AFTER_CSS = "tmp/css-audit/tailwind.after.css"
+SUITE = %w[test/controllers test/integration test/helpers].freeze
+# Everywhere a class string can live. Tailwind has to see all of these.
+CODE_DIRS = %w[app/views app/helpers app/javascript app/presenters app/lib app/components config].freeze
+# Everywhere an @utility can be declared.
+STYLESHEETS = %w[app/assets/stylesheets/**/*.css app/assets/tailwind/*.css].freeze
+
+def run_suite(paths)
+  FileUtils.rm_rf(SNAPSHOTS)
+  puts "== Running #{paths.join(" ")} with CSS_SNAPSHOT=1"
+  output, status = Open3.capture2e({ "CSS_SNAPSHOT" => "1" }, "bin/rails", "test", *paths)
+  puts "   #{output.lines.grep(/\d+ runs, \d+ assertions/).last&.strip || output.lines.last(5).join}"
+  puts "   (the suite failed; snapshots from failing tests may stop early)" unless status.success?
+end
+
+def build_css(path)
+  require "bundler/setup"
+  require "tailwindcss/ruby"
+  FileUtils.mkdir_p(File.dirname(path))
+  # The same command tailwindcss:build runs (no postcss.config.js here), written
+  # somewhere a running tailwindcss:watch cannot overwrite.
+  command = [Tailwindcss::Ruby.executable, "-i", "app/assets/tailwind/application.css", "-o", path, "--minify"]
+  output, status = Open3.capture2e(*command)
+  abort "tailwindcss failed:\n#{output}" unless status.success?
+end
+
+# Class names used in selectors, unescaped (".lg\:p-4" -> "lg:p-4"), the rule
+# count, and the utilities Tailwind emitted.
+def stylesheet(path)
+  css = File.read(path).gsub(%r{/\*.*?\*/}m, "")
+  classes = Set.new
+  rules = 0
+  CssMatchers.each_rule(css) do |selector|
+    rules += 1
+    classes.merge(CssMatchers.selector_classes(selector))
+  end
+  { classes:, rules:, bytes: File.size(path), utilities: CssMatchers.compiled_utilities(css) }
+end
+
+def declared_utilities
+  Dir.glob(STYLESHEETS).flat_map { |file| CssMatchers.declared_utilities(File.read(file)) }
+end
+
+def snapshot_files(dir) = Dir.glob("**/*.html", base: dir).to_set
+
+def compare_snapshots(scoped)
+  current = snapshot_files(SNAPSHOTS)
+  base = snapshot_files(BASE_SNAPSHOTS)
+  # A scoped run only answers for the test classes it ran.
+  if scoped
+    ran = current.to_set { |f| f.split("/").first }
+    base = base.select { |f| ran.include?(f.split("/").first) }.to_set
+  end
+  changed = (current & base).select { |f| File.read("#{SNAPSHOTS}/#{f}") != File.read("#{BASE_SNAPSHOTS}/#{f}") }.sort
+  # Same lines in a different order: rows that tie on their sort key and come back
+  # from the database in either order. A class change always changes a line.
+  reordered, changed = changed.partition do |f|
+    File.readlines("#{SNAPSHOTS}/#{f}").sort == File.readlines("#{BASE_SNAPSHOTS}/#{f}").sort
+  end
+  added = (current - base).sort
+  removed = (base - current).sort
+
+  puts "\n== HTML snapshots: #{current.size} captured, #{changed.size} changed, #{added.size} new, " \
+       "#{removed.size} missing, #{reordered.size} reordered only"
+  changed.each do |f|
+    diff, = Open3.capture2("diff", "-u", "#{BASE_SNAPSHOTS}/#{f}", "#{SNAPSHOTS}/#{f}")
+    puts diff
+  end
+  added.each { |f| puts "   new:       #{f}" }
+  removed.each { |f| puts "   missing:   #{f}" }
+  reordered.each { |f| puts "   reordered: #{f}" }
+  puts "   (empty: a pure refactor)" if changed.empty? && added.empty? && removed.empty?
+end
+
+def code_texts
+  @code_texts ||= CODE_DIRS.flat_map { |dir| Dir.glob("#{dir}/**/*.{erb,rb,js,html,yml}") }
+                           .reject { |f| f.include?("/vendor/") }
+                           .to_h { |f| [f, File.read(f)] }
+end
+
+# Comment lines are skipped: Tailwind ignores Ruby comments too, and prose there
+# ("shrink the axis", "a diff") names classes nobody uses.
+COMMENT_LINE = %r{\A\s*(?:#|//|/?\*|<%#)}
+
+def code_lines(pattern)
+  code_texts.flat_map do |file, text|
+    text.each_line.with_index(1).filter_map do |line, number|
+      "#{file}:#{number}" if line.match?(pattern) && !line.match?(COMMENT_LINE)
+    end
+  end
+end
+
+def references(name) = code_lines(/(?<![\w:\/\[\]!.-])#{Regexp.escape(name)}(?![\w\/\[\]-])/)
+
+def report_failures(what, hits_by_class)
+  return if hits_by_class.empty?
+
+  puts "\n== FAIL: #{hits_by_class.size} #{what}"
+  hits_by_class.each { |c, hits| puts "   .#{c}  #{hits.first(5).join("  ")}#{" …" if hits.size > 5}" }
+end
+
+def compare_stylesheets
+  build_css(AFTER_CSS)
+  before = stylesheet(BASE_CSS)
+  after = stylesheet(AFTER_CSS)
+  removed = (before[:classes] - after[:classes]).sort
+  added = (after[:classes] - before[:classes]).sort
+  declared = declared_utilities
+  unemitted = declared.reject { |name| after[:utilities].include?(name) }
+
+  puts "\n== Stylesheet: #{before[:bytes]} -> #{after[:bytes]} bytes, #{before[:rules]} -> #{after[:rules]} rules"
+  puts "   removed (#{removed.size}): #{removed.map { |c| ".#{c}" }.join(" ")}" if removed.any?
+  puts "   added (#{added.size}): #{added.map { |c| ".#{c}" }.join(" ")}" if added.any?
+  puts "   no selector added or removed" if removed.empty? && added.empty?
+  puts "   #{declared.size} @utility declared, #{unemitted.size} not emitted#{": #{unemitted.join(" ")}" if unemitted.any?}"
+
+  still_used = removed.to_h { |c| [c, references(c)] }.reject { |_, hits| hits.empty? }
+  # An @utility only @apply uses is never emitted and never written, so being
+  # unemitted is not the failure. Being unemitted and written is.
+  unstyled = (unemitted - still_used.keys).to_h { |c| [c, code_lines(CssMatchers.written(c))] }
+                                          .reject { |_, hits| hits.empty? }
+  report_failures("class(es) no longer compiled but still written in the code", still_used)
+  report_failures("@utility not emitted but still written in the code", unstyled)
+  still_used.empty? && unstyled.empty?
+end
+
+args = ARGV.dup
+if args.delete("--baseline")
+  run_suite(SUITE)
+  FileUtils.rm_rf(BASE_SNAPSHOTS)
+  FileUtils.cp_r(SNAPSHOTS, BASE_SNAPSHOTS)
+  build_css(BASE_CSS)
+  css = stylesheet(BASE_CSS)
+  puts "\n== Baseline: #{snapshot_files(BASE_SNAPSHOTS).size} snapshots, " \
+       "#{css[:bytes]} bytes, #{css[:rules]} rules, #{css[:classes].size} class selectors"
+  exit
+end
+
+abort "No baseline yet. Run bin/css_check --baseline on the pre-refactor commit." unless Dir.exist?(BASE_SNAPSHOTS) && File.exist?(BASE_CSS)
+
+unless args.delete("--css")
+  run_suite(args.empty? ? SUITE : args)
+  compare_snapshots(args.any?)
+end
+exit(compare_stylesheets ? 0 : 1)

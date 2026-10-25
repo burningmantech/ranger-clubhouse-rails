@@ -1,0 +1,97 @@
+<%# The trainer attendance table: every matched group in one table, saved in
+    bulk. Attendance decides whether a trainer counts as trained for the
+    year; the lead flag marks who ran the session. %>
+<% session = @training_session %>
+
+<%= ui_section "Trainers — #{session.trainer_count} Signed Up", icon: "chalkboard-user", icon_type: :solid do %>
+  <p class="mb-3">
+    Mark a trainer as <strong>Attended</strong> so they are counted as trained for the year.
+    Lead = the trainer(s) responsible for the session.
+  </p>
+
+  <% if session.trainer_count.zero? %>
+    <%= ui_empty_state "No trainers are signed up yet." %>
+  <% else %>
+    <%= form_with url: training_session_trainer_statuses_path(training_slug, session.slot.id),
+                  method: :post, builder: AppFormBuilder do %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Position" %>
+          <%= t.heading "Attendance" %>
+          <%= t.heading "Lead" %>
+          <% if can_adjust_roster? %>
+            <%= t.heading "Remove" %>
+          <% end %>
+        <% end %>
+        <%= t.body do %>
+          <% session.trainer_groups.each do |group| %>
+            <% group.trainers.each do |trainer| %>
+              <% row_key = "#{group.slot.id}-#{trainer.person.id}" %>
+              <%= t.row do %>
+                <%= t.row_header do %>
+                  <%= person_display_link trainer.person, trainer.person.id %>
+                  <%= hidden_field_tag "trainers[#{row_key}][person_id]", trainer.person.id %>
+                  <%= hidden_field_tag "trainers[#{row_key}][trainer_slot_id]", group.slot.id %>
+                <% end %>
+                <%= t.cell group.position_title %>
+                <%= t.cell do %>
+                  <%= select_tag "trainers[#{row_key}][status]",
+                                 options_for_select(
+                                   [["Pending", TrainerStatus::STATUS_PENDING],
+                                    ["Attended", TrainerStatus::STATUS_ATTENDED],
+                                    ["No Show", TrainerStatus::STATUS_NO_SHOW]],
+                                   trainer.status
+                                 ),
+                                 class: AppFormBuilder::SELECT_CLASSES,
+                                 aria: { label: "Attendance for #{trainer.person.callsign}" } %>
+                <% end %>
+                <%= t.cell do %>
+                  <label class="inline-flex items-center gap-2 min-h-9 cursor-pointer">
+                    <%= hidden_field_tag "trainers[#{row_key}][is_lead]", "0", id: nil %>
+                    <%= check_box_tag "trainers[#{row_key}][is_lead]", "1", trainer.is_lead,
+                                      class: AppFormBuilder::CHECKBOX_CLASSES,
+                                      aria: { label: "#{trainer.person.callsign} is a lead trainer" } %>
+                    <span>Lead</span>
+                  </label>
+                <% end %>
+                <% if can_adjust_roster? %>
+                  <%= t.cell do %>
+                    <%= delete_button training_session_remove_roster_path(training_slug, session.slot.id, trainer.person.id,
+                                                                          kind: "trainer", trainer_slot_id: group.slot.id),
+                                      "Remove",
+                                      variant: :secondary, size: "sm",
+                                      confirm_modal: {
+                                        title: "Remove Trainer",
+                                        message: "Remove #{trainer.person.callsign} from this session's trainer roster? They can be added back.",
+                                        confirm_label: "Remove #{trainer.person.callsign}"
+                                      } %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%# Add Trainer sits beside Save in the same row -- a link inside the
+          form is fine, and two stacked rows read as misaligned buttons. %>
+      <%= button_row class: "mt-4" do %>
+        <%= submit_button "Save Trainers" %>
+        <% if can_adjust_roster? %>
+          <%= button_link "Add Trainer", :secondary,
+                          training_session_new_roster_path(training_slug, session.slot.id, kind: "trainer"),
+                          icon: "plus", icon_type: :solid, data: { turbo_frame: "modal" } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if session.trainer_count.zero? && can_adjust_roster? %>
+    <%= button_row do %>
+      <%= button_link "Add Trainer", :secondary,
+                      training_session_new_roster_path(training_slug, session.slot.id, kind: "trainer"),
+                      icon: "plus", icon_type: :solid, data: { turbo_frame: "modal" } %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,128 @@
+<%# Everything an auditor account needs. The reason for the account leads,
+    because it is the one answer that can send a reader somewhere else; then who
+    you are, how you sign in, your legal name, and where you live. The sum that
+    keeps robots out sits last, beside the button that acts on it.
+
+    required_label: "" throughout. Nearly every field here has to be answered, so
+    a full "required" pill on each one is a wall of red that a real error then has
+    to shout over. The bare asterisk still marks the field and the input still
+    carries aria-required; red is left to mean a mistake. %>
+<% person = @form.person %>
+<% address_required = person.mailing_address_required? %>
+
+<p class="mb-4">
+  To audit a training you need a Clubhouse account. Please answer the following.
+</p>
+
+<%# Posts to the form's own address, so a rejected form leaves the reader on a
+    page whose address matches what they are looking at.
+
+    register-intent rides alongside the form's country-state behaviour: choosing
+    "become a Ranger" reveals the note under the reason and holds the submit, so
+    the wrong reader is caught at the question, not after filling the form in. %>
+<% form_data = country_form_data_attributes(@form.state) %>
+<% form_data = form_data.merge(
+     controller: "#{form_data[:controller]} register-intent",
+     action: "#{form_data[:action]} change->register-intent#check",
+     register_intent_trigger_value: RegisterForm::RANGER_INTENT
+   ) %>
+<%= ui_form(@form, register_path(step: "form"), data: form_data) do |f| %>
+  <%= ui_section "Your Reason for Registering", icon: "circle-question", icon_type: :solid do %>
+    <%# The browser is asked to insist as well, through the inputs themselves: a
+        round trip to find out empties both password boxes. %>
+    <%= f.collection_radio_buttons :intent, RegisterForm::INTENT_OPTIONS, :last, :first,
+                                   { label: "Why are you creating a Clubhouse account?",
+                                     required: true, required_label: "" },
+                                   { required: true } %>
+
+    <%# Revealed the moment "become a Ranger" is chosen; the controller also holds
+        the submit while it shows. Hidden, so it never flashes for the reader who
+        picks a reason that belongs here. %>
+    <div data-register-intent-target="message" class="hidden mt-3">
+      <%= ui_callout_box :error, icon: "ban" do %>
+        <strong>This will not make you a Black Rock Ranger.</strong>
+        To become a Ranger, submit a Volunteer Form at
+        <%= link_to "profiles.burningman.org", "https://profiles.burningman.org",
+                    class: "link link-primary", target: "_blank", rel: "noopener noreferrer" %>.
+        If you are here to audit a training, pick one of the other reasons above.
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= ui_section "Sign-In Details", icon: "envelope", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What will I sign in with?</dt>
+      <dd>Your email address and the password you choose here.</dd>
+      <dt>Can I change the password later?</dt>
+      <dd>Yes, from your profile once you have signed in.</dd>
+    </dl>
+    <%= f.email_field :email, label: "Email Address", width: "w-full sm:w-72",
+                      maxlength: 50, required: true, required_label: "", autocomplete: "email" %>
+    <%= form_row do %>
+      <%= f.password_field :password, label: "Password", width: "w-full sm:w-64",
+                           minlength: RegisterForm::PASSWORD_MINIMUM,
+                           maxlength: RegisterForm::PASSWORD_MAXIMUM, required: true, required_label: "",
+                           autocomplete: "new-password",
+                           help_text: "#{RegisterForm::PASSWORD_MINIMUM} to #{RegisterForm::PASSWORD_MAXIMUM} characters." %>
+      <%= f.password_field :password_confirmation, label: "Confirm Password", width: "w-full sm:w-64",
+                           minlength: RegisterForm::PASSWORD_MINIMUM,
+                           maxlength: RegisterForm::PASSWORD_MAXIMUM, required: true, required_label: "",
+                           autocomplete: "new-password" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Legal Name", icon: "id-card", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Why the legal name?</dt>
+      <dd>Used for training sign-in sheets and event access.</dd>
+      <dt>Do I choose my own callsign?</dt>
+      <dd>No. The Clubhouse builds one for you from your name, and it appears on the next page.</dd>
+    </dl>
+    <%= render "common/legal_name_fields", f: f, autocomplete: true, required_label: "" %>
+  <% end %>
+
+  <%= ui_section "Mailing Address", icon: "location-dot", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Why do we need this?</dt>
+      <dd>Used for Ranger-related mailings.</dd>
+    </dl>
+    <%= render "common/mailing_address_fields", f: f, address_required: address_required,
+                                               state_required: person.state_required?,
+                                               autocomplete: true, required_label: "" %>
+  <% end %>
+
+  <%= ui_section "Phone", icon: "phone", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Why do we need this?</dt>
+      <dd>Used to reach you when email fails.</dd>
+    </dl>
+    <%= form_row do %>
+      <%= f.telephone_field :home_phone, label: "Primary Phone", width: "w-full sm:w-44",
+                            maxlength: 25, required: true, required_label: "", autocomplete: "tel" %>
+      <%= f.telephone_field :alt_phone, label: "Alternative Phone", width: "w-full sm:w-44",
+                            maxlength: 25 %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Human Check", icon: "user-check", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Why the sum?</dt>
+      <dd>It keeps automated sign-ups from filling the Clubhouse with accounts no one asked for.</dd>
+    </dl>
+    <%= f.text_field :human_answer, label: RegisterForm::HUMAN_QUESTION, width: "w-full sm:w-32",
+                     maxlength: 10, required: true, required_label: "", autocomplete: "off",
+                     inputmode: "numeric" %>
+  <% end %>
+
+  <%= render "questions" %>
+
+  <%# Creating the account runs a slow password hash, the first status change,
+      and a notification, so the submit says it is working -- Turbo disables it
+      for the round trip, and this names why it went quiet. %>
+  <%= button_row do %>
+    <%= f.submit "Create My Auditor Account", size: "base",
+                 data: { turbo_submits_with: "Creating your account…",
+                         register_intent_target: "submit" } %>
+    <%= cancel_link register_path, "Start Over", size: "base" %>
+  <% end %>
+<% end %>

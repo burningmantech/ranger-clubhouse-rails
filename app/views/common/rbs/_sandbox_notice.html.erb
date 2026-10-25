@@ -1,0 +1,25 @@
+<%# locals: (sandboxes:, test_address:, sent: false, others_live: false) %>
+<%# Which channels deliver to no one, and where email goes while it is being
+    tested. A sandboxed broadcast looks exactly like a real one everywhere
+    else, so the sender is told before and after sending. `sent:` words the
+    sandbox for a broadcast that has already gone; `others_live:` adds that
+    every other channel still delivers, which test mode always says too: a
+    sender who reads "test" must not assume texts are a test as well. Test
+    mode does deliver, so it never shares the "recorded but not delivered"
+    sentence -- and stays in the present tense, since emails are still queued
+    when the sent page shows. %>
+<% if sandboxes.any? || test_address.present? %>
+  <%= ui_callout_box :warning, title: sandboxes.any? ? "Sandbox Mode Is On" : "Emails Go to the Test Address",
+                               icon: "flask", icon_type: :solid, heading_level: :h2 do %>
+    <% if sandboxes.any? %>
+      <p><%= sandboxes.to_sentence.upcase_first %> <%= sent ? "were" : "are" %> recorded but not delivered.</p>
+    <% end %>
+    <% if test_address.present? %>
+      <p>Emails go to <strong><%= test_address %></strong>, with each Ranger's id in place of the ?, not to the
+        Rangers themselves.</p>
+    <% end %>
+    <% if (others_live || test_address.present?) && RbsSandbox.anything_live?(sandboxes, test_address) %>
+      <p>Anything else you send goes out for real.</p>
+    <% end %>
+  <% end %>
+<% end %>

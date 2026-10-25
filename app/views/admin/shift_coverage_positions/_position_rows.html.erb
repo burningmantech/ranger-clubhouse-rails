@@ -1,0 +1,46 @@
+<%# locals: (f:, positions:) %>
+<%# The positions a post reads, one row each: a position and an optional label. The form
+    draws the rows the post has plus two blank ones, never fewer than four, and a blank row
+    is ignored. After a refused save it draws the rows as they were sent, junk and all, so
+    the reader can see what to put right. %>
+<% post = f.object %>
+<% entries = Array(post.position_ids) %>
+<% row_count = [entries.size + 2, 4].max %>
+<% choices = position_choices_by_team(positions) %>
+<% rows_in_error = post.errors.details[:position_ids].filter_map { |detail| detail[:row] } %>
+<% describedby = token_list("post-positions-help", "post-positions-error": post.errors.include?(:position_ids)) %>
+
+<%= f.fieldset "Positions", aria: { describedby: } do %>
+  <%= f.help_text_tag "A label is printed after the callsign of anyone on that position, e.g. Mentee, " \
+                      "so positions sharing a post can be told apart.", "post-positions-help" %>
+  <%= f.error_message :position_ids, "post-positions-error" %>
+
+  <div class="space-y-6">
+    <% row_count.times do |row| %>
+      <% id, label = entries[row] %>
+      <% invalid = rows_in_error.include?(row) %>
+      <div class="flex flex-wrap gap-x-4 gap-y-2">
+        <%# The wrapper carries the field's width, since the builder's width: cannot reach a raw tag. %>
+        <div class="w-full sm:max-w-xs">
+          <%# Explicit ids: the names repeat, and an id derived from one would collide under Turbo morph. %>
+          <%= label_tag "post-row-#{row}-position", "Position #{row + 1}",
+                        class: invalid ? AppFormBuilder::LABEL_ERROR_CLASSES : AppFormBuilder::LABEL_CLASSES %>
+          <%= select_tag "shift_coverage_position[row_position_ids][]",
+                         grouped_options_for_select(choices, id),
+                         include_blank: true, id: "post-row-#{row}-position",
+                         class: [invalid ? AppFormBuilder::SELECT_ERROR_CLASSES : AppFormBuilder::SELECT_CLASSES,
+                                 "w-full"],
+                         aria: { describedby:, invalid: ("true" if invalid) } %>
+        </div>
+        <div>
+          <%= label_tag "post-row-#{row}-label", "Label #{row + 1}",
+                        class: invalid ? AppFormBuilder::LABEL_ERROR_CLASSES : AppFormBuilder::LABEL_CLASSES %>
+          <%= text_field_tag "shift_coverage_position[row_labels][]", label,
+                             id: "post-row-#{row}-label", maxlength: ShiftCoveragePosition::LABEL_LIMIT,
+                             class: invalid ? AppFormBuilder::INPUT_ERROR_CLASSES : AppFormBuilder::INPUT_CLASSES,
+                             aria: { describedby:, invalid: ("true" if invalid) } %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,8 @@
+<%# locals: (shift:, blank:) %>
+<% if shift %>
+  <%= shift.position_title || "Unknown position" %>
+  <div class="text-sm text-stone-muted"><%= shift.description.presence || "No description" %></div>
+  <div class="text-sm text-stone-muted"><%= datetime_format shift.begins %></div>
+<% else %>
+  <span class="text-stone-subtle"><%= blank %></span>
+<% end %>

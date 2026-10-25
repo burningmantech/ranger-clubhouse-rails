@@ -1,0 +1,106 @@
+<%= ui_form(@asset,
+            @asset.persisted? ? asset_management_record_path(@asset, @return_index_params) : asset_management_records_path(@return_index_params),
+            method: @asset.persisted? ? :patch : :post,
+            data: { controller: "asset-form" }) do |f| %>
+  <%= ui_section "Asset Details", icon: "barcode", icon_type: :solid do %>
+    <%= form_row do %>
+      <%= f.select :type,
+                   asset_type_select_options,
+                   {
+                     label: "Type",
+                     width: "w-full",
+                     wrapper_class: "flex-1"
+                   },
+                   {
+                     data: {
+                       action: "change->asset-form#handleTypeChange",
+                       asset_form_target: "typeSelect"
+                     }
+                   } %>
+      <%= f.text_field :barcode,
+                       label: "Barcode",
+                       required: true,
+                       maxlength: 25,
+                       width: "w-full",
+                       wrapper_class: "flex-1" %>
+      <%= f.text_field :description,
+                       label: "Description",
+                       maxlength: 25,
+                       width: "w-full",
+                       wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= form_row do %>
+      <div data-asset-form-target="durationGroup" class="w-full">
+        <%= f.collection_radio_buttons :perm_assign,
+                                       asset_duration_options(@asset.type),
+                                       :last,
+                                       :first,
+                                       label: "Usage Duration",
+                                       layout: :horizontal,
+                                       wrapper_class: "w-full" %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Assignment & Expiration", icon: "calendar-days", icon_type: :solid do %>
+    <%= form_row do %>
+      <%= f.text_field :entity_assignment,
+                       label: "Entity Assignment",
+                       maxlength: 40,
+                       width: "w-full",
+                       wrapper_class: "flex-1",
+                       help_text: "If filled in, this asset cannot be checked out. Use it for team or non-Clubhouse assignments." %>
+      <%= f.text_field :group_name,
+                       label: "Asset Group",
+                       maxlength: 25,
+                       width: "w-full",
+                       wrapper_class: "flex-1",
+                       help_text: "Use a team or collection name such as SITE, Event, or HRS." %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.date_field :expires_on,
+                       label: "Expires On",
+                       width: "w-full",
+                       wrapper_class: "flex-1",
+                       help_text: "Stops new checkouts after 23:59 on the selected date." %>
+      <%= f.text_field :order_number,
+                       label: "Order Number",
+                       maxlength: 40,
+                       width: "w-full",
+                       wrapper_class: "flex-1",
+                       help_text: "Use the vendor order number for the asset." %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.text_area :notes,
+                      label: "Notes",
+                      rows: 3,
+                      wrapper_class: "w-full" %>
+    <% end %>
+
+    <% unless @asset.persisted? %>
+      <%= form_row do %>
+        <%= f.text_field :copies,
+                         label: "Copies",
+                         maxlength: 4,
+                         width: "w-24",
+                         help_text: "Includes the first asset. Leave blank to create only one record." %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Asset" %>
+    <%= cancel_link @cancel_path %>
+    <% if @asset.persisted? %>
+      <%= delete_button asset_management_record_path(@asset, @return_index_params),
+                        "Delete Asset",
+                        confirm_modal: {
+                          title: "Delete Asset",
+                          message: "Delete asset #{@asset.barcode}? This cannot be undone."
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

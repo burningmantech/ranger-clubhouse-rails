@@ -1,0 +1,93 @@
+# Vehicle fixtures for autocomplete VehicleAdapter tests (D2).
+#
+# event_year is pinned to 2026 so the adapter default (Current.year, which is the
+# real current year in test since groundhog-day time is unset) matches without an
+# explicit :<year> suffix. Tests that must be year-independent pass ":2026".
+#
+# Reference these BY NAME (no fixtures :all ordering assumptions).
+
+# Owner-labeled, approved personal vehicle. license_number "RANGER1" intentionally
+# equals the callsign of the person fixture :plate_collision_ranger so the D2 guard
+# test can prove that "!RANGER1" returns ONLY this vehicle, never the person.
+approved_owner_vehicle:
+  person: active_ranger
+  type: "personal"
+  status: "approved"
+  event_year: 2026
+  license_number: "RANGER1"
+  license_state: "NV"
+  rental_number: ""
+  sticker_number: "PERMIT100"
+  vehicle_type: "Car"
+  vehicle_year: "2020"
+  vehicle_make: "Toyota"
+  vehicle_model: "Tacoma"
+  vehicle_color: "White"
+  vehicle_class: ""
+  team_assignment: ""
+  notes: ""
+  request_comment: ""
+  response: ""
+
+# Team-labeled fleet vehicle (no owner person) in the same year.
+approved_fleet_vehicle:
+  person: null
+  type: "fleet"
+  status: "approved"
+  event_year: 2026
+  license_number: ""
+  license_state: ""
+  rental_number: "DPW5550"
+  sticker_number: ""
+  vehicle_type: "UTV"
+  vehicle_year: "2019"
+  vehicle_make: "Polaris"
+  vehicle_model: "Ranger"
+  vehicle_color: "Green"
+  vehicle_class: ""
+  team_assignment: "Logistics"
+  notes: ""
+  request_comment: ""
+  response: ""
+
+# Pending (NOT approved) vehicle — must be excluded by the adapter's status filter.
+pending_vehicle:
+  person: active_ranger
+  type: "personal"
+  status: "pending"
+  event_year: 2026
+  license_number: "PENDING9"
+  license_state: "CA"
+  rental_number: ""
+  sticker_number: ""
+  vehicle_type: "Car"
+  vehicle_year: "2021"
+  vehicle_make: "Ford"
+  vehicle_model: "F150"
+  vehicle_color: "Black"
+  vehicle_class: ""
+  team_assignment: ""
+  notes: ""
+  request_comment: ""
+  response: ""
+
+# Approved vehicle pinned to a different year (2024) to prove year scoping.
+approved_vehicle_2024:
+  person: active_ranger
+  type: "personal"
+  status: "approved"
+  event_year: 2024
+  license_number: "OLDYEAR1"
+  license_state: "NV"
+  rental_number: ""
+  sticker_number: ""
+  vehicle_type: "Car"
+  vehicle_year: "2018"
+  vehicle_make: "Honda"
+  vehicle_model: "Civic"
+  vehicle_color: "Blue"
+  vehicle_class: ""
+  team_assignment: ""
+  notes: ""
+  request_comment: ""
+  response: ""

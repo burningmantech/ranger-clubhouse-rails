@@ -1,0 +1,48 @@
+<%# locals: (edu:) -%>
+<%# Renders one Training::EducationInfo: status, session when/where, teaching flag, required-for list.
+    Shared by the /person and /hq training pages, so the sibling partial is fully qualified —
+    partial lookup follows the rendering CONTROLLER's prefixes, not this file's directory. -%>
+<div class="flex flex-wrap items-center gap-2">
+  <%= render "common/training/status_badge", status: edu.status %>
+  <% if edu.is_trainer %>
+    <%= ui_badge "Teaching", :primary, icon: "chalkboard-user", icon_type: :solid %>
+  <% end %>
+</div>
+
+<% if edu.slot %>
+  <div class="mt-2 text-body">
+    <span class="font-medium text-heading">When:</span>
+    <%= datetime_format edu.slot.begins %> (<%= edu.slot.timezone_abbr %>)
+  </div>
+  <div class="text-body">
+    <span class="font-medium text-heading">Where:</span>
+    <%= edu.slot.description %>
+  </div>
+<% else %>
+  <div class="mt-2 text-body">Not signed up for a session.</div>
+<% end %>
+
+<% if edu.required_by.present? %>
+  <div class="mt-2 text-body">
+    <span class="font-medium text-heading">Required for:</span>
+    <%= edu.required_by.map { |position|
+          position[:not_granted] ? "#{position[:title]} (granted once ART requirements are met)" : position[:title]
+        }.join(", ") %>
+  </div>
+<% end %>
+
+<% if edu.is_green_dot_mentee %>
+  <div class="mt-2 text-body">
+    <span class="font-medium text-heading">Green Dot Mentee session:</span>
+    <% if edu.mentee_slot %>
+      <%= datetime_format edu.mentee_slot.begins %> (<%= edu.mentee_slot.timezone_abbr %>)
+    <% else %>
+      Not signed up yet.
+    <% end %>
+  </div>
+  <% if edu.mentee_timesheet %>
+    <div class="mt-1">
+      <%= ui_badge "Mentee session attended", :success, icon: "circle-check", icon_type: :solid %>
+    </div>
+  <% end %>
+<% end %>

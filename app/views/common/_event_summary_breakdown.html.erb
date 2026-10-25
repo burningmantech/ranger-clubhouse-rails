@@ -1,0 +1,71 @@
+<%# locals: (summary:, position_summary:, year:, whose:) %>
+<% have_excluded_hours = position_summary.any? { |row| !row.hours_counted } %>
+<% if summary.event_start %>
+  <%= ui_callout_box :info, icon: "calendar" do %>
+    <strong><%= year %> Event
+      Week:</strong> <%= datetime_format summary.event_start %> to <%= datetime_format summary.event_end %>
+  <% end %>
+<% else %>
+  <%= ui_callout_box :warning do %>
+    <strong>Event dates not set.</strong> Period breakdowns will not be accurate until dates are entered.
+  <% end %>
+<% end %>
+
+<%= ui_section "Hours and Credits Summary", icon: "clock", icon_type: :solid do %>
+  <dl class="instruction-list mb-3">
+    <dt>What does this show?</dt>
+    <dd><%= whose %> volunteer hours and credits broken down by event period (Pre-Event, Event Week, Post-Event).</dd>
+    <dt>What are excluded hours?</dt>
+    <dd>Training and on-call shifts don't count toward provisions but do earn credits.</dd>
+  </dl>
+
+  <%= render partial: "common/event_summary_counts", locals: { summary: } %>
+<% end %>
+
+<%= ui_section "Position Summary", icon: "list-check", icon_type: :solid do %>
+  <dl class="instruction-list mb-3">
+    <dt>What does this show?</dt>
+    <dd>All positions volunteered for this year with shift counts, hours, and credits.</dd>
+  </dl>
+
+  <% if position_summary.any? %>
+    <%= ui_table responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Position" %>
+        <%= t.heading "Shifts", right: true %>
+        <%= t.heading "Duration", right: true %>
+        <%= t.heading "Credits", right: true %>
+      <% end %>
+      <%= t.body do %>
+        <%= t.row state: :total do %>
+          <%= t.cell "All Positions (#{pluralize(position_summary.size, 'position')})" %>
+          <%= t.cell position_summary.sum(&:shifts), right: true %>
+          <%= t.cell hour_minute_words(position_summary.sum(&:duration)), right: true %>
+          <%= t.cell credit_format(position_summary.sum(&:credits)), right: true %>
+        <% end %>
+        <% position_summary.each do |position| %>
+          <%= t.row do %>
+            <%= t.cell do %>
+              <%= position.title %>
+              <% unless position.hours_counted %>
+                <span class="text-stone-muted text-sm">(hours excluded)</span>
+              <% end %>
+            <% end %>
+            <%= t.cell position.shifts, right: true %>
+            <%= t.cell hour_minute_words(position.duration), right: true %>
+            <%= t.cell credit_format(position.credits), right: true %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <% if have_excluded_hours %>
+      <%= ui_callout_box :secondary, icon: "circle-info", class: "mt-4" do %>
+        Positions marked "(hours excluded)" include training, on-call, and similar shift types.
+        These hours do not count toward provisions but do earn credits.
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No positions found for #{year}.",
+                       icon: "clipboard-list", icon_type: :solid %>
+  <% end %>
+<% end %>

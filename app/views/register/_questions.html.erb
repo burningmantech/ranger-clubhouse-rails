@@ -1,0 +1,8 @@
+<%# The standing "who to ask" line. On the form step it renders inside the form,
+    above the sticky button row, so the fixed bar has nothing trailing it to
+    cover; every other step drops it in at the foot of the page. %>
+<p class="my-4 max-w-prose">
+  <strong>Questions?</strong>
+  Contact the Ranger Volunteer Coordinators at
+  <%= mail_to EmailAddresses::VOLUNTEER_COORDINATORS_TEAM, class: "link link-primary" %>.
+</p>

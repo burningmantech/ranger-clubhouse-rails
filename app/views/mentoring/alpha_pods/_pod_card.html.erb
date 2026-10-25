@@ -1,0 +1,102 @@
+<%#
+  One pod as a card: its number, the three groups that make it up, and the
+  controls that change it. The three groups are separate rows in the database
+  (a mentor pod and the alpha and mitten pods linked to it) but one pod to
+  everyone who walks it, so they are one card here.
+
+  Locals: set (AlphaPodBoard::PodSet), slot, first, last.
+%>
+<%= ui_card do %>
+  <%= ui_card_body class: "py-3" do %>
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+      <%# h2/h3, not h3/h4: the hero's h1 is the only heading above the grid,
+          so the cards are the page's second level. %>
+      <h2 class="heading-section text-heading grow">Pod <%= set.number %></h2>
+      <%= ui_badge pluralize(set.member_count, "person"), :secondary %>
+      <% if set.mentor_pod.disbanded? && set.empty? %>
+        <%# Upstream hides this state entirely; an empty pod that is still on
+            the page needs to say why it looks abandoned. %>
+        <%= ui_badge "Disbanded", :warning, icon: "circle-pause", icon_type: :solid %>
+      <% end %>
+    </div>
+
+    <% set.groups.each do |group| %>
+      <div class="border-t border-base-300 pt-2 mt-2 first:border-t-0 first:pt-0 first:mt-0">
+        <div class="flex flex-wrap items-center gap-2 mb-1">
+          <h3 class="heading-title text-heading">
+            <%= fa_icon alpha_pod_group_icon(group.type), :solid, end: 2 %><%= group.title %>
+          </h3>
+          <%= ui_badge group.members.size.to_s, :secondary, size: "xs" %>
+          <div class="ms-auto">
+            <%# The group titles keep their own capitalisation wherever they
+                appear -- MITten is a name, not a word. %>
+            <%= button_link "Add", :secondary, mentoring_new_alpha_pods_person_path(slot, group.pod),
+                            icon: "plus", icon_type: :solid,
+                            data: { turbo_frame: "modal" },
+                            aria: { label: "Add #{group.title} to Pod #{set.number}" } %>
+          </div>
+        </div>
+
+        <% if group.members.empty? %>
+          <p class="text-sm text-stone-muted">No <%= group.title %> yet.</p>
+        <% else %>
+          <%# Numbered for Alphas, whose order is the order they walk in;
+              plain for the mentors and MITtens, who are a flat group.
+              The row inside each item is what flexes -- a flex <li> is not a
+              list-item any more and drops its number. %>
+          <%= content_tag group.type == Pod::TYPE_ALPHA ? :ol : :ul,
+                          class: "#{"list-decimal ms-5" if group.type == Pod::TYPE_ALPHA} space-y-1".squish do %>
+            <% group.members.each do |member| %>
+              <li class="marker:text-stone-muted marker:text-sm">
+                <span class="inline-flex flex-wrap items-center gap-2">
+                <%= link_to member.person.callsign,
+                            mentoring_edit_alpha_pods_person_path(slot, group.pod, member.person),
+                            class: "link link-primary inline-flex min-h-8 items-center",
+                            data: { turbo_frame: "modal" },
+                            aria: { label: "Change #{member.person.callsign} in Pod #{set.number}" } %>
+                <% if member.lead? %>
+                  <%= ui_badge "Lead", :primary, size: "xs" %>
+                <% end %>
+                <%# Alphas only. A prior bonk is what a mentor needs to know
+                    about the Alpha they are about to walk; on a mentor or a
+                    MITten it is their own history and none of the pod's
+                    business. Upstream badges it on the Alpha list alone. %>
+                <% if group.type == Pod::TYPE_ALPHA && member.prior_bonk? %>
+                  <%= ui_badge "Bonked #{member.bonk_years.join(", ")}", :warning, size: "xs",
+                               icon: "circle-exclamation", icon_type: :solid %>
+                <% end %>
+                <% if member.on_duty? %>
+                  <%= ui_badge "On duty", :success, size: "xs", icon: "circle-check", icon_type: :solid %>
+                <% end %>
+                </span>
+              </li>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= ui_card_footer class: "justify-start pb-3 gap-2 flex-wrap" do %>
+    <%# tabindex -1 alongside disabled:. A `disabled` attribute means nothing
+        on an anchor and DaisyUI's btn-disabled only blocks the pointer, so
+        without this the greyed-out arrow stays tabbable and Enter still fires
+        the Turbo request. %>
+    <%= button_link "Earlier", :ghost, mentoring_alpha_pods_pod_move_path(slot, set.mentor_pod, direction: Pod::MOVE_EARLIER),
+                    method: :patch, icon: "arrow-up", icon_type: :solid,
+                    disabled: first, tabindex: ("-1" if first),
+                    aria: { label: "Move Pod #{set.number} earlier in the walk order" } %>
+    <%= button_link "Later", :ghost, mentoring_alpha_pods_pod_move_path(slot, set.mentor_pod, direction: Pod::MOVE_LATER),
+                    method: :patch, icon: "arrow-down", icon_type: :solid,
+                    disabled: last, tabindex: ("-1" if last),
+                    aria: { label: "Move Pod #{set.number} later in the walk order" } %>
+    <%= delete_button mentoring_alpha_pods_pod_path(slot, set.mentor_pod), "Delete Pod",
+                      variant: :ghost,
+                      confirm_modal: {
+                        title: "Delete Pod #{set.number}",
+                        message: "Delete Pod #{set.number} and take its #{pluralize(set.member_count, "member")} out of it? The pod cannot be brought back.",
+                        confirm_label: "Delete Pod #{set.number}",
+                        method: "delete"
+                      } %>
+  <% end %>
+<% end %>

@@ -1,0 +1,14 @@
+<%# The bar on the door pages -- sign in, forgot password, register -- where no
+    one is signed in yet: the brand, and the theme toggle. The same bar as
+    _top_menu so navbar.css paints the same ink; the brand leads back to the
+    sign-in page rather than /me. The theme controller rides the nav here as it
+    does on the full bar, and its connect() is what sets the theme on <html>
+    from the saved preference or the system. %>
+<nav class="navbar bg-chrome/80" data-controller="theme">
+  <div class="navbar-start">
+    <%= link_to "Clubhouse", root_path, class: "btn btn-ghost text-xl no-decoration" %>
+  </div>
+  <div class="navbar-end">
+    <%= render "application/theme_toggle" %>
+  </div>
+</nav>

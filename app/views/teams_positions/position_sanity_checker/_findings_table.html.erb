@@ -1,0 +1,52 @@
+<%#
+  One check's findings as a table. Every check shows a checkbox, the callsign,
+  and the status; #position_check_columns adds whatever else that check needs.
+
+  The checkbox carries the finding's key, not a bare person id: a person short
+  of two team positions is two rows, and picking one must not settle the other.
+%>
+<% columns = position_check_columns(check) %>
+
+<%= ui_table striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading width: "1%" do %>
+      <span class="sr-only">Repair</span>
+    <% end %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading "Status" %>
+    <% columns.each do |label, _key| %>
+      <%= t.heading label %>
+    <% end %>
+  <% end %>
+
+  <%= t.body do %>
+    <% findings.each do |finding| %>
+      <%= t.row do %>
+        <%= t.cell do %>
+          <%# The target is named in the label, not just the row: one person can
+              be two findings of the same check, and two checkboxes announcing
+              "Repair 2Step" are the same control as far as a screen reader
+              is concerned. %>
+          <%= bulk_select_checkbox "keys[]", finding.key,
+                                   id: "repair-#{finding.key.tr(':', '-')}",
+                                   aria_label: [finding.callsign, finding.target_label]
+                                                 .compact.join(" — ")
+                                                 .prepend("Repair ") %>
+        <% end %>
+        <%= t.row_header do %>
+          <%# The finding stands in for the person: it carries the callsign,
+              which is all the link renders. Guarded rather than linked bare
+              because Tech Ninja is not one of PersonConcern::VIEW_ROLES. %>
+          <%= person_display_link(finding, finding.person_id,
+                                  path: person_path(finding.person_id)) %>
+        <% end %>
+        <%= t.cell finding.status %>
+        <% columns.each do |_label, key| %>
+          <%= t.cell do %>
+            <%= position_check_cell(finding, key) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

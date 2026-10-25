@@ -1,0 +1,35 @@
+<%# locals: (message:, folder:, reply_form: nil, notice: nil, streams: []) %>
+<%#
+  The conversation pane: the selected thread beside the list from lg up, the
+  whole page below it. The aside is what review_pane_controller watches; the
+  messages-pane frame inside it is what a row's link loads (MessagesConcern#show
+  answers that request with this partial alone). The frame targets _top, and the
+  Mark Read, Archive and reply forms inside it keep their own frames, so they
+  submit as they did on the thread page.
+
+  The frame is rendered disabled. Turbo hands a link to a frame only while the
+  frame is enabled, so until review_pane_controller enables it from lg up -- or
+  with no script at all -- a row's link is an ordinary visit to the thread page.
+
+  With nothing selected -- the index -- the pane is hidden below lg, where the
+  list is the whole page. `notice` says why a row's thread could not be shown
+  (MessagesConcern#refuse_message). `streams` are turbo-streams that ride inside
+  the frame and run as it renders: what reading the thread changed outside the
+  pane (MessagesConcern#read_state_streams).
+%>
+<%# review-pane (components/review-pane.css) caps the height from lg up so a long thread scrolls inside. %>
+<aside class="<%= class_names("review-pane box box-default p-4 lg:flex-1 lg:min-w-0 lg:sticky lg:top-4 lg:self-start",
+                              "hidden lg:block": message.nil?) %>"
+       aria-label="Conversation" data-review-pane-target="pane">
+  <%= turbo_frame_tag "messages-pane", target: "_top", disabled: true, data: { turbo_action: "advance" } do %>
+    <% if message %>
+      <%= render partial: "common/messages/messages_panel", locals: { message:, folder:, reply_form: } %>
+    <% else %>
+      <% if notice %>
+        <%= ui_callout_box :warning, role: "status" do %><%= notice %><% end %>
+      <% end %>
+      <%= ui_empty_state "Select a conversation to read it here.", icon: "hand-pointer", icon_type: :solid %>
+    <% end %>
+    <%= safe_join(streams) %>
+  <% end %>
+</aside>

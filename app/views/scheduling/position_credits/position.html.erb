@@ -1,0 +1,122 @@
+<%= hero_panel icon: "coins", heading_level: :h1, id: "scheduling-position-credits-position-header",
+               description: "Edit or delete the credit rates earned for this position's shifts.",
+               back_to: ["#{@year} Position Credits", scheduling_position_credits_path(year: @year)] do |panel| %>
+  <% panel.title do %><%= @year %> <%= @position_title %> Credits<% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @total_count, "Credits" %>
+<% end %>
+
+<% if @position.nil? %>
+  <div class="my-2">
+    <%= ui_callout_box :error, title: "This Position No Longer Exists" do %>
+      The credits below belong to deleted position #<%= @position_id %>. They earn nothing and
+      cannot be copied. Delete them, or edit each one to point at a position that still exists.
+    <% end %>
+  </div>
+<% end %>
+
+<%# These buttons need a live position, so on the deleted-position page above
+    the wrapper goes too -- its my-4 would sit under the callout as a blank band. %>
+<% if @position %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= button_link "Add Position Credit", :primary,
+                      scheduling_new_position_credit_path(position_id: @position_id, year: @year),
+                      icon: "plus", icon_type: :solid %>
+      <% if @total_count.positive? %>
+        <%= button_link "Bulk Copy", :secondary,
+                        scheduling_new_position_credit_copy_path(position_id: @position_id, year: @year),
+                        icon: "copy" %>
+        <%= button_link "Credit Timeline", :secondary,
+                        scheduling_position_credits_position_timeline_path(@position_id, year: @year),
+                        icon: "chart-line", icon_type: :solid %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @total_count.positive? %>
+  <%= filter_bar id: "position-credit-filters",
+                 chips: credit_filter_chips(@position_id, @year),
+                 clear_url: scheduling_position_credits_position_path(@position_id, year: @year),
+                 count: @filtering ? "Showing #{@credits.size} of #{@total_count} credits" : pluralize(@total_count, "credit"),
+                 # day: the CSV action filters on it, so without it the file
+                 # would ignore the Day chip sitting beside this button.
+                 actions: export_csv_link(
+                   scheduling_position_credits_position_path(@position_id, year: @year,
+                                                         day: params[:day], format: :csv)
+                 ),
+                 url: scheduling_position_credits_position_path(@position_id) do |f| %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :day,
+                   options_for_select([["All days", ""]] + @day_options.map { |day| [wday_month_day_format(day), day.iso8601] },
+                                      params[:day]),
+                   { label: "Day", width: "w-full sm:w-44" } %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @credits.any? %>
+  <%= ui_form(nil, scheduling_position_credits_position_bulk_delete_path(@position_id, year: @year),
+              method: :delete, local: true, no_error_summary: true) do |f| %>
+    <%= bulk_select do %>
+      <%= ui_table do |t| %>
+        <%= t.header do %>
+          <%= t.heading width: "1%" do %>
+            <%= bulk_select_all aria_label: "Select all position credits" %>
+          <% end %>
+          <%= t.heading "ID", right: true %>
+          <%= t.heading "From" %>
+          <%= t.heading "To" %>
+          <%= t.heading "Credits per Hour", right: true %>
+          <%= t.heading "Description" %>
+          <%= t.heading "Actions" %>
+        <% end %>
+        <%= t.body do %>
+          <% @credits.each do |credit| %>
+            <%= t.row id: "credit-#{credit.id}" do %>
+              <%= t.cell do %>
+                <%= bulk_select_checkbox "credit_ids[]", credit.id, id: "select-credit-#{credit.id}",
+                                         aria_label: "Select credit ##{credit.id} #{credit.description}" %>
+              <% end %>
+              <%= t.cell credit.id, right: true %>
+              <%= t.cell credit.start_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+              <%= t.cell credit.end_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+              <%= t.cell credit_format_short(credit.credits_per_hour), right: true %>
+              <%= t.cell credit.description %>
+              <%= t.cell do %>
+                <%= edit_link scheduling_edit_position_credit_path(credit, year: @year), "",
+                              title: "Edit", aria: { label: "Edit" }, class: "btn-square" %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= button_row do %>
+        <%= f.submit "Delete Selected Credits", variant: :error,
+                     data: {
+                       turbo_confirm: confirm_modal_dialog(
+                         title: "Confirm Credit Deletion",
+                         message: "Delete the selected position credits? " \
+                                  "Earned credits for #{@year} shifts will be recalculated without them. This cannot be undone.",
+                         confirm_label: "Delete Credits",
+                         variant: :error
+                       ),
+                       checkbox_select_all_target: "submit"
+                     } %>
+        <%= bulk_select_count class: "text-stone-subtle" %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif @total_count.positive? %>
+  <%= ui_empty_state "No position credits match the current filter.", icon: "filter", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No #{@position_title} credits were found for #{@year}.",
+                     icon: "coins", icon_type: :solid %>
+<% end %>

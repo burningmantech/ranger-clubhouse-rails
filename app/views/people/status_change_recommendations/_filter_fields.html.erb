@@ -1,0 +1,23 @@
+<%# locals: (f:) %>
+<%#
+  The filters this group can offer. Each choice is built from the group's own
+  people, so a choice can never come back empty, and a group with only one
+  status offers no status filter at all.
+%>
+<%= form_row do %>
+  <% if @status_counts.size > 1 %>
+    <%= f.select :status, filter_status_options(@status_counts, matching: @matching_statuses),
+                 label: "Current Status", selected: @filters[:status],
+                 width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+  <% if @group.shows_vintage? %>
+    <%= f.select :vintage, status_change_vintage_options,
+                 label: "Vintage", selected: @filters[:vintage],
+                 width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+  <% if @group.shows_history? %>
+    <%= f.select :last_year, status_change_year_options(@year_values),
+                 label: "Last Year Rangered", selected: @filters[:last_year],
+                 width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+<% end %>

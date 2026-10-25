@@ -1,0 +1,128 @@
+# Searchable mail for PersonMessage.search_for_person. InnoDB's full-text index
+# sees committed rows only, so a row created inside a transactional test is
+# invisible to MATCH ... AGAINST: search tests read these, committed before any
+# test runs. The mailbox is InactiveRanger's, with AlphaNewbie and RANGER1 as
+# the other parties -- people no other messages test reads a mailbox of. Every
+# thread is read by everyone in it (person_message_member.yml), so no unread
+# count, chip or prompt moves.
+#
+# The index reads body_text, which PersonMessage#body= keeps and a fixture has
+# to spell out: the body itself for plain text, its words alone for the
+# editor's HTML.
+#
+# Each row has its own id, in date order as real ids run: threads and replies
+# are ordered by id (PersonMessage#replies), and a label's hashed id would
+# put a reply before its thread. So a reply names its thread by id, as
+# person_message_member.yml does.
+
+# A thread from AlphaNewbie, its reply holding a word the top does not.
+search_dirt_swap:
+  id: 1006
+  person: inactive_ranger
+  creator_person: alpha_ranger
+  sender_person: alpha_ranger
+  sender_type: person
+  message_type: contact
+  subject: "Shift swap for Thursday?"
+  body: "Can you take my 18:00 Dirt shift? I'll take your Saturday morning in return."
+  body_text: "Can you take my 18:00 Dirt shift? I'll take your Saturday morning in return."
+  created_at: <%= 3.days.ago.to_fs(:db) %>
+
+search_dirt_swap_reply:
+  id: 1007
+  person: alpha_ranger
+  creator_person: inactive_ranger
+  sender_person: inactive_ranger
+  sender_type: person
+  message_type: contact
+  reply_to_id: 1006 # search_dirt_swap
+  subject: "Shift swap for Thursday?"
+  body: "Sure, I'll bring the thermos."
+  body_text: "Sure, I'll bring the thermos."
+  created_at: <%= 2.days.ago.to_fs(:db) %>
+
+# Sent by the owner and archived by them: a hit outside the Inbox.
+search_radio_archived:
+  id: 1002
+  person: plate_collision_ranger
+  creator_person: inactive_ranger
+  sender_person: inactive_ranger
+  sender_type: person
+  message_type: contact
+  subject: "Radio handoff"
+  body: "Leave the Dirt radio with the shift lead at Outpost."
+  body_text: "Leave the Dirt radio with the shift lead at Outpost."
+  created_at: <%= 10.days.ago.to_fs(:db) %>
+
+# A subject the body does not repeat, and a name InnoDB indexes as one word.
+search_khaki_notes:
+  id: 1001
+  person: inactive_ranger
+  creator_person: plate_collision_ranger
+  sender_person: plate_collision_ranger
+  sender_type: person
+  message_type: contact
+  subject: "Khaki binder notes"
+  body: "They are in the binder at Outpost, filed under gate_log_book."
+  body_text: "They are in the binder at Outpost, filed under gate_log_book."
+  created_at: <%= 20.days.ago.to_fs(:db) %>
+
+# Someone else's mail with every word the owner searches for: never a hit.
+search_not_the_owners:
+  id: 1008
+  person: plate_collision_ranger
+  creator_person: alpha_ranger
+  sender_person: alpha_ranger
+  sender_type: person
+  message_type: contact
+  subject: "Dirt shift roster, Khaki thermos"
+  body: "The 18:00 Dirt shift roster is up."
+  body_text: "The 18:00 Dirt shift roster is up."
+  created_at: <%= 1.day.ago.to_fs(:db) %>
+
+# A group thread InactiveRanger is a member of, started by RetiredRanger, with a
+# reply by EchelonTest: neither row names the owner, so only their member row
+# finds it. Its callsigns start with nothing the tests above search for.
+search_group_crew:
+  id: 1004
+  person: retired_ranger
+  creator_person: retired_ranger
+  sender_person: retired_ranger
+  sender_type: person
+  message_type: contact
+  group: true
+  subject: "Burn night crew"
+  body: "Sandstorm plan: meet at the 3:00 plaza."
+  body_text: "Sandstorm plan: meet at the 3:00 plaza."
+  created_at: <%= 5.days.ago.to_fs(:db) %>
+
+search_group_crew_reply:
+  id: 1005
+  person: echelon_ranger
+  creator_person: echelon_ranger
+  sender_person: echelon_ranger
+  sender_type: person
+  message_type: contact
+  group: true
+  reply_to_id: 1004 # search_group_crew
+  subject: "Burn night crew"
+  body: "I packed extra lanterns."
+  body_text: "I packed extra lanterns."
+  created_at: <%= 4.days.ago.to_fs(:db) %>
+
+# RANGER1's answer to the radio thread, written in the editor: tag and
+# attribute words (strong, href, https) are in its body but not its text, so a
+# search for one finds nothing. Older than the swap thread's reply, so the
+# threads keep their order.
+search_radio_rich_reply:
+  id: 1003
+  person: inactive_ranger
+  creator_person: plate_collision_ranger
+  sender_person: plate_collision_ranger
+  sender_type: person
+  message_type: contact
+  reply_to_id: 1002 # search_radio_archived
+  subject: "Radio handoff"
+  body: '<p>Bring the <strong>spare</strong> batteries to the <a href="https://example.org/depot">depot</a>.</p><p>Thanks!</p>'
+  body_text: "Bring the spare batteries to the depot.\nThanks!"
+  created_at: <%= 9.days.ago.to_fs(:db) %>

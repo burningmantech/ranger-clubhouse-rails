@@ -1,0 +1,89 @@
+<%# Conditional status notices shown above the check in/out panel —
+    port of the Ember shift-check-in-alerts component. %>
+<% person = shift_person %>
+
+<% if @status_converted %>
+  <%= render partial: "common/shift_manage/converted_modal" %>
+<% end %>
+
+<% unless person.can_work? %>
+  <%= ui_alert_banner "Shift Check-In Blocked", :error do %>
+    <%= person.callsign %> cannot start a shift because their account status
+    (<code><%= person.status %></code>) does not allow checking in to shifts.
+  <% end %>
+<% end %>
+
+<% if person.status == Person::INACTIVE %>
+  <%= ui_callout_box :info, accent: true, title: "Conversion to Active Status After Shift End",
+                     icon: "person-walking-arrow-loop-left" do %>
+    <%= person.callsign %> is currently Inactive. They will automatically be restored to Active
+    status after completing a regular shift — excluding training shifts, mentee shifts, and
+    Cheetah Cub shifts.
+  <% end %>
+<% elsif person.status == Person::INACTIVE_EXTENSION || person.status == Person::RETIRED %>
+  <%= ui_callout_box :warning, accent: true, title: "Must Walk a Cheetah Cub Shift",
+                     icon: "person-walking-arrow-loop-left" do %>
+    <p class="mb-2">
+      <%= person.callsign %> currently has an account status of <code><%= person.status %></code>.
+      <strong>Only Cheetah Cub shifts are available for check-in.</strong>
+    </p>
+    <p>
+      <strong>Restoring Active status:</strong> <%= person.callsign %> must complete a Cheetah Cub
+      shift under mentor supervision. The Mentors will assess their readiness to resume rangering
+      and will update the account status at the end of the shift.
+    </p>
+  <% end %>
+<% end %>
+
+<% if person.can_work? && !shift_self_serve? && !@on_duty_entry &&
+      @shift_training_passed && @upcoming_slots.imminent.none? %>
+  <%= ui_callout_box :secondary, title: "An Unscheduled Shift Is Fine",
+                     icon: "thumbs-up", icon_type: :regular do %>
+    <p class="mb-2">
+      No sign-ups are scheduled for the next
+      <%= @upcoming_slots.locate_start_minutes.in_minutes.to_i %> minutes.
+      It's all right! Scheduled sign-ups are just a way to make sure we have enough coverage.
+    </p>
+    Please ask for their preferred position, select it below, and start the shift. Consult with
+    the HQ Short or Lead if needed.
+  <% end %>
+<% end %>
+
+<% unless @shift_training_passed %>
+  <% if shift_self_serve? %>
+    <%= ui_callout_box :secondary, accent: true, title: "Restricted Check In/Out",
+                       icon: "hand" do %>
+      Since you haven't completed an In-Person Training yet, you can only check in to a limited
+      set of positions. If you need to check in to a position that isn't listed below, please
+      speak with your manager.
+    <% end %>
+  <% else %>
+    <%= ui_callout_box :error, accent: true, title: "Check In Eligibility Issue",
+                       icon: "hand" do %>
+      <p class="mb-2">
+        <%= person.callsign %> should not start a shift because In-Person Training has not been
+        completed.
+        <% if shift_positions.any? { |position| position.blockers.blank? } %>
+          While most positions are unavailable right now, a small set can still be checked in to.
+        <% end %>
+      </p>
+      <p class="mb-2">
+        If the person attended an In-Person Training earlier today, the trainers may not have
+        recorded their completion yet. Ask the HQ Lead to contact the trainers to confirm whether
+        the person attended and passed. Once training is verified, the HQ Lead can sign the
+        person in.
+      </p>
+      <% if shift_can_force? %>
+        <strong>
+          You have the authority to force a shift start. Only do so after verifying that the
+          person has successfully completed their training.
+        </strong>
+      <% else %>
+        <strong class="text-error">
+          You don't have the privileges to force a shift start for positions that require
+          In-Person Training. Please consult with the HQ Lead for assistance.
+        </strong>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

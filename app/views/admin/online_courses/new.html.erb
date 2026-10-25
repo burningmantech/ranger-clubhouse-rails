@@ -1,0 +1,6 @@
+<%= hero_panel icon: "graduation-cap", heading_level: :h1, id: "online-course-form-header",
+               title: "New #{@online_course.year} Online Course",
+               description: "Define which Moodle course a position uses for #{@online_course.year}.",
+               back_to: ["Online Courses", admin_online_courses_path(year: @online_course.year)] %>
+
+<%= render "form" %>

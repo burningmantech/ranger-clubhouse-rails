@@ -1,0 +1,138 @@
+<%# locals: (person:) %>
+<%= hero_panel icon: "user-pen", heading_level: :h1, id: "edit-identity-header",
+               back_to: ["Profile", profile_index_path] do |panel| %>
+  <% panel.title do %>
+    Edit Identity &amp; Contact Information
+  <% end %>
+  <% panel.description do %>
+    <% if viewing_self? %>
+      Update your name, gender, pronouns, and contact details.
+    <% else %>
+      Update <%= person.callsign %>'s name, gender, pronouns, and contact details.
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if viewing_self? && (person.is_ranger? || person.is_echelon?) %>
+  <%= ui_callout_box :info, icon: "lightbulb" do %>
+    <strong>Want to change your callsign?</strong>
+    Contact the Volunteer Coordinators: <%= mail_to EmailAddresses::VOLUNTEER_COORDINATORS_TEAM %>
+  <% end %>
+<% elsif viewing_self? && person.is_auditor? %>
+  <%= ui_callout_box :warning, icon: "circle-info" do %>
+    <strong>Auditor accounts have a fixed handle.</strong>
+    Your Clubhouse handle (<%= current_user.callsign %>) cannot be changed.
+    At trainings, you'll be addressed by your preferred first name.
+  <% end %>
+<% end %>
+
+<%= ui_form(person, profile_section_path("identity-info")) do |f| %>
+  <%# Section 1: Legal Name %>
+  <%= ui_section "Legal Name", icon: "id-card", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Why do we need this?</dt>
+      <dd>Used for ticketing, mailings, Motor Vehicle Record requests, and other items requiring a government id.</dd>
+    </dl>
+    <%= form_row do %>
+      <%= f.text_field :first_name, label: "First Name", width: "w-full sm:w-48", required: true %>
+      <%= f.text_field :mi, label: "Middle Initial(s)", width: "w-20", required: false %>
+      <%= f.text_field :last_name, label: "Last Name", width: "w-full sm:w-48", required: true %>
+    <% end %>
+  <% end %>
+
+  <% if person.is_ranger? || person.is_echelon? %>
+    <%# Section 2: Preferred Name & Pronunciation %>
+    <%= ui_section "Preferred Name & Pronunciation", icon: "comment", icon_type: :solid do %>
+      <dl class="instruction-list mb-3">
+        <dt>What's a preferred name?</dt>
+        <dd>Optional. Appears in some reports and emails. Useful if you're changing your legal name.</dd>
+        <dt>Your callsign is primary.</dt>
+        <dd>Your callsign (<%= person.callsign %>) is used for most communications and greetings.</dd>
+      </dl>
+      <%= f.text_field :preferred_name, label: "Preferred First Name", help_text: "Optional", width: "w-full sm:w-48" %>
+
+      <div class="mt-4 pt-3 border-t border-line">
+        <dl class="instruction-list mb-3">
+          <dt>Hard to pronounce callsign?</dt>
+          <dd>
+            Enter the phonetic spelling.
+            <span class="text-stone-muted">Example: "3pio" → "Three-Pee-Oh"</span>
+          </dd>
+        </dl>
+        <%= f.text_field :callsign_pronounce, label: "Pronunciation of #{person.callsign}", help_text: "Optional", width: "w-full sm:w-64" %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# Section 3: Gender & Pronouns %>
+  <%= ui_section "Gender & Pronouns", icon: "user", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Is this required?</dt>
+      <dd>No, both fields are optional. Share what you're comfortable with.</dd>
+    </dl>
+    <div class="space-y-1">
+      <div class="flex flex-col lg:flex-row lg:items-start gap-2 lg:gap-4">
+        <%= f.select :gender_identity,
+                     Gender::GENDER_IDENTIFY_OPTIONS,
+                     { label: "Gender" },
+                     { class: "w-44",
+                       data: {
+                         controller: "conditional-show",
+                         conditional_show_id_value: "gender-custom-block",
+                         conditional_show_reveal_value: Gender::GENDER_CUSTOM
+                       }
+                     } %>
+        <%= f.text_field :gender_custom,
+                         label: "Your Gender",
+                         width: "w-full sm:w-64",
+                         wrapper_id: "gender-custom-block",
+                         hidden: !person.has_custom_gender? %>
+      </div>
+      <div class="flex flex-col lg:flex-row lg:items-start gap-2 lg:gap-4">
+        <%= f.select :pronouns,
+                     Pronouns::PRONOUN_OPTIONS,
+                     { label: "Pronouns" },
+                     { class: "w-44",
+                       data: {
+                         controller: "conditional-show",
+                         conditional_show_id_value: "pronouns-custom-block",
+                         conditional_show_reveal_value: Pronouns::PRONOUNS_CUSTOM,
+                       }
+                     } %>
+        <%= f.text_field :pronouns_custom,
+                         label: "Your Pronouns",
+                         help_text: "e.g., ze/zim/zir, she/them/theirs",
+                         width: "w-full sm:w-64",
+                         wrapper_id: "pronouns-custom-block",
+                         hidden: !person.has_custom_pronouns? %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if can_view_contact_methods? %>
+    <%# Section 4: Contact Information %>
+    <%= ui_section "Contact Information", icon: "envelope", icon_type: :solid do %>
+      <dl class="instruction-list mb-3">
+        <dt>What's the email used for?</dt>
+        <dd>Logging into Clubhouse and IMS, plus messages from Ranger teams about scheduling and operations.</dd>
+      </dl>
+      <%= f.text_field :email, label: "Email Address", width: "w-full sm:w-72", required: true %>
+
+      <div class="mt-4 pt-3 border-t border-line">
+        <dl class="instruction-list mb-3">
+          <dt>Phone numbers</dt>
+          <dd>Used to contact you if email fails</dd>
+        </dl>
+        <div class="flex flex-col lg:flex-row gap-4 lg:gap-6">
+          <%= f.telephone_field :home_phone, label: "Primary Phone", width: "w-full sm:w-44", required: true %>
+          <%= f.telephone_field :alt_phone, label: "Alternative Phone", width: "w-full sm:w-44", help_text: "Optional", required: false %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Changes" %>
+    <%= cancel_link profile_index_path %>
+  <% end %>
+<% end %>

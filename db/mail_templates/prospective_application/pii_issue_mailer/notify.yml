@@ -1,0 +1,28 @@
+description: "Lists the details missing from an application"
+
+subject: "Hey {{ application.first_name }}, your Ranger application is missing some info"
+
+body: |
+  <p>
+    Hey {{ application.first_name }} {{ application.last_name }},
+  </p>
+  <p>
+    The Ranger Volunteer Coordinators have been reviewing your application and noticed some
+    information is missing.
+  </p>
+  {% render "shared/mailer/on_hold" %}
+  <p>
+    The following field(s) are blank on your application:
+  </p>
+  <p>
+    {%- for field in application.blank_fields %}
+      {{ field }}<br>
+    {%- endfor %}
+  </p>
+  <p>
+    Reply to this message with the missing information.
+  </p>
+  <p>
+    Your Friendly Black Rock Ranger Volunteer Coordinators
+  </p>
+  {% render "shared/mailer/application_footer", application: application %}

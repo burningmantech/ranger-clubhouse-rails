@@ -1,0 +1,20 @@
+# Certification fixtures. Reference BY NAME (no fixtures :all ordering assumptions).
+
+cpr:
+  title: "CPR"
+  on_sl_report: false
+  is_lifetime_certification: false
+  created_at: <%= 1.year.ago %>
+
+wilderness_first_aid:
+  title: "Wilderness First Aid"
+  on_sl_report: true
+  sl_title: "WFA"
+  is_lifetime_certification: false
+  created_at: <%= 1.year.ago %>
+
+ham_radio:
+  title: "Ham Radio License"
+  on_sl_report: false
+  is_lifetime_certification: true
+  created_at: <%= 1.year.ago %>

@@ -1,0 +1,22 @@
+<%# locals: (lead: nil, question: nil) %>
+<%#
+  What the four ranks mean and where to read them: one question and its
+  answer, rendered inside the page's About This Report (or How This Page
+  Works) list. Shared by every pipeline page so the ranks are described once;
+  `lead` and `question` let a page that colours its rows --
+  /mentoring/convert-prospectives is a table -- say what its own colouring
+  means instead.
+%>
+<dt><%= question || "What do the ranks mean?" %></dt>
+<dd>
+  <%= lead || "Each team ranks a person from 1 to 4: 1 is above average, 2 average, 3 below average and 4 a flag. " \
+              "Select a name: the gray line under it in the history lists every team's latest rank with its " \
+              "year, and each year's entry and each training session carries its rank as a chip." %>
+  Ranks:
+  <span class="inline-flex flex-wrap items-center gap-2 align-middle">
+    <%= intake_rank_badge(Intake::FLAG) %>
+    <%= intake_rank_badge(Intake::BELOW_AVERAGE) %>
+    <%= intake_rank_badge(Intake::ABOVE_AVERAGE) %>
+    <%= intake_rank_badge(Intake::AVERAGE) %>
+  </span>
+</dd>

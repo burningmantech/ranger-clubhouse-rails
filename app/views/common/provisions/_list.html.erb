@@ -1,0 +1,38 @@
+<%# locals: (provisions:, ref_path:, empty_message:, frame: nil, action_label: nil) %>
+<% if provisions.any? %>
+  <%= ui_table do |t| %>
+    <%= t.header do %>
+      <%= t.heading "ID" %>
+      <%= t.heading "Type" %>
+      <%= t.heading "Earned / Allocated" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Source Year", right: true %>
+      <%= t.heading "Expires After", right: true %>
+      <%= t.heading class: "sr-only" do %>
+        Actions
+      <% end %>
+    <% end %>
+    <%= t.body do %>
+      <% provisions.each do |provision| %>
+        <%= t.row do %>
+          <%= t.row_header do %>
+            <%= provision.display_ref %>
+          <% end %>
+          <%= t.cell do %>
+            <%= provision.type_label %>
+            <% if provision.type == Provision::EVENT_RADIO %>
+              (<%= pluralize provision.item_count, "radio" %>)
+            <% end %>
+          <% end %>
+          <%= t.cell provision.is_allocated ? "Allocated" : "Earned" %>
+          <%= t.cell provision.status %>
+          <%= t.cell provision.source_year, right: true %>
+          <%= t.cell provision.expires_on&.year, right: true %>
+          <%= t.cell edit_link(ref_path.call(provision)) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state empty_message, icon: "gear", icon_type: :solid %>
+<% end %>

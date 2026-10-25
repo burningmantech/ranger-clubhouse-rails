@@ -1,0 +1,12 @@
+<%# locals: (count:) %>
+<%= turbo_frame_tag "unread-count" do %>
+  <% if count > 0 %>
+    <div class="mb-4">
+      <%= ui_badge pluralize(count, "unread announcement"), :warning, icon: "bell", icon_type: :solid %>
+    </div>
+  <% else %>
+    <div class="mb-4">
+      <%= ui_badge "All announcements read.", :success, icon: "check", icon_type: :solid %>
+    </div>
+  <% end %>
+<% end %>

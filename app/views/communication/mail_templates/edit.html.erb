@@ -1,0 +1,72 @@
+<% content_for :title, "Edit Email Template" %>
+
+<%# tag, not tag_was: the tag cannot be edited here, so it never differs. %>
+<%= hero_panel icon: "envelope-open-text", heading_level: :h1, id: "mail-template-form-header",
+               title: "Edit #{@mail_template.tag}",
+               description: @mail_template.description,
+               back_to: ["Email Templates", communication_mail_templates_path] %>
+
+<% variables = MailTemplateVariables.in(@mail_template.subject, @mail_template.body,
+                                        @mail_template.text_body) %>
+<% loops = MailTemplateVariables.loops_in(@mail_template.body, @mail_template.text_body) %>
+
+<%= ui_callout_box :info, icon: "lightbulb", icon_type: :solid, title: "How the Template Is Filled In" do %>
+  <p>
+    <strong>Anything in double braces is filled in when the message is sent.</strong>
+    Write <code>{{ name }}</code> and the Clubhouse puts the value there. A name it does not
+    recognise leaves a gap, so only use the names already in the message.
+  </p>
+  <% if variables.any? %>
+    <p class="mt-2">
+      <strong>This message uses:</strong>
+      <%= safe_join(variables.map { |name| tag.code(name, class: "font-mono") }, ", ") %>
+    </p>
+  <% end %>
+  <% if loops.any? %>
+    <p class="mt-2">
+      <strong>Repeated rows:</strong>
+      <%= safe_join(loops.map { |item, list| tag.span(safe_join([tag.code(item), " for each ",
+                                                                 tag.code(list)])) }, ", ") %>
+    </p>
+  <% end %>
+<% end %>
+
+<%= ui_form(@mail_template, communication_mail_template_path(@mail_template)) do |f| %>
+  <% unless @mail_template.shared_piece? %>
+    <%= f.fieldset "Subject line", icon: "tag", icon_type: :solid do %>
+      <%= f.text_field :subject, label: "Subject", required: true,
+                       maxlength: MailTemplate::SUBJECT_COLUMN_LIMIT, width: "w-full",
+                       help_text: "What the reader sees before opening the message." %>
+    <% end %>
+  <% end %>
+
+  <%= f.fieldset "Template text", icon: "file-lines", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Why is this HTML and not a text editor?</dt>
+      <dd>
+        Email needs the layout spelled out, and a text editor would throw away the
+        double braces that fill the message in.
+      </dd>
+      <dt>What happens if I make a mistake?</dt>
+      <dd>A template that cannot be understood is refused when you save, so nothing broken goes out.</dd>
+    </dl>
+
+    <%= f.text_area :body, label: "HTML Message",
+                    required: true,
+                    class: "font-mono",
+                    help_text: "What almost every reader sees.",
+                    cols: 100,
+                    rows: 20
+    %>
+
+    <% if @mail_template.text_body.present? %>
+      <%= f.text_area :text_body, label: "Plain Text Message", class: "font-mono",
+                      help_text: "Sent alongside the HTML for readers whose mail shows no formatting." %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Template" %>
+    <%= cancel_link communication_mail_templates_path %>
+  <% end %>
+<% end %>

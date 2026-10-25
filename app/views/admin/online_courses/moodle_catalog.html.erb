@@ -1,0 +1,11 @@
+<%= hero_panel icon: "list", heading_level: :h1, id: "online-course-catalog-header",
+               title: "Moodle Course Catalog",
+               description: "Every course on the LMS, with the online course definitions already linked to it.",
+               back_to: ["Online Courses", admin_online_courses_path(year: @year)] %>
+
+<%# target: "_top" so the Create Course buttons inside the listing open the new
+    course form instead of trying to load it into this frame. %>
+<%= turbo_frame_tag "online-course-catalog", target: "_top",
+                     src: moodle_catalog_courses_admin_online_courses_path(year: @year), loading: "lazy" do %>
+  <%= render "shared/frame_spinner", label: "Loading the course catalog…" %>
+<% end %>

@@ -1,0 +1,36 @@
+<% note_type = @note&.type || params[:note_type] %>
+<% is_flag_note = note_type == ProspectiveApplicationNote::TYPE_VC %>
+<%= modal_dialog id: "note-form-dialog", size: :lg, title: @note ? "Edit Note" : (is_flag_note ? "Add Unified Flagging VC Note" : "Add Comment") do %>
+  <% if is_flag_note && @application.status_created? && @note.nil? %>
+    <%= ui_callout_box :error, accent: true do %>
+      <strong>The Clubhouse account has already been created.</strong> Notes entered here will NOT be
+      recorded into the Unified Flagging system.
+    <% end %>
+  <% end %>
+  <% if @note && @note.person_id != current_user.id %>
+    <%= ui_callout_box :warning do %>
+      <strong>You did not write this note.</strong> Check with its author before changing it.
+    <% end %>
+  <% end %>
+  <p class="mb-2">
+    <% if is_flag_note %>
+      VC Notes ARE added to the Unified Flagging system when the Clubhouse account is created.
+    <% else %>
+      Comments are shared between VCs and are NOT sent to the Unified Flagging system.
+    <% end %>
+  </p>
+  <% if @note %>
+    <%= form_with url: vc_application_note_path(@application, @note), method: :patch,
+                  builder: AppFormBuilder, data: { turbo_frame: "_top" } do |f| %>
+      <%= f.text_area :note, label: "Note", required: true, rows: 5, value: @note.note, autofocus: true %>
+      <%= modal_form_footer submit: "Save Note" %>
+    <% end %>
+  <% else %>
+    <%= form_with url: vc_application_notes_path(@application), method: :post,
+                  builder: AppFormBuilder, data: { turbo_frame: "_top" } do |f| %>
+      <%= hidden_field_tag :type, note_type %>
+      <%= f.text_area :note, label: "Note", required: true, rows: 5, autofocus: true %>
+      <%= modal_form_footer submit: is_flag_note ? "Add Note" : "Add Comment" %>
+    <% end %>
+  <% end %>
+<% end %>

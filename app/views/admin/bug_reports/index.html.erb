@@ -1,0 +1,84 @@
+<%= hero_panel icon: "bug", heading_level: :h1, id: "admin-bug-reports-header",
+               title: "Bug Reports",
+               description: "Read the problems people reported from the Bug Report button, newest first." %>
+
+<%= ui_section "Reports", icon: "table-list", icon_type: :solid do %>
+  <% if @bug_reports.empty? %>
+    <%= ui_empty_state "No bug reports yet.", icon: "bug", icon_type: :solid %>
+  <% else %>
+    <% if @total > @bug_reports.size %>
+      <p class="mb-3">
+        <strong>Showing the newest <%= @bug_reports.size %> of <%= @total %> reports.</strong>
+        Delete the log once these have been dealt with to reach the rest.
+      </p>
+    <% end %>
+
+    <%# striped: false because each report renders two rows -- the summary and
+        the detail it opens into -- so every summary row would land on the same
+        stripe. %>
+    <%= ui_table striped: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Reported" %>
+        <%= t.heading "Person" %>
+        <%= t.heading "Report" %>
+        <%= t.heading "Browser" %>
+      <% end %>
+      <%= t.body do %>
+        <% @bug_reports.each do |row| %>
+          <% detail_dom_id = "bug-report-detail-#{row.id}" %>
+          <% timestamp = bug_report_timestamp(row) %>
+          <%= t.row class: "align-middle" do %>
+            <%= t.cell class: "align-top whitespace-nowrap" do %>
+              <%= t.detail_row_toggle timestamp, id: detail_dom_id, describing: "the whole report",
+                                      class: "justify-start px-1 text-left normal-case" %>
+            <% end %>
+            <%= t.cell class: log_text_class("align-middle") do %>
+              <%= person_display_link(row.person, row.person_id, blank: "-") %>
+            <% end %>
+            <%# Kept to one line: a report can run to paragraphs. The whole of it
+                is in the detail row below. %>
+            <%= t.cell class: "align-middle max-w-xs" do %>
+              <div class="<%= log_text_class("truncate") %>"><%= row.description %></div>
+            <% end %>
+            <%= t.cell bug_report_browser(row), class: log_text_class("align-middle") %>
+          <% end %>
+
+          <%# Below the fold each row becomes its own card, so the opened detail
+              carries the timestamp it belongs to. %>
+          <%= t.detail_row id: detail_dom_id, label: timestamp do %>
+            <div class="space-y-4 py-2">
+              <%# whitespace-pre-line: a report is typed by hand, and the line
+                  breaks are part of what the person said. %>
+              <div class="text-body whitespace-pre-line wrap-anywhere"><%= row.description %></div>
+
+              <%# The page is printed, never linked: it is whatever the browser
+                  said it was. %>
+              <%= ui_label_value label_width: "8rem" do |list| %>
+                <%= list.row "Page" do %>
+                  <span class="break-all"><%= row.url.presence || "-" %></span>
+                <% end %>
+                <%= list.row "Address" do %>
+                  <span class="break-all"><%= row.ip.presence || "-" %></span>
+                <% end %>
+                <%= list.row "Browser" do %>
+                  <span class="break-all"><%= row.user_agent.presence || "-" %></span>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <div class="mt-4">
+      <%= delete_button admin_purge_bug_reports_path, "Delete All Bug Reports", size: "sm",
+                        confirm_modal: {
+                          title: "Delete All Bug Reports",
+                          message: "Delete every bug report? They cannot be brought back.",
+                          confirm_label: "Delete All Bug Reports",
+                          variant: :error,
+                          method: "delete"
+                        } %>
+    </div>
+  <% end %>
+<% end %>

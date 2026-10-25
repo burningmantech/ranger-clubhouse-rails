@@ -1,0 +1,28 @@
+<%# locals: (mentor:) %>
+<%#
+  One mentor's season, a line per shift: each mentor shift they signed in to,
+  with the mentees paired with them on it; then mentees paired with them on a
+  shift they did not sign in to as a mentor, or on an entry moved off the mentee
+  position; then walks whose mentee entry was deleted.
+%>
+<ul class="divide-y divide-base-300">
+  <% mentor.lines.each do |line| %>
+    <% note = line.entry ? art_mentoring_duration(line.entry) : ("Not signed in as a mentor" if line.off_shift) %>
+    <li class="flex flex-wrap items-center gap-x-4 gap-y-1 py-2">
+      <%# datetime_format prints an inline-block, which keeps the date whole. %>
+      <span class="font-semibold"><%= art_walk_shift_label(line.begins) %></span>
+      <% if note %>
+        <span class="text-stone-muted whitespace-nowrap"><%= note %></span>
+      <% end %>
+      <% if line.walks.empty? %>
+        <span class="text-stone-muted">No mentee assigned</span>
+      <% end %>
+      <% line.walks.each do |walk| %>
+        <span class="whitespace-nowrap">
+          <%= person_display_link walk.person, walk.person_id %>
+          <%= mentor_result_badge walk.status %>
+        </span>
+      <% end %>
+    </li>
+  <% end %>
+</ul>

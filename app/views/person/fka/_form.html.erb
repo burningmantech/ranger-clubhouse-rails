@@ -1,0 +1,16 @@
+<%# locals: (person:, person_fka:, url:) %>
+<%= ui_form(person_fka, url) do |f| %>
+  <%= ui_section "Former Callsign", icon: "clock-rotate-left", icon_type: :solid do %>
+    <%= f.text_field :fka,
+                     label: "Former Callsign (FKA)",
+                     required: true,
+                     maxlength: 255,
+                     width: "w-full sm:w-72",
+                     help_text: "The previous callsign this person was known by." %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save FKA" %>
+    <%= cancel_link edit_person_callsign_path(person) %>
+  <% end %>
+<% end %>

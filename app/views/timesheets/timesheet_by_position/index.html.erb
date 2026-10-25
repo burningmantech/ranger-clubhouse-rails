@@ -1,0 +1,95 @@
+<%#
+  Every position people turned hours in for this year, one row each. Pick a
+  position to see its entries.
+%>
+<% content_for :title, "Timesheet by Position" %>
+
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1,
+               id: "timesheet-by-position-header",
+               title: "#{@year} Timesheet by Position" do |panel| %>
+  <% panel.description do %>
+    Every timesheet turned in for this year, grouped by the position it was
+    turned in for.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%# Which positions the reader is seeing. Stated before the index, because it
+    changes what a short list means: it can be a quiet year or a narrow
+    permission, and only this line tells them apart. %>
+<% case @report.status %>
+<% when TimesheetByPositionReport::PARTIAL_REPORT %>
+  <%= ui_callout_box :warning, icon: "hand", title: "Some Positions Are Hidden" do %>
+    You are seeing only the positions owned by the Cadres and Delegations you
+    belong to, and by the teams you manage.
+  <% end %>
+<% when TimesheetByPositionReport::NO_MEMBERSHIP %>
+  <%= ui_callout_box :warning, icon: "hand", title: "No Positions to Show" do %>
+    You do not belong to a Cadre or Delegation that owns positions, and you do
+    not manage a team.
+  <% end %>
+<% end %>
+
+<% if @report.positions.any? %>
+  <%= filter_bar id: "timesheet-by-position-filters",
+                 chips: timesheet_by_position_chips(@filter_params, @year),
+                 clear_url: timesheets_timesheet_by_position_path(year: @year),
+                 count: "Showing #{@positions.size} of #{pluralize(@report.positions.size, "position")}",
+                 actions: export_csv_link(timesheets_timesheet_by_position_path(year: @year, format: :csv), "Export All to CSV"),
+                 url: timesheets_timesheet_by_position_path do |f| %>
+    <%# Year-scoped page: a GET form replaces the whole query string, so without
+        this every Apply would bounce the index back to the current year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.text_field :title, label: "Position Contains",
+                       value: @filter_params[:title],
+                       width: "w-full", wrapper_class: "flex-1" %>
+      <%# matching: -- the select navigates with the title filter still applied,
+          so its counts have to promise the list the choice delivers, not the
+          list before filtering. %>
+      <%= f.select :active, filter_status_options(@active_counts,
+                                                  matching: @matching_active_counts),
+                   label: "Status", selected: @filter_params[:active],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <% if @positions.any? %>
+    <div class="lg:w-3/4">
+      <% @positions.each do |row| %>
+        <% meta = timesheet_by_position_meta(row) %>
+        <% badges = timesheet_by_position_badges(row) %>
+        <%# A timesheet outlives its position -- the schema carries no FK -- so
+            the hours still have a row here, but there is no position page to
+            open. Rendered unfollowable rather than as a link that could only
+            ever bounce back saying the position was not found. %>
+        <% if row.position %>
+          <%= ui_drill_down_row timesheets_timesheet_by_position_position_path(row.position_id,
+                                                                              year: @year),
+                                row.title, meta:, badges: %>
+        <% else %>
+          <%= ui_drill_down_row nil, row.title, blocked: true, meta:, badges: do %>
+            <span class="text-stone-subtle">
+              This position has been deleted. Its hours are still counted.
+            </span>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= ui_empty_state "No position matches these filters.",
+                       icon: "filter-circle-xmark", icon_type: :solid %>
+  <% end %>
+<% elsif @report.status == TimesheetByPositionReport::PARTIAL_REPORT %>
+  <%# "none you can see", not "none were turned in": this reader is scoped to
+      their own teams' positions, and the year can be full of hours in positions
+      they are not shown. The position page says it the same way. %>
+  <%= ui_empty_state "No #{@year} timesheets were turned in for the positions you can see.",
+                     icon: "clock", icon_type: :solid %>
+<% elsif @report.status != TimesheetByPositionReport::NO_MEMBERSHIP %>
+  <%= ui_empty_state "No #{@year} timesheets were turned in.",
+                     icon: "clock", icon_type: :solid %>
+<% end %>

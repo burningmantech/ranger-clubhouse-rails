@@ -1,0 +1,116 @@
+<%# locals: (application:) %>
+<% if application.status_more_handles? %>
+  <%= ui_callout_box :warning, icon: "hourglass-half" do %>
+    More handles have been requested from the applicant.
+  <% end %>
+<% elsif application.status_hold_pii_issue? %>
+  <%= ui_callout_box :warning, icon: "circle-exclamation" do %>
+    Callsign approved, however the application is on hold due to missing personal information.
+  <% end %>
+<% end %>
+
+<%= ui_label_value label_width: "12rem", size: :base do |list| %>
+  <% list.row "Approved callsign" do %>
+    <% if application.approved_handle.present? %>
+      <span class="font-bold text-success"><%= application.approved_handle %></span>
+      <%= edit_link dialog_vc_application_path(application, dialog: "edit_approved_handle"), "Edit Callsign",
+                    data: { turbo_frame: "modal" }, class: "ms-2" %>
+    <% else %>
+      <span class="text-stone-muted">none assigned yet</span>
+      <%= button_link "Assign Callsign", :primary, dialog_vc_application_path(application, dialog: "approve_callsign"),
+                      data: { turbo_frame: "modal" }, class: "ms-2" %>
+    <% end %>
+  <% end %>
+  <% list.row "Submitted handles" do %>
+    <% if application.handle_list_issues.any? %>
+      <%= ui_callout_box :warning do %>
+        <strong>The handle list needs reformatting.</strong>
+        <ul class="list-disc ms-5">
+          <% application.handle_list_issues.each do |issue| %>
+            <li><%= issue %></li>
+          <% end %>
+        </ul>
+      <% end %>
+    <% end %>
+    <% if application.problem_handles.present? %>
+      <%= ui_callout_box :error do %>
+        <strong>Potentially problematic handles were flagged:</strong>
+        <ul class="list-disc ms-5">
+          <% application.problem_handles.each do |handle, problems| %>
+            <li><strong><%= handle %></strong> &mdash; <%= Array(problems).join(" ") %></li>
+          <% end %>
+        </ul>
+      <% end %>
+    <% end %>
+    <% if application.screened_handles.blank? %>
+      <span class="text-error font-semibold">none submitted</span>
+    <% else %>
+      <ul class="space-y-2">
+        <% application.screened_handles.each do |screened| %>
+          <li class="flex flex-wrap items-center gap-2">
+            <% taken_by_other = screened[:existing_person] && !screened[:is_applicant] %>
+            <span class="font-semibold <%= "text-success" if screened[:is_applicant] %>">
+              <% if screened[:is_applicant] %><%= fa_icon "check", :solid, class: "icon-success" %><% end %>
+              <% if taken_by_other %><%= fa_icon "ban", :solid, class: "icon-error" %><% end %>
+              <%= screened[:handle] %>
+            </span>
+            <% if screened[:is_applicant] %>
+              <%= ui_badge "Already assigned to this applicant", :warning %>
+            <% elsif taken_by_other %>
+              <%= ui_badge "Taken by existing account", :error %>
+              <%= link_to "#{screened[:existing_person].callsign} (#{screened[:existing_person].status})",
+                          person_path(screened[:existing_person]), class: "underline" %>
+            <% elsif screened[:reserved_handles].present? %>
+              <% screened[:reserved_handles].each do |reservation| %>
+                <%= ui_badge "Reserved: #{reservation.type_label}", :warning %>
+              <% end %>
+            <% else %>
+              <%= button_link "Assign Callsign", :secondary,
+                              dialog_vc_application_path(application, dialog: "approve_callsign", handle: screened[:handle]),
+                              data: { turbo_frame: "modal" } %>
+              <span class="text-stone-muted" title="The Handle Checker has not been ported to this Clubhouse yet.">
+                check handle (not yet available)
+              </span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+    <%= dropdown_menu "Handle Actions", class: "mt-3 block", menu_class: "w-64" do %>
+      <% if application.handles.present? %>
+        <%= dropdown_item "Reject handle submissions…", dialog_vc_application_path(application, dialog: "more_handles"),
+                          data: { turbo_frame: "modal" } %>
+      <% end %>
+      <%= dropdown_item "Edit handles list…", dialog_vc_application_path(application, dialog: "edit_handles"),
+                        data: { turbo_frame: "modal" } %>
+      <% if application.handles.present? %>
+        <%= dropdown_item "Extract handles with AI…", extract_handles_vc_application_path(application),
+                          data: { turbo_method: :post, turbo_frame: "modal" } %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <% list.row "Rejected handles" do %>
+    <% if application.rejected_handles.blank? %>
+      <span class="text-stone-muted">No handle submissions have been rejected.</span>
+    <% else %>
+      <ul class="space-y-3">
+        <% application.rejected_handles.each do |rejection| %>
+          <li>
+            <% rejected_at = Time.zone.parse(rejection["rejected_at"].to_s) rescue nil %>
+            <div class="font-semibold">
+              Rejected <%= rejected_at ? datetime_format(rejected_at, year: true) : rejection["rejected_at"] %>
+            </div>
+            <div><%= Array(rejection["handles"]).join(", ") %></div>
+            <% if rejection["message"].present? %>
+              <%= ui_disclosure "Rejection Message", summary_class: "text-sm text-stone-muted" do %>
+                <%= simple_format rejection["message"] %>
+              <% end %>
+            <% else %>
+              <div class="text-sm text-stone-muted">No rejection message was given.</div>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+<% end %>

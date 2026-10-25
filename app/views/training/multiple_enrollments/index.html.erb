@@ -1,0 +1,91 @@
+<% content_for :title, "#{@training.title} Multiple Enrollments" %>
+
+<%= hero_panel icon: "copy", heading_level: :h1, id: "training-multiple-enrollments-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> Multiple Enrollments<% end %>
+  <% panel.description do %>
+    Trainees signed up for more than one session.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "#{@year} Sessions", training_path(training_slug, year: @year) %>
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2008, skip_pandemic: true %>
+<% end %>
+
+<% if @report.trainee_count.positive? %>
+  <%# Totals across every section on the page. A clean year skips straight to
+      the section empty states. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @report.trainee_count.to_s, "Trainees", variant: :warning %>
+    <%= ui_stat_box @report.enrollment_count.to_s, "Sign-Ups" %>
+    <%= ui_stat_box @report.max_enrollments.to_s, "Most Sign-Ups" %>
+  <% end %>
+
+  <%# Out of the hero: what does not count as a duplicate. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What is not counted?</dt>
+      <dd>Multi-part sessions that belong together are not counted.</dd>
+    </dl>
+  <% end %>
+
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link(training_multiple_enrollments_path(training_slug, year: @year, format: :csv)) %>
+    <% end %>
+  </div>
+<% end %>
+
+<% @report.sections.each do |section| %>
+  <% linkable = section.position_id == @training.id %>
+  <%= ui_section section.position_title,
+                 badge: pluralize(section.trainees.size, "trainee"),
+                 badge_color: section.trainees.any? ? :warning : :success do %>
+    <% if section.trainees.empty? %>
+      <%= ui_empty_state "Congratulations! No multiple enrollments were found for #{@year}.",
+                         icon: "circle-check", icon_type: :solid %>
+    <% else %>
+      <% if section.emails.any? %>
+        <%# Upstream printed every address on the page under a jump link. One
+            button that copies them does the same job off the screen. %>
+        <p class="mb-3">
+          <%= clipboard_button section.emails.join(", ") do %>
+            Copy <%= pluralize(section.emails.size, "email address") %>
+          <% end %>
+        </p>
+      <% end %>
+
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Sign-Ups", right: true %>
+          <%= t.heading "Sessions" %>
+          <%= t.heading "Email" %>
+        <% end %>
+        <%= t.body do %>
+          <% section.trainees.each do |trainee| %>
+            <%= t.row do %>
+              <%= t.row_header do %><%= person_display_link trainee.person, trainee.person.id %><% end %>
+              <%= t.cell trainee.slots.size, right: true %>
+              <%= t.cell do %>
+                <%# One sign-up per line. Upstream stacked the times and the
+                    descriptions in two independent columns, which only line up
+                    by luck past two sign-ups. Sessions belonging to the training
+                    itself link to their session page so the duplicate can be
+                    removed there; mentee sections list volunteer shifts, which
+                    have no session page. %>
+                <div class="flex flex-col gap-y-1">
+                  <% trainee.slots.each do |slot| %>
+                    <div class="flex flex-wrap items-center gap-x-2">
+                      <%= training_session_link slot, linkable: linkable %>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+              <%= t.cell email_link_or_dash(trainee.person.email) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

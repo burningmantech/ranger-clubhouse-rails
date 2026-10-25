@@ -1,0 +1,64 @@
+<%# locals: (message:) %>
+<%# Recipients are chips (one callsign is a one-to-one message; several, a
+    Cadre or Delegation, or anything sent as one, one shared conversation),
+    with Find Recipient adding a chip from a phone. The HQ window's relay names
+    its one sender in the same field, capped at one chip: a new choice replaces
+    it. select_callsign streams a Find choice into either. %>
+<div class="overflow-hidden rounded-lg border border-line">
+  <%= ui_form message, messages_path(**direction_params), class: "p-3" do |f| %>
+    <%# The page's one how-to: several callsigns, a Cadre or Delegation, or both
+        make one shared conversation (MessagesConcern#send_group_message). %>
+    <% help_text = if group_send_allowed?
+                     "Add as many callsigns as you like, up to #{MessageForm::MAX_CALLSIGNS}, and choose a " \
+                       "Cadre or Delegation below as well or instead. Everyone sees every reply, in one shared conversation."
+                   else
+                     "Who the message is from. Choosing another callsign replaces them."
+                   end %>
+    <%# As a Cadre or Delegation the sender is on (.scratch/team-messaging/PRD.md):
+        the team's name on the message, and everyone on the team in the
+        conversation. Only where a group may be sent, and only for a member;
+        their own name first, as the form's nil. %>
+    <% if (sender_teams = message_sender_team_options).any? %>
+      <%= f.select :sender_team_id, sender_teams,
+                   { label: "From", include_blank: message_owner.callsign, layout: :vertical, width: "w-full sm:w-64",
+                     help_text: "Sent as a team, the message shows the team's name, and everyone on the team is in the conversation." } %>
+    <% end %>
+    <%= f.callsign_chips_field :callsigns, url: suggest_callsigns_messages_path, label: lookup_label.delete_suffix(":"),
+                                           layout: :vertical, width: "w-full", wrapper_class: "mb-1",
+                                           max: (1 unless group_send_allowed?), help_text: %>
+    <%# Stacked, never side by side: beside Find Recipient (a tablet, or any
+        phone over about 415px) the Cadre section was indented from the fields. %>
+    <div class="mb-3">
+      <div class="lg:hidden">
+        <%= button_link "Find #{lookup_role_label}", :secondary, find_recipient_messages_path(**direction_params),
+                        data: { turbo_stream: true } %>
+      </div>
+      <% if group_send_allowed? %>
+        <%# Folded, the select is not sent (disclosure_fields_controller). %>
+        <%= ui_disclosure safe_join([fa_icon("people-group", :solid, end: 1), "Send to a Cadre or Delegation"]),
+                          open: message.team_id.present?, content_class: "pb-1",
+                          data: { controller: "disclosure-fields", action: "toggle->disclosure-fields#sync" } do %>
+          <%= f.select :team_id, message_team_options, { label: "Cadre or Delegation", layout: :vertical,
+                                                         include_blank: "None", width: "w-full sm:w-64" } %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%
+      addressed = message.recipient_callsigns.any?
+      options = { label: "Subject", maxlength: 80, layout: :vertical, width: "w-full" }
+      options["data-controller"] = "autofocus" if addressed && message.subject.blank?
+    %>
+    <%= f.text_field :subject, options %>
+
+    <%# The editor's own autofocus: Lexxy focuses itself once it loads. Its
+        limit is the text's, not the markup's (MessageTextValidator). %>
+    <%= f.rich_text_area :body, label: "Your Message", layout: :vertical,
+                                autofocus: (addressed && message.subject.present?) %>
+
+    <%= button_row do %>
+      <%= f.submit "Send Message" %>
+      <%= cancel_link messages_path %>
+    <% end %>
+  <% end %>
+</div>

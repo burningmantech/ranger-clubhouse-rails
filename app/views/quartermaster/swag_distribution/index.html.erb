@@ -1,0 +1,83 @@
+<%#
+  What swag was handed out during an event, one row per person. The category
+  stat boxes, the filter options, and the roster lines all read the same
+  report rows, so a count and the lines it summarises cannot disagree.
+%>
+<% content_for :title, "Swag Distribution" %>
+
+<%= hero_panel icon: "shirt", heading_level: :h1, id: "quartermaster-swag-distribution-header",
+               title: "Swag Distribution" do |panel| %>
+  <% panel.description do %>
+    What swag &mdash; shirts, service pins, and patches &mdash; was handed out during an event,
+    by person.
+  <% end %>
+  <%# keep: the category filter survives a year change; the selector's GET
+      would otherwise drop it. include_all reads the controller flag that also
+      makes setup_year honour the choice, so the two cannot disagree. %>
+  <% panel.year_selector year: swag_distribution_selected_year, years: @data_years,
+                         include_all: allow_all_years, keep: active_filters(@filter_params) %>
+<% end %>
+
+<% if @rows.empty? %>
+  <%= ui_empty_state "No swag was handed out in #{@year || "any year"}, " \
+                     "so there is nothing to report.",
+                     icon: "shirt", icon_type: :solid %>
+  <%# A year with no swag at all still carries any category filter forward, so
+      the chip that removes it has to render here too -- the filter bar in the
+      other branch only appears when there are rows to narrow. %>
+  <% if active_filters(@filter_params).any? %>
+    <%= render "filters" %>
+  <% end %>
+<% else %>
+  <%# People and Items describe the whole scope; each category box is also the
+      quartermaster's restocking count and links to its own filtered roster.
+      The filter bar's count reports the narrowing below it. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @rows.size.to_s, "People" %>
+    <%= ui_stat_box @item_count.to_s, "Items" %>
+    <% SwagDistributionReport::CATEGORIES.each do |category| %>
+      <% count = @category_counts[category] %>
+      <% next if count.zero? %>
+      <%# These boxes are the only place the per-category totals appear. %>
+      <%= ui_stat_link swag_distribution_url(category: category.to_s),
+                       aria_label: "#{count} #{SwagDistributionReport::CATEGORY_TITLES[category].downcase} — show recipients" do %>
+        <%= ui_stat_box count.to_s, SwagDistributionReport::CATEGORY_TITLES[category] %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# The export rides the bar, so it carries whatever the chips say is showing. %>
+  <%= render "filters",
+             count: "Showing #{@filtered.size} of #{pluralize(@rows.size, "person")}",
+             actions: export_csv_link(swag_distribution_url(@filter_params.merge(format: :csv))) %>
+
+  <%= ui_section "Distribution", icon: "gift", icon_type: :solid, border: false do %>
+    <% if @filtered.empty? %>
+      <div class="px-4 pb-2">
+        <%= ui_empty_state "No one matched the current filter.",
+                           icon: "magnifying-glass", icon_type: :solid %>
+      </div>
+    <% else %>
+      <%= ui_table full_width: true, striped: true,
+                   id: "swag-distribution-roster" do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Items", right: true %>
+          <%= t.heading "Swag Received" %>
+        <% end %>
+        <%# Quartermasters may read this page but not the person pages it would
+            link to, so they get plain callsigns rather than links that bounce. %>
+        <% linked = can_view_person_page? %>
+        <%= t.body do %>
+          <% @filtered.each do |row| %>
+            <%= t.row do %>
+              <%= t.row_header linked ? callsign_link(row.person) : row.person.callsign %>
+              <%= t.cell row.items.size, right: true %>
+              <%= t.cell swag_item_lines(row) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,41 @@
+<%# locals: (filter_params:, active_params:, count: nil, actions: nil) %>
+<%# The four yes/no filters for the ticket-holder table, in the standard
+    filter_bar shell. All four are ordinary GET params applied server-side.
+
+    They mirror the table's four yes/no columns one for one, which is what makes
+    the page useful: "no online course" or "signed up but never rangered" is one
+    click rather than a scan down four columns.
+
+    Locals:
+      filter_params - { course:, signup:, rangered:, trained: }; "all" means off
+      active_params - filter_params without the "all" entries; one chip each
+      count         - result summary shown at the end of the bar
+      actions       - the page's Export CSV button, at the end of the row %>
+<%
+  filters = Ticketing::ClaimedWithNoSignupsController::BOOLEAN_FILTERS
+  choices = [UiComponents::FilterBarHelper::ALL_FILTER_OPTION, ["Yes", "yes"], ["No", "no"]]
+
+  chip_labels = filters.transform_values { |filter| filter[:label] }
+  # The chip already names the column, so the value reads as a plain Yes or No
+  # rather than repeating it.
+  chips = filter_chips(active_params, chip_labels, value_label: ->(_key, value) { value.capitalize }) do |remaining|
+    ticketing_claimed_with_no_signups_path(remaining)
+  end
+%>
+<%= filter_bar id: "claimed-no-signups-filters",
+               chips: chips,
+               clear_url: ticketing_claimed_with_no_signups_path,
+               count: count,
+               actions: actions,
+               url: ticketing_claimed_with_no_signups_path do |f| %>
+  <%= form_row do %>
+    <% filters.each do |key, filter| %>
+      <%= f.select key, choices, label: filter[:label], selected: filter_params[key],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>

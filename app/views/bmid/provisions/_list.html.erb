@@ -1,0 +1,42 @@
+<%# locals: (provisions:, type:, person:) %>
+<%# The first step of the provision dialog the BMID manage grid opens from a
+    meals or showers cell: everything that cell's label is describing, so an
+    admin can pick the pass they meant -- or add another.
+
+    A person can hold two usable passes of one type (an earned one and an
+    allocated one, or an earned one that was banked and came back into play
+    because they hold an allocated one). The cell shows the union, so the table
+    carries the source year, the expiry, the status, and earned-or-allocated:
+    what it takes to tell two of them apart.
+
+    Picking one swaps this frame for the record form; saving there closes the
+    dialog and redraws the row's two cells. %>
+<%= modal id: "bmid-provision-modal", size: :xl, close_button: false do |m| %>
+  <%= m.title do %>
+    <%= bmid_provision_noun(type).titleize %> &mdash; <%= person.callsign %>
+  <% end %>
+  <%= m.body do %>
+    <p class="mb-3 text-body">
+      Meals and showers are printed from the person's provisions, so anything you change
+      here saves on its own, right away. It does not touch the badge, and it does not join
+      the badge changes you have in progress.
+    </p>
+
+    <%= render "common/provisions/list",
+               provisions: provisions,
+               ref_path: ->(provision) { edit_bmid_provision_path(provision, provision_context) },
+               empty_message: "No #{bmid_provision_noun(type)} on file for #{person.callsign}.",
+               frame: "modal",
+               action_label: "Edit" %>
+
+    <div class="mt-4">
+      <%= button_row do %>
+        <%= button_link bmid_provision_add_label(type), :primary,
+                        new_bmid_provision_path(provision_context.merge(type:)),
+                        icon: "plus", icon_type: :solid,
+                        data: { turbo_frame: "modal" } %>
+        <%= modal_close_button "Close" %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

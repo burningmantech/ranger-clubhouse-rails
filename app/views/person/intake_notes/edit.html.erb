@@ -1,0 +1,23 @@
+<%= hero_panel icon: "pen", heading_level: :h1, id: "intake-note-edit-header",
+               title: "Edit #{intake_team_label(@person_intake_note.type)} Note — #{@person.callsign}",
+               back_to: [intake_notes_return_label, intake_notes_return_path] %>
+
+<%= ui_callout_box :warning do %>
+  <p>
+    This form is only intended to correct spelling mistakes and/or clarify the note's message.
+    If you have additional information from another day, <strong>ADD A NEW NOTE.</strong>
+  </p>
+  <p>
+    Note created on
+    <%= datetime_format(@person_intake_note.created_at, tz: "America/Los_Angeles", tz_abbr: "PT", year: true) %>.
+  </p>
+<% end %>
+
+<%= ui_form(@person_intake_note, person_intake_note_path(@person, @person_intake_note, intake_notes_origin_params), method: :patch) do |f| %>
+  <%= f.text_area :note, label: "Note", rows: 5, required: true %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Note" %>
+    <%= cancel_link intake_notes_return_path %>
+  <% end %>
+<% end %>

@@ -1,0 +1,29 @@
+<%# locals: (checkout_form:, attachments:, autofocus: true) %>
+<%# Shared barcode checkout form (extracted from the person assets page;
+    upstream: port/api/AssetController.php checkout). POSTs to
+    assets_checkout_path from AssetManagementConcern. Expired assets come back
+    as the force-checkout interstitial modal (common/assets/_expired_modal). %>
+<%= ui_form(checkout_form, assets_checkout_path, method: :post) do |f| %>
+  <%= form_row do %>
+    <div class="mb-3">
+      <%# The HQ barcode choreography targets the input by id, and the
+          builder's auto-label would not follow a custom field id — pair the
+          label by hand (classes mirror FormHelper LABEL_CLASSES and the
+          required badge from build_label). %>
+      <%= f.label :barcode, for: "checkout-barcode",
+                  class: "block mb-1 font-medium text-heading text-base" do %>
+        Barcode<%= ui_badge "required", :error, icon: "asterisk", icon_type: :solid, class: "ml-2" %>
+      <% end %>
+      <%= f.text_field :barcode, wrapper: false, required: true, maxlength: 25,
+                       autofocus: autofocus, id: "checkout-barcode" %>
+    </div>
+    <%= f.collection_select :attachment_id,
+                            attachments,
+                            :id,
+                            :description,
+                            { include_blank: "No attachment", label: "Attachment (optional)" } %>
+  <% end %>
+  <%= button_row do %>
+    <%= f.submit "Check Out" %>
+  <% end %>
+<% end %>

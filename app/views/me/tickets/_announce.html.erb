@@ -1,0 +1,76 @@
+<%# Ticketing period: ANNOUNCE. Ported from port/components/ticketing-announce.hbs. %>
+<%
+  info = @ticketing_info
+  pkg = @ticket_package
+%>
+
+<% if person.is_applicant? %>
+  <%= ui_callout_box :secondary, icon: "ticket", accent: true, title: "Setup Access Passes — Check Back in July" do %>
+    <strong>Nothing to do yet.</strong> Setup Access Pass details for applicants attending an Alpha shift are posted in <strong>July</strong>.
+  <% end %>
+<% else %>
+  <% if pkg.gift_items.any? %>
+    <%= ui_callout_box :success, icon: "gift", accent: true, title: "#{pluralize(pkg.gift_items.count, "Gift Ticket")} Available" do %>
+      Claim <%= pkg.gift_items.count == 1 ? "it" : "them" %> once the Ranger ticketing window opens.
+    <% end %>
+  <% end %>
+
+  <% if pkg.lsd_items.any? %>
+    <%= ui_callout_box :success, icon: "ticket", accent: true, title: "Late Season Directed (LSD) Items Claimed" do %>
+      <ul class="list-disc pl-4 space-y-1">
+        <% pkg.lsd_items.each do |item| %>
+          <li><%= item.type_label %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+
+  <% if pkg.access_documents.any? %>
+    <%= ui_callout_box :success, icon: "ticket", accent: true, title: "#{pluralize(pkg.access_documents.count, "Ticket")} Available" do %>
+      <p class="mb-2"><strong>You qualified.</strong> Claim or bank once ticketing opens.</p>
+      <ul class="list-disc pl-4 space-y-1">
+        <% pkg.access_documents.each do |ticket| %>
+          <li><strong><%= ticket.type_label %></strong> — earned <%= ticket.source_year %>, expires September <%= ticket.expiry_date&.year %></li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <%= ui_section "What Happens Next", icon: "circle-question", icon_type: :solid do %>
+      <dl class="instruction-list">
+        <dt>What do I do now?</dt>
+        <dd>Come back to claim or bank your ticket once the Ranger ticketing window opens in <strong>June or early July</strong>. Watch the Ranger Announce mailing list.</dd>
+        <dt>Not attending this year?</dt>
+        <dd>Bank your ticket to use it for a future event.</dd>
+      </dl>
+    <% end %>
+  <% else %>
+    <%= ui_section "No Ticket Earned", icon: "circle-xmark", icon_type: :solid do %>
+      <p class="mb-3"><strong>You did not qualify for a ticket during the last event.</strong></p>
+      <dl class="space-y-2">
+        <dt class="font-bold">Credits you earned</dt>
+        <dd><%= credit_format(pkg.credits_earned) %></dd>
+        <dt class="font-bold">Special Price Ticket needs</dt>
+        <dd><%= credit_format(info.spt_credits) %></dd>
+        <dt class="font-bold">Staff Credential needs</dt>
+        <dd><%= credit_format(info.sc_credits) %></dd>
+      </dl>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Vehicle Passes & Setup Access Passes (SAPs)", icon: "car-side", icon_type: :solid do %>
+    <dl class="instruction-list">
+      <dt>Setup Access Pass (SAP)?</dt>
+      <dd>Any Ranger in good standing who intends to ranger the upcoming event qualifies.</dd>
+      <dt>Vehicle Pass?</dt>
+      <dd>
+        <% if pkg.access_documents.any? %>
+          Available if you claim a ticket through Rangers — paid with a Special Price Ticket, free with a Staff Credential.
+        <% else %>
+          <strong>Not available through Rangers</strong> — no ticket earned and no banked tickets. You'll need to buy your own.
+        <% end %>
+      </dd>
+      <dt>When can I claim?</dt>
+      <dd>When Ranger ticketing opens in <strong>June or July</strong>.</dd>
+    </dl>
+  <% end %>
+<% end %>

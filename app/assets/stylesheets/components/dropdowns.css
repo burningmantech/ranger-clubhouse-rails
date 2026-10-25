@@ -1,0 +1,20 @@
+/*
+ * Dropdown Menu System Extensions
+ * DaisyUI provides: dropdown, dropdown-content, dropdown-end, etc.
+ * Custom utilities below use non-conflicting names for project patterns.
+ */
+
+/* Dropdown menu container */
+@utility dropdown-panel {
+    @apply menu bg-base-100 rounded-box shadow-lg z-50 w-52 p-2 border border-base-300;
+}
+
+/* Dropdown menu item link */
+@utility dropdown-link {
+    @apply block px-4 py-2 text-sm text-base-content hover:bg-base-200 rounded-lg;
+}
+
+/* Dropdown disabled item */
+@utility dropdown-disabled-item {
+    @apply block px-4 py-2 text-sm text-base-content/40 cursor-not-allowed;
+}

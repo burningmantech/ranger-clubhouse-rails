@@ -1,0 +1,40 @@
+<%= hero_panel icon: "boxes-stacked", heading_level: :h1, id: "ops-assets-header",
+               title: "Asset Inventory",
+               description: "Browse the inventory by asset type to view, filter, and export its records." do |panel| %>
+  <% if @available_years.any? %>
+    <% panel.year_selector year: @year,
+                           years: @available_years,
+                           include_current_year: false,
+                           include_year_argument: false %>
+  <% end %>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <% if can?(:edit_assets) %>
+      <%= button_link "Add Asset", :primary, new_asset_management_record_path(year: @year),
+                      icon: "plus", icon_type: :solid %>
+    <% end %>
+    <% if @total_records.positive? %>
+      <%= export_csv_link(asset_management_records_path(year: @year, format: :csv)) %>
+    <% end %>
+  <% end %>
+</div>
+
+<%# present?, not any?: an untyped bucket makes @types [nil], and [nil].any? is false. %>
+<% if @types.present? %>
+  <div class="text-lg">
+    Showing <%= pluralize @types.size, "asset type" %> with <%= pluralize @total_records, "record" %>
+  </div>
+  <div class="lg:w-3/4">
+    <% @types.each do |type| %>
+      <% expired = @expired_counts[type].to_i %>
+      <%= ui_drill_down_row asset_type_records_path(type, year: @year),
+                            asset_type_label(type),
+                            meta: pluralize(@type_counts[type], "record"),
+                            badges: (ui_badge("#{expired} expired", :warning, size: "base") if expired.positive?) %>
+    <% end %>
+  </div>
+<% else %>
+  <%= ui_empty_state "No asset records have been added yet.", icon: "boxes-stacked", icon_type: :solid %>
+<% end %>

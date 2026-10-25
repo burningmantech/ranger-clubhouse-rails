@@ -1,0 +1,49 @@
+<%= ui_form(@event_date,
+            @event_date.persisted? ? admin_event_date_path(@event_date) : admin_event_dates_path) do |f| %>
+  <%= f.fieldset "Event window", icon: "calendar-days", icon_type: :solid do %>
+    <p class="my-2">
+      Gate open through the end of the event.
+    </p>
+    <%= form_row do %>
+      <%= f.datetime_field :event_start, label: "Event Start / Gate Open", required: true %>
+      <%= f.datetime_field :event_end, label: "Event End", required: true %>
+    <% end %>
+  <% end %>
+
+  <%= f.fieldset "Credit period", icon: "coins", icon_type: :solid do %>
+    <p class="my-2">
+      Sets which hours the Hours &amp; Credits report counts. The period closes at the top of the
+      following January, so the end may fall in the next year.
+    </p>
+    <%= form_row do %>
+      <%= f.datetime_field :pre_event_start, label: "Pre-Event Start", required: true %>
+      <%= f.datetime_field :post_event_end, label: "Post-Event End", required: true %>
+    <% end %>
+  <% end %>
+
+  <%= f.fieldset "Pre-event slot window", icon: "lock", icon_type: :solid do %>
+    <p class="my-2">
+      Inside this window a new slot must be an approved pre-event position, unless the person
+      creating it is an admin.
+    </p>
+    <%= form_row do %>
+      <%= f.datetime_field :pre_event_slot_start, label: "Pre-Event Slot Start", required: true %>
+      <%= f.datetime_field :pre_event_slot_end, label: "Pre-Event Slot End", required: true %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Event Date" %>
+    <%= cancel_link admin_event_dates_path %>
+    <% if @event_date.persisted? && can?(:delete_event_dates) %>
+      <%= delete_button admin_event_date_path(@event_date), "Delete Event Date",
+                        confirm_modal: {
+                          title: "Confirm Event Date Deletion",
+                          message: "Delete the #{@stored_year} event dates? " \
+                                   "Reports and scheduling rules for that year read this record. This cannot be undone.",
+                          confirm_label: "Delete Event Date",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

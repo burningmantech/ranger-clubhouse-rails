@@ -1,0 +1,17 @@
+<% content_for :title, @document.new_record? ? "New Document" : "Edit Document" %>
+
+<%= hero_panel icon: "pen-to-square", heading_level: :h1, id: "edit-resource-document-header",
+               back_to: [resource_return_label, resource_show_path] do |panel| %>
+  <% panel.title do %>
+    <%= @document.new_record? ? "Write" : "Edit" %> <%= @document.description %>
+  <% end %>
+  <% panel.description do %>
+    <% if @document.new_record? %>
+      Nothing is published until you save.
+    <% else %>
+      Changes appear as soon as you save.
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= render "common/resource_documents/form", document: @document %>

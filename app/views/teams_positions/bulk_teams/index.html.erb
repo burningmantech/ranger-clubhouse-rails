@@ -1,0 +1,77 @@
+<%= hero_panel icon: "people-arrows", heading_level: :h1, id: "bulk-teams-header",
+               title: "Bulk Grant / Revoke a Team",
+               description: "Grant or revoke one team membership for a list of callsigns." %>
+
+<%# Only the apply renders a results block, and only then is this a 422 results
+    page that should jump the reader to the top. A refusal is a validation
+    re-render and keeps its scroll. %>
+<% if @outcome %>
+  <div data-controller="scroll-to-top" hidden></div>
+
+  <%# Green only when the whole list went through. A run where every line was
+      unusable wrote nothing, and painting that success invites a reader
+      scanning by colour to move on from a job that did not happen. %>
+  <% variant, icon = bulk_team_outcome_banner(@change, @outcome) %>
+  <%= ui_callout_box(variant, icon:, icon_type: :solid) do %>
+    <strong><%= bulk_team_outcome_headline(@change, @outcome) %></strong>
+    <%= bulk_team_outcome_detail(@change, @outcome) %>
+    <% if variant == :success %>
+      Your list is still below.
+    <% else %>
+      Your list is still below — fix anything that did not go through and check it again.
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if manageable_teams.any? %>
+  <%# The consequence the form cannot show on its face: the reader picks a team,
+      and positions move with it. %>
+  <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid do %>
+    <strong>This moves positions too.</strong>
+    Granting a team also grants its Recommended positions. Revoking a team also revokes the
+    Recommended and Optional positions, along with any upcoming shifts signed up for with them.
+    To move one position on its own, use
+    <%= link_to "Bulk Position Grant / Revoke", teams_positions_bulk_positions_path %>.
+  <% end %>
+
+  <%# Params, not a model: the form carries three loose values and re-renders
+      itself with them after a refusal, so the pasted list survives. %>
+  <%= ui_form(nil, teams_positions_preview_bulk_teams_path,
+              method: :post, no_error_summary: true) do |f| %>
+    <%= f.select :team_id,
+                 bulk_team_options(manageable_teams, params[:team_id]),
+                 { label: "Team", required: true, prompt: "Choose a team",
+                   help_text: bulk_teams_reach_hint },
+                 { class: "w-full sm:w-96" } %>
+
+    <%# No option is checked by default: neither direction should be the one you
+        get by not reading the question. %>
+    <%= f.collection_radio_buttons :direction,
+                                   TeamsPositions::BulkTeamsHelper::DIRECTION_OPTIONS,
+                                   :last, :first,
+                                   { label: "What should happen?",
+                                     layout: :horizontal, label_position: :stacked,
+                                     checked: params[:direction] } %>
+
+    <%= f.text_area :callsigns, label: "Callsigns", required: true,
+                    value: params[:callsigns], rows: 10,
+                    help_text: "One callsign per line. Capitalisation and punctuation do not matter." %>
+
+    <%# Said beside the button it is about, not in the hero: the hero is one
+        sentence on what the page does. %>
+    <p class="mb-3">
+      <strong>Checking is always safe.</strong> It shows exactly what will change, and nothing
+      is saved until you confirm.
+    </p>
+
+    <%= button_row do %>
+      <%= f.submit "Check Callsigns" %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state nil, icon: "people-group", icon_type: :solid do %>
+    There are no teams you can grant or revoke here. Either you do not manage a team yet, or
+    every team you manage grants Admin or Tech Ninja — those memberships can only be moved one
+    person at a time from their page.
+  <% end %>
+<% end %>

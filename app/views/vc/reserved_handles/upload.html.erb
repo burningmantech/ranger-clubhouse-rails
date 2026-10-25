@@ -1,0 +1,149 @@
+<% commit_ready = @results.present? && @error_count.zero? %>
+
+<%= hero_panel icon: "upload", heading_level: :h1, id: "vc-reserved-handles-upload-header",
+               back_to: ["Reserved Handles", vc_reserved_handles_path] do |panel| %>
+  <% panel.title do %>Bulk Upload Reserved Handles<% end %>
+  <% panel.description do %>
+    Paste a list of handles to reserve them all at once.
+  <% end %>
+<% end %>
+
+<%# Results sit above the form so the verdict is the first thing on screen
+    when the page re-renders after a verify. Editing anything below makes
+    those results stale, which withdraws the commit button. %>
+<div data-controller="stale-results"
+     data-action="input->stale-results#markStale change->stale-results#markStale">
+  <% if @results %>
+    <% problem_lines = @results.filter_map { |row| row[:line_number] if row[:error] } %>
+    <%= ui_section @upload_form.commit ? "Commit results" : "Verified handles — not saved yet",
+                   id: "upload-results", icon: "list-check", icon_type: :solid do %>
+      <% if @error_count.positive? %>
+        <%= ui_callout_box :error, accent: true do %>
+          <% if @upload_form.commit %>
+            <strong><%= @error_count %> of <%= pluralize(@results.size, "handle") %> could not be saved.</strong>
+            The rest were saved. The lines that failed are waiting in the Handles box below &mdash;
+            fix them and verify again.
+          <% else %>
+            <strong><%= pluralize(@error_count, "problem") %> found on <%= "line".pluralize(problem_lines.size) %> <%= problem_lines.to_sentence %>.</strong>
+            Fix those lines in the Handles box below, then verify again. Nothing has been saved.
+          <% end %>
+        <% end %>
+      <% else %>
+        <div data-stale-results-target="commit">
+          <%= ui_callout_box :success do %>
+            <strong>No problems found.</strong> Commit to save <%= pluralize(@results.size, "handle") %>.
+          <% end %>
+          <%# Re-submits the exact values that were verified, so editing the form
+              below cannot change what Commit saves. These carry no ids on
+              purpose: the same ids on the form below make a duplicate that
+              Turbo resolves by dropping one of the pair, which silently
+              emptied this form. %>
+          <%= ui_form(@upload_form, upload_vc_reserved_handles_path, no_error_summary: true) do |f| %>
+            <%= f.hidden_field :handles, id: nil %>
+            <%= f.hidden_field :reservation_type, id: nil %>
+            <%= f.hidden_field :expires_on, id: nil %>
+            <%= f.hidden_field :reason, id: nil %>
+            <%= f.hidden_field :twii_year, id: nil %>
+            <%= f.hidden_field :commit, value: "1", id: nil %>
+            <div class="my-3">
+              <%= f.submit "Commit #{pluralize(@results.size, "Handle")}" %>
+            </div>
+          <% end %>
+        </div>
+        <div data-stale-results-target="stale" class="hidden">
+          <%= ui_callout_box :warning do %>
+            <strong>The list changed after it was verified.</strong>
+            Verify the handles again to commit them.
+          <% end %>
+        </div>
+      <% end %>
+
+      <p class="mt-3">
+        Showing <%= pluralize(@results.size, "handle") %> as
+        <strong><%= reserved_handle_type_label(@upload_form.reservation_type) %></strong><% if @upload_form.twii_person? %>, TWII year <%= @upload_form.twii_year %><% end %>.
+      </p>
+
+      <%= ui_table do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Status" %>
+          <%# Numbering only matches the box while it still holds every line —
+              a partial commit leaves just the failures behind. %>
+          <%= t.heading "Line", right: true unless @upload_form.commit %>
+          <%= t.heading "Handle" %>
+          <%= t.heading "Expires On" %>
+          <%= t.heading "Reason" %>
+          <%= t.heading "Problem" %>
+        <% end %>
+        <%= t.body do %>
+          <% @results.each do |row| %>
+            <%= t.row do %>
+              <%= t.cell do %>
+                <% if row[:error] %>
+                  <%= ui_badge "Problem", :error, icon: "triangle-exclamation", icon_type: :solid %>
+                <% else %>
+                  <%= ui_badge @upload_form.commit ? "Saved" : "OK", :success, icon: "circle-check", icon_type: :solid %>
+                <% end %>
+              <% end %>
+              <%= t.cell row[:line_number], right: true unless @upload_form.commit %>
+              <%= t.cell row[:handle] %>
+              <%= t.cell row[:expires_on].presence || "never" %>
+              <%= t.cell value_or_dash(row[:reason]) %>
+              <%= t.cell do %>
+                <% if row[:error] %>
+                  <span class="text-error font-semibold"><%= row[:error] %></span>
+                <% else %>
+                  &mdash;
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= ui_form(@upload_form, upload_vc_reserved_handles_path) do |f| %>
+    <%= f.fieldset "Upload Details", icon: "list", icon_type: :solid do %>
+      <dl class="instruction-list mb-3">
+        <dt>What goes on each line?</dt>
+        <dd>
+          One handle per line. Add a per-handle expiration or reason with commas:
+          <code>handle</code>, <code>handle,2027-09-15</code>,
+          <code>handle,2027-09-15,reason</code>, or <code>handle,,reason</code>.
+        </dd>
+        <dt>What happens when I verify?</dt>
+        <dd>Nothing is saved. Each line is checked, any problems are listed, and then you can commit the list.</dd>
+      </dl>
+
+      <%= form_row do %>
+        <%= f.select :reservation_type,
+                     reserved_handle_type_options,
+                     label: "Type", required: true, width: "w-full sm:w-64",
+                     data: {
+                       controller: "conditional-show",
+                       conditional_show_id_value: "upload-twii-year",
+                       conditional_show_reveal_value: HandleReservation::RESERVATION_TYPE_TWII_PERSON
+                     } %>
+        <%= f.number_field :twii_year, label: "TWII Year",
+                           wrapper_id: "upload-twii-year",
+                           hidden: !@upload_form.twii_person?,
+                           width: "w-full sm:w-28",
+                           help_text: "Required for TWII entries. Lines without a date expire on #{reserved_handle_twii_default_date}." %>
+      <% end %>
+
+      <%= form_row do %>
+        <%= f.date_field :expires_on, label: "Expires On", width: "w-full sm:w-44",
+                         help_text: "Optional. Applies to every line without its own date." %>
+        <%= f.text_field :reason, label: "Reason", maxlength: 255, width: "w-full sm:w-72",
+                         help_text: "Optional. Applies to every line without its own reason." %>
+      <% end %>
+
+      <%= f.text_area :handles, label: "Handles", required: true, rows: 10 %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Verify Handles", variant: commit_ready ? :secondary : :primary %>
+      <%= cancel_link vc_reserved_handles_path %>
+    <% end %>
+  <% end %>
+</div>

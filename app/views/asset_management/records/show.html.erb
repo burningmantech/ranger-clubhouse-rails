@@ -1,0 +1,63 @@
+<%= hero_panel icon: "boxes-stacked", heading_level: :h1, id: "ops-asset-show-header",
+               title: "Asset #{@asset.barcode}",
+               description: "Review assignment details, checkout status, and full checkout history for this asset.",
+               back_to: @back_to %>
+
+<% if can?(:edit_assets) %>
+  <div class="mb-4">
+    <%= button_row do %>
+      <%= edit_link edit_asset_management_record_path(@asset, @return_index_params), "Edit Asset" %>
+      <%= delete_button asset_management_record_path(@asset, @return_index_params),
+                        "Delete Asset",
+                        confirm_modal: {
+                          title: "Delete Asset",
+                          message: "Delete asset #{@asset.barcode}? This cannot be undone."
+                        } %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= ui_section "Asset Details", icon: "barcode", icon_type: :solid do %>
+  <%= ui_label_value label_width: "10rem", size: :base do |list| %>
+    <% list.row "Barcode", @asset.barcode %>
+    <% list.row "Type", asset_type_label(@asset.type) %>
+    <% list.row "Assignment", asset_duration_label(@asset) %>
+    <% list.row "Description", value_or_dash(@asset.description) %>
+    <% list.row "Year", @asset.year %>
+    <% list.row "Created at", datetime_format(@asset.created_at, year: true) %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Assignment & Expiration", icon: "calendar-days", icon_type: :solid do %>
+  <%= ui_label_value label_width: "10rem", size: :base do |list| %>
+    <% list.row "Entity assignment", value_or_dash(@asset.entity_assignment) %>
+    <% list.row "Asset group", value_or_dash(@asset.group_name) %>
+    <% list.row "Order number", value_or_dash(@asset.order_number) %>
+    <% list.row "Expires on", expires_on_cell(@asset) %>
+    <% list.row "Notes", value_or_dash(nl2br(@asset.notes)) %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Current Checkout State", icon: "right-left", icon_type: :solid do %>
+  <% if @current_checkout.present? %>
+    <%= ui_callout_box :warning, title: "Currently Checked Out" do %>
+      Assigned to
+      <strong><%= person_display_link(@current_checkout.person, @current_checkout.person_id) %></strong>.
+    <% end %>
+
+    <div class="mt-4">
+      <%= ui_label_value label_width: "10rem", size: :base do |list| %>
+        <% list.row "Checked out", datetime_format(@current_checkout.checked_out, year: true) %>
+        <% list.row "Checked out by" do %>
+          <%= person_display_link(@current_checkout.check_out_person,
+                                  @current_checkout.check_out_person_id) %>
+        <% end %>
+        <% list.row "Attachment", value_or_dash(@current_checkout.attachment&.description) %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= ui_empty_state "This asset is currently checked in.", icon: "circle-check", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<%= render "common/assets/checkout_history", history: @asset_history %>

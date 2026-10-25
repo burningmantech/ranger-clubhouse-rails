@@ -1,0 +1,83 @@
+<article id="team-box-<%= team.id %>"
+        class="card-standard p-3 shadow-xs"
+        data-membership-editor-target="teamCard"
+        data-team-title="<%= team.title %>"
+        data-team-type="<%= team.type %>"
+        data-dangerous="<%= team.dangerous? %>"
+        data-dangerous-permissions="<%= team.dangerous_permissions.join(" and ") %>"
+>
+  <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+    <div class="flex-center-gap-2">
+      <%= check_box_tag "#{param_key}[team_ids][]",
+                        team.id,
+                        team.selected,
+                        id: "team-#{team.id}",
+                        class: AppFormBuilder::CHECKBOX_CLASSES,
+                        data: { action: "membership-editor#teamToggle" } %>
+      <label for="<%= "team-#{team.id}" %>" class="inline-flex items-center min-h-9 min-w-9 text-base font-semibold text-heading cursor-pointer"><%= team.title %></label>
+    </div>
+
+    <% if team.permissions? %>
+      <%# Below lg the menu drops under the title row at full width, so its panel
+          never leaves a phone screen and the manager checkbox keeps its place. %>
+      <%= dropdown_menu pluralize(team.permission_count, "Permission"), variant: :ghost,
+                        menu_label: "Granted Permissions",
+                        class: "w-full order-last lg:w-auto lg:order-none",
+                        summary_class: "w-full justify-between lg:w-auto",
+                        menu_class: "w-full lg:w-64" do %>
+        <li class="menu-title">Granted Permissions</li>
+        <% team.permission_titles.each do |title| %>
+          <li><span><%= title %></span></li>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <% unless team.active %>
+      <%= ui_badge "inactive", :error, size: "xs" %>
+    <% end %>
+
+    <div class="ml-auto flex items-center gap-2">
+      <%= check_box_tag "#{param_key}[manager_ids][]",
+                        team.id,
+                        team.manager_selected,
+                        id: "team-manager-#{team.id}",
+                        class: AppFormBuilder::CHECKBOX_CLASSES,
+                        data: { action: "membership-editor#managerToggle" } %>
+      <label for="<%= "team-manager-#{team.id}" %>" class="inline-flex items-center min-h-9 text-sm font-medium text-heading cursor-pointer">Is Team Manager</label>
+    </div>
+  </div>
+
+  <% unless team.active %>
+    <p class="mt-1 text-sm text-error">
+      Team is inactive but still has related grants. The recommendation is to deselect all items.
+    </p>
+  <% end %>
+
+  <% if team.any_positions? %>
+    <div class="mt-2 space-y-1">
+      <%= render "position_group",
+                 title: "Positions All Team Members Are Recommended to Have",
+                 positions: team.all_member_positions,
+                 category: "all_members",
+                 param_key: param_key %>
+
+      <%= render "position_group",
+                 title: "Optional Positions (Membership in Team Recommended)",
+                 positions: team.optional_positions,
+                 category: "optional",
+                 param_key: param_key %>
+
+      <%= render "position_group",
+                 title: "Public Positions (Team Membership Not Required)",
+                 positions: team.public_positions,
+                 category: "public",
+                 param_key: param_key %>
+    </div>
+  <% else %>
+    <p class="mt-1 ml-1 text-sm italic text-stone-muted">Team does not have any positions.</p>
+  <% end %>
+
+  <div class="mt-2 ml-1">
+    <%= submit_button "Save" %>
+  </div>
+</article>

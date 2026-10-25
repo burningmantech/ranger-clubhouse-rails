@@ -1,0 +1,50 @@
+<%= ui_form(@title,
+            @title.persisted? ? bmid_title_path(@title) : bmid_titles_path) do |f| %>
+  <%= f.fieldset "Badge Title Details", icon: "id-badge", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Where does the title print?</dt>
+      <dd>On the badge line you pick — a badge has three, printed top to bottom.</dd>
+      <dt>What does preference do?</dt>
+      <dd>It breaks ties. If someone holds two positions earning a title on the same
+        line, the lower preference number wins.</dd>
+      <dt>Does saving change any badges?</dt>
+      <dd>No. Run Set BMID Titles to write titles onto this year's badges.</dd>
+    </dl>
+
+    <%= form_row do %>
+      <%= f.text_field :title, label: "Title", required: true,
+                       maxlength: BmidTitle::TITLE_LIMIT, show_counter: true,
+                       width: "w-full sm:w-64",
+                       help_text: "Printed on the badge exactly as typed." %>
+      <%= f.select :title_line,
+                   BmidTitle::TITLE_LINES.map { |line| ["Title #{line}", line] },
+                   { label: "Badge Line", required: true },
+                   { class: "w-full sm:w-44" } %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.collection_select :position_id, @positions, :id, :title,
+                              { label: "Earned by Position", required: true,
+                                help_text: "Everyone holding this position earns the title." },
+                              { class: "w-full sm:w-72" } %>
+      <%= f.number_field :sort_index, label: "Preference", required: true,
+                         width: "w-full sm:w-28",
+                         help_text: "Lowest number wins when a line has more than one." %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Badge Title" %>
+    <%= cancel_button bmid_titles_path %>
+    <% if @title.persisted? %>
+      <%= delete_button bmid_title_path(@title),
+                        confirm_modal: {
+                          title: "Confirm Badge Title Deletion",
+                          message: "Delete \"#{@title.title}\"? #{bmid_title_position_name(@title)} will stop " \
+                                   "earning it. Badges already carrying it keep it until someone clears them.",
+                          confirm_label: "Delete Badge Title",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,60 @@
+<%# locals: (history:, check_in_row: nil, check_in_path: nil) %>
+<%# Every time this asset left the cage and came back, oldest first. Shared by
+    the asset record page and the barcode lookup; only the lookup passes
+    check_in_row and check_in_path, which put a Check In control on that row.
+
+    The control is tied to the row the action will actually close, not to any
+    row that is still open: nothing in the schema stops an asset having two
+    open rows, and a button on each would promise more than one check-in while
+    both closed the same one. %>
+<%= ui_section "Checkout History", icon: "clock-rotate-left", icon_type: :solid, badge: history.size.to_s do %>
+  <% if history.any? %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Person" %>
+        <%= t.heading "Attachment" %>
+        <%= t.heading "Checked Out / By" %>
+        <%= t.heading "Checked In / By" %>
+        <%= t.heading "Duration" %>
+      <% end %>
+
+      <%= t.body do %>
+        <% history.each do |person_asset| %>
+          <%= t.row do %>
+            <%= t.cell person_display_link(person_asset.person, person_asset.person_id) %>
+            <%= t.cell value_or_dash(person_asset.attachment&.description) %>
+            <%= t.cell do %>
+              <div><%= datetime_format(person_asset.checked_out, year: true) %></div>
+              <div>
+                <%= person_display_link(person_asset.check_out_person,
+                                        person_asset.check_out_person_id) %>
+              </div>
+            <% end %>
+            <%= t.cell do %>
+              <% if person_asset.checked_in.present? %>
+                <div><%= datetime_format(person_asset.checked_in, year: true) %></div>
+                <div>
+                  <%= person_display_link(person_asset.check_in_person,
+                                          person_asset.check_in_person_id) %>
+                </div>
+              <% else %>
+                <div class="flex flex-wrap items-center gap-2">
+                  <%= ui_badge "Still checked out", :warning %>
+                  <%# button_link rather than button_row: a button row inside a
+                      table cell breaks the cell's own layout. %>
+                  <% if check_in_path && person_asset == check_in_row %>
+                    <%= button_link "Check In", :primary, check_in_path, method: :patch %>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+            <%= t.cell hour_minute_words(person_asset.duration) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No checkout history has been recorded for this asset yet.",
+                       icon: "clock-rotate-left", icon_type: :solid %>
+  <% end %>
+<% end %>

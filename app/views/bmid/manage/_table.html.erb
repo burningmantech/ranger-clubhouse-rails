@@ -1,0 +1,54 @@
+<%# The read-only badge roster ("Dense Ledger"). Every column except the flags
+    and the Edit link is sortable; clicking the active column flips it.
+
+    Locals:
+      badges      - the filtered, sorted Bmid rows (some unsaved)
+      sort_state  - { sort:, dir:, params: } for the heading links
+      view_params - what this view is showing (year, category, filters, sort,
+                    layout), so the Edit link can hand it to the badge editor
+                    and get the admin back to this exact row %>
+<%# Not responsive: a card per badge would be a dozen labelled lines for each of
+    a few hundred badges, and the sort links live in the column headings. The
+    ledger scrolls inside its own box instead. %>
+<%= ui_table responsive: false do |t| %>
+  <%= t.header do %>
+    <%= t.heading do %>
+      <span class="sr-only">Flags</span>
+    <% end %>
+    <%= bmid_sort_heading t, "Callsign", "callsign", sort_state %>
+    <%= t.heading "Edit" %>
+    <%= bmid_sort_headings t, sort_state %>
+  <% end %>
+
+  <%= t.body do %>
+    <% badges.each do |bmid| %>
+      <%= t.row id: bmid_row_dom_id(bmid) do %>
+        <%# The accent repeats what the icon already says, so the row never
+            depends on colour alone. %>
+        <%= t.cell bmid_flag_icons(bmid), class: bmid_row_accent_class(bmid) %>
+        <%= t.row_header do %>
+          <%= callsign_link bmid.person %>
+        <% end %>
+        <%# The editor is this page's own, so it takes the year with it and
+            comes back to this row with the whole view still in place. %>
+        <%= t.cell do %>
+          <%= link_to "Edit", edit_bmid_badge_path(view_params.merge(person_id: bmid.person_id)),
+                      class: LinkHelper::TABLE_LINK_CLASSES,
+                      aria: { label: "Edit the badge for #{bmid.person.callsign}" } %>
+        <% end %>
+        <%= t.cell bmid_status_badge(bmid) %>
+        <%= t.cell value_or_dash(bmid.title1) %>
+        <%= t.cell value_or_dash(bmid.title2) %>
+        <%= t.cell value_or_dash(bmid.title3) %>
+        <%= t.cell bmid.org_vehicle_insurance ? "Yes" : "—" %>
+        <%= t.cell do %><%= render "showers_cell", bmid: bmid %><% end %>
+        <%= t.cell do %><%= render "meals_cell", bmid: bmid %><% end %>
+        <%= t.cell bmid_sap_cell(bmid), center: true %>
+        <%= t.cell value_or_dash(bmid.team) %>
+        <%= t.cell class: "max-w-md" do %>
+          <%= simple_format(bmid.notes, class: "text-base") if bmid.notes.present? %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

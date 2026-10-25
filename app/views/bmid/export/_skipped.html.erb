@@ -1,0 +1,14 @@
+<%# Selected badges that could not be exported, with reasons.
+
+    Locals:
+      skipped - [Bmid::ExportController::Skipped] %>
+<% if skipped.any? %>
+  <%= ui_callout_box :warning, accent: true,
+                     title: "#{pluralize(skipped.size, 'Selected Badge')} Left Out" do %>
+    <ul class="list-disc ms-5">
+      <% skipped.each do |skip| %>
+        <li><%= skip.callsign %> &mdash; <%= skip.reason %></li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>

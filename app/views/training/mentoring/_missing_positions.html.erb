@@ -1,0 +1,18 @@
+<%# locals: (shifts:) %>
+<%#
+  A training flagged for ART mentoring finds its mentee and mentor positions on
+  its own team (ArtMentoring::Shifts); say so when one is missing, rather than
+  showing an empty page with no reason.
+%>
+<% team = shifts.training.team&.title || "training's team" %>
+<% if shifts.mentee_position.nil? %>
+  <%= ui_callout_box :warning, accent: true, class: "my-4", title: "No Mentee Position" do %>
+    No position on the <%= team %> is flagged as its ART mentee position, so no mentee shift can be listed.
+    An admin can flag one on the Position Records page.
+  <% end %>
+<% elsif shifts.mentor_position.nil? %>
+  <%= ui_callout_box :warning, accent: true, class: "my-4", title: "No Mentor Position" do %>
+    No position on the <%= team %> is flagged as its ART mentor position, so no mentor can be picked.
+    An admin can flag one on the Position Records page.
+  <% end %>
+<% end %>

@@ -1,0 +1,8 @@
+<%= render template: "common/mentoring/index", locals: {
+  back_link: back_to(@person.callsign, person_path(@person)),
+  description_text: person_mentoring_description(@person, @mentoring, @mentee_events, art_shifts: @art_history.shift_count),
+  send_message_path_builder: nil,
+  status_form_path_builder: ->(year) { person_mentoring_update_path(@person, mentor_year: year) },
+  can_edit_status: can_update_mentoring?,
+  link_to_person: true
+} %>

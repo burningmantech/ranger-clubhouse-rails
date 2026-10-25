@@ -1,0 +1,25 @@
+# Solid Cable keeps broadcasts in the database, so one sent from bin/rails console or runner reaches a browser on the
+# server too.
+#
+# polling_interval and message_retention must be written as durations (1.second, 1.day). Solid Cable splits the value
+# on "." and calls the last piece as a method on the rest, so a bare number such as 5 raises NoMethodError in its
+# listener thread at the first sleep; the thread dies and no broadcast is ever delivered.
+# test/channels/solid_cable_config_test.rb holds this.
+development:
+  adapter: solid_cable
+  connects_to:
+    database:
+      writing: cable
+  polling_interval: 1.second
+  message_retention: 1.day
+
+test:
+  adapter: test
+
+production:
+  adapter: solid_cable
+  connects_to:
+    database:
+      writing: cable
+  polling_interval: 5.seconds
+  message_retention: 1.day

@@ -1,0 +1,35 @@
+<%# Trainee or trainer roster for one session. The email column and the copy
+    button only appear for people who may see addresses; upstream showed the
+    same list behind its canViewEmail gate.
+    Locals: people (Array<Person>), list_name (String, for the copy label). %>
+<% show_email = Current.can_view_email? %>
+<% emails = show_email ? people.filter_map { |person| person.email.presence } : [] %>
+
+<% if emails.any? %>
+  <p class="mb-3">
+    <%= clipboard_button emails.join(", ") do %>
+      Copy <%= pluralize(emails.size, "#{list_name.singularize} email address") %>
+    <% end %>
+  </p>
+<% end %>
+
+<%= ui_table full_width: true, striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading "Name" %>
+    <% if show_email %>
+      <%= t.heading "Email" %>
+    <% end %>
+  <% end %>
+  <%= t.body do %>
+    <% people.each do |person| %>
+      <%= t.row do %>
+        <%= t.row_header do %><%= person_display_link person, person.id %><% end %>
+        <%= t.cell person.desired_full_name %>
+        <% if show_email %>
+          <%= t.cell email_link_or_dash(person.email) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

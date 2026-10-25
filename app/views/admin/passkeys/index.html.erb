@@ -1,0 +1,84 @@
+<%= hero_panel icon: "fingerprint", heading_level: :h1, id: "admin-passkeys-header",
+               title: "Passkeys",
+               description: "Every passkey registered on a Clubhouse account." %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @stats[:accounts].to_s, "Accounts with a Passkey" %>
+  <%= ui_stat_box @stats[:passkeys].to_s, "Passkeys" %>
+  <%= ui_stat_box @stats[:used_lately].to_s, "Used in the Last 30 Days" %>
+  <%# The ones to look over: see the filter below. %>
+  <%= ui_stat_box @stats[:added_by_admin].to_s, "Added by an Admin", variant: :warning %>
+<% end %>
+
+<% if @stats[:passkeys].positive? %>
+  <%# A how-to about the rows, offered while any passkey exists -- whatever the
+      filter leaves in the table. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>How do I remove a passkey?</dt>
+      <dd>A passkey is removed from the page of the person it belongs to. Select a callsign to go there.</dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "passkey-filters",
+                 chips: passkey_filter_chips(@form),
+                 clear_url: admin_passkeys_path,
+                 count: "Showing #{@passkeys.size} of #{pluralize(@meta[:total], "passkey")}",
+                 url: admin_passkeys_path, model: @form, scope: PasskeyFilterForm::PARAM_SCOPE do |f| %>
+    <%= f.select :added_by, PasskeyFilterForm::ADDED_BY_OPTIONS, { label: "Added By" }, { class: "w-full sm:w-48" } %>
+    <%= button_row class: "mt-4" do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Registered Passkeys", icon: "fingerprint", icon_type: :solid do %>
+  <% if @passkeys.any? %>
+    <%= ui_table striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Nickname" %>
+        <%= t.heading "Added" %>
+        <%= t.heading "Added By" %>
+        <%= t.heading "Last Used" %>
+      <% end %>
+      <%= t.body do %>
+        <% @passkeys.each do |passkey| %>
+          <%= t.row do %>
+            <%# Clubhouse 2 shares the database and can delete a person without
+                knowing this table exists, so a row may outlive its account. %>
+            <% if passkey.person %>
+              <%= t.row_header do %>
+                <%= link_to passkey.person.callsign, person_passkeys_path(passkey.person), class: "underline" %>
+              <% end %>
+              <%= t.cell passkey.person.status %>
+            <% else %>
+              <%= t.row_header "Account deleted" %>
+              <%= t.cell "" %>
+            <% end %>
+            <%= t.cell passkey.nickname %>
+            <%= t.cell datetime_format(passkey.created_at) %>
+            <%= t.cell do %>
+              <%# Asked of the passkey, not of added_by: the Admin's account may be gone. %>
+              <% if passkey.added_by_admin? %>
+                <%= passkey.added_by&.callsign || "A deleted account" %> <%= ui_badge "Admin", :warning %>
+              <% else %>
+                Self
+              <% end %>
+            <% end %>
+            <%= t.cell passkey.last_used_at ? datetime_format(passkey.last_used_at) : "Never" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <div class="mt-4">
+      <%= ui_pager(@meta, noun: "passkey") { |page| admin_passkeys_path(@form.query_params(to_page: page)) } %>
+    </div>
+  <% elsif @stats[:passkeys].positive? %>
+    <%= ui_empty_state "No passkeys match the current filter.", icon: "filter", icon_type: :solid %>
+  <% else %>
+    <%= ui_empty_state "No one has added a passkey yet.", icon: "fingerprint", icon_type: :solid %>
+  <% end %>
+<% end %>

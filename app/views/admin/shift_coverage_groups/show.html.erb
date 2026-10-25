@@ -1,0 +1,67 @@
+<% content_for :title, @group.title %>
+
+<%= hero_panel icon: "table-cells", heading_level: :h1, id: "shift-coverage-group-header",
+               title: @group.title,
+               back_to: ["Shift Coverage Management", admin_shift_coverage_groups_path] %>
+
+<%= ui_section "Shift Type Details", edit_link: edit_admin_shift_coverage_group_path(@group) do %>
+  <%= ui_label_value do |list| %>
+    <% list.row "Slug" do %>
+      <span class="font-mono"><%= @group.slug %></span>
+    <% end %>
+    <% list.row "Period Positions",
+                shift_coverage_management_position_lines(@group.base_position_ids, @positions_by_id) %>
+  <% end %>
+<% end %>
+
+<%= button_row class: "my-4" do %>
+  <%# The spoken name holds the words on the button: "Add Post" inside "Add Post to Command". %>
+  <%= button_link "Add Post", :primary, new_admin_shift_coverage_group_post_path(@group),
+                  icon: "plus", icon_type: :solid, aria: { label: "Add Post to #{@group.title}" } %>
+<% end %>
+
+<%= ui_section "Posts", badge: @posts.size.to_s, border: false do %>
+  <% if @posts.any? %>
+    <%= ui_table striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "#" %>
+        <%= t.heading "Post" %>
+        <%= t.heading "Positions" %>
+        <%= t.heading "Shows" %>
+        <%= t.heading "Actions" %>
+      <% end %>
+      <%= t.body do %>
+        <% @posts.each_with_index do |post, index| %>
+          <%= t.row do %>
+            <%= t.row_header index + 1 %>
+            <%= t.cell post.title %>
+            <%# A headcount prints no labels on the report, so none are shown here; they stay
+                stored, and come back if the post goes back to callsigns. %>
+            <%= t.cell shift_coverage_management_position_lines(post.count_only ? post.position_id_list : post.position_ids,
+                                                                @positions_by_id) %>
+            <%= t.cell do %>
+              <% if post.count_only %>
+                <%= ui_badge "Headcount", :secondary %>
+              <% else %>
+                Callsigns
+              <% end %>
+            <% end %>
+            <%= t.cell class: "whitespace-nowrap" do %>
+              <div class="flex-center-gap-2">
+                <%= edit_link edit_admin_shift_coverage_group_post_path(@group, post), "Edit",
+                              aria: { label: "Edit post #{post.title}" } %>
+                <%= render "common/move_buttons",
+                           up_url: move_admin_shift_coverage_group_post_path(@group, post, direction: "up"),
+                           down_url: move_admin_shift_coverage_group_post_path(@group, post, direction: "down"),
+                           label: "post #{post.title}",
+                           first: index.zero?, last: index == @posts.size - 1 %>
+              </div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No posts in this shift type yet. Add the first one." %>
+  <% end %>
+<% end %>

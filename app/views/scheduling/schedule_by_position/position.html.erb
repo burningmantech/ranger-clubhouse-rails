@@ -1,0 +1,77 @@
+<%#
+  One position's year: every shift, earliest first, with who signed up for each.
+%>
+<% content_for :title, "#{@position.title} Schedule" %>
+
+<%= hero_panel icon: "calendar-days", heading_level: :h1,
+               id: "schedule-by-position-detail-header",
+               title: "#{@year} #{@position.title} Schedule",
+               back_to: ["#{@year} Schedule by Position",
+                         scheduling_schedule_by_position_path(year: @year)] do |panel| %>
+  <% panel.description do %>
+    Every <%= @position.title %> shift this year and who signed up for it,
+    earliest first.
+  <% end %>
+  <%# Stays on this position and only swaps the year. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @detail.shift_count.to_s, "Shifts",
+                  icon: "calendar-check", icon_type: :solid %>
+  <%= ui_stat_box "#{@detail.sign_up_count} of #{@detail.seat_count}", "Signed Up",
+                  variant: :secondary, icon: "users", icon_type: :solid %>
+  <%# The one coverage figure that stays true when a shift shares its seats with
+      a parent or sub-shift. Amber only while there is something to act on. %>
+  <%= ui_stat_box @detail.empty_shift_count.to_s, "Empty Shifts",
+                  variant: (@detail.empty_shift_count.positive? ? :warning : :success),
+                  icon: "user-slash", icon_type: :solid %>
+<% end %>
+
+<div class="my-4 flex flex-wrap gap-2">
+  <% if schedule_by_position_can_manage_slots? %>
+    <%= button_link "Manage Slots", :secondary,
+                    scheduling_slots_position_path(@position.id, year: @year),
+                    icon: "calendar-days", icon_type: :solid %>
+  <% end %>
+  <% if @detail.shifts.any? %>
+    <%= export_csv_link(scheduling_schedule_by_position_position_path(
+                          @position.id, year: @year, format: :csv
+                        )) %>
+  <% end %>
+</div>
+
+<% if @detail.shifts.any? %>
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Time & Description" %>
+      <%= t.heading "Status", center: true %>
+      <%= t.heading "Duration", right: true %>
+      <%= t.heading "Sign-Ups", center: true %>
+      <%= t.heading "Callsigns" %>
+    <% end %>
+    <%= t.body do %>
+      <% @detail.shifts.each do |shift| %>
+        <%= t.row do %>
+          <%= t.row_header do %>
+            <%= slot_shift_time(shift.slot) %>
+            <div class="text-sm text-stone-subtle"><%= value_or_dash(shift.slot.description) %></div>
+          <% end %>
+          <%# A switched-off shift is listed like any other and named here. %>
+          <%= t.cell center: true do %>
+            <%= slot_status_badge(shift.slot) %>
+          <% end %>
+          <%= t.cell hour_minute_format(shift.slot.duration), right: true %>
+          <%= t.cell "#{shift.sign_ups.size} of #{shift.slot.max}", center: true,
+                     class: "whitespace-nowrap" %>
+          <%= t.cell do %>
+            <%= schedule_by_position_sign_ups(shift) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "#{@position.title} has no #{@year} shifts.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

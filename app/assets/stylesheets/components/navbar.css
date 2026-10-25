@@ -1,0 +1,38 @@
+/*
+ * Top navigation bar (app/views/application/_top_menu.html.erb)
+ *
+ * The bar is dark chrome in both themes (bg-chrome/80), like the sidebar. Its
+ * btn-ghost controls used to inherit an ink set on the bar because daisyUI
+ * 5.5 painted a resting ghost button in currentColor. daisyUI 5.7 paints it
+ * in base-content instead -- dark ink in the light theme, measured at 1.4:1
+ * on the bar (2026-09-11). --btn-rest-fg is the variable 5.7 reads for the
+ * resting colour; setting it, rather than `color`, leaves the hover state
+ * daisyUI paints alone (base-content on a base-200 pill, 7.0:1 / 7.9:1).
+ *
+ * neutral-content is the bar's ink, and the reason the <nav> itself carries
+ * none: it is daisyUI's ink for text on dark chrome and what the
+ * Search trigger already wears, so every control on the bar reads in one
+ * ink: 12.2:1 light, 15.3:1 dark. The focus ring took the same 5.7 fall to
+ * base-content (outline-color's fallback), so it gets the same ink.
+ *
+ * The mega menu and search dialogs are rendered inside the <nav> but sit on
+ * base-100; their ghost buttons must keep base-content, hence the guard.
+ */
+.navbar .btn-ghost:not(dialog *) {
+    --btn-rest-fg: var(--color-neutral-content);
+    outline-color: var(--color-neutral-content);
+}
+
+/*
+ * active_links_controller stamps aria-current="true" on any link to the page
+ * being shown -- the brand on /me, Messages on /me/messages -- and daisyUI
+ * draws a .btn with aria-current as pressed: the base-200 pill in base-content,
+ * a light slab on the bar in the light theme. On the bar the current page is
+ * the sidebar's to mark, so such a link rests like every other control and
+ * still takes daisyUI's hover pill.
+ */
+.navbar .btn-ghost[aria-current="true"]:not(dialog *, :hover) {
+    --btn-bg: transparent;
+    --btn-border: transparent;
+    color: var(--btn-rest-fg);
+}

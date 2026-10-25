@@ -1,0 +1,103 @@
+<% content_for :title, "#{@training.title} Online Course Progress" %>
+
+<%= hero_panel icon: "list-check", heading_level: :h1,
+               id: "training-online-course-progress-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> &mdash; Online Course Progress<% end %>
+  <% panel.description do %>
+    Who enrolled in the <%= @year %> online course, and who has finished it.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "#{@year} Sessions", training_path(training_slug, year: @year) %>
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2022, skip_pandemic: true %>
+  <% if @report.enrollments.any? %>
+    <% panel.progress completed: @report.completed_count, total: @report.enrollments.size,
+                      start_label: "Completed",
+                      end_label: "#{(@report.completed_count * 100.0 / @report.enrollments.size).round}%" %>
+  <% end %>
+<% end %>
+
+<% if @report.enrollments.empty? %>
+  <%= ui_empty_state "No one has enrolled in the #{@training.title} online course for #{@year} yet.",
+                     icon: "graduation-cap", icon_type: :solid %>
+<% else %>
+  <%# Season totals: the whole report, not the filtered view. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @report.enrollments.size.to_s, "People" %>
+    <%= ui_stat_box @report.completed_count.to_s, "Completed", variant: :success %>
+    <%= ui_stat_box @report.progress_counts["in-progress"].to_s, "In Progress", variant: :warning %>
+    <%= ui_stat_box @report.progress_counts["direct"].to_s, "Direct Enrollment" %>
+  <% end %>
+
+  <%# Direct Enrollment is a box above at every count as well as a mark in the
+      Enrolled column, so the card takes no guard beyond the branch it sits in. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What does direct enrollment mean?</dt>
+      <dd>
+        The person was enrolled directly in Moodle and not via the Clubhouse, so the
+        enrollment date is not known.
+      </dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "online-course-progress-filters",
+                 chips: online_course_progress_filter_chips(@filter_params, training_slug, @year),
+                 clear_url: training_online_course_progress_path(training_slug, year: @year),
+                 count: "Showing #{@rows.size} of #{pluralize(@report.enrollments.size, "person")}",
+                 # The CSV is the whole report, not the narrowed page, so the label
+                 # says so -- it sits beside chips that narrow the view.
+                 actions: export_csv_link(training_online_course_progress_path(training_slug, year: @year, format: :csv),
+                                          "Export All to CSV"),
+                 url: training_online_course_progress_path(training_slug) do |f| %>
+    <%# The year rides the filter form -- a GET form replaces the query string,
+        so without this every Apply would bounce the page back to this year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :status, online_course_progress_status_options(@report.status_counts),
+                   label: "Status", selected: @filter_params[:status],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :progress, online_course_progress_options(@report.progress_counts),
+                   label: "Progress", selected: @filter_params[:progress],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.text_field :callsign, label: "Callsign Contains",
+                       value: @filter_params[:callsign],
+                       width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "People" do %>
+    <% if @rows.empty? %>
+      <%= ui_empty_state "No one matched the current filters.",
+                         icon: "magnifying-glass", icon_type: :solid %>
+    <% else %>
+      <%# responsive: so phones get the stacked card layout, same as the sibling reports. %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Moodle Username" %>
+          <%# The zone rides the heading, as it does in the CSV's "Enrolled At
+              (Pacific)": the cells print none of their own. %>
+          <%= t.heading "Enrolled (Pacific)" %>
+          <%= t.heading "Completed (Pacific)" %>
+        <% end %>
+        <%= t.body do %>
+          <% @rows.each do |poc| %>
+            <% person = poc.person %>
+            <%= t.row do %>
+              <%= t.row_header do %><%= person_display_link person, person.id %><% end %>
+              <%= t.cell do %><%= person_status_badge person.status %><% end %>
+              <%= t.cell value_or_dash(person.lms_username) %>
+              <%= t.cell online_course_progress_time(poc.enrolled_at, tag.i("— direct enrollment —")) %>
+              <%= t.cell online_course_progress_time(poc.completed_at) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

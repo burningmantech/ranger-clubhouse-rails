@@ -1,0 +1,142 @@
+<%= hero_panel icon: "ticket", heading_level: :h1, id: "qualifications-header",
+               description: "Track your progress toward earning tickets, meals, clothing, and showers.",
+               back_to: [@back_to_label, @back_to_url] do |panel| %>
+  <% panel.title do %>Qualifications
+  <% end %>
+<% end %>
+
+<% step = @qualifications.next_step %>
+<% all_earned = @qualifications.all_earned? %>
+<% closed_out = @qualifications.closed_out? %>
+<%# Green once every goal is earned, even while an upper tier still offers a step;
+    neutral once nothing open is left to earn this year.
+    Divs, not <p>s: the base paragraph margin would swallow mt-1 and pad the card unevenly. %>
+<%= ui_accent_card "Next Step", variant: (all_earned ? :success : (closed_out ? :secondary : :primary)),
+                                icon: "flag-checkered",
+                                heading_level: :h2,
+                                options: { id: "qualifications-next-step", class: "mb-4" } do %>
+  <div class="text-lg text-heading">
+    <% if step %>
+      <%= qualification_next_step step %>
+    <% elsif all_earned %>
+      You have earned everything available this year.
+    <% elsif closed_out %>
+      Nothing still open can be earned this year.
+    <% else %>
+      Your sign-ups cover everything still open. Ranger those shifts to earn it.
+    <% end %>
+  </div>
+  <% unless all_earned %>
+    <div class="mt-1 text-base text-stone-subtle tabular-nums"><%= qualification_goal_counts @qualifications.goal_counts %></div>
+  <% end %>
+  <% if step %>
+    <%= button_link "View Available Sign-Ups", :primary, @signups_url, icon: "calendar-plus", icon_type: :solid,
+                    class: "mt-3" %>
+  <% end %>
+<% end %>
+
+<div class="mb-4 rounded-lg border border-warning/30 bg-warning/10">
+  <div class="p-3 font-medium flex items-center gap-2 text-warning">
+    <%= fa_icon "circle-info", :solid, class: "icon-warning" %>
+    Important: Read before checking your progress
+  </div>
+  <%# text-base: the rows' secondary text size, so the callout does not out-size what it caveats %>
+  <div class="grid p-4 pt-0 gap-x-6 gap-y-2 text-base text-stone-emphasis">
+    <div class="flex gap-2 basis-64 grow">
+      <span class="icon-warning mt-0.5">•</span>
+      <div>
+        <strong>Hours are estimates:</strong> Sign-ups show potential hours. Actual earnings are based on time on duty.
+      </div>
+    </div>
+
+    <% if @ineligible_duration.present? %>
+      <div class="flex gap-2 basis-64 grow">
+        <span class="icon-warning mt-0.5">•</span>
+        <div>
+          <strong>Ineligible hours:</strong> <%= hour_minute_words @ineligible_duration %> of your volunteer hours do
+          not
+          count toward provisions (e.g. training sessions).
+        </div>
+      </div>
+    <% end %>
+
+    <div class="flex gap-2 basis-64 grow">
+      <span class="icon-warning mt-0.5">•</span>
+      <div>
+        <strong>Verification required:</strong> Final eligibility is confirmed after all timesheets are verified.
+      </div>
+    </div>
+
+    <div class="flex gap-2 basis-64 grow text-error">
+      <span class="mt-0.5">•</span>
+      <div>
+        <strong>Non-transferable:</strong> Items cannot be sold or transferred. Attempting to do so results in
+        revocation.
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# Each section's rule closes it, under the rows it governs. %>
+<% note_class = "border-t border-base-300 pt-2 text-base text-stone-subtle" %>
+
+<div class="grid gap-x-4 lg:w-7/10">
+  <%= qualification_section "Tickets", @qualifications.section_state(:tickets) do %>
+    <% if @qualifications.visible?(:spt) %>
+      <%= render "common/qualifications/qualification_row", item: @qualifications[:spt],
+                 description: "Reduced-price paper ticket. Vehicle pass available to purchase." %>
+    <% end %>
+    <%= render "common/qualifications/qualification_row", item: @qualifications[:staff_credential],
+               description: "Free wristband + free Vehicle Pass. Wristband is the ticket. Will Call pickup only." %>
+    <p class="<%= note_class %>">
+      You will receive only one ticket type (Staff Credential supersedes Special Price Ticket). Vehicle Passes are
+      attached to tickets and cannot be bought separately.
+    </p>
+  <% end %>
+
+  <%= qualification_section "Meal Passes", @qualifications.section_state(:meal_passes) do %>
+    <% if @qualifications.visible?(:event_week_eats) %>
+      <%= render "common/qualifications/qualification_row", item: @qualifications[:event_week_eats],
+                 description: "3 meals/day at the commissary. Event Week only.",
+                 subtext: "Event Week hours only" %>
+    <% end %>
+    <%= render "common/qualifications/qualification_row", item: @qualifications[:all_eats],
+               description: "3 meals/day at the commissary. Pre-Event + Event Week + Post-Event.",
+               subtext: "combined Pre-Event + Event Week + Post Event hours" %>
+    <p class="<%= note_class %>">
+      You get one pass type only (All Eats supersedes Event Week). Present your BMID at the commissary.
+    </p>
+  <% end %>
+
+  <%= qualification_section "Ranger Clothing", @qualifications.section_state(:ranger_clothing) do %>
+    <% if @qualifications.shiny_penny? %>
+      <div class="p-4 bg-warning/10 rounded-lg text-warning">
+        <h4 class="heading-title flex items-center gap-2 mb-1">
+          <%= fa_icon "star", :solid %> Welcome, Shiny Penny!
+        </h4>
+        <p>You are not eligible for additional clothing this year. You will be eligible starting next year.</p>
+      </div>
+    <% else %>
+      <%= render "common/qualifications/qualification_row", item: @qualifications[:t_shirt],
+                 subtext: "combined Pre-Event & Event Week hours only" %>
+      <%= render "common/qualifications/qualification_row", item: @qualifications[:long_sleeve_shirt],
+                 subtext: "combined Pre-Event & Event Week hours only" %>
+    <% end %>
+  <% end %>
+
+  <%= qualification_section "Showers", @qualifications.section_state(:showers) do %>
+    <%= render "common/qualifications/qualification_row", item: @qualifications[:shower_pog],
+               description: "One-time shower access for this event only. Non-transferable.",
+               subtext: "Event week hours only" %>
+    <%= render "common/qualifications/qualification_row", item: @qualifications[:shower_access_event_week],
+               subtext: "Event Week hours only" %>
+    <% if @qualifications.visible?(:shower_access_entire_event) %>
+      <%= render "common/qualifications/qualification_row", item: @qualifications[:shower_access_entire_event],
+                 subtext: "combined Pre-Event + Event Week + Post Event hours" %>
+    <% end %>
+    <p class="<%= note_class %>">
+      Daily shower access during Pre-Event, Event Week, and Post-Event, linked to your BMID. Only one path required:
+      Event Week hours, or Combined hours (Pre + Event + Post).
+    </p>
+  <% end %>
+</div>

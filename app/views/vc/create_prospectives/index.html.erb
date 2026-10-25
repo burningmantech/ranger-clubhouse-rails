@@ -1,0 +1,116 @@
+<%#
+  Create Clubhouse accounts from approved applications. Static until a button
+  is pressed: Preview runs every check and reports what would happen, Create
+  Accounts does the work. Both POSTs render their results here at 422 (the
+  results are transient and Turbo drops a 200 form response) — the same idiom
+  as the Salesforce Application Import page.
+%>
+
+<%= hero_panel icon: "user-plus", heading_level: :h1, id: "vc-create-prospectives-header",
+               title: "Create Prospective Accounts" do |panel| %>
+  <% panel.description do %>
+    Turn approved applications into prospective Clubhouse accounts.
+  <% end %>
+<% end %>
+
+<% if @auth_error %>
+  <%= ui_callout_box :error, accent: true, title: "Could Not Sign In to Salesforce" do %>
+    <p><%= @auth_error %></p>
+    <p class="mt-2">
+      The run stopped before anything was created. Check the Salesforce credentials with the
+      Ranger Tech Cadre, then try again.
+    </p>
+  <% end %>
+<% end %>
+
+<%# Results sit above the actions so the verdict is the first thing on
+    screen when the page re-renders after a run. %>
+<% if @results %>
+  <%= render "results", results: @results, committed: @committed,
+             send_welcome_email: @send_welcome_email, sf_writebacks: @sf_writebacks %>
+<% end %>
+
+<%= ui_section "Create the Accounts", icon: "user-plus", icon_type: :solid do %>
+  <p class="mb-3">
+    <strong>Preview is always safe.</strong> It runs the exact same checks as Create Accounts
+    and shows what would happen, without creating anything.
+  </p>
+
+  <p class="mb-2">Creating accounts does this:</p>
+  <ul class="mb-3 space-y-2">
+    <li>
+      Creates a prospective account for every ready application, and marks that application
+      Account Created.
+    </li>
+    <li>
+      <%= ui_badge @send_welcome_email ? "On" : "Off", @send_welcome_email ? :success : :secondary,
+                   icon: @send_welcome_email ? "circle-check" : "circle-minus", icon_type: :solid %>
+      <strong>Welcome email.</strong>
+      <% if @send_welcome_email %>
+        Each new prospective is emailed a welcome message with a sign-in link.
+      <% else %>
+        No welcome emails are sent, because the SendWelcomeEmail setting is off.
+      <% end %>
+    </li>
+    <li>
+      <%= ui_badge @sf_writebacks ? "On" : "Off", @sf_writebacks ? :success : :secondary,
+                   icon: @sf_writebacks ? "circle-check" : "circle-minus", icon_type: :solid %>
+      <strong>Salesforce update.</strong>
+      <% if @sf_writebacks %>
+        Each applicant's Salesforce record is updated with the new Clubhouse account.
+      <% else %>
+        Salesforce is not contacted at all, because the SFEnableWritebacks setting is off.
+      <% end %>
+    </li>
+  </ul>
+
+  <%= button_row do %>
+    <%= ui_form(nil, vc_create_prospectives_preview_path, method: :post) do |f| %>
+      <%= f.submit "Preview Account Creation", variant: :secondary,
+                   data: { turbo_submits_with: "Checking applications…" } %>
+    <% end %>
+    <%= ui_form(nil, vc_create_prospectives_commit_path, method: :post) do |f| %>
+      <%= f.submit "Create Accounts", variant: :primary,
+                   data: {
+                     turbo_submits_with: "Creating accounts…",
+                     turbo_confirm: confirm_modal_dialog(
+                       title: "Create Prospective Accounts",
+                       message: create_prospectives_confirm_message(
+                         send_welcome_email: @send_welcome_email, sf_writebacks: @sf_writebacks
+                       ),
+                       confirm_label: "Create Accounts"
+                     )
+                   } %>
+    <% end %>
+  <% end %>
+  <p class="mt-2 text-stone-subtle">
+    Checking every application can take a little while &mdash; leave the page open until the
+    results appear.
+  </p>
+<% end %>
+
+<%= ui_section "How This Page Behaves", icon: "circle-question", icon_type: :solid, id: "create-help" do %>
+  <dl class="instruction-list">
+    <dt>Which applications show up here?</dt>
+    <dd>
+      Approved applications for <%= Current.year %> that are awaiting account creation.
+      Approve applications on the <%= link_to "Applications", vc_applications_path, class: "underline" %>
+      page first.
+    </dd>
+    <dt>Where do the applications come from?</dt>
+    <dd>
+      The <%= link_to "Salesforce Application Import", vc_application_import_path, class: "underline" %>
+      page pulls them out of Salesforce and into the Clubhouse.
+    </dd>
+    <dt>Is it safe to run this twice?</dt>
+    <dd>
+      Yes. An application that already became an account is marked Account Created and no longer
+      shows up as ready.
+    </dd>
+    <dt>What is a callsign reassignment?</dt>
+    <dd>
+      When an approved callsign still belongs to a retired or resigned Ranger, creating the account
+      moves that callsign to the new prospective and gives the previous holder a generated one.
+    </dd>
+  </dl>
+<% end %>

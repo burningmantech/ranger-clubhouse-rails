@@ -1,0 +1,31 @@
+<%# app/views/me/tickets/_ticket_overview_item.html.erb %>
+<%# Compact card component for displaying ticket/provision items %>
+<%
+  type ||= "secondary"
+  title ||= ""
+  icon ||= "circle-check"
+
+  icon_styles = {
+    success: "icon-success",
+    warning: "icon-warning",
+    error: "icon-error",
+    secondary: "text-stone-subtle"
+  }
+
+  title_styles = {
+    success: "text-success",
+    warning: "text-warning",
+    error: "text-error",
+    secondary: "text-heading"
+  }
+
+  icon_class = icon_styles[type.to_sym] || icon_styles[:secondary]
+  title_class = title_styles[type.to_sym] || title_styles[:secondary]
+%>
+
+<%= render layout: "common/icon_block", locals: { icon:, icon_class: } do %>
+  <h4 class="heading-title <%= title_class %>"><%= title %></h4>
+  <div class="text-body mt-1">
+    <%= yield %>
+  </div>
+<% end %>

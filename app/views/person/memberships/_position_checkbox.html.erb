@@ -1,0 +1,38 @@
+<div class="flex items-center gap-2 py-1"
+     data-position-dangerous="<%= item.dangerous? %>"
+     data-position-title="<%= item.title %>"
+     data-position-dangerous-permissions="<%= item.dangerous_permissions.join(" and ") %>"
+     data-deselect-on-join="<%= item.deselect_on_team_join %>">
+  <%= check_box_tag "#{param_key}[position_ids][]",
+                    item.id,
+                    item.selected,
+                    id: "position-#{item.id}",
+                    class: AppFormBuilder::CHECKBOX_CLASSES,
+                    data: { action: "membership-editor#positionToggle" } %>
+  <span class="flex flex-wrap items-center gap-2 text-sm">
+    <label for="<%= "position-#{item.id}" %>" class="inline-flex items-center min-h-9 min-w-9 font-medium text-heading cursor-pointer"><%= item.title %></label>
+    <% if item.all_rangers %>
+      <span class="text-stone-muted"><%= fa_icon "universal-access", :solid, class: "text-xs" %> All Rangers</span>
+    <% end %>
+    <% if item.new_user_eligible %>
+      <span class="text-stone-muted"><%= fa_icon "globe", :solid, class: "text-xs" %> All Accounts</span>
+    <% end %>
+    <% if item.deselect_on_team_join %>
+      <span class="text-stone-muted"><%= fa_icon "power-off", :solid, class: "text-xs" %> Clears on join</span>
+    <% end %>
+    <% unless item.active %>
+      <span class="text-error font-medium">[inactive]</span>
+    <% end %>
+    <% if item.permissions? %>
+      <%= dropdown_menu pluralize(item.permission_count, "Permission"), variant: :ghost,
+                        menu_label: "Granted Permissions", class: "w-full lg:w-auto",
+                        summary_class: "w-full justify-between lg:w-auto",
+                        menu_class: "w-full lg:w-64" do %>
+        <li class="menu-title">Granted Permissions</li>
+        <% item.permission_titles.each do |title| %>
+          <li><span><%= title %></span></li>
+        <% end %>
+      <% end %>
+    <% end %>
+  </span>
+</div>

@@ -1,0 +1,20 @@
+<% path = MegaMenu.resolve_path(item[:path]) %>
+<% category_title = local_assigns[:category_title] %><%# category panels never pass it %>
+<div class="mega-menu-item" data-search-text="<%= [item[:title], item[:description]].compact_blank.join(" ").downcase %>">
+  <% if MegaMenu.linkable?(item) %>
+    <%= mega_star_button(path, category_title ? "#{item[:title]} (#{category_title})" : item[:title], panel_key) %>
+  <% else %>
+    <span class="mega-menu-star-spacer" aria-hidden="true">&nbsp;</span>
+  <% end %>
+  <%= link_to path, mega_item_link_options(item) do %>
+    <span class="mega-menu-item-title">
+      <%= item[:title] %><%# search results, and titles repeated within a list, name the link's category %>
+      <% if category_title %>
+        <span class="mega-menu-item-cat">(<%= category_title %>)</span>
+      <% end %>
+    </span>
+    <% if item[:description].present? %>
+      <span class="mega-menu-item-desc"><%= item[:description] %></span>
+    <% end %>
+  <% end %>
+</div>

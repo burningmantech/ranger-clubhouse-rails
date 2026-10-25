@@ -1,0 +1,63 @@
+<%#
+  The page's About This Report card: how the headline numbers count, and what
+  the roster's codes mean.
+
+  Upstream prints all of this as two permanent paragraphs above and below the
+  rosters. Folded away instead: it is a page of reference that a shift lead
+  reads once and then never again, and it costs nothing to open.
+%>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Are Green Dots counted twice?</dt>
+    <dd>Green Dots are counted inside the Dirt Rangers total, not on top of it.</dd>
+
+    <dt>What do the gender codes mean?</dt>
+    <dd>
+      F: Female, M: Male, NB: Non-binary, Q: Queer (unspecified), GF: Gender Fluid,
+      TF: Trans-Female, TM: Trans-Male, TS: Two Spirit, - (dash): not stated.
+      Anything else is what the Ranger wrote themselves.
+    </dd>
+
+    <dt>What are the GTR? and Veh? columns?</dt>
+    <dd>
+      <strong>GTR</strong> means the Ranger signed the Vehicle Use Protocol.
+      <strong>VEH</strong> means they have Burning Man org insurance.
+      <strong class="text-error">-BL-</strong> means they are vehicle blacklisted and may
+      not take a rig out, whatever else they have signed.
+    </dd>
+
+    <dt>What do the chips beside a callsign mean?</dt>
+    <dd>
+      <%= ui_badge "GD", :success %> is a qualified Green Dot -- one who passed Green Dot training
+      this year and is not standing a mentee shift.
+      <%= ui_badge "TS", :secondary %> is a Troubleshooter who is not also running the shift as
+      Shift Lead or Operator on Duty.
+    </dd>
+
+    <dt>What does the ban icon
+      <%= fa_icon "ban", :solid, class: "text-error" %> mean?</dt>
+    <dd>
+      The Ranger is not marked as being on site. They may well be on playa -- the mark is made
+      at an HQ window during on-site registration, and they may not have visited one yet.
+    </dd>
+
+    <dt>What do the position abbreviations mean?</dt>
+    <dd>
+      Dspch: Dispatcher, GD: Green Dot, GDLead: Green Dot Lead, GerPat: Gerlach Patrol,
+      GerLd: Gerlach Patrol Lead, GTR: Gator/Golf Cart, HSP: Hot Springs Patrol,
+      IntDsp: Intercept Dispatch, IntOpr: Intercept Operator, LNT: Leave No Trace,
+      PM: Personnel Manager, Opr: Operator, RSL: Ranger Shift Lead,
+      RSLPre: Ranger Shift Lead (pre-event), SC: Shift Coordinator, Tow: Tow Truck,
+      TowMnt: Tow Truck Mentee, VEH: Vehicle (SUV, pick-up).
+      An award icon <%= fa_icon "award", :solid, class: "text-stone-icon" %> marks a certification
+      rather than a position.
+    </dd>
+
+    <dt>What do the arrows on a shift time mean?</dt>
+    <dd>
+      The roster prints clock times only, so a shift reaching past the day it is listed under is
+      marked: <strong>&lt;06:30</strong> starts the day before, and <strong>18:15&gt;</strong> ends
+      the day after.
+    </dd>
+  </dl>
+<% end %>

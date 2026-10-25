@@ -1,0 +1,23 @@
+<%= hero_panel icon: "image", heading_level: :h1, id: "photos-review-header",
+               title: "Photo Review",
+               description: "Approve or reject submitted BMID photos." %>
+
+<%= render "stats", total: @total %>
+
+<% if @photos.empty? %>
+  <%= ui_callout_box :success do %>
+    <strong>Congratulations! All photos have been reviewed.</strong>
+  <% end %>
+<% else %>
+  <% if @total > @photos.size %>
+    <%= ui_callout_box :info do %>
+      Showing the first <%= @photos.size %> of <%= @total %> submitted photos. Reload after reviewing to see more.
+    <% end %>
+  <% end %>
+  <%# The consequence of every Approve and Reject below, out of the hero and
+      kept visible above the cards that carry those buttons. %>
+  <%= ui_callout_box :info, icon: "envelope", icon_type: :solid, accent: true, class: "my-4" do %>
+    <strong>Volunteers are emailed the review decision.</strong>
+  <% end %>
+  <%= render partial: "photo", collection: @photos %>
+<% end %>

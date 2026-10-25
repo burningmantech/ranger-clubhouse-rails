@@ -1,0 +1,82 @@
+<%= hero_panel icon: "envelope", heading_level: :h1, id: "admin-mail-log-header",
+               title: "System Mail Log",
+               description: "Search the emails the Clubhouse has recorded, by recipient, address, or subject." %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @stats[:last_24], "Last 24 Hours" %>
+  <%= ui_stat_box @stats[:week], "Last 7 Days" %>
+  <%= ui_stat_box @stats[:retained], mail_log_retained_label %>
+<% end %>
+
+<%# The legend takes no guard here: @logs is what the search found, and the
+    controller holds no count of the whole log to read instead. %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>How far back does the log go?</dt>
+    <dd><%= mail_log_retention_note %></dd>
+    <dt>Is every message here?</dt>
+    <dd>
+      Not every message the Clubhouse sends is recorded here, so a message missing from this log
+      was not necessarily missing from someone's inbox.
+    </dd>
+    <%= render "common/mail_log/legend" %>
+  </dl>
+<% end %>
+
+<%= filter_bar id: "mail-log-filters",
+               chips: mail_log_filter_chips(@form),
+               clear_url: admin_mail_log_path,
+               url: admin_mail_log_path, model: @form, scope: "filter" do |f| %>
+  <%= form_row do %>
+    <%= f.text_field :person_callsign,
+                     label: "Person Callsign",
+                     help_text: "Matches messages sent to or from this person.",
+                     maxlength: 64,
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+    <%= f.text_field :email,
+                     label: "Email Address",
+                     help_text: "Any part of the sending or receiving address.",
+                     maxlength: 255,
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= f.text_field :subject,
+                   label: "Subject",
+                   help_text: "Any part of the subject line.",
+                   maxlength: 255,
+                   width: "w-full" %>
+
+  <%= button_row class: "mt-4" do %>
+    <%= f.submit "Search" %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Mail Log", icon: "envelope", icon_type: :solid do %>
+  <% pager = ui_pager(@meta, noun: "message") { |page| admin_mail_log_path(@form.query_params(to_page: page)) } %>
+  <% if @logs.empty? %>
+    <% if @form.query_params.any? %>
+      <%# The card that says how far back the log goes is closed, and a search past
+          that window finds nothing for that reason alone. %>
+      <%= ui_empty_state "No messages matched the current search. #{mail_log_retention_note}",
+                         icon: "magnifying-glass", icon_type: :solid %>
+    <% else %>
+      <%= ui_empty_state "No messages have been recorded yet.", icon: "envelope", icon_type: :regular %>
+    <% end %>
+  <% else %>
+    <div class="mb-3">
+      <%= pager %>
+    </div>
+
+    <%= render "common/mail_log/table", logs: @logs,
+               body_path: ->(mail) { admin_mail_log_body_path(mail) } %>
+  <% end %>
+
+  <%# Outside the branch above: a search or a stale page number empties the
+      table while the log still holds messages, and the reader still needs a
+      way back to the other pages. %>
+  <div class="mt-4">
+    <%= pager %>
+  </div>
+<% end %>

@@ -1,0 +1,40 @@
+<%# locals: (vehicle:, event_year:) %>
+<%#
+  Renders one autocomplete vehicle row. The label is Owner/Team/Fleet; the numbers
+  line lists whichever of Lic / DPW Request ID / Permit are present; the description
+  is the make/model/etc.
+
+  D2: every value here comes from the vehicle table; vehicle.person is joined ONLY
+  to render the "Owner <callsign>" label. Vehicle columns default to "" (not nil),
+  so guard with .present? rather than nil-checks.
+%>
+<%
+  label =
+    if vehicle.person&.callsign.present?
+      "Owner #{vehicle.person.callsign}"
+    elsif vehicle.team_assignment.present?
+      "Team #{vehicle.team_assignment}"
+    else
+      "Fleet Vehicle"
+    end
+
+  numbers = []
+  if vehicle.license_number.present?
+    numbers << "Lic ##{[vehicle.license_state.presence, vehicle.license_number].compact.join("-")}"
+  end
+  numbers << "DPW Request ID ##{vehicle.rental_number}" if vehicle.rental_number.present?
+  numbers << "Permit ##{vehicle.sticker_number}" if vehicle.sticker_number.present?
+
+  description = [
+    vehicle.vehicle_type.presence,
+    vehicle.vehicle_year.presence,
+    vehicle.vehicle_make.presence,
+    vehicle.vehicle_model.presence,
+    vehicle.vehicle_color.presence
+  ].compact.join(" ")
+
+  lines = []
+  lines << numbers.join(" ") if numbers.any?
+  lines << "• #{description}" if description.present?
+%>
+<%= render "autocomplete/item", icon: "car", title: label, lines: %>

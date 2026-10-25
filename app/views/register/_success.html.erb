@@ -1,0 +1,22 @@
+<%# The account exists. Everything a new auditor needs to sign in for the first
+    time, including the callsign the Clubhouse chose for them. %>
+<%= ui_section "Your Account Is Ready", icon: "circle-check", icon_type: :solid do %>
+  <%= ui_callout_box :success do %>
+    <strong>Welcome, <%= @callsign %>.</strong>
+    Your Clubhouse account has been created.
+  <% end %>
+
+  <dl class="instruction-list mb-4">
+    <dt>How do I sign in?</dt>
+    <dd>With the email address and password you just chose.</dd>
+    <dt>Where did my callsign come from?</dt>
+    <dd>The Clubhouse builds one for every auditor from their name. It appears beside your name everywhere in the Clubhouse.</dd>
+    <dt>What happens next?</dt>
+    <dd>Sign in, then sign up for the training session you would like to audit.</dd>
+  </dl>
+
+  <%= button_row do %>
+    <%= button_link "Go to Sign In", :primary, root_path,
+                    icon: "right-to-bracket", icon_type: :solid, size: "base" %>
+  <% end %>
+<% end %>

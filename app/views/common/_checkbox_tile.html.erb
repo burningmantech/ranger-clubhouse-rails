@@ -1,0 +1,17 @@
+<%# locals: (align: :center) %>
+<%# The tap target for one checkbox: the whole tile, at the 36px floor.
+    Rendered with `render layout:` so the call site supplies the box and its
+    label. The only thing that varies between the four is where the box sits
+    when the label wraps -- beside the first line (:start) or centred.
+
+    fetch, not a ternary: align is a caller-supplied name, and a ternary would
+    render :top or "start" as centred without saying anything.
+
+    cursor-pointer and select-none because the whole label is the hit area, the
+    house rule wherever that is true (twelve precedents, including
+    form_helper.rb:817). Without select-none a 36px tile tapped twice on a
+    phone selects its own label text instead of toggling again. %>
+<% alignment = { center: "items-center", start: "items-start" }.freeze %>
+<label class="flex <%= alignment.fetch(align) %> gap-2 rounded-base border border-line bg-base-100 px-3 py-2 min-h-9 cursor-pointer select-none">
+  <%= yield %>
+</label>

@@ -1,0 +1,57 @@
+<%# locals: (logs:, logging_on:) %>
+<%# Never restored from Turbo's cache: Back fetches the page again, rather than
+    showing a copy of an hour-old list whose feed would subscribe twice. %>
+<% turbo_exempts_page_from_cache %>
+
+<%= tag.div data: { controller: "live-log", live_log_cap_value: request_log_live_cap } do %>
+  <%# The feed's stream source, made from this template only while the tab is
+      showing (live_log_controller.js). The channel checks the viewer's roles
+      itself; the signed name is only what turbo_stream_from insists on. %>
+  <template data-live-log-target="source">
+    <%= turbo_stream_from "request-log", channel: RequestLogLiveChannel %>
+  </template>
+
+  <% unless logging_on %>
+    <%= ui_callout_box :warning do %>
+      Request logging is off, so nothing will appear here until the RequestLogEnabled setting is turned on.
+    <% end %>
+  <% end %>
+
+  <%# Shown by the controller when the feed has gone without a subscription for
+      longer than a reconnect takes: refused, or the connection lost. %>
+  <%= ui_callout_box :warning, hidden: true, data: { live_log_target: "stalled" } do %>
+    Live updates have stopped. Reload the page to start them again.
+  <% end %>
+
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>When does a request appear?</dt>
+      <dd>Within a few seconds of the Clubhouse answering it, at the top of the list.</dd>
+      <dt>How many are kept?</dt>
+      <dd>The newest <%= request_log_live_cap %>. Older ones drop off the bottom, and the Search mode still has them.</dd>
+      <dt>Does the list update in a background tab?</dt>
+      <dd>No. It stops while the tab is hidden and catches up when you return to it.</dd>
+    </dl>
+  <% end %>
+
+  <%= ui_section "Live Requests", icon: "tower-broadcast", icon_type: :solid do %>
+    <%# The table gives way to this while it holds no rows; the controller swaps
+        them back as the first request arrives. %>
+    <%= ui_empty_state "No requests have been recorded yet. Each one appears here as the Clubhouse answers it.",
+                       icon: "right-left", icon_type: :solid,
+                       hidden: logs.any?, data: { live_log_target: "empty" } %>
+
+    <%= tag.div hidden: logs.empty?, data: { live_log_target: "table" } do %>
+      <%= ui_table striped: false do |t| %>
+        <%= t.header do %>
+          <% request_log_live_headings.each do |heading| %>
+            <%= t.heading heading %>
+          <% end %>
+        <% end %>
+        <%= t.body id: "request-log-live-rows", data: { live_log_target: "rows" } do %>
+          <%= render "admin/request_logs/live_rows", rows: logs %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

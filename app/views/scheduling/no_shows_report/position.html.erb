@@ -1,0 +1,75 @@
+<%#
+  One position's year: a row per shift that had a no show, with the people who
+  did not turn up for it. The shifts everyone honored are counted, not listed.
+%>
+<% content_for :title, "#{@position.title} No Shows" %>
+
+<%= hero_panel icon: "user-clock", heading_level: :h1,
+               id: "scheduling-no-shows-report-position-header",
+               title: "#{@year} #{@position.title} No Shows",
+               back_to: ["#{@year} No Shows Report",
+                         scheduling_no_shows_report_path(year: @year)] do |panel| %>
+  <% panel.description do %>
+    Every shift of this position that has already started where someone signed
+    up and was never on duty for it, oldest shift first.
+  <% end %>
+  <%# The selector posts an action-less GET, so it stays on this position and
+      only swaps the year. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @detail.slot_count.to_s, "Shifts",
+                  icon: "calendar-days", icon_type: :solid %>
+  <%= ui_stat_box @detail.no_show_count.to_s, "No Shows",
+                  variant: @detail.no_show_count.positive? ? :error : :secondary,
+                  icon: "user-xmark", icon_type: :solid %>
+  <%= ui_stat_box @detail.slot_details.size.to_s, "Shifts Affected",
+                  variant: @detail.slot_details.any? ? :warning : :secondary,
+                  icon: "calendar-xmark", icon_type: :solid %>
+<% end %>
+
+<% if @detail.slot_details.any? %>
+  <div class="my-4">
+    <%# The pages are one position at a time, and so is the export. %>
+    <%= export_csv_link(scheduling_no_shows_report_position_path(@position.id, year: @year,
+                        format: :csv)) %>
+  </div>
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Shift", width: "30%" %>
+      <%= t.heading "Description", width: "20%" %>
+      <%= t.heading "No Shows" %>
+    <% end %>
+    <%= t.body do %>
+      <% @detail.slot_details.each do |detail| %>
+        <%= t.row do %>
+          <%= t.row_header slot_shift_time(detail.slot) %>
+          <%= t.cell detail.slot.description %>
+          <%# The count rides along: "3 of 12 signed up" is the difference
+              between a shift that lost one person and one no one covered. %>
+          <%= t.cell safe_join([no_shows_people(detail.no_shows),
+                                tag.span("#{detail.no_shows.size} of " \
+                                         "#{pluralize(detail.signup_count, "sign-up")}",
+                                         class: "block text-base text-stone-muted mt-1")]) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%# "did not", not "everyone honored": a shift no one signed up for produces
+      no no-show either, and calling that shift honored is the one line on the
+      page a reader takes away. %>
+  <p class="mt-2 text-base text-body">
+    <%= pluralize @detail.slot_details.size, "shift" %> had a no show &middot;
+    <%= pluralize @detail.clean_slot_count, "shift" %> did not
+  </p>
+<% elsif @detail.slot_count.positive? %>
+  <%# Stated as the absence of a no show rather than as "everyone showed up":
+      a position whose shifts no one signed up for lands here too, and that is
+      not a position everyone turned out for. %>
+  <%= ui_empty_state "No #{@year} shift of this position had a no show.",
+                     icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No #{@year} shifts of this position have started yet.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

@@ -1,0 +1,10 @@
+<%# locals: (rows:, year:, selected_id: nil, extra: nil) %>
+<%#
+  One section's lines of the review list, edge to edge inside the section
+  (the -mx-4 undoes ui_section's padding). The caller renders the heading and
+  carries the count.
+%>
+<ul class="-mx-4 divide-y divide-base-300">
+  <%= render partial: "common/unified_flagging/list_row", collection: rows, as: :summary,
+             locals: { year: year, selected_id: selected_id, extra: extra } %>
+</ul>

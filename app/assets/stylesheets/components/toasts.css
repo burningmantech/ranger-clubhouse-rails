@@ -1,0 +1,48 @@
+/*
+ * Toast/Notification System
+ * DaisyUI toast + alert components
+ * See: https://daisyui.com/components/toast/
+ * See: https://daisyui.com/components/alert/
+ */
+
+/* Toast container base with entry/exit animations */
+@utility toast-base {
+    @apply alert flex items-center w-full max-w-md p-4 mb-4 rounded-lg shadow relative overflow-hidden;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 300ms ease, transform 300ms ease;
+}
+
+/* Toast show state - triggers entry animation */
+.toast-base.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Toast progress bar */
+.toast-progress {
+    @apply absolute bottom-0 left-0 h-1 rounded-b-lg;
+    @apply bg-current opacity-30;
+    width: 100%;
+    transition: width linear;
+}
+
+/* Toast success variant */
+@utility toast-success {
+    @apply alert-success alert-soft;
+}
+
+/* Toast info variant */
+@utility toast-info {
+    @apply alert-info alert-soft;
+}
+
+/* Toast warning variant */
+@utility toast-warning {
+    @apply alert-warning alert-soft;
+}
+
+/* Toast danger/error variant */
+@utility toast-error {
+    @apply alert-error alert-soft;
+}

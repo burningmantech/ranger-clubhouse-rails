@@ -1,0 +1,105 @@
+<%# locals: (entries:, person:) %>
+<%# Timesheet verification widget (Ember
+    port/components/hq-timesheet-verification.hbs). Each entry renders as two
+    rows: time/position/duration/credits, then a status banner with the
+    review actions. "Skip Review" is client-only state owned by the hq-shift
+    Stimulus controller — never persisted, resets on reload. The `listed`
+    param on the action URLs keeps already-reviewed entries visible after a
+    turbo-stream re-render (upstream _reconcileTimesheetsToReview). %>
+<%
+  listed = entries.map(&:id).join(",")
+  unreviewed = entries.count(&:verification_required?)
+%>
+<div data-hq-shift-target="reviewNotice" <%= "hidden" if unreviewed.zero? %>>
+  <%= ui_callout_box :warning, accent: true, title: "Timesheet Entry Review Needed",
+                     icon: "hand-point-right" do %>
+    Review every timesheet entry before you start a shift and after you end one. During a
+    rush such as the Burn Night check-in, use <em>Skip Review</em> instead.
+  <% end %>
+</div>
+
+<%# The "a different entry" actions used to sit here, above everything. They act
+    on entries other than the current shift, so opening the section with them put
+    the rarest paths first — they now render below the current shift in
+    hq/shift_manage/_other_entries. %>
+<% if entries.any? %>
+  <div class="mb-3" data-hq-shift-target="skipAllRow" <%= "hidden" if unreviewed.zero? %>>
+    <%= button_action "Skip Review for All Entries", :secondary,
+                      data: { action: "hq-shift#skipAll" } %>
+  </div>
+  <%= ui_table striped: false, responsive: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Time" %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Duration", right: true %>
+      <%= t.heading "Credits", right: true %>
+    <% end %>
+    <%= t.body do %>
+      <% entries.each do |entry| %>
+        <%= t.row data: { entry_id: entry.id, needs_review: entry.verification_required? } do %>
+          <%= t.cell datetime_format(entry.on_duty, entry.off_duty) %>
+          <%= t.cell entry.position.title %>
+          <%= t.cell hour_minute_words(entry.duration), right: true %>
+          <%= t.cell credit_format(entry.credits), right: true %>
+        <% end %>
+        <%= t.row data: { entry_id: entry.id } do %>
+          <%= t.cell colspan: 4 do %>
+            <% if entry.time_warnings&.status == "out-of-range" %>
+              <div class="mb-1"><%= ui_badge "Entry times are outside the scheduled times.",
+                                            :warning, icon: "triangle-exclamation",
+                                            icon_type: :solid %></div>
+            <% end %>
+            <% if timesheet_too_long?(entry) %>
+              <div class="mb-1"><%= ui_badge "Entry might be too long at #{hour_minute_words(entry.duration)}.",
+                                            :warning, icon: "triangle-exclamation",
+                                            icon_type: :solid %></div>
+            <% end %>
+            <div data-hq-shift-target="entryStatus" data-entry-id="<%= entry.id %>">
+              <% if entry.status_verified? %>
+                <div class="text-success">
+                  <%= fa_icon "check", :solid, end: 2 %>This entry is marked correct.
+                </div>
+              <% elsif entry.status_pending? %>
+                <div class="text-warning">
+                  <%= fa_icon "hourglass", :solid, end: 2 %>This entry has a correction request pending.
+                </div>
+              <% elsif entry.verification_required? %>
+                <div class="text-error">
+                  <%= fa_icon "arrow-right", :solid, end: 2 %>Entry requires review.
+                </div>
+              <% end %>
+            </div>
+            <div data-hq-shift-target="entrySkippedStatus" data-entry-id="<%= entry.id %>" hidden>
+              <%= fa_icon "clock", :regular, end: 2 %>You will review this entry later.
+            </div>
+            <div class="mt-2">
+              <%= button_row do %>
+                <% if entry.status_verified? %>
+                  <%= button_link "Un-Verify Entry", :secondary,
+                                  hq_shift_manage_unverify_timesheet_path(person, entry.id,
+                                                                          listed:, **shift_context),
+                                  method: :patch %>
+                <% else %>
+                  <%= button_link "Mark Entry as Correct", :success,
+                                  hq_shift_manage_verify_timesheet_path(person, entry.id,
+                                                                        listed:, **shift_context),
+                                  method: :patch %>
+                <% end %>
+                <%= button_link nil, :secondary,
+                                hq_shift_manage_correction_form_path(person, entry.id,
+                                                                     listed:, **shift_context),
+                                data: { turbo_stream: true } do %>
+                  Submit Correction<% if entry.status_pending? %> <%= fa_icon "check", :solid, start: 1 %><% end %>
+                <% end %>
+                <%= button_action "Skip Review", :secondary,
+                                  disabled: entry.status_verified? || entry.status_pending?,
+                                  data: { action: "hq-shift#skipEntry",
+                                          entry_id: entry.id } %>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

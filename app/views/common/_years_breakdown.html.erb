@@ -1,0 +1,38 @@
+<%# locals: (person:) %>
+<%# The six-hour notice is a counting rule, which on a report would fold into the
+    page's card. It stays a visible warning by the owner's ruling (2026-10-02):
+    this partial also draws a Ranger's own Work History, where it is a rule
+    they can act on, and the three pages that share it stay alike. %>
+<%= ui_callout_box :warning do %>
+  Starting in 2025, a minimum of 6 hours must be volunteered at each event for it to count as having Rangered that
+  event.
+<% end %>
+<dl class="ui-label-value">
+  <dt class="font-medium text-heading">Rangered events:</dt>
+  <dd>
+    <% if person.years_as_ranger.any? %>
+      <%= pluralize person.years_as_ranger.size, "event" %>
+      <span class="text-stone-muted">[<%= year_range person.years_as_ranger %>]</span>
+    <% else %>
+      <span class="text-stone-muted italic">none</span>
+    <% end %>
+  </dd>
+  <% if person.years_as_contributor.any? %>
+    <dt>As Echelon volunteer:</dt>
+    <dd>
+      <%= pluralize person.years_as_contributor.size, "event" %>
+      <span class="text-stone-muted">[<%= year_range person.years_as_contributor %>]</span>
+    </dd>
+  <% end %>
+
+  <dt>Service years:</dt>
+  <dd>
+    <% if person.years_of_service.any? %>
+      <%= pluralize person.years_of_service.size, "year" %>
+      <span class="text-stone-muted">[<%= year_range person.years_of_service %>]</span>
+    <% else %>
+      <span class="text-stone-muted italic">none</span>
+    <% end %>
+  </dd>
+</dl>
+

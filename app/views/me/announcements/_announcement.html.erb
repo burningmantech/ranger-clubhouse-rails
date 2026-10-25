@@ -1,0 +1,88 @@
+<%# locals: (announcement:) %>
+<%
+  is_read = announcement.has_read
+  is_expired = announcement.expired?
+
+  # Card styling based on read status
+  if is_expired
+    card_classes = "bg-base-200 border border-base-300 opacity-60"
+  else
+    card_classes = "bg-base-200 border border-base-300"
+  end
+%>
+<%# Not a Turbo Frame. Mark as Read answers with a stream that replaces this by
+    its id, which any element has. A frame would also take over the links in the
+    message: one that points at another Clubhouse page asks that page for the
+    frame, finds none, and the reader gets an error instead of the page. %>
+<%= tag.div id: dom_id(announcement), class: "rounded-lg p-4 mb-3 #{card_classes}", role: "article" do %>
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 mb-2">
+    <div class="flex-center-gap-2">
+      <% if is_expired %>
+        <%= fa_icon "clock", :solid, class: "text-stone-icon", fixed: true %>
+      <% elsif is_read %>
+        <%= fa_icon "circle-check", :solid, class: "icon-success", fixed: true %>
+      <% else %>
+        <%= fa_icon "bell", :solid, class: "icon-warning", fixed: true %>
+      <% end %>
+      <h3 class="heading-title <%= is_read ? 'text-body' : 'text-heading' %>">
+        <%= announcement.subject %>
+      </h3>
+    </div>
+    <%# Status indicator with icon + color + text (WCAG compliant) %>
+    <div class="shrink-0">
+      <% if is_expired %>
+        <%= ui_badge "Expired", :secondary, icon: "clock", icon_type: :solid, aria: { label: "This announcement has expired" } %>
+      <% elsif is_read %>
+        <%= ui_badge "Read", :success, icon: "circle-check", icon_type: :solid, aria: { label: "You have read this announcement" } %>
+      <% else %>
+        <%= ui_badge "Unread", :warning, icon: "circle-exclamation", icon_type: :solid, aria: { label: "You have not read this announcement" } %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-subtle mb-3">
+    <span class="inline-flex-center-gap-2">
+      <%= fa_icon "calendar", :regular %>
+      Posted <%= mdy_format(announcement.created_at) %>
+    </span>
+    <% if announcement.expires_at %>
+      <span class="inline-flex-center-gap-2 <%= is_expired ? 'text-stone-icon line-through' : '' %>">
+        <%= fa_icon "hourglass-half", :solid %>
+        <% if is_expired %>
+          Expired <%= mdy_format(announcement.expires_at) %>
+        <% else %>
+          Expires <%= mdy_format(announcement.expires_at) %>
+        <% end %>
+      </span>
+    <% end %>
+  </div>
+
+  <%# Message content. lexxy-content carries the rules that give a saved message
+      its paragraph spacing and list markers back; without it, lists render as
+      unmarked lines. Sanitized rather than trusted: the people who post an
+      announcement are not the people it is shown to. %>
+  <div class="lexxy-content mb-4 text-body">
+    <%= rich_text(announcement.message) %>
+  </div>
+
+  <%# Action row %>
+  <% unless is_expired %>
+    <div class="pt-3 border-t border-line">
+      <% if is_read %>
+        <%= button_link "Mark as Unread", :secondary, me_toggle_read_announcement_path(announcement),
+                        icon: "envelope",
+                        icon_type: :regular,
+                        method: :post,
+                        data: { turbo_stream: true },
+                        aria: { label: "Mark this announcement as unread" } %>
+      <% else %>
+        <%= button_link "Mark as Read", :primary, me_toggle_read_announcement_path(announcement),
+                        icon: "envelope-open",
+                        icon_type: :regular,
+                        method: :post,
+                        data: { turbo_stream: true },
+                        aria: { label: "Mark this announcement as read" } %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

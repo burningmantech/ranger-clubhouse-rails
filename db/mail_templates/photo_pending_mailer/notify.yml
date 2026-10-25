@@ -1,0 +1,33 @@
+description: "Tells the photo reviewers what is waiting for them"
+
+subject: "[Clubhouse] {{ count }} {% if count == 1 %}photo{% else %}photos{% endif %} queued for review."
+
+body: |
+  <p>
+    Hello Photo Reviewer,
+  </p>
+
+  <p>
+    One or more photos are <a href="{{ review_url }}">queued for review.</a>
+  </p>
+
+  <table class="data-table" style="margin-bottom: 20px">
+    <thead>
+      <tr>
+        <th>Callsign</th>
+        <th>Status</th>
+        <th>Uploaded At</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for photo in photos %}
+        <tr>
+          <td>{{ photo.callsign }}</td>
+          <td>{{ photo.status }}</td>
+          <td>{{ photo.uploaded_ago }} ago</td>
+        </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+
+  {% render "shared/mailer/bot_sign_off" %}

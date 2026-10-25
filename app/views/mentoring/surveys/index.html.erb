@@ -1,0 +1,29 @@
+<%#
+  Every year's Alpha survey at once, newest first. Upstream listed the same
+  thing as a bare Year/Title table; the reports, the audience line and the
+  answered badge follow the training surveys index this page shares its report
+  pages with.
+%>
+<% content_for :title, "Alpha Surveys" %>
+<%= hero_panel icon: "square-poll-vertical", heading_level: :h1, id: "mentoring-surveys-header",
+               title: "Alpha Surveys", description: "What the Alphas said about their mentors." %>
+
+<% if @surveys.empty? %>
+  <%= ui_empty_state "No Alpha surveys have been created yet.",
+                     icon: "clipboard-question", icon_type: :solid %>
+<% else %>
+  <%# Out of the hero, and only where there is a survey to read. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Who answers, and when?</dt>
+      <dd>Alphas answer this survey after the season.</dd>
+      <dt>Are the answers anonymous?</dt>
+      <dd>Names appear only where the Alpha agreed to share theirs.</dd>
+    </dl>
+  <% end %>
+
+  <%= ui_section "Alpha Surveys", badge: pluralize(@surveys.size, "survey"), badge_color: :success do %>
+    <%# One row per season, so the year leads. %>
+    <%= render "common/surveys/survey_table", surveys: @surveys, show_year: true %>
+  <% end %>
+<% end %>

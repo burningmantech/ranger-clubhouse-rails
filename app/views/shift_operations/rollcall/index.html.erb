@@ -1,0 +1,51 @@
+<%#
+  The mode chooser. Nothing is loaded here on purpose: both rosters cost real
+  queries, and this page is opened on playa bandwidth by someone who knows
+  which of the two they came for.
+%>
+<% content_for :title, "Roll Call" %>
+
+<%= hero_panel icon: "clipboard-list", heading_level: :h1,
+               id: "shift-operations-rollcall-header",
+               title: "Roll Call" do |panel| %>
+  <% panel.description do %>
+    Sign a whole crew in or out by tapping names.
+  <% end %>
+<% end %>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 my-4 lg:w-3/4">
+  <%= button_link nil, :primary, shift_operations_rollcall_sign_in_path,
+                  class: "py-4 text-lg" do %>
+    <%= fa_icon "person-walking", :solid %>Sign Rangers In
+  <% end %>
+  <%= button_link nil, :secondary, shift_operations_rollcall_sign_out_path,
+                  class: "py-4 text-lg" do %>
+    <%= fa_icon "bed", :solid %>Sign Rangers Out
+  <% end %>
+</div>
+
+<%= ui_section "How This Page Is Used", icon: "circle-question", icon_type: :solid do %>
+  <dl class="instruction-list">
+    <%# Out of the hero: it joins the list this page already keeps. %>
+    <dt>Which shifts is this for?</dt>
+    <dd>
+      Built for Burn Perimeter and the other burn shifts, where no one needs gear issued first
+      or collected after.
+    </dd>
+    <dt>What does tapping a name do?</dt>
+    <dd>
+      It writes immediately. There is no review step and no save button — one tap signs
+      that Ranger in or out, and the row changes to show what happened.
+    </dd>
+    <dt>What if I tap the wrong person?</dt>
+    <dd>
+      Tap them again. On the Sign Out roster that resumes the shift you just ended. On the
+      Sign In roster it signs them back out.
+    </dd>
+    <dt>Someone is blocked from signing in. What now?</dt>
+    <dd>
+      Send them to an HQ window. Blockers cannot be overridden from this page, even by an
+      operator who has that privilege elsewhere.
+    </dd>
+  </dl>
+<% end %>

@@ -1,0 +1,19 @@
+<%# locals: (counts:, active:, year:) %>
+<%#
+  One stat tile per display group, in the page's order and wording
+  (unified_flagging_group_meta). Each counts the whole roster -- `counts` is
+  tallied before the filters run, so one tile's count never drops to zero
+  when another is chosen -- and is the control that narrows the list to its
+  group; the ring marks the one showing. Shared by the pipeline index and
+  /people/unified-flagging.
+%>
+<%= ui_stat_row do %>
+  <% unified_flagging_group_meta.each do |group, meta| %>
+    <% count = counts.fetch(group, 0) %>
+    <%= ui_stat_link unified_flagging_path(year:, section: group),
+                     active: active == group.to_s,
+                     aria_label: "#{count} #{meta[:title]} — show them" do %>
+      <%= ui_stat_box count.to_s, meta[:title], variant: meta[:stat_variant] %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,38 @@
+<%= hero_panel icon: "certificate", heading_level: :h1, id: "certificates-report-header",
+               title: "Certificates Report",
+               description: "Who holds each certification, with a roster of dates and card numbers " \
+                            "behind each one." %>
+
+<%# The counting rule, out of the hero -- and only while there are rows it applies to. %>
+<% if @certifications.any? %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Who is counted?</dt>
+      <dd>Only people with an active status are counted (active, inactive, inactive extension, retired).</dd>
+    </dl>
+  <% end %>
+<% end %>
+
+<% if @total_records.positive? %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link(certificates_report_path(format: :csv), "Export All to CSV") %>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @certifications.any? %>
+  <div class="text-lg">
+    Showing <%= pluralize @certifications.size, "certification" %>
+    with <%= pluralize @total_records, "record" %>
+  </div>
+  <div class="lg:w-3/4">
+    <% @certifications.each do |certification| %>
+      <%= ui_drill_down_row certificates_report_detail_path(certification),
+                            certification.title,
+                            meta: pluralize(@holder_counts.fetch(certification.id, 0), "person") %>
+    <% end %>
+  </div>
+<% else %>
+  <%= ui_empty_state "No certifications have been added yet.", icon: "certificate", icon_type: :solid %>
+<% end %>

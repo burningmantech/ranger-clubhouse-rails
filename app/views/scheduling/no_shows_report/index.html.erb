@@ -1,0 +1,57 @@
+<%#
+  Every position whose shifts have started this year, with the no shows found
+  on them. Pick a position to see which shifts, and who.
+%>
+<% content_for :title, "No Shows Report" %>
+
+<%= hero_panel icon: "user-clock", heading_level: :h1, id: "scheduling-no-shows-report-header",
+               title: "#{@year} No Shows Report" do |panel| %>
+  <% panel.description do %>
+    No shows by position, counting only shifts that have already started.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @summary.positions.any? %>
+  <%# Counts on a drill-down index are plain text, not stat boxes -- the stats
+      belong on the position page, per the records-management pattern. %>
+  <div class="text-lg my-4">
+    Showing <%= pluralize @summary.positions.size, "position" %>
+    with <%= pluralize @summary.slot_count, "shift" %> &middot;
+    <%= pluralize @summary.no_show_count, "no show" %> on
+    <%= pluralize @summary.no_show_slot_count, "shift" %>
+  </div>
+
+  <%# The definition, out of the hero. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What is a no show?</dt>
+      <dd>
+        A no show signed up for a shift and was never on duty for that position while it ran.
+      </dd>
+      <% if flake_report_readable? %>
+        <%# The two reports disagree on a handful of people, and a reader who
+            cannot see why will read one of the pages as wrong. %>
+        <dt>How is this different from the Flake Report?</dt>
+        <dd>
+          The <%= link_to "Flake Report", scheduling_flake_report_path(year: @year) %>
+          asks a narrower version of this question: it excuses a sign-up whose timesheet
+          names the shift, even when the hours never touched it.
+        </dd>
+      <% end %>
+    </dl>
+  <% end %>
+
+  <div class="lg:w-3/4">
+    <% @summary.positions.each do |position| %>
+      <%= ui_drill_down_row scheduling_no_shows_report_position_path(position.position_id,
+                                                                    year: @year),
+                            position.title,
+                            meta: pluralize(position.slot_count, "shift"),
+                            badges: no_shows_position_badges(position) %>
+    <% end %>
+  </div>
+<% else %>
+  <%= ui_empty_state "No #{@year} shifts have started yet.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

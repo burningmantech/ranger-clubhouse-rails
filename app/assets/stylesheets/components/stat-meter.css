@@ -1,0 +1,22 @@
+/*
+ * Stat Meter
+ * A single stacked bar showing how one set of records divides across statuses.
+ * Used by Ticketing > Statistics, one meter per ticket type.
+ *
+ * The bar is decorative: it is marked aria-hidden and every number it draws is
+ * also printed in the labelled chips beneath it, so the proportions are a
+ * second reading of the counts and never the only one.
+ *
+ * Segments are separated by a gap rather than a border, letting the surface
+ * show through so two adjacent tints stay legible against each other.
+ */
+
+/* The track shows through the gaps between segments, and is all you see when a
+   type is holding nothing at all. */
+.stat-meter {
+    @apply flex h-4 w-full gap-1 rounded-full bg-base-200;
+}
+
+.stat-meter-segment {
+    @apply h-full first:rounded-s-full last:rounded-e-full;
+}

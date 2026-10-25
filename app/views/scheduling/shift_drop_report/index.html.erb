@@ -1,0 +1,63 @@
+<%#
+  Every position that lost someone close to a shift start this year. Pick a
+  position to see which shifts, and who.
+%>
+<% content_for :title, "Shift Drop Report" %>
+
+<%= hero_panel icon: "user-minus", heading_level: :h1, id: "scheduling-shift-drop-report-header",
+               title: "#{@year} Shift Drop Report" do |panel| %>
+  <% panel.description do %>
+    Sign-ups removed close to their shift's start, by position.
+  <% end %>
+  <%# keep: the window rides along, or changing the year silently answers a
+      different question than the one on screen. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: @index_params.except(:year) %>
+<% end %>
+
+<%# The definition, out of the hero. It says what the log can and cannot tell
+    you: the removal records the shift and who lost it, never who asked for it,
+    so promising "who bailed" would mis-read every row a scheduler removed on
+    someone's behalf. Above the window control the second answer points at. %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What is a shift drop?</dt>
+    <dd>
+      A shift drop is a sign-up removed close to the shift's start &mdash; whether the ranger
+      removed it themselves or someone removed it for them.
+    </dd>
+    <dt>How do I read this report?</dt>
+    <dd>Choose how close to the start counts, then select a position to see which shifts, and who.</dd>
+  </dl>
+<% end %>
+
+<%# The pages are one position at a time; the export is the whole year, and
+    carries the window so the file matches the page it came from. %>
+<%= render "window_filter", hours: @hours, year: @year,
+                           default_url: scheduling_shift_drop_report_path(year: @year),
+                           url: scheduling_shift_drop_report_path,
+                           count: shift_drop_summary_count(@summary),
+                           actions: export_csv_link(scheduling_shift_drop_report_path(@index_params.merge(format: :csv))) %>
+
+<% if @summary.positions.any? %>
+  <div class="lg:w-3/4">
+    <% @summary.positions.each do |position| %>
+      <%= ui_drill_down_row scheduling_shift_drop_report_position_path(position.position_id,
+                                                                      @index_params),
+                            position.title,
+                            meta: "#{pluralize(position.drop_count, "drop")} · " \
+                                  "#{pluralize(position.slot_count, "shift")}",
+                            badges: shift_drop_position_badges(position, @hours) %>
+    <% end %>
+  </div>
+<% elsif @summary.total_slot_count.positive? %>
+  <%# Two different answers: no one dropped late, versus there was nothing to
+      drop. One message for both would leave the reader unable to tell which. %>
+  <%= ui_empty_state "No #{@year} shift lost anyone within " \
+                     "#{pluralize(@hours, "hour")} of its start." +
+                     shift_drop_widen_hint(@hours),
+                     icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No shifts have been scheduled for #{@year}.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

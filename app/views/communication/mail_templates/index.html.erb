@@ -1,0 +1,53 @@
+<% content_for :title, "Email Templates" %>
+
+<%= hero_panel icon: "envelope-open-text", heading_level: :h1, id: "mail-templates-header",
+               title: "Email Templates",
+               description: "Edit what the emails the Clubhouse sends actually say." %>
+
+<%= ui_callout_box :warning, title: "These Go Out to Real People" do %>
+  <strong>A change here is live for the next message sent.</strong>
+  There is no draft and no approval step. Every edit is recorded against your name.
+<% end %>
+
+<% if @mail_templates.any? %>
+  <%= ui_section pluralize(@mail_templates.size, "template"), border: false do %>
+    <p class="mb-3">
+      <strong>Pieces shared by several messages are listed too.</strong>
+      Those have no subject of their own: they are included wherever they are needed.
+    </p>
+
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Template / What It Is For" %>
+        <%= t.heading "Updated / By" %>
+        <%= t.heading "Actions" %>
+      <% end %>
+      <%= t.body do %>
+        <% @mail_templates.each do |template| %>
+          <%= t.row do %>
+            <%= t.cell do %>
+              <div class="font-mono">
+                <%= template.tag %>
+                <% if template.shared_piece? %>
+                  <%= ui_badge "shared", :secondary %>
+              <% end %>
+              </div>
+              <%= template.description %>
+            <% end %>
+            <%= t.cell do %>
+              <%= datetime_format(template.updated_at, year: true) %><br>
+              <%= person_display_link(template.person_update, template.person_update_id) %>
+            <% end %>
+            <%= t.cell do %>
+              <%= edit_link edit_communication_mail_template_path(template), "Edit",
+                            aria: { label: "Edit the #{template.tag} template" } %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No email templates have been loaded yet.", icon: "envelope",
+                     icon_type: :regular %>
+<% end %>

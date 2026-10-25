@@ -1,0 +1,90 @@
+<%# locals: (dashboard:, person:, replay:) %>
+<%# The steps of the first-sign-in tour, for the onboarding controller, which
+    says what the template attributes mean, and the toast it shows on Done. The
+    copy varies with the dashboard the person sees (Dashboard#type). The
+    navbar's ids are where the sidebar and Menu steps point
+    (application/_top_menu). %>
+<%= tag.div data: { controller: "onboarding",
+                    action: "turbo:before-cache@document->onboarding#finish",
+                    onboarding_url_value: (me_onboarded_path unless replay) } do %>
+  <% case dashboard.type %>
+<% when Dashboard::TYPE_APPLICANT %>
+    <template data-onboarding-target="step" data-title="Welcome Applicant <%= person.callsign %>">
+      <p>The checklist on this page is your path to becoming a Ranger. Each step says what to do next.</p>
+      <p>First, a quick tour of where things are. Press Next to continue, or the × to skip it.</p>
+    </template>
+  <% when Dashboard::TYPE_AUDITOR %>
+    <template data-onboarding-target="step" data-title="Welcome, <%= person.callsign %>">
+      <p>This is the Ranger Secret Clubhouse. Your dashboard lists what to do next.</p>
+      <p>This quick tour shows you where things are. Press Next to continue, or the × to skip it.</p>
+    </template>
+  <% else %>
+    <template data-onboarding-target="step"
+              data-title="Welcome, <%= person.is_echelon? ? "Echelon Volunteer" : "Ranger" %> <%= person.callsign %>">
+      <p>This is the Ranger Secret Clubhouse: your shifts, training, tickets and timesheets in one place.</p>
+      <p>This quick tour shows you where things are. Press Next to continue, or the × to skip it.</p>
+    </template>
+  <% end %>
+
+  <template data-onboarding-target="step" data-title="Links Look Like This">
+    <%# A sample, not a link: a real one would carry the reader off mid-tour. %>
+    <p><span class="link">A link looks like this</span>: colored and underlined.
+      Anything that looks like this opens a page.</p>
+    <p>Buttons look like Next below. A button does something; a link takes you somewhere.</p>
+  </template>
+
+  <%# Below lg the sidebar is behind the navbar's hamburger; from lg up it is open. %>
+  <template data-onboarding-target="step" data-element="#sidebar-toggle" data-side="bottom"
+            data-title="Your Sidebar">
+    <p>Tap this button to open the sidebar. It lists the pages for this part of the Clubhouse.</p>
+  </template>
+  <template data-onboarding-target="step" data-element="#sidebar-drawer-content" data-side="right"
+            data-title="Your Sidebar">
+    <p>The sidebar lists the pages for this part of the Clubhouse. Scheduling, messaging, and other features can be
+      found here.</p>
+  </template>
+
+  <%# A person with no area beyond My Clubhouse has no Menu button, and no
+      step for it: the sidebar step above already covers their pages. %>
+  <% if mega_menu_offered? %>
+    <template data-onboarding-target="step" data-element="#menu-open, #menu-open-phone" data-side="bottom"
+              data-title="The Menu Button">
+      <p>Menu opens every area you can use. Star a page there to keep it at the top.</p>
+      <p>Desktop keyboard shortcuts are:</p>
+      <p>MacOS - Cmd+Shift+K</p>
+      <p>Windows/Linux - Ctrl+Shift+K</p>
+    </template>
+  <% end %>
+
+  <template data-onboarding-target="step" data-element=".account-menu" data-side="bottom"
+            data-title="Account Menu">
+    Through this menu, you can log out, change your password, set up a passkey, switch between a light &amp; dark theme
+    or replay this tour.
+  </template>
+
+  <% if dashboard.type == Dashboard::TYPE_RANGER %>
+    <template data-onboarding-target="step" data-element="#bug-report" data-side="bottom"
+              data-title="File A Bug Report">
+      Did you find a bug? Did something break? Use this to report the problem.
+    </template>
+  <% end %>
+
+  <%# The title row, not the section: a long links document is taller than the
+      pane, and a popover beside its title is where the reader looks. %>
+  <template data-onboarding-target="step" data-element="#links-and-things > [role=heading]" data-side="bottom"
+            data-title="Links &amp; Things">
+    <%# Which document Milestones shows: the Ranger one for the active statuses,
+        the applicant one for everyone else, applicants included. %>
+    <% if dashboard.type == Dashboard::TYPE_APPLICANT %>
+      <p>Useful links for the road to your first shift. They are near the bottom of this page.</p>
+    <% elsif Person::ACTIVE_STATUSES.include?(person.status) %>
+      <p>Useful links, including the Ranger Manual. They are near the bottom of this page.</p>
+    <% else %>
+      <p>Useful links the Rangers keep for you. They are near the bottom of this page.</p>
+    <% end %>
+  </template>
+
+  <template data-onboarding-target="toast">
+    <%= ui_toast_render("Tour complete. Replay it any time from the Account menu.", :success) %>
+  </template>
+<% end %>

@@ -1,0 +1,16 @@
+<%# locals: (status:) -%>
+<%# Maps a Training status constant to a DaisyUI badge (icon + color, never color alone). -%>
+<% case status %>
+<% when Training::PASS %>
+  <%= ui_badge "Passed", :success, icon: "circle-check", icon_type: :solid %>
+<% when Training::FAIL %>
+  <%= ui_badge "Not Completed", :error, icon: "circle-xmark", icon_type: :solid %>
+<% when Training::NO_SHOW %>
+  <%= ui_badge "Did Not Attend", :error, icon: "circle-xmark", icon_type: :solid %>
+<% when Training::PENDING %>
+  <%= ui_badge "Pending", :warning, icon: "hourglass-half", icon_type: :solid %>
+<% when Training::NO_SHIFT %>
+  <%= ui_badge "Not Signed Up", :secondary, icon: "circle", icon_type: :regular %>
+<% else %>
+  <%= ui_badge "Status Unknown", :secondary, icon: "circle-question", icon_type: :solid %>
+<% end %>

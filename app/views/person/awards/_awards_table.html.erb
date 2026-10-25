@@ -1,0 +1,52 @@
+<%# locals: (person:, title:, icon:, awards:, award_type:, new_label:, can_manage:) %>
+<%= ui_section title, icon: icon, icon_type: :solid, badge: awards.size.to_s do %>
+  <% if can_manage %>
+    <div class="my-4">
+      <%= button_link new_label, :primary,
+                      new_person_award_path(person, type: award_type),
+                      icon: "plus", icon_type: :solid %>
+    </div>
+  <% end %>
+
+  <% if awards.any? %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Award" %>
+        <%= t.heading "Year" %>
+        <%= t.heading "Grants Service Year" %>
+        <%= t.heading "Granted On" %>
+        <%= t.heading "Notes" %>
+        <% if can_manage %>
+          <%= t.heading "Actions", right: true %>
+        <% end %>
+      <% end %>
+      <%= t.body do %>
+        <% awards.each do |person_award| %>
+          <%= t.row do %>
+            <%= t.row_header person_award.title.presence || "Unknown award" %>
+            <%= t.cell person_award.year %>
+            <%= t.cell do %>
+              <% if person_award.awards_grants_service_year %>
+                <%= ui_badge "Service year", :success, icon: "circle-check", icon_type: :solid %>
+              <% else %>
+                —
+              <% end %>
+            <% end %>
+            <%= t.cell mdy_format(person_award.created_at).presence || "—" %>
+            <%= t.cell do %>
+              <div class="whitespace-pre-line"><%= person_award.notes.presence || "—" %></div>
+            <% end %>
+            <% if can_manage %>
+              <%= t.cell right: true do %>
+                <%= edit_link edit_person_award_path(person, person_award),
+                              aria: { label: "Edit #{person_award.title} award for #{person_award.year}" } %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No awards have been granted yet.", icon: icon, icon_type: :solid %>
+  <% end %>
+<% end %>

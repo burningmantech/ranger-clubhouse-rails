@@ -1,0 +1,56 @@
+<%# Chrome-free layout for printable pages (training sign-up sheet, trainer's
+    report). No navbar, sidebar, or modal frame -- the browser's print output
+    is the page itself; on-screen-only helpers inside the views use
+    print:hidden. %>
+<!DOCTYPE html>
+<%# data-theme pins the light theme. This layout carries no navbar, so the
+    theme controller never connects and <html> would otherwise stay bare --
+    and daisyUI emits its dark theme under
+    @media (prefers-color-scheme: dark) { :root:not([data-theme]) }. On a dark
+    OS that flipped base-100 to near-black while the three hardcoded bridge
+    tokens -- heading, body-subtle and line, which answer only to .dark or
+    [data-theme="dark"] -- stayed light: a heading at 1.38:1 on the surface,
+    measured. Body text was fine, because base-content is daisyUI's and moved
+    with it. Pinning light makes the preview and the paper agree, and matches
+    the sheet stylesheets, which fix their own ink on white in both themes. %>
+<html lang="en" data-theme="light">
+<head>
+  <title><%= content_for(:title) || "Ranger Secret Clubhouse" %></title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%# The proportional roman latin face is on the critical path for every page. The
+      italic, latin-ext and monospaced faces are declared in fonts.css and fetched
+      only when something actually asks for them. %>
+  <link rel="preload" href="<%= asset_path("atkinson-latin.woff2") %>" as="font" type="font/woff2" crossorigin>
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <%# Letter with fixed margins for every print view. Lives here, not in the
+      tailwind bundle -- @page cannot be scoped by selector, so a bare rule
+      there would apply to every screen page's print output. %>
+  <%# The :root rule covers the html box below the last sheet's content --
+      daisyUI paints :root with base-100, and the body's print:bg-white
+      cannot reach it. %>
+  <style>
+    @page { size: letter; margin: 0.5in; }
+    @media print { :root { background: #fff; } }
+  </style>
+  <%# Named per-view @page rules land here via content_for :page_rules (the
+      trainer's report emits its footer margin boxes with the dynamic session
+      title; Chrome renders them -- verified in 151). CRITICAL: margin boxes
+      must stay on a NAMED rule, never on the bare @page above -- that one
+      reaches every print view, including the sign-up sheet, which carries no
+      page numbers on purpose. %>
+  <%= yield :page_rules %>
+  <%= javascript_importmap_tags %>
+  <%# Stimulus's own entry modules. They are inside the lazily-pinned controllers
+      directory, so without these two the browser only discovers them after
+      application.js has been fetched and parsed. %>
+  <link rel="modulepreload" href="<%= asset_path("controllers/index.js") %>">
+  <link rel="modulepreload" href="<%= asset_path("controllers/application.js") %>">
+</head>
+<%# print:bg-white -- paper is white regardless of the screen theme; the
+    themed bg-base-100 tinted the trailing area of a report's final sheet. %>
+<body class="bg-base-100 text-base-content text-base p-4 print:p-0 print:bg-white" data-controller="local-time">
+<%= yield %>
+</body>
+</html>

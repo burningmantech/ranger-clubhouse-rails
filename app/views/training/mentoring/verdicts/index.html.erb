@@ -1,0 +1,184 @@
+<%#
+  Training › Mentoring › Verdicts: how the year's mentee shifts ended, newest
+  first, then each mentor's season with their shifts behind a detail row. The
+  filter bar narrows the Verdicts table only; the Mentors table is the season.
+  A walk whose mentee entry was deleted stays, as "Shift deleted" (ruled
+  2026-10-21).
+%>
+<% content_for :title, "#{@training.title} Mentoring Verdicts" %>
+
+<%= hero_panel icon: "flag-checkered", heading_level: :h1, id: "mentoring-verdicts-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> Mentoring Verdicts<% end %>
+  <% panel.description do %>
+    How each mentee shift ended, and each mentor's shifts, mentees and verdicts.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "Mentoring", training_mentoring_path(training_slug, year: @year) %>
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2008, skip_pandemic: true %>
+<% end %>
+
+<%= render "training/mentoring/missing_positions", shifts: @shifts %>
+
+<% bonks = ArtMentoring::VerdictsReport::BONKS %>
+<% bonked = @report.count(*bonks) %>
+<%# Labels the card's questions quote, read from one place each. %>
+<% passed_label = mentor_result_label(PersonMentor::STATUS_PASS) %>
+<% bonked_label = mentor_result_label(PersonMentor::STATUS_BONK) %>
+<% verdicts_title, shifts_heading, mentees_heading, length_heading = "Verdicts", "Shifts", "Mentees", "Average Length" %>
+<% any_deleted = @report.walks.any? { |walk| @report.entry_for(walk).nil? } %>
+<%= ui_stat_row do %>
+  <%= ui_stat_box @report.count(*ArtMentoring::VerdictsReport::VERDICTS).to_s, "Verdicts Recorded",
+                  icon: "flag-checkered", icon_type: :solid %>
+  <%= ui_stat_box @report.count(PersonMentor::STATUS_PASS).to_s, passed_label, variant: :success,
+                  icon: "circle-check", icon_type: :solid %>
+  <%= ui_stat_box bonked.to_s, bonked_label, icon: "circle-xmark", icon_type: :solid %>
+  <%= art_awaiting_verdict_box(@shifts.awaiting_verdict_count) %>
+  <%= ui_stat_box @report.mentors.size.to_s, "Mentors", icon: "user-check", icon_type: :solid %>
+  <%= ui_stat_box @shifts.mentor_entries.size.to_s, "Mentor Shifts", icon: "person-walking", icon_type: :solid %>
+<% end %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What do the verdicts mean?</dt>
+    <dd>
+      <strong><%= passed_label %></strong>: the mentor recommends the mentee for the team.
+      <strong><%= bonked_label %></strong>: the mentor asked the mentee to stop for now.
+      <strong><%= mentor_result_label(PersonMentor::STATUS_SELF_BONK) %></strong>: the mentee chose to stop.
+    </dd>
+    <dt>Why is a mentee shift missing from <%= verdicts_title %>?</dt>
+    <dd>
+      Only shifts with a verdict are listed. A shift still Pending counts in Awaiting a Verdict, and is recorded on
+      Mentor Assignment.
+    </dd>
+    <% if any_deleted %>
+      <dt>What does <%= Training::MentoringHelper::SHIFT_DELETED %> mean?</dt>
+      <dd>
+        The mentee's timesheet entry was deleted after the verdict was recorded. The verdict still counts for its
+        mentor, and can no longer be changed here.
+      </dd>
+    <% end %>
+    <dt>How are a mentor's <%= shifts_heading %> and <%= length_heading %> counted?</dt>
+    <dd>
+      From their own <%= @shifts.mentor_position&.title || "mentor position" %> timesheet entries this year. A shift
+      still going is left out of the average.
+    </dd>
+    <dt>What does <%= mentees_heading %> count?</dt>
+    <dd>Each mentee once, however many shifts they rangered with that mentor.</dd>
+  </dl>
+<% end %>
+
+<% if @report.verdicts.any? %>
+  <%= filter_bar id: "mentoring-verdicts-filters",
+                 chips: art_verdict_filter_chips(@filter_params, training_slug, @year, @report.verdicts),
+                 clear_url: training_mentoring_verdicts_path(training_slug, year: @year),
+                 count: "Showing #{@verdicts.size} of #{pluralize(@report.verdicts.size, "verdict")}",
+                 actions: (if @verdicts.any?
+                             export_csv_link(training_mentoring_verdicts_path(training_slug, year: @year, format: :csv,
+                                                                              **active_filters(@filter_params)))
+                           end),
+                 url: training_mentoring_verdicts_path(training_slug) do |f| %>
+    <%# The year rides the filter form: a GET form replaces the query string. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :status, art_verdict_options, label: "Verdict", selected: @filter_params[:status],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :mentor_id, art_verdict_mentor_options(@report.verdicts), label: "Mentor",
+                   selected: @filter_params[:mentor_id], width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_section verdicts_title, icon: "flag-checkered", icon_type: :solid, border: false do %>
+  <% if @report.verdicts.empty? %>
+    <%= ui_empty_state "No mentee shift has a verdict recorded in #{@year}.", icon: "flag-checkered", icon_type: :solid %>
+  <% elsif @verdicts.empty? %>
+    <%= ui_empty_state "No verdict matches the current filters.", icon: "filter", icon_type: :solid %>
+  <% else %>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Mentee" %>
+        <%= t.heading "Verdict" %>
+        <%= t.heading "Mentor" %>
+        <%= t.heading "Shift" %>
+        <%= t.heading "Length", right: true %>
+        <%= t.heading "Notes" %>
+      <% end %>
+      <%= t.body do %>
+        <% @verdicts.each do |walk| %>
+          <% entry = @report.entry_for(walk) %>
+          <% group = entry && @shifts.group_for(entry.id) %>
+          <%= t.row id: "verdict-#{walk.id}" do %>
+            <%= t.row_header do %><%= person_display_link walk.person, walk.person_id %><% end %>
+            <%= t.cell do %><%= mentor_result_badge walk.status %><% end %>
+            <%= t.cell do %><%= person_display_link walk.mentor, walk.mentor_id %><% end %>
+            <%= t.cell class: "whitespace-nowrap" do %>
+              <% if group %>
+                <%= link_to datetime_format(entry.on_duty),
+                            training_mentoring_assignment_shift_path(training_slug, group.key, year: @year),
+                            class: LinkHelper::TABLE_LINK_CLASSES %>
+              <% else %>
+                <%= art_walk_shift_label(entry&.on_duty) %>
+              <% end %>
+            <% end %>
+            <%= t.cell value_or_dash(entry && art_mentoring_duration(entry)), right: true %>
+            <%= t.cell do %>
+              <% if walk.notes.present? %>
+                <div class="whitespace-pre-line"><%= walk.notes %></div>
+              <% else %>
+                <%= value_or_dash nil %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Mentors", icon: "user-check", icon_type: :solid, border: false, class: "mt-6",
+               badge: @report.mentors.size.to_s do %>
+  <% if @report.mentors.empty? %>
+    <%= ui_empty_state "No one signed in as a mentor or walked with a mentee in #{@year}.",
+                       icon: "user-check", icon_type: :solid %>
+  <% else %>
+    <%# Not striped: each mentor's detail row sits under its own row. %>
+    <%= ui_table full_width: true, striped: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Mentor" %>
+        <%= t.heading shifts_heading, right: true %>
+        <%= t.heading mentees_heading, right: true %>
+        <%= t.heading passed_label, right: true %>
+        <%= t.heading bonked_label, right: true %>
+        <%= t.heading mentor_result_label(PersonMentor::STATUS_PENDING), right: true %>
+        <%= t.heading length_heading, right: true %>
+        <%= t.heading "Details" %>
+      <% end %>
+      <%= t.body do %>
+        <% @report.mentors.each do |mentor| %>
+          <% detail_id = "mentor-shifts-#{mentor.id}" %>
+          <% name = person_display_name(mentor.person, mentor.id) %>
+          <%= t.row id: "mentor-#{mentor.id}" do %>
+            <%= t.row_header do %><%= person_display_link mentor.person, mentor.id %><% end %>
+            <%# A dash for none, so the counts a mentor has stand out. %>
+            <%= t.cell value_or_dash(mentor.entries.size.nonzero?), right: true %>
+            <%= t.cell value_or_dash(mentor.mentee_count.nonzero?), right: true %>
+            <%= t.cell value_or_dash(mentor.count(PersonMentor::STATUS_PASS).nonzero?), right: true %>
+            <%= t.cell value_or_dash(mentor.count(*bonks).nonzero?), right: true %>
+            <%= t.cell value_or_dash(mentor.count(PersonMentor::STATUS_PENDING).nonzero?), right: true %>
+            <%= t.cell value_or_dash(mentor.average_length && hour_minute_format(mentor.average_length)), right: true %>
+            <%= t.cell do %>
+              <%= t.detail_row_toggle "Shifts", id: detail_id, describing: name %>
+            <% end %>
+          <% end %>
+          <%= t.detail_row id: detail_id, label: name do %>
+            <%= render "mentor_shifts", mentor: %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

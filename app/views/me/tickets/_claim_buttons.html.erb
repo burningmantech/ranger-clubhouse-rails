@@ -1,0 +1,51 @@
+<%# locals: (ticket:) -%>
+<%# Claim controls for one regular ticket. An SPT carries the delivery choice: %>
+<%# claiming (qualified/banked) PATCHes the document status with a             %>
+<%# delivery_method so claim + delivery is one click; once claimed, the        %>
+<%# remaining methods render as switch buttons that PATCH delivery for every   %>
+<%# deliverable (ticket + Vehicle Pass). Other types keep the plain claim      %>
+<%# button, and render nothing while in use.                                   %>
+<% claiming = !ticket.is_using? %>
+<% if ticket.type == AccessDocument::SPT %>
+  <%
+    info = @ticketing_info
+    if claiming
+      verb = "Claim & "
+      path = me_tickets_document_status_path(ticket)
+      base_params = { status: AccessDocument::CLAIMED }
+    else
+      verb = "Switch to "
+      path = me_tickets_delivery_path
+      base_params = {}
+    end
+
+    options = [
+      { method: AccessDocument::DELIVERY_WILL_CALL,
+        label: "Pick Up At Will Call", icon: "person-walking" },
+    { method: AccessDocument::DELIVERY_POSTAL,
+        label: "Mail via USPS Standard (+ #{dollars(info.mail_standard_price)})", icon: "envelope" },
+      { method: AccessDocument::DELIVERY_PRIORITY,
+        label: "Mail via USPS Priority (+ #{dollars(info.mail_priority_price)})", icon: "truck-fast" }
+     ]
+    options = options.reject { |opt| opt[:method] == ticket.delivery_method } unless claiming
+  %>
+  <p class="text-body">
+    <strong>Will Call has no shipping costs.</strong>
+    Worried about mail delays? Pick Will Call — your ticket waits for you at the Box Office.
+  </p>
+  <%= button_row do %>
+    <% options.each do |opt| %>
+      <%= button_link "#{verb}#{opt[:label]}",
+                      ((claiming && opt[:method] == AccessDocument::DELIVERY_WILL_CALL) ? :primary : :secondary),
+                      path,
+                      method: :patch, params: base_params.merge(delivery_method: opt[:method]),
+                      icon: opt[:icon], icon_type: :solid %>
+    <% end %>
+  <% end %>
+<% elsif claiming %>
+  <%= button_row do %>
+    <%= button_link "Claim This Ticket", :primary, me_tickets_document_status_path(ticket),
+                    method: :patch, params: { status: AccessDocument::CLAIMED },
+                    icon: "circle-check", icon_type: :solid %>
+  <% end %>
+<% end %>

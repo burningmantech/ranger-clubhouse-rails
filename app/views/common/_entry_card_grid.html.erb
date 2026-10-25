@@ -1,0 +1,58 @@
+<%# locals: (title:, subtitle: nil, duration:, credits:, description: nil, title_id: nil, signups_column: nil, signups_label: "SIGN-UPS", status_indicator: nil, badges: []) %>
+<%
+  # safely handle optional locals for callers that don't pass them
+  signups_column = local_assigns[:signups_column]
+  status_indicator = local_assigns[:status_indicator]
+  badges = local_assigns[:badges]
+  has_signups = signups_column.present?
+  # Format duration/credits as minimal text
+  duration_text = hour_minute_words(duration)
+  credits_text = credit_format(credits)
+  # Credits are a quantity, not a status: emphasis is weight, per the
+  # Weight-Not-Color rule. Zero stays subtle -- that distinction is real.
+  credits_class = credits.positive? ? "font-semibold text-heading" : "font-medium text-stone-subtle"
+%>
+<%# === DESKTOP LAYOUT (Row 1: Title | Description | Duration | Credits, Row 2: DateTime) === %>
+<%# Row 1: Title | Description | Duration | Credits %>
+<div class="flex items-baseline gap-2">
+  <div <%= "id=\"#{title_id}-desktop\"".html_safe if title_id %> class="font-semibold text-body leading-snug mb-1">
+    <%= title %>
+  </div>
+  <% if description %>
+    <div class="text-base">
+      &bullet;
+    </div>
+    <div class="font-semibold text-body leading-snug truncate  min-w-0"><%= description %></div>
+  <% end %>
+  <% if status_indicator %>
+    <%= status_indicator %>
+  <% end %>
+  <% if badges.present? %>
+    <div class="ms-auto flex gap-1">
+    <% badges.each do |badge| %>
+      <div>
+        <%= ui_badge badge[:label], badge[:color], icon: badge[:icon] %>
+      </div>
+    <% end %>
+    </div>
+  <% end %>
+
+</div>
+<div class="text-stone-emphasis flex flex-row flex-wrap lg:flex-nowrap lg:gap-2">
+  <div class="w-full lg:w-1/2">
+    <%= yield %>
+  </div>
+  <div class="shrink-0 font-medium text-stone-muted tabular-nums lg:text-right w-2/5 lg:w-1/4">
+    <%= duration_text %>
+  </div>
+  <div class="shrink-0 tabular-nums lg:text-right w-2/5 lg:w-1/4 <%= credits_class %>">
+    <%= credits_text %>
+  </div>
+</div>
+
+<%# === SIGNUPS ROW (responsive, below main content) === %>
+<% if has_signups %>
+  <div>
+    <%= signups_column %>
+  </div>
+<% end %>

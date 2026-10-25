@@ -1,0 +1,124 @@
+<%= hero_panel icon: "people-group", heading_level: :h1, id: "team-records-header",
+               title: "Team Records",
+               description: "Create and edit teams, cadres, and delegations — their flags, role grants, and contact details." %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @total_count.to_s, "Total" %>
+  <%= ui_stat_box @type_counts[Team::TYPE_TEAM].to_i.to_s, "Teams" %>
+  <%= ui_stat_box @type_counts[Team::TYPE_CADRE].to_i.to_s, "Cadres" %>
+  <%= ui_stat_box @type_counts[Team::TYPE_DELEGATION].to_i.to_s, "Delegations" %>
+  <% if @inactive_count.positive? %>
+    <%= ui_stat_box @inactive_count.to_s, "Inactive", variant: :warning %>
+  <% end %>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= button_link "Add Team", :primary, teams_positions_new_team_record_path(@return_params),
+                    icon: "plus", icon_type: :solid %>
+  <% end %>
+</div>
+
+<% if @total_count.positive? %>
+  <%= filter_bar id: "team-record-filters",
+                 chips: team_record_filter_chips(@filter_params),
+                 clear_url: teams_positions_team_records_path,
+                 count: "Showing #{@teams.size} of #{pluralize(@total_count, "team")}",
+                 url: teams_positions_team_records_path do |f| %>
+    <%= form_row do %>
+      <%= f.select :type, team_record_type_options(@matching_type_counts),
+                   label: "Type", selected: @filter_params[:type],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :active, team_record_active_options,
+                   label: "Status", selected: @filter_params[:active],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.select :attribute, team_record_attribute_options,
+                   label: "Attribute", selected: @filter_params[:attribute],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :role, team_record_role_options(@granted_roles),
+                   label: "Role Grant", selected: @filter_params[:role],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @teams.any? %>
+  <%= dropdown_scroll_list team_record_scroll_items(@teams) %>
+
+  <%= ui_table striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Team" %>
+      <%= t.heading "Role Grants" %>
+      <%= t.heading "Attributes" %>
+      <%= t.heading "Managers" %>
+      <%= t.heading "Contact" %>
+      <%= t.heading "Actions", right: true %>
+    <% end %>
+
+    <%= t.body do %>
+      <% @teams.each do |team| %>
+        <%= t.row id: "team-#{team.id}" do %>
+          <%= t.row_header do %>
+            <div class="flex items-start gap-2">
+              <% if team.active %>
+                <%= fa_icon "circle-check", :solid, class: "icon-success mt-1" %>
+              <% else %>
+                <%= fa_icon "circle-xmark", :solid, class: "icon-error mt-1" %>
+              <% end %>
+              <div>
+                <div class="font-semibold text-heading"><%= team.title %></div>
+                <div class="flex flex-wrap gap-1 mt-1">
+                  <%= ui_badge team_record_type_label(team.type), :secondary, size: "sm",
+                               class: "whitespace-nowrap" %>
+                  <% unless team.active %>
+                    <%= ui_badge "Inactive", :warning, size: "sm", class: "whitespace-nowrap" %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+
+          <%= t.cell { value_list(@roles_by_team[team.id]) } %>
+          <%= t.cell { value_list(team_record_attribute_labels(team)) } %>
+
+          <%= t.cell do %>
+            <% managers = @managers_by_team[team.id] %>
+            <% if managers.present? %>
+              <div class="flex flex-col gap-1">
+                <% managers.each do |manager| %>
+                  <%= person_display_link manager.person, manager.person_id %>
+                <% end %>
+              </div>
+            <% else %>
+              <%= value_or_dash(nil) %>
+            <% end %>
+          <% end %>
+
+          <%= t.cell do %>
+            <div><%= team.email.presence || tag.span("No email", class: "text-stone-muted italic") %></div>
+            <% if team.resource_tag.present? %>
+              <div class="text-stone-muted"><%= team.resource_tag %></div>
+            <% else %>
+              <div class="text-stone-muted italic">No document tag</div>
+            <% end %>
+          <% end %>
+
+          <%= t.cell right: true do %>
+            <%= edit_link teams_positions_edit_team_record_path(team, @return_params), "Edit Team" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif @total_count.positive? %>
+  <%= ui_empty_state "No teams match the current filters.", icon: "filter", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No teams have been added yet.", icon: "people-group", icon_type: :solid %>
+<% end %>

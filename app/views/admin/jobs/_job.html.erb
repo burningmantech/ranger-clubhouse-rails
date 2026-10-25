@@ -1,0 +1,52 @@
+<%# locals: (job:, t:) %>
+<%# One job: its row, and the detail row its chevron opens. t is the
+    ui_table builder of the table the row sits in. %>
+<% detail_id = "job-detail-#{job.id}" %>
+<% event = job_event(job) %>
+<%= t.row do %>
+  <%= t.row_header do %>
+    <%= t.detail_row_toggle job_class_label(job), id: detail_id, name: "#{job.class_name} — job #{job.id}",
+                            class: "font-mono text-sm break-words lg:whitespace-nowrap" %>
+  <% end %>
+  <%= t.cell class: "whitespace-nowrap" do %>
+    <%= job_status_badge(job) %>
+  <% end %>
+  <%= t.cell job.queue_name, class: log_text_class("font-mono") %>
+  <%= t.cell datetime_format(job.created_at), class: log_text_class("whitespace-nowrap") %>
+  <%= t.cell job_last_event(event), class: log_text_class %>
+  <%= t.cell right: true do %>
+    <%= job_row_actions(job) %>
+  <% end %>
+<% end %>
+
+<%= t.detail_row id: detail_id do %>
+  <div class="space-y-4 py-2">
+    <div>
+      <div class="<%= log_heading_class %>">Details</div>
+      <%= ui_label_value label_width: "9rem" do |list| %>
+        <%= list.row "Job id" do %><%= job.id %><% end %>
+        <%= list.row "Active Job id" do %><span class="font-mono"><%= value_or_dash(job.active_job_id) %></span><% end %>
+        <%= list.row "Queue" do %><%= job.queue_name %><% end %>
+        <%= list.row "Priority" do %><%= job.priority %><% end %>
+        <%= list.row "Attempts" do %><%= job_attempts(job) %><% end %>
+        <%= list.row "Enqueued" do %><%= datetime_format(job.created_at, year: true) %><% end %>
+        <%= list.row event[:label] do %><%= job_event_value(event, year: true) %><% end %>
+      <% end %>
+    </div>
+
+    <% if (failed = job.failed_execution) %>
+      <div>
+        <div class="<%= log_heading_class %>">Error</div>
+        <p class="text-body mb-2">
+          <span class="font-mono"><%= failed.exception_class %></span>: <%= job_error_summary(failed) %>
+        </p>
+        <%= ui_data_block(job_error_text(failed), max_height: "max-h-56") %>
+      </div>
+    <% end %>
+
+    <div>
+      <div class="<%= log_heading_class %>">Arguments</div>
+      <%= ui_data_block(job_arguments_json(job), max_height: "max-h-80") %>
+    </div>
+  </div>
+<% end %>

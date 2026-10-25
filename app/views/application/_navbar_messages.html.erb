@@ -1,0 +1,23 @@
+<%# locals: (count:) %>
+<%# The navbar's unread envelope: the viewer's unread threads, the same count
+    as the Unread tab, linking to that folder. #navbar-messages is always on the
+    page for a mailbox user, hidden at zero, because a Turbo Stream replaces it
+    by id when a thread is marked read or unread (MessagesConcern) and a replace
+    aimed at a missing id does nothing.
+
+    The indicator is a wrapper, not a class on the button: daisyUI's .indicator
+    sets width: max-content from the utilities layer, which beats btn-square's
+    fixed width and would shrink the button to its icon, under the 36px floor.
+    The count is read out from the link's aria-label; the badge inside it is
+    what a sighted reader sees. %>
+<% if count.positive? %>
+  <%= tag.span id: "navbar-messages", class: "indicator" do %>
+    <%= button_link nil, :ghost, me_messages_path(folder: PersonMessage::FOLDER_UNREAD),
+                    icon: "envelope", icon_type: :solid, class: "btn-square",
+                    aria: { label: pluralize(count, "unread message") } do %>
+      <%= ui_badge count.to_s, :warning, class: "indicator-item" %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= tag.span id: "navbar-messages", hidden: true %>
+<% end %>

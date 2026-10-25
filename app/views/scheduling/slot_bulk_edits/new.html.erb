@@ -1,0 +1,121 @@
+<% back_path = scheduling_slots_position_path(@position.id, year: @year) %>
+
+<%= hero_panel icon: "pen-to-square", heading_level: :h1, id: "scheduling-bulk-edit-header",
+               back_to: ["#{@position.title} Slots", back_path] do |panel| %>
+  <% panel.title do %>Bulk Edit <%= @year %> <%= @position.title %> Slots
+  <% end %>
+  <% panel.description do %>
+    Apply the filled-in fields to every selected slot below.
+  <% end %>
+<% end %>
+
+
+<% if @slots.any? %>
+  <%= ui_form nil, scheduling_slot_bulk_edits_path(@position.id, year: @year, filter: @filter.presence),
+              method: :post do |f| %>
+    <%= ui_section "Fields to Apply", icon: "sliders", icon_type: :solid do %>
+      <%# Out of the hero, and at the top of the fields it is about. A plain
+          line rather than an instruction-list: a bare list has no bottom
+          margin and would sit on the first label, and `instruction-list mb-3`
+          is the 63-copy cluster the CSS ratchet refuses one more of. %>
+      <p class="mb-3">Blank fields leave the slots' current values unchanged.</p>
+      <%= f.select :new_position_id,
+                   options_for_select([["(keep current position)", ""]] + @position_choices,
+                                      params[:new_position_id]),
+                   { label: "Position", width: "w-full sm:w-72",
+                     help_text: "Moving slots to another position carries their sign-ups along." } %>
+      <%= form_row do %>
+        <%= f.text_field :description, label: "Description", value: params[:description],
+                         maxlength: 40, show_counter: true, width: "w-full sm:w-64" %>
+        <%= f.number_field :max, label: "Max Sign-Ups", value: params[:max], min: 0, width: "w-24" %>
+      <% end %>
+      <%= f.text_area :url, label: "Additional Information", value: params[:url], rows: 3,
+                      maxlength: 512, show_counter: true %>
+    <% end %>
+
+
+    <%= ui_section "Select Slots to Update", icon: "list-check", icon_type: :solid do %>
+      <% if @total_count.positive? %>
+        <%= filter_bar id: "bulk-edit-slot-filters",
+                       chips: slot_bulk_edit_filter_chips(@position, @year, @filter),
+                       clear_url: scheduling_new_slot_bulk_edit_path(@position.id, year: @year),
+                       count: "Showing #{@slots.size} of #{@total_count} slots",
+                       url: scheduling_new_slot_bulk_edit_path(@position.id), scope: :filter do |f| %>
+          <%= hidden_field_tag :year, @year %>
+          <%= form_row do %>
+            <%= f.select :active,
+                         options_for_select([["All slots", ""], %w[Active active], %w[Inactive inactive]],
+                                            @filter[:active]),
+                         { label: "Status", width: "w-full sm:w-44" } %>
+            <%= f.select :description,
+                         options_for_select([["All descriptions", ""]] + @description_options,
+                                            @filter[:description]),
+                         { label: "Description", width: "w-full sm:w-64" } %>
+            <%= f.select :date,
+                         options_for_select([["All dates", ""]] + @date_options.map { |date| [wday_month_day_format(date), date.iso8601] },
+                                            @filter[:date]),
+                         { label: "Date", width: "w-full sm:w-44" } %>
+            <%= f.select :time,
+                         options_for_select([["All times", ""]] + @time_options.map { |time| [time, time] },
+                                            @filter[:time]),
+                         { label: "Time", width: "w-full sm:w-40" } %>
+            <%= f.select :datetime,
+                         options_for_select([["Any start", ""]] + @datetime_options.map { |dt| [dt.strftime(DateTimeHelper::MONTH_DAY_TIME), dt.iso8601] },
+                                            @filter[:datetime]),
+                         { label: "Date/Time", width: "w-full sm:w-56" } %>
+          <% end %>
+          <%= button_row do %>
+            <%= f.submit "Apply Filters", variant: :secondary %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= bulk_select do %>
+        <%= ui_table do |t| %>
+          <%= t.header do %>
+            <%= t.heading width: "1%" do %>
+              <%= bulk_select_all aria_label: "Select all slots", checked: @selected_ids.nil? || @selected_ids.length == @slots.length %>
+            <% end %>
+            <%= t.heading "ID", right: true %>
+            <%= t.heading "Time" %>
+            <%= t.heading "Max", right: true %>
+            <%= t.heading "Sign-Ups", right: true %>
+            <%= t.heading "Description" %>
+            <%= t.heading "Active", center: true %>
+          <% end %>
+          <%= t.body do %>
+            <% @slots.each do |slot| %>
+              <%= t.row id: "slot-#{slot.id}" do %>
+                <%= t.cell do %>
+                  <%= bulk_select_checkbox "slot_ids[]", slot.id, checked: @selected_ids.nil? || @selected_ids.include?(slot.id),
+                                           id: "bulk-edit-slot-#{slot.id}",
+                                           aria_label: "Update slot ##{slot.id} #{slot.description}" %>
+                <% end %>
+                <%= t.cell slot.id, right: true %>
+                <%= t.cell datetime_format(slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr) %>
+                <%= t.cell slot.max, right: true %>
+                <%= t.cell slot.signed_up, right: true %>
+                <%= t.cell do %>
+                  <%= slot.description %>
+                  <%= render "common/scheduling/slot_additional_info", slot: slot %>
+                <% end %>
+                <%= t.cell center: true do %>
+                  <%= slot_status_badge(slot) %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Save Selected Slots" %>
+      <%= cancel_link back_path %>
+    <% end %>
+  <% end %>
+<% elsif @filtering %>
+  <%= ui_empty_state "No slots match the current filters.", icon: "filter", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No #{@position.title} slots were found for #{@year}.",
+                     icon: "calendar-plus", icon_type: :solid %>
+<% end %>

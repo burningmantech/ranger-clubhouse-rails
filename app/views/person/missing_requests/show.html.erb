@@ -1,0 +1,38 @@
+<%= hero_panel icon: "file-circle-question", heading_level: :h1, id: "person-missing-request-show-header",
+               back_to: ["#{@year} Timesheet", person_timesheets_path(@person, year: @year)] do |panel| %>
+  <% panel.title do %>
+    Missing Timesheet Request #<%= @entry.id %> &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Requested Shift", icon: "clock", icon_type: :solid do %>
+  <%= ui_table striped: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Time" %>
+      <%= t.heading "Duration" %>
+      <%= t.heading "Credits", right: true %>
+      <%= t.heading "Partner(s)" %>
+    <% end %>
+    <%= t.body do %>
+      <%= t.row do %>
+        <%= t.cell missing_request_status_badge(@entry) %>
+        <%= t.cell @entry.position.title %>
+        <%= t.cell datetime_format(@entry.on_duty, @entry.off_duty) %>
+        <%= t.cell hour_minute_words(@entry.duration, full: true) %>
+        <%= t.cell credit_format(@entry.credits), right: true %>
+        <%= t.cell @entry.partner.presence || "-" %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_section "User & Timesheet Reviewer Notes", icon: "comment", icon_type: :solid do %>
+  <%= render partial: "common/timesheet_notes",
+             locals: { notes: @entry.notes, empty_message: "No notes have been entered." } %>
+<% end %>
+
+<%= button_row do %>
+  <%= back_to "#{@year} Timesheet", person_timesheets_path(@person, year: @year) %>
+<% end %>

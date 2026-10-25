@@ -1,0 +1,36 @@
+<%# locals: (groups:, heading: nil) %>
+<%
+  # Calculate progress across all groups
+  all_steps = groups.flat_map(&:steps)
+  total_tasks = all_steps.count { |s| s.result != DashboardTask::STATUS_NOTE }
+  completed_tasks = all_steps.count { |s| s.result == DashboardTask::STATUS_COMPLETED }
+  action_needed = all_steps.count { |s| [DashboardTask::STATUS_ACTION_NEEDED, DashboardTask::STATUS_URGENT].include?(s.result) }
+  progress_percent = total_tasks.positive? ? ((completed_tasks.to_f / total_tasks) * 100).round : 0
+%>
+
+<% if total_tasks > 1 %>
+  <%= ui_progress_box id: "dashboard-progress" do |box| %>
+    <% box.title icon: "list-check" do %>
+      <%= local_assigns[:heading] || "Your Current Progress" %> &mdash; Additional Tasks May Be Required Later
+    <% end %>
+    <% box.subtitle do %>
+      <%= progress_count_of(completed_tasks, total_tasks, "current tasks complete") %>
+    <% end %>
+    <% box.progress completed: completed_tasks, total: total_tasks, 
+         start_label: "Getting Started", end_label: "Finished (for now)",
+         aria_label: "Task completion progress: #{completed_tasks} of #{total_tasks} tasks complete" %>
+    <% box.status do %>
+      <% if action_needed.positive? %>
+        <div class="flex-center-gap-2 icon-warning">
+          <%= fa_icon "circle-exclamation", :solid, { class: "animate-pulse" } %>
+          <span class="font-medium"><%= action_needed %> need<%= action_needed == 1 ? "s" : "" %> attention</span>
+        </div>
+      <% elsif completed_tasks == total_tasks %>
+        <div class="flex-center-gap-2 icon-success">
+          <%= fa_icon "circle-check", :solid %>
+          <span class="font-medium">All tasks complete!</span>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

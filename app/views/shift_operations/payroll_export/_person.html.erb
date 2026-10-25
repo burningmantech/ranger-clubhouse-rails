@@ -1,0 +1,59 @@
+<%#
+  One person's entries for the pay period. The heading carries their hours so a
+  card can be read without opening the table under it, and a row still running
+  is tinted -- the shading needs the important flag because row striping is set
+  on the same property and would otherwise win.
+%>
+<%= ui_section payroll_person_heading(person), border: false,
+               id: "payroll-person-#{person.id}" do %>
+  <%# responsive: six columns squeezed into a phone wrap into rows hundreds of
+      pixels tall; folded into labelled cards each entry stays readable. %>
+  <%= ui_table caption: "Timesheet entries for #{person.callsign}" do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Recorded Time" %>
+      <%= t.heading "Hours", right: true %>
+      <%= t.heading "Exported As" %>
+      <%= t.heading "Notes" %>
+    <% end %>
+    <%= t.body do %>
+      <% person.shifts.each do |shift| %>
+        <%= t.row state: (:warning if shift.still_on_duty) do %>
+          <%= t.cell payroll_status_badge(shift) %>
+          <%= t.row_header do %>
+            <%= shift.position_title %>
+            <div class="text-stone-muted"><%= shift.paycode %></div>
+          <% end %>
+          <%= t.cell datetime_format(shift.orig_on_duty, shift.orig_off_duty) %>
+          <%# The recorded shift, and under it what is actually paid whenever the
+              two differ -- a break taken out, time outside the period clipped
+              off, or both. Without the second line a clipped row shows hours
+              the total below it does not include. %>
+          <%= t.cell right: true do %>
+            <%= hour_minute_format(shift.orig_duration) %>
+            <% if shift.payable_duration != shift.orig_duration %>
+              <div class="text-stone-muted"><%= hour_minute_format(shift.payable_duration) %></div>
+            <% end %>
+          <% end %>
+          <%= t.cell do %>
+            <% if shift.split? %>
+              <%= datetime_format(shift.meal_break.first_on_duty, shift.meal_break.first_off_duty) %>
+              <div class="text-stone-muted italic my-1">
+                <%= pluralize(meal_break_minutes, "minute") %> meal break
+              </div>
+              <%= datetime_format(shift.meal_break.second_on_duty, shift.meal_break.second_off_duty) %>
+            <% else %>
+              <%= datetime_format(shift.on_duty, shift.off_duty) %>
+            <% end %>
+          <% end %>
+          <%= t.cell do %>
+            <% shift.notes.each do |note| %>
+              <div><%= note %></div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

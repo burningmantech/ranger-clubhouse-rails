@@ -1,0 +1,53 @@
+<%# locals: (result:, sandboxes:, test_address:, history_path: nil, resent: false) %>
+<%# How a send or a retry turned out: whether anything failed, and how much of
+    each kind of message went out.
+
+    Texts go out while the sender waits, so their outcome is known; emails and
+    Clubhouse messages are handed to a queue and follow behind.
+
+    An emergency also lists people no channel reaches (Rbs.unreachable). The
+    headline's count leaves them out, and either callout ends by naming them.
+    A retry lists only the people it sent to again, so it never has any. %>
+<% nothing_sent = !result.sent_sms && !result.sent_email && !result.sent_clubhouse %>
+<% unreached = Rbs.unreachable(result.people, send_clubhouse: result.sent_clubhouse) %>
+<% if nothing_sent %>
+  <%# Only a retry whose rows changed between the click and the send, say
+      sent by another run, finds nothing: the reason is not known here. %>
+  <%= ui_callout_box :warning, icon: "circle-info", icon_type: :solid do %>
+    <strong>Nothing was sent again.</strong>
+  <% end %>
+<% elsif result.sms_failed.positive? %>
+  <%= ui_callout_box :error, icon: "triangle-exclamation", icon_type: :solid do %>
+    <strong><%= pluralize(result.sms_failed, "text message") %> could not be sent.</strong>
+    <% if history_path %>
+      They can be sent again from <%= link_to "this broadcast's page", history_path, class: "underline font-semibold" %>.
+    <% end %>
+    <%= rbs_unreachable_sentence(unreached) if unreached.any? %>
+  <% end %>
+<% else %>
+  <%= ui_callout_box :success, icon: "circle-check", icon_type: :solid do %>
+    <strong>
+      <%= resent ? "Sent again" : "Broadcast sent" %>
+      to <%= pluralize(result.people.size - unreached.size, "person") %>.
+    </strong>
+    Texts go out now; emails and Clubhouse messages are queued and follow over the next few minutes.
+    <%= rbs_unreachable_sentence(unreached) if unreached.any? %>
+  <% end %>
+<% end %>
+
+<%= render "common/rbs/sandbox_notice", sandboxes:, test_address:, sent: true %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box result.sent_sms ? result.people.count { |person| person.sms_status == Broadcast::STATUS_SENT }.to_s : "—",
+                  "Texts Sent", variant: result.sent_sms ? :success : :secondary,
+                  icon: "comment-sms", icon_type: :solid %>
+  <%= ui_stat_box result.sms_failed.to_s, "Texts Failed",
+                  variant: result.sms_failed.positive? ? :error : :secondary,
+                  icon: "triangle-exclamation", icon_type: :solid %>
+  <%= ui_stat_box result.sent_email ? result.emails_queued.to_s : "—", "Emails Queued",
+                  variant: result.sent_email ? :success : :secondary,
+                  icon: "envelope", icon_type: :solid %>
+  <%= ui_stat_box result.sent_clubhouse ? result.clubhouse_messages.to_s : "—", "Clubhouse Messages",
+                  variant: result.sent_clubhouse ? :success : :secondary,
+                  icon: "comments", icon_type: :solid %>
+<% end %>

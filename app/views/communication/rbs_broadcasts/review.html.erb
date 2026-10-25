@@ -1,0 +1,86 @@
+<div data-controller="scroll-to-top" hidden></div>
+
+<%#
+  Step two: the message and the exact list of people it would reach. Nothing
+  has been sent yet -- this page writes nothing, and the send below works the
+  recipients out again so what goes out is what was reviewed.
+%>
+<% info = rbs_type(@type) %>
+<%# Who the broadcast reaches: the list, less anyone no channel reaches. %>
+<% reached = @people.size - @unreached.size %>
+<% content_for :title, "Review #{info[:title].downcase}" %>
+
+<%= hero_panel icon: info[:icon], heading_level: :h1, id: "rbs-review-header",
+               title: info[:title],
+               description: "Check the message and the people it goes to, then send it.",
+               back_to: ["Ranger Broadcast System", communication_rbs_root_path] do |panel| %>
+  <% panel.progress completed: 2, total: 3, start_label: "Write", end_label: "Sent" %>
+<% end %>
+
+<%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid do %>
+  <strong>Nothing has been sent yet.</strong>
+  Sending reaches <%= pluralize(reached, "person") %>:
+  <%= @people.count(&:use_sms) %> by text, <%= @people.count(&:use_email) %> by email<%
+  if @form.sends_clubhouse? %>, and <%= @people.size %> by Clubhouse message<% end %>.
+  <%= rbs_unreachable_sentence(@unreached) if @unreached.any? %>
+<% end %>
+
+<%= render "common/rbs/sandbox_notice", sandboxes: @sandboxes, test_address: @email_test_address %>
+
+<div class="stack-to-row-lg">
+  <%= ui_section "Message", icon: "envelope-open-text", icon_type: :solid do %>
+    <% if @form.sends_sms? %>
+      <h3 class="heading-title text-heading mb-1">
+        <%= fa_icon "comment-sms", :solid, fixed: true %> Text
+      </h3>
+      <div class="rounded-base border border-line bg-default p-3 mb-3">
+        <%= @form.sms_message %><span class="text-stone-subtle"><%= Rbs::SMS_SUFFIX %></span>
+      </div>
+    <% end %>
+
+    <% if @form.sends_email? || @form.sends_clubhouse? %>
+      <h3 class="heading-title text-heading mb-1">
+        <%= fa_icon "envelope", :solid, fixed: true %>
+        <%= [("Email" if @form.sends_email?), ("Clubhouse message" if @form.sends_clubhouse?)].compact.to_sentence %>
+      </h3>
+      <div class="rounded-base border border-line bg-default p-3">
+        <div class="font-semibold"><%= @form.simple? ? @form.sms_message : @form.subject %></div>
+        <% if @form.message.present? %>
+          <div class="mt-2"><%= simple_format(@form.message) %></div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Audience", icon: "users", icon_type: :solid do %>
+    <%= ui_label_value size: :base do |list| %>
+      <% rbs_criteria_rows(@form).each do |label, value| %>
+        <% list.row label, value %>
+      <% end %>
+      <% list.row "Sent by", rbs_channel_badges(rbs_sending_channels(@form)) %>
+    <% end %>
+  <% end %>
+</div>
+
+<%= ui_section "Recipients (#{@people.size})", icon: "user-check", icon_type: :solid, border: false do %>
+  <p class="px-3 pb-2">
+    Everyone below matches what you chose. If a channel cannot reach someone, the table says why.
+  </p>
+  <%= render "recipients_table", people: @people, sms: @form.sends_sms?, email: @form.sends_email?, reached: %>
+<% end %>
+
+<%#
+  One form, two buttons: send it, or go back to the form with everything kept.
+  Every value travels as a hidden field so the send acts on exactly what is
+  shown above.
+%>
+<%= ui_form(nil, communication_rbs_broadcasts_path(@type)) do %>
+  <%= render "carried_values", form: @form %>
+  <%= button_row do %>
+    <%= submit_button "Send to #{pluralize(reached, "person")}",
+                      variant: @type == Broadcast::TYPE_EMERGENCY ? :error : :primary %>
+    <%= submit_button "Edit Message", variant: :secondary,
+                      formaction: communication_rbs_edit_broadcast_path(@type) %>
+    <%= cancel_link communication_rbs_root_path %>
+  <% end %>
+<% end %>

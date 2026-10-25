@@ -1,0 +1,18 @@
+<%# locals: (type:) %>
+<%# One kind of broadcast: when to use it, who it reaches, and how to start it. %>
+<% info = rbs_type(type) %>
+<%= ui_accent_card info[:title], variant: info[:variant], icon: info[:icon], icon_type: :solid,
+                   heading_level: :h3 do %>
+  <p class="mb-1"><%= info[:situation] %></p>
+  <p class="mb-2 text-stone-muted">
+    Reaches <%= info[:reaches] %>.<% if info[:note] %> <%= info[:note] %><% end %>
+  </p>
+  <div class="flex flex-wrap items-center gap-2">
+    <%= rbs_channel_badges(rbs_type_channels(type)) %>
+    <span class="grow"></span>
+    <%= button_link "Start", info[:variant] == :secondary ? :primary : info[:variant],
+                    communication_rbs_new_broadcast_path(type),
+                    icon: "arrow-right", icon_type: :solid, size: "sm",
+                    aria: { label: "Start a #{info[:title].downcase}" } %>
+  </div>
+<% end %>

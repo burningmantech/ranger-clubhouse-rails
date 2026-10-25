@@ -1,0 +1,75 @@
+<%= hero_panel icon: "address-book", heading_level: :h1, id: "directory-header",
+               back_to: :dashboard do |panel| %>
+  <% panel.title do %>Cadre Directory
+  <% end %>
+  <% panel.description do %>
+    Contact information for Ranger Cadres, Delegations, and other listed teams.
+  <% end %>
+<% end %>
+
+<%= ui_accent_card "About the Ranger Special Teams", variant: :info do %>
+  Want to know more about the Ranger Special Teams? Visit the <%= ext_link "Ranger Special Teams Guide", setting(Setting::JOINING_RANGER_SPECIAL_TEAMS_URL) %> to learn
+  more about each team and if applications are being accepted to join them.
+
+<% end %>
+
+<%= dropdown_scroll_list @scroll_to_teams %>
+
+<% @teams.each do |team| %>
+  <%= ui_section "#{team.title} (#{pluralize team.members.size, "member"})", id: "team-#{team.id}" do %>
+    <% if team.description.present? %>
+      <div class="mb-3 text-body">
+        <%= team.description %>
+      </div>
+    <% end %>
+
+    <% if team.email.present? %>
+      <div class="mb-4">
+        <strong class="text-heading">Contact:</strong>
+        <%= mail_to team.email, team.email %>
+      </div>
+    <% else %>
+      <div class="mb-4 text-body italic">No contact email on file.</div>
+    <% end %>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 mt-4"
+         role="list"
+         aria-label="<%= team.title %> members">
+      <% team.members.each do |member| %>
+        <% person = member.person %>
+        <div role="listitem"
+             class="border border-line rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+          <% if person.avatar_photo %>
+            <%= image_tag person.avatar_photo,
+                          class: "w-full object-cover",
+                          style: "height: #{PersonPhoto::AVATAR_HEIGHT}px;",
+                          loading: "lazy",
+                          alt: "Photo of #{person.callsign}#{member.overseer_positions.present? ? ", #{member.overseer_positions.first.title}" : ""}" %>
+          <% else %>
+            <div class="flex items-center justify-center bg-secondary-content"
+                 style="height: <%= PersonPhoto::AVATAR_HEIGHT %>px;">
+              <div class="text-center">
+                <%= fa_icon :user, :solid, class: "fa-4x mb-2" %>
+                <div class="text-sm text-body">No Photo</div>
+              </div>
+            </div>
+          <% end %>
+
+          <div class="p-4 text-center">
+            <div class="text-xl font-semibold text-heading mb-2 leading-tight">
+              <%= person.callsign %>
+            </div>
+
+            <% if member.overseer_positions.present? %>
+              <div class="text-sm text-body space-y-1">
+                <% member.overseer_positions.each do |position| %>
+                  <div class="leading-snug"><%= position.title %></div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

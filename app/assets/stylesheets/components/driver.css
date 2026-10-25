@@ -1,0 +1,92 @@
+/*
+ * driver.js overrides: the first-sign-in tour's popover
+ * (controllers/onboarding_controller.js).
+ *
+ * driver.css (vendored verbatim, imported just before components.css) paints
+ * the popover in its own grays and whites and sets its type in Helvetica. This
+ * file re-themes it in the app's tokens, so the dark theme follows for free,
+ * and gives its buttons the daisyUI btn the rest of the app uses. Same layer as
+ * the vendored sheet and later in source, so each rule here wins on equal
+ * specificity; the arrow is re-colored per side because driver.css paints the
+ * three hidden sides transparent per side too, and a shorthand would undo that.
+ *
+ * The overlay keeps driver's black at 0.7: a dimmed page reads the same on
+ * either theme.
+ */
+
+/* --- The popover: a card ----------------------------------------------- */
+
+.driver-popover {
+    @apply bg-base-100 text-body font-sans text-base border border-line rounded-box p-4 shadow-lg;
+}
+
+.driver-popover-title {
+    @apply text-lg font-semibold text-heading;
+}
+
+.driver-popover-description {
+    @apply text-base;
+}
+
+.driver-popover-description p + p {
+    @apply mt-2;
+}
+
+.driver-popover-progress-text {
+    @apply text-sm text-stone-muted;
+}
+
+/* --- The arrow, one side at a time (see the note above) ------------------ */
+
+.driver-popover-arrow-side-left {
+    border-left-color: var(--color-base-100);
+}
+
+.driver-popover-arrow-side-right {
+    border-right-color: var(--color-base-100);
+}
+
+.driver-popover-arrow-side-top {
+    border-top-color: var(--color-base-100);
+}
+
+.driver-popover-arrow-side-bottom {
+    border-bottom-color: var(--color-base-100);
+}
+
+/* --- Buttons: daisyUI's, as everywhere else ------------------------------ */
+
+/* Back and Next/Done carry btn btn-sm (ghost, primary), put on them by the
+   onboarding controller's onPopoverRender. The classes, not an @apply: daisyUI
+   compiles btn into the utilities layer, which beats driver's footer-button
+   rule here in components for every property btn declares, while an @apply
+   btn lands in daisyUI's nested components sublayer, which that rule beats.
+   What btn leaves alone still leaks through from driver's rule and is zeroed
+   here: the 3px padding-block, and the 4px between the two buttons, which the
+   gap replaces. */
+.driver-popover-footer-btn {
+    @apply py-0;
+}
+
+.driver-popover-navigation-btns {
+    @apply gap-2;
+}
+
+.driver-popover-navigation-btns button + button {
+    @apply ms-0;
+}
+
+/* The close ×: driver draws it 32 by 28 in the popover's corner. A 36px square,
+   muted until pointed at, with the app's focus ring. */
+.driver-popover-close-btn {
+    @apply w-9 h-9 text-stone-muted rounded-box;
+}
+
+.driver-popover-close-btn:hover,
+.driver-popover-close-btn:focus-visible {
+    @apply text-heading;
+}
+
+.driver-popover-close-btn:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2;
+}

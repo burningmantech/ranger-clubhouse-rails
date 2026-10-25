@@ -1,0 +1,56 @@
+<%# locals: (application:) %>
+<%= ui_label_value label_width: "12rem", size: :base do |list| %>
+  <% list.row "BRC events" do %>
+    <% if application.all_events.empty? %>
+      <%= ui_badge "No event attendance", :error, icon: "ban", icon_type: :solid %>
+    <% elsif application.brc_experience_okay? %>
+      <%= ui_badge "Experience is okay", :success, icon: "circle-check", icon_type: :solid %>
+    <% else %>
+      <%= ui_badge "Experience issue", :error, icon: "circle-exclamation", icon_type: :solid %>
+    <% end %>
+    <% if application.experience_issue %>
+      <div class="text-error font-semibold mt-1"><%= application.experience_issue %></div>
+    <% end %>
+    <% if application.all_events.any? %>
+      <div class="mt-1"><%= application.all_events.join(", ") %></div>
+    <% end %>
+    <% if application.have_pandemic_years? %>
+      <div class="text-warning mt-1">
+        <%= fa_icon "triangle-exclamation", :solid %>
+        The pandemic years 2020 and 2021 do not count towards event attendance.
+      </div>
+    <% end %>
+    <% if application.status_hold_qualification_issue? %>
+      <div class="text-stone-muted mt-1">Applicant asked to confirm attendance.</div>
+    <% end %>
+  <% end %>
+  <% list.row "Experience type", application.experience_label %>
+  <% list.row "Age" do %>
+    <% if application.is_over_18 %>
+      <%= ui_badge "Is 18 or older", :success, icon: "circle-check", icon_type: :solid %>
+    <% else %>
+      <%= ui_badge "Under 18", :error, icon: "circle-exclamation", icon_type: :solid %>
+    <% end %>
+    <% if application.status_hold_age_issue? %>
+      <div class="text-stone-muted mt-1">Applicant asked to confirm age.</div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<div class="flex flex-wrap items-center gap-2 mt-3">
+  <%= edit_link edit_details_vc_application_path(application), "Edit Details" %>
+  <% unless application.finalized? %>
+    <% unless application.status_hold_qualification_issue? %>
+      <%= button_link "Ask for Event Confirmation", :warning,
+                      dialog_vc_application_path(application, dialog: "status_message",
+                                                 status: ProspectiveApplication::STATUS_HOLD_QUALIFICATION_ISSUE),
+                      data: { turbo_frame: "modal" } %>
+    <% end %>
+    <% unless application.status_hold_age_issue? %>
+      <%= button_link "Ask for Age Confirmation", :warning,
+                      dialog_vc_application_path(application, dialog: "status_message",
+                                                 status: ProspectiveApplication::STATUS_HOLD_AGE_ISSUE),
+                      data: { turbo_frame: "modal" } %>
+    <% end %>
+  <% end %>
+</div>

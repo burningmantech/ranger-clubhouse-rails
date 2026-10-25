@@ -1,0 +1,85 @@
+<%#
+  How busy the HQ window is expected to be, day by day, and whether anybody is
+  scheduled to answer it.
+%>
+<% content_for :title, "HQ Check In/Out Forecast" %>
+
+<%# This report with nothing held back: where clearing the filters lands, and
+    what the export covers. Spelled once so the two cannot disagree. %>
+<% report_params = @index_params.except(:day) %>
+<% whole_report_url = scheduling_hq_forecast_path(report_params) %>
+
+<%= hero_panel icon: "house-chimney-window", heading_level: :h1,
+               id: "scheduling-hq-forecast-header",
+               title: "#{@year} HQ Check In/Out Forecast" do |panel| %>
+  <% panel.description do %>
+    Expected check-ins and check-outs at the HQ window for every period of the
+    event, beside the HQ volunteers scheduled to handle them.
+  <% end %>
+  <%# keep: the period width and the filters ride along, or changing the year
+      silently answers a different question than the one on screen. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: @index_params.except(:year) %>
+<% end %>
+
+<%= hq_forecast_other_page_link :all, year: @year, interval: @interval %>
+
+<% if @report.any? %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box number_with_delimiter(@report.checkin_total), "Expected Check-Ins" %>
+    <% if (busiest = @report.busiest) %>
+      <%= ui_stat_box hq_forecast_moment_label(busiest),
+                      "Most Check-Ins (#{busiest.checkin})" %>
+    <% end %>
+    <%= ui_stat_box @report.unstaffed_count.to_s, "Unstaffed Periods",
+                    variant: @report.unstaffed_count.positive? ? :warning : :secondary %>
+    <%= ui_stat_box @report.days.size.to_s, "Days" %>
+  <% end %>
+
+  <%# Out of the hero: how to read the chart, and the one link a bar does not
+      announce. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What is the top row?</dt>
+      <dd>The number of people expected to check in or out in each period.</dd>
+      <dt>What do the numbers on a shift mean?</dt>
+      <dd>How many are signed up, out of the shift's maximum.</dd>
+      <dt>What are the hatched bars?</dt>
+      <dd>A hatched shift has no one signed up. A striped column in the top row has no lead, short, or window on duty.</dd>
+      <dt>Why are some hours not flagged?</dt>
+      <dd>HQ is closed when no HQ shift is scheduled at any desk, so those hours are not counted as unstaffed.</dd>
+      <dt>How do I see who is signed up?</dt>
+      <dd>Select a shift. Hover over any bar to see its exact times and counts.</dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "hq-forecast-filters",
+                 chips: hq_forecast_filter_chips(@report, @index_params),
+                 clear_url: whole_report_url,
+                 count: hq_forecast_count(@report, @days),
+                 # The page can be read one day at a time; the export is
+                 # always the whole year, so the file matches the report rather
+                 # than the current view.
+                 actions: export_csv_link(scheduling_hq_forecast_path(report_params.merge(format: :csv)), "Export All to CSV"),
+                 url: scheduling_hq_forecast_path do |f| %>
+    <%= form_row do %>
+      <%= render "interval_field", f: f, year: @year, interval: @interval %>
+      <%= f.select :day, hq_forecast_day_options(@report), label: "Day",
+                   selected: @day, width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%# Never empty: a day the report does not hold falls back to all of them. %>
+  <% @days.each do |day| %>
+    <%= ui_section day.label, icon: "calendar-day", icon_type: :solid, border: false,
+                   badge: hq_forecast_day_badge(@report, day), badge_color: :warning do %>
+      <%= hq_forecast_gantt(@report, day) %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No #{@year} HQ shifts have been scheduled.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

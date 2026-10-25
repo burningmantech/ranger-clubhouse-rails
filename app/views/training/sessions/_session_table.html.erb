@@ -1,0 +1,65 @@
+<%# One bucket of the landing page's sessions (upcoming or past). Upstream
+    spread the trainer groups across ragged per-position columns; here they
+    stack inside a single Trainers cell so the row survives mobile widths. %>
+<% if sessions.empty? %>
+  <%= ui_empty_state empty_message, icon: "calendar", icon_type: :regular %>
+<% else %>
+  <% show_group_titles = (Position::TRAINERS[@training.id] || []).size > 1 %>
+  <%= ui_table striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Time / Location" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Sign-Ups", center: true %>
+      <%= t.heading "Trainers" %>
+    <% end %>
+
+    <%= t.body do %>
+      <% sessions.each do |session| %>
+        <% slot = session.slot %>
+        <%= t.row do %>
+          <%= t.row_header do %>
+            <div>
+              <%= link_to training_session_time(slot),
+                          training_session_path(training_slug, slot.id),
+                          class: "font-medium" %>
+              <% if slot.max.positive? && slot.signed_up >= slot.max %>
+                <%= ui_badge "FULL", :error, icon: "circle-dot", icon_type: :regular %>
+              <% end %>
+            </div>
+            <div class="font-normal"><%= slot.description %></div>
+            <% unless slot.active %>
+              <div class="text-error font-normal">Not activated — sign-ups are disabled.</div>
+            <% end %>
+          <% end %>
+          <%= t.cell do %>
+            <%= slot_status_badge slot %>
+          <% end %>
+          <%= t.cell "#{slot.signed_up} of #{slot.max}", center: true  %>
+          <%= t.cell do %>
+            <% if session.trainer_groups.any? %>
+              <div class="space-y-1">
+                <% session.trainer_groups.each do |group| %>
+                  <div>
+                    <% if show_group_titles %>
+                      <span class="font-medium"><%= group.position_title %> (<%= group.trainers.size %>):</span>
+                    <% end %>
+                    <% if group.trainers.any? %>
+                      <%= safe_join(group.trainers.map { |trainer|
+                            person_display_link(trainer.person, trainer.person.id) + (trainer.is_lead ? " (lead)" : "")
+                          }, ", ") %>
+                    <% else %>
+                      <span class="text-stone-muted">No trainers signed up yet.</span>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <p class="text-error font-semibold">No trainer slots were found.</p>
+              <p><%= render "training/sessions/trainer_slot_rule" %></p>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

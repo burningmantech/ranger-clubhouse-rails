@@ -1,0 +1,4 @@
+<%# locals: (total:) -%>
+<%= ui_stat_row id: "photos-review-stats" do %>
+  <%= ui_stat_box total, "Awaiting Review", variant: total.zero? ? :secondary : :warning %>
+<% end %>

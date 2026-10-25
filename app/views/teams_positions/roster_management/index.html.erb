@@ -1,0 +1,23 @@
+<%= hero_panel icon: "people-group", heading_level: :h1, id: "roster-management-header",
+               title: "Roster Management",
+               description: "Review who is on a team and which of its positions they hold." %>
+
+<% if @teams.any? %>
+  <div class="text-lg my-4">
+    <%# An Admin or Tech Ninja reaches every roster without managing any team,
+        so the sentence has to say which of the two it means. %>
+    <% if @manages_all %>
+      You can open any of the <%= pluralize @teams.size, "team" %> roster<%= "s" if @teams.many? %>.
+    <% else %>
+      You manage <%= pluralize @teams.size, "team" %>.
+    <% end %>
+  </div>
+  <div class="lg:w-3/4">
+    <% @teams.each do |team| %>
+      <%= ui_drill_down_row teams_positions_roster_management_team_path(team), team.title,
+                            meta: pluralize(@member_counts.fetch(team.id, 0), "member") %>
+    <% end %>
+  </div>
+<% else %>
+  <%= ui_empty_state "There are no teams to manage yet.", icon: "people-group", icon_type: :solid %>
+<% end %>

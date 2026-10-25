@@ -1,0 +1,55 @@
+<%= hero_panel icon: "chart-line", heading_level: :h1, id: "scheduling-position-credits-timeline-header",
+               title: "#{@year} #{@position_title} Credit Timeline",
+               description: "See how the credit rate for this position's shifts rises and falls over the event.",
+               back_to: ["#{@year} #{@position_title} Credits", scheduling_position_credits_position_path(@position_id, year: @year)] %>
+
+<% if @timeline %>
+  <% if @position.nil? %>
+    <div class="my-2">
+      <%= ui_callout_box :error, title: "This Position No Longer Exists" do %>
+        These credits belong to deleted position #<%= @position_id %>, so no shift earns this rate.
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @timeline.credits.size, "Credits" %>
+    <%= ui_stat_box credit_format_short(@timeline.peak), "Peak Credits per Hour" %>
+    <%= ui_stat_box @timeline.days.size, "Days" %>
+  <% end %>
+
+  <%= ui_section "Credit Rate Timeline", icon: "chart-column", icon_type: :solid do %>
+    <p class="mb-2">
+      Each credit is a band and the top edge is the rate a shift earns at that moment.
+      Hover a step to see which credits make it up; steps too narrow to hover are in the Rate Table below.
+    </p>
+    <%= credit_timeline_chart @timeline %>
+  <% end %>
+
+  <%= ui_section "Rate Table", icon: "table-cells", icon_type: :solid,
+                 link: export_csv_link(scheduling_position_credits_position_timeline_path(@position_id, year: @year, format: :csv)) do %>
+    <p class="mb-2">Every step of the combined rate, for reading the chart without hovering.</p>
+    <%= ui_table full_width: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "From" %>
+        <%= t.heading "To" %>
+        <%= t.heading "Hours", right: true %>
+        <%= t.heading "Credits per Hour", right: true %>
+        <%= t.heading "Made Up Of" %>
+      <% end %>
+      <%= t.body do %>
+        <% @timeline.segments.each do |segment| %>
+          <%= t.row do %>
+            <%= t.cell datetime_format(segment.starts_at) %>
+            <%= t.cell datetime_format(segment.ends_at) %>
+            <%= t.cell hour_format(segment.minutes * 60), right: true %>
+            <%= t.cell credit_format_short(segment.total), right: true %>
+            <%= t.cell credit_segment_makeup(segment) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No #{@position_title} credits were found for #{@year}.", icon: "coins", icon_type: :solid %>
+<% end %>

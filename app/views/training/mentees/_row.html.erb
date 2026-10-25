@@ -1,0 +1,38 @@
+<%# One roster row. Shared by the index and by destroy.turbo_stream, which
+    re-renders it through ui_table_rows so the swapped row keeps the same
+    classes and responsive data-labels as the ones around it.
+    Locals: t (table builder), mentee, revoked, can_revoke %>
+<%= t.row id: mentees_row_id(mentee) do %>
+  <%= t.row_header do %>
+    <div class="flex flex-col gap-y-1 items-start">
+      <%= person_display_link mentee.person, mentee.person.id %>
+      <%= person_status_badge mentee.status %>
+    </div>
+  <% end %>
+  <% mentee.grants.each do |grant| %>
+    <%= t.cell do %><%= mentees_grant_cell grant %><% end %>
+  <% end %>
+  <% if can_revoke %>
+    <%= t.cell do %>
+      <% if revoked %>
+        <%# Undo for a mis-click. The ids ride along so only what was just taken
+            comes back; after a reload the row is gone and so is the offer. %>
+        <div class="flex flex-col gap-y-2 items-start">
+          <%= ui_badge "Positions revoked", :secondary, icon: "circle-check", icon_type: :solid %>
+          <%= button_link "Restore Positions", :secondary,
+                          training_restore_mentee_positions_path(training_slug, mentee.person.id,
+                                                                 position_ids: mentees_restorable_ids(mentee)),
+                          method: :post, icon: "rotate-left", icon_type: :solid %>
+        </div>
+      <% else %>
+        <%= delete_button training_revoke_mentee_positions_path(training_slug, mentee.person.id),
+                          "Revoke Positions",
+                          icon: "ban", icon_type: :solid,
+                          confirm_modal: { title: "Revoke Mentee Positions",
+                                           method: :delete,
+                                           confirm_label: "Revoke Positions",
+                                           message: "Revoke every #{@training.title} mentee position from #{mentee.callsign}?" } %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

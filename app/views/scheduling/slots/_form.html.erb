@@ -1,0 +1,77 @@
+<%= ui_form(@slot,
+            @slot.persisted? ? scheduling_slot_path(@slot, year: @year) : scheduling_slots_path(year: @year),
+            data: { controller: "link-options",
+                    link_options_url_value: scheduling_slots_link_options_path(year: @year),
+                    link_options_frame_value: "slot-link-options" }) do |f| %>
+  <%= f.fieldset "Basic Information", icon: "circle-info", icon_type: :solid do %>
+    <%= f.select :position_id,
+                 grouped_options_for_select(slot_position_choices(@positions), @slot.position_id),
+                 { label: "Position", required: true, prompt: "Select a position" },
+                 { data: { action: "change->link-options#refresh" } } %>
+    <p class="my-2">
+      When filling out the description, avoid phrases like &ldquo;Click For More Info&rdquo;.
+      The text entered in the Additional Information field is shown automatically when a
+      volunteer signs up for the shift.
+    </p>
+    <%= f.text_field :description, label: "Description", required: true,
+                     maxlength: 40, show_counter: true, width: "w-full sm:w-64" %>
+    <%= form_row do %>
+      <%= f.datetime_field :begins, label: "Start Time", required: true %>
+      <%= f.datetime_field :ends, label: "Ending Time", required: true %>
+      <%= f.select :timezone, slot_timezone_choices(@slot), { label: "Timezone", width: "w-full sm:w-56" } %>
+    <% end %>
+  <% end %>
+
+  <%= f.fieldset "Shift Information", icon: "file-lines", icon_type: :solid do %>
+    <p class="my-2">
+      Provide details about the shift below. URLs and email addresses are hyperlinked
+      automatically, and the text is shown when a volunteer signs up for this shift.
+    </p>
+    <p class="my-2">
+      Example: <i>Women of Khaki will meet at Tokyo before shift. More info at
+      http://women.khaki/meetup or email women@khaki.rangers</i>
+    </p>
+    <%= f.text_area :url, label: "Additional Information", rows: 3,
+                    maxlength: 512, show_counter: true %>
+  <% end %>
+
+  <%= turbo_frame_tag "slot-link-options" do %>
+    <%= render "link_fieldsets", slot: @slot, link_slots: @link_slots %>
+  <% end %>
+
+  <%= f.fieldset "Max Sign-Ups & Activation", icon: "users", icon_type: :solid do %>
+    <% if @slot.trainer_slot_id.present? %>
+      <div class="my-2">
+        <%= ui_callout_box :warning do %>
+          The trainer's slot has been set, so Max Sign-Ups acts as a multiplier instead of
+          a hard count. The total sign-ups allowed is the number of trainers signed up in
+          the trainer's slot times this limit. For example, with 2 trainers signed up and
+          a limit of 10, 20 total sign-ups are allowed.
+        <% end %>
+      </div>
+    <% end %>
+    <%= form_row do %>
+      <%= f.number_field :max,
+                         label: @slot.trainer_slot_id.present? ? "Multiplier Sign-Ups" : "Max Sign-Ups",
+                         required: true, min: 0, width: "w-24" %>
+      <%= f.check_box :active, label: "Active",
+                      help_text: "Active slots are visible for sign-ups." %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Slot" %>
+    <% if @slot.persisted? %>
+      <%= f.submit "Save as New Slot", name: "save_as_new", variant: :secondary %>
+    <% end %>
+    <%= cancel_link @cancel_path %>
+    <% if @slot.persisted? %>
+      <%= delete_button scheduling_slot_path(@slot, year: @year),
+                        confirm_modal: {
+                          title: "Confirm Slot Deletion",
+                          message: "Delete #{@slot.position_title} - #{@slot.description}? This cannot be undone.",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

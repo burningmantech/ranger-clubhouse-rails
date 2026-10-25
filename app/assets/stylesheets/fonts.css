@@ -1,0 +1,92 @@
+/*
+ * Atkinson Hyperlegible — the one typeface (see DESIGN.md, "The One Typeface Rule").
+ *
+ * The proportional cut is the default for everything. The monospaced cut is a
+ * companion of the same design, reserved for the places where character cells
+ * have to line up: `code`, `.font-mono`, and tabular figures.
+ *
+ * Self-hosted rather than fetched from Google Fonts. Every layout used to open with
+ * two preconnects and a render-blocking cross-origin stylesheet before the browser
+ * learned which font files it needed — three round trips to a third party, on an
+ * application whose worst-case network is a phone on playa. Served from our own
+ * origin the files arrive on the connection the page is already using.
+ *
+ * The files are the "Atkinson Hyperlegible Next" release, which is the variable
+ * cut of the same design and the counterpart to Mono; it is declared here under
+ * the plain family name because that is what the design system calls it. The
+ * variable range is the full 200-800 the design system draws on. The latin-ext
+ * and italic faces are declared but only fetched when a glyph or a style actually
+ * calls for them, which is why they are separate files rather than one merged face.
+ */
+
+@font-face {
+    font-family: "Atkinson Hyperlegible";
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url("atkinson-latin.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "Atkinson Hyperlegible";
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url("atkinson-latin-ext.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: "Atkinson Hyperlegible";
+    font-style: italic;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url("atkinson-latin-italic.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "Atkinson Hyperlegible";
+    font-style: italic;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url("atkinson-latin-ext-italic.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: "Atkinson Hyperlegible Mono";
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url("atkinson-mono-latin.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "Atkinson Hyperlegible Mono";
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url("atkinson-mono-latin-ext.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: "Atkinson Hyperlegible Mono";
+    font-style: italic;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url("atkinson-mono-latin-italic.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "Atkinson Hyperlegible Mono";
+    font-style: italic;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url("atkinson-mono-latin-ext-italic.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}

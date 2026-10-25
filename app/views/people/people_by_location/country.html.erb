@@ -1,0 +1,99 @@
+<%# One country: either the states it has people in, or the people themselves. %>
+<%
+  query = people_by_location_query(year: @year, participation: @participation,
+                                   statuses: @statuses)
+  country_label = people_by_location_country_label(@country)
+  page_label = @state ? people_by_location_state_label(@country, @state) : country_label
+
+  # Carried by every link on the page once a state is picked, so drilling,
+  # filtering, and exporting all stay inside it.
+  state_param = @state ? { state: @state } : {}
+  page_query = query.merge(state_param)
+
+  # A state page goes back to its own country's state list; everything else
+  # goes back to the countries index.
+  back_label, back_url =
+    if @state && PeopleByLocationReport.states?(@country)
+      [country_label, people_by_location_country_path(@country, query)]
+    else
+      ["All countries", people_by_location_path(query)]
+    end
+%>
+<% content_for :title, "#{page_label} People by Location" %>
+
+<%= hero_panel icon: "earth-americas", heading_level: :h1,
+               id: "people-by-location-country-header",
+               title: "#{@year} People in #{page_label}",
+               description: people_by_location_country_intro(@country, @show_states, @year),
+               back_to: [back_label, back_url] do |panel| %>
+  <%# keep: the selector posts a bare GET carrying only the year, so the state
+      and the filters ride along -- otherwise changing year would quietly drop
+      the reader back to the whole country with nothing filtered. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: page_query.except(:year) %>
+<% end %>
+
+<%= render "people/shared/privacy_notice",
+           shows: "home addresses#{" and email addresses" if can_view_email?}" %>
+
+<%= render "status_notice" %>
+
+<%= filter_bar id: "people-by-location-country-filters",
+               chips: people_by_location_chips(year: @year, participation: @participation,
+                                               statuses: @statuses) { |chip_query|
+                        people_by_location_country_path(@country,
+                                                        chip_query.merge(state_param))
+                      },
+               clear_url: people_by_location_country_path(@country,
+                                                          { year: @year }.merge(state_param)),
+               count: people_by_location_showing(@people.size, @show_states && @counts.size,
+                                                 @country),
+               # Above the split, so a country listing its states can still be
+               # exported whole -- otherwise the only way out is a state at a time.
+               actions: export_csv_link(people_by_location_country_path(@country,
+                                        page_query.merge(format: :csv)), "Export #{page_label} to CSV"),
+               url: people_by_location_country_path(@country) do |f| %>
+  <%# The year and the state ride along, or Apply would drop back to the current
+      year and out to the whole country. %>
+  <%= hidden_field_tag :year, @year %>
+  <% if @state %>
+    <%= hidden_field_tag :state, @state %>
+  <% end %>
+  <%= render "filter_fields", f: %>
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<% if @show_states %>
+  <% if @counts.any? %>
+    <div class="lg:w-3/4">
+      <% @counts.each do |state, count| %>
+        <%= ui_drill_down_row people_by_location_country_path(@country,
+                                                              query.merge(state:)),
+                              people_by_location_state_label(@country, state),
+                              meta: people_by_location_count(count) %>
+      <% end %>
+    </div>
+  <% elsif @filtered %>
+    <%= ui_empty_state "No one in #{country_label} matches these filters.",
+                       icon: "filter-circle-xmark", icon_type: :solid %>
+  <% else %>
+    <%= ui_empty_state "No one has an address in #{country_label}.",
+                       icon: "earth-americas", icon_type: :solid %>
+  <% end %>
+<% else %>
+  <% if @people.any? %>
+    <%# The state column is worth a column only where states are actually on
+        file: on a state page every row repeats the same one, and countries that
+        do not record a state would show a column of dashes. %>
+    <%= render "people_table", people: @people, country: @country, year: @year,
+               show_state: @state.nil? && @people.any? { |row| row.state.present? } %>
+  <% elsif @filtered %>
+    <%= ui_empty_state "No one in #{page_label} matches these filters.",
+                       icon: "filter-circle-xmark", icon_type: :solid %>
+  <% else %>
+    <%= ui_empty_state "No one has an address in #{page_label}.",
+                       icon: "earth-americas", icon_type: :solid %>
+  <% end %>
+<% end %>

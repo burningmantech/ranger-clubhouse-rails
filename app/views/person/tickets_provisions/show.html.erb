@@ -1,0 +1,119 @@
+<%
+  # Scope words and toggle links for the two show-all filters. Each toggle
+  # flips its own filter and preserves the other one.
+  document_scope = @showing_all_documents ? "" : "current "
+  document_toggle = person_tickets_provisions_path(@person,
+                                                   documents: @showing_all_documents ? nil : "all",
+                                                   provisions: @showing_all_provisions ? "all" : nil,
+                                                   anchor: "access-documents")
+  provision_toggle = person_tickets_provisions_path(@person,
+                                                    documents: @showing_all_documents ? "all" : nil,
+                                                    provisions: @showing_all_provisions ? nil : "all",
+                                                    anchor: "provisions")
+%>
+<%= hero_panel icon: "ticket", heading_level: :h1, id: "person-tickets-provisions-header",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Tickets &amp; Provisions &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<div class="flex justify-start gap-2">
+  <div class="border rounded px-2 py-1">
+    <div class="font-semibold">
+      Ticketing Period
+    </div>
+    <div>
+      <%= @ticketing_period.presence&.titleize || "Unknown" %>
+    </div>
+  </div>
+  <div class="border rounded px-2 py-1">
+    <div class="font-semibold">
+      Last visited Tickets & Stuff
+    </div>
+    <div>
+      <%= @person_event.ticketing_last_visited_at ? datetime_format(@person_event.ticketing_last_visited_at, year: true) : "Not yet" %>
+    </div>
+  </div>
+  <div class="border rounded px-2 py-1">
+    <div class="font-semibold">
+      Started ticketing
+    </div>
+    <div>
+      <%= @person_event.ticketing_started_at ? datetime_format(@person_event.ticketing_started_at, year: true) : "Not yet" %>
+    </div>
+  </div>
+  <div class="border rounded px-2 py-1">
+    <div class="font-semibold">
+      Finished ticketing
+    </div>
+    <div>
+      <%= @person_event.ticketing_finished_at ? datetime_format(@person_event.ticketing_finished_at, year: true) : "Not yet" %>
+    </div>
+  </div>
+</div>
+<div class="my-4">
+  <%= button_link "View Their Tickets & Stuff Page", :secondary,
+                  person_tickets_provisions_dashboard_path(@person),
+                  icon: "eye", icon_type: :solid %>
+</div>
+
+<%= ui_section "Access Documents", icon: "ticket", icon_type: :solid, id: "access-documents" do %>
+  <div class="me-muted">
+    Showing <%= pluralize(@documents.size, "#{document_scope}access document") %>.
+  </div>
+
+  <% if @documents.any? %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "ID" %>
+        <%= t.heading "Type" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Delivery" %>
+        <%= t.heading "Access Date" %>
+        <%= t.heading "Source Year", right: true %>
+        <%= t.heading "Expires After", right: true %>
+        <%= t.heading "Actions" %>
+      <% end %>
+      <%= t.body do %>
+        <% @documents.each do |document| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%= document.display_ref %>
+            <% end %>
+            <%= t.cell do %>
+              <%= document.type_label %>
+              <% if document.type == AccessDocument::SAPSO %>
+                <br>for <%= document.name.presence || "not given" %>
+              <% end %>
+            <% end %>
+            <%= t.cell document.status %>
+            <%= t.cell document.delivery_method_label %>
+            <%= t.cell access_date_label(document) %>
+            <%= t.cell document.source_year, right: true %>
+            <%= t.cell document.expiry_date&.year, right: true %>
+            <%= t.cell edit_link(edit_person_access_document_path(@person, document)) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No #{document_scope}access documents on file.", icon: "ticket", icon_type: :solid %>
+  <% end %>
+
+  <%= button_row class: "mt-4" do %>
+    <%= button_link "Add Access Document", :primary,
+                    new_person_access_document_path(@person),
+                    icon: "plus", icon_type: :solid %>
+    <%= button_link (@showing_all_documents ? "Show current documents" : "Show all documents"), :secondary,
+                    document_toggle %>
+  <% end %>
+<% end %>
+
+<%= render "person/provisions/section",
+           person: @person,
+           provisions: @provisions,
+           package: @provision_package,
+           showing_all: @showing_all_provisions,
+           origin: "tickets_provisions",
+           toggle_path: provision_toggle %>

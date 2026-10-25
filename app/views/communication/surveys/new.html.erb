@@ -1,0 +1,8 @@
+<% content_for :title, "New Survey" %>
+
+<%= hero_panel icon: "square-poll-vertical", heading_level: :h1, id: "survey-form-header",
+               title: "New Survey",
+               description: "Set who answers this survey and what it says; the questions come next.",
+               back_to: ["#{@year} Survey Management", communication_surveys_path(year: @year)] %>
+
+<%= render "form" %>

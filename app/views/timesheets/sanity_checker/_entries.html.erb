@@ -1,0 +1,73 @@
+<%#
+  A row per flagged entry. Two checks add a column of their own: "Shift ran too
+  long" shows the maximum it was measured against, and "Longer than the
+  scheduled shift" stacks the scheduled shift under the entry in the same cells
+  so the two can be read against each other without counting columns.
+
+  Locals: entries (Array<Timesheet>), check (Symbol)
+%>
+<% shows_max_hours = check == :too_long %>
+<% shows_shift = check == :too_long_for_shift %>
+<%# The one check whose two times are the wrong way round. datetime_context
+    drops the second date whenever it precedes the first, so the reversed
+    range renders as its two clocks on their own lines, each dated. %>
+<% reversed = check == :end_before_start %>
+
+<%= ui_table full_width: true, striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading "Position" %>
+    <%= t.heading shows_shift ? "Entry / shift" : (reversed ? "On duty / off duty" : "Time") %>
+    <%= t.heading shows_shift ? "Duration / shift length" : "Duration", right: true %>
+    <% if shows_max_hours %>
+      <%= t.heading "Max Hours", right: true %>
+    <% end %>
+    <% if shows_shift %>
+      <%= t.heading "Shift Description" %>
+    <% end %>
+  <% end %>
+  <%= t.body do %>
+    <% entries.each do |entry| %>
+      <%= t.row do %>
+        <%# Timesheet Management reads this report but cannot open the person
+            pages, so the callsign is a link only for readers who may follow
+            it -- otherwise every row is a link that bounces to /me. %>
+        <%# Linked to the person's timesheet for the report year, not to their
+            general page: that is where the flagged entry is corrected, and it
+            is where upstream's PersonLink pointed. %>
+        <%= t.row_header person_display_link(entry.person, entry.person_id,
+                                             path: entry.person &&
+                                                   person_timesheets_path(entry.person,
+                                                                          year: @year)) %>
+        <%= t.cell entry.position&.title || "Position ##{entry.position_id}" %>
+        <%= t.cell do %>
+          <% if reversed %>
+            <div><%= datetime_format(entry.on_duty) %></div>
+            <div><%= datetime_format(entry.off_duty) %></div>
+          <% else %>
+            <%= timesheet_entry_time(entry) %>
+          <% end %>
+          <% if shows_shift && entry.slot %>
+            <div class="text-stone-subtle"><%= timesheet_shift_time(entry.slot) %></div>
+          <% end %>
+        <% end %>
+        <%= t.cell right: true do %>
+          <%= timesheet_check_duration(entry.duration) %>
+          <% if shows_shift && entry.slot %>
+            <%# The same formatter for both, so the two numbers stacked in one
+                cell are in the same units. %>
+            <div class="text-stone-subtle">
+              <%= timesheet_check_duration(entry.slot.duration) %>
+            </div>
+          <% end %>
+        <% end %>
+        <% if shows_max_hours %>
+          <%= t.cell timesheet_check_max_hours(entry).to_s, right: true %>
+        <% end %>
+        <% if shows_shift %>
+          <%= t.cell entry.slot&.description || "—" %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

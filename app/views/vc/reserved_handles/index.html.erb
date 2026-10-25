@@ -1,0 +1,114 @@
+<% can_manage = can?(:manage_reserved_handles) %>
+
+<%= hero_panel icon: "ban", heading_level: :h1, id: "vc-reserved-handles-header",
+               title: "Reserved Handles" do |panel| %>
+  <% panel.description do %>
+    Handles that must not be issued as Ranger callsigns, for a set time or forever.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @total_count, "Handles" %>
+  <%= ui_stat_box @active_count, "Active" %>
+  <% if @expired_count.positive? %>
+    <%= ui_stat_box @expired_count, "Expired", variant: :warning %>
+  <% end %>
+<% end %>
+
+<%# What belongs on the list, out of the hero. It matters most when adding to
+    an empty list, so it is not guarded on rows. %>
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What belongs on this list?</dt>
+    <dd>
+      The Handle Checker reads this list &mdash; active and vintage Ranger callsigns are
+      brought in separately, so do not add them here.
+    </dd>
+  </dl>
+<% end %>
+
+<% if can_manage %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= button_link "Add Reserved Handle", :primary, new_vc_reserved_handle_path,
+                      icon: "plus", icon_type: :solid %>
+      <%= button_link "Bulk Upload", :secondary, upload_vc_reserved_handles_path,
+                      icon: "upload", icon_type: :solid %>
+      <% if @expired_count.positive? %>
+        <%= button_link "Delete Expired Handles", :secondary, expire_vc_reserved_handles_path,
+                        icon: "clock-rotate-left", icon_type: :solid,
+                        data: confirm_modal(
+                          title: "Delete Expired Handles",
+                          message: "Delete all #{pluralize(@expired_count, "expired handle")} now? This cannot be undone.",
+                          confirm_label: "Delete Expired",
+                          method: :post,
+                          variant: :error
+                        ) %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= filter_bar id: "reserved-handle-filters",
+               chips: reserved_handle_filter_chips(@filter_params),
+               clear_url: vc_reserved_handles_path,
+               count: "Showing #{pluralize(@reservations.size, "handle")} of #{@total_count}",
+               url: vc_reserved_handles_path do |f| %>
+  <%= form_row do %>
+    <%= f.select :reservation_type,
+                 reserved_handle_type_filter_options,
+                 label: "Type",
+                 selected: @filter_params[:reservation_type],
+                 width: "w-full",
+                 wrapper_class: "flex-1" %>
+    <%= f.select :status,
+                 reserved_handle_status_filter_options,
+                 label: "Status",
+                 selected: @filter_params[:status],
+                 width: "w-full",
+                 wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<% if @reservations.empty? %>
+  <% if @total_count.zero? %>
+    <%= ui_empty_state "No handles have been reserved yet.", icon: "ban", icon_type: :solid %>
+  <% else %>
+    <%= ui_empty_state "No handles matched the current filters.", icon: "magnifying-glass", icon_type: :solid %>
+  <% end %>
+<% else %>
+  <%= ui_table do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Handle / Term" %>
+      <%= t.heading "Type" %>
+      <%= t.heading "TWII Year" %>
+      <%= t.heading "Expires On" %>
+      <%= t.heading "Reason" %>
+      <% if can_manage %>
+        <%= t.heading "Actions", right: true %>
+      <% end %>
+    <% end %>
+    <%= t.body do %>
+      <% @reservations.each do |reservation| %>
+        <%= t.row id: "reserved-handle-#{reservation.id}" do %>
+          <%= t.cell reservation.handle %>
+          <%= t.cell reservation.type_label %>
+          <%= t.cell value_or_dash(reservation.twii_year) %>
+          <%= t.cell expires_on_cell(reservation, fallback: "never") %>
+          <%= t.cell value_or_dash(reservation.reason) %>
+          <% if can_manage %>
+            <%= t.cell right: true do %>
+              <%= edit_link edit_vc_reserved_handle_path(reservation), "",
+                            title: "Edit", aria: { label: "Edit #{reservation.handle}" },
+                            class: "btn-square" %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

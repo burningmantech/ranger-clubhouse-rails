@@ -1,0 +1,14 @@
+<%# locals: (stage:, review:) %>
+<%# Render with `layout:`; the block is the stage body. %>
+<% summary = capture do %>
+  <%= vc_stage_badge(stage) %>
+  <span class="font-semibold text-base text-heading"><%= stage.title %></span>
+  <span class="grow text-sm text-stone-muted lg:text-right"><%= stage.summary %></span>
+  <%= fa_icon "chevron-down", :solid, class: "vc-stage-chevron text-stone-icon" %>
+<% end %>
+<%= ui_accordion summary, unstyled: true, open: review.open?(stage),
+                 id: "stage-#{stage.key}", class: "box box-default vc-stage",
+                 summary_class: "vc-stage-summary", content_class: "vc-stage-body",
+                 data: { vc_stages_target: "stage" } do %>
+  <%= yield %>
+<% end %>

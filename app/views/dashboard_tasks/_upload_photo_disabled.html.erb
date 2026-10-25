@@ -1,0 +1,7 @@
+<%# locals: (step:,facts:)%>
+<% if [DashboardTask::BEFORE_EVENT, DashboardTask::DURING_EVENT].include?(facts.period) %>
+  <b>Photo uploads closed</b> — BMIDs are being printed.
+<% else %>
+  <b>Photo uploads closed</b> — reopens early November.
+<% end %>
+<p class="mt-2">Need help? Email <%= mail_to EmailAddresses::VOLUNTEER_COORDINATORS_TEAM %></p>

@@ -1,0 +1,23 @@
+<%# locals: (type:, info:, during_event:, sandboxes:, test_address:) %>
+<%# What a sender should know before writing: how serious this kind of
+    broadcast is, whether the event is running, and whether anything is being
+    recorded instead of delivered. %>
+<% if info[:note].present? %>
+  <%= ui_callout_box info[:variant] == :secondary ? :info : info[:variant],
+                     title: type == Broadcast::TYPE_EMERGENCY ? "Use only in an emergency" : nil,
+                     icon: info[:icon], icon_type: :solid do %>
+    <%= info[:note] %>
+    <% if type == Broadcast::TYPE_EMERGENCY %>
+      Your words may end up on the front page of a newspaper.
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if rbs_type_on_playa?(type) && !during_event %>
+  <%= ui_callout_box :warning, icon: "calendar-xmark", icon_type: :solid do %>
+    <strong>The event has not started.</strong>
+    This broadcast reaches the people who are on site, so it may reach almost no one right now.
+  <% end %>
+<% end %>
+
+<%= render "common/rbs/sandbox_notice", sandboxes:, test_address: %>

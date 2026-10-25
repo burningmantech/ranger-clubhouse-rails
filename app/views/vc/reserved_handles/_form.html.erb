@@ -1,0 +1,53 @@
+<% is_twii = @reservation.twii_person? %>
+
+<%= ui_form(@reservation,
+            @reservation.persisted? ? vc_reserved_handle_path(@reservation) : vc_reserved_handles_path) do |f| %>
+  <%= f.fieldset "Reserved Handle Details", icon: "ban", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What does the type do?</dt>
+      <dd>It tells the Handle Checker why the handle is reserved.</dd>
+      <dt>When does a reservation end?</dt>
+      <dd>On its expiration date. Leave the date blank to reserve the handle indefinitely.</dd>
+    </dl>
+
+    <%= form_row do %>
+      <%= f.text_field :handle, label: "Handle / Term", required: true,
+                       maxlength: 100, show_counter: true, width: "w-full sm:w-64" %>
+      <%= f.select :reservation_type,
+                   reserved_handle_type_options,
+                   label: "Type", required: true, width: "w-full sm:w-64",
+                   data: {
+                     controller: "conditional-show",
+                     conditional_show_id_value: "reserved-handle-twii-year",
+                     conditional_show_reveal_value: HandleReservation::RESERVATION_TYPE_TWII_PERSON
+                   } %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.date_field :expires_on, label: "Expires On", width: "w-full sm:w-44",
+                       help_text: "Optional. Leave blank to reserve indefinitely." %>
+      <%= f.number_field :twii_year, label: "TWII Year",
+                         wrapper_id: "reserved-handle-twii-year",
+                         hidden: !is_twii,
+                         width: "w-full sm:w-28",
+                         help_text: "Required for TWII entries. When Expires on is blank, it is set to #{reserved_handle_twii_default_date}." %>
+    <% end %>
+
+    <%= f.text_area :reason, label: "Reason", maxlength: 255, show_counter: true, rows: 2,
+                    help_text: "Optional. Shown when the Handle Checker reports a conflict with this handle." %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Reserved Handle" %>
+    <%= cancel_link vc_reserved_handles_path %>
+    <% if @reservation.persisted? %>
+      <%= delete_button vc_reserved_handle_path(@reservation),
+                        confirm_modal: {
+                          title: "Confirm Reserved Handle Deletion",
+                          message: "Delete the reserved handle \"#{@reservation.handle}\"? This cannot be undone.",
+                          confirm_label: "Delete Handle",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

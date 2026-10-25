@@ -1,0 +1,75 @@
+<%#
+  One check's findings, and the form that settles the ones you pick.
+
+  One form for the whole page, including the two grouped checks: what a repair
+  grants or revokes comes from the finding the server recomputes, not from the
+  form, so a section per position or team needs no button of its own.
+%>
+<% meta = position_check_meta(@check) %>
+<% content_for :title, meta[:label] %>
+
+<%= hero_panel icon: meta[:icon], heading_level: :h1,
+               id: "position-check-#{@check.to_s.dasherize}-header",
+               title: meta[:label],
+               back_to: ["Position Sanity Checker",
+                         teams_positions_position_sanity_checker_path] do |panel| %>
+  <% panel.description do %>
+    <%= meta[:blurb] %>
+  <% end %>
+<% end %>
+
+<%= render "results" if @results %>
+
+<% if @findings.any? %>
+  <%# A check this large is almost always one misconfigured position rather
+      than a thousand individual mistakes, so the callout says where to look
+      before offering the list. %>
+  <% if @truncated %>
+    <%= ui_callout_box :warning, icon: "list-ol", icon_type: :solid,
+                       title: "Showing the First #{@findings.size}" do %>
+      This check found more rows than one page can repair at once. Settle these,
+      then reload for the next batch — and if the number is not going down,
+      look at the position or team settings behind the check rather than the
+      accounts.
+    <% end %>
+  <% end %>
+
+  <div class="my-4">
+    <%= position_check_badge(@findings.size) %>
+  </div>
+
+  <%= ui_form(nil, position_check_repair_path(@check),
+              method: :post, local: true, no_error_summary: true) do |f| %>
+    <%= bulk_select do %>
+      <%= bulk_select_all label: "Select everything shown" %>
+
+      <% if PositionSanityCheck.grouped?(@check) %>
+        <% @findings.group_by(&:group_id).each do |_id, group| %>
+          <%= ui_section group.first.group_label, border: false do %>
+            <%= render "findings_table", check: @check, findings: group %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <%= render "findings_table", check: @check, findings: @findings %>
+      <% end %>
+
+      <%# What the blurb used to say after its first sentence. It is what the
+          button below will do, so it stays in plain sight beside it rather than
+          folding into a card -- and carries the button's own icon. %>
+      <%= ui_callout_box :info, icon: "wrench", icon_type: :solid, accent: true, class: "my-4" do %>
+        <%= meta[:repair] %>
+      <% end %>
+
+      <%= button_row do %>
+        <%= button_action meta[:action], :primary,
+                          type: "submit", icon: "wrench", icon_type: :solid,
+                          data: { checkbox_select_all_target: "submit" } %>
+        <%= button_link "Back to the Board", :secondary,
+                        teams_positions_position_sanity_checker_path,
+                        icon: "arrow-left", icon_type: :solid %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state meta[:empty], icon: "circle-check", icon_type: :solid %>
+<% end %>

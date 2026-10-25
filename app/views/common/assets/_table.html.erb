@@ -1,0 +1,85 @@
+<%# locals: (person_assets:, allow_attachment_change:, row_actions: nil) %>
+<%# Shared asset checkout table (extracted from the person assets page;
+    upstream: port/components/hq-asset-table.hbs). Check-in and
+    change-attachment targets come from the AssetManagementConcern path
+    helpers. row_actions names an optional partial (rendered with an
+    person_asset: local) for includer-specific buttons in a trailing
+    Actions column — the person page adds History and admin Delete there. %>
+<%= ui_table full_width: false do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Type" %>
+    <%= t.heading "Barcode" %>
+    <%= t.heading "Attachment", class: "text-center" %>
+    <%= t.heading "Assign" %>
+    <%= t.heading "Checked Out / By" %>
+    <%= t.heading "Checked In / By" %>
+    <%= t.heading "Duration" %>
+    <% if row_actions %>
+      <%= t.heading "Actions" %>
+    <% end %>
+  <% end %>
+  <%= t.body do %>
+    <% person_assets.each do |person_asset| %>
+      <%= t.row do %>
+        <%= t.cell person_asset.asset.type %>
+        <%= t.cell person_asset.asset.barcode %>
+        <%= t.cell do %>
+          <%= person_asset.attachment&.description || "—" %>
+          <% if allow_attachment_change && person_asset.checked_in.nil? %>
+            <div class="mt-2">
+              <%= button_link "Change Attachment",
+                              :secondary,
+                              assets_change_attachment_path(person_asset),
+                              data: { turbo_stream: true } %>
+            </div>
+          <% end %>
+        <% end %>
+        <%= t.cell class: "text-center" do %>
+          <%= render "common/assets/duration_label", asset: person_asset.asset %>
+        <% end %>
+        <%= t.cell do %>
+          <div>
+            <%= datetime_format(person_asset.checked_out) %>
+          </div>
+          <div>
+            <% if person_asset.check_out_person %>
+              <%= callsign_link person_asset.check_out_person %>
+            <% else %>
+              —
+            <% end %>
+          </div>
+        <% end %>
+        <%= t.cell do %>
+          <% if person_asset.checked_in %>
+            <div>
+              <%= datetime_format(person_asset.checked_in) %>
+            </div>
+            <div>
+              <% if person_asset.check_in_person %>
+                <%= callsign_link person_asset.check_in_person %>
+              <% else %>
+                —
+              <% end %>
+            </div>
+          <% else %>
+            <%= ui_badge "checked out", :warning %>
+            <div class="mt-2">
+              <%= button_link "Check In",
+                              :primary,
+                              assets_check_in_path(person_asset),
+                              method: :patch %>
+            </div>
+          <% end %>
+        <% end %>
+        <%= t.cell hour_minute_words(person_asset.duration) %>
+        <% if row_actions %>
+          <%= t.cell right: true do %>
+            <%= button_row do %>
+              <%= render row_actions, person_asset: person_asset %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

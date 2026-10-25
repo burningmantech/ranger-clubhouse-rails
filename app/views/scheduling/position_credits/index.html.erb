@@ -1,0 +1,41 @@
+<%= hero_panel icon: "coins", heading_level: :h1, id: "scheduling-position-credits-header",
+               title: "#{@year} Position Credits" do |panel| %>
+  <% panel.description do %>
+    Set how many credits each hour of a shift earns, per position and time range.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2012, skip_pandemic: true %>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= button_link "Add Position Credit", :primary, scheduling_new_position_credit_path(year: @year),
+                    icon: "plus", icon_type: :solid %>
+    <% if @total_credits.positive? %>
+      <%= button_link "Copy Position Credits", :secondary, scheduling_new_position_credit_copy_path(year: @year),
+                      icon: "copy" %>
+      <%= export_csv_link(scheduling_position_credits_path(year: @year, format: :csv)) %>
+    <% end %>
+  <% end %>
+</div>
+
+<% if @groups.any? %>
+  <div class="text-lg">
+    Showing <%= pluralize @groups.size, "position" %> with <%= pluralize @total_credits, "position credit" %>
+  </div>
+  <div class="lg:w-3/4">
+    <% @groups.each do |group| %>
+      <%= ui_drill_down_row scheduling_position_credits_position_path(group[:position_id], year: @year),
+                            group[:title],
+                            meta: pluralize(group[:count], "credit"),
+                            badges: (if group[:orphan]
+                                       ui_badge "position deleted", :error, size: "base",
+                                                icon: "triangle-exclamation", icon_type: :solid
+                                     end) %>
+    <% end %>
+  </div>
+<% else %>
+  <%= ui_empty_state nil, icon: "coins", icon_type: :solid do %>
+    No position credits were found for <%= @year %>.
+    To copy credits from a previous year, select that year above.
+  <% end %>
+<% end %>

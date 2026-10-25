@@ -1,0 +1,216 @@
+<%# locals: (group:, submitted:, result:, pass_offers:) %>
+<%#
+  One mentoring shift: the window it lists, the mentors on it, and its mentees,
+  each with a mentor, a result and notes, saved together, in any year (ruled
+  2026-10-22: a past year's walks are recorded and corrected here too). A
+  reader without the trainer role gets the same table with nothing to change.
+  `submitted` holds what a refused or questioned save sent, so the reader keeps
+  their edits; `pass_offers` is the pass question that save is waiting on.
+%>
+<% editable = can_manage_session? %>
+<% mentee_title = @shifts.mentee_position.title %>
+<% row_errors = result&.row_errors || {} %>
+<%# What a recorded pass can still grant, for the rows already passed. %>
+<% pass_left = editable ? @shifts.pass.offers(group.passed) : {} %>
+
+<% refusal = if result&.conflict
+               "Someone else saved this shift at the same moment. Check the rows below, then save again to record " \
+                 "your changes."
+             elsif result&.denied
+               "#{result.denied} Record the pass without that grant, or ask someone who may make it."
+             elsif row_errors.any?
+               "#{pluralize(row_errors.size, "row")} below still #{row_errors.one? ? "needs" : "need"} fixing. " \
+                 "The shift is saved as a whole, so no part of it was written."
+             end %>
+<% if refusal %>
+  <%= ui_callout_box :error, accent: true, class: "my-4", title: "Nothing Was Recorded" do %><%= refusal %>
+  <% end %>
+<% end %>
+
+<% if group.unmatched? %>
+  <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid, accent: true, class: "my-4" do %>
+    <strong>No <%= mentee_title %> shift starts within an hour of these sign-ins.</strong>
+    Mentees who signed in between <%= art_mentoring_window(group) %> are listed. Their entries may need correcting.
+  <% end %>
+<% else %>
+  <%= ui_callout_box :success, icon: "flag", icon_type: :solid, accent: true, class: "my-4" do %>
+    <strong><%= mentee_title %> &mdash; <%= datetime_format(group.begins, group.ends) %>.</strong>
+    Mentees signed in to this shift, or between <%= art_mentoring_window(group) %>, are listed.
+  <% end %>
+<% end %>
+
+<% unless editable %>
+  <%= ui_callout_box :info, class: "my-4" do %>
+    You can read this shift but not record it. Recording needs the <%= @training.title %> trainer role.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box group.mentee_entries.size.to_s, "Mentees", icon: "user-group", icon_type: :solid %>
+  <%= ui_stat_box group.mentors.size.to_s, "Mentors on Shift", icon: "user-check", icon_type: :solid %>
+  <%= art_need_mentor_box(group.needing_mentor.size) %>
+  <%= art_awaiting_verdict_box(group.awaiting_verdict.size) %>
+<% end %>
+
+<%# How to record the shift: nothing to say to a reader who cannot. %>
+<% if editable %>
+  <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Who can I pick as a mentor?</dt>
+      <dd>
+        The mentors signed in around this shift come first, then everyone else holding the
+        <%= @shifts.mentor_position&.title || "mentor" %> position. A mentee may have up to
+        <%= ArtMentoring::Assignment::MENTOR_SLOTS %> mentors, and a mentor may take several mentees.
+      </dd>
+      <dt>Can I pair a mentor now and record the result later?</dt>
+      <dd>
+        Yes. Save with the result left at <%= mentor_result_label(PersonMentor::STATUS_PENDING) %>, and come back once
+        the shift is over.
+      </dd>
+      <dt>How do I undo a pairing?</dt>
+      <dd>
+        Set every mentor to <%= MentorHelper::NO_MENTOR %>, leave the result at
+        <%= mentor_result_label(PersonMentor::STATUS_PENDING) %> and the notes empty, and save.
+      </dd>
+      <dt>What else happens when I record a pass?</dt>
+      <dd>
+        Someone with the <%= @training.title %> graduate role is asked whether to add the mentee to the
+        <%= @shifts.pass.team&.title || "team" %> with its Recommended positions, and to revoke
+        <%= @shifts.pass.revoked_positions.map(&:title).to_sentence %>.
+        Without that role the pass is recorded alone, and a graduate can finish it later with
+        <%= Training::MentoringHelper::GRANT_TEAM_POSITIONS %>.
+      </dd>
+    </dl>
+  <% end %>
+<% end %>
+
+<%= ui_section "Mentors on Shift", icon: "user-check", icon_type: :solid, border: false do %>
+  <% if group.mentor_entries.empty? %>
+    <%= ui_empty_state "No mentor has signed in around this shift.", icon: "user-check", icon_type: :solid %>
+  <% else %>
+    <%= ui_table striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Mentor" %>
+        <%= t.heading "Signed In" %>
+        <%= t.heading "Duration", right: true %>
+        <%= t.heading "Mentees This Shift", right: true %>
+      <% end %>
+      <%= t.body do %>
+        <% group.mentor_entries.each do |entry| %>
+          <%= t.row do %>
+            <%= t.row_header do %><%= person_display_link entry.person, entry.person_id %>
+            <% end %>
+            <%= t.cell datetime_format(entry.on_duty), class: "whitespace-nowrap" %>
+            <%= t.cell art_mentoring_duration(entry), right: true, class: "whitespace-nowrap" %>
+            <%= t.cell group.mentee_count_for(entry.person), right: true %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% mentees = capture do %>
+  <%= ui_section "Mentees", icon: "person-walking", icon_type: :solid, border: false, class: "mt-6",
+                 badge: group.mentee_entries.size.to_s do %>
+    <%# Not striped: an error row follows the row it describes. %>
+    <%= ui_table full_width: true, striped: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Mentee" %>
+        <%= t.heading "Signed In" %>
+        <%= t.heading "Duration", right: true %>
+        <%= t.heading "Mentors" %>
+        <%= t.heading "Result" %>
+      <% end %>
+      <%= t.body do %>
+        <% group.mentee_entries.each do |entry| %>
+          <% walk = group.walk_for(entry) %>
+          <% typed = submitted&.dig(entry.id) %>
+          <% picked = typed ? typed.mentor_ids : walk&.mentor_ids || [] %>
+          <% error = row_errors[entry.id] %>
+          <% callsign = entry.person.callsign %>
+          <%# The fields share one name scheme, so each carries an explicit
+              id: Turbo's morph drops fields whose ids collide. %>
+          <%= t.row id: "walk-#{entry.id}", state: (:error if error) do %>
+            <%= t.row_header do %>
+              <%= person_display_link entry.person, entry.person_id %>
+            <% end %>
+            <%= t.cell datetime_format(entry.on_duty), class: "whitespace-nowrap" %>
+            <%= t.cell art_mentoring_duration(entry), right: true, class: "whitespace-nowrap" %>
+            <%# One select per mentor slot, as the Alpha roster has them. %>
+            <%= t.cell do %>
+              <div class="space-y-2">
+                <% ArtMentoring::Assignment::MENTOR_SLOTS.times do |i| %>
+                  <div>
+                    <%= select_tag "walks[#{entry.id}][mentor_ids][]",
+                                   art_mentor_choices(group, @shifts.mentor_holders, entry, picked[i]),
+                                   id: "walk-#{entry.id}-mentor-#{i + 1}", disabled: !editable,
+                                   class: "#{AppFormBuilder::SELECT_CLASSES} min-w-36",
+                                   aria: { label: "Mentor #{i + 1} for #{callsign}" } %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+            <%= t.cell do %>
+              <%= select_tag "walks[#{entry.id}][status]",
+                             options_for_select(mentor_result_options,
+                                                typed ? typed.status : walk&.status || PersonMentor::STATUS_PENDING),
+                             id: "walk-#{entry.id}-status", disabled: !editable,
+                             class: "#{AppFormBuilder::SELECT_CLASSES} min-w-32",
+                             aria: { label: "Result for #{callsign}" } %>
+              <%# A recorded pass that has not yet joined them to the team or
+                  revoked the mentee position: a graduate can finish it here. %>
+              <% if editable && pass_left.key?(entry.id) %>
+                <% if can_graduate? %>
+                  <div class="mt-2">
+                    <%= button_action Training::MentoringHelper::GRANT_TEAM_POSITIONS, :secondary,
+                                      type: "submit", name: "grant_for", value: entry.id,
+                                      icon: "user-plus", icon_type: :solid,
+                                      aria: { label: "#{Training::MentoringHelper::GRANT_TEAM_POSITIONS} for #{callsign}" } %>
+                  </div>
+                <% else %>
+                  <br><span class="text-stone-muted">A <%= @training.title %> graduate can add them to the team.</span>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+          <%# Notes on their own line under the mentee. basis-full: below the
+              fold the cell is a flex item, and colspan means nothing there. %>
+          <%= t.row id: "walk-#{entry.id}-notes-row", state: (:error if error) do %>
+            <%= t.cell colspan: 5, class: "basis-full" do %>
+              <%= label_tag "walk-#{entry.id}-notes", "Notes", class: AppFormBuilder::LABEL_CLASSES %>
+              <%= text_area_tag "walks[#{entry.id}][notes]", typed ? typed.notes : walk&.notes,
+                                id: "walk-#{entry.id}-notes", rows: 4, disabled: !editable,
+                                maxlength: ArtMentoring::Assignment::NOTES_MAX,
+                                class: AppFormBuilder::TEXTAREA_CLASSES,
+                                aria: { label: "Notes for #{callsign}" } %>
+            <% end %>
+          <% end %>
+          <% if error %>
+            <%= t.row id: "walk-#{entry.id}-error", state: :error do %>
+              <%= t.cell colspan: 5 do %>
+                <span class="text-error"><%= fa_icon "triangle-exclamation", :solid, end: 2 %><%= error %></span>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if editable %>
+  <%= ui_form nil, training_mentoring_assignment_shift_path(training_slug, group.key, year: @year),
+              method: :post, local: true, no_error_summary: true, data: { controller: "unsaved-changes" } do |f| %>
+    <%# First in the form, so Record Pass is its default button: Enter on a
+        dialog check box presses it, not an earlier Grant Team Positions. %>
+    <%= render "pass_dialog", f:, offers: pass_offers if pass_offers.any? %>
+    <%= mentees %>
+    <%= button_row do %>
+      <%= f.submit "Save This Shift", data: { turbo_submits_with: "Recording…" } %>
+      <%= cancel_link training_mentoring_assignment_path(training_slug, year: @year) %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= mentees %>
+<% end %>

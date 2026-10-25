@@ -1,0 +1,17 @@
+<%# locals: (step:,facts:)%>
+<% if facts.timesheets_unverified.positive? %>
+  <p><%= fa_icon "clock", :solid %> <b><%= pluralize facts.timesheets_unverified, "entry" %></b> needs verification.</p>
+<% elsif !facts.timesheet_confirmed %>
+  Final confirmation is still outstanding.
+<% end %>
+
+<% if facts.period == DashboardTask::AFTER_EVENT %>
+  <%= ui_callout_box :error, accent: true do %>
+    <p class="font-bold">
+      <%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %>
+      DEADLINE: Oct 1st, 11:59 PM Pacific
+    </p>
+    <p class="text-sm">Without this, your ranger hours won't count!</p>
+  <% end %>
+<% end %>
+<%= link_to "Go To Timesheets", me_timesheet_dashboard_path, class: "tap-target-link" %>

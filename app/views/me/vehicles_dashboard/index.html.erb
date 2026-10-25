@@ -1,0 +1,51 @@
+<% dashboard = @vehicle_dashboard %>
+
+<%= hero_panel icon: "car-side", id: "vehicle-dashboard-header", heading_level: :h1,
+               title: "Vehicle Dashboard",
+               description: "Manage your Motor Vehicle Record (MVR) and Personal Vehicle Requests (PVR) for #{Current.year}.",
+               back_to: :dashboard %>
+
+<div class="mt-4">
+  <% if dashboard.mvr_deadline_passed? && !dashboard.mvr_approved? %>
+    <%= ui_callout_box :error do %>
+      <h2 id="deadline-alert-title" class="heading-section mb-2">
+        MVR Deadline Missed
+      </h2>
+      <p>
+        Deadline: <%= full_datetime_format dashboard.mvr_deadline %> (Pacific)
+      </p>
+      You may not drive any larger Ranger vehicle (trucks &amp; SUVs) on behalf of the Rangers.
+      This includes your personal vehicle.
+    <% end %>
+  <% elsif dashboard.motorpool_agreement_signed? %>
+    <div class="stack-to-row-lg" role="list" aria-label="Vehicle request sections">
+      <div class="flex-1" role="listitem">
+        <%= render partial: "mvr_info", locals: { dashboard:  } %>
+      </div>
+      <div class="flex-1" role="listitem">
+        <%= render partial: "pvr_info", locals: { dashboard:  } %>
+      </div>
+    </div>
+  <% else %>
+    <div class="bg-error/10 border border-line rounded-xl shadow-sm p-8 text-center max-w-2xl mx-auto my-12"
+         role="region"
+         aria-labelledby="agreement-required-title">
+      <%= render "common/status_medallion", icon: "file-signature", state: :error, size: :lg %>
+
+      <h2 id="agreement-required-title" class="heading-section text-heading mb-4">
+        Action Required: Vehicle Use Protocol Signature
+      </h2>
+
+      <p class="text-lg me-muted mb-8 max-w-md mx-auto">
+        You must sign the <strong>Vehicle Use Agreement</strong> before you can submit any MVR Requests or Personal
+        Vehicle Requests.
+      </p>
+
+      <%= button_link nil, :error, me_agreements_path,
+                      size: "lg",
+                      "aria-label": "Review and sign the Vehicle Use Protocol Agreement" do %>
+        Review and Sign Agreement <%= fa_icon "arrow-right", :solid %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,152 @@
+<%#
+  Pick this year's Alphas, print an acceptance form for each. Ported from
+  upstream Ember mentor/acceptance-sheets: the same roster, the same Errors
+  checks, and the same all-selected-by-default table. Filtering and selection
+  are server-side here, and the issues filter is this page's own addition.
+%>
+<% content_for :title, "Alpha Acceptance Sheets" %>
+<%= hero_panel icon: "file-signature", heading_level: :h1, id: "acceptance-sheets-header",
+               title: "Alpha Acceptance Sheets" do |panel| %>
+  <% panel.description do %>
+    Print the form the mentor cadre signs to accept an Alpha into the Rangers, one page each.
+  <% end %>
+<% end %>
+
+<% if @total.zero? %>
+  <%= ui_empty_state "No one holds Alpha status right now, so there are no acceptance forms to print.",
+                     icon: "file-signature", icon_type: :solid %>
+<% else %>
+  <%# The stat boxes count every Alpha; the filter bar's count line below
+      reports how many are on screen. They differ only while a filter is on. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @total.to_s, "Alphas", icon: "user-group", icon_type: :solid %>
+    <%= ui_stat_box (@total - @issue_count).to_s, "Ready to print",
+                    variant: :success, icon: "circle-check", icon_type: :solid %>
+    <%= ui_stat_box @issue_count.to_s, "Need Attention",
+                    variant: @issue_count.positive? ? :warning : :success,
+                    icon: "triangle-exclamation", icon_type: :solid %>
+  <% end %>
+
+  <%# Out of the hero: what a form carries, and how the selection starts. %>
+  <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What is on each form?</dt>
+      <dd>
+        Each form carries their training, their shift, and every note the VC, Training, and Mentor
+        teams have written.
+      </dd>
+      <dt>Who gets printed?</dt>
+      <dd>Everyone is selected to start; clear anyone you are not printing for.</dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "acceptance-sheets-filters",
+                 chips: alpha_acceptance_filter_chips(@filter_params, @alpha_slots),
+                 clear_url: mentoring_alpha_acceptance_sheets_path,
+                 count: "Showing #{@entries.size} of #{pluralize(@total, "Alpha")}",
+                 url: mentoring_alpha_acceptance_sheets_path do |f| %>
+    <%= form_row do %>
+      <%= f.select :shift, alpha_acceptance_shift_options(@alpha_slots),
+                   label: "Mentor Shift", selected: @filter_params[:shift],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :issues, alpha_acceptance_issues_options,
+                   label: "Issues", selected: @filter_params[:issues],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <% if @entries.empty? %>
+    <%= ui_empty_state "No Alphas matched those filters.",
+                       icon: "magnifying-glass", icon_type: :solid %>
+  <% else %>
+    <%# A second GET form, sibling to the filter bar's: HTML cannot nest forms,
+        and this one carries the selection. The filters ride along as hidden
+        fields so the printed sheets can link back to the view they came from. %>
+    <%= ui_form nil, mentoring_alpha_acceptance_sheets_print_path,
+                method: :get, local: true, no_error_summary: true do |f| %>
+      <%# id: nil -- the filter bar's own selects already own #shift and
+          #issues, and a duplicate id is what let Turbo's morph silently drop
+          fields in the Reserved Handles page. The server reads names. %>
+      <%= hidden_field_tag :shift, @filter_params[:shift], id: nil %>
+      <%= hidden_field_tag :issues, @filter_params[:issues], id: nil %>
+
+      <%= bulk_select do %>
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <%= bulk_select_all label: "Select every Alpha listed", selected: @entries.size %>
+          <%= button_row do %>
+            <%= f.submit "Print Selected", data: { checkbox_select_all_target: "submit" } %>
+          <% end %>
+        </div>
+
+        <%= ui_table full_width: true, striped: true do |t| %>
+          <%= t.header do %>
+            <%= t.heading "Select", width: "1%" %>
+            <%= t.heading "Callsign" %>
+            <%= t.heading "Name" %>
+            <%= t.heading "Training" %>
+            <%= t.heading "Mentor Shift" %>
+            <%= t.heading "Issues" %>
+          <% end %>
+          <%= t.body do %>
+            <% @entries.each do |entry| %>
+              <% person = entry.person %>
+              <%# Everyone starts selected, issues and all -- upstream's
+                  default. An Alpha with a problem is still walked, and
+                  silently dropping them from the stack is the worse surprise.
+                  The Issues column and the filter are how they get noticed. %>
+              <%= t.row id: "acceptance-row-#{person.id}" do %>
+                <%= t.cell do %>
+                  <%= bulk_select_checkbox "person_ids[]", person.id, checked: true,
+                                           id: "acceptance-check-#{person.id}",
+                                           aria_label: "Print an acceptance form for #{person.callsign}" %>
+                <% end %>
+                <%= t.row_header callsign_link(person) %>
+                <%= t.cell person.desired_full_name %>
+                <%= t.cell do %>
+                  <% if entry.trainings.empty? %>
+                    <span class="text-stone-muted">None</span>
+                  <% else %>
+                    <% entry.trainings.each do |training| %>
+                      <div><%= alpha_acceptance_training_label(training) %></div>
+                    <% end %>
+                  <% end %>
+                <% end %>
+                <%= t.cell do %>
+                  <% if entry.alpha_slots.empty? %>
+                    <span class="text-stone-muted">None</span>
+                  <% else %>
+                    <% entry.alpha_slots.each do |slot| %>
+                      <div><%= alpha_acceptance_slot_label(slot) %></div>
+                    <% end %>
+                  <% end %>
+                <% end %>
+                <%= t.cell do %>
+                  <% if entry.issues? %>
+                    <div class="text-error font-semibold">
+                      <%= fa_icon "ban", :solid, end: 2 %>
+                      <% entry.issues.each do |issue| %>
+                        <div><%= issue %></div>
+                      <% end %>
+                    </div>
+                  <% else %>
+                    <span class="text-success">
+                      <%= fa_icon "circle-check", :solid, end: 2 %>None
+                    </span>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+
+        <%= button_row do %>
+          <%= f.submit "Print Selected", data: { checkbox_select_all_target: "submit" } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

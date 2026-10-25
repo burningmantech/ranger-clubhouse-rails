@@ -1,0 +1,63 @@
+<%= hero_panel icon: "message", heading_level: :h1, id: "person-banners-header",
+               description: "Create, update, and remove internal account banner messages for this person.",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Manage Account Banners &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= ui_callout_box :warning, title: "Who Sees Banners" do %>
+  Who can see these banners? Account banner messages are visible to anyone with Event Management On Playa or Event Management permissions.
+  This includes HQ Window volunteers who check the person in and out, Mentors, Volunteer Coordinators, and other
+  groups authorized to look up accounts.
+<% end %>
+
+<%= ui_callout_box :error, accent: true, icon: "eye-slash" do %>
+  The person will not see this message.
+<% end %>
+
+<div class="mb-3">
+  <%= button_link "Add Banner", :primary, new_person_banner_path(@person), icon: "plus", icon_type: :solid %>
+</div>
+
+<%= ui_section "Existing Banners", icon: "message", icon_type: :solid, badge: @person_banners.size.to_s do %>
+  <% if @person_banners.any? %>
+    <%= ui_table responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Type" %>
+        <%= t.heading "Posted" %>
+        <%= t.heading "Message" %>
+        <%= t.heading "Actions", right: true %>
+      <% end %>
+      <%= t.body do %>
+        <% @person_banners.each do |banner| %>
+          <%= t.row do %>
+            <%= t.cell do %>
+              <% if banner.is_permanent? %>
+                <%= ui_badge "Permanent", :warning %>
+              <% else %>
+                <%= ui_badge "Event only", :secondary %>
+              <% end %>
+            <% end %>
+            <%= t.cell(datetime_format(banner.updated_at || banner.created_at)) %>
+            <%= t.cell do %>
+              <div class="whitespace-pre-line"><%= banner.message %></div>
+            <% end %>
+            <%= t.cell right: true do %>
+              <div class="flex-center gap-2 justify-end">
+                <%= edit_link edit_person_banner_path(@person, banner) %>
+                <%= delete_button person_banner_path(@person, banner),
+                                  "Delete",
+                                  confirm_modal: {
+                                    message: "Delete this banner? This cannot be undone."
+                                  } %>
+              </div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No account banners are recorded for this person.", icon: "message", icon_type: :solid %>
+  <% end %>
+<% end %>

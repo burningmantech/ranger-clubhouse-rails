@@ -1,0 +1,12 @@
+<%# One face on the board. The placeholder is the same size as a photo so the
+    rows stay lined up whether or not somebody has one. %>
+<% if person.profile_photo %>
+  <%= photo_tag person.profile_photo,
+                class: "photo-board-photo",
+                alt: "#{person.callsign} photo" %>
+<% else %>
+  <div class="photo-board-photo photo-board-photo-missing">
+    <%= fa_icon "user", :solid, class: "fa-3x" %>
+    <span>No photo</span>
+  </div>
+<% end %>

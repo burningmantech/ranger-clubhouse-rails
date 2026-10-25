@@ -1,0 +1,118 @@
+<%= hero_panel icon: "bug", heading_level: :h1, id: "admin-error-logs-header",
+               title: "Error Logs",
+               description: "Review exceptions and failures recorded by the system, filtered by person, type, and time range." %>
+
+<%= filter_bar id: "error-log-filters",
+               chips: error_log_filter_chips(@form),
+               clear_url: admin_error_logs_path,
+               url: admin_error_logs_path, model: @form, scope: "filter" do |f| %>
+  <%= form_row do %>
+    <%= f.text_field :person_callsign,
+                     label: "Person Callsign",
+                     maxlength: 64,
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+    <%= f.text_field :error_type,
+                     label: "Error Type",
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.datetime_field :start_time,
+                         label: "Starts At",
+                         width: "w-full",
+                         wrapper_class: "flex-1" %>
+    <%= f.datetime_field :end_time,
+                         label: "Ends At",
+                         width: "w-full",
+                         wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= f.check_box :last_day, label: "Last 24 hours only", include_hidden: false %>
+
+  <%= button_row class: "mt-4" do %>
+    <%= f.submit "Search" %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Error Log Entries", icon: "table-list", icon_type: :solid do %>
+  <% pager = ui_pager(@meta, summary: error_log_pager_summary(@meta)) { |page| admin_error_logs_path(@form.query_params(page:)) } %>
+  <% if @error_logs.empty? %>
+    <%= ui_empty_state "No error log entries matched the current filters.", icon: "magnifying-glass", icon_type: :solid %>
+  <% else %>
+    <div class="mb-3">
+      <%= pager %>
+    </div>
+
+    <%= ui_table striped: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Timestamp" %>
+        <%= t.heading "Person" %>
+        <%= t.heading "Type" %>
+        <%= t.heading "IP" %>
+        <%= t.heading "URL" %>
+      <% end %>
+      <%= t.body do %>
+        <% @error_logs.each do |row| %>
+          <% detail_dom_id = "error-log-detail-#{row.id}" %>
+          <%= t.row class: "align-middle" do %>
+            <%= t.cell class: "align-top" do %>
+              <%= t.detail_row_toggle error_log_timestamp(row), id: detail_dom_id, describing: row.error_type %>
+            <% end %>
+            <%= t.cell class: log_text_class("align-middle") do %>
+              <%= error_log_person_label(row.person, row.person_id) %>
+            <% end %>
+            <%= t.cell class: "align-middle text-sm leading-snug" do %>
+              <%= log_truncated(row.error_type) %>
+            <% end %>
+            <%= t.cell class: log_text_class("align-middle") do %>
+              <%= error_log_ip(row) %>
+            <% end %>
+            <%= t.cell class: log_text_class("align-middle") do %>
+              <% display_url = error_log_display_url(row.url) %>
+              <div class="truncate max-w-64" title="<%= display_url %>"><%= display_url %></div>
+            <% end %>
+          <% end %>
+
+          <%= t.detail_row id: detail_dom_id do %>
+            <div class="space-y-4 py-2">
+              <div>
+                <div class="<%= log_heading_class %>">Metadata</div>
+                <%= ui_label_value label_width: "8rem" do |list| %>
+                  <% error_log_metadata_items(row).each do |label, value| %>
+                    <%= list.row label do %>
+                      <%= value %>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              </div>
+
+              <% if (exception = error_log_exception(row)) %>
+                <div>
+                  <div class="<%= log_heading_class %>">Exception</div>
+                  <p class="text-body mb-2"><%= error_log_exception_summary(exception) %></p>
+                  <%= error_log_stacktrace_block(exception) %>
+                </div>
+              <% end %>
+
+              <div>
+                <div class="<%= log_heading_class %>">Raw Data</div>
+                <%= error_log_pretty_data_block(row) %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Outside the branch above: a filter or a stale page number empties the
+      table while the log still holds rows, and the reader still needs a way
+      back to the other pages. %>
+  <div class="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <%= pager %>
+    <%= delete_button admin_purge_error_logs_path, "Delete All Entries", size: "sm",
+                      confirm_message: "Delete the entire error log? This cannot be undone." %>
+  </div>
+<% end %>

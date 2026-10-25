@@ -1,0 +1,126 @@
+<% content_for :title, "Background Jobs" %>
+
+<%= hero_panel icon: "bars-progress", heading_level: :h1, id: "admin-jobs-header",
+               title: "Background Jobs",
+               description: "Watch the job queues, retry or delete failed jobs, and see which workers are running." %>
+
+<%= ui_stat_row do %>
+  <% @counts.each do |state, count| %>
+    <%= job_stat_tile state, count, active: @form.status == state %>
+  <% end %>
+<% end %>
+
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What do the states mean?</dt>
+    <dd>
+      <% @counts.each_key do |state| %>
+        <strong><%= job_state(state)[:label] %></strong>: <%= job_state_about(state) %>
+      <% end %>
+    </dd>
+    <dt>What does Retry do?</dt>
+    <dd>Puts a failed job back on its queue with its attempt counter reset. The failure record goes with it.</dd>
+    <dt>What does Delete do?</dt>
+    <dd>Removes the job and its failure record for good. A job in progress cannot be deleted; wait for it to finish or fail.</dd>
+    <dt>How current is this page?</dt>
+    <dd>It reads the queue tables when it opens. Reload to see what has changed since.</dd>
+    <dt>When is a worker stale?</dt>
+    <dd>
+      A process whose last heartbeat is more than <%= distance_of_time_in_words(SolidQueue.process_alive_threshold) %>
+      old is pruned by the supervisor, and any job it had claimed is failed.
+    </dd>
+  </dl>
+<% end %>
+
+<%= filter_bar id: "job-filters",
+               chips: job_filter_chips(@form),
+               clear_url: admin_jobs_path,
+               count: "Showing #{@jobs.size} of #{pluralize(@meta[:total], "job")}",
+               actions: job_bulk_actions(@counts["failed"]),
+               url: admin_jobs_path, model: @form, scope: JobFilterForm::PARAM_SCOPE do |f| %>
+  <%= form_row do %>
+    <%= f.select :status, job_status_options(@counts),
+                 { label: "Status", width: "w-full", wrapper_class: "flex-1" } %>
+    <%= f.select :queue_name, job_queue_options(@queue_names),
+                 { label: "Queue", width: "w-full", wrapper_class: "flex-1" } %>
+    <%= f.text_field :class_name,
+                     label: "Job Class",
+                     help_text: "Any part of the class name.",
+                     maxlength: 128,
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= button_row class: "mt-4" do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Jobs", icon: "list-check", icon_type: :solid do %>
+  <% if @jobs.empty? %>
+    <% if @form.active_filters.any? %>
+      <%= ui_empty_state "No jobs match the current filters.", icon: "magnifying-glass", icon_type: :solid %>
+    <% else %>
+      <%= ui_empty_state "No jobs are queued, running, scheduled, failed or recently finished.",
+                         icon: "list-check", icon_type: :solid %>
+    <% end %>
+  <% else %>
+    <% pager = ui_pager(@meta, noun: "job") { |page| admin_jobs_path(@form.query_params(page:)) } %>
+    <div class="mb-3">
+      <%= pager %>
+    </div>
+
+    <%= ui_table full_width: true, striped: true, caption: "Jobs, newest first" do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Job" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Queue" %>
+        <%= t.heading "Enqueued" %>
+        <%= t.heading "Last Event" %>
+        <%= t.heading "Actions", right: true %>
+      <% end %>
+      <%= t.body do %>
+        <% @jobs.each do |job| %>
+          <%= render "admin/jobs/job", t:, job: %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <div class="mt-4">
+      <%= pager %>
+    </div>
+  <% end %>
+<% end %>
+
+<%= ui_section "Workers", icon: "server", icon_type: :solid,
+               badge: @workers.size.to_s, badge_color: workers_badge_color(@workers) do %>
+  <% if @workers.empty? %>
+    <%= ui_empty_state "No Solid Queue process is registered. Jobs wait until a worker starts.",
+                       icon: "server", icon_type: :solid %>
+  <% else %>
+    <%= ui_table full_width: true, striped: true, caption: "Solid Queue processes and their last heartbeat" do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Process" %>
+        <%= t.heading "Name" %>
+        <%= t.heading "Host" %>
+        <%= t.heading "PID", right: true %>
+        <%= t.heading "Last Heartbeat" %>
+        <%= t.heading "Configuration" %>
+      <% end %>
+      <%= t.body do %>
+        <% @workers.each do |worker| %>
+          <%= t.row do %>
+            <%= t.row_header worker.kind %>
+            <%= t.cell worker.name, class: log_text_class("font-mono break-all") %>
+            <%= t.cell worker.hostname, class: log_text_class %>
+            <%= t.cell worker.pid.to_s, right: true, class: log_text_class %>
+            <%= t.cell class: log_text_class("whitespace-nowrap") do %>
+              <%= worker_heartbeat_badge(worker) %>
+            <% end %>
+            <%= t.cell worker_configuration(worker), class: log_text_class %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

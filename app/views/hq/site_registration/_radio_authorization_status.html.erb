@@ -1,0 +1,39 @@
+<%# locals: (variant:, person_event:, event_info:, callsign:) %>
+<%# Radio / Radio Checkout Agreement messaging for the On-Site Registration
+    landing sections (port/components/hq/radio-authorization-status.hbs).
+    variant :agreement — agreement signed / not-signed notice.
+    variant :summary   — radio_max provisions authorization line, gated on
+                         radio_info_available so missing data is never shown
+                         as "Shift radios only". %>
+<% if variant == :agreement %>
+  <% if person_event.asset_authorized %>
+    <h3 class="heading-title text-success">
+      <%= fa_icon "check", :solid, end: 2 %>The Radio Checkout Agreement has been signed.
+    </h3>
+  <% else %>
+    <h3 class="heading-title text-error">
+      <%= fa_icon "ban", :solid, end: 2 %>Radio Checkout Agreement <strong>not signed</strong> &mdash; DO NOT ISSUE RADIOS.
+    </h3>
+    <p class="mb-3">
+      Direct <%= callsign %> to a kiosk and have them agree to the Radio Checkout
+      Agreement. Issue a radio only after they sign.
+    </p>
+  <% end %>
+<% elsif variant == :summary && event_info.radio_info_available %>
+  <% if event_info.radio_max.to_i.positive? %>
+    <% if person_event.asset_authorized %>
+      <h3 class="heading-title text-success">
+        <%= fa_icon "tower-broadcast", :solid, end: 2 %>Authorized for <%= pluralize(event_info.radio_max, "Event Radio") %>
+      </h3>
+    <% else %>
+      <h3 class="heading-title text-error">
+        <%= fa_icon "ban", :solid, end: 2 %>Authorized for <%= pluralize(event_info.radio_max, "Event Radio") %>
+        &mdash; <strong>Do not issue until the Radio Checkout Agreement is signed.</strong>
+      </h3>
+    <% end %>
+  <% else %>
+    <h3 class="heading-title text-heading">
+      <%= fa_icon "tower-broadcast", :solid, end: 2 %>Shift radios only
+    </h3>
+  <% end %>
+<% end %>

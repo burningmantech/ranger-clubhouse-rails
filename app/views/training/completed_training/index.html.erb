@@ -1,0 +1,76 @@
+<% content_for :title, "Completed #{@training.title}" %>
+
+<%= hero_panel icon: "circle-check", heading_level: :h1, id: "training-completed-header" do |panel| %>
+  <% panel.title do %>Completed <%= @training.title %><% end %>
+  <% panel.description do %>
+    Who passed each of the year's sessions.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "#{@year} Sessions", training_path(training_slug, year: @year) %>
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2008, skip_pandemic: true %>
+<% end %>
+
+<% if @report.sessions.any? %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @report.sessions.size.to_s, "Sessions" %>
+    <%= ui_stat_box @report.trainee_count.to_s, "Trainees" %>
+    <%= ui_stat_box @report.trainer_count.to_s, "Trainers" %>
+  <% end %>
+
+  <%# Out of the hero: which sessions make the list, and what an empty one
+      means. Then who the export leaves out. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Which sessions are listed?</dt>
+      <dd>
+        Only sessions that have ended are listed — a session with no passes has not been
+        scored yet.
+      </dd>
+      <dt>Who is in the export?</dt>
+      <dd>The export lists trainees only. Trainers are not included.</dd>
+    </dl>
+  <% end %>
+
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link(training_completed_training_path(training_slug, year: @year, format: :csv)) %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= ui_section "Sessions" do %>
+  <% if @report.sessions.empty? %>
+    <%= ui_empty_state "No sessions have ended in #{@year}.", icon: "calendar", icon_type: :regular %>
+  <% else %>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Session" %>
+        <%= t.heading "Location" %>
+        <%= t.heading "Trainees", right: true %>
+        <%= t.heading "Trainers", right: true %>
+      <% end %>
+      <%= t.body do %>
+        <% @report.sessions.each do |session| %>
+          <% slot = session.slot %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%= link_to training_session_time(slot),
+                          training_completed_training_session_path(training_slug, slot.id, year: @year),
+                          class: LinkHelper::TABLE_LINK_CLASSES %>
+            <% end %>
+            <%= t.cell slot.description %>
+            <%= t.cell session.trainees.size, right: true %>
+            <%= t.cell session.trainers.size, right: true %>
+          <% end %>
+        <% end %>
+        <%= t.row state: :total do %>
+          <%= t.row_header "Totals" %>
+          <%= t.cell "" %>
+          <%= t.cell @report.trainee_count, right: true %>
+          <%= t.cell @report.trainer_count, right: true %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

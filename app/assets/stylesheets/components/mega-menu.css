@@ -1,0 +1,165 @@
+/*
+ * Mega Menu (navbar drill-down menu)
+ * Native <dialog> opened from the top navbar. Full screen on mobile,
+ * centered large panel on desktop. Rendered by MegaMenuHelper +
+ * app/views/me/menu/, driven by mega_menu_controller.js.
+ */
+
+.mega-menu-dialog {
+  @apply fixed m-0 p-0 border-0 bg-base-100 text-base-content shadow-xl;
+  width: 100dvw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+}
+
+.mega-menu-dialog::backdrop {
+  background: rgb(0 0 0 / 0.5);
+}
+
+@media (min-width: 1024px) {
+  .mega-menu-dialog {
+    @apply rounded-lg;
+    width: min(90vw, 72rem);
+    height: 85dvh;
+    margin: auto;
+  }
+}
+
+/* The rest of the open dialog's column, below any error callout */
+.mega-menu-frame {
+  @apply block flex-1 min-h-0;
+}
+
+.mega-menu-content {
+  @apply flex flex-col h-full;
+}
+
+.mega-menu-header {
+  @apply flex items-center justify-between gap-2 px-4 py-2 border-b border-line;
+}
+
+.mega-menu-search {
+  @apply flex-1 min-w-0 min-h-9 text-base;
+}
+
+/* display comes from markup (`flex lg:hidden`) so the responsive utility,
+   which lives in a cascade layer, is not overridden by this unlayered rule */
+.mega-menu-tabs {
+  @apply gap-1 overflow-x-auto px-2 py-1 border-b border-line;
+}
+
+.mega-menu-tabs .mega-menu-chrome-btn {
+  @apply w-auto whitespace-nowrap;
+}
+
+.mega-menu-body {
+  @apply flex flex-1 min-h-0;
+}
+
+.mega-menu-side {
+  @apply flex-col w-64 shrink-0 gap-1 p-3 border-r border-line overflow-y-auto;
+}
+
+.mega-menu-side-divider {
+  @apply my-2 border-t border-line;
+}
+
+.mega-menu-chrome-btn {
+  @apply justify-start w-full min-h-8 font-normal;
+}
+
+.mega-menu-chrome-btn[aria-current="true"] {
+  @apply text-heading bg-secondary/30 font-semibold;
+}
+
+.mega-menu-panels {
+  @apply flex-1 min-h-0 overflow-y-auto p-4;
+}
+
+.mega-menu-panel[hidden] {
+  display: none !important;
+}
+
+.mega-menu-panel-title {
+  @apply text-lg font-semibold text-stone-muted mb-1
+}
+
+.mega-menu-items {
+  @apply flex flex-col gap-1;
+}
+
+/* Section group heading inside a multi-section category panel */
+.mega-menu-section-title {
+  @apply text-sm font-semibold text-stone-muted mt-3 mb-1;
+}
+
+/* Untitled section groups still separate visually */
+.mega-menu-items + .mega-menu-items {
+  @apply mt-3;
+}
+
+.mega-menu-item {
+  @apply flex items-start gap-1;
+}
+
+/* this unlayered rule outranks preflight's [hidden], so filtered-out search
+   results need their own override (same reason .mega-menu-panel has one) */
+.mega-menu-item[hidden] {
+  display: none !important;
+}
+
+.mega-menu-item-link {
+  @apply flex flex-col flex-1 rounded-lg px-1 py-1 min-h-8 hover:bg-base-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary;
+}
+
+.mega-menu-item-title {
+  @apply font-semibold text-heading;
+}
+
+/* category a link lives under, on search results and on titles repeated
+   within a list; secondary to the link title */
+.mega-menu-item-cat {
+  @apply font-normal text-stone-muted;
+}
+
+.mega-menu-item-desc {
+  @apply text-sm text-stone-muted;
+}
+
+.mega-menu-star {
+  @apply btn-square min-h-9 min-w-8;
+}
+
+.mega-menu-star-on {
+  @apply text-primary;
+}
+
+.mega-menu-star-spacer {
+  @apply w-8 shrink-0;
+}
+
+.mega-menu-cat-btn {
+  @apply w-full justify-start gap-3 h-auto min-h-14 py-2 font-normal;
+}
+
+.mega-menu-cat-text {
+  @apply flex flex-col flex-1 text-left;
+}
+
+/* buttons default to btn's smaller font; keep category titles readable */
+.mega-menu-cat-text .mega-menu-item-title {
+  @apply text-base;
+}
+
+.mega-menu-cat-chevron {
+  @apply text-stone-muted;
+}
+
+.mega-menu-back {
+  @apply justify-start mb-2 min-h-8;
+}
+
+.mega-menu-close {
+  @apply min-h-8 min-w-18;
+}

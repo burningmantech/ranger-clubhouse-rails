@@ -1,0 +1,24 @@
+<%# One badge line on the Set BMID Titles preview: the picker, and the text box
+    the Custom option hands over to. conditional-show only reacts to a change,
+    so the box's opening state has to be right from the server. %>
+<% custom_id = "bmid-custom-title-#{cell[:key]}" %>
+<% label = "Title #{line} for #{person.callsign}" %>
+
+<%= select_tag "titles[#{cell[:key]}]",
+               options_for_select(
+                 [["Blank", ""]] + cell[:options] +
+                   [["Custom title…", Bmid::TitlesController::CUSTOM]],
+                 cell[:selected]
+               ),
+               class: "#{AppFormBuilder::SELECT_CLASSES} w-full",
+               aria: { label: label },
+               data: { controller: "conditional-show",
+                       conditional_show_id_value: custom_id,
+                       conditional_show_reveal_value: Bmid::TitlesController::CUSTOM } %>
+
+<div id="<%= custom_id %>" class="mt-1 <%= "hidden" if cell[:custom].blank? %>">
+  <%= text_field_tag "custom_titles[#{cell[:key]}]", cell[:custom],
+                     maxlength: BmidTitle::TITLE_LIMIT,
+                     class: "#{AppFormBuilder::INPUT_CLASSES} w-full",
+                     aria: { label: "Custom #{label.downcase}" } %>
+</div>

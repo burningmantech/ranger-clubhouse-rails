@@ -1,0 +1,73 @@
+<%= hero_panel icon: "bullhorn", heading_level: :h1, id: "communication-announcements-header",
+               title: "Announcements" do |panel| %>
+  <% panel.description do %>
+    Post the messages that appear on everyone's Clubhouse home page.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @total_count.to_s, "Announcements", icon: "bullhorn", icon_type: :solid %>
+  <%= ui_stat_box @active_count.to_s, "Active", variant: :success,
+                  icon: "circle-check", icon_type: :solid %>
+  <%= ui_stat_box @expired_count.to_s, "Expired",
+                  variant: @expired_count.positive? ? :warning : :secondary,
+                  icon: "clock", icon_type: :solid %>
+<% end %>
+
+<%= button_row do %>
+  <%= button_link "Add Announcement", :primary, new_communication_announcement_path,
+                  icon: "plus", icon_type: :solid %>
+  <% if @expired_count.positive? %>
+    <%= button_link "Delete Expired", :secondary,
+                    delete_expired_communication_announcements_path,
+                    icon: "trash", icon_type: :solid,
+                    data: confirm_modal(
+                      title: "Delete Expired Announcements",
+                      message: "Delete all #{@expired_count} expired #{"announcement".pluralize(@expired_count)} now? This cannot be undone.",
+                      confirm_label: "Delete Expired",
+                      method: :post,
+                      variant: :error
+                    ) %>
+  <% end %>
+<% end %>
+
+<%= filter_bar id: "announcement-filters",
+               chips: announcement_filter_chips(@filter_params),
+               clear_url: communication_announcements_path,
+               count: "Showing #{@announcements.size} of #{@total_count} #{"announcement".pluralize(@total_count)}",
+               url: communication_announcements_path do |f| %>
+  <%= form_row do %>
+    <%= f.select :audience,
+                 announcement_audience_filter_options,
+                 label: "Audience",
+                 selected: @filter_params[:audience],
+                 width: "w-full",
+                 wrapper_class: "flex-1" %>
+    <%= f.select :status,
+                 announcement_status_filter_options,
+                 label: "Status",
+                 selected: @filter_params[:status],
+                 width: "w-full",
+                 wrapper_class: "flex-1" %>
+    <%= f.select :sort,
+                 announcement_sort_options,
+                 label: "Sort",
+                 selected: @filter_params[:sort],
+                 width: "w-full",
+                 wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<% if @announcements.empty? %>
+  <% if @total_count.zero? %>
+    <%= ui_empty_state "No announcements have been posted yet.", icon: "bullhorn", icon_type: :solid %>
+  <% else %>
+    <%= ui_empty_state "No announcements matched the current filters.", icon: "magnifying-glass", icon_type: :solid %>
+  <% end %>
+<% else %>
+  <%= render partial: "announcement", collection: @announcements, as: :announcement %>
+<% end %>

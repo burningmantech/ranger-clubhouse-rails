@@ -1,0 +1,13 @@
+<%= hero_panel icon: "pen", heading_level: :h1, id: "edit-person-award-header",
+               description: "Update or remove this service recognition award.",
+               back_to: ["Service Recognition Awards", person_awards_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Edit Award &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= render "form",
+           person: @person,
+           person_award: @person_award,
+           award_type: @award_type,
+           entity_options: @entity_options %>

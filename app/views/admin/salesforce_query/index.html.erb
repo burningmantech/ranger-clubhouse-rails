@@ -1,0 +1,28 @@
+<%= hero_panel icon: "database", heading_level: :h1, id: "admin-salesforce-query-header",
+               title: "Salesforce Query",
+               description: "Run a SOQL query or SOSL search against Salesforce and review the records it returns." %>
+
+<%= ui_section "Query", icon: "code", icon_type: :solid do %>
+  <%= ui_form(nil, admin_run_salesforce_query_path) do |f| %>
+    <%# No autocomplete: "off" -- it opts the field out of the browser's form
+        restoration, which is what keeps a typed query through an accidental reload. %>
+    <%= f.text_area :soql, label: "SOQL or SOSL Query", required: true, rows: 6, class: "font-mono",
+                    spellcheck: false, autocapitalize: "off",
+                    placeholder: "SELECT Id, Name FROM Ranger__c LIMIT 10",
+                    help_text: "One SELECT (SOQL) or FIND (SOSL) statement; it cannot change records. Salesforce " \
+                               "returns up to 2,000 records per run, and each query you run is recorded in the " \
+                               "Action Log." %>
+    <%= button_row do %>
+      <%= f.submit "Run Query", data: { turbo_submits_with: "Contacting Salesforce…" } %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Results", icon: "table", icon_type: :solid,
+               badge: ("Mock Data" if salesforce_mock?), badge_color: :warning do %>
+  <%# The sort controller lives on the region the run replaces the inside of, so
+      each new table arrives under it and its status line resets with it. %>
+  <div id="salesforce-query-results" data-controller="table-sort">
+    <%= ui_empty_state "Run a query to see its records here." %>
+  </div>
+<% end %>

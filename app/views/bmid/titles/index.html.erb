@@ -1,0 +1,59 @@
+<%= hero_panel icon: "id-badge", heading_level: :h1,
+               id: "bmid-titles-header",
+               title: "Badge Titles",
+               description: "The titles a position earns on a badge"
+%>
+
+<dl class="instruction-list my-4">
+  <dt>How many titles can one badge print?</dt>
+  <dd>Three, one per line. A position may earn a title on one of them.</dd>
+</dl>
+
+<%= button_row class: "my-4" do %>
+  <%= button_link "Add Badge Title", :primary, new_bmid_title_path,
+                  icon: "plus", icon_type: :solid %>
+  <%= button_link "Set BMID Titles", :secondary, set_bmid_titles_path,
+                  icon: "wand-magic-sparkles", icon_type: :solid %>
+<% end %>
+
+<%# One table per badge line: preference only ever means anything within a
+    line, so ordering them together invites comparing numbers across lines. %>
+<% BmidTitle::TITLE_LINES.each do |line| %>
+  <% titles = @titles_by_line[line].to_a %>
+  <%= ui_section "Title #{line}", icon: "id-badge", icon_type: :solid,
+                 id: "bmid-title-line-#{line}", border: false do %>
+    <% if titles.empty? %>
+      <%= ui_empty_state "Nothing prints on this line yet.", icon: "id-badge", icon_type: :solid %>
+    <% else %>
+      <%= ui_table striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Preference" %>
+          <%= t.heading "Title" %>
+          <%= t.heading "Set by Position" %>
+          <%= t.heading "Actions", right: true %>
+        <% end %>
+        <%= t.body do %>
+          <% titles.each_with_index do |title, index| %>
+            <%= t.row id: "bmid-title-#{title.id}" do %>
+              <%= t.cell title.sort_index %>
+              <%= t.row_header title.title %>
+              <%= t.cell bmid_title_position_name(title) %>
+              <%= t.cell right: true do %>
+                <span class="inline-flex gap-1 justify-end">
+                  <%= render "common/move_buttons",
+                             up_url: move_bmid_title_path(title, direction: BmidTitle::MOVE_UP),
+                             down_url: move_bmid_title_path(title, direction: BmidTitle::MOVE_DOWN),
+                             label: "title #{title.title}",
+                             first: index.zero?, last: index == titles.size - 1 %>
+                  <%= edit_link edit_bmid_title_path(title), "",
+                                title: "Edit", aria: { label: "Edit #{title.title}" },
+                                class: "btn-square" %>
+                </span>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

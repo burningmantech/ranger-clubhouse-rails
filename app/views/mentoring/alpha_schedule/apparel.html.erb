@@ -1,0 +1,99 @@
+<%#
+  Apparel distribution: what each signed-in Alpha is owed, split so a bonked
+  Alpha's shirts are not handed out with everyone else's, then the totals the
+  quartermaster counts boxes against. Totals exclude the bonked group, as
+  upstream does. Upstream Ember mentor/alpha-apparel-sheet.
+%>
+<% slot = @roster.slot %>
+<%# safe_join, not interpolation: a shift with no description is named by its
+    time, which is markup, and a plain string would print the tags. %>
+<% shift_title = safe_join([slot.begins_year, " ", alpha_shift_title(slot)]) %>
+<% shift_when = datetime_format(slot.begins, slot.ends) %>
+<% content_for :title, "Apparel Distribution — #{alpha_shift_title_text(slot)}" %>
+
+<%= render "print_screen_nav" %>
+
+<% @groups.each_with_index do |group, index| %>
+  <section class="alpha-sheet <%= "break-before-page" if index.positive? %>">
+    <%= render "sheet_masthead",
+               doc_label: "Alpha shift · Apparel · #{group[:title]}",
+               shift_title:, shift_when:, first: index.zero? %>
+
+    <% if group[:entries].empty? %>
+      <p class="mt-4">No <%= group[:title] %> Alphas are signed into this shift.</p>
+    <% else %>
+      <div class="alpha-subline">
+        <span><%= pluralize(group[:entries].size, "Alpha") %> &middot; <%= group[:title] %></span>
+        <span class="font-bold">Tick each item as it is handed over</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr class="alpha-running-head">
+            <th colspan="7"><%= shift_title %> &middot; Apparel &middot; <%= group[:title] %></th>
+          </tr>
+          <tr>
+            <th>Handle</th>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Mentor Result</th>
+            <th>T-Shirt</th>
+            <th>T-Shirt Backup</th>
+            <th>Long Sleeve</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% group[:entries].each do |entry| %>
+            <% person = entry.person %>
+            <tr class="alpha-apparel-row">
+              <td class="alpha-callsign"><%= person.callsign %></td>
+              <td><%= person.desired_full_name %></td>
+              <td><%= person.status %></td>
+              <td><%= entry.mentor_status %></td>
+              <td><%= ShirtTotals.title_for(person, :tshirt_swag) %></td>
+              <td><%= ShirtTotals.title_for(person, :tshirt_secondary_swag) %></td>
+              <td><%= ShirtTotals.title_for(person, :long_sleeve_swag) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  </section>
+<% end %>
+
+<section class="alpha-sheet break-before-page">
+  <%= render "sheet_masthead", doc_label: "Alpha shift · Apparel · Totals",
+             shift_title:, shift_when:, first: false %>
+  <div class="alpha-subline">
+    <span>Counts for the Pass/Pending group only &mdash; bonked Alphas are excluded.</span>
+    <span class="font-bold">Pull this many from stores</span>
+  </div>
+
+  <div class="alpha-totals mt-2">
+    <% @shirt_totals.each do |kind| %>
+      <section>
+        <table>
+          <caption><%= kind.name %></caption>
+          <thead>
+            <tr>
+              <th>Size</th>
+              <th class="alpha-total-count">Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if kind.sizes.empty? %>
+              <tr><td colspan="2">None</td></tr>
+            <% else %>
+              <% kind.sizes.each do |size| %>
+                <tr>
+                  <td><%= size.title %></td>
+                  <td class="alpha-total-count"><%= size.count %></td>
+                </tr>
+              <% end %>
+            <% end %>
+          </tbody>
+        </table>
+      </section>
+    <% end %>
+  </div>
+</section>

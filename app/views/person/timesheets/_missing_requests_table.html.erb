@@ -1,0 +1,32 @@
+<%= ui_table do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Status" %>
+    <%= t.heading "Time" %>
+    <%= t.heading "Position" %>
+    <%= t.heading "Duration", right: true %>
+    <%= t.heading "Credits", right: true %>
+    <%= t.heading "Action" %>
+  <% end %>
+  <%= t.body do %>
+    <% @missing_requests.each do |request| %>
+      <%= t.row class: "align-middle" do %>
+        <%= t.cell missing_request_status_badge(request) %>
+        <%= t.cell datetime_format(request.on_duty, request.off_duty) %>
+        <%= t.cell request.position.title %>
+        <%= t.cell hour_minute_words(request.duration), right: true %>
+        <%= t.cell credit_format(request.credits), right: true %>
+        <%= t.cell do %>
+          <% if can?(:manage_timesheets) %>
+            <%= button_link (request.status_pending? ? "Review" : "Edit"),
+                            (request.status_pending? ? :warning : :primary),
+                            edit_person_missing_request_path(@person, request, year: @year),
+                            icon: "pen-to-square", icon_type: :solid %>
+          <% else %>
+            <%= button_link "View", :primary, person_missing_request_path(@person, request, year: @year),
+                            icon: "magnifying-glass", icon_type: :solid %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

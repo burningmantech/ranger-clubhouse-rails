@@ -1,0 +1,33 @@
+<%= hero_panel icon: "wand-magic-sparkles", heading_level: :h1, id: "art-permission-form-header",
+               title: "Create ART Permissions",
+               description: "Create the set of permissions that belongs to a training position.",
+               back_to: ["Permissions", admin_permissions_path] %>
+
+<%= ui_section "What This Creates", icon: "circle-info", icon_type: :solid do %>
+  <dl class="instruction-list">
+    <dt>Which permissions does it create?</dt>
+    <dd>
+      <%= pluralize(Role::ART_ROLE_SUFFIXES.size, "permission") %>:
+      <%= Role::ART_ROLE_SUFFIXES.values.to_sentence %>.
+    </dd>
+    <dt>What if some already exist?</dt>
+    <dd>They are left alone. Only the missing ones are created, and the result says which.</dd>
+    <dt>Why is a position missing from the list?</dt>
+    <dd>
+      The list holds active training positions whose title contains the word "Training".
+      Anything else cannot carry this set of permissions.
+    </dd>
+  </dl>
+<% end %>
+
+<%= ui_form(@art_form, art_admin_permissions_path) do |f| %>
+  <%= f.fieldset "Training position", icon: "graduation-cap", icon_type: :solid do %>
+    <%= f.collection_select :position_id, @art_positions, :id, :title,
+                            { label: "Position", prompt: "Select a training position", required: true } %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Create Permissions" %>
+    <%= cancel_link admin_permissions_path %>
+  <% end %>
+<% end %>

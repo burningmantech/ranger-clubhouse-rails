@@ -1,0 +1,107 @@
+<%#
+  Training › Mentoring › Multiple Shifts: one row per mentee with more than one
+  mentee shift this year, each shift as a chip, the verdict on the latest ended
+  one, and their mentors. The filter bar narrows the table and the CSV.
+%>
+<% content_for :title, "#{@training.title} Multiple Mentee Shifts" %>
+
+<%= hero_panel icon: "clone", heading_level: :h1, id: "mentoring-multiple-shifts-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> Multiple Mentee Shifts<% end %>
+  <% panel.description do %>
+    Mentees who have rangered, or signed up for, more than one mentee shift this year.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "Mentoring", training_mentoring_path(training_slug, year: @year) %>
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2008, skip_pandemic: true %>
+<% end %>
+
+<%= render "training/mentoring/missing_positions", shifts: @shifts %>
+
+<% rows = @report.rows %>
+<% rangered = rows.count { |row| row.kind?(ArtMentoring::MultipleShiftsReport::RANGERED) } %>
+<% signed_up = rows.count(&:signed_up_again?) %>
+<%= ui_stat_row do %>
+  <%= ui_stat_box rows.size.to_s, "Mentees Listed", icon: "user-graduate", icon_type: :solid %>
+  <%= ui_stat_box rangered.to_s, "Rangered Two or More", icon: "repeat", icon_type: :solid %>
+  <%= ui_stat_box signed_up.to_s, "Signed Up Again", variant: signed_up.positive? ? :warning : :secondary,
+                  icon: "calendar", icon_type: :solid %>
+  <% if @is_current_year %>
+    <%= ui_stat_box rows.count(&:on_shift?).to_s, "On Shift Now", variant: :success,
+                    icon: "person-walking", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What counts as a shift here?</dt>
+    <dd>
+      A timesheet entry on <%= @shifts.mentee_position&.title || "the mentee position" %>, on now or ended, or a
+      sign-up for a mentee shift that has not started yet.
+    </dd>
+    <dt>Why does a second shift matter?</dt>
+    <dd>
+      A mentee back for another shift usually has a verdict pending from the first, or has passed and should hold the
+      team's positions instead of the mentee position.
+    </dd>
+    <dt>Which verdict is shown?</dt>
+    <dd>The one recorded for their latest ended shift. A shift still going has none yet.</dd>
+  </dl>
+<% end %>
+
+<% if rows.any? %>
+  <%= filter_bar id: "mentoring-multiple-shifts-filters",
+                 chips: art_multiple_shifts_filter_chips(@filter_params, training_slug, @year),
+                 clear_url: training_mentoring_multiple_shifts_path(training_slug, year: @year),
+                 count: "Showing #{@rows.size} of #{pluralize(rows.size, "mentee")}",
+                 actions: (if @rows.any?
+                             export_csv_link(training_mentoring_multiple_shifts_path(
+                                               training_slug, year: @year, format: :csv, **active_filters(@filter_params)
+                                             ))
+                           end),
+                 url: training_mentoring_multiple_shifts_path(training_slug) do |f| %>
+    <%# The year rides the filter form: a GET form replaces the query string. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :kind, filter_select_options(Training::MentoringHelper::MULTIPLE_SHIFTS_KINDS), label: "Kind",
+                   selected: @filter_params[:kind], width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.text_field :callsign, label: "Callsign Contains", value: @filter_params[:callsign],
+                       width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Mentees", icon: "user-graduate", icon_type: :solid, border: false do %>
+  <% if rows.empty? %>
+    <%= ui_empty_state "No mentee has more than one mentee shift in #{@year}.", icon: "clone", icon_type: :solid %>
+  <% elsif @rows.empty? %>
+    <%= ui_empty_state "No mentee matches the current filters.", icon: "filter", icon_type: :solid %>
+  <% else %>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Mentee" %>
+        <%= t.heading "Rangered", right: true %>
+        <%= t.heading "Signed Up", right: true %>
+        <%= t.heading "Shifts" %>
+        <%= t.heading "Latest Verdict" %>
+        <%= t.heading "Mentors" %>
+      <% end %>
+      <%= t.body do %>
+        <% @rows.each do |row| %>
+          <% walk = row.latest_walk %>
+          <%= t.row id: "multiple-shifts-#{row.person.id}" do %>
+            <%= t.row_header do %><%= person_display_link row.person, row.person.id %><% end %>
+            <%= t.cell row.rangered.to_s, right: true %>
+            <%= t.cell row.signups.size.to_s, right: true %>
+            <%= t.cell do %><%= art_mentee_shift_chips(row) %><% end %>
+            <%= t.cell do %><%= walk ? mentor_result_badge(walk.status) : value_or_dash(nil) %><% end %>
+            <%= t.cell value_or_dash(row.mentors.map(&:callsign).to_sentence) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

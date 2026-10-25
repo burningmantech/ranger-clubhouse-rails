@@ -1,0 +1,19 @@
+<%# locals: (person:) %>
+<%# Wizard step — Verify Camp Information (port/templates/hq/site-checkin.hbs
+    step 1). Turbo-streamed back into #hq-step-camp-info by save_camp_info;
+    the advance signal only accompanies a successful save. %>
+<p class="mb-3">
+  Enter the camp's name, the street address, and street side (man-side, mountainside,
+  plaza, etc.).
+</p>
+<%= ui_form(person, hq_site_registration_camp_info_path(person),
+            method: :patch, data: { turbo_frame: "_top" }) do |f| %>
+  <%= f.text_area :camp_location,
+                  label: "Camp Name & Location",
+                  help_text: "For example: Camp Specificity, 9:15 & D, Mountainside.",
+                  rows: 6, autofocus: true %>
+  <%= button_row do %>
+    <%= f.submit "Save & Next" %>
+    <%= button_action "Cancel", :secondary, data: { action: "hq-wizard#cancel" } %>
+  <% end %>
+<% end %>

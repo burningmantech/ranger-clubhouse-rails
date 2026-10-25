@@ -1,0 +1,74 @@
+<% content_for :title, "#{@training.title} Trainer Attendance" %>
+
+<%= hero_panel icon: "chalkboard-user", heading_level: :h1, id: "training-trainer-attendance-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> Trainer Attendance<% end %>
+  <% panel.description do %>
+    Who taught — or missed — each of the year's sessions.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "#{@year} Sessions", training_path(training_slug, year: @year) %>
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2008, skip_pandemic: true %>
+<% end %>
+
+<% if @report.trainers.any? %>
+  <%# Season totals across every trainer on the page. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @report.trainers.size.to_s, "Trainers" %>
+    <%= ui_stat_box @report.signup_count.to_s, "Teaching Sign-Ups" %>
+    <%= ui_stat_box "#{@report.attended_count} of #{@report.signup_count}", "Attended" %>
+  <% end %>
+
+  <%# Out of the hero: where a missing attendance mark gets fixed. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Where is attendance recorded?</dt>
+      <dd>Attendance is recorded on the session page.</dd>
+    </dl>
+  <% end %>
+
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link(training_trainer_attendance_path(training_slug, year: @year, format: :csv)) %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= ui_section "Trainers" do %>
+  <% if @report.trainers.empty? %>
+    <%# chalkboard-user ships in solid only -- :regular renders a tofu box. %>
+    <%= ui_empty_state "No trainers were found for #{@year}.", icon: "chalkboard-user", icon_type: :solid %>
+  <% else %>
+    <p class="mb-4">Showing <%= pluralize(@report.trainers.size, "trainer") %>.</p>
+
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Trainer" %>
+        <%= t.heading "Attended", right: true %>
+        <%= t.heading "Sessions" %>
+      <% end %>
+      <%= t.body do %>
+        <% @report.trainers.each do |trainer| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <% if trainer.person %>
+                <%= person_display_link trainer.person, trainer.person.id %>
+              <% else %>
+                <%= trainer.callsign %>
+              <% end %>
+            <% end %>
+            <%= t.cell "#{trainer.attended_count} of #{trainer.rows.size}",
+                       right: true, class: "whitespace-nowrap" %>
+            <%= t.cell do %>
+              <div class="flex flex-col gap-y-1">
+                <% trainer.rows.each do |row| %>
+                  <%= render "session_line", row: row %>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

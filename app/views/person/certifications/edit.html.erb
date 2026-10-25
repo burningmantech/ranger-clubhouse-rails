@@ -1,0 +1,9 @@
+<%= hero_panel icon: "pen", heading_level: :h1, id: "edit-person-certification-header",
+               description: "Update this certification record.",
+               back_to: ["Certifications", person_certifications_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Edit Certification &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= render "form", person: @person, person_certification: @person_certification, certifications: @certifications %>

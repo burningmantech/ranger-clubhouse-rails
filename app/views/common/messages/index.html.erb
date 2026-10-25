@@ -1,0 +1,24 @@
+<%# locals: (back_link: nil) %>
+<%# Mailbox index for every audience. Self-serve at /me has no @person and
+    composes as the signed-in user; the management interfaces (/person/:id
+    and /hq/:person_id) set @person and may compose in either direction.
+    Every path comes from MessagesConcern's namespace-aware helpers, so the
+    page stays inside whichever namespace rendered it. Only back_link needs
+    a local — it leaves the mailbox, and each management shell has its own
+    home. %>
+<div class="mb-2">
+  <% if @person %>
+    <%= hero_panel icon: "comments", heading_level: :h1, id: "messages-header",
+                   description: "View #{@person.callsign}'s messages, and send messages to or on behalf of them.", back_to: back_link do |panel| %>
+      <% panel.title do %>Messages &mdash; <%= @person.callsign %><% end %>
+    <% end %>
+  <% else %>
+    <%= hero_panel icon: "comments", heading_level: :h1, id: "messages-header",
+                   title: "Messages",
+                   description: "Communicate with other Rangers and Echelon volunteers.",
+                   back_to: :dashboard %>
+  <% end %>
+  <%= render partial: "common/messages/compose_buttons", locals: { person: @person } %>
+</div>
+
+<%= render partial: "common/messages/workspace", locals: { messages: @messages, folder: @folder } %>

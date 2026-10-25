@@ -1,0 +1,27 @@
+<%# locals: (person:) %>
+<%# The two ways to fix a timesheet entry that is NOT the current shift.
+    Grouped and placed below the current-shift actions on purpose: the section
+    is titled "End The Shift", and leading with the rarest paths made the
+    operator sort five similar-sounding correction actions before reaching the
+    one they came for. Splitting on which entry each acts on is the distinction
+    that actually decides the choice, so it is the one stated in the copy.
+
+    Must render OUTSIDE #hq-verification — render_verification_update replaces
+    that div wholesale on every verify, which would wipe this block. %>
+<div class="mt-6 pt-4 border-t border-base-300">
+  <h3 class="heading-title text-heading mb-1">A Different Timesheet Entry</h3>
+  <p class="mb-3">Neither of these touches the current shift.</p>
+  <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+    <p>
+      <strong>The entry exists but is wrong.</strong> If it is not in the review list above,
+      use <%= link_to "Timesheet / Corrections", person_timesheets_path(person) %>.
+    </p>
+    <div class="lg:text-end lg:shrink-0">
+      <%= button_link "Add Missing Timesheet Request", :secondary,
+                      hq_shift_manage_new_missing_request_path(person, **shift_context),
+                      icon: "plus", icon_type: :solid,
+                      data: { turbo_stream: true } %>
+      <p class="text-stone-muted mt-1">There is no entry for the shift.</p>
+    </div>
+  </div>
+</div>

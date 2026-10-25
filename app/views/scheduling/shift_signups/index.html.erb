@@ -1,0 +1,98 @@
+<%#
+  Every position holding active shifts this year and how full they are. Pick a
+  position to see its shifts.
+%>
+<% content_for :title, "Shift Sign-Ups" %>
+
+<%= hero_panel icon: "clipboard-check", heading_level: :h1,
+               id: "shift-signups-header",
+               title: "#{@year} Shift Sign-Ups" do |panel| %>
+  <% panel.description do %>
+    Every active shift of this year and how full it is, grouped by the position
+    it belongs to.
+  <% end %>
+  <%# The selector carries only the year, so the filter rides along as a hidden
+      field. Without it, changing year quietly widens the list back out. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: @filter_params %>
+<% end %>
+
+<% if @rows.any? %>
+  <% shift_count = @rows.sum(&:shift_count) %>
+  <% sign_up_count = @rows.sum(&:sign_up_count) %>
+  <% seat_count = @rows.sum(&:seat_count) %>
+
+  <div class="my-4 text-lg">
+    <%= pluralize(@rows.size, "position") %> holding
+    <%= pluralize(number_with_delimiter(shift_count), "shift") %> ·
+    <%= number_with_delimiter(sign_up_count) %> of
+    <%= number_with_delimiter(seat_count) %> sign-ups filled
+  </div>
+
+  <%# A legend for rows is all the card holds, so it shares their branch: the
+      page's rows, not the filtered ones, or a filter that matched nothing
+      would take the card away from above its own bar. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <%= render "legend", subject: "position" %>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "shift-signups-filters",
+                 chips: shift_signups_chips(@filter_params, @year),
+                 clear_url: scheduling_shift_signups_path(year: @year),
+                 count: "Showing #{@shown_rows.size} of #{pluralize(@rows.size, "position")}",
+                 actions: export_csv_link(scheduling_shift_signups_path(year: @year, format: :csv), "Export All to CSV"),
+                 url: scheduling_shift_signups_path do |f| %>
+    <%# Year-scoped page: a GET form replaces the whole query string, so without
+        this every Apply would bounce the list back to the current year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :show, shift_signups_show_options,
+                   label: "Showing", selected: @filter_params[:show],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <% if @shown_rows.any? %>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Position" %>
+        <%= t.heading "Shifts", right: true %>
+        <%= t.heading "Sign-Ups", right: true %>
+        <%= t.heading "Empty", right: true %>
+        <%= t.heading "Fill" %>
+      <% end %>
+      <%= t.body do %>
+        <% @shown_rows.each do |row| %>
+          <% signed_up = shift_signups_count(row.sign_up_count, row.seat_count) %>
+          <%= t.row state: shift_signups_row_state(row) do %>
+            <%= t.row_header do %>
+              <%= link_to row.title,
+                          scheduling_shift_signups_position_path(row.position_id, year: @year),
+                          class: LinkHelper::TABLE_LINK_CLASSES %>
+            <% end %>
+            <%= t.cell row.shift_count, right: true %>
+            <%= t.cell signed_up, right: true, class: "whitespace-nowrap" %>
+            <%# A dash rather than a nought: every position with a gap should
+                catch the eye, and a column of noughts hides the ones that do. %>
+            <%= t.cell row.empty_count.positive? ? row.empty_count : "—", right: true %>
+            <%= t.cell do %>
+              <%= render "fill_meter", counts: row,
+                         label: "#{row.title}: #{signed_up} signed up" %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No position matches this filter.",
+                       icon: "filter-circle-xmark", icon_type: :solid %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No #{@year} shifts were found.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

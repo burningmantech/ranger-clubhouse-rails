@@ -1,0 +1,7 @@
+description: "Carries a note a Volunteer Coordinator wrote to an applicant"
+
+subject: "{{ email_subject }}"
+
+body: |
+  {{ email_message }}
+  {% render "shared/mailer/application_footer", application: application %}

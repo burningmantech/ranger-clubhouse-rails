@@ -1,0 +1,31 @@
+<%# locals: (entry:, position_options:) %>
+<%# Missing-timesheet-request dialog (Ember Me::TimesheetMissingEdit hosted
+    by hq-timesheet-verification). Turbo-streamed into the "modal" frame;
+    mirrors Me::MissingRequestsController#create's param surface. %>
+<%= modal_dialog id: "hq-missing-request-modal", size: :lg, title: "New Missing Timesheet Request", frame: false do %>
+  <%= ui_callout_box :warning do %>
+    Use this form only for a shift with no timesheet entry at all. To fix an existing
+    entry, use its <em>Submit Correction</em> button instead.
+  <% end %>
+  <%# _top: escape the "modal" turbo-frame so the success redirect renders
+      the page. %>
+  <%= ui_form(entry, hq_shift_manage_missing_request_path(shift_person, **shift_context),
+              method: :post, data: { turbo_frame: "_top" }) do |f| %>
+    <%= f.select :position_id, position_options,
+                 label: "Which position was the shift for?" %>
+    <%= form_row do %>
+      <%= f.datetime_field :on_duty, label: "Shift Start Date & Time",
+                           wrapper_class: "flex-1" %>
+      <%= f.datetime_field :off_duty, label: "Shift End Date & Time",
+                           wrapper_class: "flex-1" %>
+    <% end %>
+    <%= f.text_field :partner,
+                     label: "Shift Partners or Lead Who Can Corroborate",
+                     maxlength: 100 %>
+    <%= f.text_area :additional_notes,
+                    label: "Brief Explanation",
+                    help_text: "1 to 3 sentences on why the entry is missing.",
+                    maxlength: 1500 %>
+    <%= modal_form_footer f, submit: "Submit Request" %>
+  <% end %>
+<% end %>

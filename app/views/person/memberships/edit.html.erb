@@ -1,0 +1,63 @@
+<%= hero_panel icon: "people-group", heading_level: :h1, id: "person-membership-edit-header",
+               title: "Manage Teams & Positions — #{@person.callsign}",
+               back_to: [@person.callsign, person_path(@person)] %>
+
+<p class="mb-2 text-sm text-stone-muted">
+  <% if @membership_presenter.admin_view? %>
+    As an administrator, all teams and positions are available to be granted or revoked.
+  <% else %>
+    You may only grant or revoke positions for teams you manage.
+  <% end %>
+  Legend:
+  <%= fa_icon "universal-access", :solid, class: "text-xs" %> All Rangers &middot;
+  <%= fa_icon "globe", :solid, class: "text-xs" %> All Accounts &middot;
+  <%= fa_icon "power-off", :solid, class: "text-xs" %> Clears on join &middot;
+  <i>Is Team Manager</i> = may manage the team's grants &middot;
+  <i>N Permissions</i> = opens the list of associated permissions.
+</p>
+
+<% if @membership_presenter.show_scroll_list? %>
+  <%= dropdown_scroll_list @membership_presenter.scroll_items %>
+<% end %>
+
+<% if @membership_presenter.any_editable_items? %>
+  <% param_key = @membership_form.model_name.param_key %>
+
+  <%= ui_form(@membership_form, person_membership_path(@person), method: :patch, data: { controller: "membership-editor" }) do |f| %>
+    <%= hidden_field_tag "#{param_key}[team_ids][]", "" %>
+    <%= hidden_field_tag "#{param_key}[manager_ids][]", "" %>
+    <%= hidden_field_tag "#{param_key}[position_ids][]", "" %>
+
+    <div class="columns-1 gap-4 lg:columns-2">
+      <% if @membership_presenter.can_manage_general_positions? %>
+        <div class="mb-4 break-inside-avoid">
+          <article class="card-standard p-3 shadow-xs">
+            <h3 class="heading-title text-heading mb-2">General Positions / Unassociated with a Clubhouse Team</h3>
+            <% @membership_presenter.general_positions.each do |position| %>
+              <%= render "position_checkbox", item: position, param_key: param_key %>
+            <% end %>
+            <div class="mt-2 ml-1">
+              <%= submit_button "Save" %>
+            </div>
+          </article>
+        </div>
+      <% end %>
+
+      <% @membership_presenter.team_items.each do |team| %>
+        <div class="mb-4 break-inside-avoid">
+          <%= render "team_card", team: team, param_key: param_key %>
+        </div>
+      <% end %>
+    </div>
+
+    <%= button_row do %>
+      <%= cancel_link person_path(@person) %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "You do not currently manage any teams or positions for this person.", icon: "people-group", icon_type: :solid %>
+
+  <%= button_row do %>
+    <%= cancel_link person_path(@person), "Back to Person" %>
+  <% end %>
+<% end %>

@@ -1,0 +1,12 @@
+<%# locals: (step:,facts:)%>
+<p class="text-error font-semibold"><%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %> Photo rejected:</p>
+<ul class="mb-2 list-disc list-inside">
+  <% facts.photo.rejections.each do |reason| %>
+    <li><%= reason %></li>
+  <% end %>
+</ul>
+<% if facts.photo.reject_message.present? %>
+  <p class="font-semibold">Reviewer note:</p>
+  <p class="mb-2"><%= simple_format facts.photo.reject_message %></p>
+<% end %>
+<p class="mb-2"><%= link_to "Go To Upload Photo", new_me_profile_photo_path, class: "tap-target-link" %></p>

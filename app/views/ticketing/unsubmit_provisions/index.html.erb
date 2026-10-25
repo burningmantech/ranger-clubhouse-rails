@@ -1,0 +1,100 @@
+<%#
+  Un-submit recommendations (Ember vc/access-documents/unsubmit-provisions
+  port). Lists people who claimed or submitted earned provisions but did not
+  ranger that year; the operator picks who gets their provisions returned to
+  available. The commit renders its ledger at 422 (Turbo drops a 200 form
+  response). See Ticketing::UnsubmitProvisionsController.
+%>
+
+<%= hero_panel icon: "rotate-left", heading_level: :h1, id: "ticketing-unsubmit-provisions-header",
+               back_to: ["Maintenance Tasks", ticketing_maintenance_path] do |panel| %>
+  <% panel.title do %>Un-Submit Provisions<% end %>
+  <% panel.description do %>
+    People who claimed or submitted earned provisions for <%= @year %> but did
+    not ranger.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box number_with_delimiter(@rows.size), "People" %>
+  <%= ui_stat_box @year, "Year" %>
+<% end %>
+
+<% if @rows.empty? %>
+  <%= ui_empty_state "No one claimed or submitted earned provisions for #{@year} without rangering. " \
+                     "There is nothing to un-submit.",
+                     icon: "circle-check", icon_type: :solid %>
+  <%= button_row do %>
+    <%= button_link "Back to Maintenance Tasks", :secondary, ticketing_maintenance_path %>
+  <% end %>
+<% else %>
+  <%= ui_callout_box :info do %>
+    <strong>Check who really was a no-show before un-submitting.</strong>
+    The ticket, SAP, BMID, and sign-up columns show how far each person got:
+    someone with a submitted BMID or event sign-ups may have rangered without a
+    timesheet entry. Run this before Clean Provisions marks these as used.
+  <% end %>
+
+  <%= button_row do %>
+    <%= export_csv_link(ticketing_unsubmit_provisions_path(format: :csv)) %>
+  <% end %>
+
+  <%= ui_form(nil, ticketing_unsubmit_provisions_commit_path, method: :post) do |f| %>
+    <%= ui_section "Recommended for Un-Submitting", icon: "table-list", icon_type: :solid, border: false do %>
+      <%= bulk_select do %>
+        <%= bulk_select_all label: "Select everyone listed" %>
+
+        <%= ui_table do |t| %>
+          <%= t.header do %>
+            <%= t.heading "Un-Submit", width: "1%" %>
+            <%= t.heading "Callsign" %>
+            <%= t.heading "Status" %>
+            <%= t.heading "Ticket" %>
+            <%= t.heading "SAP" %>
+            <%= t.heading "BMID Printed" %>
+            <%= t.heading "#{@year} Sign-Ups?" %>
+            <%= t.heading "Provisions" %>
+          <% end %>
+          <%= t.body do %>
+            <% @rows.each do |row| %>
+              <%= t.row do %>
+                <%= t.cell do %>
+                  <%= bulk_select_checkbox "person_ids[]", row.person.id, id: "unsubmit-person-#{row.person.id}",
+                                           aria_label: "Un-submit provisions for #{row.person.callsign}" %>
+                <% end %>
+                <%= t.row_header do %>
+                  <%= callsign_link row.person %>
+                <% end %>
+                <%= t.cell row.person.status %>
+                <%= t.cell value_or_dash(row.ticket_summary) %>
+                <%= t.cell yes_no_badge(row.has_sap) %>
+                <%= t.cell yes_no_badge(row.bmid) %>
+                <%= t.cell yes_no_badge(row.signed_up) %>
+                <%= t.cell do %>
+                  <% row.provision_summaries.each do |summary| %>
+                    <div><%= summary %></div>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= ui_callout_box :warning, accent: true, class: "my-4" do %>
+      <strong>Un-submitting returns every checked person's earned claimed or submitted
+      provisions to available.</strong> This cannot be undone from here.
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Un-Submit Selected Provisions", variant: :error,
+                   data: { turbo_confirm: confirm_modal_dialog(
+                     title: "Confirm Un-Submit",
+                     message: "Return the selected people's provisions to available?",
+                     confirm_label: "Un-Submit Provisions"
+                   ) } %>
+      <%= cancel_button ticketing_maintenance_path %>
+    <% end %>
+  <% end %>
+<% end %>

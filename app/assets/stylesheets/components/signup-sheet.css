@@ -1,0 +1,174 @@
+/*
+ * Printable training sign-up sheet (training/sessions#signup_sheet).
+ *
+ * Print-first component: fixed ink-on-white colors on purpose -- the sheet is
+ * a paper document, so it renders as a white "paper" preview on screen in both
+ * themes and prints solid black regardless of the muted theme text colors.
+ * Greys that match a light-theme token are written as the token instead:
+ * layouts/print pins data-theme="light", so they cannot turn dark with the
+ * screen. The rest have no token close enough and stay literal.
+ *
+ * Pagination is the browser's, not ours: an entry is one tbody with
+ * break-inside: avoid, and the thead repeats on every printed page. There are
+ * deliberately no rows-per-page constants -- entry height varies with a
+ * wrapped name, so any fixed count drifts (see the note in
+ * Training::SessionsController). The running-head row is what keeps a
+ * continuation page identifiable once the masthead is behind it.
+ */
+
+/*
+ * `page: signup-sheet` binds the sheet to the named @page rule the view emits
+ * into layouts/print's :page_rules hook (the footer's page-number margin box
+ * lives there -- @page cannot be written in the tailwind bundle).
+ */
+.signup-sheet {
+  background: #fff;
+  color: #111;
+  font-size: 12pt;
+  page: signup-sheet;
+}
+
+/* Paper preview on screen; @page margins take over in print. */
+@media screen {
+  .signup-sheet {
+    max-width: 8.5in;
+    margin-inline: auto;
+    margin-bottom: 1.5rem;
+    padding: 0.5in;
+    border: 1px solid var(--color-line);
+  }
+}
+
+.signup-masthead {
+  border-bottom: 2.5pt solid #111;
+  padding-bottom: 6pt;
+  margin-bottom: 2pt;
+}
+
+.signup-doc-label {
+  font-size: 8.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-body);
+}
+
+.signup-session {
+  font-size: 17pt;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.signup-when {
+  font-size: 11pt;
+  color: #222;
+}
+
+/*
+ * Repeats at the top of every printed page (browsers re-render thead per
+ * page), so a continuation sheet still says which session and document it
+ * belongs to. Redundant on page 1 under the masthead, where it is simply a
+ * thin restatement.
+ */
+.signup-running-head th {
+  font-size: 8pt;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--color-body-subtle);
+  border-bottom: 0.5pt solid #ccc;
+  padding-bottom: 3pt;
+}
+
+.signup-subline {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 9pt;
+  @apply text-stone-muted;
+  padding: 3pt 0 8pt;
+}
+
+.signup-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.signup-sheet th {
+  font-size: 8pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-heading);
+  text-align: left;
+  padding: 2pt 6pt;
+  border-bottom: 1.25pt solid #111;
+}
+
+.signup-sheet td {
+  padding: 3pt 6pt;
+  vertical-align: middle;
+}
+
+/* One tbody per entry: zebra by person, never torn across sheets. */
+.signup-sheet tbody {
+  break-inside: avoid;
+}
+
+.signup-sheet tbody:nth-of-type(even) td {
+  background: var(--color-base-200);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.signup-id-row td {
+  height: 0.36in;
+  border-bottom: 0.5pt dotted #bbb;
+}
+
+/* Scoped under .signup-sheet so vertical-align/padding beat the td defaults. */
+.signup-sheet .signup-num {
+  width: 0.32in;
+  text-align: right;
+  font-size: 9pt;
+  color: var(--color-body-subtle);
+  padding-right: 4pt;
+  vertical-align: top;
+  padding-top: 7pt;
+  border-bottom: 0.75pt solid #999;
+}
+
+.signup-callsign {
+  width: 1.55in;
+  font-weight: 700;
+}
+
+.signup-name {
+  width: 1.75in;
+  font-size: 10.5pt;
+  color: #222;
+}
+
+.signup-sig {
+  border-left: 0.75pt solid #ccc;
+}
+
+.signup-notes-cell {
+  height: 0.21in;
+  border-bottom: 0.75pt solid #999;
+}
+
+.signup-fill {
+  font-size: 7pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #999;
+}
+
+/* Cells holding only a fill-in caption anchor it top-left like a paper form. */
+.signup-sheet td:has(> .signup-fill:only-child) {
+  vertical-align: top;
+}
+
+/* Walk-in entries (ART only): blank fill-in cells plus contact lines. */
+.signup-contact-row td {
+  height: 0.32in;
+  border-bottom: 0.5pt dotted #bbb;
+}

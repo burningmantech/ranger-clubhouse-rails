@@ -1,0 +1,44 @@
+<%= hero_panel icon: "magnifying-glass", heading_level: :h1, id: "vc-search-header",
+               title: "Application Search",
+               back_to: ["Applications", vc_applications_path] do |panel| %>
+  <% panel.description do %>
+    Results for &ldquo;<%= @query %>&rdquo; across all years.
+  <% end %>
+<% end %>
+
+<%= form_with url: search_vc_applications_path, method: :get, builder: AppFormBuilder, class: "mb-4" do |f| %>
+  <div class="flex flex-wrap items-end gap-2">
+    <%= f.search_field :query, label: "Search All Years", width: "w-full sm:w-96", value: @query,
+                       placeholder: "A-nnnn, R-nnnn, name, email, or BPGUID" %>
+    <%= f.submit "Search Applications" %>
+  </div>
+<% end %>
+
+<% if @results.any? %>
+  <%= ui_section "Found #{pluralize(@results.size, "application")}", border: false do %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Year" %>
+        <%= t.heading "Application" %>
+        <%= t.heading "Salesforce ID" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Name" %>
+        <%= t.heading "Email" %>
+      <% end %>
+      <%= t.body do %>
+        <% @results.each do |application| %>
+          <%= t.row do %>
+            <%= t.cell application.year %>
+            <%= t.row_header application_link(application) %>
+            <%= t.cell application.salesforce_name %>
+            <%= t.cell application_status_badge(application.status) %>
+            <%= t.cell "#{application.first_name} #{application.last_name}" %>
+            <%= t.cell email_link_or_dash(application.email) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No applications found with the query \"#{@query}\"." %>
+<% end %>

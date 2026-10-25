@@ -1,0 +1,17 @@
+description: "Tells the training team a session has no places left"
+
+subject: "[Clubhouse] A training session has become full"
+
+body: |
+  <p>
+    Heads up! A training session has reached capacity.
+  </p>
+
+  <p>
+    <b>What:</b> {{ slot.position_title }} - {{ slot.description }}<br>
+    <b>When:</b> {{ slot.begins }}<br>
+    <b>Signups:</b> {{ signed_up }}<br>
+    <b>Max:</b> {{ slot.max }}<br>
+  </p>
+
+  {% render "shared/mailer/bot_sign_off" %}

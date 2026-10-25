@@ -1,0 +1,61 @@
+<%# locals: (pod:, position:, pod_count:, year:, frame: "modal") %>
+<%#
+  Change a pod, move it in the order, or delete it.
+
+  The two move buttons are the keyboard and screen-reader path to the ordering
+  that everyone else does by dragging a card. They send the same request the
+  drag does -- a place in the line -- so there is one endpoint and one rule
+  about what happens at the ends.
+
+  `position` is that place, counted along the shift's line, and is NOT the
+  pod's sort_index: the two agree only while a line runs exactly 1..N, which
+  nothing guarantees for a table the Laravel side also writes.
+
+  Shared by the change dialog and the answer to a move made from inside it,
+  which re-renders this in place rather than closing it. The frame local tells
+  the two apart -- opened on its own it carries the turbo frame, and streamed
+  into the frame it must not carry a second one.
+
+  Deleting asks first: the pod and its memberships go for good, unlike taking
+  someone out of a pod, which is undone by adding them back.
+%>
+<% pod_name = cruise_direction_pod_name(pod) %>
+<% first = position <= 1 %>
+<% last = position >= pod_count %>
+<%= modal_dialog id: "cruise-direction-pod-dialog", title: pod_name, frame: frame do %>
+  <%= render "shift_operations/cruise_direction/pods/form", pod: pod,
+             url: shift_operations_cruise_direction_pod_path(pod, year: year),
+             method: :patch, submit: "Save Changes" %>
+
+  <div class="border-t border-base-300 mt-4 pt-3">
+    <p class="text-stone-muted mb-2">
+      <%= pod_name %> is <%= position %> of <%= pod_count %> in the line.
+      Dragging a card by its grip does the same thing.
+    </p>
+    <%= button_row do %>
+      <%= button_link "Move Earlier", :secondary,
+                      shift_operations_cruise_direction_pod_position_path(pod, position: position - 1,
+                                                                               from: "dialog", year: year),
+                      method: :patch, size: "sm", icon: "arrow-up", icon_type: :solid,
+                      disabled: first,
+                      data: { turbo_frame: "_top" },
+                      aria: { label: "Move #{pod_name} earlier in the line" } %>
+      <%= button_link "Move Later", :secondary,
+                      shift_operations_cruise_direction_pod_position_path(pod, position: position + 1,
+                                                                               from: "dialog", year: year),
+                      method: :patch, size: "sm", icon: "arrow-down", icon_type: :solid,
+                      disabled: last,
+                      data: { turbo_frame: "_top" },
+                      aria: { label: "Move #{pod_name} later in the line" } %>
+      <%= delete_button shift_operations_cruise_direction_pod_path(pod, year: year),
+                        "Delete pod", variant: :error, size: "sm",
+                        data: { turbo_frame: "_top" },
+                        confirm_modal: {
+                          title: "Delete #{pod_name}",
+                          message: "Delete #{pod_name} and take its #{pluralize(pod.person_count, "Ranger")} out of it? The pod cannot be brought back.",
+                          confirm_label: "Delete #{pod_name}",
+                          method: "delete"
+                        } %>
+    <% end %>
+  </div>
+<% end %>

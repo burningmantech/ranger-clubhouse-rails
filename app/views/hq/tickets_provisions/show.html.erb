@@ -1,0 +1,20 @@
+<%# Tickets & Provisions Progress modal shell (Ember port/templates/hq.hbs
+    modal hosting HqTicketsAndProvisions). Fetched into the app-wide "modal"
+    turbo frame by the shell's right-column button; the body is a lazy turbo
+    frame that requests ?progress=1 for the computed tables, so the dialog
+    opens immediately with a spinner (the upstream loading indicator). %>
+<%= turbo_frame_tag "modal" do %>
+  <%= modal id: "hq-tickets-provisions-dialog", size: :xl do |m| %>
+    <%= m.title "Tickets and Provisions Progress" %>
+    <%= m.body do %>
+      <%= turbo_frame_tag HqHelper::TICKETS_PROVISIONS_FRAME,
+                          src: hq_tickets_provisions_path(@person, progress: 1),
+                          loading: "lazy" do %>
+        <div class="flex-center gap-2 p-8" role="status">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <span class="sr-only">Loading progress&hellip;</span>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

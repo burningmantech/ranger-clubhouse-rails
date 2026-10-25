@@ -1,0 +1,70 @@
+/*
+ * Safe Area Insets
+ *
+ * The viewport is declared `viewport-fit=cover` so the app paints edge to edge
+ * on a notched phone. That is a trade, not a freebie: anything that touches a
+ * screen edge now has to buy its own clearance back or a rounded corner, the
+ * notch, or the home indicator eats it. Landscape is the case that matters on
+ * playa -- a phone in a vehicle mount spends most of its life on its side, with
+ * the notch on one inline edge and the indicator across the bottom.
+ *
+ * Every rule uses max() so the design's own padding still wins on hardware with
+ * no insets, where env() resolves to 0.
+ *
+ * The first consumer was a mobile message tab bar whose own
+ * env(safe-area-inset-bottom) rule always resolved to zero because the viewport
+ * meta lacked viewport-fit=cover; that bar is gone, and declaring the viewport
+ * here is what switches every rule below on.
+ */
+
+.navbar {
+    padding-inline-start: max(0.5rem, env(safe-area-inset-left));
+    padding-inline-end: max(0.5rem, env(safe-area-inset-right));
+}
+
+/*
+ * The scroll container for page content, in both the drawer and no-drawer
+ * layouts. It owns all four sides so the inset padding cannot be undone by
+ * utility ordering.
+ */
+.app-edge-pad {
+    padding-top: 0.75rem;
+    padding-inline-start: max(0.75rem, env(safe-area-inset-left));
+    padding-inline-end: max(0.75rem, env(safe-area-inset-right));
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+/*
+ * The sidebar keeps its black field full-bleed under the notch and moves its
+ * own content clear, rather than leaving a page-coloured gutter beside it.
+ */
+.drawer-side > aside {
+    padding-inline-start: env(safe-area-inset-left);
+}
+
+/*
+ * A sticky button row is fixed to the bottom edge below lg, which is exactly
+ * where the home indicator lives.
+ *
+ * The bottom padding is a property, given to the spacer as well, because
+ * `.button-row-spacer` (components/buttons.css) holds this row's place in the
+ * flow and has to add the same padding up.
+ *
+ * The padding stops at lg because the bar does. The `fixed` class stays on the
+ * element at every width -- `lg:static` only changes its position -- and this
+ * rule is unlayered, so it outranks the helper's `lg:px-0 lg:py-0`. Left
+ * unscoped it followed the row into the flow: every desktop form drew its
+ * buttons 16px in from its fields, over 16px of padding nothing asked for.
+ */
+.button-row.fixed,
+.button-row-spacer {
+    --button-row-pad-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@media (width < theme(--breakpoint-lg)) {
+    .button-row.fixed {
+        padding-inline-start: max(1rem, env(safe-area-inset-left));
+        padding-inline-end: max(1rem, env(safe-area-inset-right));
+        padding-bottom: var(--button-row-pad-bottom);
+    }
+}

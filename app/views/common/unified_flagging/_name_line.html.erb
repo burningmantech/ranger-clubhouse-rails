@@ -1,0 +1,23 @@
+<%# locals: (person:, chips: nil) %>
+<%#
+  Who this is -- callsign, name, status as stored (no brackets, design-content)
+  and former handles -- with the chips pushed to the right of it. The review
+  pane's header. On a phone the chips wrap under the name.
+%>
+<div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+  <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+    <%= callsign_link person, class: "font-semibold text-lg" %>
+    <span class="text-body"><%= person.first_name %> <%= person.last_name %></span>
+    <span class="text-sm text-stone-muted"><%= person.status %></span>
+    <%# Reads the preloaded association rather than Person#formerly_known_as_array,
+        which plucks and so re-queries once per row. is_irrelevant is the stored
+        verdict -- usually the regexp's, but deliberately overridden for handles
+        that must stay findable (see Person#fka_irrelevant_override), so the
+        column is authoritative and re-deriving it here would be wrong. %>
+    <% fka = person.person_fka.reject(&:is_irrelevant).map(&:fka) %>
+    <% if fka.any? %>
+      <span class="text-sm text-stone-muted">FKA: <%= fka.join(", ") %></span>
+    <% end %>
+  </div>
+  <%= tag.div(chips, class: "flex flex-wrap gap-2 ms-auto") if chips.present? %>
+</div>

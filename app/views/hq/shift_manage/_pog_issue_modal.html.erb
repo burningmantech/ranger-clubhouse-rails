@@ -1,0 +1,33 @@
+<%# locals: (pog:, warnings:, ended_entry:) %>
+<%# Pog issue dialog (Ember port/components/hq-pogs.hbs pogToIssue modal):
+    computed warnings, guidelines (suppressed for shower pogs), and an
+    optional note. Turbo-streamed into the "modal" frame. %>
+<%= modal_dialog id: "hq-pog-issue-modal", size: :lg, placement: "top", title: "Confirm #{PersonPog::POG_LABELS[pog.pog]}", frame: false do %>
+  <% if warnings.any? %>
+    <%= ui_callout_box :error, icon: "hand" do %>
+      Please note the following:
+      <ul class="list-disc ms-5 mt-1">
+        <% warnings.each do |warning| %>
+          <li><%= warning %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+  <% unless pog.pog == PersonPog::POG_SHOWER %>
+    <%= render "hq/shift_manage/pog_guidelines" %>
+  <% end %>
+  <%# _top: escape the "modal" turbo-frame; failures come back as a stream
+      that replaces this dialog. %>
+  <%= ui_form(pog, hq_shift_manage_pogs_path(shift_person, **shift_context),
+              method: :post, data: { turbo_frame: "_top" }) do |f| %>
+    <%= f.hidden_field :pog %>
+    <% if ended_entry %>
+      <%# Links the pog to the just-ended shift entry. %>
+      <%= f.hidden_field :timesheet_id, value: ended_entry.id %>
+    <% end %>
+    <%= f.text_area :notes,
+                    label: "Note (optional; do not record the barcode)",
+                    rows: 2 %>
+    <%= modal_form_footer f, submit: "Record #{PersonPog::POG_LABELS[pog.pog]}" %>
+  <% end %>
+<% end %>

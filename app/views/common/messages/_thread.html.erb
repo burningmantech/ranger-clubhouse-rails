@@ -1,0 +1,16 @@
+<%# locals: (message:, owner:) %>
+<%# What #messages-thread holds: the expiry notice and the cards, newest last.
+    Mark Read and Mark Unread morph the cards one by one
+    (MessagesConcern#card_streams), never the whole of it, whose morph would
+    remove a card that landed live after their request loaded the thread. %>
+<% if message.has_expired? %>
+  <%= ui_callout_box :error do %>
+    <strong>This message has expired.</strong> The information in it is no longer current.
+  <% end %>
+<% elsif message.expires_at.present? %>
+  <%= ui_callout_box :warning, icon: "clock", icon_type: :regular, role: "status" do %>
+    Expires <%= datetime_format message.expires_at %>
+  <% end %>
+<% end %>
+<%= render partial: "common/messages/message_card", collection: [message, *message.replies], as: :message,
+           locals: { owner: } %>

@@ -1,0 +1,18 @@
+<%# locals: (summary:) %>
+<%#
+  Who walked with this person that year. Its own line rather than a chip: the
+  names are links, and a mentee can have three or four of them.
+
+  `mentors` are plain {id:, callsign:} hashes from PersonMentor, not Person
+  records, so `callsign_link` (which takes a record) does not apply here.
+%>
+<div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2">
+  <span class="font-semibold text-body">Mentors:</span>
+  <% if summary[:mentors].any? %>
+    <%= safe_join(summary[:mentors].map { |mentor|
+          link_to mentor[:callsign], person_path(mentor[:id]), class: LinkHelper::TABLE_LINK_CLASSES
+        }, tag.span("/", class: "text-stone-muted")) %>
+  <% else %>
+    <span class="text-stone-muted">None assigned</span>
+  <% end %>
+</div>

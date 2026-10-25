@@ -1,0 +1,38 @@
+<%# Layout for the unattended wall display. No navbar, sidebar, modal frame, or
+    toasts -- no one is standing at this screen to use them, and every pixel
+    belongs to the board.
+
+    Dark is fixed here rather than followed from the viewer's setting: the
+    monitor this runs on has no one to flip a switch, and a white screen in a
+    dim room is unreadable. Both the class and the attribute are set, because
+    the two halves of the theme system read different ones -- the `dark:`
+    variants key off the class, and the colour tokens key off data-theme. %>
+<!DOCTYPE html>
+<html lang="en" class="dark" data-theme="dark">
+<head>
+  <title><%= content_for(:title) || "Ranger Secret Clubhouse" %></title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%# Arrive here the long way round -- a fresh load, not a swap of the page
+      body. The dark theme and the missing chrome are both set on the <html>
+      element, which is the one part of the page a Turbo visit leaves alone, so
+      following the menu link here would otherwise leave the monitor showing
+      the board in whatever theme the last page was using. %>
+  <meta name="turbo-visit-control" content="reload">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%# The proportional roman latin face is on the critical path for every page. The
+      italic, latin-ext and monospaced faces are declared in fonts.css and fetched
+      only when something actually asks for them. %>
+  <link rel="preload" href="<%= asset_path("atkinson-latin.woff2") %>" as="font" type="font/woff2" crossorigin>
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+  <%# Stimulus's own entry modules. They are inside the lazily-pinned controllers
+      directory, so without these two the browser only discovers them after
+      application.js has been fetched and parsed. %>
+  <link rel="modulepreload" href="<%= asset_path("controllers/index.js") %>">
+  <link rel="modulepreload" href="<%= asset_path("controllers/application.js") %>">
+</head>
+<body class="bg-base-100 text-base-content" data-controller="local-time">
+<%= yield %>
+</body>
+</html>

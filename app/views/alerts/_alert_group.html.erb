@@ -1,0 +1,107 @@
+<%# locals: (alerts:, heading:, description:, person:, sms_available:, sms_reason:, index_offset: 0) %>
+
+<%= ui_section heading do %>
+ <div class="mb-2">
+   <%= description  %>
+ </div>
+  <%# Channel Legend %>
+  <div class="mb-4 card-standard bg-base-200 p-3">
+    <div class="font-semibold text-heading mb-2">Alert Channels:</div>
+    <div class="flex flex-col sm:flex-row sm:flex-wrap gap-x-4 gap-y-2">
+      <div class="flex-center-gap-2">
+        <%= ui_badge "Required", :secondary %>
+        <span class="text-stone-muted">Must receive this alert</span>
+      </div>
+      <div class="flex-center-gap-2">
+        <%= ui_badge "Email only", :secondary %>
+        <span class="text-stone-muted">Only available via email</span>
+      </div>
+      <div class="flex-center-gap-2">
+        <%= ui_badge "SMS only", :secondary %>
+        <span class="text-stone-muted">Only available via SMS</span>
+      </div>
+    </div>
+  </div>
+
+  <% alerts.each_with_index do |alert, idx| %>
+    <% field_idx = index_offset + idx %>
+    <% unless idx.zero? %>
+      <hr class="my-4 border-line">
+    <% end %>
+
+    <input type="hidden" name="alerts[<%= field_idx %>][id]" value="<%= alert.id %>">
+
+    <%# Desktop: 3-column grid | Mobile: Stacked card blocks %>
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto_auto] gap-3 lg:gap-6 lg:items-start">
+      <%# Column 1: Alert Info %>
+      <div class="min-w-0">
+        <div class="font-semibold text-heading mb-1"><%= alert.title %></div>
+        <div class="text-body"><%= alert.description %></div>
+      </div>
+
+      <%# Column 2: SMS Channel %>
+      <div class="flex items-start gap-2 lg:w-44 shrink-0">
+        <div class="lg:hidden text-xs font-medium text-stone-muted uppercase tracking-wide mt-1">SMS:</div>
+        <div>
+          <% if alert.no_opt_out %>
+            <%= ui_badge "Required", :secondary %>
+          <% elsif alert.email_only %>
+            <%= ui_badge "Email only", :secondary %>
+          <% elsif !sms_available %>
+            <% unavailable_id = "sms_unavailable_#{field_idx}" %>
+            <div class="inline-flex items-center opacity-50 cursor-not-allowed" role="group" aria-describedby="<%= unavailable_id %>">
+              <input type="checkbox"
+                     disabled
+                     class="<%= AppFormBuilder::CHECKBOX_CLASSES %> cursor-not-allowed"
+                     aria-label="SMS (unavailable)">
+              <span class="ms-2 text-base text-heading select-none leading-tight">SMS</span>
+              <span id="<%= unavailable_id %>" class="sr-only">
+                SMS is unavailable because <%= sms_reason %>. <%=
+                  if person.sms_number.blank?
+                    "Add a phone number above to enable SMS alerts."
+                  elsif person.sms_stopped?
+                    "Resume SMS by texting START from your phone."
+                  elsif !person.sms_verified?
+                    "Verify your phone number above to enable SMS alerts."
+                  end
+                %>
+              </span>
+            </div>
+          <% else %>
+            <input type="hidden" name="alerts[<%= field_idx %>][use_sms]" value="0">
+            <label class="inline-flex items-center min-h-9 cursor-pointer">
+              <input type="checkbox"
+                     name="alerts[<%= field_idx %>][use_sms]"
+                     value="1"
+                     <%= "checked" if alert.use_sms %>
+                     class="<%= AppFormBuilder::CHECKBOX_CLASSES %>">
+              <span class="ms-2 text-base text-heading select-none leading-tight">SMS</span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Column 3: Email Channel %>
+      <div class="flex items-start gap-2 lg:w-44 shrink-0">
+        <div class="lg:hidden text-xs font-medium text-stone-muted uppercase tracking-wide mt-1">Email:</div>
+        <div>
+          <% if alert.no_opt_out %>
+            <%= ui_badge "Required", :secondary %>
+          <% elsif alert.sms_only %>
+            <%= ui_badge "SMS only", :secondary %>
+          <% else %>
+            <input type="hidden" name="alerts[<%= field_idx %>][use_email]" value="0">
+            <label class="inline-flex items-center min-h-9 cursor-pointer">
+              <input type="checkbox"
+                     name="alerts[<%= field_idx %>][use_email]"
+                     value="1"
+                     <%= "checked" if alert.use_email %>
+                     class="<%= AppFormBuilder::CHECKBOX_CLASSES %>">
+              <span class="ms-2 text-base text-heading select-none">Email</span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

@@ -1,0 +1,18 @@
+<%# Shared "contact the Ranger Ticketing Team" callout.                        %>
+<%# Use for any broken / missing-data state a member cannot fix themselves.   %>
+<%# Optional locals:                                                          %>
+<%#   message: lead sentence (defaults to a generic ask)                      %>
+<%#   variant: callout variant (defaults to :error)                          %>
+<%
+  variant = local_assigns.fetch(:variant, :error)
+  message = local_assigns.fetch(:message, "Something needs a human. This can only be fixed by the ticketing team.")
+  email   = @ticketing_info&.ranger_ticketing_email
+%>
+<%= ui_callout_box variant, icon: "life-ring", accent: true, title: "Contact the Ranger Ticketing Team" do %>
+  <p class="mb-2"><%= message %></p>
+  <% if email.present? %>
+    <p>
+      Email <%= mail_to email, email, class: "underline font-semibold" %> and include your callsign.
+    </p>
+  <% end %>
+<% end %>

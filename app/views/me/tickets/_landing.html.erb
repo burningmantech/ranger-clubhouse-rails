@@ -1,0 +1,231 @@
+<%# locals: (person: current_user, admin_view: false) -%>
+<%# The Tickets & Provisions hub body, shared between /me/tickets and the     %>
+<%# read-only admin view-as-person page (admin_view: true hides the hero and  %>
+<%# every action button).                                                     %>
+<%# Switches on the ticketing period. OPEN (for eligible members) is either   %>
+<%# the walkthrough launcher (until ticketing is finished) or the adjustable  %>
+<%# overview (after finishing); other periods render their own partial.       %>
+<%
+  info = @ticketing_info
+  period = info.period
+  applicant = person.is_applicant?
+  presenter = (!applicant && @ticket_package) ? TicketOverviewPresenter.new(@ticket_package, info) : nil
+
+  open_member = period == TicketingInfo::PERIOD_OPEN && !applicant && !@missing_bpguid && presenter
+  finished = open_member && @ticket_package.finished_at.present?
+
+  # Finished overview: one card per applicable section.
+  checklist = open_member ? presenter.sections.select(&:applicable?) : []
+
+  # Walkthrough (unfinished): the ordered wizard steps and how many are settled.
+  wizard_keys = (open_member && !finished) ? presenter.wizard_steps : []
+  wizard_sections = wizard_keys - [:review]
+  wizard_done = wizard_sections.count { |key| !presenter.section_status(key).needs_decision? }
+
+  # Section key -> hub metadata + destination page.
+
+  if presenter&.using_staff_credential?
+    ticket_label = "Staff Credential"
+  elsif presenter&.ticket
+    ticket_label = "Special Price Ticket"
+  else
+    ticket_label = "Ticket"
+  end
+
+  section_meta = {
+    ticket: { title: ticket_label, icon: "ticket", path: me_tickets_ticket_path },
+    gift: { title: "Gift tickets", icon: "gift", path: me_tickets_gift_path },
+    vehicle_pass: { title: "Vehicle Pass", icon: "car-side", path: me_tickets_vehicle_pass_path },
+    provisions: { title: "Provisions", icon: "gear", path: me_tickets_provisions_path },
+    sap: { title: "Setup Access Pass (SAP)", icon: "passport", path: me_tickets_sap_path },
+    sap_so: { title: "SAPs for significant others", icon: "people-group", path: me_tickets_sap_so_path },
+    review: { title: "Confirm your choices", icon: "flag-checkered", path: me_tickets_review_path }
+  }
+
+
+%>
+
+<% unless admin_view %>
+  <%= hero_panel icon: "ticket", heading_level: :h1, id: "tickets-header", back_to: :dashboard do |panel| %>
+    <% panel.title do %>
+      <%= applicant ? "Setup Access Pass" : "Tickets & Provisions" %>
+    <% end %>
+    <% panel.description do %>
+      <%= applicant ? "Your early-entry Setup Access Pass eligibility and details." : "Claim, bank, and set up your event ticket, passes, and provisions." %>
+    <% end %>
+    <% if wizard_sections.any? %>
+      <% panel.progress completed: wizard_done, total: wizard_sections.size, start_label: "Ticketing", end_label: "#{wizard_done} of #{wizard_sections.size} done" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% case period %>
+<% when TicketingInfo::PERIOD_ANNOUNCE %>
+  <%= render "me/tickets/announce", person: %>
+
+<% when TicketingInfo::PERIOD_OFF_SEASON %>
+  <%= render "me/tickets/off_season", person: %>
+
+<% when TicketingInfo::PERIOD_CLOSED %>
+  <%= render "me/tickets/closed", person: %>
+
+<% when TicketingInfo::PERIOD_OPEN %>
+  <% if applicant %>
+    <%# --- Applicant: Setup Access Pass only ------------------------------- %>
+    <%= ui_callout_box :success, icon: "calendar-check", accent: true, title: "Setup Access Pass (SAP) Available" do %>
+      <p class="mb-1"><strong>You can enter the event early with your SAP.</strong></p>
+      <p>Entry date: on or after <%= mdy_format info.sap_alpha_default_date, full: true %>.</p>
+    <% end %>
+
+    <%= ui_callout_box :error, title: "Read This Before You Rely on Your SAP" do %>
+      <ul class="space-y-1">
+        <li><strong>A SAP is NOT a Burning Man ticket.</strong> You must bring your own.</li>
+        <li><strong>A SAP is NOT a Vehicle Pass.</strong></li>
+        <li><strong>A SAP covers you only.</strong> It does not cover companions.</li>
+        <li><strong>No early entry before <%= mdy_format info.sap_alpha_default_date %>.</strong> You will be turned
+          away.
+        </li>
+      </ul>
+    <% end %>
+
+    <%= ui_callout_box :info, icon: "envelope" do %>
+      <strong>Next:</strong> watch for an email from Burning Man Ticketing in late July or early August. Check your spam folder too.
+    <% end %>
+
+  <% elsif @missing_bpguid %>
+    <%# --- Blocked: no linked Burner Profile -------------------------------- %>
+    <%= ui_callout_box :warning, icon: "id-badge", accent: true, title: "Link Your Burner Profile First" do %>
+      <p class="mb-2"><strong>You can't claim tickets until your Burner Profile ID (BPGUID) is on file.</strong></p>
+      <ul class="space-y-1 mb-2">
+        <li>Ranger Ticketing needs it to match you in the Burning Man ticket system.</li>
+        <li>Add it on your profile, then come back to this page.</li>
+      </ul>
+      <% unless admin_view %>
+        <%= button_link "Go to My Profile", :primary, me_profile_path, icon: "user", icon_type: :solid %>
+      <% end %>
+    <% end %>
+
+  <% else %>
+    <%# --- Eligible member --------------------------------------------------- %>
+
+    <% if @ticket_package.lsd_items.any? %>
+      <%= ui_callout_box :secondary, icon: "ticket", accent: true, title: "Late Season Directed (LSD) Items Claimed" do %>
+        <ul class="list-disc pl-4 space-y-1">
+          <% @ticket_package.lsd_items.each do |item| %>
+            <li><%= item.type_label %> — must be paid for in advance.</li>
+          <% end %>
+        </ul>
+      <% end %>
+    <% end %>
+
+    <% if finished %>
+      <%# --- Finished: confirmation + adjustable overview -------------------- %>
+      <%= ui_callout_box :success, accent: true, title: "Your Ticketing Choices Are Recorded" do %>
+        <p><strong>Watch your inbox and the Ranger Announce list for next steps.</strong> You can still adjust any choice below before the deadline.</p>
+      <% end %>
+
+      <% if presenter.gift_ticket_count.zero? && @ticket_package.gift_items.any? %>
+        <%= ui_callout_box :secondary, icon: "gift", accent: true, title: "#{pluralize(@ticket_package.gift_items.count, "Gift Ticket")} Available" do %>
+          Claim <%= @ticket_package.gift_items.count == 1 ? "it" : "them" %> in the Gift tickets section below.
+        <% end %>
+      <% end %>
+
+      <%= ui_section "What Happens Next", icon: "list-ol", icon_type: :solid do %>
+        <ol class="list-decimal pl-5 space-y-2 text-body">
+          <li>After the ticketing deadline, your claimed items are uploaded to Burning Man ticketing.</li>
+          <li>You'll get an email with any next steps — including how to pay for and ship items.</li>
+          <li><strong>Finish the Burning Man checkout promptly</strong> — even for free items — or they may be delayed.
+          </li>
+          <li>Claimed SAPs that aren't part of a Staff Credential are emailed to you automatically.</li>
+        </ol>
+      <% end %>
+
+      <%# One card per applicable section so every choice stays adjustable. %>
+      <%= ui_section "Adjust Your Choices", icon: "pen", icon_type: :solid do %>
+        <% unless admin_view %>
+          <p class="text-body mb-4">Changed your mind? Open any section to claim, bank, or release before the
+            deadline.</p>
+        <% end %>
+        <div class="two-column-lg">
+          <% checklist.each do |sec| %>
+            <% meta = section_meta[sec.key] %>
+            <div class="flex flex-col gap-3 rounded-lg border border-line p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start gap-2 min-w-0">
+                  <%= fa_icon meta[:icon], :solid, class: "text-stone-icon mt-1 shrink-0" %>
+                  <h3 class="heading-title text-heading"><%= meta[:title] %></h3>
+                </div>
+                <%= render "me/tickets/status_chip", state: sec.state %>
+              </div>
+              <%= render "me/tickets/section_detail", sec:, presenter:, person: %>
+              <% unless admin_view %>
+                <div class="mt-auto">
+                  <% if sec.locked? %>
+                    <%= button_link "Locked", :secondary, meta[:path], disabled: true, icon: "lock", icon_type: :solid %>
+                  <% else %>
+                    <%= button_link "Review", :secondary, meta[:path], icon: "pen", icon_type: :solid %>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+    <% else %>
+      <%# --- Unfinished: the walkthrough launcher ---------------------------- %>
+      <%= ui_callout_box :info, icon: "clock", title: "Ranger Ticketing Is Open" do %>
+        <% if info.submit_date %>
+          <p><strong>Deadline: <%= full_datetime_format(info.submit_date) %> (Pacific).</strong></p>
+        <% end %>
+        <p class="mt-1">We'll walk you through each choice, one page at a time. Change any choice until the
+          deadline.</p>
+      <% end %>
+
+      <%= ui_section "Your Ticketing Steps", icon: "clipboard-list", icon_type: :solid do %>
+        <% unless admin_view %>
+          <div class="mb-4">
+            <%= button_link (@ticket_package.started_at ? "Continue ticketing" : "Start ticketing"), :primary,
+                            section_meta[presenter.next_undecided_step][:path],
+                            size: "lg", icon: "arrow-right", icon_type: :solid %>
+          </div>
+        <% end %>
+        <ol class="divide-y divide-line">
+          <% wizard_keys.each_with_index do |key, i| %>
+            <% meta = section_meta[key] %>
+            <%
+              row = capture do %>
+              <span class="w-5 text-right shrink-0 font-semibold text-stone-muted"><%= i + 1 %>.</span>
+              <%= fa_icon meta[:icon], :solid, class: "text-stone-icon shrink-0 w-5 text-center" %>
+              <span class="font-semibold text-heading min-w-0"><%= meta[:title] %></span>
+              <span class="ms-auto shrink-0 flex items-center gap-2">
+                <% if key != :review %>
+                  <%= render "me/tickets/status_chip", state: presenter.section_status(key).state %>
+                <% end %>
+                <% unless admin_view %>
+                  <%= fa_icon "chevron-right", :solid, class: "text-stone-subtle" %>
+                <% end %>
+              </span>
+            <% end %>
+            <li>
+              <% if admin_view %>
+                <div class="flex items-center gap-3 py-2 min-h-9"><%= row %></div>
+              <% else %>
+                <%= link_to meta[:path], class: "flex items-center gap-3 py-2 min-h-9 no-decoration hover:bg-base-200 transition-colors rounded-lg px-1 -mx-1" do %>
+                  <%= row %>
+                <% end %>
+              <% end %>
+            </li>
+          <% end %>
+        </ol>
+      <% end %>
+    <% end %>
+  <% end %>
+
+<% else %>
+  <%= ui_callout_box :warning, icon: "circle-question", title: "Ticketing Status Unavailable" do %>
+    We couldn't determine the current ticketing period. Please check back later.
+  <% end %>
+<% end %>
+
+<%= render "me/tickets/faqs_section", person: %>

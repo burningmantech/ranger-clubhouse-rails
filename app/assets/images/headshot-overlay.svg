@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="350" height="450" viewBox="0 0 350 450">
+  <!-- CONFIG -->
+  <defs>
+    <!-- Stroke widths and colors -->
+    <style>
+      .border { stroke:#ff2a2a; stroke-width:8; fill:none; }
+      .outline { stroke:#ff2a2a; stroke-width:10; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+    </style>
+
+    <!-- Mask to keep the outside area #666 but punch a transparent "interior" hole -->
+    <!-- White (1) = visible; Black (0) = punched out (transparent) -->
+    <mask id="bgCutout" maskUnits="userSpaceOnUse">
+      <!-- Start fully opaque -->
+      <rect x="0" y="0" width="350" height="450" fill="white"/>
+
+      <!-- The interior silhouette area to remove (black) -->
+      <!-- This is a closed shape formed by shoulders touching the frame edges,
+           curving up around the head, and down the other side, then across the bottom. -->
+      <path fill="black" fill-rule="evenodd" d="
+        M 8,360
+        C 28,360 56,354 94,334
+          132,314 144,292 158,272
+
+        C 165,262 168,256 171,247
+          174,238 175,232 175,225
+
+        C 175,205 181,189 194,178
+          207,167 223,162 242,162
+
+        C 261,162 277,167 290,178
+          303,189 309,205 309,225
+
+        C 309,232 310,238 313,247
+          316,256 319,262 326,272
+
+        C 340,292 352,314 390,334
+          328,354 342,360 342,360
+
+        L 342,442
+        L 8,442
+        Z
+      "/>
+    </mask>
+  </defs>
+
+  <!-- Background outside the silhouette is #666; interior is transparent via the mask -->
+  <rect x="0" y="0" width="350" height="450" fill="#666" mask="url(#bgCutout)"/>
+
+  <!-- Red outer border (7:9 frame) -->
+  <rect x="8" y="8" width="334" height="434" rx="6" class="border"/>
+
+  <!-- Head-and-shoulders outline (no chin; shoulders connect to edges) -->
+  <!-- Geometry notes:
+       - ViewBox: 350×450
+       - Head top ~30% down (after your 10% down adjustment): ~135px from top
+       - Head enlarged ~10% vs earlier iterations
+       - Shoulders connect at the inner border edges (x=8 and x=342) -->
+  <path class="outline" d="
+    M 8,360
+    C 28,360 56,354 94,334
+      132,314 144,292 158,272
+
+    C 170,255 170,240 183,224
+      196,208 214,198 238,198
+
+    C 262,198 280,208 293,224
+      306,240 306,255 318,272
+
+    C 332,292 344,314 382,334
+      320,354 342,360 342,360
+  "/>
+</svg>

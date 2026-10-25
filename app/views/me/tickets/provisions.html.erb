@@ -1,0 +1,115 @@
+<%# /me/tickets/provisions — one decision: use or bank your earned provisions.  %>
+<%# Earned provisions (meals / showers / event radios) can be banked for a      %>
+<%# future year. Allocated provisions cannot — that case is explained, not      %>
+<%# actionable. PATCH me_tickets_provisions_path status=banked|claimed.         %>
+<%
+  info      = @ticketing_info
+  presenter = TicketOverviewPresenter.new(@ticket_package, info)
+  pkg       = @ticket_package
+  items     = presenter.provision_items
+
+  have_provisions  = pkg.provisions.present?
+  bankable         = have_provisions && pkg.provisions_bankable
+  banked           = have_provisions && pkg.provisions_banked
+  have_event_radio = presenter.radios.positive?
+
+  # Undecided = an earned (non-allocated) provision still sitting at its default.
+  undecided = pkg.provision_records.any? { |p| !p.is_allocated && p.status == Provision::AVAILABLE }
+%>
+
+<%= hero_panel icon: "gear", heading_level: :h1, id: "provisions-header",
+               title: "Provisions",
+               description: "One choice: use your earned provisions at this event, or bank them for a future year.",
+               back_to: ["Tickets & Provisions", me_tickets_path] %>
+
+<% unless have_provisions %>
+  <%# --- Nothing to decide -------------------------------------------------- %>
+  <%= ui_callout_box :secondary, icon: "circle-info", accent: true, title: "No Provisions to Decide Right Now" do %>
+    <p class="mb-1"><strong>You have no earned provisions this year.</strong></p>
+    <p class="text-body">Provisions like meals, Wet Spot access, and event radios are earned from prior volunteer service. When you earn some, they show up here.</p>
+  <% end %>
+
+  <div class="mt-4">
+    <%= button_link "Back to Tickets & Provisions", :secondary, me_tickets_path, icon: "arrow-left", icon_type: :solid %>
+  </div>
+
+<% else %>
+  <%# --- What the choice is about ------------------------------------------ %>
+  <%= ui_section "What You've Earned", icon: "gift", icon_type: :solid do %>
+    <p class="text-body mb-3">
+      <% if bankable %>
+        These provisions have been given to you:
+      <% else %>
+        These provisions — your earned and allocated ones combined — have been given to you:
+      <% end %>
+    </p>
+    <ul class="space-y-2">
+      <% items.each do |item| %>
+        <li class="flex items-center gap-3">
+          <%= fa_icon item.icon, :solid, class: "text-stone-icon shrink-0 w-5 text-center" %>
+          <span class="text-body"><%= item.label %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if bankable %>
+    <%# --- The single decision --------------------------------------------- %>
+    <%= ui_section "Use or Bank Your Provisions", icon: "hand-pointer", icon_type: :solid do %>
+      <div class="flex flex-col gap-4">
+        <%# Current status, led by a chip so it's readable at a glance %>
+        <div class="flex items-start gap-3">
+          <% if banked %>
+            <%= render "status_chip", state: :decided, label: "Banked" %>
+            <p class="text-body"><strong>Your provisions are banked for a future year.</strong> You won't receive them at this event.</p>
+          <% elsif undecided %>
+            <%= render "status_chip", state: :needs_decision, label: "Not Decided" %>
+            <p class="text-body"><strong>Your provisions will be used at this event by default.</strong> Bank them instead if you'd rather save them.</p>
+          <% else %>
+            <%= render "status_chip", state: :decided, label: "Using Them" %>
+            <p class="text-body"><strong>Your provisions are set to be used at this event.</strong></p>
+          <% end %>
+        </div>
+
+        <%# The one action — flips to the opposite of the current state %>
+        <div>
+          <% if banked %>
+            <%= button_link "Use My Provisions This Event", :primary, me_tickets_provisions_path,
+                  method: :patch, params: { status: "claimed" }, icon: "utensils", icon_type: :solid %>
+          <% else %>
+            <%= button_link "Bank My Provisions for a Future Year", :primary, me_tickets_provisions_path,
+                  method: :patch, params: { status: "banked" }, icon: "box-archive", icon_type: :solid %>
+          <% end %>
+        </div>
+
+        <p class="text-body"><strong>You can change this any time before the ticketing deadline.</strong></p>
+      </div>
+    <% end %>
+
+    <%# When banking makes sense — scannable Q&A %>
+    <%= ui_section "When to Bank", icon: "circle-question", icon_type: :solid do %>
+      <dl class="instruction-list">
+        <dt>When should I bank instead of using them?</dt>
+        <dd>Bank if you're taking this year off or planning a light Ranger schedule, so you can use them in a future year.</dd>
+        <dt>What happens if I do nothing?</dt>
+        <dd>Your provisions are used at this event by default.</dd>
+      </dl>
+    <% end %>
+
+  <% else %>
+    <%# --- Allocated provisions: explained, not actionable ----------------- %>
+    <%= ui_callout_box :info, icon: "lock", accent: true, title: "These Provisions Are Set for This Event" do %>
+      <p class="mb-2"><strong>Because you were given allocated provisions for your upcoming Ranger assignment, your earned and allocated provisions will all be used at this event.</strong></p>
+      <p class="text-body">Allocated provisions can't be banked, so there's nothing to change here.</p>
+    <% end %>
+  <% end %>
+
+  <%# Event-radio disclaimer — relevant whenever an event radio is included %>
+  <% if have_event_radio %>
+    <%= ui_callout_box :secondary, icon: "walkie-talkie", title: "About Your Event #{"Radio".pluralize(presenter.radios)}" do %>
+      <p class="text-body"><strong>Event radios are limited.</strong> Qualifying for one doesn't guarantee you'll receive it.</p>
+    <% end %>
+  <% end %>
+
+  <%= render "wizard_nav", step: :provisions, presenter: presenter %>
+<% end %>

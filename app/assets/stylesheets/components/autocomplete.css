@@ -1,0 +1,205 @@
+/*
+ * Autocomplete Component
+ * Semantic token-based styling with dark mode support
+ * WCAG 2.1 AA compliant: 36px touch targets, visible focus rings
+ */
+
+/* Results dropdown container (below by default). A themed, always-visible scrollbar
+   is forced (overriding macOS overlay scrollbars that auto-hide) so an overflowing
+   result list visibly signals it can scroll. */
+@utility ac-results {
+    @apply absolute z-50 w-full overflow-y-auto;
+    @apply bg-base-100;
+    @apply border border-line rounded-lg;
+    @apply shadow-lg;
+    max-height: 20rem;
+    top: 100%;
+    margin-top: 0.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--color-base-content) 30%, transparent) transparent;
+}
+
+/* Chrome/WebKit: styling the scrollbar disables overlay auto-hide, so the thumb
+   stays visible whenever the list overflows. */
+.ac-results::-webkit-scrollbar {
+    width: 0.5rem;
+}
+
+.ac-results::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ac-results::-webkit-scrollbar-thumb {
+    background-color: color-mix(in oklch, var(--color-base-content) 30%, transparent);
+    @apply rounded-full;
+}
+
+/* Results dropdown above variant */
+@utility ac-results-above {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: 0.25rem;
+}
+
+/*
+ * Inline (embedded) variant — used when results render inside a container
+ * such as the global search modal body rather than as a floating dropdown.
+ * Drops absolute positioning so results sit in normal flow; keeps the ~20rem
+ * internal scroll. The autocomplete controller skips updatePlacement() (no
+ * above/below flip) when this variant is active.
+ */
+@utility ac-results-inline {
+    @apply static w-full;
+    top: auto;
+    margin-top: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* Individual option */
+@utility ac-option {
+    @apply cursor-pointer select-none;
+    @apply text-heading;
+    @apply transition-colors duration-150;
+    @apply hover:bg-base-200;
+    @apply min-h-9;
+    display: flex;
+    align-items: center;
+}
+
+/* Active (keyboard-selected) option — a light-green success tint signals selection,
+   staying distinct from the brand-blue (primary) focus accents and the neutral hover.
+   The inline-start accent is a non-hue cue so selection never relies on color alone now
+   that the ring is gone. The tint composites the success green over `transparent` (not a
+   mix into base-100): mixing two hued colors in oklch averages their hue, which rotated
+   the warm base-100 (hue ~90) and green (hue 160) into a khaki ~92 in light mode. Over
+   transparent the hue stays true green and the alpha composites onto the row's base-100,
+   reading as light green on the light row and a subtle green on the dark row — no dark:
+   variant needed since --color-success flips per theme. */
+@utility ac-option-active {
+    background-color: color-mix(in oklch, var(--color-success) 18%, transparent);
+    box-shadow: inset 3px 0 0 0 var(--color-success);
+}
+
+/* .ac-option's hover:bg-base-200 has specificity (0,2,0) and outranks the plain
+   .ac-option-active rule (0,1,0); without this, hovering the selected row would wipe the
+   green. This rule matches that specificity and, placed after, wins the tie. The slightly
+   stronger mix keeps a hovered-selected row reading as selected, not just hovered. The
+   inset accent box-shadow from above is untouched by the hover bg rule, so it persists. */
+.ac-option-active:hover {
+    background-color: color-mix(in oklch, var(--color-success) 26%, transparent);
+}
+
+/* Group container */
+@utility ac-group {
+    @apply py-1;
+}
+
+/* Group header label */
+@utility ac-group-header {
+    @apply px-3 py-2 text-xs font-semibold uppercase tracking-wider;
+    @apply text-stone-muted;
+    @apply select-none;
+}
+
+/* Filter bar. Pinned to the top of the scrolling result list so the status chips
+   (or the in-progress searching indicator that replaces them) stay put while the
+   list scrolls beneath. The bar has no height of its own: a chip and the indicator
+   are both min-h-9, so a one-row bar is the same height on either side of the
+   chips <-> searching swap and the area doesn't jitter. Pinned inside the scroller,
+   it covers the top of the list: the controller's select() reserves the bar's
+   height as scroll padding so a selected row is never scrolled underneath it. */
+@utility ac-filter-bar {
+    @apply flex flex-wrap items-center gap-2 px-3 py-2;
+    @apply border-b border-line;
+    @apply sticky top-0 z-10 bg-base-100;
+}
+
+/* In-progress searching indicator shown in the filter-bar slot during a fetch.
+   As tall as a chip, which is what keeps the bar's height (see ac-filter-bar). */
+@utility ac-searching {
+    @apply inline-flex items-center min-h-9 text-sm text-stone-muted;
+}
+
+/* Filter chip. Tab reaches the chips from the input, so each needs a focus ring
+   of its own: the browser's default ring is blue, which vanishes on the active
+   chip's brand-blue fill. The offset keeps the ring clear of that fill. */
+@utility ac-filter-chip {
+    @apply inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full;
+    @apply bg-base-200;
+    @apply text-body;
+    @apply border border-line;
+    @apply transition-colors duration-150 cursor-pointer;
+    @apply hover:bg-base-300;
+    @apply min-h-9;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary;
+    @apply focus-visible:ring-offset-2 focus-visible:ring-offset-base-100;
+}
+
+/* Active filter chip */
+@utility ac-filter-chip-active {
+    @apply bg-primary text-primary-content border-primary;
+}
+
+.ac-filter-chip-active:hover {
+    background-color: color-mix(in oklch, var(--color-primary) 85%, black);
+}
+
+/* Filter count badge. Sets its own text color (text-body) so it never inherits
+   the active chip's white text onto its light pill — which washed the count out. */
+@utility ac-filter-count {
+    @apply inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 text-xs rounded-full;
+    @apply bg-base-300 text-body;
+}
+
+/* Empty state */
+@utility ac-empty {
+    @apply px-4 py-6 text-center text-stone-muted;
+    @apply text-sm;
+}
+
+/* Error state */
+@utility ac-error {
+    @apply px-4 py-6 text-center text-error;
+    @apply text-sm;
+}
+
+/* Loading indicator. Floats where the results list opens, as the list does: in
+   the flow it grew the callsign field for every search and pushed everything
+   below it down and back. An open list comes later in the markup and covers it. */
+@utility ac-loading {
+    @apply absolute z-50 w-full top-full mt-1;
+    @apply bg-base-100 border border-line rounded-lg shadow-lg;
+    @apply px-4 py-2 text-center text-stone-muted;
+    @apply text-sm;
+}
+
+/* Keyboard help footer */
+@utility ac-keyboard-help {
+    @apply flex items-center justify-center gap-4 px-3 py-2;
+    @apply border-t border-line;
+    @apply text-xs text-stone-subtle;
+    @apply select-none;
+}
+
+.ac-keyboard-help kbd {
+    @apply inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1;
+    @apply bg-base-200;
+    @apply border border-line rounded;
+    @apply text-xs font-mono text-stone-muted;
+}
+
+/* Group separator - adjacent groups get a top border */
+.ac-group + .ac-group {
+    @apply border-t border-line;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .ac-option,
+    .ac-filter-chip {
+        transition: none;
+    }
+}

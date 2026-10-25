@@ -1,0 +1,10 @@
+<%= modal_dialog id: "edit-handles-dialog", size: :lg, title: "Edit Handles List" do %>
+  <%= render "vc/applications/account_created_warning", application: @application,
+             message: "No more handles should be recorded." %>
+  <%= form_with url: vc_application_path(@application), method: :patch,
+                builder: AppFormBuilder, data: { turbo_frame: "_top" } do |f| %>
+    <%= f.text_area "prospective_application[handles]", label: "Submitted Handles (one per line)",
+                    required: true, value: @application.handles, rows: 10 %>
+    <%= modal_form_footer submit: "Save Handles" %>
+  <% end %>
+<% end %>

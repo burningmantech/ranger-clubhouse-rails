@@ -1,0 +1,45 @@
+/*
+ * Shift Coverage's period x post grid.
+ *
+ * A shift type can carry seventeen posts, so the grid is wider than the screen
+ * and scrolls sideways. The hours column is frozen at the start edge: scroll
+ * the posts away from it and the reader still knows which period each row is.
+ *
+ * Below the lg breakpoint the table has already folded into one card per
+ * period, so there is nothing to scroll sideways and nothing to freeze.
+ */
+
+@media (min-width: theme(--breakpoint-lg)) {
+    .shift-coverage-grid th.shift-coverage-period {
+        @apply sticky start-0 z-10;
+        /*
+         * The frozen cell takes its row's own background -- striping included --
+         * so the columns pass behind it rather than through it.
+         */
+        background-color: inherit;
+    }
+
+    /*
+     * The heading cannot inherit its background the way the rows do: a row of
+     * headings carries none of its own, and the posts would slide straight
+     * through the word.
+     */
+    .shift-coverage-grid thead th.shift-coverage-period {
+        @apply bg-base-200;
+    }
+
+    /*
+     * The border is what tells the reader the hours are pinned rather than
+     * merely first, once the posts start sliding under them.
+     */
+    .shift-coverage-grid tbody th.shift-coverage-period {
+        @apply border-e border-base-300;
+    }
+}
+
+/*
+ * No print rules here on purpose. A printed page is narrower than the
+ * breakpoint above, so the grid has already folded into one card per period
+ * and there is no frozen column left to unfreeze. Printing this report as a
+ * grid would need its own sheet and layout, the way the shift lead report has.
+ */

@@ -1,0 +1,132 @@
+<%#
+  Every shift start of the year that was forced past a sign-in blocker. One row
+  per forced start, in callsign order, as the audit trail it is: what was
+  overridden, by whom, and the reason they gave for it.
+%>
+<% content_for :title, "Forced Shift Starts" %>
+
+<%= hero_panel icon: "hand", heading_level: :h1,
+               id: "timesheets-forced-shift-start-header",
+               title: "#{@year} Forced Shift Starts" do |panel| %>
+  <% panel.description do %>
+    Check-ins that a sign-in blocker stopped and an HQ lead started anyway.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @all_entries.empty? %>
+  <%= ui_empty_state "No shift start was forced in #{@year}. Every check-in cleared its blockers.",
+                     icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%# Out of the hero: what a row carries. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What does each row show?</dt>
+      <dd>
+        Each row names the checks that were overridden, how far off they were, and the reason
+        given at the time.
+      </dd>
+    </dl>
+  <% end %>
+
+  <%# Each select offers only what the year holds, so no single choice returns
+      nothing -- but the four combine, and a combination can. The empty state
+      below says which filters are on rather than leaving a blank table. %>
+  <%= filter_bar id: "forced-shift-start-filters",
+                 chips: forced_shift_start_filter_chips(@filters, @all_entries, @year),
+                 clear_url: timesheets_forced_shift_start_path(year: @year),
+                 count: "Showing #{@entries.size} of " \
+                        "#{pluralize(@all_entries.size, "forced start")}",
+                 # Carries the filters so the file and the page agree about
+                 # what is in it.
+                 actions: export_csv_link(timesheets_forced_shift_start_path(year: @year, format: :csv,
+                                          **active_filters(@filters))),
+                 url: timesheets_forced_shift_start_path do |f| %>
+    <%# Year-scoped page: without this, applying a filter snaps back to the
+        current year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :person_id, forced_shift_start_person_options(@all_entries),
+                   label: "Person", selected: @filters[:person_id],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :forced_by_id, forced_shift_start_forced_by_options(@all_entries),
+                   label: "Forced By", selected: @filters[:forced_by_id],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= form_row do %>
+      <%= f.select :position_id, forced_shift_start_position_options(@all_entries),
+                   label: "Position", selected: @filters[:position_id],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :blocker, forced_shift_start_blocker_options(@all_entries),
+                   label: "Blocked Reason", selected: @filters[:blocker],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+<% end %>
+
+<% if @all_entries.any? && @entries.empty? %>
+  <%= ui_empty_state "No forced start in #{@year} matches all of those filters. " \
+                     "Remove one to widen the search.",
+                     icon: "filter-circle-xmark", icon_type: :solid %>
+<% elsif @entries.any? %>
+  <%= ui_section "#{pluralize(@entries.size, "forced start")} in #{@year}", border: false do %>
+    <%# Six columns of audit detail: desktop-first, scrolling sideways on a
+        narrow screen rather than restacking, so a column can still be read
+        down. %>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Person" %>
+        <%= t.heading "Position" %>
+        <%= t.heading "Shift Start" %>
+        <%= t.heading "Forced By" %>
+        <%= t.heading "Blockers Overridden" %>
+        <%= t.heading "Reason Given" %>
+      <% end %>
+      <%= t.body do %>
+        <% @entries.each do |entry| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%= person_display_link entry.person, entry.person_id %>
+            <% end %>
+            <%= t.cell entry.position_title %>
+            <%# nowrap: left to wrap, "Thu Aug 21 @ 10:15" breaks over three
+                lines and the date column reads taller than the blockers beside
+                it. %>
+            <%= t.cell class: "whitespace-nowrap" do %><%= datetime_format entry.on_duty %><% end %>
+            <%= t.cell do %>
+              <%= person_display_link entry.forced_by, entry.forced_by_id, blank: "Not recorded" %>
+            <% end %>
+            <%= t.cell do %>
+              <% if entry.blockers.empty? %>
+                <%# The timesheet says the start was forced; the audit log that
+                    would say which checks did not survive. Saying "none" here
+                    would read as "nothing was overridden", which is the one
+                    thing this row rules out. %>
+                <span class="text-stone-muted italic">Not recorded</span>
+              <% else %>
+                <div class="flex flex-col gap-y-1">
+                  <% entry.blockers.each do |blocker| %>
+                    <div><%= timesheet_blocker_label blocker %></div>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+            <%# Capped so a paragraph-long reason cannot squeeze the five
+                columns the reader scans down. %>
+            <%= t.cell class: "max-w-md" do %>
+              <% if entry.reason.blank? %>
+                <span class="text-stone-muted italic">No reason given</span>
+              <% else %>
+                <%= simple_format entry.reason, {}, sanitize: true %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

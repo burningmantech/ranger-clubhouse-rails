@@ -1,0 +1,22 @@
+<%# locals: (entries:) %>
+<%# The Training preview for someone without the Online Course: one card per
+    month, its sessions by description only, sorted A to Z, a repeated
+    description printed once with its count. Entries arrive sorted by begins,
+    so group_by keeps the months in order. Nothing here is a date, a seat count
+    or a button. %>
+<div class="grid gap-3 lg:grid-cols-2">
+  <% entries.group_by { |entry| entry.slot.begins.strftime("%B") }.each do |month, month_entries| %>
+    <% sessions = month_entries.map { |entry| entry.slot.description.presence || "Session" }.tally.sort_by { |description, _| description.downcase } %>
+    <%= ui_card class: "p-3" do %>
+      <%= ui_subheading do %>
+        <%= month %>
+        <%= ui_badge pluralize(month_entries.size, "session"), :secondary %>
+      <% end %>
+      <ul class="list-disc ms-5 space-y-1">
+        <% sessions.each do |description, count| %>
+          <li><%= description %><%= " (#{pluralize count, "session"})" if count > 1 %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+</div>

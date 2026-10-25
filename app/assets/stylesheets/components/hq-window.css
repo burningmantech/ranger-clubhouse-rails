@@ -1,0 +1,206 @@
+/*
+ * HQ Window Interface — device tiers
+ *
+ * The HQ window runs on two screens this app has never had a tier for. The
+ * layout system splits at lg and only at lg: below it is "phone", above it is
+ * "desktop". That split was written for the two scenes in PRODUCT.md that
+ * bracket it — a Ranger's phone in dust, and an off-season admin at a desk —
+ * and it serves both well. The window itself is neither.
+ *
+ *   - A tablet on a stand at the window sits at 820pt in portrait, inside the
+ *     phone band, and inherits rules that assume there is room for exactly one
+ *     thing per line.
+ *   - A large screen the shift crew reads together sits far above lg, where
+ *     nothing more happens: the extra 900px goes entirely into line length at
+ *     the desk type size, which is the one thing distance reading cannot use.
+ *
+ * The table fold already solved the first half of this for tables (see
+ * tables.css, "A tablet is a real admin device here, not a wide phone"). This
+ * file extends the same reasoning to the rest of the HQ surface, and adds the
+ * tier above desktop that no surface had.
+ *
+ * Scoped to .hq-shell throughout. Every rule here is a device-tier correction,
+ * not a new HQ look: the tokens, components, and colours are the ones the rest
+ * of the app already uses.
+ */
+
+/*
+ * Tier 1 — the tablet band (md .. lg)
+ *
+ * Wide enough for two things per line, narrow enough that the phone rules
+ * still applied.
+ *
+ * The other half of this band's problem — .button-row stacking every button
+ * onto its own line up to lg — turned out not to be an HQ problem at all, and
+ * is fixed for every namespace in buttons.css rather than overridden here.
+ */
+@media (width >= theme(--breakpoint-md)) and (width < theme(--breakpoint-lg)) {
+    /*
+     * The identity/summary column leads on mobile because the operator
+     * verifies the face before anything else, and that ordering is correct
+     * here too — but as a column it spends roughly 300px of the first screen
+     * on four short values, and the next action lands below the fold on a
+     * device that had the width to show both.
+     *
+     * Laid across instead: photo, the two figures, and the progress button on
+     * one line. The photo keeps its full 140px — it is the reason this block
+     * leads, and shrinking it to buy back rows would defeat the point. The
+     * saving comes from the three text blocks moving beside it rather than
+     * under it.
+     *
+     * Not applied at lg and up, where the column is already beside the content
+     * and reads correctly as a column.
+     */
+    .hq-shell .hq-summary {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        text-align: start;
+    }
+
+    /*
+     * The dl is a two-column grid rather than a flex line so the labels stay
+     * in a column and the values line up with each other. As a flex row the
+     * four items read as one run-on strip and the pairing stops being visible.
+     */
+    .hq-shell .hq-summary dl {
+        display: grid;
+        grid-template-columns: auto auto;
+        align-items: baseline;
+        gap: 0.25rem 1rem;
+    }
+
+    /*
+     * The stacked layout's own vertical rhythm (mt-3 on the dl and the button,
+     * mb-2 between the figures) is what the flex gap now provides. Left in, it
+     * pushes the three blocks out of alignment with the photo beside them.
+     *
+     * The inline margins have to go for a different reason: the photo carries
+     * mx-auto to centre itself in the stacked column, and an auto inline
+     * margin on a flex item eats the row's free space. Left in, it holds the
+     * photo off the page's start edge — out of line with every block below it
+     * — and opens a gap beside it that reads as a missing element.
+     */
+    .hq-shell .hq-summary > *,
+    .hq-shell .hq-summary dd {
+        margin: 0;
+    }
+}
+
+/*
+ * Tier 2 — the shared display (screen only)
+ *
+ * At 1920 the HQ page measures 1701px wide and 1259px tall in a 1080px
+ * viewport: it very nearly fits, and every value on it is set at the desk
+ * sizes — 14.4px table cells, 17.6px section titles — on a screen read from
+ * several feet back by more than one person. The width goes into a 1454px
+ * "Next:" line, which is simultaneously too small to read at that distance
+ * and too long to track back to the start of.
+ *
+ * So the extra pixels are spent the other way: on legibility, not on measure.
+ * zoom rather than a per-element type scale because the whole surface has to
+ * grow together — type, spacing, icons, and the 36px touch targets keep their
+ * relationships, and one declaration cannot drift out of step with the
+ * elements it forgot. The content reflows into a narrower CSS-pixel box and
+ * renders larger, which is exactly the trade being made.
+ *
+ * The threshold is 1800px rather than 1600px so it clears a 16" laptop at its
+ * default 1728pt width. Viewing distance is not something CSS can ask about;
+ * physical width is the honest proxy, and the line is drawn above the largest
+ * screen someone is realistically sitting right in front of.
+ *
+ * screen only — a print run must never inherit this.
+ */
+@media screen and (width >= 112.5rem) {
+    .hq-shell {
+        zoom: 1.15;
+    }
+
+    /*
+     * Growing the type without capping the measure would only trade one
+     * unreadable line for a larger one. This cap governs the layout — the
+     * sections, the tables, the button rows — which all still want the width
+     * a 6-column asset table needs.
+     */
+    .hq-shell .hq-shell-content {
+        max-width: 64rem;
+    }
+
+    /*
+     * Prose gets a second, tighter bound, because the column width that suits
+     * a table is roughly 94 characters of body copy, and a reader several feet
+     * back has to find the start of the next line without the page helping.
+     * Stated in ch so it tracks the type rather than a pixel guess: the limit
+     * is a count of characters, which is what the eye is actually failing on.
+     *
+     * On the column rather than on every block, so a table cell or a badge
+     * that happens to be a paragraph is not caught by it.
+     */
+    .hq-shell .hq-shell-content p {
+        max-width: 68ch;
+    }
+}
+
+/*
+ * The sidebar is not inside .hq-shell — it is the shared layout's, rendered as
+ * a sibling of the whole scroll area — so the rule above cannot reach it, and
+ * without this the navigation stays desk-sized beside content that grew. On a
+ * screen being read from across the room that seam is the most visible thing
+ * on the page.
+ *
+ * Scoped by the theme the HQ menu already sets on its own aside rather than by
+ * a new class on the shared drawer: sidebar_menu writes the theme name there
+ * for its colours, and it is exactly the "this is the HQ sidebar" signal this
+ * needs. No other namespace's chrome is touched.
+ */
+@media screen and (width >= 112.5rem) {
+    [data-sidebar-theme-value="hq"] {
+        zoom: 1.15;
+    }
+}
+
+/*
+ * A wall-mounted 4K panel is the far end of the same scene, not a different
+ * one, so it takes the same treatment further rather than a new layout.
+ */
+@media screen and (width >= 150rem) {
+    .hq-shell,
+    [data-sidebar-theme-value="hq"] {
+        zoom: 1.35;
+    }
+}
+
+/*
+ * The mailbox (common/messages/_workspace, the Mail Desk) inside the shell.
+ * Its list column is 40% of what the summary column and the sidebar leave,
+ * which is under 20rem from lg up to about 1210px: 245px at 1024, 308px at
+ * 1180, the window tablet's landscape width (measured 2026-10-18). Too narrow
+ * for a row's callsign, subject and snippet, so there the pane drops under
+ * the list, as slice 6 of the messaging rework's PRD asked.
+ *
+ * A container query rather than a viewport width: what the list gets depends
+ * on the sidebar and the summary column, not on the window alone. 50rem of
+ * workspace is the 20rem list. The pane stays where it is in the page, under
+ * the list (review_pane_controller runs with park=false there), and keeps
+ * loading from the list's links as it does beside it.
+ *
+ * Only inside the shell: Me and Person have no summary column taking the
+ * width.
+ */
+.hq-shell .messages-workspace {
+    container: messages-workspace / inline-size;
+}
+
+@container messages-workspace (width < 50rem) {
+    .hq-shell .messages-workspace > [data-controller~="review-pane"] {
+        flex-direction: column;
+    }
+
+    .hq-shell .messages-workspace [data-review-pane-target="list"] {
+        width: auto;
+    }
+
+    .hq-shell .messages-workspace [data-review-pane-target="pane"] {
+        align-self: stretch;
+    }
+}

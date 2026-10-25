@@ -1,0 +1,81 @@
+<%# locals: (shifts:, slot:, year:, on_duty:, filter_params:) %>
+<%#
+  What the report is reporting on.
+
+  The shift picker is an action-less GET form that reloads the page with the
+  chosen shift in the query string -- the report it produces is the whole page,
+  so it should be a real URL that survives a reload and a back button. The form
+  carries the year and nothing else, which is also how picking a shift while
+  reading the live report returns to the scheduled one.
+
+  The mode button stays here rather than moving into the status band: the band
+  only exists once a report has been asked for, and "Currently on duty" has to
+  be reachable from the empty page too.
+
+  Folded once a report is on screen, and open until then. The picker is the one
+  control on this page a reader touches once and then leaves alone, so once it
+  has done its job it gives its height to the roster; the subtitle says what is
+  picked, so folding it hides no answer. This default is decided on the server,
+  which knows whether a report was asked for -- unlike a width-dependent one.
+%>
+<% subtitle = if on_duty
+                "Whoever is signed in right now"
+              elsif slot
+                cruise_direction_shift_label(slot)
+              else
+                "No shift picked yet"
+              end %>
+
+<%# role=heading on the title span: this was a ui_section, which gives its title
+    an aria-level 2 heading, and the fold would otherwise take "Shift period" out
+    of the outline a screen-reader reader navigates the page by. %>
+<%= ui_disclosure tag.span("Shift period", class: "font-semibold", role: "heading", "aria-level": "2"),
+                  variant: :card, subtitle: subtitle, open: slot.nil? && !on_duty,
+                  class: "mb-3" do %>
+  <div class="flex flex-col lg:flex-row lg:items-end gap-2">
+    <% if shifts.any? %>
+      <%= form_tag false, method: :get, data: { controller: "form" } do %>
+        <%= label_tag :slot_id, "#{year} shift", class: "block font-medium text-heading mb-1" %>
+        <%# The same day-grouped list and the same shift labels the Cruise
+            Direction picker offers -- both pages pick from the year's dirt
+            shifts, and two spellings of one shift would be a needless puzzle. %>
+        <%= select_tag :slot_id,
+                       grouped_options_for_select(cruise_direction_shift_option_groups(shifts), slot&.id),
+                       include_blank: "Select a shift",
+                       class: "#{AppFormBuilder::SELECT_CLASSES}",
+                       data: { action: "change->form#submit" } %>
+
+        <%# Everything except the shift itself, which this form's own select
+            carries: a sort and a filter describe how the reader is reading a
+            roster, not which shift it is, so stepping to the next shift should
+            not quietly reset them. %>
+        <%= shift_lead_carried_fields shift_lead_all_params(filter_params), except: [:slot_id] %>
+
+      <% end %>
+    <% else %>
+      <div class="grow">
+        <%= ui_empty_state "No dirt shifts were scheduled for #{year}.", icon: "calendar", icon_type: :solid %>
+      </div>
+    <% end %>
+
+    <div class="shrink-0">
+      <%# In the live report the same button re-runs it: this page is left open on
+          a console for hours, and the answer goes stale by the minute. Which is
+          exactly when the filters and sorts have to survive the click, so the
+          URL is built from what the page is showing rather than two literals --
+          minus the shift, which the live report does not have. %>
+      <% live = shift_lead_all_params(filter_params)
+        .except(:slot_id)
+        .merge(mode: Scheduling::ShiftLeadController::ON_DUTY_MODE) %>
+      <% if on_duty %>
+        <%= button_link "Refresh On-Duty List", :primary,
+                        scheduling_shift_lead_path(**live),
+                        icon: "arrows-rotate", icon_type: :solid, class: "w-full justify-center" %>
+      <% else %>
+        <%= button_link "Currently On Duty", :secondary,
+                        scheduling_shift_lead_path(**live),
+                        icon: "clock", icon_type: :solid, class: "w-full justify-center" %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

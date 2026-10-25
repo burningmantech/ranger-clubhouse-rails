@@ -1,0 +1,99 @@
+<%# The window view: what this vehicle is approved for, and where the permit
+    number gets typed in. Upstream's sticker-edit modal, as a page. %>
+<%= hero_panel icon: "id-badge", heading_level: :h1, id: "vehicle-permit-header",
+               title: "Driving Permit",
+               description: registry_vehicle_title(@vehicle) do |panel| %>
+  <% panel.back_to do %>
+    <%= back_to "Vehicle Registry", vehicles_registry_index_path(@return_index_params) %>
+  <% end %>
+<% end %>
+
+<% case @vehicle.status %>
+<% when Vehicle::APPROVED %>
+  <%= ui_callout_box :success, icon: "circle-check", icon_type: :solid, accent: true do %>
+    <strong>Approved.</strong> Issue the items listed below.
+  <% end %>
+<% when Vehicle::REJECTED %>
+  <%= ui_callout_box :error, icon: "triangle-exclamation", icon_type: :solid, accent: true do %>
+    <strong>Denied. Do not issue any stickers or items.</strong>
+  <% end %>
+<% else %>
+  <%= ui_callout_box :warning, icon: "circle-exclamation", icon_type: :solid, accent: true do %>
+    <strong>Pending review.</strong> Wait for approval before issuing anything.
+  <% end %>
+<% end %>
+
+<%= ui_section "Vehicle", icon: "car", icon_type: :solid do %>
+  <dl class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-2">
+    <div class="flex gap-2">
+      <dt class="text-stone-muted">Vehicle</dt>
+      <dd><%= value_or_dash([@vehicle.vehicle_year, @vehicle.vehicle_make, @vehicle.vehicle_model, @vehicle.vehicle_color].compact_blank.join(" ")) %></dd>
+    </div>
+    <div class="flex gap-2">
+      <dt class="text-stone-muted">License plate</dt>
+      <dd><%= value_or_dash(vehicle_plate(@vehicle)) %></dd>
+    </div>
+    <div class="flex gap-2">
+      <dt class="text-stone-muted">Class</dt>
+      <dd><%= value_or_dash(@vehicle.vehicle_class) %></dd>
+    </div>
+    <div class="flex gap-2">
+      <dt class="text-stone-muted">DPW request ID</dt>
+      <dd><%= value_or_dash(@vehicle.rental_number) %></dd>
+    </div>
+  </dl>
+<% end %>
+
+<% unless @vehicle.status == Vehicle::REJECTED %>
+  <%# "Approved" would contradict the pending callout directly above it. %>
+  <% items_title = @vehicle.status == Vehicle::APPROVED ? "Approved items" : "Requested items" %>
+  <%= ui_section items_title, icon: "clipboard-check", icon_type: :solid do %>
+    <dl class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-2">
+      <div class="flex gap-2">
+        <dt class="text-stone-muted">Driving permit</dt>
+        <dd><%= @vehicle.driving_sticker_label %></dd>
+      </div>
+      <div class="flex gap-2">
+        <dt class="text-stone-muted">Ranger logo decal</dt>
+        <dd><%= @vehicle.ranger_logo_label %></dd>
+      </div>
+      <div class="flex gap-2">
+        <dt class="text-stone-muted">Fuel chit</dt>
+        <dd><%= @vehicle.fuel_chit_label %></dd>
+      </div>
+      <div class="flex gap-2">
+        <dt class="text-stone-muted">Amber light</dt>
+        <dd><%= @vehicle.amber_light_label %></dd>
+      </div>
+    </dl>
+  <% end %>
+<% end %>
+
+<% if @vehicle.response.present? %>
+  <%= ui_section "Response to the Requester", icon: "comment", icon_type: :solid do %>
+    <p class="whitespace-pre-line"><%= @vehicle.response %></p>
+  <% end %>
+<% end %>
+
+<% if @vehicle.status != Vehicle::REJECTED && @vehicle.driving_sticker != Vehicle::DRIVING_STICKER_NONE %>
+  <%= ui_section "Record the Permit Number", icon: "pen", icon_type: :solid do %>
+    <%= ui_form(@vehicle, permit_vehicles_registry_path(@vehicle, @return_index_params),
+                method: :patch) do |f| %>
+      <%= f.text_field :sticker_number,
+                       label: "#{@vehicle.driving_sticker_label} Driving Permit Number",
+                       width: "w-full sm:w-44",
+                       autofocus: true,
+                       help_text: "The number printed on the permit you just handed over." %>
+
+      <%= button_row do %>
+        <%= f.submit "Save Permit Number" %>
+        <%= cancel_link vehicles_registry_index_path(@return_index_params) %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif @vehicle.status != Vehicle::REJECTED %>
+  <%= ui_section "Driving Permit", icon: "pen", icon_type: :solid do %>
+    <%= ui_empty_state "No driving permit has been requested for this vehicle.",
+                       icon: "ban", icon_type: :solid %>
+  <% end %>
+<% end %>

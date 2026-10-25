@@ -1,0 +1,16 @@
+/*
+ * Page Layout Patterns
+ * Shells that stack on a narrow screen and open up at the lg fold, which is
+ * where this app folds tables and layouts everywhere else. The breakpoint is in
+ * the names so a call site reads as the shape it produces.
+ */
+
+/* One column, two from lg. The page body of a report or dashboard. */
+@utility two-column-lg {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-4;
+}
+
+/* Stacked, side by side from lg. A body beside a sidebar, or a pair of panels. */
+@utility stack-to-row-lg {
+    @apply flex flex-col lg:flex-row gap-4;
+}

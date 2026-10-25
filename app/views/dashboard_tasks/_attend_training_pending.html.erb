@@ -1,0 +1,34 @@
+<%# locals: (step:,facts:)%>
+<% training = facts.training %>
+<% session_ended = training.slot&.has_ended %>
+<% if training.is_trainer && session_ended %>
+  <%= fa_icon "chalkboard-teacher", :solid %> <b>Your teaching session has ended.</b> Once you're marked as attended, you're trained!
+<% elsif training.is_trainer %>
+  <%= fa_icon "chalkboard-teacher", :solid %> <b>You're teaching this session.</b> Once you're marked as attended, you're trained!
+<% elsif session_ended %>
+  <%= fa_icon "hourglass-half", :solid %> <b>Your training session has ended.</b> Your result will show here once your trainers record it.
+<% elsif facts.needs_full_training || facts.is_auditor || facts.is_applicant %>
+  <p class="text-error font-bold"><%= fa_icon "clock", :solid, class: "icon-error" %> FULL DAY required</p>
+  <% unless facts.is_auditor %>
+    <div class="text-stone-muted text-sm">
+      <% if facts.is_binary %>
+        (Less than 2 events experience)
+      <% elsif facts.is_applicant %>
+        (Prospective Ranger)
+      <% else %>
+        (<%= facts.status %> status)
+      <% end %>
+    </div>
+  <% end %>
+<% else %>
+  <%= fa_icon "clock-rotate-left", :solid %> <b>Half-day only</b> — 2+ events experience.
+<% end %>
+<% if training.slot %>
+  <div class="my-2 p-2 bg-default dark:bg-default rounded">
+    <%= fa_icon "calendar", :solid %> <b><%= datetime_format(training.slot.begins) %></b><br>
+    <%= fa_icon "location-dot", :solid %> <%= training.slot.description %>
+  </div>
+<% end %>
+<% unless session_ended %>
+  <p class="text-base">Can't make it? <%= link_to "Schedule", me_schedule_path %></p>
+<% end %>

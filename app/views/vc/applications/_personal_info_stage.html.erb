@@ -1,0 +1,49 @@
+<%# locals: (application:) %>
+<% if application.status_hold_pii_issue? && application.personal_info_issues? %>
+  <%= ui_callout_box :warning, icon: "circle-exclamation" do %>
+    <strong>On hold: one or more personal info fields are blank.</strong> The applicant has been emailed.
+  <% end %>
+<% elsif application.status_hold_pii_issue? %>
+  <%= ui_callout_box :success do %>
+    <strong>The personal info issues appear resolved.</strong> Approve the application to notify the applicant
+    of the approved callsign.
+  <% end %>
+  <%= form_with url: status_vc_application_path(application), method: :post, builder: AppFormBuilder, class: "mb-3" do %>
+    <%= hidden_field_tag :status, ProspectiveApplication::STATUS_APPROVED %>
+    <%= submit_button "Approve Application" %>
+  <% end %>
+<% elsif application.personal_info_issues? %>
+  <%= ui_callout_box :warning, icon: "circle-exclamation" do %>
+    One or more personal info fields are blank: <%= application.blank_personal_info.join(", ") %>.
+  <% end %>
+<% end %>
+
+<%= ui_label_value label_width: "12rem", size: :base do |list| %>
+  <% list.row "Name", "#{application.first_name} #{application.last_name}" %>
+  <% list.row "Email" do %>
+    <%= mail_to application.email %>
+  <% end %>
+  <% list.row "Address" do %>
+    <% if application.street.present? || application.city.present? %>
+      <%= application.street %><br>
+      <%= [application.city.presence, application.state.presence, application.postal_code.presence].compact.join(", ") %><br>
+      <%= application.country %>
+    <% else %>
+      <span class="text-stone-muted">not stated</span>
+    <% end %>
+  <% end %>
+  <% list.row "Phone" do %>
+    <% if application.phone.present? %>
+      <%= link_to application.phone, "tel:#{application.phone}" %>
+    <% else %>
+      <span class="text-stone-muted">not stated</span>
+    <% end %>
+  <% end %>
+  <% list.row "Emergency contact" do %>
+    <%= application.emergency_contact.presence || content_tag(:span, "not stated", class: "text-stone-muted") %>
+  <% end %>
+<% end %>
+
+<div class="mt-3">
+  <%= edit_link edit_personal_info_vc_application_path(application), "Edit Personal Info" %>
+</div>

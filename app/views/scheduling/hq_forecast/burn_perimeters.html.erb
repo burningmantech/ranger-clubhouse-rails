@@ -1,0 +1,53 @@
+<%#
+  What each burn sends to the HQ window: everyone checking in before it and
+  back out after, beside the HQ volunteers on duty at the time.
+%>
+<% content_for :title, "HQ Forecast: Burn Perimeters" %>
+
+<%= hero_panel icon: "fire", heading_level: :h1,
+               id: "scheduling-hq-forecast-burns-header",
+               title: "#{@year} Burn Perimeter Forecast" do |panel| %>
+  <% panel.description do %>
+    Every burn of the year and the traffic it brings to the HQ window, beside
+    the HQ volunteers scheduled for those periods.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: { interval: @interval } %>
+<% end %>
+
+<%= hq_forecast_other_page_link :burns, year: @year, interval: @interval %>
+
+<% if @burns.any? %>
+  <%# Out of the hero: the legend, and the one link a table cell does not
+      announce. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What are the highlighted periods?</dt>
+      <dd>Highlighted periods have an HQ shift scheduled but no lead, short, or window on duty.</dd>
+      <dt>How do I see who is signed up?</dt>
+      <dd>Select a staffing count to see who is signed up.</dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "hq-forecast-burn-filters",
+                 count: "Showing #{pluralize(@burns.size, "burn")}",
+                 url: scheduling_hq_forecast_burn_perimeters_path do |f| %>
+    <%= form_row do %>
+      <%= render "interval_field", f: f, year: @year, interval: @interval %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <% @burns.each do |burn| %>
+    <%= ui_section burn.title, icon: "fire", icon_type: :solid, border: false,
+                   id: "hq-burn-#{burn.key}" do %>
+      <%= render "periods_table", periods: burn.periods, desks: burn.desks, interval: @interval,
+                 caption: "#{burn.title} check-ins, check-outs, and HQ staffing" %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No #{@year} burn perimeter shifts have been scheduled.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

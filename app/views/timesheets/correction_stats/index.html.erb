@@ -1,0 +1,152 @@
+<%#
+  One year of correction activity, counted. The sibling Correction Requests page
+  lists what is still waiting on a decision; this page measures what has already
+  been settled. The two do not cover every request between them, and the About
+  This Report card says which ones fall on neither.
+
+  Laid out as the app's other statistics page is (Ticketing > Statistics):
+  headline counts in a stat row, a card per request type carrying the approved
+  against rejected proportion, then where the requests come from, then who
+  decided them.
+%>
+<% content_for :title, "Correction Statistics" %>
+
+<%= hero_panel icon: "chart-simple", heading_level: :h1,
+               id: "timesheets-correction-stats-header",
+               title: "#{@year} Timesheet Correction Statistics" do |panel| %>
+  <% panel.description do %>
+    How this year's correction and missing-entry requests were decided, and by whom.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box number_with_delimiter(@report.timesheet_total), "Timesheet Entries" %>
+  <%= ui_stat_box number_with_delimiter(@report.corrections.decided), "Corrections Decided" %>
+  <%= ui_stat_box number_with_delimiter(@report.missing.decided), "Missing Entries Decided" %>
+  <%# The one count that is not a decision: an entry that no longer exists.
+      Amber because it is the number a reader is most likely to want to
+      explain, not because it is bad. %>
+  <%= ui_stat_box number_with_delimiter(@report.entries_deleted), "Entries Deleted", variant: :warning %>
+<% end %>
+
+<% if @report.empty? %>
+  <%= ui_empty_state "Nothing was decided in #{@year}: no correction was approved " \
+                     "or rejected, and no missing-entry request was reviewed.",
+                     icon: "chart-simple", icon_type: :solid %>
+<% else %>
+  <%# What a reader has to know before the numbers mean anything: upstream
+      behaviours the page would otherwise misrepresent, then how the lists
+      under "Where the requests come from" are counted. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Whose decisions are counted?</dt>
+      <dd>
+        Only decisions made by somebody other than the ranger who filed the request.
+        A ranger correcting their own entry is not a review.
+      </dd>
+      <dt>What about requests still waiting?</dt>
+      <dd>
+        Not here &mdash; this page counts settled requests.
+        <%= link_to "Correction Requests",
+                    timesheets_correction_requests_path(year: @year), class: "link" %>
+        lists what is still waiting on a decision for <%= @year %>'s shifts.
+      </dd>
+      <%# The page used to promise the sibling covered everything else. It does
+          not: a decided missing-entry request with no reviewer recorded is on
+          neither page, and in recent years that has been a large minority of
+          them. Saying so is the honest half of keeping upstream's filter. %>
+      <dt>Is anything left out?</dt>
+      <dd>
+        Yes. A missing-entry request with no reviewer recorded against it is left
+        out of every number on that side, decided or not &mdash; so it appears
+        neither here nor on Correction Requests.
+      </dd>
+      <dt>Which year is a request counted under?</dt>
+      <dd>
+        A correction counts under the year it was <em>decided</em>. A missing-entry
+        request counts under the year of the <em>shift</em> it asks for. So a
+        January decision about last year's entry lands in January's year.
+      </dd>
+      <dt>How are the lists under &ldquo;Where the requests come from&rdquo; counted?</dt>
+      <dd>
+        Corrections are counted by decision &mdash; an entry reviewed twice counts
+        twice. Missing entries are counted by request. Neither is counted by
+        ranger: one ranger filing five requests shows as five. Each list holds at
+        most <%= CorrectionStatsReport::TOP_LIMIT %> rows.
+      </dd>
+    </dl>
+  <% end %>
+
+  <%# In a section of their own so the cards' h3s sit under a level-2 heading
+      rather than jumping straight from the page title. %>
+  <%= ui_section "How They Were Decided", icon: "scale-balanced", icon_type: :solid do %>
+    <div class="two-column-lg">
+      <%= render "decision_card", title: "Correction Requests", unit: "decision",
+                 description: "Changes asked for on an entry that already exists.",
+                 stats: @report.corrections %>
+      <%= render "decision_card", title: "Missing-Entry Requests", unit: "request",
+                 description: "Requests for a shift that was never turned in.",
+                 stats: @report.missing %>
+    </div>
+  <% end %>
+
+  <%= ui_section "Where the Requests Come From", icon: "chart-column", icon_type: :solid do %>
+    <%# The two sides count different things and the columns say so. Corrections
+        are review decisions: an entry sent back and approved again counts
+        twice, so these totals run ahead of the number of entries involved. %>
+    <div class="two-column-lg">
+      <%= render "top_list", title: "Corrections by Position", heading: "Position",
+                 count_heading: "Decisions", rows: @report.corrections.top_positions %>
+      <%= render "top_list", title: "Corrections by Ranger", heading: "Callsign",
+                 count_heading: "Decisions", rows: @report.corrections.top_people,
+                 people: true %>
+      <%= render "top_list", title: "Missing Entries by Position", heading: "Position",
+                 count_heading: "Requests", rows: @report.missing.top_positions %>
+      <%# link_year only here: these rows are scoped by the shift's year, which
+          is the year a person's timesheet page reads. %>
+      <%= render "top_list", title: "Missing Entries by Ranger", heading: "Callsign",
+                 count_heading: "Requests", rows: @report.missing.top_people,
+                 people: true, link_year: @year %>
+    </div>
+  <% end %>
+
+  <%= ui_section "Who Decided Them", icon: "users", icon_type: :solid do %>
+    <% if @report.reviewers.empty? %>
+      <%= ui_empty_state "No reviewer could be named for #{@year}'s decisions." %>
+    <% else %>
+      <%# responsive: below lg each reviewer becomes a labelled card -- eight
+          numeric columns on a phone is a sideways scroll no one finishes. %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Corrections Approved", right: true %>
+          <%= t.heading "Corrections Rejected", right: true %>
+          <%= t.heading "Corrections Total", right: true %>
+          <%= t.heading "Missing Approved", right: true %>
+          <%= t.heading "Missing Rejected", right: true %>
+          <%= t.heading "Missing Total", right: true %>
+          <%= t.heading "All Decisions", right: true %>
+        <% end %>
+        <%= t.body do %>
+          <% @report.reviewers.each do |reviewer| %>
+            <%= t.row do %>
+              <%= t.row_header do %>
+                <%= person_display_link reviewer.person, reviewer.person_id %>
+              <% end %>
+              <%= t.cell number_with_delimiter(reviewer.corrections_approved), right: true %>
+              <%= t.cell number_with_delimiter(reviewer.corrections_rejected), right: true %>
+              <%= t.cell number_with_delimiter(reviewer.corrections_total), right: true %>
+              <%= t.cell number_with_delimiter(reviewer.missing_approved), right: true %>
+              <%= t.cell number_with_delimiter(reviewer.missing_rejected), right: true %>
+              <%= t.cell number_with_delimiter(reviewer.missing_total), right: true %>
+              <%= t.cell right: true do %>
+                <span class="font-semibold"><%= number_with_delimiter reviewer.grand_total %></span>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

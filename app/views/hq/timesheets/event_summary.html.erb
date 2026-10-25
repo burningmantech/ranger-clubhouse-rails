@@ -1,0 +1,19 @@
+<%# Hours & credits breakdown for the person at the window — the HQ twin of
+    /me/timesheet/event-summary, third person and locked to the current year. %>
+<%= hero_panel icon: "chart-simple", heading_level: :h1, id: "event-summary-header",
+               description: "Breakdown of #{@person.callsign}'s #{@year} volunteer hours and credits by event period and position.",
+               back_to: ["Timesheet", hq_timesheets_path(@person)] do |panel| %>
+  <% panel.title do %><%= @year %> Hours &amp; Credits<% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box hour_format(@summary.total_duration), "TOTAL HOURS" %>
+  <%= ui_stat_box credit_format_short(@summary.total_credits), "CREDITS" %>
+  <%= ui_stat_box @position_summary.size, "POSITIONS" %>
+<% end %>
+
+<%= render partial: "common/event_summary_breakdown",
+           locals: { summary: @summary,
+                     position_summary: @position_summary,
+                     year: @year,
+                     whose: "#{@person.callsign}'s" } %>

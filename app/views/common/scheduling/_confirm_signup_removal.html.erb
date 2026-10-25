@@ -1,0 +1,22 @@
+<p class="text-body mb-3">
+  Please confirm you wish to remove this shift from your schedule:
+</p>
+<div class="space-y-2">
+  <div class="flex-center-gap-2 items-baseline">
+    <%= fa_icon "briefcase", :solid, class: "text-stone-icon w-4" %>
+    <div>
+    <span class="text-stone-muted">Shift:</span>
+    <span class="text-heading font-medium">
+      <%= slot.position.title %>
+      <% if slot.description %>
+        <span class="ml-1">- <%= slot.description %></span>
+      <% end %>
+    </span>
+    </div>
+  </div>
+  <div class="flex-center-gap-2">
+    <%= fa_icon "clock", :solid, class: "text-stone-icon w-4" %>
+    <span class="text-stone-muted">Time:</span>
+    <span class="text-heading"><%= datetime_format slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr %></span>
+  </div>
+</div>

@@ -1,0 +1,131 @@
+<%= ui_section "Overview", id: "person-summary-strip", action: { partial: "person/actions", locals: { person: @person } } do %>
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-start">
+    <%= render partial: "photo", locals: { photo: photo, person: person } %>
+
+    <div class="min-w-0 flex-1 grid gap-x-8 gap-y-4 xl:grid-cols-2">
+      <% if can_view_email? || can_view_pii? %>
+        <div>
+          <%= render "person/summary_group_heading", title: "Email & Phone" %>
+          <%= ui_label_value label_width: "7rem" do |list| %>
+            <% if can_view_email? %>
+              <% list.row "Email" do %>
+                <%= clipboard_button person.email, label: "Copy email address" do %>
+                  <%= mail_to person.email, nil, class: "inline-flex items-center min-h-7" %>
+                <% end %>
+              <% end %>
+            <% end %>
+
+            <% if can_view_pii? %>
+              <% list.row "Phone" do %>
+                <% if person.home_phone.present? %>
+                  <%= clipboard_button person.home_phone, label: "Copy phone number" do %>
+                    <%= link_to phone_format(person.home_phone), "tel:#{person.home_phone}", class: "inline-flex items-center min-h-7" %>
+                  <% end %>
+                <% else %>
+                  <i class="text-stone-muted">None</i>
+                <% end %>
+              <% end %>
+
+              <% if person.alt_phone.present? %>
+                <% list.row "Alt. Phone" do %>
+                  <%= clipboard_button person.alt_phone, label: "Copy alternate phone number" do %>
+                    <%= link_to phone_format(person.alt_phone), "tel:#{person.alt_phone}", class: "tap-target-link" %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if !person.is_auditor? && !person.is_applicant? %>
+        <div>
+          <%= render "person/summary_group_heading", title: "Service History" %>
+          <%= ui_label_value label_width: "7rem", class: "space-y-1" do |list| %>
+            <% unless person.is_echelon? %>
+              <% list.row "Rangered" do %>
+                <% if person.years_as_ranger.present? %>
+                  <%= pluralize(person.years_as_ranger.length, "event") %>
+                  <span class="text-stone-muted">[<%= year_range person.years_as_ranger %>]</span>
+                <% else %>
+                  <i class="text-stone-muted">None</i>
+                <% end %>
+              <% end %>
+            <% end %>
+
+            <% if person.years_as_contributor.present? || person.is_echelon? %>
+              <% list.row "Echelon Years" do %>
+                <% if person.years_as_contributor.present? %>
+                  <%= pluralize(person.years_as_contributor.length, "event") %>
+                  <span class="text-stone-muted">[<%= year_range person.years_as_contributor %>]</span>
+                <% else %>
+                  <i class="text-stone-muted">None</i>
+                <% end %>
+              <% end %>
+            <% end %>
+
+            <% list.row "Service Years" do %>
+              <% if person.years_of_service.present? %>
+                <%= pluralize(person.years_of_service.length, "year") %>
+                <span class="text-stone-muted">[<%= year_range person.years_of_service %>]</span>
+              <% else %>
+                <i class="text-stone-muted">None</i>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <div>
+        <%= render "person/summary_group_heading", title: "Callsign" %>
+        <%= ui_label_value label_width: "7rem", class: "space-y-1" do |list| %>
+          <% list.row "Approval" do %>
+            <% if person.callsign_approved %>
+              <%= ui_badge "approved", :success %>
+            <% else %>
+              <%= ui_badge "not approved", :error %>
+            <% end %>
+          <% end %>
+
+          <% list.row "Former callsigns" do %>
+            <% if person_fkas.any? %>
+              <%= person_fkas.join(", ") %>
+            <% else %>
+              <i class="text-stone-muted">None</i>
+            <% end %>
+          <% end %>
+
+          <% if person.used_vanity_change %>
+            <% list.row "Vanity Change" do %>
+              One-time vanity change used
+              <% if person.vanity_changed_at.present? %>
+                on <%= datetime_format person.vanity_changed_at, year: true %>
+              <% else %>
+                <span class="text-stone-muted">(date unknown)</span>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <div>
+        <%= render "person/summary_group_heading", title: "Account" %>
+        <%= ui_label_value label_width: "7rem", class: "space-y-1" do |list| %>
+          <% list.row "Last Seen" do %>
+            <%= render "person/timestamp_value", at: person.last_seen_at, none: "Never" %>
+          <% end %>
+
+          <%# The first-sign-in tour (me/dashboard/_onboarding); Actions › Reset
+              Onboarding Tour clears it. %>
+          <% list.row "Onboarding Tour" do %>
+            <%= render "person/timestamp_value", at: person.on_boarded_at, none: "Not yet taken" %>
+          <% end %>
+
+          <% list.row "Created" do %>
+            <%= render "person/timestamp_value", at: person.created_at, none: "Before 2010" %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

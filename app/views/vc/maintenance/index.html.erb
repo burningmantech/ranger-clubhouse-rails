@@ -1,0 +1,61 @@
+<%#
+  Volunteer Coordinator bulk maintenance tasks.
+
+  Nothing on this page mutates: each task button is a plain link to that task's
+  preview page, which lists every account the task will touch and holds the
+  actual commit button. See Vc::MaintenanceController.
+%>
+
+<%= hero_panel icon: "screwdriver-wrench", heading_level: :h1, id: "vc-maintenance-header",
+               title: "Volunteer Coordinator Maintenance Functions" do |panel| %>
+  <% panel.description do %>
+    End-of-intake clean-up tasks.
+  <% end %>
+<% end %>
+
+<%= ui_callout_box :warning, accent: true, title: "Read This Before Running a Task" do %>
+  <p class="mb-2">
+    <strong>Each task changes every matching account, all at once, and cannot be undone.</strong>
+    Pressing a task button is safe: it opens a preview of every account the task will
+    touch, and nothing changes until you confirm there.
+  </p>
+  <p>
+    A reset callsign becomes LastFirstYY &mdash; last name, first initial, and the two-digit
+    year, such as <code>DoeJ<%= Current.year % 100 %></code>. Bonked accounts get a trailing
+    <code>B</code>. When that callsign is already taken, a number follows the last name:
+    <code>Doe2J<%= Current.year % 100 %></code>.
+  </p>
+<% end %>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-x-4 my-4">
+  <%= ui_section "Reset Applicants to Past Prospective", icon: "user-slash", icon_type: :solid do %>
+    <p class="mb-2">
+      <strong>Reverts every Alpha, Bonked, and Prospective account to &ldquo;past prospective&rdquo; status.</strong>
+      Each callsign is changed to LastFirstYY and marked as unapproved.
+    </p>
+    <p class="mb-3">
+      The status change also strips permissions, positions, and team memberships, and drops any future shift sign-ups.
+    </p>
+
+    <%= button_row do %>
+      <%= button_link "Preview Conversion", :error, vc_maintenance_preview_pnvs_path,
+                      full_width: true %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Reset Past Prospectives", icon: "id-badge", icon_type: :solid do %>
+    <p class="mb-2">
+      <strong>Resets every Past Prospective account that still has an approved callsign.</strong>
+      Each callsign is changed to LastFirstYY and marked as unapproved.
+    </p>
+    <p class="mb-3">
+      Account status is not changed, so permissions, positions, team memberships, and shift sign-ups
+      are left alone.
+    </p>
+
+    <%= button_row do %>
+      <%= button_link "Preview Reset", :error, vc_maintenance_preview_past_prospectives_path,
+                      full_width: true %>
+    <% end %>
+  <% end %>
+</div>

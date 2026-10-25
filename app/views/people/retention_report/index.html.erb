@@ -1,0 +1,107 @@
+<%#
+  Everyone who rangered any of the last five events. The counts come first, so
+  the shape of the roster is visible before the roster itself; the filters then
+  cut it down to the group a survey is being sent to, and the export carries
+  exactly what the filters show.
+%>
+<% content_for :title, "Retention Report" %>
+
+<%= hero_panel icon: "user-clock", heading_level: :h1, id: "people-retention-report-header",
+               title: "Retention Report" do |panel| %>
+  <% panel.description do %>
+    Rangers who rangered at least one of the last five events, from
+    <%= @report.start_year %> through <%= @report.end_year %>.
+  <% end %>
+<% end %>
+
+<% if @report.rows.empty? %>
+  <%= ui_empty_state "No one has rangered any of the last five events, so there is no one to survey.",
+                     icon: "user-clock", icon_type: :solid %>
+<% else %>
+  <%# The counts describe the whole report. The filter bar's own count reports
+      the narrowing below it. %>
+  <%= ui_stat_row do %>
+    <% retention_report_counts(@report, @counts_by_last_year).each do |value, label, variant| %>
+      <%= ui_stat_box value, label, variant: variant %>
+    <% end %>
+  <% end %>
+
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Who is listed?</dt>
+      <dd>
+        A Ranger is listed once they have rangered any of the last five events. Alpha,
+        Training, and Deep Freeze shifts do not count, and neither do echelon shifts.
+      </dd>
+      <%= render "common/skipped_years_pair" if @report.skips_years? %>
+      <dt>What is the report for?</dt>
+      <dd>The Retention Team uses the report to send surveys once the event is over.</dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "retention-report-filters",
+                 chips: retention_report_filter_chips(@filter_params),
+                 clear_url: people_retention_report_path,
+                 count: "Showing #{@rows.size} of #{pluralize(@report.rows.size, "Ranger")}",
+                 # In the bar beside the chips: the export carries whatever the
+                 # chips say is narrowing the roster.
+                 actions: export_csv_link(retention_report_url(@filter_params.merge(format: :csv))),
+                 url: people_retention_report_path do |f| %>
+    <%= form_row do %>
+      <%# Each select counts what its choice will deliver -- the roster the
+          other filter leaves -- rather than the whole report. %>
+      <%= f.select :status, filter_status_options(@status_counts, matching: @matching_status_counts),
+                   label: "Status", selected: @filter_params[:status],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :last_year,
+                   retention_report_year_options(@counts_by_last_year, matching: @matching_year_counts),
+                   label: "Last Rangered", selected: @filter_params[:last_year],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Rangers", icon: "users", icon_type: :solid, border: false do %>
+    <% if @rows.empty? %>
+      <div class="px-4 pb-2">
+        <%= ui_empty_state "No one matched the current filters.",
+                           icon: "magnifying-glass", icon_type: :solid %>
+      </div>
+    <% else %>
+      <%# Seven columns on an admin report: the desktop table stays a table and
+          scrolls sideways on a narrow screen, rather than folding 1,300-odd
+          rows into cards seven lines tall each. %>
+      <%= ui_table full_width: true, striped: true, id: "retention-report-roster" do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Name" %>
+          <%= t.heading "First Year", right: true %>
+          <%= t.heading "Last Year", right: true %>
+          <%= t.heading "Total Years", right: true %>
+          <%= t.heading "#{@report.start_year}–#{@report.end_year}" %>
+        <% end %>
+        <%= t.body do %>
+          <% @rows.each do |row| %>
+            <%= t.row do %>
+              <%# The report returns value rows, not Person records, so the
+                  link needs the path built for it. Both roles that may read
+                  this page may open a person page, so the callsign always
+                  links. %>
+              <%= t.row_header callsign_link(row, person_path(row.id)) %>
+              <%= t.cell row.status %>
+              <%= t.cell row.name %>
+              <%= t.cell value_or_dash(row.first_year), right: true %>
+              <%= t.cell value_or_dash(row.last_year), right: true %>
+              <%= t.cell row.total_years, right: true %>
+              <%= t.cell retention_report_year_strip(row, @report.years) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+<% end %>

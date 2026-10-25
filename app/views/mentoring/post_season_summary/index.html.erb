@@ -1,0 +1,108 @@
+<%#
+  The mentor cadre's end-of-season review of one year's Prospective and Alpha
+  class, split by what the Mentors concluded. The rows, the chips and the
+  lazily-loaded per-person history are the shared pipeline ones -- see
+  UnifiedFlaggingConcern -- with this page's sign-up and verdict chips and its
+  mentors line handed to them as extras.
+%>
+<% content_for :title, "#{@year} Post Season Summary" %>
+<%= hero_panel icon: "clipboard-check", heading_level: :h1, id: "post-season-summary-header",
+               title: "#{@year} Post Season Summary" do |panel| %>
+  <% panel.description do %>
+    Everyone who became a Prospective or an Alpha in <%= @year %>, including those who did not finish the season.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @total.zero? %>
+  <%= ui_empty_state "No one became a Prospective or an Alpha in #{@year}.",
+                     icon: "clipboard-check", icon_type: :solid %>
+<% else %>
+  <%# Every figure describes the class, not the filtered view -- each section's
+      badge below is what counts the rows on screen. Each tile also narrows the
+      class to what it counts; the Mentees tile is the way back. %>
+  <%= ui_stat_row do %>
+    <% post_season_stat_tiles(mentees: @mentee_count, walked: @walked_count,
+                              flagged: @flagged_count, no_signup: @no_signup_count).each do |tile| %>
+      <% filter = tile[:filter] %>
+      <%= ui_stat_link unified_flagging_path(year: @year, **filter),
+                       active: filter.any? && filter.all? { |key, value| @filter_params[key] == value },
+                       aria_label: "#{tile[:count]} #{tile[:label]} — show #{filter.any? ? "them" : "everyone"}" do %>
+        <%= ui_stat_box tile[:count].to_s, tile[:label], variant: tile.fetch(:variant, :secondary), icon: tile[:icon] %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render "common/unified_flagging/personnel_warning", callsigns: @personnel_flagged %>
+
+  <%# Out of the hero, then the legend every pipeline page shares. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What does each person's entry show?</dt>
+      <dd>Who signed up for an Alpha shift, who walked one, and what the Mentors concluded.</dd>
+      <%= render "common/unified_flagging/review_legend" %>
+      <%= render "common/unified_flagging/lead_legend" %>
+      <%= render "common/unified_flagging/rank_legend" %>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "post-season-summary-filters",
+                 chips: post_season_filter_chips(@filter_params, @year, @mentor_labels),
+                 clear_url: unified_flagging_path(year: @year),
+                 count: "Showing #{@shown} of #{pluralize(@total, "person", plural: "people")}",
+                 url: unified_flagging_path do |f| %>
+    <%# Without this the year is lost on submit -- the selector is outside the form. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.text_field :q, label: "Search by Callsign, Name, or Former Handle",
+                       value: @filter_params[:q], width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :section, post_season_facet_options(:section),
+                   label: "Section", selected: @filter_params[:section],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :signup, post_season_facet_options(:signup),
+                   label: "Alpha Shift", selected: @filter_params[:signup],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :outcome, post_season_facet_options(:outcome),
+                   label: "Outcome", selected: @filter_params[:outcome],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.select :rank, post_season_facet_options(:rank),
+                   label: "Mentor Rank", selected: @filter_params[:rank],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :notes, post_season_facet_options(:notes),
+                   label: "Mentor Notes", selected: @filter_params[:notes],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :mentor, post_season_mentor_filter_options(@mentor_labels),
+                   label: "Mentor", selected: @filter_params[:mentor],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @total.positive? && @shown.zero? %>
+  <%= ui_empty_state "No one in the #{@year} class matched those filters.",
+                     icon: "magnifying-glass", icon_type: :solid %>
+<% elsif @total.positive? %>
+  <% pane = render "common/unified_flagging/review_pane", summary: @selected, history: @history, year: @year,
+                   **Mentoring::PostSeasonSummaryHelper::PANE_EXTRAS %>
+  <%= render layout: "common/unified_flagging/review_workspace", locals: { pane: } do %>
+    <% Mentoring::PostSeasonSummaryHelper::SECTIONS.each do |key, meta| %>
+      <% rows = @sections[key] || [] %>
+      <%= ui_section meta[:title], id: "post-season-#{key}", icon: meta[:icon], icon_type: :solid,
+                     badge: rows.size.to_s, badge_color: meta[:badge_color] do %>
+        <% if rows.empty? %>
+          <p class="text-stone-muted"><%= post_season_empty_message(key, filtering: @filtering) %></p>
+        <% else %>
+          <%= render "common/unified_flagging/review_list", rows: rows, year: @year, selected_id: @selected_id,
+                     extra: "mentoring/post_season_summary/list_extra" %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

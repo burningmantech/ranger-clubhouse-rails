@@ -1,0 +1,32 @@
+<%# locals: (full_name:,name:,positions:) %>
+<p class="mb-4">
+  While you are currently unable to submit a
+  <%= full_name.present? ? "#{full_name} (#{name})" : name %>, you can take steps to become eligible.
+</p>
+
+<section aria-labelledby="eligibility-requirements-heading">
+  <h6 id="eligibility-requirements-heading" class="font-semibold mb-2">
+    Become Eligible by Signing Up for a Qualified Shift
+  </h6>
+  
+  <p class="mb-2 text-stone-muted">
+    To submit a <%= name %>, you must first sign up for one of the qualified positions listed below:
+  </p>
+
+  <ul role="list" class="list-disc list-inside mb-6 space-y-1 bg-default p-4 rounded-lg" aria-label="List of qualifying positions">
+    <% positions.each do |position| %>
+      <li class="font-medium"><%= position.title %></li>
+    <% end %>
+  </ul>
+
+  <%= ui_callout_box :info, accent: true, title: "Signing Up", icon: "calendar-check" do %>
+    <p class="text-base text-warning mb-3">
+      Ready to sign up? Visit the schedule page to sign up for a qualifying shift. Once you do so, return here for instructions.
+    </p>
+    <%# The link's own focus outline (base.css), moved onto its edge: no gap
+        inside the callout's tint. %>
+    <%= link_to me_schedule_path, class: "inline-flex items-center font-semibold text-warning focus-visible:outline-offset-0 rounded" do %>
+      Go to Schedule / Sign-Ups <%= fa_icon "arrow-right", :solid, class: "ms-1 text-xs" %>
+    <% end %>
+  <% end %>
+</section>

@@ -1,0 +1,65 @@
+<%#
+  Person BMID admin page. The badge may not exist in the DB yet (see
+  Person::BmidsController) — @bmid can be an unsaved record, so the form Creates
+  or Updates the same person+year badge. Layout: readiness hero + contextual
+  warnings, the shared provisions section, then the editable badge form.
+%>
+<% is_new = @bmid.new_record? %>
+<% photo_ok = @bmid.has_approved_photo %>
+<% save_label = "Save BMID" %>
+
+<%= hero_panel icon: "id-card", heading_level: :h1, id: "person-bmid-header",
+               description: "Prepare this person's Burning Man ID badge for printing.",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    <%= Current.year %> BMID &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @bmid.status, "Status", variant: (@bmid.will_not_print? ? :warning : :secondary) %>
+  <%= ui_stat_box photo_ok ? "On file" : "Missing", "Photo", variant: (photo_ok ? :secondary : :warning) %>
+  <%= ui_stat_box bmid_sap_badge_value(@bmid),
+                  "SAP Date",
+                  variant: (@bmid.sap.nil? ? :warning : :secondary) %>
+<% end %>
+
+
+<%# --- Contextual warnings ------------------------------------------------- %>
+<%# Shared with the BMID roster's single-badge editor. %>
+<%= render "common/bmids/warnings", bmid: @bmid, person: @person, save_label: save_label %>
+
+<%# --- Provisions (shared with Tickets & Provisions) ----------------------- %>
+<%= render "person/provisions/section",
+           person: @person,
+           provisions: @provisions,
+           package: @provision_package,
+           showing_all: @showing_all_provisions,
+           origin: "bmid",
+           toggle_path: person_bmid_path(@person, provisions: @showing_all_provisions ? nil : "all", anchor: "provisions"),
+           collapsed: true %>
+
+<%# --- The editable badge -------------------------------------------------- %>
+<%= ui_form(@bmid, person_bmid_path(@person), method: is_new ? :post : :patch, data: { controller: "unsaved-changes" }) do |f| %>
+  <%# Shared with the BMID roster's single-badge editor. %>
+  <%= render "common/bmids/fields", f: f, bmid: @bmid, ticketing_info: @ticketing_info,
+             link: button_link("View Access Documents", :secondary,
+                               person_tickets_provisions_path(@person),
+                               icon: "ticket", icon_type: :solid) %>
+
+  <% if is_new %>
+    <%= ui_callout_box :info do %>
+      <strong>This is a new BMID record.</strong> It's created when you select "<%= save_label %>".
+    <% end %>
+  <% else %>
+    <p class="me-muted mb-4">
+      Created <%= datetime_format(@bmid.created_at, year: true) %>
+      &middot; Last modified <%= datetime_format(@bmid.updated_at, year: true) %>
+    </p>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit save_label %>
+    <%= cancel_link person_path(@person) %>
+  <% end %>
+<% end %>

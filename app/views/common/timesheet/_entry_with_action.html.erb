@@ -1,0 +1,139 @@
+<%# locals: (entry:) %>
+<%# Shared by /me (self-serve voice) and /hq (third-person voice for the
+    window operator) — see the TimesheetConcern contract. %>
+<%
+  badges = []
+  if entry.off_duty.nil?
+    badges << { icon: "person-walking", color: :warning, label: "still on duty" }
+  elsif entry.status_verified?
+    badges << { icon: "check", color: :success, label: "verified" }
+  elsif entry.verification_required?
+    if entry.status_approved?
+      badges << { icon: "check", color: :warning, label: "correction needs verification" }
+    else
+      badges << { icon: "check", color: :warning, label: "verification needed" }
+    end
+  elsif entry.status_pending?
+    badges << { icon: "hourglass", color: :warning, label: "correction pending review" }
+  elsif entry.status_rejected?
+    badges << { icon: "ban", color: :error, label: "correction rejected" }
+  else
+    badges << { icon: "bug", color: :error, label: "STATUS BUG!" }
+  end
+%>
+
+<div class="px-3 py-2">
+  <%= render layout: "common/entry_card_grid", locals: {
+    title: entry.position.title,
+    duration: entry.duration,
+    credits: entry.credits,
+    title_id: "entry-#{entry.id}-title",
+    description: nil,
+    badges:
+  } do %>
+    <% if entry.off_duty %>
+      <%= datetime_format entry.on_duty, entry.off_duty %>
+    <% else %>
+      <%= datetime_format entry.on_duty %> to <span class="italic text-stone-subtle">still on duty</span>
+    <% end %>
+  <% end %>
+  <% if entry.off_duty %>
+    <% if entry.status_verified? %>
+      <div class="mt-1 text-stone-muted text-sm">
+        Verified correct on <%= datetime_format entry.verified_at %>
+      </div>
+    <% elsif entry.verification_required? %>
+      <div class="mt-1">
+        <% if entry.status_approved? %>
+          <% if timesheet_self_serve? %>
+            Although the correction has been approved, you are still required to verify whether the updated information
+            is accurate.
+          <% else %>
+            Although the correction has been approved, the entry still needs to be verified as accurate.
+          <% end %>
+        <% else %>
+          This entry requires verification to confirm the position and shift times are correct.
+        <% end %>
+      </div>
+    <% elsif entry.status_pending? %>
+      <div class="mt-1 text-warning">
+        The requested corrections are pending review.
+      </div>
+    <% elsif entry.status_rejected? %>
+      <div class="mt-1 text-error">
+        <% if timesheet_self_serve? %>
+          The submitted corrections request has been denied. You may submit an appeal. If you do not wish to do so,
+          the entry still needs to be verified to indicate no further correction requests will be submitted for this
+          entry.
+        <% else %>
+          The submitted corrections request has been denied. <%= timesheet_person.callsign %> may submit an appeal.
+          Otherwise, the entry still needs to be verified to indicate no further correction requests will be submitted
+          for this entry.
+        <% end %>
+      </div>
+    <% else %>
+      <div class="mt-1 text-error">
+        Uh oh, a bug has been tripped over.
+      </div>
+    <% end %>
+  <% else %>
+    <div class="mb-1 text-warning">
+      <% if timesheet_self_serve? %>
+        This shift is still in progress. You may verify the entry or submit a correction once you have signed out.
+      <% else %>
+        This shift is still in progress. The entry can be verified or corrected once <%= timesheet_person.callsign %>
+        has signed out.
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if entry.notes.any? %>
+    <div class="mb-1 text-sm me-muted">
+      Last note left from <%= entry.notes.last.from_label(current_user.id) %>
+      at <%= datetime_format entry.notes.last.created_at %>
+    </div>
+  <% end %>
+
+  <% unless entry.position.count_hours %>
+    <div class="text-stone-muted">
+      Note: On-duty hours in this position do not qualify for provisions (meals, showers, clothing, or an event radio).
+      This applies to provisions only and does not affect <%= timesheet_whose %> credit earnings or ticket eligibility.
+    </div>
+  <% end %>
+
+  <% if entry.off_duty %>
+    <div class="mt-1 pt-3">
+      <%
+        correct_label = if entry.status_pending?
+                          "Add More Info"
+                        elsif entry.status_rejected?
+                          "Submit Appeal"
+                        else
+                          "Request Correction"
+                        end
+      %>
+      <%= button_row do %>
+        <%= button_link correct_label, :secondary, timesheet_correction_path(entry), target: "_top" %>
+        <% unless entry.status_verified? %>
+          <%= button_link "Mark as Verified", :secondary,
+                          timesheet_mark_verified_path(entry),
+                          method: :patch,
+                          data: { turbo_stream: true } %>
+        <% end %>
+        <% if entry.notes.any? %>
+          <%= button_action "Show Notes", :secondary, controller: "toggle",
+                            data: {
+                              toggle_label_value: "Hide Notes",
+                              toggle_dom_id_value: "entry-notes-#{entry.id}"
+                            },
+                            aria_hidden: "true" %>
+        <% end %>
+      <% end %>
+      <% if entry.notes.any? %>
+        <div id="entry-notes-<%= entry.id %>" class="hidden mt-2" aria-hidden="true">
+          <%= render partial: "common/timesheet_notes", locals: { notes: entry.notes } %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,55 @@
+<%#
+  What the repair just did. Rendered from the POST because a fresh load cannot
+  re-derive it: the entries it fixed have stopped needing repair, which is the
+  point.
+%>
+<div data-controller="scroll-to-top" hidden></div>
+
+<% failed = @results.select(&:error) %>
+
+<% if @results.any? %>
+  <%= ui_callout_box(failed.any? ? :warning : :success,
+                     icon: failed.any? ? "triangle-exclamation" : "circle-check",
+                     icon_type: :solid,
+                     title: "#{pluralize(@results.size - failed.size, "Entry")} Relinked") do %>
+    <ul class="flex flex-col gap-1">
+      <% @results.each do |result| %>
+        <li>
+          <%# An icon as well as a colour on both outcomes: red text alone does
+              not survive a greyscale screen or a colour-blind reader. %>
+          <% if result.error %>
+            <span class="text-error">
+              <%= fa_icon "circle-exclamation", :solid, end: 1 %>
+              <span class="font-semibold"><%= result.callsign %></span>
+              — <%= result.error %>
+            </span>
+          <% else %>
+            <span>
+              <%= fa_icon "circle-check", :solid, end: 1, class: "text-success" %>
+              <span class="font-semibold"><%= result.callsign %></span>
+              — <%= result.message %>
+            </span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>
+
+<% if @skipped.positive? %>
+  <%= ui_callout_box :secondary, icon: "circle-info", icon_type: :solid do %>
+    <%# Deliberately does not name a cause. The entries could have been settled
+        by somebody else while this page sat open, or the schedule could have
+        moved under them — nothing here can tell those apart. %>
+    <%= pluralize(@skipped, "selected entry") %>
+    <%= @skipped == 1 ? "no longer needs" : "no longer need" %> repairing, so
+    <%= @skipped == 1 ? "it was" : "they were" %> left alone.
+  <% end %>
+<% end %>
+
+<% if @results.empty? && @skipped.zero? %>
+  <%= ui_callout_box :warning, icon: "hand-point-up", icon_type: :solid,
+                     title: "Nothing Was Selected" do %>
+    Tick the entries you want relinked, then use the button under the tables.
+  <% end %>
+<% end %>

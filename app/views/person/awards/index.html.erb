@@ -1,0 +1,75 @@
+<%= hero_panel icon: "award", heading_level: :h1, id: "person-awards-header",
+               title: "Service Recognition Awards — #{@person.callsign}",
+               description: "Service recognition awards for #{@person.callsign}, and the service years they add.",
+               back_to: [@person.callsign, person_path(@person)] %>
+
+<%# The tallies, out of the description slot and into the body (design-rules >
+    Hero Panel Stats). Zero is a value, so there is no empty-state sentence; the
+    year ranges, which a stat box has no slot for, follow on one line. %>
+<%= ui_stat_row do %>
+  <%= ui_stat_box @years_of_service.size, "Service Years" %>
+  <%= ui_stat_box @years_of_awards.size, "Award Years" %>
+<% end %>
+<p class="mb-4">
+  Service years <%= year_range(@years_of_service) %>; award years included as service years
+  <%= year_range(@years_of_awards) %>.
+</p>
+
+<%= ui_callout_box :info, title: "What These Awards Recognize" do %>
+  Service Recognition Awards honor the year-round contributions of Cadre, Delegation, and selected Team members, as
+  well as acknowledge individuals in special roles or events. These awards are purely honorary and do not count toward
+  earning tickets, appreciations (such as Ranger shirts), or provisions (like meal passes). They also have no impact on
+  Ranger status.
+<% end %>
+
+<%= ui_callout_box :warning, title: "Awards May Be Incomplete" do %>
+  Currently, many awards are limited to certain years and may not fully reflect all volunteer efforts. This is partly
+  because many awards were auto-generated from Clubhouse records, which only cover a limited timeframe and may contain
+  inaccuracies.
+<% end %>
+
+<% if @can_manage %>
+  <div class="mb-3">
+    <%= button_link "Rebuild Awards", :secondary, rebuild_person_awards_path(@person),
+                    icon: "arrows-rotate", icon_type: :solid,
+                    data: confirm_modal(
+                      title: "Rebuild Awards",
+                      message: "Rebuild re-checks #{@person.callsign}'s team and position history and grants any " \
+                               "awards that are missing. Awards already granted are left alone.",
+                      confirm_label: "Rebuild Awards",
+                      method: :post
+                    ) %>
+  </div>
+<% else %>
+  <%= ui_callout_box :info do %>
+    Contact a Clubhouse Admin or Award Manager to grant or edit service recognition awards.
+  <% end %>
+<% end %>
+
+<%= render "awards_table",
+           person: @person,
+           title: "Cadre/Delegation and Selected Teams Recognition",
+           icon: "users",
+           awards: @team_awards,
+           award_type: "team",
+           new_label: "Grant team award",
+           can_manage: @can_manage %>
+
+<%= render "awards_table",
+           person: @person,
+           title: "Special Service Awards",
+           icon: "star",
+           awards: @special_awards,
+           award_type: "special",
+           new_label: "Grant special award",
+           can_manage: @can_manage %>
+
+<%= render "awards_table",
+           person: @person,
+           title: "Special Positions Recognition",
+           icon: "person-walking",
+           awards: @position_awards,
+           award_type: "position",
+           new_label: "Grant position award",
+           can_manage: @can_manage %>
+

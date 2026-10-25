@@ -1,0 +1,7 @@
+<%# locals: (step:,facts:)%>
+<p><b>Online Course coming soon</b> — usually early April.</p>
+<% if facts.is_applicant %>
+  <p class="text-sm text-stone-muted mt-1">Questions? <%= mail_to EmailAddresses::VOLUNTEER_COORDINATORS_TEAM %></p>
+<% else %>
+  <p class="text-sm text-stone-muted mt-1">Watch the Announce mailing list.</p>
+<% end %>

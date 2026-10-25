@@ -1,0 +1,63 @@
+<%#
+  Every position whose shifts have started this year, with the flakes and
+  rogues found on them. Pick a position to see which shifts they were.
+%>
+<% content_for :title, "Flake Report" %>
+
+<%= hero_panel icon: "ghost", heading_level: :h1, id: "scheduling-flake-report-header",
+               title: "#{@year} Flake Report" do |panel| %>
+  <% panel.description do %>
+    Flakes and rogues by position, counting only shifts that have already started.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @summary.positions.any? %>
+  <%# Counts on a drill-down index are plain text, not stat boxes -- the stats
+      belong on the position page, per the records-management pattern. %>
+  <div class="text-lg my-4">
+    Showing <%= pluralize @summary.positions.size, "position" %>
+    with <%= pluralize @summary.slot_count, "shift" %> &middot;
+    <%= pluralize @summary.flake_count, "flake" %> &middot;
+    <%= pluralize @summary.rogue_count, "rogue" %> &middot;
+    <%= pluralize @summary.unstaffed_slot_count, "shift" %> with no sign-ups
+  </div>
+
+  <%# The two definitions, out of the hero. The report joins on the timesheet's
+      shift link, so the copy has to say so: most flakes DO hold a timesheet,
+      just not one attached to the shift they signed up for. Promising "has no
+      timesheet" mis-stated every number on the page. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What is a flake?</dt>
+      <dd>
+        A flake signed up for a shift and was never on duty for that position during it
+        &mdash; they may have been on duty elsewhere, and the row says where.
+      </dd>
+      <dt>What is a rogue?</dt>
+      <dd>A rogue has a timesheet attached to a shift they never signed up for.</dd>
+      <% if no_shows_report_readable? %>
+        <%# The two reports disagree on a handful of people, and a reader who
+            cannot see why will read one of the pages as wrong. %>
+        <dt>How is this different from the No Shows Report?</dt>
+        <dd>
+          The <%= link_to "No Shows Report", scheduling_no_shows_report_path(year: @year) %>
+          asks a broader version of the flake question: it counts a sign-up as missed unless
+          the person's own hours overlap the shift.
+        </dd>
+      <% end %>
+    </dl>
+  <% end %>
+
+  <div class="lg:w-3/4">
+    <% @summary.positions.each do |position| %>
+      <%= ui_drill_down_row scheduling_flake_report_position_path(position.position_id, year: @year),
+                            position.title,
+                            meta: pluralize(position.slot_count, "shift"),
+                            badges: flake_report_position_badges(position) %>
+    <% end %>
+  </div>
+<% else %>
+  <%= ui_empty_state "No #{@year} shifts have started yet.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

@@ -1,0 +1,88 @@
+<%# locals: (back_link:, description_text:) %>
+<%= hero_panel icon: "clock", heading_level: :h1, id: "hours-credits-header",
+               description: "#{description_text}", back_to: back_link do |panel| %>
+  <% panel.title do %>Hours & Credits
+  <% end %>
+<% end %>
+
+<div class="grid grid-cols-3 gap-2 lg:gap-4 my-4">
+  <%= ui_stat_box credit_format(@summary.credits_earned), "Earned",
+                  variant: :success,
+                  icon: "circle-check",
+                  icon_type: :solid,
+                  size: :md %>
+
+  <%= ui_stat_box hour_minute_words(@summary.counted_duration), "Scheduled",
+                  variant: :secondary,
+                  icon: "clock",
+                  icon_type: :solid,
+                  size: :md %>
+
+  <%= ui_stat_box credit_format(@summary.total_credits), "Potential",
+                  variant: :secondary,
+                  icon: "star",
+                  icon_type: :solid,
+                  size: :md %>
+</div>
+
+<div class="text-stone-muted">
+  <%= fa_icon "circle-info", :solid, class: "text-primary", aria: { hidden: true } %>
+  <span><strong>Earned</strong> = confirmed. <strong>Scheduled/Potential</strong> = estimates from sign-ups.</span>
+</div>
+<% if @summary.event_start.present? %>
+  <div class="text-stone-muted">
+    <%= fa_icon "calendar", :solid, end: 1 %> Event week: <%= datetime_format @summary.event_start, @summary.event_end %>
+  </div>
+<% end %>
+
+<% unless @summary.event_start.present? %>
+  <%= ui_callout_box :warning do %>
+    Event dates not set. Breakdowns may be inaccurate.
+  <% end %>
+<% end %>
+
+<div class="font-medium text-heading mt-4 mb-2 flex items-center gap-2">
+  <%= fa_icon "chart-bar", :solid, class: "text-stone-subtle", aria: { hidden: true } %>
+  Breakdown by Period
+</div>
+
+<%= ui_table full_width: false, striped: false, responsive: false do |t| %>
+  <%= t.header do %>
+    <%= t.heading "" %>
+    <%= t.heading "Total", class: "text-end" %>
+    <%= t.heading "Pre", class: "text-end" %>
+    <%= t.heading "Event", class: "text-end" %>
+    <%= t.heading "Post", class: "text-end" %>
+  <% end %>
+  <%= t.body do %>
+    <%= t.row do %>
+      <%= t.cell do %>
+        <%= fa_icon "clock", :regular, class: "text-stone-icon me-1", aria: { hidden: true } %>
+        <span class="hidden lg:inline">Hours</span><span class="lg:hidden">Hrs</span>
+      <% end %>
+      <%= t.cell class: "text-end font-semibold" do %>
+        <%= hour_minute_words @summary.counted_duration %>
+      <% end %>
+      <%= t.cell hour_minute_words(@summary.pre_event_duration), class: "text-end" %>
+      <%= t.cell hour_minute_words(@summary.event_duration), class: "text-end" %>
+      <%= t.cell hour_minute_words(@summary.post_event_duration), class: "text-end" %>
+    <% end %>
+    <%= t.row do %>
+      <%= t.cell do %>
+        <%= fa_icon "star", :regular, class: "text-stone-icon me-1", aria: { hidden: true } %>
+        <span class="hidden lg:inline">Credits</span><span class="lg:hidden">Cr</span>
+      <% end %>
+      <%= t.cell credit_format(@summary.total_credits), class: "text-end font-semibold" %>
+      <%= t.cell credit_format(@summary.pre_event_credits), class: "text-end" %>
+      <%= t.cell credit_format(@summary.event_credits), class: "text-end" %>
+      <%= t.cell credit_format(@summary.post_event_credits), class: "text-end" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @summary.other_duration.positive? %>
+  <%= ui_callout_box :warning, icon: "circle-exclamation", class: "mt-4" do %>
+    <strong>Excluded: <%= hour_minute_words(@summary.other_duration) %></strong>
+    <span> - training, on-call, etc. (doesn't affect credits)</span>
+  <% end %>
+<% end %>

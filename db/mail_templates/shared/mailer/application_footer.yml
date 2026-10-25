@@ -1,0 +1,16 @@
+description: "Who to ask about an application, and which one it is"
+
+body: |
+  <hr style="border: none; border-top: 1px solid #eeeeee; margin: 20px 0;">
+  <p style="font-size: 12px; color: #666666;">
+    <b>Questions?</b> Reply to this message or email the Volunteer Coordinators at
+    <a href="mailto:ranger-vc-list@burningman.org">ranger-vc-list@burningman.org</a>
+  </p>
+  <p style="font-size: 11px; color: #999999;">
+    Application ID: A-{{ application.id }}<br>
+    {%- if application.assigned_to %}
+      Assigned #{{ application.assigned_to.id }} {{ application.assigned_to.callsign }}
+    {%- else %}
+      (available)
+    {%- endif %}
+  </p>

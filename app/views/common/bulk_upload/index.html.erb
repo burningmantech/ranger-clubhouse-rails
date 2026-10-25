@@ -1,0 +1,91 @@
+<%# The form step, shared by every bulk page. Rendered from the page's own
+    controller, so its copy comes from bulk_page_config and anything it needs
+    beyond a select and a textarea comes from its optional partials. %>
+<% config = bulk_page_config %>
+
+<%= hero_panel icon: config[:icon], heading_level: :h1, id: "#{controller_name.dasherize}-header",
+               title: config[:title], description: config[:description] %>
+
+<%# Only the apply renders a results block, and only then is this a 422 results
+    page that should jump the reader to the top. A refusal is a validation
+    re-render and keeps its scroll. %>
+<% if @outcome %>
+  <div data-controller="scroll-to-top" hidden></div>
+
+  <% variant, icon = bulk_upload_outcome_banner(@batch, @outcome) %>
+  <%= ui_callout_box(variant, icon:, icon_type: :solid) do %>
+    <strong><%= bulk_upload_outcome_headline(@batch, @outcome) %></strong>
+    <%= bulk_upload_outcome_detail(@batch, @outcome) %>
+    <% if variant == :success %>
+      Your list is still below.
+    <% else %>
+      Your list is still below — fix anything that did not go through and check it again.
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# Which year the writes land in, said out loud. The reader picked no year, so
+    the only other way to find out is to go and look at what changed. %>
+<% if config[:year_scoped] %>
+  <%= ui_callout_box :info, icon: "calendar-days", icon_type: :solid do %>
+    <strong>This changes the <%= Current.year %> event year.</strong>
+    Nothing outside <%= Current.year %> is touched.
+  <% end %>
+<% end %>
+
+<% if bulk_upload_partial?("advisory") %>
+  <%= render "advisory" %>
+<% end %>
+
+<%# A page whose action list is built from records -- the certifications one --
+    can legitimately have nothing to offer. Saying so beats an empty select the
+    reader keeps opening. %>
+<% if bulk_actions.empty? %>
+  <%= ui_empty_state nil, icon: "circle-question", icon_type: :solid do %>
+    There is nothing this page can record yet.
+  <% end %>
+<% else %>
+<%# Params, not a model: the form carries a few loose values and re-renders
+    itself with them after a refusal, so the pasted list survives. %>
+<%= ui_form(nil, bulk_path(:preview), method: :post, no_error_summary: true) do |f| %>
+  <% if bulk_upload_partial?("extra_fields") %>
+    <%= render "extra_fields", f: f %>
+  <% end %>
+
+  <%= f.select :bulk_action,
+               bulk_upload_action_options(bulk_actions, params[:bulk_action]),
+               { label: config[:action_label], required: true, prompt: config[:action_prompt] },
+               { class: "w-full sm:w-96" } %>
+
+  <%= f.text_area :records, label: config[:records_label], required: true,
+                  value: params[:records], rows: 10,
+                  help_text: config[:records_help] %>
+
+  <% if bulk_upload_partial?("formats") %>
+    <%= render "formats" %>
+  <% end %>
+
+  <%# Optional, and short: this is the sentence that lands in each record's
+      audit history, where "bulk upload" on its own explains nothing six months
+      later. %>
+  <%# Stated this way because it is true on all eight pages. Three of the tables
+      written here -- person_event, person_certification, person_team_log --
+      keep no history of their own, so promising a per-record entry everywhere
+      would be a promise half the pages cannot keep. %>
+  <%= f.text_field :reason, label: "Reason (optional)", value: params[:reason],
+                   help_text: "Saved with this batch in the admin log. Records that keep " \
+                              "their own history get it too." %>
+
+  <%# Said once here, beside the button it is about, rather than as a second
+      sentence in all eight pages' hero descriptions: the hero is one sentence on
+      what the page does. %>
+  <p class="mb-3">
+    <strong>Checking is always safe.</strong> It shows exactly what will change, and nothing is
+    saved until you confirm.
+  </p>
+
+  <%= button_row do %>
+    <%= f.submit "Check the List" %>
+  <% end %>
+<% end %>
+<% end %>

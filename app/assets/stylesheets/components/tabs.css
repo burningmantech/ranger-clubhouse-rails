@@ -1,0 +1,37 @@
+/*
+ * daisyUI lifted tabs (tabs tabs-lift) -- the mailbox folder selector, at
+ * every width, in app/views/common/messages/_folder_selector.html.erb.
+ *
+ * daisyUI 5.7 outlines the lifted tab in base-300, which measures 1.13:1 on
+ * the base-200 box, fills it in base-100 (1.05:1 on the box), and paints idle
+ * labels in base-content at 50% opacity: 2.4:1 light / 2.9:1 dark, below the
+ * 4.5:1 AA floor for 14px text. On the warm paper scale none of it reads as a
+ * tab bar (measured 2026-09-13).
+ *
+ * --tab-border-color is the variable 5.7 reads for the outline and the corner
+ * flares. It is declared on every tab by `.tab:is(.tabs > .tab)`, so it has to
+ * be overridden on the tab: a value on the container is shadowed by the tab's
+ * own declaration, whichever layer wins. body-subtle measures 5.4:1 / 5.6:1
+ * on base-200 in light / dark. The 2px primary top edge (5.1:1 / 5.7:1) marks
+ * the open folder. The lifted fill stays daisyUI's base-100: the outline and
+ * the edge carry the state, not the fill.
+ *
+ * Hover is left to daisyUI (full base-content, 8.2:1 / 7.8:1), so the idle rule
+ * excludes it the way daisyUI's own idle rule does.
+ *
+ * Underlined tabs (tabs tabs-border) -- TabsHelper#tab_navigation and the
+ * photo upload source picker -- inherit the same 50% idle label, so they share
+ * the idle rule. Their active underline is daisyUI's currentColor bar.
+ */
+.tabs-lift > .tab {
+    --tab-border-color: var(--color-body-subtle);
+}
+
+:is(.tabs-lift, .tabs-border) > .tab:not(.tab-active, :hover, :focus-visible) {
+    @apply text-stone-muted;
+}
+
+.tabs-lift > .tab.tab-active {
+    @apply text-heading font-medium;
+    border-top: 2px solid var(--color-primary);
+}

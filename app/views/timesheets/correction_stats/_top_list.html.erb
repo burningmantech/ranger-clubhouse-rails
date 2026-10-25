@@ -1,0 +1,57 @@
+<%# locals: (title:, heading:, count_heading:, rows:, people: false, link_year: nil) %>
+<%#
+  One "where requests come from" leaderboard: positions or the rangers behind
+  them. Both shapes are the same two columns, so they share this partial.
+
+  count_heading: the corrections lists count review decisions and the missing
+  lists count requests -- see _decision_card. The column has to say which.
+
+  link_year: the year to open a ranger's timesheet at, or nil for their default.
+  Passed rather than read off @year because it is only right for the missing
+  lists: those are scoped by the shift's year, which is the year the person
+  timesheet page also reads. The corrections lists are scoped by the year the
+  decision was made, and a 2020 decision about a 2019 entry would land the
+  reader on an empty 2020 timesheet.
+
+  striped: rows are ranked and nearly all short, and the stripe is what keeps a
+  reader on the right line when the counts run down to ties.
+%>
+<div class="card-standard p-4">
+  <h3 class="heading-title text-heading mb-2"><%= title %></h3>
+
+  <% if rows.empty? %>
+    <p class="text-base text-stone-muted">None this year.</p>
+  <% else %>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading heading %>
+        <%= t.heading count_heading, right: true %>
+      <% end %>
+      <%= t.body do %>
+        <% rows.each do |row| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <% if people %>
+                <%# person_timesheets_readable?, not can_view_person_page?: the
+                    link goes to the ranger's timesheet, and Timesheet
+                    Management is admitted there while being kept out of
+                    /person/:id. Gating on the person-page roles handed this
+                    page's largest non-admin audience dead text instead of a
+                    link that works for them. %>
+                <% if row.person && person_timesheets_readable? %>
+                  <%= callsign_link row.person,
+                                    person_timesheets_path(row.person, year: link_year) %>
+                <% else %>
+                  <%= person_display_name row.person, row.person_id %>
+                <% end %>
+              <% else %>
+                <%= row.label %>
+              <% end %>
+            <% end %>
+            <%= t.cell number_with_delimiter(row.total), right: true %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

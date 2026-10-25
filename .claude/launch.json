@@ -1,0 +1,31 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "clubhouse3",
+      "runtimeExecutable": "bin/dev",
+      "runtimeArgs": [],
+      "port": 3010,
+      "env": {
+        "PORT": "3010"
+      }
+    },
+    {
+      "name": "clubhouse3-alt",
+      "runtimeExecutable": "bin/rails",
+      "runtimeArgs": ["server", "--pid", "tmp/pids/server-alt.pid"],
+      "port": 3210,
+      "autoPort": true
+    },
+    {
+      "name": "clubhouse3-sf-mock",
+      "runtimeExecutable": "bin/rails",
+      "runtimeArgs": ["server", "--pid", "tmp/pids/server-sfmock.pid"],
+      "port": 3211,
+      "env": {
+        "SF_MOCK_DATA": "1",
+        "PORT": "3211"
+      }
+    }
+  ]
+}

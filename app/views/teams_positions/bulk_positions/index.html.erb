@@ -1,0 +1,69 @@
+<%= hero_panel icon: "arrow-right-arrow-left", heading_level: :h1, id: "bulk-positions-header",
+               title: "Bulk Grant / Revoke a Position",
+               description: "Grant or revoke one position for a list of callsigns." %>
+
+<%# Only the apply renders a results block, and only then is this a 422 results
+    page that should jump the reader to the top. A refusal is a validation
+    re-render and keeps its scroll. %>
+<% if @outcome %>
+  <div data-controller="scroll-to-top" hidden></div>
+
+  <%= ui_callout_box(@outcome.failed? ? :error : :success,
+                     icon: @outcome.failed? ? "triangle-exclamation" : "circle-check",
+                     icon_type: :solid) do %>
+    <strong><%= bulk_position_outcome_headline(@change, @outcome) %></strong>
+    <%= bulk_position_outcome_detail(@change, @outcome) %>
+    Your list is still below — fix anything that did not go through and check it again.
+  <% end %>
+<% end %>
+
+<% if manageable_positions.any? %>
+  <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid do %>
+    <strong>This does not change team membership.</strong>
+    To move a whole team membership, use
+    <%= link_to "Bulk Team Grant / Revoke", teams_positions_bulk_teams_path %> instead — granting
+    a team also grants its Recommended positions, and revoking one also revokes the Recommended
+    and Optional positions along with their upcoming shifts.
+  <% end %>
+
+  <%# Params, not a model: the form carries three loose values and re-renders
+      itself with them after a refusal, so the pasted list survives. %>
+  <%= ui_form(nil, teams_positions_preview_bulk_positions_path,
+              method: :post, no_error_summary: true) do |f| %>
+    <%= f.select :position_id,
+                 bulk_position_options(manageable_positions, params[:position_id]),
+                 { label: "Position", required: true, prompt: "Choose a position",
+                   help_text: bulk_positions_reach_hint },
+                 { class: "w-full sm:w-96" } %>
+
+    <%# No option is checked by default: neither direction should be the one you
+        get by not reading the question. %>
+    <%= f.collection_radio_buttons :direction,
+                                   TeamsPositions::BulkPositionsHelper::DIRECTION_OPTIONS,
+                                   :last, :first,
+                                   { label: "What should happen?",
+                                     layout: :horizontal, label_position: :stacked,
+                                     checked: params[:direction] } %>
+
+    <%= f.text_area :callsigns, label: "Callsigns", required: true,
+                    value: params[:callsigns], rows: 10,
+                    help_text: "One callsign per line. Capitalisation and punctuation do not matter." %>
+
+    <%# Said beside the button it is about, not in the hero: the hero is one
+        sentence on what the page does. %>
+    <p class="mb-3">
+      <strong>Checking is always safe.</strong> It shows exactly what will change, and nothing
+      is saved until you confirm.
+    </p>
+
+    <%= button_row do %>
+      <%= f.submit "Check Callsigns" %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state nil, icon: "people-group", icon_type: :solid do %>
+    There are no positions you can grant or revoke here. Either you do not manage a team yet, or
+    every position on the teams you manage grants Admin or Tech Ninja — those can only be moved by
+    someone who already holds the role.
+  <% end %>
+<% end %>

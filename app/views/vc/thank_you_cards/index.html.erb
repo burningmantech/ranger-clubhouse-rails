@@ -1,0 +1,77 @@
+<%= hero_panel icon: "envelope", heading_level: :h1, id: "vc-thank-you-cards-header",
+               title: "#{@year} Thank You Cards" do |panel| %>
+  <% panel.description do %>
+    Mailing addresses for everyone who rangered a shift in <%= @year %>.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: { include_statuses: @include_statuses } %>
+<% end %>
+
+<%= render "people/shared/privacy_notice", shows: "home addresses and email addresses" %>
+
+<% if @people.any? %>
+  <%= ui_stat_row id: "thank-you-cards-status-counts" do %>
+    <% @status_counts.each do |status, count| %>
+      <%= ui_stat_box count.to_s, status, icon_type: :solid,
+                      **thank_you_card_stat_options(status) %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= filter_bar id: "thank-you-cards-filters",
+               chips: thank_you_card_filter_chips(@year, @include_statuses),
+               clear_url: (vc_thank_you_cards_path(year: @year) if @include_statuses.any?),
+               count: thank_you_card_summary_count(@people.size, @missing_address_count),
+               actions: (export_csv_link(vc_thank_you_cards_path(year: @year,
+                                         include_statuses: @include_statuses,
+                                         format: :csv)) if @people.any?),
+               url: vc_thank_you_cards_path do |f| %>
+  <%= hidden_field_tag :year, @year %>
+
+  <fieldset>
+    <legend class="mb-2 text-base font-medium text-heading">Also include people we do not normally mail</legend>
+    <%= render "common/checkbox_grid",
+               name: "include_statuses[]",
+               options: ThankYouCardsReport::OPTIONAL_STATUSES.map { |status| [status, status] },
+               selected: @include_statuses,
+               id_prefix: "include-status" %>
+  </fieldset>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters", variant: :secondary %>
+  <% end %>
+<% end %>
+
+<% if @people.any? %>
+  <%= ui_table striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Name" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Email" %>
+      <%= t.heading "Mailing Address" %>
+      <%= t.heading "Country" %>
+    <% end %>
+    <%= t.body do %>
+      <% @people.each do |person| %>
+        <% lines = @address_lines[person.id] %>
+        <%= t.row do %>
+          <%= t.row_header callsign_link(person) %>
+          <%= t.cell "#{person.first_name} #{person.last_name}" %>
+          <%= t.cell person.status %>
+          <%= t.cell email_link_or_dash(person.email) %>
+          <%# inline-block keeps every line of the address flush left of each other
+              when the table folds and the column heading becomes an inline label. %>
+          <%= t.cell tag.span(lines.any? ? safe_join(lines, tag.br) : "No address on file",
+                              class: class_names("inline-block align-top", "text-base-content/70" => lines.empty?)) %>
+          <%= t.cell value_or_dash(thank_you_card_country(person.country)) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state nil, icon: "envelope", icon_type: :solid do %>
+    No one on the <%= @year %> mailing list.
+    Select another year above, or use Filters to include people we do not normally mail.
+  <% end %>
+<% end %>

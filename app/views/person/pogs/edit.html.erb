@@ -1,0 +1,15 @@
+<%= hero_panel icon: "utensils", heading_level: :h1, id: "person-pogs-edit-header",
+               back_to: ["Meal & Shower Pogs", person_pogs_path(@person, year: @year)] do |panel| %>
+  <% panel.title do %>
+    Edit Pog &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= render "form",
+           person:       @person,
+           person_pog:   @person_pog,
+           form_path:    person_pog_path(@person, @person_pog, year: @year),
+           form_method:  :patch,
+           submit_label: "Save Pog",
+           show_delete:  true,
+           year:         @year %>

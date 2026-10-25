@@ -1,0 +1,28 @@
+/*
+ * Bookmark kiosk page
+ *
+ * The saved document is the whole page here, and every link in it is something
+ * a Ranger taps with a finger on a touchscreen standing in HQ. A link written
+ * in a document is a bare inline box about 20px tall -- a little over half the
+ * 36px this product holds every interactive element to.
+ *
+ * Vertical padding on an inline box grows what the finger can hit without
+ * moving a single character of the text. On its own it would grow the boxes of
+ * two stacked links into each other, which turns a near miss into the wrong
+ * link rather than into nothing, so the lines that carry a link are pushed
+ * apart far enough to clear it. Only those lines: a paragraph of instructions
+ * is nothing to aim at, and loosening the whole document would spend a
+ * screenful of scrolling on prose no one is reaching for.
+ *
+ * The room is bought with margin rather than line-height on purpose. Half the
+ * links here are written out as full URLs, which wrap over two and three lines
+ * on a phone; loosening the leading opens those wraps up as well, and one
+ * address broken across a gap reads as two separate links.
+ */
+.bookmark-page .lexxy-content :is(li, p):has(a) {
+    margin-block: 0.75rem;
+}
+
+.bookmark-page .lexxy-content a {
+    padding-block: 0.5rem;
+}

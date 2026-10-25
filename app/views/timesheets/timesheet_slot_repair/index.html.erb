@@ -1,0 +1,81 @@
+<%#
+  Every shift link the repair would change, grouped by what the change does to
+  the entry. Nothing here is written until the button under the tables is
+  pressed, so the page is safe to open and safe to leave.
+%>
+<% content_for :title, "Timesheet Slot Repair" %>
+
+<%= hero_panel icon: "link", heading_level: :h1,
+               id: "timesheet-slot-repair-header",
+               title: "#{@year} Timesheet Slot Repair" do |panel| %>
+  <% panel.description do %>
+    Relink timesheet entries to the scheduled shift they belong to.
+  <% end %>
+  <%# No skip_pandemic: the hero panel drops the selected year before building
+      the list, so a year left out of it cannot be shown as chosen -- the
+      heading would say one year and the selector another. The pandemic years
+      hold no shifts and simply report nothing to repair. %>
+  <% panel.year_selector year: @year, min_year: year_floor %>
+<% end %>
+
+<%= render "results" if @results %>
+
+<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+  <strong>Nothing changes until you apply it.</strong>
+  An entry is matched to the shift the ranger signed up for. Failing that, to any
+  shift for the same position starting within an hour of their check-in.
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box number_with_delimiter(@scanned), "Entries Checked", icon: "list-check" %>
+  <% TimesheetSlotRepair::KINDS.each do |kind| %>
+    <% meta = slot_repair_meta(kind) %>
+    <% count = @groups.fetch(kind, []).size %>
+    <%= ui_stat_box count.to_s, meta[:label],
+                    variant: count.zero? ? :success : meta[:variant],
+                    icon: meta[:icon] %>
+  <% end %>
+<% end %>
+
+<% if @changes.any? %>
+  <%= ui_form(nil, timesheets_apply_timesheet_slot_repair_path(year: @year),
+              method: :post, local: true, no_error_summary: true) do |f| %>
+    <%= bulk_select do %>
+      <%= bulk_select_all label: "Select everything shown", selected: @changes.count(&:offered?) %>
+
+      <% TimesheetSlotRepair::KINDS.each do |kind| %>
+        <% changes = @groups[kind] %>
+        <% next if changes.blank? %>
+        <% meta = slot_repair_meta(kind) %>
+
+        <%= ui_section meta[:heading], icon: meta[:icon], icon_type: :solid, border: false do %>
+          <p class="text-stone-muted mb-2"><%= meta[:aside] %></p>
+          <%= render "group", changes: changes %>
+        <% end %>
+      <% end %>
+
+      <%= button_row do %>
+        <%= button_action "Apply the Selected Changes", :primary,
+                          type: "submit", icon: "wrench", icon_type: :solid,
+                          data: { checkbox_select_all_target: "submit",
+                                  turbo_confirm: confirm_modal_dialog(
+                                    title: "Apply These Changes",
+                                    message: "Apply these changes? This rewrites the shift link on every entry " \
+                                             "you selected. It cannot be undone from here.",
+                                    confirm_label: "Apply Changes"
+                                  ) } %>
+        <%= button_link "Back to Timesheets", :secondary, timesheets_on_duty_path,
+                        icon: "arrow-left", icon_type: :solid %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif @scanned.zero? %>
+  <%# Not the same answer as the one below it: no entries were checked, so
+      nothing was found to be right either. %>
+  <%= ui_empty_state "There are no #{@year} timesheet entries to check.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "All #{pluralize(@scanned, "timesheet entry")} for #{@year} " \
+                     "are linked to the right shift. There is nothing to repair.",
+                     icon: "circle-check", icon_type: :solid %>
+<% end %>

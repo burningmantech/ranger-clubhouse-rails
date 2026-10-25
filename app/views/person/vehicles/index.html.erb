@@ -1,0 +1,151 @@
+<%= hero_panel icon: "car", heading_level: :h1, id: "person-vehicles-header",
+               description: "Manage MVR/PVR flags, vehicle agreements, and lifetime vehicle status for this person.",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    <%= @year %> Driving Privileges &amp; Vehicle Agreements &mdash; <%= @person.callsign %>
+  <% end %>
+  <% panel.year_selector year: @year, years: @years %>
+<% end %>
+
+<% if @person.vehicle_blacklisted %>
+  <%= ui_callout_box :error, title: "Vehicle Blacklisted", icon: "car-burst" do %>
+    Person may not drive gators, cars, or trucks on playa for Ranger business.
+    All vehicle flags and agreements are disabled.
+  <% end %>
+<% end %>
+
+<%= ui_section "MVR & PVR Eligible Positions", icon: "list-check", icon_type: :solid do %>
+  <%= render "eligibility_list",
+             list: @mvr_signups,
+             title: "MVR Sign-Up",
+             name: "MVR",
+             is_signups: true
+  %>
+  <%= render "eligibility_list",
+             list: @mvr_teams,
+             title: "MVR Eligible Team",
+             name: "MVR"
+  %>
+  <%= render "eligibility_list",
+             list: @mvr_positions,
+             title: "MVR Eligible Position",
+             name: "MVR",
+             is_position: true
+  %>
+  <hr class="my-4 border-base-300">
+  <%= render "eligibility_list",
+             list: @pvr_teams,
+             title: "Personal Vehicle Eligible Team",
+             name: "Personal Vehicle"
+  %>
+  <%= render "eligibility_list",
+             list: @pvr_positions,
+             title: "Personal Vehicle Eligible Position",
+             name: "Personal Vehicle",
+             is_position: true,
+             no_advisory: true
+  %>
+<% end %>
+
+<%= ui_section "Motor Vehicle Record (MVR) Flags", icon: "id-card", icon_type: :solid do %>
+  <% if @can_edit %>
+    <%= ui_form(@person_event, update_mvr_flags_person_vehicles_path(@person, year: @year), method: :patch) do |f| %>
+      <%= f.check_box :org_vehicle_insurance,
+                      label: "MVR request has been approved (aka BMP insurance)" %>
+      <%= f.check_box :mvr_eligible,
+                      label: "May submit an MVR request",
+                      help_text: "Use only if this person does not have an MVR-eligible cadre/team and is not signed up for an eligible shift." %>
+      <%= f.check_box :ignore_mvr,
+                      label: "Mute the MVR request step on the Clubhouse Dashboard" %>
+      <%= button_row do %>
+        <%= f.submit "Save MVR Flags" %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <p>
+      <% if @person_event.org_vehicle_insurance %>
+        <%= ui_badge "authorized", :success %>
+      <% else %>
+        <%= ui_badge "not authorized", :error %>
+      <% end %>
+      for the <%= @year %> event to drive Ranger vehicles on playa for Ranger business.
+      Vehicle must have a valid Burning Man driving permit. Note: any personal vehicles
+      driven on behalf of the department must be pre-approved prior to arrival on playa.
+    </p>
+  <% end %>
+<% end %>
+
+<%= ui_section "Personal Vehicle Request (PVR) Flags", icon: "truck-pickup", icon_type: :solid do %>
+  <% if @can_edit %>
+    <%= ui_form(@person_event, update_pvr_flags_person_vehicles_path(@person, year: @year), method: :patch) do |f| %>
+      <%= f.check_box :may_request_stickers,
+                      label: "Personal Vehicle Use Requests allowed",
+                      help_text: "Use only if this person does not have a PVR-eligible cadre/team and is not signed up for an eligible shift." %>
+      <%= f.check_box :ignore_pvr,
+                      label: "Mute the Personal Vehicle Request step on the Clubhouse Dashboard" %>
+      <%= button_row do %>
+        <%= f.submit "Save PVR Flags" %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <p>
+      <% if @pvr_eligible %>
+        <%= ui_badge "permitted", :success %>
+      <% else %>
+        <%= ui_badge "not permitted", :error %>
+      <% end %>
+      to submit Personal Vehicle Requests.
+    </p>
+  <% end %>
+<% end %>
+
+<%= ui_section "Vehicle Agreements", icon: "file-signature", icon_type: :solid do %>
+  <% if @can_edit %>
+    <%= ui_callout_box :warning, title: "Before You Save" do %>
+      Do not sign agreements on someone else's behalf. Doing so may expose the organization
+      to legal liability.
+    <% end %>
+    <%= ui_form(@person_event, update_agreements_person_vehicles_path(@person, year: @year), method: :patch) do |f| %>
+      <%= f.check_box :signed_motorpool_agreement,
+                      label: "Signed Vehicle Use Protocol" %>
+      <%= f.check_box :signed_personal_vehicle_agreement,
+                      label: "Signed Personal Vehicle Policy Agreement" %>
+      <%= button_row do %>
+        <%= f.submit "Save Agreements" %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <p>
+      <% if @person_event.signed_motorpool_agreement %>
+        <%= ui_badge "signed", :success %>
+      <% else %>
+        <%= ui_badge "not signed", :warning %>
+      <% end %>
+      the <%= @year %> Vehicle Use Protocol.
+    </p>
+    <p>
+      <% if @person_event.signed_personal_vehicle_agreement %>
+        <%= ui_badge "signed", :success %>
+      <% else %>
+        <%= ui_badge "not signed", :warning %>
+      <% end %>
+      the <%= @year %> Personal Vehicle Agreement.
+    </p>
+  <% end %>
+<% end %>
+
+<%= ui_section "Lifetime Vehicle Flags", icon: "car-burst", icon_type: :solid do %>
+  <% if @can_admin %>
+    <%= ui_form(@person, update_blacklist_person_vehicles_path(@person, year: @year), method: :patch) do |f| %>
+      <%= f.check_box :vehicle_blacklisted, label: "Vehicle Blacklisted" %>
+      <%= button_row do %>
+        <%= f.submit "Save Blacklist" %>
+      <% end %>
+    <% end %>
+  <% elsif @person.vehicle_blacklisted %>
+    <strong class="text-error">VEHICLE BLACKLISTED</strong>
+  <% else %>
+    <em>No blacklisted vehicle</em>
+  <% end %>
+<% end %>
+

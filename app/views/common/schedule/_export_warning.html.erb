@@ -1,0 +1,28 @@
+<div class="space-y-6" role="region" aria-label="Schedule Export Information">
+  <%= ui_callout_box :warning, accent: true, title: "Snapshot Only", icon: "circle-exclamation" do %>
+    <div class="mt-2">
+      <p class="mb-2">
+        This file is a <strong>one-time copy</strong>. It will <strong>not update</strong> automatically.
+      </p>
+      <p>
+        If you change your schedule later, you must <span class="font-semibold">export this calendar again</span>.
+      </p>
+    </div>
+  <% end %>
+
+  <%= ui_callout_box :info, accent: true, title: "Check Your Time Zone", icon: "earth-americas" do %>
+    <div class="mt-2">
+      <p class="mb-2">
+        On Playa shifts are in <strong>Pacific Time</strong>. Your calendar app may convert them to your local time.
+      </p>
+      <ul class="list-disc list-outside ml-4 space-y-1">
+        <li>
+          <strong>Verify Settings:</strong> Ensure your calendar app is set to the correct time zone.
+        </li>
+        <li>
+          <strong>Example:</strong> A <span class="whitespace-nowrap">06:00 Pacific</span> shift might appear as <span class="whitespace-nowrap">09:00 Eastern</span>.
+        </li>
+      </ul>
+    </div>
+  <% end %>
+</div>

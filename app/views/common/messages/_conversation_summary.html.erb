@@ -1,0 +1,70 @@
+<%# locals: (message:, owner:, namespace:, folder:, q: nil, selected_id: nil) %>
+<%# owner: the mailbox's owner; namespace: the pages showing it (me, person or
+    hq, MessagesConcern#messages_route_prefix); q: the search the row is a hit
+    of. All three are locals, never the controller's helpers, so a live reply
+    can render the row from a broadcast (PersonMessage#announce_reply). %>
+<% is_read = message.thread_read?(owner.id) %>
+<% is_sender = message.sender?(owner.id) %>
+<% is_archived = message.archived?(owner.id) %>
+<% participant_name = message_party_name(message, owner) %>
+<% address = message_address_label(message, owner) %>
+<% latest = message.replies.last || message %>
+<li id="<%= dom_id(message, :conversation) %>">
+  <%# A link into the pane's frame, keeping the folder: selecting a row swaps
+      only the pane. Its selected state is aria-current, which the review-line
+      styles (components/review-pane.css) key on and review_pane_controller
+      moves to whichever row the pane shows, without re-rendering the list.
+      Its text is its name, as each line reads: the party, the chip, the time,
+      the subject and the snippet with a search's marks. %>
+  <%= link_to mailbox_message_path(namespace, owner, message, folder:, q:),
+              class: class_names("messages-conversation-item no-decoration review-line",
+                                 "messages-conversation-unread": !is_read),
+              data: { turbo_frame: "messages-pane", review_id: message.id, review_pane_target: "line" },
+              aria: { current: ("true" if message.id == selected_id) } do %>
+    <div class="messages-conversation-avatar shrink-0" aria-hidden="true">
+      <% case message.group? ? :group : message.sender_type %>
+      <% when :group %>
+        <div class="messages-avatar-team"><%= fa_icon "user-group", :solid, size: "lg" %></div>
+      <% when PersonMessage::SENDER_TYPE_PERSON %>
+        <%# The other party's photo: the recipient's when the owner sent it, else the sender's %>
+        <% avatar = is_sender ? message.recipient_avatar : message.sender_avatar %>
+        <% if avatar %>
+          <%= photo_tag avatar, width: 48, height: 48, class: "w-12 h-12 rounded-lg object-cover" %>
+        <% else %>
+          <div class="messages-avatar-placeholder"><%= fa_icon "user", :solid, size: "lg" %></div>
+        <% end %>
+      <% when PersonMessage::SENDER_TYPE_RBS %>
+        <div class="messages-avatar-rbs"><%= fa_icon "bullhorn", :solid, size: "lg" %></div>
+      <% when PersonMessage::SENDER_TYPE_TEAM %>
+        <div class="messages-avatar-team"><%= fa_icon "people-group", :solid, size: "lg" %></div>
+      <% else %>
+        <div class="messages-avatar-placeholder"><%= fa_icon "user", :solid, size: "lg" %></div>
+      <% end %>
+    </div>
+
+    <div class="flex-1 min-w-0">
+      <%# Row 1: the other party, the state chip, and when the thread last moved %>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="min-w-0 truncate font-semibold text-heading">
+          <% if address %><span class="text-stone-subtle font-normal"><%= address %></span><% end %>
+          <%= participant_name %>
+        </span>
+        <% if is_archived %>
+          <%= ui_badge "Archived", :secondary, size: :xs, class: "shrink-0" %>
+          <%# Its bold says unread, where the chip has no room to. %>
+          <% unless is_read %><span class="sr-only">Unread</span><% end %>
+        <% elsif !is_read %>
+          <% has_new_reply = message.replies.any? { |reply| reply.unread?(owner.id) } %>
+          <%= ui_badge(has_new_reply ? "New Reply" : "New", :warning, size: :xs, class: "shrink-0") %>
+        <% end %>
+        <time datetime="<%= latest.created_at.iso8601 %>" class="ms-auto shrink-0 whitespace-nowrap text-sm text-stone-subtle">
+          <%= message_list_time latest.created_at %>
+        </time>
+      </div>
+      <%# Row 2: subject, and on a search's hit what it matched, marked %>
+      <div class="truncate text-body mb-1"><%= message_search_marks(message.subject, q) %></div>
+      <%# Row 3: the latest message in the thread, or the words around a search's match %>
+      <div class="truncate text-sm text-stone-muted"><%= message_list_snippet(message, q) %></div>
+    </div>
+  <% end %>
+</li>

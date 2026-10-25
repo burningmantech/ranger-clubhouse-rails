@@ -1,0 +1,22 @@
+<%# locals: (people:, empty:) %>
+<%# One of the two lists of numbers that cannot be reached. %>
+<% if people.empty? %>
+  <%= ui_empty_state empty, icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%= ui_table striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Number" %>
+    <% end %>
+    <%= t.body do %>
+      <% people.each do |person| %>
+        <%= t.row do %>
+          <%= t.row_header person_display_link(person, person.id) %>
+          <%= t.cell person.status %>
+          <%= t.cell PhoneFormatter.format(person.sms_number), class: "whitespace-nowrap" %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

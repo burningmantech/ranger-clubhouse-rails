@@ -1,0 +1,8 @@
+<%# HQ wrapper for the shared position shift list. See index.html.erb for why
+    the year option is dropped from every path builder. %>
+<%= render template: "common/available_sign_ups/show",
+           locals: {
+             back_link: back_to("Available Sign-Ups", hq_scheduling_sign_ups_path(@person)),
+             schedule_signups_path_builder: ->(slot, **options) { hq_scheduling_signups_path(@person, slot_id: slot.id, **options.except(:year)) },
+             sign_up_slot_path_builder: ->(position_id, slot_id, **options) { hq_scheduling_sign_ups_slot_path(@person, position_id:, slot_id:, **options.except(:year)) }
+           } %>

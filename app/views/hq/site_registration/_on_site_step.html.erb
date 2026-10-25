@@ -1,0 +1,32 @@
+<%# locals: (person:) %>
+<%# Wizard step — Mark Person As On Site (site-checkin.hbs final step,
+    isLast + includeCancel). Alphas/Prospectives get the Hat Rack copy with
+    no field guide; everyone else gets the BMID + field guide copy. The
+    finish submits POST on-site; success is a full-page redirect whose state
+    keys off person.on_site. %>
+<% if person.pnv? %>
+  <p class="mb-3">
+    Direct <%= person.callsign %> to the Hat Rack where the Mentors take over.
+    The Mentors check <%= person.callsign %> into their Alpha shift.
+  </p>
+  <p class="mb-3">
+    Do not hand over a Ranger field guide. The Mentors hand these out to newly
+    minted Shiny Pennies.
+  </p>
+<% else %>
+  <p class="mb-3">
+    Hand over their BMID. Offer them a Ranger field guide.
+  </p>
+  <p class="mb-3">
+    Mark <%= person.callsign %> as on site if everything appears to be okay.
+  </p>
+<% end %>
+<%= ui_form(nil, hq_site_registration_on_site_path(person),
+            method: :post, data: { turbo_frame: "_top" }) do |f| %>
+  <%= button_row do %>
+    <%= f.submit "Mark as On Site" %>
+    <%= button_action "Previous Step", :secondary, icon: "arrow-left", icon_type: :solid,
+                      data: { action: "hq-wizard#back" } %>
+    <%= button_action "Cancel", :secondary, data: { action: "hq-wizard#cancel" } %>
+  <% end %>
+<% end %>

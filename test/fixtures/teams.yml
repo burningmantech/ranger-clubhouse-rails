@@ -1,0 +1,93 @@
+# Test fixtures for Team model
+
+khaki_team:
+  title: "Khaki Delegation"
+  type: "delegation"
+  active: true
+  awards_eligible: true
+  awards_auto_grant: false
+  awards_grants_service_year: true
+  description: "Leadership delegation"
+  email: "khaki@rangers.example.com"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+dirt_team:
+  title: "DIRT Team"
+  type: "team"
+  active: true
+  awards_eligible: true
+  awards_auto_grant: true
+  awards_grants_service_year: true
+  description: "Department Impartial Rangers Tactics"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+operations_team:
+  title: "Operations"
+  type: "team"
+  active: true
+  awards_eligible: true
+  awards_auto_grant: false
+  awards_grants_service_year: false
+  description: "Operations team"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+non_eligible_team:
+  title: "Non-Eligible Team"
+  type: "team"
+  active: true
+  awards_eligible: false
+  awards_auto_grant: false
+  awards_grants_service_year: false
+  description: "Team not eligible for awards"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+council_cadre:
+  title: "Council Cadre"
+  type: "cadre"
+  active: true
+  awards_eligible: true
+  awards_auto_grant: false
+  awards_grants_service_year: true
+  description: "Ranger Council - leadership team"
+  email: "council@rangers.example.com"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+mentor_cadre:
+  title: "Mentor Cadre"
+  type: "cadre"
+  active: true
+  awards_eligible: true
+  awards_auto_grant: false
+  awards_grants_service_year: true
+  description: "Mentor team supporting new Rangers"
+  email: "mentors@rangers.example.com"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+green_dot_cadre:
+  title: "Green Dot Cadre"
+  type: "cadre"
+  active: true
+  awards_eligible: true
+  awards_auto_grant: false
+  awards_grants_service_year: true
+  description: "Green Dot Rangers supporting participants"
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+inactive_cadre:
+  title: "Inactive Cadre"
+  type: "cadre"
+  active: false
+  awards_eligible: false
+  awards_auto_grant: false
+  awards_grants_service_year: false
+  description: "This cadre is no longer active"
+  created_at: <%= 2.years.ago %>
+  updated_at: <%= 1.year.ago %>
+

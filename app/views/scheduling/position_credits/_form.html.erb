@@ -1,0 +1,52 @@
+<%= ui_form(@credit,
+            @credit.persisted? ? scheduling_position_credit_path(@credit, year: @year) : scheduling_position_credits_path(year: @year)) do |f| %>
+  <%= f.fieldset "Position", icon: "user-group", icon_type: :solid do %>
+    <% if @credit.persisted? %>
+      <%= f.select :position_id,
+                   grouped_options_for_select(slot_position_choices(@positions), @credit.position_id),
+                   { label: "Position", required: true, prompt: "Select a position" } %>
+    <% else %>
+      <%# daisyUI's .select derives min-height from the content, so a multiple
+          select ignores size= and grows to every option; pin the height. %>
+      <%= f.select :position_id,
+                   grouped_options_for_select(slot_position_choices(@positions), @position_ids),
+                   { label: "Positions", required: true,
+                     help_text: "Select more than one position to create the same credit for each of them." },
+                   { multiple: true, size: 15, class: "h-64 min-h-0" } %>
+    <% end %>
+  <% end %>
+
+  <%= f.fieldset "Time Range", icon: "clock", icon_type: :solid do %>
+    <p class="my-2">
+      A shift earns this credit rate for the part of it that falls inside this time range.
+      The credit's year is set by its beginning time, regardless of the year being viewed.
+    </p>
+    <%= form_row do %>
+      <%= f.datetime_field :start_time, label: "Beginning Time", required: true %>
+      <%= f.datetime_field :end_time, label: "Ending Time", required: true %>
+    <% end %>
+  <% end %>
+
+  <%= f.fieldset "Credit Rate", icon: "coins", icon_type: :solid do %>
+    <%= form_row do %>
+      <%= f.number_field :credits_per_hour, label: "Credits per Hour", required: true,
+                         step: 0.01, width: "w-32" %>
+      <%= f.text_field :description, label: "Description", required: true,
+                       maxlength: 25, show_counter: true, width: "w-full sm:w-64" %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Position Credit" %>
+    <%= cancel_link @cancel_path %>
+    <% if @credit.persisted? %>
+      <%= delete_button scheduling_position_credit_path(@credit, year: @year),
+                        confirm_modal: {
+                          title: "Confirm Credit Deletion",
+                          message: "Delete the #{@credit.description} credit " \
+                                   "for #{credit_position_title(@credit.position, @credit.position_id)}? This cannot be undone.",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

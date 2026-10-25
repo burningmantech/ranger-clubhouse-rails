@@ -1,0 +1,49 @@
+<%#
+  What the tints and icons in the table mean: one question and its answer,
+  rendered inside the page's About This Report list.
+
+  Every sample is rendered through the same partials the rows use, so the
+  legend cannot drift from the table it explains.
+%>
+<dt>What do the colors and icons mean?</dt>
+<dd>
+  <%# A grid rather than a wrapping row: six sample/meaning pairs flowing freely
+      run together, and the plain-text "Qualified" sample has no badge edge to
+      mark where it ends. %>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
+    <div class="flex-center-gap-2">
+      <%= render "summary_value", value: "Claimed", status: AccessDocument::CLAIMED %>
+      <span class="text-stone-muted">Ready to use this year</span>
+    </div>
+
+    <div class="flex-center-gap-2">
+      <%= render "summary_value", value: "Banked", status: AccessDocument::BANKED %>
+      <span class="text-stone-muted">Saved for a later year</span>
+    </div>
+
+    <div class="flex-center-gap-2">
+      <%= render "summary_value", value: "Submitted", status: AccessDocument::SUBMITTED %>
+      <span class="text-stone-muted">Sent to the ticket vendor</span>
+    </div>
+
+    <div class="flex-center-gap-2">
+      <%= render "summary_value", value: "Qualified", status: nil %>
+      <span class="text-stone-muted">Earned, not claimed yet</span>
+    </div>
+
+    <div class="flex-center-gap-2">
+      <%= render "summary_value", value: nil %>
+      <span class="text-stone-muted">None of this kind held</span>
+    </div>
+
+    <div class="flex-center-gap-2">
+      <%= render "summary_missing" %>
+      <span class="text-stone-muted">Needs an arrival date</span>
+    </div>
+
+    <div class="flex-center-gap-2">
+      <%= render "summary_error", error: "RAD-0000" %>
+      <span class="text-stone-muted">Something to look into</span>
+    </div>
+  </div>
+</dd>

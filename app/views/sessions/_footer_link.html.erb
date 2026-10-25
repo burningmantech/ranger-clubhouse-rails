@@ -1,0 +1,10 @@
+<%# locals: (label:, path:, aria_label: nil, data: nil, muted: false, wrapper_class: nil) -%>
+<%# The small centred link under a panel in the sessions layout. tap-target-link
+    keeps it at the 36px floor a fingertip needs; muted marks the one that is
+    not the page's own next step. %>
+<div class="<%= class_names("text-center pt-2", wrapper_class) %>">
+  <%= link_to label, path,
+              class: class_names("no-decoration tap-target-link text-sm hover:text-warning hover:underline",
+                                 muted ? "text-body" : "text-warning"),
+              "aria-label": aria_label, data: data %>
+</div>

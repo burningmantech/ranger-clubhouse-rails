@@ -1,0 +1,25 @@
+<%# locals: (verdict:)%>
+<%= ui_callout_box :warning,
+                title: "Linked Shifts Now Full",
+                icon: "users", accent: true do %>
+  <dl class="space-y-2 text-body">
+    <dt class="font-bold text-heading">What happened?</dt>
+    <dd>
+      Your sign-up filled the last spot. This shift shares a
+      <strong class="text-heading">combined <%= pluralize verdict.combined_max, "sign-up" %></strong>
+      limit with the linked <%= "shift".pluralize(verdict.linked_slots.size) %> below.
+    </dd>
+
+    <dt class="font-bold text-heading">Linked <%= "Shift".pluralize(verdict.linked_slots.size) %></dt>
+    <dd>
+      <ul class="list-disc pl-4 space-y-1">
+        <% verdict.linked_slots.each do |linked| %>
+          <li><%= linked.slot.position.title %></li>
+        <% end %>
+      </ul>
+    </dd>
+
+    <dt class="font-bold text-heading">Result</dt>
+    <dd>No more sign-ups allowed for any of these shifts.</dd>
+  </dl>
+<% end %>

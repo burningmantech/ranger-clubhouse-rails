@@ -1,0 +1,304 @@
+/*
+ * Printable Shift Lead Report (shift_operations/shift_lead#print_sheet).
+ *
+ * Print-first component, modelled on .trainers-report: fixed ink-on-white
+ * colors on purpose -- the sheet is a paper document, so it renders as a white
+ * "paper" preview on screen in both themes and prints solid black regardless of
+ * the muted theme text colors.
+ * Greys that match a light-theme token are written as the token instead:
+ * layouts/print pins data-theme="light", so they cannot turn dark with the
+ * screen. The rest have no token close enough and stay literal.
+ *
+ * Letter PORTRAIT at 7.5pt. All ten roster columns fit the 7.5in of usable
+ * width with every Ranger on a single line, so nothing is dropped and no row is
+ * split -- Positions / Certifications takes the remaining width and is the only
+ * column allowed to wrap. If real data ever wraps it past two lines, the fix is
+ * landscape, not dropping a column.
+ *
+ * `page: shift-lead-sheet` binds the sheet to the named @page rule the view
+ * emits into layouts/print's :page_rules hook. The footer margin boxes live
+ * there because @page cannot be scoped by selector in this bundle, and they
+ * must stay on a NAMED rule -- the bare @page in layouts/print reaches every
+ * print view, including the sign-up sheet, which carries no page numbers.
+ */
+
+.shift-lead-sheet {
+  background: #fff;
+  color: #111;
+  font-size: 7.5pt;
+  page: shift-lead-sheet;
+}
+
+/* Paper preview on screen; @page margins take over in print. */
+@media screen {
+  .shift-lead-sheet {
+    max-width: 8.5in;
+    margin-inline: auto;
+    margin-bottom: 1.5rem;
+    padding: 0.5in;
+    border: 1px solid var(--color-line);
+  }
+}
+
+/* --- masthead ------------------------------------------------------------- */
+
+.shift-lead-sheet .sheet-masthead {
+  border-bottom: 2.5pt solid #111;
+  padding-bottom: 4pt;
+}
+
+.shift-lead-sheet .sheet-doc-label {
+  font-size: 7.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-body);
+}
+
+.shift-lead-sheet .sheet-headline {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin-top: 2pt;
+}
+
+.shift-lead-sheet .sheet-shift {
+  font-size: 15pt;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.shift-lead-sheet .sheet-mode {
+  font-size: 10pt;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.shift-lead-sheet .sheet-subline {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 7pt;
+  @apply text-stone-muted;
+  padding-top: 3pt;
+}
+
+/* Named filters, when the sheet is a narrowed view rather than the whole shift.
+   Boxed rather than another grey subline: a reader who misses this believes the
+   sheet is the full roster. */
+.shift-lead-sheet .sheet-filters {
+  border: 0.9pt solid #111;
+  border-left: 3pt solid #111;
+  border-radius: 2pt;
+  padding: 2pt 5pt;
+  margin-top: 3pt;
+  font-size: 7.5pt;
+}
+
+/* --- headline numbers ------------------------------------------------------ */
+
+.shift-lead-sheet .sheet-stats {
+  display: flex;
+  gap: 5pt;
+  padding: 5pt 0;
+}
+
+.shift-lead-sheet .sheet-stat {
+  flex: 1 1 0;
+  border: 0.9pt solid #111;
+  border-radius: 2pt;
+  padding: 1.5pt 5pt 2.5pt;
+}
+
+.shift-lead-sheet .sheet-stat b {
+  display: block;
+  font-size: 12pt;
+  line-height: 1.1;
+}
+
+.shift-lead-sheet .sheet-stat-label {
+  font-size: 6pt;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-body);
+}
+
+/* --- band headings + tables ------------------------------------------------
+ * Cell rules are scoped `.shift-lead-sheet .sheet-*`: the generic
+ * `.shift-lead-sheet td` below would beat bare cell classes and silently break
+ * their alignment (the sign-up sheet trap). */
+
+.shift-lead-sheet .sheet-band {
+  font-weight: 700;
+  font-size: 9pt;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-top: 1pt solid #111;
+  border-bottom: 0.75pt solid #999;
+  padding: 3pt 4pt;
+  margin-top: 7pt;
+  background: var(--color-base-300);
+  break-after: avoid;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/*
+ * The running head: the same treatment as .sheet-band, but as the first row of
+ * the thead so it repeats on every sheet. A band that is a sibling div prints
+ * once, and all three rosters share an identical ten-column header -- so a
+ * continuation sheet would be unattributable once the masthead is behind it.
+ * Same fix as .signup-running-head.
+ */
+.shift-lead-sheet .sheet-running-head th {
+  font-weight: 700;
+  font-size: 9pt;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  border-top: 1pt solid #111;
+  border-bottom: 0.75pt solid #999;
+  padding: 3pt 4pt;
+  background: var(--color-base-300);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* The masthead's shift line is an h1 for the browsable URL; the sheet sets its
+   own type scale, so the heading level must not drag a UA margin onto paper. */
+.shift-lead-sheet h1.sheet-shift {
+  margin: 0;
+}
+
+.shift-lead-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* The roster tables carry their own band inside the thead, so they need the
+   separation the sibling .sheet-band's margin gives the below-minimum table. */
+.shift-lead-sheet table.sheet-roster {
+  margin-top: 7pt;
+}
+
+.shift-lead-sheet th {
+  font-size: 6.5pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-heading);
+  text-align: left;
+  padding: 2pt 3pt;
+  border-bottom: 1.25pt solid #111;
+}
+
+.shift-lead-sheet td {
+  padding: 2pt 3pt;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+/* Never tear a Ranger across two sheets. */
+.shift-lead-sheet tbody tr {
+  break-inside: avoid;
+}
+
+.shift-lead-sheet tbody tr:nth-child(even) td {
+  background: var(--color-base-200);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/*
+ * Column widths, on a <colgroup> rather than the headings, because
+ * `table-layout: fixed` reads the first row and a width on a th that later
+ * wraps would move the whole grid. Portrait letter at 0.5in margins is 7.5in
+ * usable; the roster's fixed columns take 5.30in and Positions /
+ * Certifications gets the remaining ~2.20in, which holds the longest real
+ * certification string on one line.
+ *
+ * The time columns are 0.60in rather than the 0.42in the values need: the
+ * headings are wider than the data, and at 0.42in "Shift Start" and "Shift
+ * Ends" ran into each other.
+ */
+.shift-lead-sheet .sheet-col-position { width: 0.6in; }
+.shift-lead-sheet .sheet-col-callsign { width: 1.3in; }
+.shift-lead-sheet .sheet-col-pronouns { width: 0.9in; }
+.shift-lead-sheet .sheet-col-gender { width: 0.3in; }
+.shift-lead-sheet .sheet-col-years { width: 0.28in; }
+.shift-lead-sheet .sheet-col-flag { width: 0.36in; }
+.shift-lead-sheet .sheet-col-time { width: 0.6in; }
+
+.shift-lead-sheet .sheet-col-shortfall { width: 2.6in; }
+.shift-lead-sheet .sheet-col-window { width: 1.4in; }
+.shift-lead-sheet .sheet-col-count { width: 0.7in; }
+
+.shift-lead-sheet .sheet-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.shift-lead-sheet .sheet-ctr {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.shift-lead-sheet .sheet-callsign {
+  font-size: 9pt;
+  font-weight: 700;
+}
+
+.shift-lead-sheet .sheet-none {
+  font-weight: 700;
+}
+
+/* --- chips ----------------------------------------------------------------- */
+
+.shift-lead-sheet .sheet-chip {
+  display: inline-block;
+  border: 0.7pt solid #111;
+  border-radius: 2pt;
+  padding: 0 2pt;
+  font-size: 6pt;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* The qualified Green Dot chip is the one a shift lead hunts for, so it is the
+   one that goes solid rather than outlined. */
+.shift-lead-sheet .sheet-chip.sheet-chip-solid {
+  background: #111;
+  color: var(--color-neutral-content);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* --- decoder ring (bottom of the last sheet, no forced break) -------------- */
+
+.shift-lead-sheet .sheet-legend {
+  break-inside: avoid;
+  margin-top: 7pt;
+  border-top: 1pt solid #111;
+  padding-top: 3pt;
+}
+
+.shift-lead-sheet .sheet-legend-title {
+  font-size: 7pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-heading);
+  margin-bottom: 2pt;
+}
+
+.shift-lead-sheet .sheet-legend-cols {
+  columns: 3;
+  column-gap: 12pt;
+  font-size: 6.5pt;
+  color: var(--color-heading);
+}
+
+.shift-lead-sheet .sheet-legend-cols div {
+  break-inside: avoid;
+  margin-bottom: 1.5pt;
+}

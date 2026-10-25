@@ -1,0 +1,22 @@
+<%= modal_dialog id: "more-handles-dialog", size: :lg, title: "Reject Handles & Request More" do %>
+  <%= render "vc/applications/account_created_warning", application: @application,
+             message: "No more handles should be recorded." %>
+  <p class="mb-2">
+    <strong>The submitted handles will move to the rejected list</strong>, and the applicant will be
+    emailed asking for five more handles. The message below is included in the email.
+  </p>
+  <%= form_with url: status_vc_application_path(@application), method: :post,
+                builder: AppFormBuilder, data: { turbo_frame: "_top" } do |f| %>
+    <%= hidden_field_tag :status, ProspectiveApplication::STATUS_MORE_HANDLES %>
+    <%= f.text_area :message, label: "Message from the Handle Wranglers", required: true,
+                    value: @application.handles, rows: 8,
+                    help_text: "Explain why each submitted handle was rejected." %>
+    <%= button_row do %>
+      <%= submit_button "Reject & Request More Handles" %>
+      <%= submit_button "Preview Email", variant: :secondary,
+                        formaction: preview_email_vc_application_path(@application),
+                        formmethod: "get", formtarget: "_blank" %>
+      <%= modal_close_button "Cancel" %>
+    <% end %>
+  <% end %>
+<% end %>

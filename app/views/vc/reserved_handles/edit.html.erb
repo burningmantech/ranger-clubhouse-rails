@@ -1,0 +1,13 @@
+<%= hero_panel icon: "ban", heading_level: :h1, id: "vc-reserved-handles-form-header",
+               description: "Reserved handle ##{@reservation.id}.",
+               back_to: ["Reserved Handles", vc_reserved_handles_path] do |panel| %>
+  <% panel.title do %>Edit <%= @reservation.handle %><% end %>
+<% end %>
+
+<% if @reservation.has_expired? %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box "Expired", "Status", variant: :warning %>
+  <% end %>
+<% end %>
+
+<%= render "form" %>

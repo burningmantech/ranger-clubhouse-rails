@@ -1,0 +1,19 @@
+<%# What neither the pasted list nor the table above can show: the SAP action
+    writes to more documents than it examined, and the ticket action never
+    replaces anything even when the row says a document already exists. %>
+<% if batch.action.id == "wap" %>
+  <%= ui_callout_box :warning, icon: "circle-exclamation", icon_type: :solid do %>
+    <strong>Every SAP and Staff Credential each person holds gets this date.</strong>
+    The table above names the one document that was checked, but the date lands on all of that
+    person's qualified, claimed and banked passes and credentials. Ones already submitted are
+    left alone.
+  <% end %>
+<% else %>
+  <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+    <strong>Each line creates a new document, marked qualified.</strong>
+    Nothing is overwritten. A line for someone who already holds that type gives them a second
+    one — those rows are the amber ones above.
+    <code>LSD</code> and <code>VPLSD</code> are the exception: those are recorded as claimed,
+    because an LSD item is only entered once the recipient has asked for it.
+  <% end %>
+<% end %>

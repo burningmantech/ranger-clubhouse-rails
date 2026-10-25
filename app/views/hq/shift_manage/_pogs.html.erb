@@ -1,0 +1,127 @@
+<%# locals: (pogs:, ended_entry:, on_duty_entry:, half_pog_enabled:) %>
+<%# Meal & shower pog issuance and history (Ember
+    port/components/hq-pogs.hbs). Turbo-stream updated into #hq-pogs after
+    every pog mutation. %>
+<% person = shift_person %>
+
+<% if ended_entry %>
+  <div class="mb-3">
+    <div class="text-lg mb-1">
+      The <em><%= ended_entry.position.title %></em> shift on
+      <%= datetime_format ended_entry.on_duty, ended_entry.off_duty %>
+      lasted <%= hour_minute_words ended_entry.duration %>.
+    </div>
+    <% if ended_entry.verification_required? %>
+      <strong class="text-error">
+        <%= fa_icon "triangle-exclamation", :solid, end: 2 %>No one has reviewed this timesheet
+        entry. Review it now so the shift duration is accurate.
+      </strong>
+    <% elsif ended_entry.status_pending? %>
+      <strong class="text-error">
+        <%= fa_icon "hourglass", :solid, end: 2 %>The timesheet entry has a pending correction.
+        The shift duration might be incorrect.
+      </strong>
+    <% end %>
+  </div>
+<% end %>
+
+<% if current_period_has_meal_pass? %>
+  <%= ui_callout_box :info, accent: true, title: "Has Meal Pass", icon: "hand-point-right" do %>
+    <%= person.callsign %> has a BMID Meal Pass for the current event period.
+  <% end %>
+<% elsif on_duty_entry && hq_self_serve_pog_position?(on_duty_entry.position_id) %>
+  <%= ui_callout_box :error, accent: true, icon: "hand" do %>
+    <%= person.callsign %> is on a Mentor shift and will receive their meal pogs directly
+    from the Mentors.
+  <% end %>
+<% else %>
+  <%= ui_callout_box :secondary, accent: true do %>
+    For this event period: one meal pog for a shift of 6 hours or more.
+    <br>Two pogs for a shift of 10 hours or more.
+    <% if half_pog_enabled %>
+      <br>1/2 Meal Pogs are available for a shift shorter than 6 hours.
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= button_row class: "mb-2" do %>
+  <%= button_link half_pog_enabled ? "Record Full Meal Pog" : "Record Meal Pog", :primary,
+                  hq_shift_manage_new_pog_path(person, pog: PersonPog::POG_MEAL, **shift_context),
+                  data: { turbo_stream: true } %>
+  <% if half_pog_enabled %>
+    <%= button_link "Record 1/2 Meal Pog", :primary,
+                    hq_shift_manage_new_pog_path(person, pog: PersonPog::POG_HALF_MEAL,
+                                                 **shift_context),
+                    data: { turbo_stream: true } %>
+  <% end %>
+  <%= button_link "Record Shower Pog", :primary,
+                  hq_shift_manage_new_pog_path(person, pog: PersonPog::POG_SHOWER,
+                                               **shift_context),
+                  data: { turbo_stream: true } %>
+<% end %>
+
+<div class="mb-2"><%= pluralize(pogs.size, "pog") %> recorded.</div>
+
+<%= ui_table full_width: false do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Pog" %>
+    <%= t.heading "Status" %>
+    <%= t.heading "Issued On" %>
+    <%= t.heading "Issued By" %>
+    <%= t.heading "Notes" %>
+    <%= t.heading "Action" %>
+  <% end %>
+  <%= t.body do %>
+    <% pogs.each do |pog| %>
+      <%= t.row do %>
+        <%= t.cell pog.pog_label %>
+        <%= t.cell do %>
+          <% if pog.pog == PersonPog::POG_HALF_MEAL && pog.status == PersonPog::STATUS_REDEEMED %>
+            Redeemed for Full Meal Pog
+          <% else %>
+            <%= pog.status_label %>
+          <% end %>
+        <% end %>
+        <%= t.cell datetime_format(pog.issued_at) %>
+        <%= t.cell do %>
+          <%= callsign_link pog.issued_by %>
+        <% end %>
+        <%= t.cell pog.notes.presence || "—" %>
+        <%= t.cell do %>
+          <% if pog.status == PersonPog::STATUS_CANCELLED %>
+            —
+          <% else %>
+            <%= button_row do %>
+              <%= button_link "Edit Note", :secondary,
+                              hq_shift_manage_edit_pog_path(person, pog.id, **shift_context),
+                              data: { turbo_stream: true } %>
+              <% if pog.pog == PersonPog::POG_HALF_MEAL && pog.status == PersonPog::STATUS_ISSUED %>
+                <%= button_link "Redeem for Full Meal Pog", :primary,
+                                hq_shift_manage_update_pog_path(person, pog.id,
+                                                               pog_op: "redeem", **shift_context),
+                                data: confirm_modal(
+                                  title: "Redeem for Full Meal Pog",
+                                  message: "Confirm you want to redeem this 1/2 Meal Pog " \
+                                           "for a Full Meal Pog.",
+                                  confirm_label: "Redeem Pog",
+                                  method: :patch
+                                ) %>
+              <% end %>
+              <%= button_link "Cancel Pog", :error,
+                              hq_shift_manage_cancel_pog_form_path(person, pog.id,
+                                                                   **shift_context),
+                              data: { turbo_stream: true } %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <% if pogs.empty? %>
+      <%= t.row do %>
+        <%= t.cell colspan: 6 do %>
+          <%= ui_empty_state "No pogs have been issued yet." %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

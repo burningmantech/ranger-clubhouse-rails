@@ -1,0 +1,132 @@
+<%#
+  Every text, email, and Clubhouse message the broadcast system recorded in the
+  year, outgoing and incoming. The ones a phone sent in -- and the replies to
+  them -- open under their row.
+%>
+<% content_for :title, "Message Log" %>
+
+<%= hero_panel icon: "comment-dots", heading_level: :h1, id: "rbs-messages-header",
+               title: "Message Log",
+               description: "Every text, email, and Clubhouse message the broadcast system recorded in the year, outgoing and incoming.",
+               back_to: ["Ranger Broadcast System", communication_rbs_root_path] do |panel| %>
+  <% panel.year_selector year: @year, min_year: year_floor %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box number_with_delimiter(@meta[:total]).to_s, "Messages",
+                  icon: "comment-dots", icon_type: :solid %>
+  <%= ui_stat_box @inbound_count.to_s, "Incoming from Phones",
+                  icon: "mobile-screen", icon_type: :solid %>
+  <%= ui_stat_box @unknown_count.to_s, "From Unknown Numbers",
+                  variant: @unknown_count.positive? ? :warning : :secondary,
+                  icon: "phone-slash", icon_type: :solid %>
+<% end %>
+
+<%= filter_bar id: "rbs-message-filters",
+               chips: rbs_message_filter_chips(@form, @year),
+               clear_url: communication_rbs_messages_path(year: @year),
+               count: "Showing #{@messages.size} of #{number_with_delimiter(@meta[:total])}",
+               url: communication_rbs_messages_path, model: @form,
+               scope: RbsMessageLogFilterForm::PARAM_SCOPE do |f| %>
+  <%= hidden_field_tag :year, @year %>
+  <%= form_row do %>
+    <%= f.text_field :callsign, label: "Callsign", maxlength: 64,
+                     help_text: "Messages to or from one Ranger.", width: "w-full",
+                     wrapper_class: "flex-1" %>
+    <%= f.select :direction, rbs_direction_options, { label: "Direction" },
+                 { class: "w-full" } %>
+  <% end %>
+
+  <div class="mt-2">
+    <label class="<%= AppFormBuilder::LABEL_CLASSES %>" id="rbs-status-label">Outcome</label>
+    <div role="group" aria-labelledby="rbs-status-label">
+      <%= render "common/checkbox_grid",
+                 name: "#{RbsMessageLogFilterForm::PARAM_SCOPE}[status][]",
+                 options: rbs_message_status_options, selected: @form.status,
+                 id_prefix: "rbs-status" %>
+    </div>
+  </div>
+
+  <%# The reasons a broadcast email did not go, apart from the rest: one
+      Outcome filter, sent as the same list. %>
+  <div class="mt-2">
+    <label class="<%= AppFormBuilder::LABEL_CLASSES %>" id="rbs-email-failure-label">Email Failure Reason</label>
+    <div role="group" aria-labelledby="rbs-email-failure-label">
+      <%= render "common/checkbox_grid",
+                 name: "#{RbsMessageLogFilterForm::PARAM_SCOPE}[status][]",
+                 options: rbs_message_status_options(email_failures: true), selected: @form.status,
+                 id_prefix: "rbs-status" %>
+    </div>
+  </div>
+
+  <%= button_row class: "mt-4" do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<% pager = ui_pager(@meta, noun: "message", class: "my-3") do |page|
+     communication_rbs_messages_path({ year: @year }.merge(@form.query_params(to_page: page)))
+   end %>
+
+<% if @messages.empty? %>
+  <% if @form.any? %>
+    <%= ui_empty_state "No message matched the current filters.", icon: "filter", icon_type: :solid %>
+  <% else %>
+    <%= ui_empty_state "No messages were recorded in #{@year}.",
+                       icon: "comment-dots", icon_type: :regular %>
+  <% end %>
+<% else %>
+  <%= pager %>
+
+  <%# striped: false because a message that carries text renders two rows -- the
+      summary and the text it opens into -- so every summary row would land on
+      the same stripe. %>
+  <%= ui_table striped: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading "When" %>
+      <%= t.heading "Person" %>
+      <%= t.heading "Outcome" %>
+      <%= t.heading "Direction" %>
+      <%= t.heading "Address" %>
+      <%= t.heading "Broadcast" %>
+      <%= t.heading "" %>
+    <% end %>
+    <%= t.body do %>
+      <% @messages.each do |message| %>
+        <% text_id = "rbs-message-text-#{message.id}" %>
+        <%= t.row do %>
+          <%= t.cell datetime_format(message.created_at, year: true), class: "whitespace-nowrap align-top" %>
+          <%= t.cell person_display_link(message.person, message.person_id), class: "align-top" %>
+          <%= t.cell rbs_message_status_badge(message.status), class: "align-top whitespace-nowrap" %>
+          <%= t.cell rbs_direction_cell(message), class: "align-top whitespace-nowrap" %>
+          <%= t.cell rbs_message_address(message), class: "align-top whitespace-nowrap" %>
+          <%= t.cell class: "align-top" do %>
+            <% if message.broadcast_id %>
+              <%= link_to "##{message.broadcast_id}",
+                          communication_rbs_history_broadcast_path(message.broadcast_id),
+                          class: "underline" %>
+            <% else %>
+              <span class="text-stone-subtle">—</span>
+            <% end %>
+          <% end %>
+          <%= t.cell class: "align-top" do %>
+            <% if rbs_message_has_text?(message) %>
+              <%= t.detail_row_toggle "Text", id: text_id, describing: "message text" %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <% if rbs_message_has_text?(message) %>
+          <%= t.detail_row id: text_id, label: "Text" do %>
+            <div class="rounded-base border border-line bg-default p-3 my-1">
+              <%= message.message.presence || tag.i("empty message") %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# Outside the branch above: a filter or a stale page number empties the table
+    while the log still holds messages, and the reader still needs a way back. %>
+<%= pager %>

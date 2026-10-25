@@ -1,0 +1,73 @@
+<% content_for :title, "OAuth Clients" %>
+
+<%= hero_panel icon: "key", heading_level: :h1, id: "oauth-clients-header",
+               title: "OAuth Clients",
+               description: "Manage the websites that let people sign in with their Clubhouse account." %>
+
+<%= ui_callout_box :info, title: "What These Records Control" do %>
+  <strong>A website presents its Client ID and secret to sign someone in.</strong>
+  Both values also live in that website's own settings. Change one here without changing it there
+  and the sign-ins stop until they match again. Deleting a client stops them for good.
+  <p class="mt-2">
+    <% if Sso.server? %>
+      <strong>This Clubhouse is the sign-in server.</strong> The websites below send people here to sign in.
+    <% elsif Sso.client? %>
+      <strong>This Clubhouse signs people in through <%= Sso.server_host %></strong> as client
+      <span class="font-mono"><%= Sso.client_settings.client_id %></span>. The websites below sign in through it too.
+    <% else %>
+      <strong>Single sign-on is switched off on this Clubhouse.</strong> The websites below keep signing
+      people in through Clubhouse 2 until it is turned on.
+    <% end %>
+  </p>
+<% end %>
+
+<%= button_row class: "my-4" do %>
+  <%= button_link "Add Client", :primary, new_admin_oauth_client_path,
+                  icon: "plus", icon_type: :solid %>
+<% end %>
+
+<% if @clients.any? %>
+  <%= ui_section pluralize(@clients.size, "client"), border: false do %>
+    <%= ui_table striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Client ID" %>
+        <%= t.heading "Description" %>
+        <%= t.heading "Redirect URI" %>
+        <%= t.heading "Secret" %>
+        <%= t.heading "Created" %>
+        <%= t.heading "Updated" %>
+        <%= t.heading "Action" %>
+      <% end %>
+      <%= t.body do %>
+        <% @clients.each do |client| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <span class="font-mono"><%= client.client_id %></span>
+            <% end %>
+            <%= t.cell client.description %>
+            <%= t.cell do %>
+              <% if client.redirect_uri.present? %>
+                <span class="font-mono break-all"><%= client.redirect_uri %></span>
+              <% else %>
+                <%= ui_badge "Not Set", :warning, icon: "triangle-exclamation", icon_type: :solid %>
+              <% end %>
+            <% end %>
+            <%= t.cell do %>
+              <%= clipboard_button(client.secret) do %>
+                <span class="font-mono break-all"><%= client.secret %></span>
+              <% end %>
+            <% end %>
+            <%= t.cell datetime_format(client.created_at, year: true), class: "whitespace-nowrap" %>
+            <%= t.cell datetime_format(client.updated_at, year: true), class: "whitespace-nowrap" %>
+            <%= t.cell do %>
+              <%= edit_link edit_admin_oauth_client_path(client), "Edit",
+                            aria: { label: "Edit #{client.client_id}" } %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No OAuth clients have been added yet.", icon: "key", icon_type: :solid %>
+<% end %>

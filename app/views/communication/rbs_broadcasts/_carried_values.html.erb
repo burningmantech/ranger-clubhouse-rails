@@ -1,0 +1,12 @@
+<%# locals: (form:) %>
+<%# Everything the sender chose, carried to the next step as hidden fields.
+    Lists need one field each, named so the page reads them back as a list. %>
+<% form.carried_values.each do |name, value| %>
+  <% if value.is_a?(Array) %>
+    <% value.each do |item| %>
+      <%= hidden_field_tag "#{RbsBroadcastForm::PARAM_SCOPE}[#{name}][]", item, id: nil %>
+    <% end %>
+  <% else %>
+    <%= hidden_field_tag "#{RbsBroadcastForm::PARAM_SCOPE}[#{name}]", value, id: nil %>
+  <% end %>
+<% end %>

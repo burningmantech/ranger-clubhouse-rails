@@ -1,0 +1,22 @@
+<%# locals: (person:) %>
+<%= ui_section "Clothing",
+               icon: :shirt,
+               icon_type: :solid,
+               edit_link: (can_edit_profile? ? profile_edit_section_path(:clothing) : nil) do %>
+  <%= ui_table full_width: false, striped: false, responsive: false do |t| %>
+    <%= t.body do %>
+      <%= t.row do %>
+        <%= t.cell "T-Shirt choice" %>
+        <%= t.cell person.tshirt_swag.present? ? person.tshirt_swag.title : none_stated %>
+      <% end %>
+      <%= t.row do %>
+        <%= t.cell "Backup T-Shirt choice" %>
+        <%= t.cell person.tshirt_secondary_swag.present? ? person.tshirt_secondary_swag.title : none_stated %>
+      <% end %>
+      <%= t.row do %>
+        <%= t.cell "Long Sleeve choice" %>
+        <%= t.cell person.long_sleeve_swag.present? ? person.long_sleeve_swag.title : none_stated %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

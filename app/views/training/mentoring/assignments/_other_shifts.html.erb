@@ -1,0 +1,49 @@
+<%# locals: (entries:) %>
+<%#
+  The year's other mentee shifts of the people above, with how each went: an
+  earlier pending walk, or a pass, is what a mentor reads before recording this
+  one. `entries` is [group, timesheet entry] pairs from ArtMentoring::Shifts.
+%>
+<%= ui_section "Mentees' Other Shifts", icon: "repeat", icon_type: :solid, badge: entries.size.to_s,
+               border: false, class: "mt-6" do %>
+  <% if entries.empty? %>
+    <%= ui_empty_state "None of them has signed in to another mentee shift in #{@year}.",
+                       icon: "repeat", icon_type: :solid %>
+  <% else %>
+    <%= ui_table striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Mentee" %>
+        <%= t.heading "Shift" %>
+        <%= t.heading "Mentors" %>
+        <%= t.heading "Result" %>
+        <%= t.heading "Notes" %>
+      <% end %>
+      <%= t.body do %>
+        <% entries.each do |group, entry| %>
+          <% walk = group.walk_for(entry) %>
+          <%= t.row do %>
+            <%= t.row_header do %><%= person_display_link entry.person, entry.person_id %><% end %>
+            <%# nowrap: the Notes column otherwise takes the width and folds the shift's time range. %>
+            <%= t.cell class: "whitespace-nowrap" do %>
+              <%# One span: the link is inline-flex, which would drop the spaces around "to". %>
+              <%= link_to tag.span(art_mentoring_shift_label(group)),
+                          training_mentoring_assignment_shift_path(training_slug, group.key, year: @year),
+                          class: LinkHelper::TABLE_LINK_CLASSES %>
+            <% end %>
+            <%= t.cell do %>
+              <% if walk %>
+                <%= safe_join(walk.rows.map { |row| person_display_link(row.mentor, row.mentor_id) }, ", ") %>
+              <% else %>
+                <%= value_or_dash(nil) %>
+              <% end %>
+            <% end %>
+            <%= t.cell do %>
+              <%= mentor_result_badge(walk&.status || PersonMentor::STATUS_PENDING) %>
+            <% end %>
+            <%= t.cell value_or_dash(walk&.notes.presence) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

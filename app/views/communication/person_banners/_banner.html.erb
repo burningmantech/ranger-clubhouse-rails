@@ -1,0 +1,53 @@
+<%# locals: (banner:) %>
+<%
+  # The banner outlives the account it names: nothing in the database ties the
+  # two together, so a removed account leaves the name behind on its own.
+  who = person_display_name(banner.person, banner.person_id)
+%>
+<%= ui_card id: "person-banner-#{banner.id}", class: "mb-3 p-4", role: "article" do %>
+  <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-2">
+    <h3 class="inline-flex-center-gap-2 heading-title text-heading">
+      <%= fa_icon "user", :solid, class: "text-stone-icon", fixed: true %>
+      <%= person_display_link(banner.person, banner.person_id) %>
+    </h3>
+    <div class="shrink-0 flex flex-wrap items-center gap-2">
+      <% if banner.person %>
+        <%= person_status_label(banner.person) %>
+      <% end %>
+      <%= person_banner_type_badge(banner) %>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-subtle my-2">
+    <% person_banner_history(banner).each do |entry| %>
+      <span class="inline-flex-center-gap-2">
+        <%= fa_icon "calendar", :regular %>
+        <%= entry %>
+      </span>
+    <% end %>
+  </div>
+
+  <%# The message is the point of the page, so it gets a readable line length
+      and keeps the line breaks it was written with. %>
+  <div class="text-body bg-default max-w-prose p-2">
+    <%= banner.message %>
+  </div>
+
+  <div class="pt-3 mt-3 border-t border-line">
+    <%= button_row do %>
+      <%# The labels repeat the visible words first so that saying "Edit banner"
+          out loud reaches the button, then name the person so a page of them
+          can be told apart. %>
+      <%= edit_link edit_person_banner_path(banner.person_id, banner), "Edit Banner",
+                    aria: { label: "Edit banner for #{who}" } %>
+      <%= delete_button person_banner_path(banner.person_id, banner), "Delete Banner",
+                        aria: { label: "Delete banner for #{who}, posted #{banner.created_at&.to_date}" },
+                        confirm_modal: {
+                          title: "Confirm Banner Deletion",
+                          message: "Delete the account banner for #{who} posted #{banner.created_at&.to_date}? This cannot be undone.",
+                          confirm_label: "Delete Banner",
+                          method: :delete
+                        } %>
+    <% end %>
+  </div>
+<% end %>

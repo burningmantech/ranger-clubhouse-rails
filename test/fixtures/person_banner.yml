@@ -1,0 +1,41 @@
+# Test fixtures for PersonBanner (account banner messages)
+
+# Saving any record stamps updated_at, so a row that was never edited still
+# carries one. What marks a real edit is the person recorded against it, and
+# these three have none.
+
+# A permanent banner with a known creator and no edits since.
+vintage_callsign:
+  person: retired_ranger
+  is_permanent: true
+  message: "RetiredRanger rangered before the Clubhouse came online. The callsign is vintage and should not be reassigned."
+  creator_person: active_ranger
+  created_at: <%= Time.zone.local(Current.year - 2, 6, 10, 12, 0, 0) %>
+  updated_at: <%= Time.zone.local(Current.year - 2, 6, 10, 12, 0, 0) %>
+
+# Carried over from the old account note field, so it has no creator recorded.
+no_creator_banner:
+  person: inactive_ranger
+  is_permanent: true
+  message: "Account is on hold pending a conversation with the Volunteer Coordinators."
+  created_at: <%= Time.zone.local(Current.year - 1, 3, 2, 12, 0, 0) %>
+  updated_at: <%= Time.zone.local(Current.year - 1, 3, 2, 12, 0, 0) %>
+
+# The creator row is gone -- the table carries no foreign key, so the id dangles.
+deleted_creator_banner:
+  person: echelon_ranger
+  is_permanent: true
+  message: "Echelon contact for the Ranger department. Do not reassign this callsign."
+  creator_person_id: 999999
+  created_at: <%= Time.zone.local(Current.year - 1, 8, 21, 12, 0, 0) %>
+  updated_at: <%= Time.zone.local(Current.year - 1, 8, 21, 12, 0, 0) %>
+
+# An event-only note, posted this year and edited since.
+current_event_note:
+  person: active_ranger
+  is_permanent: false
+  message: "Ask TestRanger to stop by the VC tent about an outstanding radio before the first shift."
+  creator_person: retired_ranger
+  updater_person: echelon_ranger
+  created_at: <%= Time.zone.local(Current.year, 1, 15, 12, 0, 0) %>
+  updated_at: <%= Time.zone.local(Current.year, 2, 20, 12, 0, 0) %>

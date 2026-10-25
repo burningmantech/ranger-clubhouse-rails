@@ -1,0 +1,66 @@
+<%# locals: (person:, trainings:) %>
+<%#
+  Read-only Training note group -- regardless of permissions, no one adds/edits
+  training notes here (they live on the trainer session pages). Ported from
+  port/components/intake-training.hbs: one entry per in-person training session,
+  newest first, with its TraineeNote notes.
+%>
+<%= ui_section "Training", icon: "chalkboard-user", icon_type: :solid, badge: trainings.size.to_s do %>
+  <% if trainings.blank? %>
+    <%= ui_empty_state "No training sign-ups.", icon: "chalkboard-user", icon_type: :solid %>
+  <% else %>
+    <% trainings.sort_by(&:slot_begins).reverse.each do |training| %>
+      <div class="mb-4 pb-4 border-b border-line last:border-0 last:pb-0 last:mb-0">
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <span class="font-semibold text-heading"><%= mdy_format(training.slot_begins) %></span>
+          <% if training.slot_description.present? %>
+            <span class="text-body"><%= training.slot_description %></span>
+          <% end %>
+          <span class="text-stone-muted">&lt;<%= training.person_status %>&gt;</span>
+          <% if training.slot_has_ended %>
+            <%= training_pass_badge(training.training_status) %>
+            <%= intake_rank_badge(training.training_rank) %>
+          <% else %>
+            <%= ui_badge("training pending", :warning) %>
+          <% end %>
+        </div>
+
+        <% if training.slot_has_ended %>
+          <% notes = (training.training_notes || []).reject(&:is_log) %>
+          <% if notes.any? %>
+            <ul class="space-y-3">
+              <% notes.each do |note| %>
+                <li>
+                  <div class="text-sm text-stone-muted mb-1">
+                    <%= datetime_format(note.created_at, tz: "America/Los_Angeles", tz_abbr: "PT", year: true) %>
+                    by
+                    <% if note.person_source %>
+                      <%= note.person_source.callsign %>
+                    <% else %>
+                      <i>*imported*</i>
+                    <% end %>
+                  </div>
+                  <div class="text-body"><%= simple_format(note.note) %></div>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p class="text-body">No training notes.</p>
+          <% end %>
+
+          <p class="mt-2 text-sm">
+            <% if training.feedback_delivered %>
+              <span class="text-success">
+                <%= fa_icon("check", :solid, end: 1) %>Lead trainer delivered feedback to trainee.
+              </span>
+            <% else %>
+              <span class="text-warning">
+                <%= fa_icon("triangle-exclamation", :solid, end: 1) %>Lead trainer did not deliver feedback to trainee.
+              </span>
+            <% end %>
+          </p>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

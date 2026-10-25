@@ -1,0 +1,184 @@
+<%#
+  A pay period's timesheet entries, one card per person, and the punch files
+  payroll loads.
+
+  The parameters fold away once a report has run: they are set once at the top
+  of the task and the entries are what the rest of the visit is spent reading.
+  They stay open while nothing has run and whenever something needs fixing, so
+  the fields are never hidden at the moment they are wrong.
+%>
+<% content_for :title, "Payroll Export" %>
+
+<%= hero_panel icon: "money-check-dollar", heading_level: :h1,
+               id: "shift-operations-payroll-export-header",
+               title: "Payroll Export",
+               description: "Timesheet entries for a pay period, split into punch rows with meal breaks, ready for payroll." %>
+
+<% if @positions.empty? %>
+  <%# Nothing can be exported until somebody sets a paycode, and without saying
+      so the page offers an empty list and refuses every run without a reason
+      the reader can act on. %>
+  <%= ui_callout_box :error, accent: true, title: "No Positions Have a Paycom Employee Code" do %>
+    Payroll cannot be exported until at least one active position has a code set on it.
+  <% end %>
+<% end %>
+
+<%= ui_disclosure "Report Parameters", variant: :card, open: @report.nil?,
+                  subtitle: payroll_parameter_summary(@form, @positions) do %>
+  <%= ui_form(@form, shift_operations_payroll_export_path,
+              scope: PayrollExportForm::PARAM_SCOPE, method: :get) do |f| %>
+    <%= form_row do %>
+      <%= f.datetime_field :start_time, label: "Start Date & Time", use_calendar: false,
+                           width: "w-full lg:w-56", required: true %>
+      <%= f.datetime_field :end_time, label: "End Date & Time", use_calendar: false,
+                           width: "w-full lg:w-56", required: true %>
+      <%= f.select :break_after, PayrollExportForm::BREAK_AFTER_OPTIONS,
+                   { label: "Meal Break After",
+                     help_text: "How long someone can be out before a break is inserted." },
+                   { class: "w-full lg:w-44" } %>
+      <%= f.select :break_duration, PayrollExportForm::BREAK_DURATION_OPTIONS,
+                   { label: "Meal Break Length" }, { class: "w-full lg:w-44" } %>
+    <% end %>
+
+    <div data-controller="position-picker">
+      <%= f.fieldset "Positions to export", icon: "list-check", icon_type: :solid do %>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mb-2">
+          <%= button_action "Select All", :ghost,
+                            data: { action: "click->position-picker#selectAll" } %>
+          <%= button_action "Select None", :ghost,
+                            data: { action: "click->position-picker#selectNone" } %>
+          <% @positions.map(&:paycode).uniq.sort.each do |paycode| %>
+            <%= button_action "Only #{paycode}", :ghost,
+                              data: { action: "click->position-picker#selectPaycode",
+                                      position_picker_paycode_param: paycode } %>
+          <% end %>
+          <span class="text-stone-muted" aria-live="polite"
+                data-position-picker-target="count"><%= position_picker_count_label(@positions, @form.position_ids) %></span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-x-4">
+          <% @positions.each do |position| %>
+            <%= render layout: "common/checkbox_row",
+                       locals: { name: "#{PayrollExportForm::PARAM_SCOPE}[position_ids][]", value: position.id,
+                                 checked: @form.position_ids.include?(position.id),
+                                 id: "payroll-position-#{position.id}",
+                                 data: { position_picker_target: "checkbox",
+                                         paycode: position.paycode,
+                                         action: "change->position-picker#refresh" } } do %>
+              <%= position.title %> <span class="text-stone-muted">(<%= position.paycode %>)</span>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <p class="text-stone-muted mb-3">
+      Positions set to leave hours alone never get a meal break, whatever is chosen above.
+    </p>
+
+    <%= button_row do %>
+      <%= f.submit "Run Report" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @report %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @report.person_count.to_s, "People",
+                    icon: "users", icon_type: :solid %>
+    <%= ui_stat_box @report.entry_count.to_s, "Entries",
+                    icon: "clock", icon_type: :solid %>
+    <%= ui_stat_box @report.needs_review_count.to_s, "Need a Look",
+                    variant: @report.needs_review_count.positive? ? :warning : :secondary,
+                    icon: "circle-exclamation", icon_type: :solid %>
+    <%= ui_stat_box hour_minute_format(@report.grand_total), "Total Hours",
+                    icon: "hourglass-half", icon_type: :solid %>
+  <% end %>
+
+  <% if @report.people_without_ids.any? %>
+    <%# Named, not counted only: payroll cannot pay an entry with no id on it,
+        so somebody has to go and find each of these people. %>
+    <%= ui_callout_box :warning, accent: true, title: "Missing a Paycom Employee ID" do %>
+      <p>
+        <%= safe_join(@report.people_without_ids.map { |person|
+              person_display_link(person.record, person.id)
+            }, ", ") %>
+        <%# The subject stays "those entries" rather than a pronoun: a pronoun
+            here attaches to the person named at the head of the sentence, and
+            calling a Ranger "it" is not a thing this page should do. %>
+        <%= (@report.people_without_ids.size == 1) ? "has entries" : "have entries" %>
+        in this pay period but no Paycom Employee ID, so those entries are
+        left out of the files below.
+      </p>
+      <div class="mt-2">
+        <%# Guarded like the other punch files. This is the cohort most likely
+            to need a second look, so it is the last one that should skip it. %>
+        <%= payroll_export_link "Export these without IDs", "without-ids", @form,
+                                review_count: @report.people_without_ids.sum(&:needs_review_count) %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if @report.people.any? %>
+    <%# The three exports, named once: the buttons print the labels and the card
+        quotes them. %>
+    <% adjusted_label = "Export payroll with meal breaks" %>
+    <% unadjusted_label = "Export unadjusted payroll" %>
+    <% table_label = "Export this table" %>
+
+    <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+      <dl class="instruction-list">
+        <dt>Which files does payroll load?</dt>
+        <dd>
+          &ldquo;<%= adjusted_label %>&rdquo; and &ldquo;<%= unadjusted_label %>&rdquo; are what
+          payroll loads. &ldquo;<%= table_label %>&rdquo; is a plain copy of what is on screen, for
+          checking against by hand.
+        </dd>
+      </dl>
+    <% end %>
+
+    <div class="flex flex-col lg:flex-row lg:items-end gap-3 my-4">
+      <%= form_tag shift_operations_payroll_export_path, method: :get,
+                   data: { controller: "form" } do %>
+        <%= payroll_query_fields @form, except: :person_id %>
+        <label class="flex-center-gap-2" for="payroll-person-filter">
+          <span>Show</span>
+          <%= select_tag "#{PayrollExportForm::PARAM_SCOPE}[person_id]",
+                         options_for_select(payroll_person_options(@roster), @form.person_id),
+                         id: "payroll-person-filter",
+                         class: AppFormBuilder::SELECT_CLASSES,
+                         data: { action: "change->form#submit" } %>
+        </label>
+      <% end %>
+
+      <div class="lg:ms-auto">
+        <%= button_row do %>
+          <%= payroll_export_link adjusted_label, "adjusted", @form,
+                                  style: :primary, review_count: @report.needs_review_count %>
+          <%= payroll_export_link unadjusted_label, "unadjusted", @form,
+                                  review_count: @report.needs_review_count %>
+          <%= payroll_export_link table_label, "table", @form %>
+        <% end %>
+      </div>
+    </div>
+
+    <%= render partial: "person", collection: @report.people,
+               locals: { meal_break_minutes: @form.break_duration } %>
+
+    <div class="bg-base-100 border border-line rounded-base px-4 py-3 flex items-center gap-3">
+      <span class="text-heading font-semibold">Grand total</span>
+      <span class="ms-auto text-lg text-heading font-semibold">
+        <%= hour_minute_format(@report.grand_total) %>
+      </span>
+    </div>
+  <% elsif @form.person_id.present? %>
+    <%# Only reachable by hand-editing the address: the filter lists the people
+        who are on the report, so it cannot select someone who is not. Says so
+        rather than leaving the page ending on the callout above. %>
+    <%= ui_empty_state "That person has no entries to pay in this pay period.",
+                       icon: "user-slash", icon_type: :solid %>
+  <% elsif @report.people_without_ids.empty? %>
+    <%= ui_empty_state "No timesheet entries were found for this pay period.",
+                       icon: "calendar-xmark", icon_type: :solid %>
+  <% end %>
+<% end %>

@@ -1,0 +1,29 @@
+# Formerly-Known-As (FKA) fixtures for PersonSearch FKA-matching tests.
+#
+# Reference these BY NAME (no fixtures :all ordering assumptions). The normalized
+# and soundex columns are NOT NULL and are normally derived by the PersonFka#fka=
+# setter; YAML fixtures bypass that setter, so the derived values are pre-computed
+# here exactly as the setter would produce them:
+#   fka_normalized = WordUtils.normalize_word(fka)
+#   fka_soundex    = WordUtils.metaphone(fka_normalized)
+#   is_irrelevant  = PersonFka::IRRELEVANT_REGEXP matches the trimmed fka
+#
+# A search for "Moonbeam" matches the relevant row (normalized "moonbeam" /
+# soundex "MNBM") and MUST NOT surface the is_irrelevant row.
+
+# Relevant FKA on retired_ranger — searchable, surfaced by an FKA query.
+retired_relevant_fka:
+  person: retired_ranger
+  fka: "Moonbeam"
+  fka_normalized: "moonbeam"
+  fka_soundex: "MNBM"
+  is_irrelevant: false
+
+# Irrelevant FKA (ends in digits → matches IRRELEVANT_REGEXP) — must be excluded
+# from FKA search results.
+retired_irrelevant_fka:
+  person: retired_ranger
+  fka: "Stardust42"
+  fka_normalized: "stardust42"
+  fka_soundex: "STRTSTFRTTW"
+  is_irrelevant: true

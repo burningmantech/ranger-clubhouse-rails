@@ -1,0 +1,7 @@
+<%# locals: (time:, person:) -%>
+<% if time %>
+  <%= datetime_format(time, year: true) %><br>
+  by <% if person %><%= link_to person.callsign, person_path(person) %><% else %><i>unknown</i><% end %>
+<% else %>
+  <i>never</i>
+<% end %>

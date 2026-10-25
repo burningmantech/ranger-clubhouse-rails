@@ -1,0 +1,33 @@
+<%# locals: (step:,facts:)%>
+<p class="mb-2">
+  <%= fa_icon "id-badge", :solid %>
+  <b>Your Burner Profile isn't linked to your Clubhouse account.</b>
+  Ranger Ticketing needs that link to find you in the Burning Man ticket system.
+</p>
+
+<b>Steps:</b>
+<ol class="list-decimal list-inside mb-2 space-y-1">
+  <li>
+    Log in at <%= ext_link "profiles.burningman.org", "https://profiles.burningman.org" %>.
+    No profile yet? Create one.
+  </li>
+  <li>
+    Copy your Burner Profile email address from the <b>My Profile</b> page.
+    Note your username too, if you know it.
+  </li>
+  <li>
+    Email the Volunteer Coordinators at <%= mail_to EmailAddresses::VOLUNTEER_COORDINATORS_TEAM %>
+    and ask them to link your Burner Profile.
+    Include your <b>callsign</b> and <b>Burner Profile email address</b> — both required.
+    Add your username if you have it.
+  </li>
+</ol>
+
+<p class="text-error font-semibold">
+  <%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %>
+  Until it's linked you can't sign up for shifts or claim tickets and SAPs.
+</p>
+
+<p class="text-sm text-stone-muted mt-2">
+  <%= fa_icon "clock", :solid %> The Volunteer Coordinators may take a day or two to process it.
+</p>

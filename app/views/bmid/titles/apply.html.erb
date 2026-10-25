@@ -1,0 +1,52 @@
+<%# The run's results. A GET cannot re-derive them: once the titles are written,
+    asking again shows nothing left to do. %>
+<div data-controller="scroll-to-top" hidden></div>
+
+<%= hero_panel icon: "wand-magic-sparkles", heading_level: :h1, id: "bmid-set-titles-results-header",
+               title: "BMID Titles Set",
+               back_to: ["Badge Titles", bmid_titles_path] do |panel| %>
+  <% panel.description do %>
+    <%= @rows.empty? ? "Every badge already said what it should — nothing was changed." :
+        "The badges below were updated for #{@year}." %>
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @rows.size, "Badges Changed" %>
+  <%= ui_stat_box @rows.count(&:new_badge?), "New Badges" %>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= button_link "Manage Badges", :secondary, bmid_manage_path(year: @year),
+                    icon: "pen-to-square", icon_type: :solid %>
+    <%= button_link "Set BMID Titles Again", :secondary, set_bmid_titles_path,
+                    icon: "arrows-rotate", icon_type: :solid %>
+  <% end %>
+</div>
+
+<% if @rows.empty? %>
+  <%= ui_empty_state "No badges needed changing.", icon: "circle-check" %>
+<% else %>
+  <%= ui_table striped: true, responsive: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Person" %>
+      <% BmidTitle::TITLE_LINES.each do |line| %>
+        <%= t.heading "Title #{line}" %>
+      <% end %>
+    <% end %>
+    <%= t.body do %>
+      <% @rows.each do |row| %>
+        <%= t.row do %>
+          <%= t.cell do %>
+            <%= callsign_link row.person %>
+            <div class="text-sm text-stone-muted"><%= row.person.status %></div>
+          <% end %>
+          <% BmidTitle::TITLE_LINES.each do |line| %>
+            <%= t.cell value_or_dash(row.bmid.public_send("title#{line}")) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,52 @@
+<%# locals: (application:, related_applications:) %>
+<% unless application.year == current_year %>
+  <%= ui_callout_box :warning do %>
+    <strong>You are viewing an application from a prior year.</strong>
+  <% end %>
+<% end %>
+
+<% if application.bonked? %>
+  <%= ui_callout_box :error, icon: "ban", accent: true do %>
+    <strong>Application has been bonked. Take no further action.</strong> Do not contact the individual unless
+    instructed to do so by the V.C. Cadre or the Personnel Managers.
+  <% end %>
+<% end %>
+
+<% if application.status_duplicate? %>
+  <%= ui_callout_box :error, icon: "hand", accent: true do %>
+    <strong>Application marked as a duplicate.</strong> No further action should take place.
+  <% end %>
+<% elsif related_applications.any? { |related| related.year == application.year && !related.status_duplicate? } %>
+  <%= ui_callout_box :warning do %>
+    <strong>Multiple active applications found for this year.</strong>
+    See <%= link_to "Related Applications", "#section-related", class: "underline font-semibold" %> below.
+  <% end %>
+<% end %>
+
+<% if application.existing_account %>
+  <% account = application.existing_account %>
+  <% account_link = link_to("#{account.callsign} (#{account.status})", person_path(account), class: "underline font-semibold") %>
+  <% if application.status_created? %>
+    <%= ui_callout_box :success do %>
+      <strong>Application was approved, and an account created:</strong> <%= account_link %>
+    <% end %>
+  <% elsif application.returning_applicant? %>
+    <%= ui_callout_box :info, icon: "hand-point-right" do %>
+      <strong>Application belongs to a returning Past Prospective:</strong> <%= account_link %>
+    <% end %>
+  <% elsif application.uberbonked_previously? %>
+    <%= ui_callout_box :error, icon: "ban", accent: true do %>
+      <strong>Applicant was Uberbonked in a prior year.</strong> Double-check the application and Clubhouse
+      account: <%= account_link %>
+    <% end %>
+  <% elsif application.returning_ranger? %>
+    <%= ui_callout_box :error, icon: "hand-point-right", accent: true do %>
+      <strong>Application may belong to a returning Ranger.</strong> Verify this is not a mistake:
+      <%= account_link %>
+    <% end %>
+  <% else %>
+    <%= ui_callout_box :warning, icon: "hand-point-right" do %>
+      <strong>Application may be associated with an existing Clubhouse account:</strong> <%= account_link %>
+    <% end %>
+  <% end %>
+<% end %>

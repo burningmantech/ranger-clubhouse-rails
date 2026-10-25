@@ -1,0 +1,147 @@
+<%#
+  Everyone holding the Sandman position and what each of them still needs
+  before they can stand a shift.
+%>
+<% content_for :title, "Sandman Qualifications" %>
+
+<%= hero_panel icon: "fire-flame-curved", heading_level: :h1,
+               id: "sandman-qualified-header",
+               title: "#{@year} Sandman Qualifications" do |panel| %>
+  <% panel.description do %>
+    Who is qualified to be on a <%= @year %> Sandman shift, and what everyone else still needs.
+  <% end %>
+  <%# The selector carries only the year, so the filter rides along as a hidden
+      field. Without it, changing year quietly widens the list back out. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: @filter_params %>
+<% end %>
+
+<% if @report.total.positive? %>
+  <% sandmen = pluralize(@report.total, "sandman", plural: "sandmen") %>
+
+  <div class="my-4 text-lg">
+    <%= sandmen %> ·
+    <%= @report.qualified_count %> qualified ·
+    <%= pluralize(@report.qualified_signed_up_count, "qualified sign-up") %> ·
+    <%= pluralize(@report.unqualified_signed_up_count, "unqualified sign-up") %>
+  </div>
+
+  <%# Each box counts the people who have met one requirement and opens the ones
+      who have not, so the number and the list behind it always agree. How many
+      boxes there are follows the checks in force. %>
+  <% boxes = sandman_qualified_scoreboard(@report, @year) %>
+  <div class="grid grid-cols-2 <%= sandman_qualified_scoreboard_columns(boxes.size) %> gap-2 lg:gap-3 my-4">
+    <% boxes.each do |box| %>
+      <%= sandman_qualified_scoreboard_box(box, @filter_params[:show]) %>
+    <% end %>
+  </div>
+
+  <%# The scoreboard above is labelled with the very words defined here. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Who is listed?</dt>
+      <dd>
+        Everyone with an active account who currently holds the Sandman position.
+        That roster is read as it stands today, so an earlier year shows today's
+        sandmen against that year's answers.
+      </dd>
+
+      <dt>What counts as trained?</dt>
+      <dd>
+        Passing a <%= @year %> Sandman training, or turning up to teach one as a
+        Sandman trainer.
+      </dd>
+
+      <% if @report.affidavit_required? %>
+        <dt>What counts as the affidavit?</dt>
+        <dd>The Sandman affidavit, signed for <%= @year %>.</dd>
+      <% end %>
+
+      <% if @report.experience_required? %>
+        <dt>What counts as experience?</dt>
+        <dd>
+          A timesheet entry from <%= @report.cutoff_year %> or later on a burn
+          perimeter shift or one of its neighbours: Burn Perimeter, Burn Command
+          Team, Burn Quad Lead, Special Burn, or Sandman itself.
+        </dd>
+      <% end %>
+
+      <dt>Who counts as qualified?</dt>
+      <dd>
+        <%# The checks are named from what the Clubhouse is set to ask for, so the
+            page can never claim a rule it is not measuring. %>
+        Anyone who has met every check this page lists.
+        <% unless @report.affidavit_required? && @report.experience_required? %>
+          The Clubhouse is currently set to skip the rest, so they are left off
+          the report rather than counted against anyone.
+        <% end %>
+        Being signed up for a shift is reported beside the checks but is never one
+        of them &mdash; which is how somebody can hold a <%= @year %> shift they
+        cannot yet stand.
+      </dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "sandman-qualified-filters",
+                 chips: sandman_qualified_chips(@filter_params, @year),
+                 clear_url: scheduling_sandman_qualified_path(year: @year),
+                 count: "Showing #{@shown_rows.size} of #{sandmen}",
+                 actions: export_csv_link(scheduling_sandman_qualified_path(year: @year, format: :csv), "Export All to CSV"),
+                 url: scheduling_sandman_qualified_path do |f| %>
+    <%# Year-scoped page: a GET form replaces the whole query string, so without
+        this every Apply would bounce the list back to the current year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :show, sandman_qualified_show_options(@report),
+                   label: "Showing", selected: @filter_params[:show],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <% if @shown_rows.any? %>
+    <%# container_class bounds the scrollport: a pinned heading holds to the
+        nearest scrolling ancestor, and for a table that is its container, so
+        without a height there is nothing for it to hold to. %>
+    <%= ui_table full_width: true, striped: true,
+                 container_class: "sandman-qualified-pane" do |t| %>
+      <%# Pinned so the four yes-or-no columns keep their labels down a long
+          roster. Below the desktop breakpoint the table stacks into labelled
+          cards and there is no heading row to hold. %>
+      <%= t.header class: "lg:sticky lg:top-0 lg:z-20" do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Qualified" %>
+        <%= t.heading "#{@year} Trained" %>
+        <%# A check the Clubhouse is not asking for gets no column: a tick
+            no one is measured against is just another thing to read. %>
+        <%= t.heading "Affidavit" if @report.affidavit_required? %>
+        <%= t.heading "Experience (#{@report.cutoff_year} or Later)" if @report.experience_required? %>
+        <%= t.heading "#{@year} Signed Up" %>
+      <% end %>
+      <%= t.body do %>
+        <% @shown_rows.each do |row| %>
+          <%# Tinted only when somebody holds a shift they cannot yet stand.
+              That is the row the page exists to surface. %>
+          <%= t.row state: (:warning if row.unqualified_signed_up?) do %>
+            <%= t.row_header do %>
+              <%= person_display_link(row.person, row.person_id) %>
+            <% end %>
+            <%= t.cell sandman_qualified_verdict(row) %>
+            <%= t.cell sandman_qualified_flag(row.trained) %>
+            <%= t.cell sandman_qualified_flag(row.affidavit) if @report.affidavit_required? %>
+            <%= t.cell sandman_qualified_flag(row.experience) if @report.experience_required? %>
+            <%= t.cell sandman_qualified_flag(row.signed_up) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No sandman matches this filter.",
+                       icon: "filter-circle-xmark", icon_type: :solid %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No active person holds the Sandman position.",
+                     icon: "user-xmark", icon_type: :solid %>
+<% end %>

@@ -1,0 +1,49 @@
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1, id: "work-history-header",
+               title: "Work History — #{@person.callsign}",
+               description: "On-playa volunteer hours by position and event year.",
+               back_to: ["Timesheet", person_timesheets_path(@person)] %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What positions are excluded?</dt>
+    <dd>Alpha, Deep Freeze, and Training positions are excluded.</dd>
+    <%# A how-to about the table's cells, so it goes when the table does. %>
+    <% unless @history.years.empty? %>
+      <dt>How do I see where the hours went?</dt>
+      <dd>Select any hours figure below to see its breakdown. The overall total is not a link.</dd>
+    <% end %>
+  </dl>
+<% end %>
+
+<%= years_breakdown(@person) %>
+
+<% subject = @is_me ? "You have" : "#{@person.callsign} has" %>
+
+<% if @history.inaccurate_years.any? %>
+  <%= ui_callout_box :warning do %>
+    <%= subject %> timesheet entries before 2008.
+    The department did not start tracking volunteer hours until the 2008 event.
+    All timesheet entries prior to 2008 are placeholders.
+  <% end %>
+<% end %>
+
+<% unless @history.years.empty? %>
+  <% if @history.has_echelon_work %>
+    <%= ui_callout_box :info do %>
+      <%= subject %> Echelon volunteer timesheet entries.
+    <% end %>
+  <% end %>
+
+  <div class="text-body my-2">
+    <% if @history.inaccurate_years.any? %>
+      <%= pluralize(@history.inaccurate_years.size, "year") %> volunteered prior to 2008:
+      [<%= year_range(@history.inaccurate_years) %>]<br>
+      <%= pluralize(@history.years.size, "year") %> volunteered after 2007.
+    <% else %>
+      <%= pluralize(@history.years.size, "year") %> volunteered.
+    <% end %>
+    <%= pluralize(@history.positions.size, "position") %>.
+  </div>
+<% end %>
+
+<%= render "common/work_history/matrix", history: @history %>

@@ -1,0 +1,66 @@
+<%# locals: (bmid:, person:, save_label:) %>
+<%# The three contextual callouts a single-badge editor shows before the form:
+    whether this badge has earned a print, what the person's Setup Access Pass
+    is doing, and whether there is an approved photo to print on it.
+
+    Shared by the person's own badge page (/person/:id/bmid) and the roster's
+    editor (/bmid/manage/badges/:person_id/edit) so the two cannot drift apart.
+
+    save_label: what this page's submit button says, so the "print anyway"
+    instructions name the button the admin is actually looking at. %>
+<% is_new = bmid.new_record? %>
+
+<%# --- Print qualification -------------------------------------------------- %>
+<% if bmid.not_qualified_to_print? %>
+  <%= ui_callout_box (is_new ? :error : :secondary), accent: true,
+                     icon: "hand",
+                     title: (person.status == Person::ECHELON ? "No sign-ups found" : "No claimed ticket or in-person training sign-up") do %>
+    <p class="mb-2">
+      <% if person.status == Person::ECHELON %>
+        Because this Echelon volunteer hasn't signed up for any shifts, the recommendation is to not print their BMID.
+      <% else %>
+        Because this person hasn't signed up for an in-person training nor claimed a ticket, the recommendation is to
+        not print their BMID.
+      <% end %>
+    </p>
+    <% if is_new %>
+      <p><strong>To print anyway,</strong> set the status to "Prep" or "Ready to Print" (fill out the appropriate
+        fields) and select "<%= save_label %>".</p>
+    <% elsif bmid.qualified_to_print? %>
+      <p><strong>This badge's status will cause it to print.</strong> Set the status to "Do Not Print" or "Issues" to
+        prevent it.</p>
+    <% elsif bmid.submitted? %>
+      <p>This BMID was submitted for printing.</p>
+    <% elsif bmid.will_not_print? %>
+      <p>This badge's status explicitly prevents it from printing.</p>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# --- SAP status ---------------------------------------------------------- %>
+<% if bmid.sap %>
+  <%= ui_callout_box (bmid.sap_submitted? || bmid.sap_banked? ? :warning : :info),
+                     icon: "clipboard-check", title: "Setup Access Pass" do %>
+    <p class="mb-1">
+      The SAP is through <strong>RAD-<%= bmid.sap_id %></strong>, a <%= bmid.sap_type_label %> with
+      status <%= bmid.sap.status %>.
+    </p>
+    <% if bmid.sap_submitted? %>
+      <p><strong>The SAP has been submitted for processing — the SAP date can't be changed.</strong></p>
+    <% elsif bmid.sap_banked? %>
+      <p><strong>The selected <%= bmid.sap_type_label %> is banked.</strong> An additional SAP document may need to be
+        issued.</p>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_callout_box :warning, title: "No Setup Access Pass" do %>
+    <strong>A SAP or Staff Credential couldn't be located — the SAP date can't be changed.</strong>
+  <% end %>
+<% end %>
+
+<%# --- Photo ---------------------------------------------------------------- %>
+<% unless bmid.has_approved_photo %>
+  <%= ui_callout_box :warning, icon: "camera", title: "No Approved Photo" do %>
+    <strong>This person doesn't have an approved photo on file.</strong>
+  <% end %>
+<% end %>

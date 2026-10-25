@@ -1,0 +1,125 @@
+<%#
+  One Alpha shift: who is signed up, who has signed in, and who carries a
+  mentor flag -- plus the three sheets and the add/remove controls. Upstream
+  rendered this as an accordion body on the schedule page; here it is the page.
+%>
+<% slot = @roster.slot %>
+<% shift_title = alpha_shift_title(slot) %>
+<% content_for :title, "#{alpha_shift_title_text(slot)} — Alpha Schedule" %>
+
+<%= hero_panel icon: "clipboard-user", heading_level: :h1, id: "alpha-shift-header",
+               title: shift_title do |panel| %>
+  <% panel.description do %>
+    Add or remove sign-ups for <%= datetime_format(slot.begins, slot.ends) %>,
+    <%= slot.begins_year %>, then print the sheets you need for the shift.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "Alpha Schedule", mentoring_alpha_schedule_path(year: slot.begins_year) %>
+  <% end %>
+<% end %>
+
+<% unless slot.active %>
+  <%= ui_callout_box :warning, icon: "circle-pause", icon_type: :solid, accent: true, class: "my-4" do %>
+    <strong>This shift is inactive.</strong> It is hidden from the sign-up pages Rangers see, so
+    no one new can add themselves. Existing sign-ups still stand.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box "#{@roster.entries.size}#{" of #{slot.max}" if slot.max.to_i.positive?}",
+                  "Signed Up", icon: "users", icon_type: :solid %>
+  <%= ui_stat_box @roster.signed_in_count.to_s, "Signed In",
+                  variant: :success, icon: "user-check", icon_type: :solid %>
+  <%= ui_stat_box @roster.flagged_count.to_s, "Flagged",
+                  variant: @roster.flagged_count.positive? ? :warning : :secondary,
+                  icon: "flag", icon_type: :solid %>
+<% end %>
+
+<%= button_row do %>
+  <%= button_link "Sign-In Sheet", :secondary, mentoring_alpha_schedule_signup_sheet_path(slot),
+                  icon: "clipboard-list", icon_type: :solid %>
+  <%# While no one is signed in these two lead to the "no Alphas" dialog
+      instead of a sheet with nothing on it -- upstream's pre-click modal. %>
+  <% sheets_ready = @roster.any_signed_in? %>
+  <% no_alphas_path = mentoring_alpha_schedule_no_alphas_path(slot) %>
+  <% sheet_data = sheets_ready ? {} : { turbo_frame: "modal" } %>
+  <%= button_link "Information Sheet", :secondary,
+                  sheets_ready ? mentoring_alpha_schedule_info_sheet_path(slot) : no_alphas_path,
+                  icon: "circle-info", icon_type: :solid, data: sheet_data %>
+  <%= button_link "Apparel Distribution", :secondary,
+                  sheets_ready ? mentoring_alpha_schedule_apparel_path(slot) : no_alphas_path,
+                  icon: "shirt", icon_type: :solid, data: sheet_data %>
+  <%= button_link "Add Person", :primary, mentoring_new_alpha_schedule_roster_path(slot),
+                  icon: "user-plus", icon_type: :solid, data: { turbo_frame: "modal" } %>
+<% end %>
+
+<% if @roster.entries.empty? %>
+  <%= ui_empty_state "No one has signed up for this shift yet. Use Add person to sign someone up.",
+                     icon: "user-plus", icon_type: :solid %>
+<% else %>
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Name" %>
+      <%= t.heading "Gender" %>
+      <%= t.heading "Signed In" %>
+      <%= t.heading "Training" %>
+      <%= t.heading "Home" %>
+      <%= t.heading "Action" %>
+    <% end %>
+    <%= t.body do %>
+      <% @roster.entries.each do |entry| %>
+        <% person = entry.person %>
+        <%= t.row do %>
+          <%= t.row_header do %>
+            <%= callsign_link person %>
+            <%# Flags fold under the callsign rather than taking a column of
+                their own: they belong to the person, and the table has to fit
+                a laptop at HQ. %>
+            <% if entry.flagged? %>
+              <div class="flex flex-wrap gap-1 mt-1">
+                <% entry.flags.each do |flag| %>
+                  <span class="inline-flex items-center gap-1 text-xs">
+                    <span class="text-stone-muted"><%= flag[:year] %></span>
+                    <%= intake_rank_badge(flag[:rank]) %>
+                  </span>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+          <%= t.cell person.desired_full_name %>
+          <%= t.cell gender_format(person) %>
+          <%= t.cell do %>
+            <% if entry.signed_in? %>
+              <%= ui_badge "Yes", :success, icon: "circle-check", icon_type: :solid %>
+            <% else %>
+              <span class="text-stone-muted">No</span>
+            <% end %>
+          <% end %>
+          <%= t.cell do %>
+            <% if entry.trainings.empty? %>
+              <span class="text-stone-muted">None</span>
+            <% else %>
+              <% entry.trainings.each do |training| %>
+                <div class="text-sm">
+                  <%= mdy_format(training.slot_begins) %> &mdash; <%= training.slot_description %>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+          <%= t.cell [person.city, person.state, person.country].compact_blank.join(" ") %>
+          <%= t.cell do %>
+            <%= delete_button mentoring_alpha_schedule_roster_person_path(slot, person), "Remove",
+                              variant: :secondary, size: "sm",
+                              confirm_modal: {
+                                title: "Remove Sign-Up",
+                                message: "Remove #{person.callsign} from #{alpha_shift_title_text(slot)}?",
+                                confirm_label: "Remove #{person.callsign}",
+                                method: "delete"
+                              } %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

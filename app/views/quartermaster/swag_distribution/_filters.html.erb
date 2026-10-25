@@ -1,0 +1,23 @@
+<%# locals: (count: nil, actions: nil) %>
+<%#
+  The category filter bar. Rendered in both branches of the page: a year with
+  no swag at all still carries a category filter forward, so the chip that
+  removes it has to be reachable there too. count: and actions: are omitted in
+  that case -- there is nothing to count and nothing to export.
+%>
+<%= filter_bar id: "swag-distribution-filters",
+               chips: swag_distribution_filter_chips(@filter_params),
+               clear_url: swag_distribution_url({}),
+               count: count,
+               actions: actions,
+               url: quartermaster_swag_distribution_path do |f| %>
+  <%# The filter form's GET would drop the year without this. %>
+  <%= hidden_field_tag :year, swag_distribution_selected_year %>
+  <%= f.select :category,
+               swag_distribution_category_options(@category_counts, @filter_params[:category]),
+               label: "Category", selected: @filter_params[:category],
+               width: "w-full", wrapper_class: "flex-1" %>
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>

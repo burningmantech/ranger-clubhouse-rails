@@ -1,0 +1,145 @@
+<%#
+  Training › Mentoring: the year's mentoring numbers, the way into the
+  mentoring pages, and -- this year only -- who is on a mentee shift right now
+  and the next shifts people have signed up for.
+%>
+<% content_for :title, "#{@training.title} Mentoring" %>
+
+<%= hero_panel icon: "handshake", heading_level: :h1, id: "training-mentoring-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> Mentoring<% end %>
+  <% panel.description do %>
+    Pair mentors with mentees on shift and record how each mentee shift went.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2008, skip_pandemic: true %>
+<% end %>
+
+<%= render "training/mentoring/missing_positions", shifts: @shifts %>
+
+<% bonked = @verdicts.count(*ArtMentoring::VerdictsReport::BONKS) %>
+<% passed_label = mentor_result_label(PersonMentor::STATUS_PASS) %>
+<% bonked_label = mentor_result_label(PersonMentor::STATUS_BONK) %>
+<%= ui_stat_row do %>
+  <% if @is_current_year %>
+    <%= ui_stat_box @shifts.on_shift.size.to_s, "Mentees on Shift Now", icon: "person-walking", icon_type: :solid %>
+  <% end %>
+  <%= art_need_mentor_box(@shifts.needing_mentor_count) %>
+  <%= art_awaiting_verdict_box(@shifts.awaiting_verdict_count) %>
+  <%= ui_stat_box @verdicts.count(PersonMentor::STATUS_PASS).to_s, passed_label, variant: :success,
+                  icon: "circle-check", icon_type: :solid %>
+  <%= ui_stat_box bonked.to_s, bonked_label, icon: "circle-xmark", icon_type: :solid %>
+  <% if @is_current_year %>
+    <%= ui_stat_box @shifts.upcoming_signup_count.to_s, "Upcoming Sign-Ups", icon: "calendar", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <%= render "training/mentoring/shift_rule", shifts: @shifts %>
+    <dt>Who needs a mentor, and who awaits a verdict?</dt>
+    <dd>
+      A mentee no one has been paired with needs a mentor, whether still on shift or signed out: a verdict is
+      recorded with a mentor. A mentee paired with one awaits a verdict once signed out, until a result other than
+      <%= mentor_result_label(PersonMentor::STATUS_PENDING) %> is recorded. A sign-in left open for a day counts as
+      signed out.
+    </dd>
+    <dt>What do <%= passed_label %> and <%= bonked_label %> count?</dt>
+    <dd>The year's mentee shifts recorded with that result. Bonked includes self-bonks.</dd>
+  </dl>
+<% end %>
+
+<div class="lg:w-3/4 mb-6">
+  <%= ui_drill_down_row training_mentoring_assignment_path(training_slug, year: @year), "Mentor Assignment",
+                        meta: pluralize(@shifts.groups.size, "mentoring shift"),
+                        badges: [
+                          (if @shifts.needing_mentor_count.positive?
+                             ui_badge("#{@shifts.needing_mentor_count} need a mentor", :warning, size: "base")
+                           end),
+                          (if @shifts.awaiting_verdict_count.positive?
+                             ui_badge("#{@shifts.awaiting_verdict_count} awaiting a verdict", :warning, size: "base")
+                           end)
+                        ] %>
+  <%= ui_drill_down_row training_mentoring_verdicts_path(training_slug, year: @year), "Verdicts",
+                        meta: "#{pluralize(@verdicts.verdicts.size, "verdict")} recorded" %>
+  <%= ui_drill_down_row training_mentoring_multiple_shifts_path(training_slug, year: @year), "Multiple Shifts",
+                        meta: pluralize(@multiple_shifts.rows.size, "mentee") %>
+</div>
+
+<% if @is_current_year %>
+  <% on_shift = @shifts.on_shift %>
+  <%= ui_section "On Shift Now", icon: "person-walking", icon_type: :solid, border: false,
+                 badge: on_shift.size.to_s, badge_color: :success do %>
+    <% if on_shift.empty? %>
+      <%= ui_empty_state "No mentee is on shift right now.", icon: "person-walking", icon_type: :solid %>
+    <% else %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Mentee" %>
+          <%= t.heading "Shift" %>
+          <%= t.heading "Signed In" %>
+          <%= t.heading "Mentors" %>
+        <% end %>
+        <%= t.body do %>
+          <% on_shift.each do |group, entry| %>
+            <% walk = group.walk_for(entry) %>
+            <%= t.row do %>
+              <%= t.row_header do %><%= person_display_link entry.person, entry.person_id %><% end %>
+              <%= t.cell do %>
+                <%# One span: the link is inline-flex, which would drop the spaces around "to". %>
+                <%= link_to tag.span(art_mentoring_shift_label(group)),
+                            training_mentoring_assignment_shift_path(training_slug, group.key, year: @year),
+                            class: LinkHelper::TABLE_LINK_CLASSES %>
+              <% end %>
+              <%= t.cell datetime_format(entry.on_duty), class: "whitespace-nowrap" %>
+              <%= t.cell do %>
+                <% if walk %>
+                  <%= safe_join(walk.rows.map { |row| person_display_link(row.mentor, row.mentor_id) }, ", ") %>
+                <% else %>
+                  <%= ui_badge "No mentor yet", :warning, icon: "user-clock", icon_type: :solid %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Next Mentee Shifts", icon: "calendar", icon_type: :solid, border: false, class: "mt-6" do %>
+    <% upcoming = @shifts.upcoming.first(3) %>
+    <% if upcoming.empty? %>
+      <%= ui_empty_state "No one has signed up for a mentee shift still to come.", icon: "calendar", icon_type: :solid %>
+    <% else %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Shift" %>
+          <%= t.heading "Mentees Signed Up" %>
+          <%= t.heading "Mentors Signed Up" %>
+        <% end %>
+        <%= t.body do %>
+          <% upcoming.each do |shift| %>
+            <%= t.row do %>
+              <%= t.row_header do %>
+                <%= link_to tag.span(datetime_format(shift.slot.begins, shift.slot.ends)),
+                            training_mentoring_assignment_shift_path(training_slug, shift.slot.id, year: @year),
+                            class: LinkHelper::TABLE_LINK_CLASSES %>
+              <% end %>
+              <%= t.cell do %>
+                <%= shift.mentees.any? ? shift.mentees.map(&:callsign).to_sentence : "None yet" %>
+                <% if shift.slot.max.to_i.positive? %>(<%= shift.mentees.size %> of <%= shift.slot.max %>)<% end %>
+              <% end %>
+              <%= t.cell do %>
+                <% if shift.mentors.any? %>
+                  <%= shift.mentors.map(&:callsign).to_sentence %>
+                <% elsif shift.needs_mentor? %>
+                  <%= ui_badge "No mentor signed up", :warning, icon: "triangle-exclamation", icon_type: :solid %>
+                <% else %>
+                  None yet
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

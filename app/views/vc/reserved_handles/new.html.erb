@@ -1,0 +1,7 @@
+<%= hero_panel icon: "ban", heading_level: :h1, id: "vc-reserved-handles-form-header",
+               description: "Reserve a handle so it cannot be issued as a Ranger callsign.",
+               back_to: ["Reserved Handles", vc_reserved_handles_path] do |panel| %>
+  <% panel.title do %>New Reserved Handle<% end %>
+<% end %>
+
+<%= render "form" %>

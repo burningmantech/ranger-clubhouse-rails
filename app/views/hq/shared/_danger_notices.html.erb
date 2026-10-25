@@ -1,0 +1,25 @@
+<%# Mutually-exclusive danger notices above the page content (Ember
+    port/templates/hq.hbs if/else-if chain): disabled account, missing
+    Burner Profile ID, or PNV hat-rack instructions when the viewer is not
+    an on-duty Mentor. %>
+<% if !@person.can_start_shift? %>
+  <%= ui_callout_box :error, title: "Account Is Disabled", icon: "ban" do %>
+    <p class="mb-2">
+      <%= @person.callsign %> has the status "<%= @person.status %>", so they cannot start a shift.
+      You cannot use the HQ Window Interface for them.
+    </p>
+    <p>
+      Contact the HQ Lead, HQ Supervisor, or the Personnel Manager at <%= mail_to EmailAddresses::PERSONNEL %>.
+    </p>
+  <% end %>
+<% elsif @person.missing_bpguid? %>
+  <%= ui_callout_box :error do %>
+    <%= @person.callsign %> has no Burner Profile ID on file, so shift sign-ups stay off.
+  <% end %>
+<% elsif @person.pnv? && !@viewer_is_mentor %>
+  <%= ui_callout_box :error, title: "Direct to the Hat Rack", icon: "exclamation" do %>
+    <%= @person.callsign %> is <%= hq_pnv_noun(@person) %>.
+    You may only perform an On-Site Registration for them.
+    <strong class="text-error">Do not start their Alpha shift.</strong>
+  <% end %>
+<% end %>

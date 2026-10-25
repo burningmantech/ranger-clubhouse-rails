@@ -1,0 +1,15 @@
+<% type_label = { "team" => "team", "position" => "position", "special" => "special service" }.fetch(@award_type) %>
+
+<%= hero_panel icon: "plus", heading_level: :h1, id: "new-person-award-header",
+               description: "Recognize this person's volunteer efforts for a single year.",
+               back_to: ["Service Recognition Awards", person_awards_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Grant <%= type_label %> Award &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= render "form",
+           person: @person,
+           person_award: @person_award,
+           award_type: @award_type,
+           entity_options: @entity_options %>

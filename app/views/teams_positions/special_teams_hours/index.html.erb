@@ -1,0 +1,183 @@
+<%#
+  Hours per year in the positions a reader picks, one row per person, with
+  sign-up counts beside them when asked for.
+
+  The parameters fold away once a report has run, empty or not: the answer is
+  what the reader came for, and folded to one line it sits just under the hero.
+  Left open, the picker stood a couple of thousand pixels tall above an empty
+  answer, so a run that found no one looked like nothing happening at all. They
+  stay open while nothing has run and when the form has an error, so the fields
+  are in view whenever they need attention.
+%>
+<% content_for :title, "Special Teams Hours" %>
+
+<%= hero_panel icon: "user-clock", heading_level: :h1, id: "special-teams-hours-header",
+               title: "Special Teams Hours",
+               description: "Each person's hours per year in the positions you choose, and how many " \
+                            "shifts they signed up for if you ask." %>
+
+<%# Out of the hero -- and only while there are rows for it to explain. %>
+<% if @report&.any? %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What counts as hours?</dt>
+      <dd>
+        Time signed in to any of the chosen positions, added together for each person. A shift
+        still in progress adds nothing until it is signed out.
+      </dd>
+      <% if @report.show_signups %>
+        <dt>What is a sign-up?</dt>
+        <dd>
+          A shift on a chosen position the person signed up for, once it has ended, whether or not
+          they turned up for it.
+        </dd>
+      <% end %>
+      <%# Says who this report listed, which the two options change. %>
+      <dt>Who is listed?</dt>
+      <dd>
+        Anyone who <%= special_teams_hours_counted(@report) %> a chosen position in these
+        years<%= ", and anyone who holds one" if @report.include_holders %>.
+        <%= special_teams_hours_never_listed %>
+      </dd>
+      <%= render "common/skipped_years_pair" if @report.skips_years? %>
+    </dl>
+  <% end %>
+<% end %>
+
+<%= ui_disclosure "Report Parameters", variant: :card, open: @report.nil?, class: "my-4",
+                  subtitle: special_teams_hours_parameter_summary(@form) do %>
+  <%= ui_form(@form, teams_positions_special_teams_hours_path,
+              scope: SpecialTeamsHoursForm::PARAM_SCOPE, method: :get) do |f| %>
+    <% start_year, end_year = @form.span %>
+    <%= form_row do %>
+      <%= f.select :start_year, EventYearSpan.year_options,
+                   label: "Start Year", selected: start_year, width: "w-full sm:w-44" %>
+      <%= f.select :end_year, EventYearSpan.year_options,
+                   label: "End Year", selected: end_year, width: "w-full sm:w-44" %>
+    <% end %>
+
+    <%= f.check_box :show_signups, label: "Show how many shifts each person signed up for" %>
+    <%= f.check_box :include_holders,
+                    label: "Include people who hold a chosen position but have no hours in these years" %>
+
+    <div data-controller="position-picker">
+      <%= f.fieldset "Positions to Report On", icon: "list-check", icon_type: :solid do %>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <%= button_action "Select All", :ghost,
+                            data: { action: "click->position-picker#selectAll" } %>
+          <%= button_action "Select None", :ghost,
+                            data: { action: "click->position-picker#selectNone" } %>
+          <span class="text-stone-muted" aria-live="polite"
+                data-position-picker-target="count"><%= position_picker_count_label(@groups.flat_map(&:last), @form.position_ids) %></span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 items-start gap-x-6">
+          <% @groups.each do |title, positions| %>
+            <%# A team holding a chosen position opens, so what a report was
+                run on can be read back without opening every team. %>
+            <%= ui_disclosure title,
+                              open: positions.any? { |position| @form.position_ids.include?(position.id) },
+                              summary_class: "font-semibold text-body" do %>
+              <% positions.each do |position| %>
+                <%= render layout: "common/checkbox_row",
+                           locals: { name: "#{SpecialTeamsHoursForm::IDS_PARAM}[]", value: position.id,
+                                     checked: @form.position_ids.include?(position.id),
+                                     id: "special-teams-position-#{position.id}",
+                                     data: { position_picker_target: "checkbox",
+                                             action: "change->position-picker#refresh" } } do %>
+                  <%= title_marking_inactive(position) %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <%= button_row do %>
+      <%= f.submit "Run Report" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @report&.any? %>
+  <% truncated = @rows.size < @report.rows.size %>
+  <%# Said plainly, with the export offered as the way to see everyone: a page
+      that stops without saying so reads as "this is all there is". %>
+  <% if truncated %>
+    <%= ui_callout_box :warning, icon: "list-ol",
+                       title: "Showing the First #{number_with_delimiter(@rows.size)}" do %>
+      More people matched than one page can carry, so the list stops in callsign
+      order and its totals still count all <%= number_with_delimiter(@report.rows.size) %>.
+      Export the CSV to see everyone.
+    <% end %>
+  <% end %>
+
+  <div class="flex flex-col lg:flex-row lg:items-center gap-3 my-4">
+    <%# Body size and colour come from <main>. %>
+    <p>
+      <%= special_teams_hours_summary(@report, shown: @rows.size,
+                                               position_count: @groups.sum { |_title, positions| positions.size }) %>
+    </p>
+    <div class="lg:ms-auto">
+      <%= export_csv_link teams_positions_special_teams_hours_path(@form.query_params.merge(format: :csv)) %>
+    </div>
+  </div>
+
+  <%# Name and email only for a reader allowed to see them: reading this report
+      does not carry that permission, and a callsign is how people are named here. %>
+  <% names = Current.can_view_pii? %>
+  <% emails = Current.can_view_email? %>
+
+  <%# responsive: a phone folds each person into a card of labelled figures.
+      As a plain grid it showed the callsign, name and status, and every hours
+      column sat off to the side behind a scrollbar a phone does not draw. %>
+  <%= ui_table full_width: true, striped: true,
+               caption: "Hours per year in the chosen positions" do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Name" if names %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Email" if emails %>
+      <% @report.years.each do |year| %>
+        <%= t.heading "#{year} Hours", right: true %>
+        <%= t.heading "#{year} Sign-Ups", right: true if @report.show_signups %>
+      <% end %>
+      <%= t.heading "Total Hours", right: true %>
+      <%= t.heading "Total Sign-Ups", right: true if @report.show_signups %>
+    <% end %>
+    <%= t.body do %>
+      <% @rows.each do |row| %>
+        <%= t.row do %>
+          <%= t.row_header person_display_link(row.person, row.person.id) %>
+          <%= t.cell row.name if names %>
+          <%= t.cell person_status_label(row.person) %>
+          <%= t.cell email_link_or_dash(row.email) if emails %>
+          <% @report.years.each do |year| %>
+            <%= t.cell hour_format(row.hours_for(year)), right: true %>
+            <%= t.cell row.signups_for(year), right: true if @report.show_signups %>
+          <% end %>
+          <%= t.cell hour_format(row.total_hours), right: true %>
+          <%= t.cell row.total_signups, right: true if @report.show_signups %>
+        <% end %>
+      <% end %>
+
+      <%# The label spans callsign, status, and whichever of name and email are
+          shown. Folded on a phone, the spanning cell takes no label and every
+          figure after it keeps its own heading. Past the row limit the totals
+          still cover everyone, and the label says so beside the figures. %>
+      <%= t.row state: :total do %>
+        <%= t.row_header truncated ? "Totals for All #{number_with_delimiter(@report.rows.size)}" : "Totals",
+                         colspan: 2 + [names, emails].count(true) %>
+        <% @report.years.each do |year| %>
+          <%= t.cell hour_format(@report.hours_total(year)), right: true %>
+          <%= t.cell @report.signups_total(year), right: true if @report.show_signups %>
+        <% end %>
+        <%= t.cell hour_format(@report.total_hours), right: true %>
+        <%= t.cell @report.total_signups, right: true if @report.show_signups %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif @report %>
+  <%= ui_empty_state special_teams_hours_empty_message(@report), icon: "user-clock", icon_type: :solid %>
+<% end %>

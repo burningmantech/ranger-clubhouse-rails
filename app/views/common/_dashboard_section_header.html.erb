@@ -1,0 +1,16 @@
+<%# locals: (title:, is_urgent: false) %>
+<%
+  icon_bg = is_urgent ? "bg-error/10" : "bg-warning/10"
+  icon_ring = is_urgent ? "ring-error/30" : "ring-warning/30"
+  icon_text = is_urgent ? "icon-error" : "icon-warning"
+  title_text = is_urgent ? "text-error" : "text-heading"
+%>
+
+<div class="flex items-center gap-2 mb-2 pt-2">
+  <div class="flex items-center justify-center w-9 h-9 rounded-lg  <%= icon_bg %> ring-1 <%= icon_ring %>" aria-hidden="true">
+    <%= fa_icon dashboard_section_icon(title), :solid, class: icon_text %>
+  </div>
+  <h2 class="heading-section <%= title_text %>">
+    <%= title %>
+  </h2>
+</div>

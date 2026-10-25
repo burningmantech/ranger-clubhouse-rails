@@ -1,0 +1,6 @@
+<%# locals: (data: {}) %>
+<%# Invisible event beacon for the hq-shift Stimulus controller: turbo-stream
+    mutations replace it with fresh data-* attributes, and the controller's
+    signalTargetConnected callback applies the checklist transition. %>
+<%= tag.div "", id: "hq-shift-signal", hidden: true,
+             "data-hq-shift-target": "signal", **data %>

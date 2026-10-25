@@ -1,0 +1,54 @@
+<%# locals: (event_periods:, showers:) %>
+<%# Per-period meal-pog vs BMID-meal-pass table with the current period
+    highlighted, plus the shower-pog panel (Ember
+    port/components/hq-provision-info.hbs + port/constants/event-periods.js).
+    Rendered by both the shift-manage and site-registration pages.
+    event_periods: {pre:, event:, post:} each {current:, has_pass:} —
+    HqConcern's @event_periods. showers: true when the person holds a
+    Wet Spot Access BMID (no shower pogs). %>
+<div class="flex flex-wrap gap-8">
+  <div>
+    <h3 class="heading-title text-heading mb-2">
+      <%= fa_icon "utensils", :solid, end: 2 %>Meals
+    </h3>
+    <%= ui_table full_width: false, striped: false, responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading do %><span class="sr-only">Current period</span><% end %>
+        <%= t.heading "Event Period" %>
+        <%= t.heading "Pog or BMID Meal Pass" %>
+      <% end %>
+      <%= t.body do %>
+        <% HqHelper::EVENT_PERIOD_ROWS.each do |row| %>
+          <% period = event_periods[row[:key]] || { current: false, has_pass: false } %>
+          <%= t.row class: period[:current] ? "bg-info/10 font-semibold" : "text-stone-muted" do %>
+            <%= t.cell do %>
+              <% if period[:current] %><%= fa_icon "arrow-right", :solid %><% end %>
+            <% end %>
+            <%= t.cell "#{row[:label]}#{" (current period)" if period[:current]}" %>
+            <%= t.cell do %>
+              <% if period[:has_pass] %>
+                <%= fa_icon "ban", :solid, end: 2 %><strong>No pogs &mdash; has BMID meal pass</strong>
+              <% else %>
+                Pog for 6+ hours on duty
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+  <div>
+    <h3 class="heading-title text-heading mb-2">
+      <%= fa_icon "shower", :solid, end: 2 %>Showers
+    </h3>
+    <div class="mb-1">
+      <% if showers %>
+        <strong class="text-error"><%= fa_icon "ban", :solid, end: 2 %>No shower pogs</strong><br>
+        Has a Wet Spot Access BMID.
+      <% else %>
+        <span class="text-success font-semibold"><%= fa_icon "check", :solid, end: 2 %>Pog for every 40 hours on duty</span>
+      <% end %>
+    </div>
+    <div>Find the Wet Spot on 5:30 toward the DPW Depot.</div>
+  </div>
+</div>

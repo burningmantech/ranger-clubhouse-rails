@@ -1,0 +1,22 @@
+{
+  "name": "app",
+  "private": "true",
+  "scripts": {
+    "build:css": "tailwindcss -i ./app/assets/tailwind/application.css -o ./app/assets/builds/tailwind.css"
+  },
+  "browserslist": [
+    "defaults"
+  ],
+  "dependencies": {
+    "@hotwired/stimulus": "^3.2.2",
+    "autoprefixer": "^10.6.1",
+    "nodemon": "^3.1.14",
+    "postcss": "^8.5.30",
+    "postcss-cli": "^12.0.0",
+    "sass": "^1.105",
+    "vanilla-calendar-pro": "^3.4.0"
+  },
+  "devDependencies": {
+    "daisyui": "^5.7.50"
+  }
+}

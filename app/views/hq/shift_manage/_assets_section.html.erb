@@ -1,0 +1,63 @@
+<%# locals: (person:, person_event:, event_info:, radio_accounting:, on_duty_entry:,
+             assets_checked_out:, attachments:, checkout_form:, state:) %>
+<%# Radios & Gear section (Ember port/templates/hq/shift.hbs @id="assets").
+    Its own partial because every asset action streams it back in place
+    rather than redirecting — see Hq::ShiftManageController#assets_outcome,
+    which re-renders it with state: :current so the barcode field survives
+    each scan. %>
+<%= render layout: "hq/shift_manage/section",
+           locals: { id: "hq-assets-section",
+                     title: "Radios & Gear",
+                     state: state,
+                     summary: hq_assets_summary(radio_accounting, assets_checked_out) } do %>
+  <% unless person_event.asset_authorized %>
+    <%= render "common/assets/radio_agreement_warning", person: person %>
+  <% end %>
+
+  <% if on_duty_entry&.position_id == Position::BURN_PERIMETER %>
+    <%= ui_callout_box :warning, accent: true, title: "Radio May Not Be Required", icon: "hand" do %>
+      <%= person.callsign %> is on a shift that may not require a radio. Check with the
+      HQ Short or Lead if in doubt.
+    <% end %>
+  <% end %>
+
+  <% if radio_accounting.shift_radios.positive? ||
+        radio_accounting.collect_at_shift_end.positive? ||
+        radio_accounting.over_max.positive? %>
+    <ul class="list-disc ms-5 mb-2">
+      <% if radio_accounting.shift_radios.positive? %>
+        <li>
+          Collect <%= pluralize(radio_accounting.shift_radios, "shift radio") %> at the end
+          of the shift.
+        </li>
+      <% end %>
+      <% if radio_accounting.collect_at_shift_end.positive? %>
+        <li>
+          Collect <%= pluralize(radio_accounting.collect_at_shift_end, "event radio") %> at
+          the end of the shift.
+        </li>
+      <% end %>
+      <% if radio_accounting.over_max.positive? %>
+        <li>
+          Collect <%= pluralize(radio_accounting.over_max, "event radio") %> when the person
+          is finished rangering the event.
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div class="mb-3">
+    <% if event_info&.radio_eligible %>
+      <%= person.callsign %> is authorized for
+      <strong><%= pluralize(event_info.radio_max.to_i, "event radio") %></strong>.
+    <% else %>
+      <%= person.callsign %> is only authorized for <strong>shift radios</strong>.
+    <% end %>
+  </div>
+
+  <% if person_event.asset_authorized %>
+    <%= render "common/assets/checkout_form", checkout_form: checkout_form,
+               attachments: attachments, autofocus: false %>
+  <% end %>
+  <%= render "hq/shift_manage/asset_table", person_assets: assets_checked_out %>
+<% end %>

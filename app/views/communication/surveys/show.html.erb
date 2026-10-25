@@ -1,0 +1,79 @@
+<% content_for :title, @survey.title %>
+
+<% if @focus_group_id %>
+  <div data-controller="scroll-to-element"
+       data-scroll-to-element-id-value="group-<%= @focus_group_id %>" hidden></div>
+<% end %>
+
+<%= hero_panel icon: "square-poll-vertical", heading_level: :h1, id: "survey-header",
+               title: @survey.title,
+               description: "Edit this survey's details, then build the groups and questions people answer.",
+               back_to: ["#{@survey.year} Survey Management",
+                         communication_surveys_path(year: @survey.year)] %>
+
+<% if @survey.active %>
+  <%= ui_callout_box :success, icon: "circle-check", icon_type: :solid do %>
+    <strong>This survey is active.</strong>
+    It appears on the Clubhouse dashboard of everyone it applies to.
+  <% end %>
+<% else %>
+  <%= ui_callout_box :warning, icon: "eye-slash", icon_type: :solid do %>
+    <strong>This survey is not active.</strong>
+    No one sees it until you switch it on under Edit Survey.
+  <% end %>
+<% end %>
+
+<%= ui_section "Survey Details", icon: "circle-info", icon_type: :solid,
+               edit_link: edit_communication_survey_path(@survey) do %>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-2">
+    <div>
+      <%= ui_label_value size: :base, label_width: "9rem" do |list| %>
+        <% list.row "Who answers", survey_audience_label(@survey) %>
+        <% list.row "Position", @survey.position_title %>
+        <% if @survey.mentoring_position_id %>
+          <% list.row "About", @survey.mentoring_position_title %>
+        <% end %>
+        <% list.row "Year", @survey.year.to_s %>
+        <% list.row "Questions", "#{pluralize(@groups.size, "group")}, #{pluralize(@question_count, "question")}" %>
+        <% list.row "Responses" do %><%= survey_responses_badge(@survey) %><% end %>
+      <% end %>
+    </div>
+    <div>
+      <div class="font-semibold text-heading mb-1">
+        Prologue <span class="text-stone-muted font-normal">(shown first)</span>
+      </div>
+      <div class="lexxy-content text-body bg-default rounded-base border border-line p-3 max-h-64 overflow-y-auto mb-3">
+        <%= @survey.prologue.present? ? rich_text(@survey.prologue) : tag.span("None given.", class: "italic text-stone-muted") %>
+      </div>
+      <div class="font-semibold text-heading mb-1">
+        Epilogue <span class="text-stone-muted font-normal">(shown last)</span>
+      </div>
+      <div class="lexxy-content text-body bg-default rounded-base border border-line p-3 max-h-64 overflow-y-auto">
+        <%= @survey.epilogue.present? ? rich_text(@survey.epilogue) : tag.span("None given.", class: "italic text-stone-muted") %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= button_link "Add Group", :primary, new_communication_survey_group_path(@survey),
+                    icon: "plus", icon_type: :solid %>
+    <%= edit_link edit_communication_survey_path(@survey), "Edit Survey" %>
+    <%= survey_duplicate_button(@survey) %>
+    <% if (feedback_path = survey_feedback_path(@survey)) %>
+      <%= button_link "Read the Feedback", :secondary, feedback_path,
+                      icon: "chart-simple", icon_type: :solid %>
+    <% end %>
+  <% end %>
+</div>
+
+<% if @groups.any? %>
+  <% @groups.each_with_index do |group, index| %>
+    <%= render "group", survey: @survey, group: group,
+               first: index.zero?, last: index == @groups.size - 1 %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "This survey has no groups yet. Add the first one to start building it.",
+                     icon: "layer-group", icon_type: :solid %>
+<% end %>

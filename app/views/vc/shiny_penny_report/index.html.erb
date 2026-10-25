@@ -1,0 +1,49 @@
+<%= hero_panel icon: "coins", heading_level: :h1, id: "vc-shiny-penny-report-header",
+               title: "#{@year} Shiny Pennies",
+               description: "Rangers who passed training and mentoring in #{@year}." do |panel| %>
+  <% panel.year_selector year: @year, min_year: 2010 %>
+<% end %>
+
+<%# Unguarded: who counts is what an empty year most needs explained. %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Who counts as a Shiny Penny?</dt>
+    <dd>Anyone who became Active during <%= @year %> and walked an Alpha shift.</dd>
+  </dl>
+<% end %>
+
+<% if @people.any? %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link(vc_shiny_penny_report_path(year: @year, format: :csv)) %>
+    <% end %>
+  </div>
+
+  <div class="text-lg mb-2">
+    Showing <%= pluralize @people.size, "Shiny Penny" %>
+  </div>
+
+  <%= ui_table do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Email" %>
+      <%= t.heading "Name" %>
+    <% end %>
+    <%= t.body do %>
+      <% @people.each do |person| %>
+        <%= t.row do %>
+          <%= t.row_header link_to(person.callsign, person_path(person)) %>
+          <%= t.cell person.status %>
+          <%= t.cell email_link_or_dash(person.email) %>
+          <%= t.cell person.desired_full_name %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state nil, icon: "coins", icon_type: :solid do %>
+    No Shiny Pennies were found for <%= @year %>.
+    To view another year, select a year above.
+  <% end %>
+<% end %>

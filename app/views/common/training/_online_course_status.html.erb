@@ -1,0 +1,13 @@
+<%# locals: (event_info:, year:) -%>
+<%# The year's online-course completion state. Shared by the /person and /hq training
+    pages so the two cannot disagree about what "completed" looks like. Carries no
+    margin of its own — the caller owns spacing to whatever follows. -%>
+<div class="flex flex-wrap items-center gap-2">
+  <span class="font-medium text-heading"><%= year %> completion:</span>
+  <% if event_info.online_course_passed %>
+    <%= ui_badge "Completed", :success, icon: "circle-check", icon_type: :solid %>
+    <span class="text-body"><%= datetime_format event_info.online_course_date, year: true %></span>
+  <% else %>
+    <%= ui_badge "Not Completed", :warning, icon: "circle-exclamation", icon_type: :solid %>
+  <% end %>
+</div>

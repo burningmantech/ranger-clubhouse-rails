@@ -1,0 +1,11 @@
+<%= hero_panel icon: "list-check", heading_level: :h1, id: "online-course-enrollment-header",
+               title: "Moodle Enrollment",
+               description: "Everyone enrolled in the LMS course for #{position_title(@online_course.position, @online_course.position_id)}, #{@online_course.year}.",
+               back_to: ["Online Courses", admin_online_courses_path(year: @online_course.year)] %>
+
+<%# target: "_top" so the callsign links inside the roster open the person page
+    instead of trying to load it into this frame. %>
+<%= turbo_frame_tag "online-course-enrollment", target: "_top",
+                     src: enrollment_roster_admin_online_course_path(@online_course), loading: "lazy" do %>
+  <%= render "shared/frame_spinner", label: "Loading enrollment…" %>
+<% end %>

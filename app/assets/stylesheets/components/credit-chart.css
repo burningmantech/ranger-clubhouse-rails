@@ -1,0 +1,84 @@
+/*
+ * Credit timeline chart (scheduling/position-credits/position/:id/timeline)
+ *
+ * Only what utilities cannot say: the series palette, and geometry read from
+ * custom properties the helper sets per element --
+ *   --w  a step's width in minutes (a month cell's: its days)
+ *   --h  a layer's height in credits/hr    --y  a tick's height in credits/hr
+ * against --ymax (credits/hr) on the chart root. Layout is Tailwind utilities
+ * in app/helpers/scheduling/position_credits_helper.rb.
+ *
+ * Palette: the dataviz reference categorical set, 8 slots in a fixed order
+ * validated for colour-vision safety against this theme's surfaces in both
+ * modes. The hex values below are the one place to change it.
+ */
+.ct {
+    --ct-s1: #2a78d6;
+    --ct-s2: #eb6834;
+    --ct-s3: #1baf7a;
+    --ct-s4: #eda100;
+    --ct-s5: #e87ba4;
+    --ct-s6: #008300;
+    --ct-s7: #4a3aa7;
+    --ct-s8: #e34948;
+    --ct-grid: color-mix(in oklch, var(--color-base-content) 15%, var(--color-base-100));
+}
+
+.dark .ct {
+    --ct-s1: #3987e5;
+    --ct-s2: #d95926;
+    --ct-s3: #199e70;
+    --ct-s4: #c98500;
+    --ct-s5: #d55181;
+    --ct-s6: #008300;
+    --ct-s7: #9085e9;
+    --ct-s8: #e66767;
+}
+
+/* Series slots: --c is the fill a layer or swatch paints. A ninth or later
+   series shares the grey. */
+.ct-s1 { --c: var(--ct-s1); }
+.ct-s2 { --c: var(--ct-s2); }
+.ct-s3 { --c: var(--ct-s3); }
+.ct-s4 { --c: var(--ct-s4); }
+.ct-s5 { --c: var(--ct-s5); }
+.ct-s6 { --c: var(--ct-s6); }
+.ct-s7 { --c: var(--ct-s7); }
+.ct-s8 { --c: var(--ct-s8); }
+.ct-s0 { --c: #898781; }
+
+.ct-swatch {
+    background: var(--c);
+}
+
+.ct-tick {
+    bottom: calc(var(--y) / var(--ymax) * 100%);
+    border-top: 1px solid var(--ct-grid);
+}
+
+/* Steps grow by their length in minutes. */
+.ct-seg {
+    flex: var(--w) 1 0px;
+    min-width: 0;
+}
+
+.ct-seg:hover .ct-layer {
+    filter: brightness(1.15);
+}
+
+/* The 2px surface-coloured shadow under each layer is the gap between
+   stacked fills; painted over the layer beneath, it takes no height. */
+.ct-layer {
+    flex: none;
+    height: calc(var(--h) / var(--ymax) * 100%);
+    background: var(--c);
+    box-shadow: 0 2px 0 var(--color-base-100);
+}
+
+.ct-axis-day {
+    border-top: 1px solid var(--ct-grid);
+}
+
+.ct-axis-month {
+    flex: var(--w) 1 0px;
+}

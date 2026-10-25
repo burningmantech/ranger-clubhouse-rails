@@ -1,0 +1,17 @@
+<%= hero_panel icon: "person-walking", heading_level: :h1, id: "person-shift-manage-header",
+               back_to: ["#{@year} Timesheet", person_timesheets_path(@person, year: @year)] do |panel| %>
+  <% panel.title do %>
+    Shift Check In/Out &mdash; <%= @person.callsign %>
+  <% end %>
+  <% panel.description do %>
+    <% if @on_duty_entry %>
+      On duty as <%= @on_duty_entry.position.title %> since <%= datetime_format @on_duty_entry.on_duty %>.
+    <% else %>
+      Check <%= @person.callsign %> in when they start a shift and out when they finish.
+    <% end %>
+  <% end %>
+<% end %>
+
+<div class="max-w-3xl">
+  <%= render partial: "common/shift_manage/check_in_out" %>
+</div>

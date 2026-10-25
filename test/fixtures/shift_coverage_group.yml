@@ -1,0 +1,34 @@
+# Test fixtures for ShiftCoverageGroup: the four shift types the Shift Coverage
+# tests run, copied from what the migration seeds. Reference these BY NAME.
+#
+# The label is the slug, and the sort_index is the one the seed gives it, so
+# the shift type menu lists them in the real order with the others missing.
+#
+# base_position_ids is JSON text, in single quotes, spelled the way the app
+# writes it (no space after a comma). A YAML list here would be dumped as YAML
+# text and fail the column's json_valid check, and a spaced spelling would load
+# every multi-entry row as already changed.
+
+command:
+  slug: "command"
+  title: "Command"
+  base_position_ids: '[2,120,142]'
+  sort_index: 2
+
+echelon:
+  slug: "echelon"
+  title: "Echelon"
+  base_position_ids: '[17]'
+  sort_index: 3
+
+hq:
+  slug: "hq"
+  title: "HQ Window"
+  base_position_ids: '[33,117]'
+  sort_index: 6
+
+intercept:
+  slug: "intercept"
+  title: "Intercept"
+  base_position_ids: '[5]'
+  sort_index: 7

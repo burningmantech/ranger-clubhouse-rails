@@ -1,0 +1,62 @@
+<%# locals: (title:, description:, unit:, stats:) %>
+<%#
+  One kind of request and how it was decided. The meter carries the proportion
+  and the chips carry the numbers, so the bar stays decorative (aria-hidden) and
+  nothing is told by colour alone -- each chip pairs its tint with an icon and a
+  word, the way the ticketing statistics cards do.
+
+  Approved is success and rejected is error: these are outcomes, not severities,
+  and a rejected request is a normal one. Anything still open takes the muted
+  neutral the ticketing card gives its unclaimed segment rather than a new tint.
+
+  unit: the two cards count different things and must not claim otherwise. A
+  correction is counted per decision -- an entry reviewed twice counts twice --
+  while a missing entry is counted per request.
+%>
+<div class="card-standard p-4">
+  <div class="flex flex-wrap items-baseline justify-between gap-x-3 mb-1">
+    <h3 class="heading-title text-heading"><%= title %></h3>
+    <span class="text-base text-stone-muted">
+      <%= pluralize number_with_delimiter(stats.total), unit %>
+    </span>
+  </div>
+
+  <p class="text-base text-stone-muted mb-2"><%= description %></p>
+
+  <% if stats.total.positive? %>
+    <%# Segments divide the whole population, not just the decided part, so the
+        bar and the chips below it describe the same set. %>
+    <div class="stat-meter mb-3" aria-hidden="true">
+      <span class="stat-meter-segment bg-success" style="width: <%= stats.approved_percent %>%"></span>
+      <span class="stat-meter-segment bg-error" style="width: <%= stats.rejected_percent %>%"></span>
+      <span class="stat-meter-segment bg-base-content/30" style="width: <%= stats.undecided_percent %>%"></span>
+    </div>
+
+    <div class="flex flex-wrap gap-x-4 gap-y-1">
+      <span class="inline-flex items-center gap-2 text-base text-success">
+        <%= fa_icon "circle-check", :solid %>
+        Approved
+        <span class="font-semibold"><%= number_with_delimiter stats.approved %></span>
+      </span>
+      <span class="inline-flex items-center gap-2 text-base text-error">
+        <%= fa_icon "circle-xmark", :solid %>
+        Rejected
+        <span class="font-semibold"><%= number_with_delimiter stats.rejected %></span>
+      </span>
+      <%# Outside the decided check, not inside it: the state this chip exists
+          for is the one where nothing has been decided yet, and nesting it
+          under a decision count hid it in exactly that case. Still only drawn
+          when there is one, so a standing "0" does not read as a category the
+          page tracks. %>
+      <% if stats.undecided.positive? %>
+        <span class="inline-flex items-center gap-2 text-base text-stone-muted">
+          <%= fa_icon "hourglass-half", :solid %>
+          Still open
+          <span class="font-semibold"><%= number_with_delimiter stats.undecided %></span>
+        </span>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="text-base text-stone-muted">None reached a reviewer this year.</p>
+  <% end %>
+</div>

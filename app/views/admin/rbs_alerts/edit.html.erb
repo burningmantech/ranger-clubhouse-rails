@@ -1,0 +1,51 @@
+<%= hero_panel icon: "tower-broadcast", heading_level: :h1, id: "rbs-alert-form-header",
+               title: "Edit Alert",
+               description: "Change the words Rangers read when they choose whether to receive this alert.",
+               back_to: ["RBS Alerts", admin_rbs_alerts_path] %>
+
+<%= ui_section "Alert ##{@alert.id}", icon: "circle-info", icon_type: :solid do %>
+  <dl class="instruction-list">
+    <dt>Where do Rangers see this?</dt>
+    <dd>
+      On their Alert Preferences page, under
+      <%= @alert.on_playa ? "On Playa Alerts" : "Pre & Post Event Alerts" %>,
+      and at the top of any message sent for it.
+    </dd>
+    <dt>Which channels can it use?</dt>
+    <dd>
+      <%= rbs_alert_channels(@alert).first %>.
+      <% if @alert.no_opt_out %>
+        Everyone receives this alert and no one can turn it off.
+      <% elsif @alert.sms_only %>
+        Rangers are offered an SMS checkbox only.
+      <% elsif @alert.email_only %>
+        Rangers are offered an email checkbox only.
+      <% end %>
+      This is set in code and cannot be changed here.
+    </dd>
+    <dt>Does editing this change who receives it?</dt>
+    <dd>No. Subscriptions follow the ID number, which cannot be changed.</dd>
+  </dl>
+<% end %>
+
+<%= ui_form(@alert, admin_rbs_alert_path(@alert)) do |f| %>
+  <%= f.fieldset "Alert", icon: "bell", icon_type: :solid do %>
+    <%= f.text_field :title, label: "Title", required: true, maxlength: 255,
+                     help_text: "Shown as the heading for this alert.",
+                     width: "w-full lg:w-96" %>
+    <%= f.text_area :description, label: "Description", required: true, rows: 4,
+                    help_text: "One or two sentences saying what a Ranger will be told.",
+                    width: "w-full" %>
+    <%= f.check_box :on_playa, label: "Sent while the event is running",
+                    aria: { describedby: "on-playa-note" } %>
+    <p id="on-playa-note" class="text-sm mt-1">
+      Ticked, this alert is listed under On Playa Alerts. Unticked, it is listed under
+      Pre &amp; Post Event Alerts. Nothing else changes.
+    </p>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Alert" %>
+    <%= cancel_link admin_rbs_alerts_path %>
+  <% end %>
+<% end %>

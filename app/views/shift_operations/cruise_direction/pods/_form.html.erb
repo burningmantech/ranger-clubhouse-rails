@@ -1,0 +1,24 @@
+<%# locals: (pod:, url:, method:, submit:) %>
+<%#
+  A pod's two facts: how it gets around, and where it is going. Shared by the
+  create and edit dialogs so the two cannot drift apart.
+
+  _top on the form: the answer is a turbo stream that replaces the board behind
+  this dialog, so the submit must not be scoped to the modal frame.
+%>
+<%= form_with model: pod, url: url, method: method, scope: :pod, builder: AppFormBuilder,
+              data: { turbo_frame: "_top" } do |f| %>
+  <%# :auto, not :horizontal. Both lay the options out in CSS columns, but
+      :horizontal goes to four of them at xl -- four columns for three options,
+      inside a dialog that is already narrower than a page. That left each
+      label 55px where "Bike Mobile" needs 76, so two of the three broke across
+      lines. :auto tops out at three, one per option. %>
+  <%= f.collection_radio_buttons :transport, cruise_direction_transport_options, :last, :first,
+                                 { label: "Transport", layout: :auto, label_position: :stacked } %>
+
+  <%= f.text_field :location, label: "Deployment Location", maxlength: 34, show_counter: true,
+                   width: "w-full sm:w-64",
+                   help_text: "Where the pod is headed -- a street and time, a camp, a plaza." %>
+
+  <%= modal_form_footer f, submit: submit %>
+<% end %>

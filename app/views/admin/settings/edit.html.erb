@@ -1,0 +1,51 @@
+<%= hero_panel icon: "gear", heading_level: :h1,
+               title: "Edit #{@setting.name}",
+               back_to: ["Settings Listing", admin_settings_path] %>
+
+<%= ui_section do %>
+  <div class="mt-4">
+    Setting description: <%= @setting.description %>
+  </div>
+
+  <%# A setting with no row yet is a new record, which form_with would POST to a route that does not exist. %>
+  <%= ui_form @setting, admin_setting_path(@setting), method: :patch, class: "mt-4" do |f| %>
+    <%= hidden_field_tag :filter, @filter %>
+    <%= form_row do %>
+      <% case @setting.type %>
+      <% when Setting::TYPE_BOOL %>
+        <%= f.collection_radio_buttons :value,
+                                       Admin::SettingsController::BOOL_OPTIONS,
+                                       :last, :first,
+                                       layout: :horizontal,
+                                       wrapper_class: "w-full"
+        %>
+      <% when Setting::TYPE_DATETIME %>
+        <%= f.datetime_field :value, label: "Enter a date and time." %>
+      <% when Setting::TYPE_DATE %>
+        <%= f.datetime_field :value, selectionTimeMode: false, label: "Enter a date." %>
+      <% when Setting::TYPE_INTEGER %>
+        <%= f.text_field :value, label: "Enter a whole number." %>
+      <% when Setting::TYPE_FLOAT %>
+        <%= f.text_field :value, label: "Enter a decimal number (e.g., 12.50)." %>
+      <% when Setting::TYPE_EMAIL %>
+        <%= f.text_area :value, rows: 10, label: "Enter one or more email addresses, separated by commas or newlines." %>
+      <% when Setting::TYPE_URL %>
+        <%= f.text_field :value, label: "Enter a URL (e.g., https://example.com).", maxlength: 250 %>
+      <% when Setting::TYPE_STRING %>
+        <% if @setting.options.present? %>
+          <%= f.select :value, @setting.options, label: "Select an Option" %>
+        <% else %>
+          <%= f.text_field :value, maxlength: 250 %>
+        <% end %>
+      <% else %>
+        <%= ui_callout_box :error do %>
+          Unknown setting type "<%= @setting.type %>"
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Save Setting" %>
+      <%= cancel_button admin_settings_path %>
+    <% end %>
+  <% end %>
+<% end %>

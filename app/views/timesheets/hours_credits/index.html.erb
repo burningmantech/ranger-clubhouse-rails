@@ -1,0 +1,189 @@
+<%#
+  Every ranger who turned in a timesheet this year, with their hours and credits
+  split into the three parts of the season.
+%>
+<%# The year rides in the tab title too: this page is read a year at a time, and
+    a reader comparing two seasons has both of them open at once. %>
+<% content_for :title, "#{@year} Hours & Credits" %>
+
+<%= hero_panel icon: "calculator", heading_level: :h1,
+               id: "timesheets-hours-credits-header",
+               title: "#{@year} Hours & Credits" do |panel| %>
+  <%# The hero says what the page is, and nothing else. How the numbers are
+      arrived at is read once and then known, so it sits in the About This
+      Report card rather than above every visit's worth of scrolling. %>
+  <% panel.description do %>
+    Hours and credits for everyone who rangered this year.
+  <% end %>
+  <%# keep: the selector posts a GET carrying only the year, so without this
+      changing year silently drops whatever the reader had filtered to and hands
+      them the whole roster while the chips disappear. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: @filter_params %>
+<% end %>
+
+<% if !@report.event_dates? %>
+  <%# Without the two boundaries there is nothing to split a season at, so the
+      report cannot run at all -- said here rather than as an empty roster,
+      which would read as a quiet year. %>
+  <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid,
+                     title: "The #{@year} Event Dates Have Not Been Set" do %>
+    Hours and credits are counted against the start and end of the event week.
+    Set the <%= @year %> event dates, then run this report again.
+  <% end %>
+<% elsif @report.any? %>
+  <%# The season as a whole, whatever the filters below are showing. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box number_with_delimiter(@report.rows.size), "People",
+                    icon: "users", icon_type: :solid %>
+    <%= ui_stat_box number_with_delimiter(hour_format(@report.total_duration)), "Total Hours",
+                    icon: "clock", icon_type: :solid %>
+    <%= ui_stat_box number_with_delimiter(hours_credits_total_credits(@report.total_credits)),
+                    "Total Credits", icon: "award", icon_type: :solid %>
+  <% end %>
+
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Which part of the season does a shift count toward?</dt>
+      <dd>
+        Each shift counts toward the part of the season it fell in, and a shift
+        running over a boundary is counted in both parts.
+      </dd>
+      <dt>When is event week?</dt>
+      <dd>The <%= @year %> event week runs <%= hours_credits_event_week(@report) %>.</dd>
+      <dt>Which positions add to the hour columns?</dt>
+      <dd>
+        Only positions that earn hours are added to the hour columns, though every
+        position earns its credits.
+      </dd>
+      <dt>Who is not listed?</dt>
+      <dd>Alphas, auditors, prospectives, and bonked people are not listed.</dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "hours-credits-filters",
+                 chips: hours_credits_chips(@filter_params, @year),
+                 clear_url: timesheets_hours_credits_path(year: @year),
+                 count: "Showing #{@rows.size} of #{pluralize(@report.rows.size, "person")}",
+                 # The export carries the ledger on screen, so it travels with
+                 # the filters -- and it is offered only when there is a ledger
+                 # to carry, rather than handing back a file holding nothing but
+                 # its headings.
+                 actions: (export_csv_link(timesheets_hours_credits_path(year: @year, **@filter_params,
+                                           format: :csv)) if @rows.any?),
+                 url: timesheets_hours_credits_path do |f| %>
+    <%# Year-scoped page: a GET form replaces the whole query string, so without
+        this every Apply would bounce the ledger back to the current year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :status, filter_status_options(@status_counts,
+                                                  matching: @matching_status_counts),
+                   label: "Status", selected: @filter_params[:status],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :years, hours_credits_years_options(@years,
+                                                       matching: @matching_years_counts),
+                   label: "Years Rangered", selected: @filter_params[:years],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <% if @rows.any? %>
+
+    <%# Named once and read by both heading rows, so a band and the pair of
+        columns under it cannot drift apart. %>
+    <% groups = ["Totals", "Pre-Event", "Event Week", "Post-Event"] %>
+    <%# container_class bounds the scrollport: a sticky heading holds to the
+        nearest scrolling ancestor, and for a table that is its container, so
+        without a height there is nothing for it to hold to. %>
+    <%= ui_table striped: true, container_class: "hours-credits-pane",
+                 class: "hours-credits-grid",
+                 caption: "#{@year} hours and credits per ranger, " \
+                          "split into pre-event, event week, and post-event" do |t| %>
+      <%# Hand-built thead: the ledger needs two heading rows -- a band naming
+          each part of the season over its pair of columns -- and the builder's
+          own header helper renders exactly one. The whole thead is pinned, so
+          both rows travel together without hand-tuned row offsets.
+          Building it by hand means the builder never records the column labels
+          it would normally collect, so this table cannot be switched to the
+          stacked mobile layout without giving it those labels another way. %>
+      <thead class="<%= TableHelper::HEADER_CLASSES %> sticky top-0 z-20">
+      <tr>
+        <%= t.heading "Callsign", rowspan: 2, class: "hours-credits-callsign" %>
+        <% if can_view_pii? %>
+          <%= t.heading "Name", rowspan: 2 %>
+        <% end %>
+        <% if can_view_email? %>
+          <%= t.heading "Email", rowspan: 2 %>
+        <% end %>
+        <%= t.heading "Status", rowspan: 2 %>
+        <%= t.heading "Years", rowspan: 2, right: true %>
+        <%# The band over each pair is the one heading the builder cannot make:
+            it spans two columns, so it is scoped to the colgroup while
+            t.heading always scopes to a single column. %>
+        <% groups.each do |group| %>
+          <th class="<%= TableHelper::HEADING_CLASSES %> hours-credits-group text-center uppercase"
+              colspan="2" scope="colgroup">
+            <%= group %>
+          </th>
+        <% end %>
+      </tr>
+      <tr>
+        <%# The band is named again for a screen reader, which reads a column
+            heading on its own: eight headings all saying "Hours" or "Credits"
+            leave a listener no way to tell which part of the season they are
+            being read the numbers for. %>
+        <% groups.each do |group| %>
+          <%= t.heading right: true, class: "hours-credits-group" do %>
+            <span class="sr-only"><%= group %> </span>Hours
+          <% end %>
+          <%= t.heading right: true do %>
+            <span class="sr-only"><%= group %> </span>Credits
+          <% end %>
+        <% end %>
+      </tr>
+      </thead>
+      <%= t.body do %>
+        <% @rows.each do |row| %>
+          <%= t.row do %>
+            <%= t.row_header class: "hours-credits-callsign" do %>
+              <%= person_display_link row.person, row.person_id %>
+            <% end %>
+            <% if can_view_pii? %>
+              <%= t.cell row.name %>
+            <% end %>
+            <% if can_view_email? %>
+              <%= t.cell email_link_or_dash(row.email) %>
+            <% end %>
+            <%= t.cell person_status_label(row.person) %>
+            <%= t.cell row.years, right: true %>
+            <%# The totals always read as numbers, zero included: they are what
+                the page is asked for, and a rule in the column a reader came
+                for looks like a figure that failed to load. %>
+            <%= t.cell hour_format(row.counted_duration), right: true,
+                       class: "hours-credits-group font-semibold" %>
+            <%= t.cell hours_credits_total_credits(row.total_credits), right: true,
+                       class: "font-semibold" %>
+            <%= t.cell hours_credits_hours(row.pre_event_duration), right: true,
+                       class: "hours-credits-group" %>
+            <%= t.cell hours_credits_credits(row.pre_event_credits), right: true %>
+            <%= t.cell hours_credits_hours(row.event_duration), right: true,
+                       class: "hours-credits-group" %>
+            <%= t.cell hours_credits_credits(row.event_credits), right: true %>
+            <%= t.cell hours_credits_hours(row.post_event_duration), right: true,
+                       class: "hours-credits-group" %>
+            <%= t.cell hours_credits_credits(row.post_event_credits), right: true %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No ranger matches these filters.",
+                       icon: "filter-circle-xmark", icon_type: :solid %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No #{@year} timesheets were turned in.",
+                     icon: "clock", icon_type: :solid %>
+<% end %>

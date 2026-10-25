@@ -1,0 +1,52 @@
+<%#
+  The line formats, from the upstream help panel. Kept as a table rather than the
+  upstream bullet lists: the whole difficulty of this page is that the shape of
+  the line picks the action, and a table is where a reader can see the shapes
+  line up against each other.
+%>
+<p class="mb-3">
+  <strong>The columns decide what happens.</strong> A time in the second column signs
+  a Ranger out; anything else there is a position, which signs them in. Times are
+  <span class="font-mono">HHMM</span> or <span class="font-mono">HH:MM</span>; dates are
+  <span class="font-mono">MM/DD</span> or <span class="font-mono">MM/DD/YY</span>, and a
+  date with no year means <%= Current.year %>.
+</p>
+
+<%= ui_table full_width: true, striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Line" %>
+    <%= t.heading "What It Does" %>
+  <% end %>
+  <%= t.body do %>
+    <% BulkSignInOut::LINE_FORMATS.each do |shape, description| %>
+      <%= t.row do %>
+        <%= t.row_header shape, class: "font-mono whitespace-nowrap" %>
+        <%= t.cell description %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# h2, not h3: the page heading is the h1 and nothing sits between them. %>
+<h2 class="heading-section mt-4 mb-2">Examples</h2>
+<ul class="list-disc ms-6 space-y-1">
+  <li>
+    <span class="font-mono">tool,0730</span> — signs Tool out at 07:30 today
+  </li>
+  <li>
+    <span class="font-mono">safety phil,site setup</span> — signs Safety Phil in for
+    Site Setup, starting now
+  </li>
+  <li>
+    <span class="font-mono">crow,site setup,0845</span> — signs Crow in for Site Setup
+    at 08:45 today
+  </li>
+  <li>
+    <span class="font-mono">hubcap,intercept,08/15,2345,0630</span> — signs Hubcap in
+    for Intercept at 23:45 on August 15th and out at 06:30 the next morning
+  </li>
+  <li>
+    <span class="font-mono">kermit,dirt,08/18,0845,1650</span> — signs Kermit in and out
+    of Dirt on August 18th, 08:45 to 16:50
+  </li>
+</ul>

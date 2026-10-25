@@ -1,0 +1,24 @@
+<%# locals: (icon:, id:, heading:, emphasis: nil) %>
+<%# One meal pog guideline row: icon, headline, and a "Read more" expander whose
+    body comes from the caller's block. Rendered with `render layout:` (same
+    pattern as hq/shift_manage/_section). The read-more controller rewrites the
+    toggle's own text when no separate label target is present, so the toggle
+    intentionally has no inner label span. %>
+<div class="flex items-start gap-2 mb-2" data-controller="read-more"
+     data-read-more-more-text-value="Read More" data-read-more-less-text-value="Hide">
+  <div class="pt-0.5"><%= fa_icon icon, :solid %></div>
+  <div>
+    <div class="font-semibold <%= emphasis %>">
+      <%= heading %>
+      <%= button_action "Read More", :ghost,
+                        class: "btn-link font-normal align-baseline",
+                        "aria-expanded": "false", "aria-controls": id,
+                        data: { read_more_target: "toggle",
+                                action: "click->read-more#toggle" } %>
+    </div>
+    <span data-read-more-target="short"></span>
+    <div class="hidden text-body" id="<%= id %>" data-read-more-target="full">
+      <%= yield %>
+    </div>
+  </div>
+</div>

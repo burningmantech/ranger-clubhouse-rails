@@ -1,0 +1,193 @@
+<%#
+  The year's handheld radio inventory. Roster by default, with upstream's
+  "Summarize report" checkbox rebuilt as a view toggle that lives in the URL, so
+  the summarized table survives a reload, a year change, and an Apply Filters.
+%>
+<% content_for :title, "Radio Assets" %>
+
+<%= hero_panel icon: "walkie-talkie", heading_level: :h1, id: "radio-assets-header",
+               title: "Radio Assets" do |panel| %>
+  <% panel.description do %>
+    Every handheld radio in the <%= @year || "event" %> inventory.
+  <% end %>
+  <%# keep: -- the selector submits its own bare GET, so without it the filters
+      and the summarized view silently vanish the moment someone changes year. %>
+  <% if @available_years.any? %>
+    <% panel.year_selector year: @year,
+                           years: @available_years,
+                           include_current_year: false,
+                           include_year_argument: false,
+                           keep: @index_params.except(:year) %>
+  <% end %>
+<% end %>
+
+<% if @available_years.empty? %>
+  <%= ui_empty_state "No radios have been added to the inventory yet.",
+                     icon: "walkie-talkie", icon_type: :solid %>
+<% else %>
+  <%# The sidebar carries the year from the sibling pages, which browse every
+      year holding any asset. Without this the year would change under the
+      reader with nothing on screen admitting it. %>
+  <% if @requested_year %>
+    <div class="my-4">
+      <%= ui_callout_box :info do %>
+        <strong>No radios were recorded for <%= @requested_year %>.</strong>
+        Showing <%= @year %> instead — the most recent year with radios in the inventory.
+      <% end %>
+    </div>
+  <% end %>
+  <%# Stats describe what is on screen, not the year -- see the controller. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @radio_count.to_s, "Radios",
+                    icon: "walkie-talkie", icon_type: :solid %>
+    <%= ui_stat_box @event_count.to_s, "Event Radios",
+                    icon: "calendar-days", icon_type: :solid %>
+    <%# Plain: both kinds are routine inventory. The warning variant is for
+        counts someone has to act on -- the siblings use it for assets still out
+        and assets never returned -- and nothing here can ever be cleared. %>
+    <%= ui_stat_box @shift_count.to_s, "Shift Radios",
+                    icon: "clock", icon_type: :solid %>
+    <%= ui_stat_box @range_count.to_s, "Barcode Ranges",
+                    icon: "layer-group", icon_type: :solid %>
+  <% end %>
+
+  <%# Out of the hero, and under the stats whose two labels it explains. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What is the difference between an event radio and a shift radio?</dt>
+      <dd>
+        Event radios stay with one Ranger for the whole event; shift radios are checked out and
+        back at HQ each shift.
+      </dd>
+    </dl>
+  <% end %>
+
+  <div class="my-4">
+    <%= button_row do %>
+      <% if @summary_view %>
+        <%= button_link "Full Roster", :primary,
+                        asset_management_radio_assets_path(@index_params.except(:view)),
+                        icon: "list", icon_type: :solid %>
+      <% else %>
+        <%= button_link "Summarized View", :primary,
+                        asset_management_radio_assets_path(
+                          @index_params.merge(view: AssetManagement::RadioAssetsController::SUMMARY_VIEW)
+                        ),
+                        icon: "layer-group", icon_type: :solid %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# count: names what the rows actually are -- in the summarized view the table
+      and the pager are counting ranges, not radios. %>
+  <%= filter_bar id: "radio-assets-filters",
+                 chips: radio_assets_filter_chips(@filter_params, @view_params),
+                 clear_url: asset_management_radio_assets_path(@view_params),
+                 count: radio_assets_result_count(@summary_view, @ranges, @filtered_radios, @radios),
+                 # The export carries the filters and the view, so it always
+                 # matches the table below it.
+                 actions: export_csv_link(asset_management_radio_assets_path(@index_params.merge(format: :csv))),
+                 url: asset_management_radio_assets_path do |f| %>
+    <%# Year-scoped page: without this the filters snap back to the current year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%# ...and without this an Apply Filters drops the reader back to the roster. %>
+    <% if @summary_view %>
+      <%= hidden_field_tag :view, AssetManagement::RadioAssetsController::SUMMARY_VIEW %>
+    <% end %>
+
+    <%= form_row do %>
+      <%# The roster pages at 100, so browser find only ever sees the current
+          page -- this is how a reader answers "is 4816 a shift radio?". %>
+      <%= f.text_field :barcode,
+                       label: "Barcode",
+                       value: barcode_filter_value(@filter_params[:barcode]),
+                       help_text: "Matches any part of a barcode.",
+                       width: "w-full",
+                       wrapper_class: "flex-1" %>
+      <%= f.select :duration,
+                   radio_assets_duration_options,
+                   label: "Duration",
+                   selected: @filter_params[:duration],
+                   width: "w-full",
+                   wrapper_class: "flex-1" %>
+      <%= f.select :description,
+                   radio_assets_description_options(@selectable_descriptions),
+                   label: "Description",
+                   selected: @filter_params[:description],
+                   width: "w-full",
+                   wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%# A year always holds radios, so the only way to empty the table is a filter. %>
+  <% if @filtered_radios.empty? %>
+    <%= ui_empty_state "No #{@year} radios match these filters.",
+                       icon: "filter-circle-xmark", icon_type: :solid %>
+  <% elsif @summary_view %>
+    <%= ui_section "Barcode Ranges", icon: "layer-group", icon_type: :solid do %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Barcode Range" %>
+          <%= t.heading "Count", right: true %>
+          <%= t.heading "Description" %>
+          <%= t.heading "Duration" %>
+        <% end %>
+
+        <%= t.body do %>
+          <% @page_rows.each do |range| %>
+            <%= t.row do %>
+              <%# A one-radio range is labelled with the bare barcode, identical
+                  to the roster's linked one, so it has to lead the same place.
+                  A multi-radio range has no single record to open. %>
+              <%= t.row_header(range.count == 1 ? radio_record_link(range.exemplar, @index_params, @page) : range.label) %>
+              <%= t.cell range.count.to_s, right: true %>
+              <%= t.cell value_or_dash(range.description) %>
+              <%= t.cell radio_range_badge(range) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_section "Radio Roster", icon: "table-list", icon_type: :solid do %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Barcode" %>
+          <%= t.heading "Description" %>
+          <%= t.heading "Duration" %>
+        <% end %>
+
+        <%= t.body do %>
+          <% @page_rows.each do |radio| %>
+            <%= t.row do %>
+              <%= t.row_header radio_record_link(radio, @index_params, @page) %>
+              <%= t.cell value_or_dash(radio.description) %>
+              <%= t.cell asset_assignment_badge(radio) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @total_pages > 1 %>
+    <div class="my-4 flex flex-wrap items-center gap-4">
+      <%= button_row do %>
+        <% if @page > 1 %>
+          <%= button_link "Previous Page", :secondary,
+                          asset_management_radio_assets_path(@index_params.merge(page: @page - 1)),
+                          icon: "arrow-left", icon_type: :solid %>
+        <% end %>
+        <% if @page < @total_pages %>
+          <%= button_link "Next Page", :secondary,
+                          asset_management_radio_assets_path(@index_params.merge(page: @page + 1)) %>
+        <% end %>
+      <% end %>
+      <span class="text-body">Page <%= @page %> of <%= @total_pages %></span>
+    </div>
+  <% end %>
+<% end %>

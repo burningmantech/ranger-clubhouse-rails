@@ -1,0 +1,33 @@
+<%= ui_section "You Are No Longer on a Path to Becoming a Ranger" do %>
+  <p>
+    <strong>Your Ranger application is no longer active.</strong>
+    You are no longer in the volunteer application process. To become a Ranger, you will need to apply again.
+  </p>
+
+  <%= ui_callout_box :warning, title: "Applications Do Not Roll Over" do %>
+    A new application must be submitted for each year. Start at the
+    <%= ext_link "Ranger application process", "https://rangers.burningman.org/ranger-application-process/" %> page.
+  <% end %>
+
+  <dl class="instruction-list mb-3">
+    <dt>Already re-applied for <%= Current.year %>?</dt>
+    <dd>
+      Watch your email. Application decisions are emailed by mid-to-late April &mdash; they are not posted here.
+    </dd>
+    <dt>No email by late April?</dt>
+    <dd>
+      Email the Volunteer Coordinators at <%= mail_to EmailAddresses::VOLUNTEER_COORDINATORS_TEAM %> to check on
+      your application.
+    </dd>
+    <dt>Think this is a mistake?</dt>
+    <dd>
+      Email the Volunteer Coordinators at <%= mail_to EmailAddresses::VOLUNTEER_COORDINATORS_TEAM %> and we'll get
+      things sorted out for you.
+    </dd>
+  </dl>
+
+  <p>
+    Thanks,<br>
+    The Black Rock Rangers
+  </p>
+<% end %>

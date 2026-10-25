@@ -1,0 +1,6 @@
+<%= render template: "common/available_sign_ups/index",
+           locals: {
+             back_link: back_to("Schedule", me_schedule_path(year: @year)),
+             description_text: @is_current_year ? "Browse and sign up for upcoming shifts and training sessions." : "View shifts and training sessions available in #{@year}.",
+             sign_ups_position_path_builder: ->(position_id, **options) { me_available_sign_up_position_path(position_id:, **options) }
+           } %>

@@ -1,0 +1,101 @@
+<%#
+  One event year's pog records, newest first, narrowed by the filter bar and
+  paged. The year selector carries the filters, so changing the year keeps the
+  question; a filter value the new year does not hold reads as All.
+
+  Delete lives on each pog's edit page, not in the rows: a confirmation per row
+  is a whole dialog per row, a hundred to a page.
+%>
+<% content_for :title, "#{@year} Pog Administration" %>
+
+<%= hero_panel icon: "utensils", heading_level: :h1, id: "pog-administration-header",
+               title: "#{@year} Pog Administration" do |panel| %>
+  <% panel.description do %>
+    Find, correct or delete the meal and shower pog records issued in <%= @year %>.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, keep: @form.year_selector_keep %>
+<% end %>
+
+<% if @total.zero? %>
+  <%= ui_empty_state "No pogs were issued in #{@year}.", icon: "utensils", icon_type: :solid %>
+<% else %>
+  <%= filter_bar id: "pog-administration-filters",
+                 chips: pogs_administration_filter_chips(@form, @issuers, @year),
+                 clear_url: pogs_administration_path(year: @year),
+                 count: ("Showing #{number_with_delimiter(@meta[:total])} of #{pluralize(number_with_delimiter(@total), "pog")}" if @form.active.any?),
+                 url: pogs_administration_path, model: @form, scope: PogFilterForm::PARAM_SCOPE do |f| %>
+    <%= hidden_field_tag :year, @year, id: nil %>
+    <%# A callsign, not the person search: that search answers only to Event
+        Management, which this page's readers need not hold. %>
+    <%= form_row do %>
+      <%= f.text_field :person_callsign, label: pogs_administration_filter_label(:person_callsign),
+                       maxlength: 64, width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :issued_by_id, pogs_administration_issuer_options(@issuer_ids, @issuers),
+                   label: pogs_administration_filter_label(:issued_by_id), width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= form_row do %>
+      <%= f.select :day, pogs_administration_day_options(@days),
+                   label: pogs_administration_filter_label(:day), width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :pog, pogs_administration_type_options(@pog_types),
+                   label: pogs_administration_filter_label(:pog), width: "w-full", wrapper_class: "flex-1" %>
+      <%# Issued means handed over, a redeemed pog included, as the Pog
+          Dashboard counts it. %>
+      <%= f.select :status, pogs_administration_status_options(@statuses),
+                   label: pogs_administration_filter_label(:status), width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+
+  <% if @pogs.empty? %>
+    <%= ui_empty_state "No pogs match the current filters.", icon: "filter", icon_type: :solid %>
+  <% else %>
+    <%= ui_section "Pogs Issued in #{@year}", icon: "utensils", icon_type: :solid, border: false do %>
+      <%# Shown on a single page too: it is where the list's total reads. %>
+      <% pager = ui_pager(@meta, noun: "pog") { |page| pogs_administration_path(year: @year, **@form.query_params(page:)) } %>
+      <%= pager %>
+      <%= ui_table full_width: true, striped: true, caption: "Pogs issued in #{@year}, newest first" do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Recipient" %>
+          <%= t.heading "Issued" %>
+          <%= t.heading "Pog" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Issued By" %>
+          <%= t.heading "Shift" %>
+          <%= t.heading "Notes" %>
+          <%= t.heading "Actions", right: true %>
+        <% end %>
+        <%= t.body do %>
+          <% @pogs.each do |pog| %>
+            <% recipient = @recipients[pog.person_id] %>
+            <%= t.row do %>
+              <%= t.row_header do %>
+                <%= person_display_link recipient, pog.person_id,
+                                        path: (person_pogs_path(recipient, year: @year) if recipient) %>
+              <% end %>
+              <%# The server's clock, not a shift's Pacific wall clock. %>
+              <%= t.cell datetime_format(pog.issued_at, tz: Time.zone.name) %>
+              <%= t.cell pog.pog_label %>
+              <%= t.cell do %>
+                <% if pog.status == PersonPog::STATUS_CANCELLED %>
+                  <%= ui_badge pog.status_label, :warning %>
+                <% else %>
+                  <%= pog.status_label %>
+                <% end %>
+              <% end %>
+              <%= t.cell person_display_link(@issuers[pog.issued_by_id], pog.issued_by_id) %>
+              <%= t.cell value_or_dash(pog.timesheet&.position&.title) %>
+              <%= t.cell value_or_dash(pog.notes) %>
+              <%= t.cell right: true do %>
+                <%= edit_link pogs_edit_record_path(pog, return_params),
+                              aria: { label: "Edit #{pog.pog_label} for #{person_display_name(recipient, pog.person_id)}" } %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= pager %>
+    <% end %>
+  <% end %>
+<% end %>

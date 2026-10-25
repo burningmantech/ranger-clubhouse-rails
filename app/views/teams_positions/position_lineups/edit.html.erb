@@ -1,0 +1,6 @@
+<%= hero_panel icon: "layer-group", heading_level: :h1, id: "position-lineup-form-header",
+               title: "Edit #{@lineup.description}",
+               description: "#{pluralize(@position_ids.size, "position")} shown together on the Schedule page.",
+               back_to: ["Position Lineups", teams_positions_position_lineups_path] %>
+
+<%= render "form" %>

@@ -1,0 +1,45 @@
+<%= hero_panel icon: "address-card", heading_level: :h1, id: "vc-edit-personal-header",
+               back_to: ["Application #{@application.application_id}", vc_application_path(@application)] do |panel| %>
+  <% panel.title do %>
+    Edit Personal Info &mdash; <%= @application.application_id %>
+  <% end %>
+  <% panel.description do %>
+    Update the name, address, phone, and emergency contact for
+    <%= @application.first_name %> <%= @application.last_name %>.
+  <% end %>
+<% end %>
+
+<%= ui_form @application, vc_application_path(@application), { data: country_form_data_attributes(@application.state) } do |f| %>
+  <%= hidden_field_tag :section, "personal_info" %>
+
+  <%= ui_section "Name & Email", icon: "id-card", icon_type: :solid do %>
+    <%= form_row do %>
+      <%= f.text_field :first_name, label: "First Name", width: "w-full sm:w-48", required: true %>
+      <%= f.text_field :last_name, label: "Last Name", width: "w-full sm:w-48", required: true %>
+    <% end %>
+    <%= f.email_field :email, label: "Email", width: "w-full sm:w-72", required: true %>
+  <% end %>
+
+  <%= ui_section "Address & Phone", icon: "location-dot", icon_type: :solid do %>
+    <%= f.text_field :street, label: "Street", width: "w-full sm:w-80", required: true %>
+    <%= f.select :country, CountryStateHelper::COUNTRY_OPTIONS, label: "Country", width: "w-44",
+                 data: country_data_attributes %>
+    <%= form_row do %>
+      <%= f.text_field :city, label: "City", width: "w-48", required: true %>
+      <%= f.select :state, [], label: "State", width: "w-44", data: state_data_attributes %>
+      <%= f.text_field :postal_code, label: "Postal Code", width: "w-28", required: true %>
+    <% end %>
+    <%= f.telephone_field :phone, label: "Phone", width: "w-full sm:w-44", required: true,
+                          help_text: "Include the country code for non-US numbers." %>
+  <% end %>
+
+  <%= ui_section "Emergency Contact", icon: "truck-medical", icon_type: :solid do %>
+    <%= f.text_area :emergency_contact, label: "Emergency Contact",
+                    help_text: "Name, relationship, and phone number." %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Personal Info" %>
+    <%= cancel_link vc_application_path(@application) %>
+  <% end %>
+<% end %>

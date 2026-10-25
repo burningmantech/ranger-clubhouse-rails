@@ -1,0 +1,44 @@
+<%= modal id: "asset-history-modal", size: :xl do |m| %>
+  <%= m.title "History - #{@person_asset.asset.type} ##{@person_asset.asset.barcode}" %>
+  <%= m.body do %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Person" %>
+        <%= t.heading "Checked Out / By" %>
+        <%= t.heading "Checked In / By" %>
+        <%= t.heading "Duration" %>
+        <%= t.heading "Attachment" %>
+      <% end %>
+      <%= t.body do %>
+        <% @history.each do |person_asset| %>
+          <%= t.row do %>
+            <%= t.cell person_display_link(person_asset.person, person_asset.person_id) %>
+            <%= t.cell do %>
+              <div><%= datetime_format(person_asset.checked_out) %></div>
+              <div>
+                <%= person_display_link(person_asset.check_out_person,
+                                        person_asset.check_out_person_id) %>
+              </div>
+            <% end %>
+            <%= t.cell do %>
+              <% if person_asset.checked_in %>
+                <div><%= datetime_format(person_asset.checked_in) %></div>
+                <div>
+                  <%= person_display_link(person_asset.check_in_person,
+                                          person_asset.check_in_person_id) %>
+                </div>
+              <% else %>
+                <%= ui_badge "Still checked out", :warning %>
+              <% end %>
+            <% end %>
+            <%= t.cell hour_minute_words(person_asset.duration) %>
+            <%= t.cell(person_asset.attachment&.description || "—") %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= m.footer do %>
+    <%= modal_close_button %>
+  <% end %>
+<% end %>

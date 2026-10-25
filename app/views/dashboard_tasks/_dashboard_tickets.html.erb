@@ -1,0 +1,57 @@
+<%# locals: (step:,facts:) %>
+<% tickets = step.payload.tickets %>
+<div class="mt-1">
+  <% if tickets.not_finished %>
+    <p class="text-error font-bold"><%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %>
+      Ticketing incomplete!</p>
+    <p class="text-base">Finish all steps or you may not attend.</p>
+  <% elsif tickets.no_address %>
+    <p class="text-error font-bold"><%= fa_icon "location-dot", :solid, class: "icon-error" %> Need delivery
+      address!</p>
+  <% elsif tickets.qualified_count > 0 %>
+    <p class="text-error font-bold"><%= fa_icon "ticket", :solid, class: "icon-error" %> Items unclaimed or
+      not banked.</p>
+  <% elsif tickets.claimed.present? %>
+    <p><b><%= pluralize(tickets.claimed.length, "item") %> claimed:</b></p>
+    <ul class="list-disc list-inside text-base">
+      <% tickets.claimed.each do |item| %>
+        <li>
+          <% if item.type == AccessDocument::SAPSO %>
+            SO SAP: <i><%= item.name %></i>
+          <% elsif item.type == AccessDocument::SAP %>
+            Setup Access Pass
+          <% else %>
+            <%= item.type_label %><%= " (also your SAP)" if item.type == AccessDocument::STAFF_CREDENTIAL %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-error font-semibold"><%= fa_icon "ticket", :solid, class: "icon-error" %> No tickets
+      claimed yet.</p>
+  <% end %>
+
+  <% if tickets.provision_items.present? %>
+    <p class="mt-2"><b>Provisions:</b></p>
+    <ul class="list-disc list-inside text-base">
+      <% tickets.provision_items.each do |item| %>
+        <li><%= item.type_label %></li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>
+
+<% if tickets.banked_count > 0 %>
+  <p class="mt-2 text-sm text-stone-muted"><%= fa_icon "bank", :solid %> <%= pluralize(tickets.banked_count, "item") %>
+    banked.</p>
+<% end %>
+
+<div class="mt-2">
+  <% if step.payload.ticketing_open %>
+    To claim or adjust
+  <% else %>
+    Questions?
+  <% end %>
+</div>
+<%= link_to "Go To Tickets & Stuff", me_tickets_path, class: "tap-target-link" %>
+

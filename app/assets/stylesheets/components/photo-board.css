@@ -1,0 +1,206 @@
+/*
+ * The ROC wall display.
+ *
+ * This page is read from across a room by no one in particular, so it breaks
+ * the usual rules on purpose: type is far larger than anywhere else in the
+ * app, the whole screen is the page, and the colours are fixed dark because
+ * the monitor has no one to set them.
+ *
+ * The colours themselves are still the app's own -- the layout pins the dark
+ * theme, so base-100 is already the near-black this display wants, and the
+ * current group is marked with the same success green used everywhere else.
+ */
+
+.photo-board {
+    /*
+     * How tall the pinned heading is. Both the rail and the landing spot of a
+     * scrolled-to group are measured from it, so they cannot drift apart and
+     * slide underneath it.
+     *
+     * The display measures the real heading and writes this value back, since
+     * the height moves with the type scale and with how many lines the heading
+     * wraps onto. What is set here is only the starting guess, used for the
+     * moment before the first measurement and if scripting never runs.
+     */
+    --photo-board-header-height: 4rem;
+
+    @apply p-2;
+}
+
+/* Stays on screen while the groups scroll beneath it. */
+.photo-board-header {
+    @apply sticky top-0 z-10 flex flex-wrap items-baseline justify-between gap-4
+    mb-4 px-2 py-3 bg-base-100 border-b-2 border-base-300;
+}
+
+.photo-board-loaded {
+    @apply text-2xl font-semibold;
+}
+
+.photo-board-heading {
+    @apply text-3xl font-bold;
+}
+
+.photo-board-countdown {
+    @apply text-xl text-stone-muted;
+}
+
+.photo-board-layout {
+    @apply flex flex-col gap-6;
+}
+
+@media (min-width: theme(--breakpoint-lg)) {
+    .photo-board-layout {
+        @apply flex-row items-start;
+    }
+}
+
+/*
+ * min-width: 0 lets the column shrink so its contents can be cut short instead
+ * of pushing the page sideways.
+ *
+ * The room below the last group is what lets that group reach the top of the
+ * screen like every other one. Without it the page runs out of scroll partway
+ * through the last step and the display just stops short.
+ */
+.photo-board-groups {
+    @apply grow min-w-0;
+    padding-bottom: 100vh;
+}
+
+.photo-board-group {
+    @apply border-2 border-base-300 rounded-xl p-4 mb-6;
+    /* Lands the group below the pinned heading rather than under it. */
+    scroll-margin-top: var(--photo-board-header-height);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/*
+ * The group at the top of the screen right now. The glow carries across a room
+ * where a 2px border alone does not; the badge says the same thing in words,
+ * so the mark does not rest on colour alone.
+ */
+.photo-board-group-active {
+    @apply border-success ring-4 ring-success/25;
+}
+
+.photo-board-group-header {
+    @apply flex flex-wrap items-center gap-3 mb-4 pb-2 border-b border-base-300;
+}
+
+.photo-board-badge {
+    @apply hidden bg-success text-success-content rounded-md px-2 py-1
+    text-sm font-bold uppercase tracking-wide;
+}
+
+.photo-board-group-active .photo-board-badge {
+    @apply inline-block;
+}
+
+.photo-board-group-title {
+    @apply text-3xl font-semibold;
+}
+
+.photo-board-group-count {
+    @apply ms-auto text-lg text-stone-muted;
+}
+
+.photo-board-cards {
+    @apply flex flex-wrap gap-4;
+}
+
+/*
+ * A fixed width is what lets the rows fill and wrap evenly, and is why no row
+ * can ever run wider than the board.
+ */
+.photo-board-card {
+    @apply w-48 rounded-lg overflow-hidden bg-base-200;
+}
+
+.photo-board-photo {
+    @apply w-full h-48 object-cover bg-base-300;
+}
+
+/* Sized like a photo so the rows stay lined up without one. */
+.photo-board-photo-missing {
+    @apply flex flex-col items-center justify-center gap-2 text-stone-muted text-base;
+}
+
+.photo-board-card-body {
+    @apply p-2 text-center;
+}
+
+.photo-board-callsign {
+    @apply text-2xl font-semibold truncate;
+}
+
+.photo-board-position {
+    @apply text-base text-stone-muted truncate;
+}
+
+.photo-board-empty {
+    @apply flex flex-col items-center gap-2 py-8 text-xl text-stone-muted;
+}
+
+/* Pinned below the heading so the group list is readable at any scroll depth. */
+.photo-board-rail {
+    @apply w-full shrink-0;
+}
+
+/*
+ * Pinned, but never scrolled inside. A capped, scrolling rail would put the
+ * host cards past the cap behind a scrollbar, and there is no one at this
+ * screen to reach for one -- the people it hides are the ones it exists to
+ * point at. Left to run its full length instead.
+ */
+@media (min-width: theme(--breakpoint-lg)) {
+    .photo-board-rail {
+        @apply w-56 sticky;
+        top: var(--photo-board-header-height);
+    }
+}
+
+.photo-board-rail-heading {
+    @apply px-2 my-2 text-base font-semibold uppercase tracking-wide text-stone-muted;
+}
+
+.photo-board-rail-list {
+    @apply list-none p-0 mb-4;
+}
+
+.photo-board-rail-item {
+    @apply flex items-center gap-2 px-2 py-2 mb-1 rounded-lg text-lg;
+    transition: background-color 0.3s ease;
+}
+
+.photo-board-rail-item-active {
+    @apply bg-success/15 text-success font-bold;
+}
+
+.photo-board-rail-dot {
+    @apply w-2 h-2 rounded-full shrink-0 bg-base-300;
+}
+
+.photo-board-rail-item-active .photo-board-rail-dot {
+    @apply bg-success;
+}
+
+.photo-board-rail-title {
+    @apply truncate;
+}
+
+.photo-board-rail-count {
+    @apply ms-auto;
+}
+
+.photo-board-host {
+    @apply w-full mb-3;
+}
+
+.photo-board-no-host {
+    @apply px-2 text-lg text-error;
+}
+
+.photo-board-no-host-next {
+    @apply mt-2;
+}

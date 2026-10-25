@@ -1,0 +1,123 @@
+<%#
+  One position's roster, and — for a position everybody is meant to hold — the
+  people who are missing it.
+%>
+<% content_for :title, "#{@position.title} Grants" %>
+
+<%= hero_panel icon: "id-badge", heading_level: :h1,
+               id: "teams-positions-position-grants-position-header",
+               title: "#{@position.title} Grants",
+               back_to: ["Position Grants",
+                         teams_positions_position_grants_path(@return_params)] do |panel| %>
+  <% panel.description do %>
+    Everyone holding this position today.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box number_with_delimiter(@members.size), "Shown",
+                  icon: "users", icon_type: :solid %>
+  <%# Dropped while the on-site filter is applied, where it could only repeat
+      the box beside it -- the same call the index row meta makes. %>
+  <% unless @on_site_only %>
+    <% on_site = @members.count(&:on_site) %>
+    <%= ui_stat_box number_with_delimiter(on_site), "On Site",
+                    variant: on_site.positive? ? :success : :secondary,
+                    icon: "location-dot", icon_type: :solid %>
+  <% end %>
+  <% if @unassigned.any? %>
+    <%= ui_stat_box number_with_delimiter(@unassigned.size), "Unassigned",
+                    variant: :error, icon: "triangle-exclamation", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<%# Out of the hero: the same answer the index gives. %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Which year is this?</dt>
+    <dd>Grants are not scoped to an event year &mdash; this is who holds the position today.</dd>
+  </dl>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= export_csv_link(teams_positions_position_grants_position_path(@position,
+                        @return_params.merge(format: :csv))) %>
+  <% end %>
+</div>
+
+<%= ui_section "Roster", icon: "users", icon_type: :solid, border: false do %>
+  <% if @members.any? %>
+    <p class="text-base text-body mb-2">
+      <%# "of N people on site" while that filter is applied: it narrows the
+          roster itself, so the total it is measured against moved too. %>
+      Showing <%= number_with_delimiter(@members.size) %> of
+      <%= number_with_delimiter(@total_members) %>
+      <%= "person".pluralize(@total_members) %><%= " on site" if @on_site_only %>
+      holding this position.
+      <% badge = position_grants_scope_badge(@position, size: "sm") %>
+      <% if badge %>
+        <%= badge %>
+      <% end %>
+    </p>
+    <%# A plain grid rather than a table: the roster runs to thousands of names
+        on the widest positions, and three columns of callsign carry further
+        down a screen than three columns of table chrome. %>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
+      <% @members.each do |person| %>
+        <div id="member-<%= person.id %>">
+          <div><%= callsign_link person %></div>
+          <div class="text-stone-muted">
+            <%= person_status_label(person) %>
+            <% if person.on_site %>
+              <%= ui_badge "On site", :success, size: "sm", icon: "location-dot", icon_type: :solid %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% elsif @total_members.positive? %>
+    <%= ui_empty_state "No one holding this position matches the current filters.",
+                       icon: "filter", icon_type: :solid %>
+  <% else %>
+    <%= ui_empty_state "No one holds this position.", icon: "user-slash", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<% if @unassigned.any? %>
+  <%= ui_section "Unassigned", icon: "triangle-exclamation", icon_type: :solid, border: false do %>
+    <%# Not an empty state and not a filtered list: these are the people the
+        position's own flag says should hold it and do not, which is the finding
+        this report exists to surface. The status filter deliberately does not
+        reach them. %>
+    <%= ui_callout_box :error do %>
+      <strong><%= number_with_delimiter(@unassigned.size) %>
+        <%= "person".pluralize(@unassigned.size) %> missing this position.</strong>
+      <%= position_grants_unassigned_explanation(@position) %>
+    <% end %>
+
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign", width: "50%" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "On Site" %>
+      <% end %>
+      <%= t.body do %>
+        <% @unassigned.each do |person| %>
+          <%= t.row id: "unassigned-#{person.id}" do %>
+            <%= t.row_header { callsign_link person } %>
+            <%= t.cell { person_status_label(person) } %>
+            <%= t.cell do %>
+              <% if person.on_site %>
+                <%= fa_icon "circle-check", :solid, class: "icon-success" %>
+                <span class="sr-only">On site</span>
+              <% else %>
+                <span class="text-stone-muted">—</span>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

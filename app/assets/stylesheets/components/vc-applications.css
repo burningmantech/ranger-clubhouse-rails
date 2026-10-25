@@ -1,0 +1,64 @@
+/*
+ * VC Applications
+ * Review-progress strip and assignment chips on /vc/applications record pages.
+ */
+
+/* Anchor pill inside the sticky review-progress strip. */
+.vc-progress-item {
+    @apply inline-flex items-center gap-1 min-h-9 px-2 rounded-lg border text-xs font-medium no-underline transition-colors duration-200;
+}
+
+.vc-progress-success {
+    @apply bg-success/10 border-success/30 text-success hover:bg-success/20;
+}
+
+.vc-progress-danger {
+    @apply bg-error/10 border-error/30 text-error hover:bg-error/20;
+}
+
+.vc-progress-warning {
+    @apply bg-warning/10 border-warning/40 text-warning hover:bg-warning/20;
+}
+
+.vc-progress-pending {
+    @apply bg-info/10 border-info/30 text-info hover:bg-info/20;
+}
+
+.vc-progress-neutral {
+    @apply bg-base-200 border-base-300 text-base-content/60 hover:bg-base-300;
+}
+
+/* Icon-only check chip variant for the one-row action bar. */
+.vc-check-chip {
+    @apply justify-center min-w-10 px-2;
+}
+
+/* Stage cards on the guided review page (details/summary via ui_accordion).
+   Pair with `box box-default` in the markup for the shared card border. */
+.vc-stage {
+    @apply block w-full mb-3 scroll-mt-24;
+}
+
+.vc-stage-summary {
+    @apply flex flex-wrap items-center gap-2 px-4 py-3 min-h-9 cursor-pointer list-none select-none rounded-lg;
+}
+
+.vc-stage-summary::-webkit-details-marker {
+    display: none;
+}
+
+.vc-stage[open] .vc-stage-chevron {
+    @apply rotate-180;
+}
+
+.vc-stage-body {
+    @apply px-4 pb-3;
+}
+
+/* The vc-assign-* family is gone. Two of its four rules were colour-only --
+   a background and a border COLOUR with no border width, no padding and no
+   radius -- so they painted a tint hugging the text rather than a chip, while
+   the third state ignored them and hand-rolled amber. U20 deleted the two
+   nobody used; U20b replaced the rest with prose in
+   Vc::ApplicationsHelper#application_assignment_note, which is what the hero
+   description wanted all along. */

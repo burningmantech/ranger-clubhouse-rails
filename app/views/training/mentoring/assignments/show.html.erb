@@ -1,0 +1,30 @@
+<%#
+  One mentoring shift's roster -- or, for a shift no one has signed in to yet,
+  its sign-ups -- followed by the year's other mentee shifts of the same people.
+  See Training::Mentoring::AssignmentsController.
+%>
+<% content_for :title, "#{@training.title} Mentor Assignment" %>
+
+<%= hero_panel icon: "handshake", heading_level: :h1, id: "mentor-assignment-shift-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> Mentor Assignment<% end %>
+  <% panel.description do %>
+    <% if @group %>
+      Pair each mentee on this shift with a mentor and record how the shift went.
+    <% else %>
+      See who has signed up for this shift and how their earlier mentee shifts went.
+    <% end %>
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "Choose another shift", training_mentoring_assignment_path(training_slug, year: @year) %>
+  <% end %>
+<% end %>
+
+<% if @group %>
+  <%= render "roster", group: @group, submitted: @submitted, result: @result, pass_offers: @pass_offers || {} %>
+<% else %>
+  <%= render "upcoming", shift: @upcoming %>
+<% end %>
+
+<%= render "other_shifts",
+           entries: @shifts.other_entries(@group ? @group.mentee_entries.map(&:person_id) : @upcoming.mentees.map(&:id),
+                                          except: @group) %>

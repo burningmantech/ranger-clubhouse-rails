@@ -1,0 +1,67 @@
+<% content_for :title, "Shift Coverage Management" %>
+
+<%= hero_panel icon: "table-cells", heading_level: :h1, id: "shift-coverage-management-header",
+               title: "Shift Coverage Management",
+               description: "Set the shift types the Shift Coverage report offers and the posts each one shows." %>
+
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What is a shift type?</dt>
+    <dd>One choice in the Shift Coverage report's Shift Type menu, such as Command or Green Dot.</dd>
+    <dt>What is a post?</dt>
+    <dd>One column of that report. It lists who is on its positions for each period.</dd>
+    <dt>What are period positions?</dt>
+    <dd>The positions whose shifts become the report's rows. Each shift is one period, rounded to the nearest hour.</dd>
+    <dt>What does a label do?</dt>
+    <dd>It is printed after the callsign of anyone on that position, such as "Mentee", so positions sharing a post can be told apart.</dd>
+    <dt>Do changes affect past years?</dt>
+    <dd>Yes. Every year's report reads these definitions.</dd>
+  </dl>
+<% end %>
+
+<%= button_row class: "my-4" do %>
+  <%= button_link "Add Shift Type", :primary, new_admin_shift_coverage_group_path,
+                  icon: "plus", icon_type: :solid %>
+<% end %>
+
+<% if @groups.any? %>
+  <%= ui_section pluralize(@groups.size, "Shift Type"), border: false do %>
+    <%= ui_table striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "#" %>
+        <%= t.heading "Shift Type" %>
+        <%= t.heading "Slug" %>
+        <%= t.heading "Period Positions" %>
+        <%= t.heading "Posts" %>
+        <%= t.heading "Order" %>
+      <% end %>
+      <%= t.body do %>
+        <% @groups.each_with_index do |group, index| %>
+          <%= t.row do %>
+            <%= t.row_header index + 1 %>
+            <%= t.cell do %>
+              <%= link_to group.title, admin_shift_coverage_group_path(group),
+                          class: LinkHelper::TABLE_LINK_CLASSES %>
+            <% end %>
+            <%= t.cell do %>
+              <span class="font-mono"><%= group.slug %></span>
+            <% end %>
+            <%= t.cell shift_coverage_management_position_lines(group.base_position_ids, @positions_by_id) %>
+            <%= t.cell @post_counts.fetch(group.id, 0) %>
+            <%= t.cell class: "whitespace-nowrap" do %>
+              <div class="flex-center-gap-2">
+                <%= render "common/move_buttons",
+                           up_url: move_admin_shift_coverage_group_path(group, direction: "up"),
+                           down_url: move_admin_shift_coverage_group_path(group, direction: "down"),
+                           label: "shift type #{group.title}",
+                           first: index.zero?, last: index == @groups.size - 1 %>
+              </div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No shift types yet. The Shift Coverage report has nothing to show until one is added." %>
+<% end %>

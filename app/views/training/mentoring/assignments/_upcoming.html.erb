@@ -1,0 +1,40 @@
+<%# locals: (shift:) %>
+<%#
+  A mentee shift no one has signed in to yet: who signed up for it, and for the
+  mentor shift that goes with it. Mentors are paired once mentees sign in, so
+  nothing here is edited.
+%>
+<%= ui_callout_box :success, icon: "flag", icon_type: :solid, accent: true, class: "my-4" do %>
+  <strong><%= @shifts.mentee_position.title %> &mdash; <%= datetime_format(shift.slot.begins, shift.slot.ends) %>.</strong>
+  No one has signed in yet, so these are the sign-ups. Mentors are paired with mentees once they sign in.
+<% end %>
+
+<% if shift.needs_mentor? %>
+  <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid, class: "my-4" do %>
+    No one has signed up to mentor this shift yet.
+  <% end %>
+<% end %>
+
+<%= ui_section "Signed Up", icon: "user-group", icon_type: :solid,
+               badge: (shift.mentees.size + shift.mentors.size).to_s, border: false do %>
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Signed Up As" %>
+    <% end %>
+    <%= t.body do %>
+      <% shift.mentees.each do |person| %>
+        <%= t.row do %>
+          <%= t.row_header do %><%= person_display_link person, person.id %><% end %>
+          <%= t.cell @shifts.mentee_position.title %>
+        <% end %>
+      <% end %>
+      <% shift.mentors.each do |person| %>
+        <%= t.row do %>
+          <%= t.row_header do %><%= person_display_link person, person.id %><% end %>
+          <%= t.cell @shifts.mentor_position&.title || "Mentor" %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

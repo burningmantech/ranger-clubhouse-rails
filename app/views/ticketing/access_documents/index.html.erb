@@ -1,0 +1,110 @@
+<%#
+  Ticketing > Access Documents — Summary.
+
+  One row per person holding a live access document, ported from the Ember
+  vc/access-documents "Summary" tab and its access-documents-for-person row
+  component. @rows are AccessDocumentSummaryRow presenters; every value on the
+  page is pre-computed there, so this template only decides how it looks.
+%>
+<%= hero_panel icon: "ticket", heading_level: :h1, id: "ticketing-access-documents-header",
+               description: "Who is holding what, one row per person." do |panel| %>
+  <%# Matches the sidebar and mega-menu item exactly -- the sibling page is
+      "Current Access Documents", and a bare "Access Documents" heading here
+      would not say which of the two you landed on. %>
+  <% panel.title do %>Access Document Summary
+  <% end %>
+<% end %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Who is listed?</dt>
+    <dd>Everyone with a qualified, claimed, banked, or submitted access document is listed below.</dd>
+    <dt>What does the SOs column count?</dt>
+    <dd>Setup Access Passes this person holds for a significant other.</dd>
+    <dt>What shows up in Weird Stuff?</dt>
+    <dd>
+      Anything odd about the collection &mdash; duplicate tickets, an expired ticket, or a
+      document with a missing or out-of-range arrival date.
+    </dd>
+    <%# A legend for rows, so it is only offered when the page holds rows --
+        all of them, not the filtered ones: a filter that matched no one must
+        not take the legend from the card above its own bar. %>
+    <%= render "summary_legend" if @total_count.positive? %>
+  </dl>
+<% end %>
+
+<%= render "summary_filter_bar",
+           filter_params: @filter_params,
+           active_params: @index_params,
+           held_counts: @held_counts,
+           matching_counts: @matching_counts,
+           count: "Showing #{@rows.size} of #{pluralize(@total_count, "person")}" %>
+
+<% if @rows.any? %>
+  <%= ui_table caption: "Current access documents, one row per person" do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Person" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Ticket" %>
+      <%= t.heading "Arrival" %>
+      <%= t.heading "VP" %>
+      <%# pe-4 keeps the right-aligned count off the Special column beside it --
+          without it two adjacent "—" placeholders read as one. %>
+      <%= t.heading "SOs", right: true, class: "pe-4" %>
+      <%= t.heading "Special" %>
+      <%= t.heading "Weird Stuff" %>
+    <% end %>
+
+    <%= t.body do %>
+      <% @rows.each do |row| %>
+        <%= t.row do %>
+          <%= t.row_header do %>
+            <%# The row's one control. callsign_link carries TABLE_LINK_CLASSES,
+                which sits under the 36px floor on purpose -- see link_helper. %>
+            <%= callsign_link row.person, person_tickets_provisions_path(row.person) %>
+          <% end %>
+
+          <%= t.cell row.person.status %>
+
+          <%= t.cell do %>
+            <%= render "summary_value", value: row.tickets.value, status: row.tickets.status %>
+          <% end %>
+
+          <%= t.cell do %>
+            <% if row.arrival_missing? %>
+              <%= render "summary_missing" %>
+            <% else %>
+              <%= render "summary_value", value: row.arrival.value, status: row.arrival.status %>
+            <% end %>
+          <% end %>
+
+          <%= t.cell do %>
+            <%= render "summary_value", value: row.vp.value, status: row.vp.status %>
+          <% end %>
+
+          <%# Zero passes to nil so the cell reads as a dash, not as "0". %>
+          <%= t.cell right: true, class: "pe-4" do %>
+            <%= render "summary_value",
+                       value: (row.so_count if row.so_count.positive?), status: row.so_status %>
+          <% end %>
+
+          <%= t.cell do %>
+            <%= render "summary_special", special: row.special %>
+          <% end %>
+
+          <%= t.cell do %>
+            <%= render "summary_notes", notes: row.notes, errors: row.errors %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif @index_params.any? %>
+  <%= ui_empty_state "No one matched those filters. Try clearing one.",
+                     icon: "magnifying-glass", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state nil, icon: "ticket", icon_type: :solid do %>
+    No current access documents yet. Qualified, claimed, banked, and submitted
+    documents appear here as soon as tickets are loaded for the year.
+  <% end %>
+<% end %>

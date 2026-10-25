@@ -1,0 +1,62 @@
+<%# locals: (logs:, body_path:) %>
+<%# The mail log table, shared by the person and system-wide pages. body_path
+    is a callable that, given a message, returns the URL loading its body. How
+    to read it is in common/mail_log/_legend, which each page puts in its card. %>
+
+<%# striped: false because each message renders two rows -- the summary and the
+    detail it opens into -- so every summary row would land on the same stripe.
+    responsive: below lg each row folds into a card. As a table it could not
+    fit a phone: an address does not break, so at 390px the page scrolled
+    sideways by more than half its width. %>
+<%= ui_table striped: false do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Timestamp" %>
+    <%= t.heading "From / To" %>
+    <%= t.heading "Subject" %>
+  <% end %>
+  <%= t.body do %>
+    <% logs.each do |mail| %>
+      <% body_dom_id = "mail-log-body-#{mail.id}" %>
+      <% subject = mail.subject.presence || "(no subject)" %>
+      <%= t.row class: class_names("text-error" => mail.did_bounce, "text-warning" => mail.did_complain) do %>
+        <%= t.cell class: "whitespace-nowrap align-top" do %>
+          <%# Each icon carries the word it stands for, as a tooltip and for a
+              screen reader. Colour and shape alone would say nothing. %>
+          <% if mail.did_bounce %>
+            <%= fa_icon "triangle-exclamation", :solid, label: MailLogHelper::BOUNCED_LABEL %>
+          <% end %>
+          <% if mail.did_complain %>
+            <%= fa_icon "bell", :solid, label: MailLogHelper::SPAM_LABEL %>
+          <% end %>
+          <%= datetime_format(mail.created_at, year: true) %>
+        <% end %>
+        <%= t.cell class: "align-top" do %>
+          <div>
+            <%= person_display_link(mail.sender, mail.sender_id, blank: tag.i("- Clubhouse -")) %><br>
+            &lt;<%= mail.from_email %>&gt; <%= fa_icon "arrow-right", :solid %>
+          </div>
+          <div>
+            <%= person_display_link(mail.person, mail.person_id, blank: "-") %><br>
+            &lt;<%= mail.to_email %>&gt;
+          </div>
+          <% if mail.broadcast_id %>
+            <div><i>(sent via RBS)</i></div>
+          <% end %>
+        <% end %>
+        <%= t.cell class: "align-top" do %>
+          <%= t.detail_row_toggle subject, id: body_dom_id, describing: "message",
+                                  class: "justify-start px-1 text-left normal-case" %>
+        <% end %>
+      <% end %>
+      <%# Below the fold each row becomes its own card, so the opened message
+          carries the subject it belongs to. %>
+      <%= t.detail_row id: body_dom_id, label: subject do %>
+        <%# loading: "lazy" holds the fetch until the frame is visible — the first
+            time the toggle above unhides this row. %>
+        <%= turbo_frame_tag "mail-log-body-frame-#{mail.id}", src: body_path.call(mail), loading: "lazy" do %>
+          <p class="my-2">Loading message&hellip;</p>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

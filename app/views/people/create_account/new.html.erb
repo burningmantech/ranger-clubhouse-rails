@@ -1,0 +1,73 @@
+<%# Everything a new account needs, in the order it is usually read off an ID
+    or an application: who they are, their legal name, where they live, and
+    the password they will sign in with the first time. %>
+<% content_for :title, "Create Account" %>
+
+<%# There is no page listing the People tools, so leaving without creating an
+    account goes to the dashboard, the same as the Cancel button below. %>
+<%= hero_panel icon: "user-plus", heading_level: :h1, id: "create-account-header",
+               title: "Create Account",
+               description: "Create a Clubhouse account and set its first password.",
+               back_to: :dashboard %>
+
+<% person = @form.person %>
+<% address_required = person.mailing_address_required? %>
+
+<%= ui_form(@form, people_create_account_path,
+            data: country_form_data_attributes(@form.state)) do |f| %>
+  <%= ui_section "Account", icon: "id-badge", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Which status should I choose?</dt>
+      <dd>Most accounts created here are Echelon. Prospective and Alpha accounts normally come from the application process.</dd>
+    </dl>
+    <%= form_row do %>
+      <%= f.text_field :callsign, label: "Callsign", width: "w-full sm:w-64",
+                       maxlength: 64, required: true, help_text: "Must be unique." %>
+      <%= f.email_field :email, label: "Email Address", width: "w-full sm:w-72",
+                        maxlength: 50, required: true, help_text: "Must be unique." %>
+      <%= f.select :status, Person::ALL_STATUSES, label: "Status",
+                   width: "w-full sm:w-44", required: true %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Legal Name", icon: "id-card", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Why the legal name?</dt>
+      <dd>Used for ticketing, mailings, and Motor Vehicle Record requests.</dd>
+    </dl>
+    <%= render "common/legal_name_fields", f: f %>
+  <% end %>
+
+  <%= ui_section "Mailing Address and Phone", icon: "location-dot", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Why do we need this?</dt>
+      <dd>Used for Ranger-related mailings, and to reach the person when email fails.</dd>
+    </dl>
+    <%= render "common/mailing_address_fields", f: f, address_required: address_required,
+                                               state_required: person.state_required? %>
+    <%= f.telephone_field :home_phone, label: "Primary Phone", width: "w-full sm:w-44",
+                          maxlength: 25, required: true %>
+  <% end %>
+
+  <%= ui_section "Password", icon: "key", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Who sees this password?</dt>
+      <dd>Only you. Share it with the person directly; they can change it after signing in.</dd>
+      <dt>Why are these two boxes empty again?</dt>
+      <dd>A password is never sent back to the browser, so it has to be typed again if the rest of the form needs fixing.</dd>
+    </dl>
+    <%= form_row do %>
+      <%= f.password_field :password, label: "Password", width: "w-full sm:w-64",
+                           minlength: 8, maxlength: 80, required: true,
+                           autocomplete: "new-password", help_text: "8 to 80 characters." %>
+      <%= f.password_field :password_confirmation, label: "Confirm Password",
+                           width: "w-full sm:w-64", minlength: 8, maxlength: 80,
+                           required: true, autocomplete: "new-password" %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Create Account" %>
+    <%= cancel_link me_root_path %>
+  <% end %>
+<% end %>

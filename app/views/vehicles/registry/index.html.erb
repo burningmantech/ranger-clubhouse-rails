@@ -1,0 +1,166 @@
+<%# Vehicle Registry (Ember ops/vehicle-registry port). One responsive table
+    serves both screens: a real table at lg and above, labelled cards below it.
+    Upstream hand-maintains two separate markups for the same rows. %>
+<%= hero_panel icon: "car", heading_level: :h1, id: "vehicle-registry-header",
+               title: "Vehicle Registry",
+               description: "Every fleet and personal vehicle registered for #{@year}." do |panel| %>
+  <% panel.year_selector year: @year, min_year: year_floor %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @result.total_count.to_s, "Vehicles", icon: "car" %>
+  <%= ui_stat_box @result.pending_count.to_s, "Pending", variant: :warning,
+                  icon: "clock" %>
+  <%= ui_stat_box @result.approved_count.to_s, "Approved", variant: :success,
+                  icon: "circle-check" %>
+  <%= ui_stat_box @result.fleet_count.to_s, "Fleet", icon: "truck" %>
+  <%= ui_stat_box @result.personal_count.to_s, "Personal", icon: "user" %>
+<% end %>
+
+<%# Both buttons are conditional, so the wrapper goes when neither applies --
+    its mb-4 would otherwise be a blank band above the filter bar. %>
+<% if can?(:edit_registry) || @result.pending_count.positive? %>
+  <div class="mb-4">
+    <%= button_row do %>
+      <% if can?(:edit_registry) %>
+        <%= button_link "Add Vehicle", :primary, new_vehicles_registry_path(@index_params),
+                        icon: "plus", icon_type: :solid %>
+      <% end %>
+      <% if @result.pending_count.positive? %>
+        <%= button_link "Review #{pluralize(@result.pending_count, "pending request")}",
+                        :secondary,
+                        vehicles_registry_index_path(year: @year, status: Vehicle::PENDING),
+                        icon: "clock", icon_type: :solid %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= filter_bar id: "vehicle-registry-filters",
+               chips: registry_filter_chips(@filter_params, @year),
+               clear_url: vehicles_registry_index_path(year: @year),
+               count: "#{@result.rows.size} of #{pluralize(@result.total_count, "vehicle")}",
+               actions: (export_csv_link(vehicles_registry_index_path(@index_params.merge(format: :csv))) if @result.any?),
+               url: vehicles_registry_index_path do |f| %>
+  <%# filter_bar owns its own GET form, so the year has to travel with it. %>
+  <%= hidden_field_tag :year, @year %>
+
+  <%= form_row do %>
+    <%= f.select :status, Vehicles::RegistryHelper::STATUS_FILTER_OPTIONS,
+                 label: "Status",
+                 selected: @filter_params[:status].presence || UiComponents::FilterBarHelper::ALL_FILTER,
+                 width: "w-full",
+                 wrapper_class: "flex-1" %>
+    <%= f.select :type, Vehicles::RegistryHelper::TYPE_FILTER_OPTIONS,
+                 label: "Type",
+                 selected: @filter_params[:type].presence || UiComponents::FilterBarHelper::ALL_FILTER,
+                 width: "w-full",
+                 wrapper_class: "flex-1" %>
+    <%= f.select :permit, Vehicles::RegistryHelper::PERMIT_FILTER_OPTIONS,
+                 label: "Driving Permit",
+                 selected: @filter_params[:permit].presence || UiComponents::FilterBarHelper::ALL_FILTER,
+                 width: "w-full",
+                 wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.select :item, Vehicles::RegistryHelper::ITEM_FILTER_OPTIONS,
+                 label: "Item",
+                 selected: @filter_params[:item].presence || UiComponents::FilterBarHelper::ALL_FILTER,
+                 width: "w-full",
+                 wrapper_class: "flex-1" %>
+    <%# Passes are only looked up for the current year, so for any other year
+        this filter could only report a gap no one ever checked for. %>
+    <% if @result.enriched? %>
+      <%= f.select :sap, Vehicles::RegistryHelper::SAP_FILTER_OPTIONS,
+                   label: "Setup Access Pass",
+                   selected: @filter_params[:sap].presence || UiComponents::FilterBarHelper::ALL_FILTER,
+                   width: "w-full",
+                   wrapper_class: "flex-1" %>
+    <% end %>
+    <%= f.search_field :number,
+                       label: "Permit, Plate, or DPW Request Number",
+                       value: @filter_params[:number],
+                       width: "w-full",
+                       wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<%= ui_section "#{@year} Vehicles", icon: "table-list", icon_type: :solid do %>
+  <% if @result.empty_year? %>
+    <%= ui_empty_state "No vehicles are registered for #{@year} yet.",
+                       icon: "car", icon_type: :solid %>
+  <% elsif @result.rows.empty? %>
+    <%= ui_empty_state "No #{@year} vehicles matched the current filters.",
+                       icon: "magnifying-glass", icon_type: :solid %>
+  <% else %>
+    <% unless @result.enriched? %>
+      <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+        <strong>Setup Access Pass and personal vehicle eligibility are only
+        checked for <%= Current.year %>.</strong>
+        Those columns read "Not checked" for <%= @year %> — it means no one
+        looked, not that nothing was found.
+      <% end %>
+    <% end %>
+
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Owner / Team" %>
+        <%= t.heading "Vehicle" %>
+        <%= t.heading "Permit" %>
+        <%= t.heading "Items" %>
+        <%= t.heading "SAP" %>
+        <%= t.heading "Actions", right: true %>
+      <% end %>
+
+      <%= t.body do %>
+        <% @result.rows.each do |row| %>
+          <%= t.row do %>
+            <%= t.cell do %>
+              <div class="flex flex-wrap items-center gap-2"><%= vehicle_owner(row) %></div>
+              <div class="mt-1"><%= vehicle_status_badge(row) %></div>
+              <%= vehicle_eligibility_control(t, row, enriched: @result.enriched?) %>
+            <% end %>
+            <%= t.cell do %>
+              <div><%= [row.vehicle_year, row.vehicle_make, row.vehicle_model, row.vehicle_color].compact_blank.join(" ") %></div>
+              <div class="text-sm text-stone-muted"><%= vehicle_description_line(row) %></div>
+            <% end %>
+            <%= t.cell vehicle_permit(row) %>
+            <%= t.cell vehicle_items(row) %>
+            <%= t.cell vehicle_sap(row, enriched: @result.enriched?) %>
+            <%= t.cell right: true, data: { label: nil } do %>
+              <div class="flex flex-wrap justify-end gap-2">
+                <% if can?(:edit_registry) %>
+                  <%= edit_link edit_vehicles_registry_path(row, @index_params), "Edit Vehicle" %>
+                <% end %>
+                <%= button_link "Permit", :secondary,
+                                permit_vehicles_registry_path(row, @index_params),
+                                icon: "id-badge", icon_type: :solid %>
+              </div>
+            <% end %>
+          <% end %>
+
+          <% if vehicle_eligibility_details?(row, enriched: @result.enriched?) %>
+            <%= t.detail_row id: vehicle_eligibility_detail_id(row), label: row.person&.callsign do %>
+              <div class="flex flex-col gap-y-3">
+                <%= paperwork_detail_group "Motor Vehicle Record eligible via" do %>
+                  <%= vehicle_eligibility_sources teams: row.mvr_teams, positions: row.mvr_positions %>
+                <% end %>
+                <%= paperwork_detail_group "Motor Vehicle Record eligible sign-ups" do %>
+                  <%= paperwork_signups row.mvr_signups %>
+                <% end %>
+                <%= paperwork_detail_group "Personal vehicle eligible via" do %>
+                  <%= vehicle_eligibility_sources teams: row.pvr_teams, positions: row.pvr_positions %>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

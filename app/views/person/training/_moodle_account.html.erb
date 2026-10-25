@@ -1,0 +1,71 @@
+<%# locals: (account:, person:) -%>
+<%# Renders the fetched Moodle account comparison (?account_info=1). Shapes: -%>
+<%#   { status: :not_setup } -%>
+<%#   { status: :missing_account, lms_id: } -%>
+<%#   { status: :success, in_sync:, fields: [{ label:, actual:, expected:, in_sync: }] } -%>
+<% case account[:status] %>
+<% when :not_setup %>
+  <%= ui_callout_box :warning, title: "No Moodle Account", icon: "link-slash" do %>
+    <%= person.callsign %> does not have a Moodle account set up or linked, so account info cannot be shown.
+  <% end %>
+
+<% when :missing_account %>
+  <%= ui_callout_box :warning, title: "Moodle Account Not Found" do %>
+    No Moodle user was found for LMS ID <%= account[:lms_id] %>.
+  <% end %>
+
+<% when :success %>
+  <% if account[:in_sync] %>
+    <%= ui_callout_box :success do %>
+      All online course account fields appear to be in sync with the Clubhouse.
+    <% end %>
+  <% else %>
+    <%= ui_callout_box :warning do %>
+      One or more online course account fields are not in sync with the Clubhouse.
+      Out-of-sync rows show the expected Clubhouse value.
+    <% end %>
+  <% end %>
+
+  <%= ui_table do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Field" %>
+      <%= t.heading "Moodle Account" %>
+      <%= t.heading "Expected (Clubhouse)" %>
+      <%= t.heading "Status" %>
+    <% end %>
+    <%= t.body do %>
+      <% account[:fields].each do |field| %>
+        <%= t.row do %>
+          <%= t.cell do %>
+            <span class="font-medium text-heading"><%= field[:label] %></span>
+          <% end %>
+          <%= t.cell field[:actual].presence || "—" %>
+          <%= t.cell do %>
+            <% if field[:in_sync] %>
+              <span class="text-stone-muted">—</span>
+            <% else %>
+              <span class="font-medium text-heading"><%= field[:expected].presence || "(blank)" %></span>
+            <% end %>
+          <% end %>
+          <%= t.cell do %>
+            <% if field[:in_sync] %>
+              <%= ui_badge "In sync", :success, icon: "circle-check", icon_type: :solid %>
+            <% else %>
+              <%= ui_badge "Differs", :warning, icon: "triangle-exclamation", icon_type: :solid %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <dl class="instruction-list mt-3">
+    <dt>How is the username derived?</dt>
+    <dd>The username is the callsign with only alphanumeric characters, lower-cased, and no spaces.</dd>
+    <dt>Why does the email look different?</dt>
+    <dd>
+      The email is the Clubhouse email with plus addressing stripped out
+      (for example, my+inbox@example.com becomes my@example.com).
+    </dd>
+  </dl>
+<% end %>

@@ -1,0 +1,22 @@
+<%# The one thing every auditor has to understand before opening an account. %>
+<%= ui_section "Register to Audit Ranger Training", icon: "graduation-cap", icon_type: :solid do %>
+  <%= ui_callout_box :error, icon: "ban" do %>
+    <strong>Auditing is not a path to becoming a Black Rock Ranger.</strong>
+    There are no exceptions.
+  <% end %>
+
+  <dl class="instruction-list mb-4">
+    <dt>What does auditing let me do?</dt>
+    <dd>Sit in on a Ranger training session and learn how Rangers operate.</dd>
+    <dt>How do I become a Ranger instead?</dt>
+    <dd>Submit a Volunteer Form at profiles.burningman.org and wait to hear from the Volunteer Coordinators.</dd>
+  </dl>
+
+  <%= button_row do %>
+    <%= button_link "I Understand — Continue to Registration", :primary,
+                    register_path(step: "form"), icon: "arrow-right", icon_type: :solid,
+                    size: "base" %>
+    <%= button_link "Back to Start", :secondary, register_path, icon: "arrow-left",
+                    icon_type: :solid, size: "base" %>
+  <% end %>
+<% end %>

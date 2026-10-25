@@ -1,0 +1,49 @@
+<%# Current-shift panel with End Shift / Correct Position actions. %>
+<% entry = @on_duty_entry %>
+
+<%= ui_section entry.position.title, icon: "person-walking", icon_type: :solid,
+               badge: "On Duty", badge_color: :success, id: "current-shift" do %>
+  <%= ui_label_value label_width: "8rem", size: :base do |list| %>
+    <% list.row "Started", datetime_format(entry.on_duty) %>
+    <% list.row "Duration", hour_minute_words(entry.duration) %>
+    <% list.row "Credits", credit_format(entry.credits) %>
+    <% unless entry.position.count_hours %>
+      <% list.row "Appreciations" do %>
+        <%= fa_icon "ban", :solid, class: "icon-warning" %>
+        <%= entry.position.title %> hours do not count toward provisions (meals, showers, event
+        radio) or appreciations.
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if entry.slot&.url.present? %>
+    <%= ui_callout_box :info, class: "mt-3" do %>
+      More information about this shift: <%= hyperlink_text(entry.slot.url) %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# One ranked row rather than a button inside the card and two loose rows
+    below it: all three answer the same question, so they are grouped and
+    ordered by how often they are the answer. End Shift alone carries size lg —
+    it is the primary action and must out-weigh the two exception paths.
+    Correct Position comes last because it is the only one that leaves the
+    shift running, and takes a different icon so the two secondaries do not
+    read as the same action. .button-row stacks below md, so mobile gets the
+    same priority order top to bottom. %>
+<%= button_row sticky: shift_self_serve?, class: "mt-2" do %>
+  <%= button_link "End Shift", :primary, shift_end_path(entry_id: entry.id),
+                  method: :post, icon: "bed", icon_type: :solid, size: "lg",
+                  full_width: true %>
+  <% if allow_correction_on_end? %>
+    <%= button_link "End Shift & Submit Correction", :secondary,
+                    shift_end_path(entry_id: entry.id, submit_correction: 1),
+                    method: :post, icon: "pen-to-square",
+                    full_width: true %>
+  <% end %>
+  <%= button_link "Correct Position", :secondary, shift_correct_position_path,
+                  # solid: right-left has no regular glyph in FA Free.
+                  icon: "right-left", icon_type: :solid,
+                  data: { turbo_stream: true },
+                  full_width: true %>
+<% end %>

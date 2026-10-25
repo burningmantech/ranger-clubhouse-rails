@@ -1,0 +1,88 @@
+<%# Shared correction request form — self-serve at /me, third person at /hq
+    (see the TimesheetConcern contract for subject, voice, and paths). %>
+<%= hero_panel icon: "clock", heading_level: :h1, id: "submit-correction-header",
+               title: "Submit Correction",
+               back_to: (timesheet_self_serve? ? back_to_timesheet_dashboard : back_to("Timesheet", timesheet_return_path)) %>
+
+<%= ui_form @entry, timesheet_update_path(@entry), method: :patch do |f| %>
+  <% if @entry.notes.any? %>
+    <%= ui_section "Notes from #{timesheet_self_serve? ? "You" : timesheet_person.callsign} and the Timesheet Reviewers", icon: "comment", icon_type: :solid do %>
+      <%= render partial: "common/timesheet_notes", locals: { notes: @entry.notes } %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Position Correction", icon: "briefcase", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Current position: <%= @entry.position.title %></dt>
+      <dd>If this is incorrect, select the correct position below.</dd>
+    </dl>
+    <%= f.select :desired_position_id, @desired_position_options, label: "Correct Position" %>
+  <% end %>
+  <%= ui_section "Start Time Correction", icon: "clock", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Current start time: <%= datetime_format @entry.on_duty %></dt>
+      <dd>If this is incorrect, enter the correct time below.</dd>
+    </dl>
+    <%= f.datetime_field :desired_on_duty, label: "Correct Start Time" %>
+  <% end %>
+  <%= ui_section "End Time Correction", icon: "clock", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Current end time: <%= datetime_format @entry.off_duty %></dt>
+      <dd>If this is incorrect, enter the correct time below.</dd>
+    </dl>
+    <%= f.datetime_field :desired_off_duty, label: "Correct End Time" %>
+  <% end %>
+  <%= ui_section "Reason for Correction", icon: "pen-to-square", icon_type: :solid do %>
+    Please help us understand why this entry should be fixed by providing the following information:
+    <ul class="list-disc ms-5 my-2 space-y-1">
+      <li><span class="font-semibold">Provide a BRIEF &amp; CONCISE explanation in 1 to 3 sentences</span> what needs to
+        be corrected.
+      </li>
+      <li>
+        <span class="font-semibold">
+          <% if timesheet_self_serve? %>
+            Who was your shift partner or the Shift Lead who can corroborate your story?
+          <% else %>
+            Who was <%= timesheet_person.callsign %>'s shift partner or the Shift Lead who can corroborate the story?
+          <% end %>
+        </span>
+      </li>
+    </ul>
+    <%= f.text_area :additional_notes,
+                    label: (@entry.status_rejected? ? "Supply additional information for an appeal:" : "Enter #{timesheet_self_serve? ? "your" : "a"} brief explanation below:"),
+                    maxlength: 1000,
+                    data: input_counter_data
+    %>
+  <% end %>
+  <%= ui_callout_box :warning, title: "Grounds for Denial", accent: true do %>
+    <ul class="space-y-1">
+      <%= ui_icon_item "ban", :solid do %>
+        <% if timesheet_self_serve? %>
+          You are requesting credit for time you were not on duty due to a late start.
+        <% else %>
+          It requests credit for time <%= timesheet_person.callsign %> was not on duty due to a late start.
+        <% end %>
+      <% end %>
+      <%= ui_icon_item "ban", :solid do %>
+        Not enough or incomplete information was provided.
+      <% end %>
+      <%= ui_icon_item "ban", :solid do %>
+        The requested changes cannot be confirmed by <%= timesheet_whose %> shift partner(s) or the Shift Lead.
+      <% end %>
+      <%= ui_icon_item "ban", :solid do %>
+        <% if timesheet_self_serve? %>
+          You are attempting to be credited for OFF PLAYA trainings.
+        <% else %>
+          It attempts to credit OFF PLAYA trainings.
+        <% end %>
+      <% end %>
+    </ul>
+    <div class="mt-3 pt-3 border-t border-warning font-semibold">
+      <%= fa_icon "user-check", :solid, end: 2 %>We verify all corrections with shift partners and leads.
+    </div>
+  <% end %>
+  <%= button_row class: "mt-4" do %>
+    <%= f.submit "Submit Correction" %>
+    <%= back_to "Entries", timesheet_return_path %>
+  <% end %>
+<% end %>

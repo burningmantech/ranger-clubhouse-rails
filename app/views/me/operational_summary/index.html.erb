@@ -1,0 +1,21 @@
+<%= hero_panel icon: "bars-progress", heading_level: :h1, id: "operational-summary-header",
+               description: "View your training status, team membership, positions, provisions, driving eligibility, and certifications.",
+               back_to: ["Clubhouse Dashboard", me_root_path] do |panel| %>
+  <% panel.title do %>Operational Summary<% end %>
+<% end %>
+
+<% if current_user.is_applicant? %>
+  <%= ui_callout_box :info do %>
+    <strong>This page is for active Rangers.</strong>
+    When you become a Ranger, this page will show your training status, team membership, positions granted, provisions and event radios issued, your eligibility for driving the Ranger Vehicle Use and Ranger Rental Fleet vehicles, and any certifications that have been recorded.
+  <% end %>
+<% else %>
+  <%= render partial: "training" %>
+  <%= render partial: "teams_and_positions" %>
+  <div class="two-column-lg">
+    <%= render partial: "provisions_and_radios" %>
+    <%= render partial: "basic_driving" %>
+    <%= render partial: "mvr" %>
+    <%= render partial: "certifications" %>
+  </div>
+<% end %>

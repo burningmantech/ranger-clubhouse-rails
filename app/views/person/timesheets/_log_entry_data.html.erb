@@ -1,0 +1,59 @@
+<%# locals: (log:) %>
+<% data = log.decode_data || {} %>
+<div class="font-semibold text-heading">
+  <%= timesheet_log_action_label(log.action) %><% if data["via"].present? %> via <%= timesheet_log_via_label(data["via"]) %><% end %>
+</div>
+<% if data["message"].present? %>
+  <div><%= data["message"] %></div>
+<% end %>
+<% if log.action == TimesheetLog::UPDATE %>
+  <% if data["review_status"].is_a?(Array) %>
+    <div><span class="me-2 text-stone-muted">Status update:</span><%= data["review_status"][0] %> &rarr; <%= data["review_status"][1] %></div>
+  <% end %>
+  <% if data["position_id"].is_a?(Array) %>
+    <div>
+      <span class="me-2 text-stone-muted">Position update:</span>
+      <%= data["position_id"][0]&.dig("title") || "Position ##{data["position_id"][0]&.dig("id")}" %>
+      &rarr;
+      <%= data["position_id"][1]&.dig("title") || "Position ##{data["position_id"][1]&.dig("id")}" %>
+    </div>
+  <% end %>
+  <% if data["slot_id"].is_a?(Array) %>
+    <div>
+      <span class="me-2 text-stone-muted">Shift update:</span>
+      <%= data["slot_id"][0]&.dig("description") || "No shift" %>
+      &rarr;
+      <%= data["slot_id"][1]&.dig("description") || "No shift" %>
+    </div>
+  <% end %>
+  <% if data["on_duty"].is_a?(Array) %>
+    <div><span class="me-2 text-stone-muted">On duty update:</span><%= datetime_format data["on_duty"][0] %> &rarr; <%= datetime_format data["on_duty"][1] %></div>
+  <% end %>
+  <% if data["off_duty"].is_a?(Array) %>
+    <div><span class="me-2 text-stone-muted">Off duty update:</span><%= datetime_format data["off_duty"][0] %> &rarr; <%= datetime_format data["off_duty"][1] %></div>
+  <% end %>
+<% else %>
+  <% if data["position_title"].present? %>
+    <div><span class="me-2 text-stone-muted">Position:</span><%= data["position_title"] %></div>
+  <% end %>
+  <% if data["on_duty"].present? && !data["on_duty"].is_a?(Array) %>
+    <div><span class="me-2 text-stone-muted">On duty:</span><%= datetime_format data["on_duty"] %></div>
+  <% end %>
+  <% if data["off_duty"].present? && !data["off_duty"].is_a?(Array) %>
+    <div><span class="me-2 text-stone-muted">Off duty:</span><%= datetime_format data["off_duty"] %></div>
+  <% end %>
+<% end %>
+<% if data["forced"].present? %>
+  <% Array(data["blockers"]).each do |blocker| %>
+    <div class="text-error"><%= timesheet_blocker_label(blocker) %></div>
+  <% end %>
+  <% if data["signin_force_reason"].present? %>
+    <div>Force reason:<br><%= data["signin_force_reason"] %></div>
+  <% end %>
+<% end %>
+<% if data["notes"].present? %>
+  <div class="mt-1">Notes:<br><%= data["notes"] %></div>
+<% end %>
+<% if data["reviewer_notes"].present? %>
+  <div class="mt-1">Reviewer notes:<br><%= data["reviewer_notes"] %></div>
+<% end %>

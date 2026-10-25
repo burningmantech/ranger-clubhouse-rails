@@ -1,0 +1,19 @@
+<%# locals: (messages:,folder:,selected_id: nil) %>
+<% if search_query %>
+  <%# In the tab row's place: what the search found, and the way back to the
+      folder, as a fresh page so the field empties too. %>
+  <div class="flex flex-wrap items-center gap-2 px-3 text-sm text-stone-muted" role="status">
+    <span><%= message_search_summary(messages.size, search_query) %></span>
+    <%= button_link "Clear Search", :ghost, messages_path(folder: (folder unless folder == PersonMessage::FOLDER_INBOX)),
+                    class: "ms-auto", data: { turbo_frame: "_top" } %>
+  </div>
+<% elsif messages.empty? %>
+  <%= ui_empty_state "No messages in this folder.", icon: "envelope", class: "mx-3 text-center" %>
+<% end %>
+<% if messages.any? %>
+  <ul class="flex flex-col gap-1 p-1" role="list" aria-label="<%= search_query ? "Search results" : "Conversations" %>">
+    <%= render partial: "common/messages/conversation_summary", collection: messages, as: :message,
+               locals: { owner: message_owner, namespace: messages_route_prefix, folder:, q: search_query,
+                         selected_id: } %>
+  </ul>
+<% end %>

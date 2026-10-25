@@ -1,0 +1,35 @@
+<%#
+  Results ledger for one maintenance task run.
+
+  @rows is transient -- it only exists in the response to the POST that ran the
+  task, so this page cannot be reached again by a GET. Print it in full here.
+%>
+<%# A form-submission render keeps the submitting page's scroll position --
+    without this the reader lands wherever the submit button was instead of
+    at the summary. %>
+<div data-controller="scroll-to-top" hidden></div>
+
+<%= hero_panel icon: "circle-check", heading_level: :h1, id: "ticketing-maintenance-results-header",
+               description: "This task has finished, and the records it processed are listed below.",
+               back_to: ["Maintenance Tasks", ticketing_maintenance_path] do |panel| %>
+  <% panel.title do %><%= @task.title %><% end %>
+<% end %>
+
+<% if @rows.any? %>
+  <% failed = @rows.count { |row| row.error.present? } %>
+  <% if failed.positive? %>
+    <%= ui_callout_box :error, accent: true, title: "Some Records Could Not Be Saved" do %>
+      <%= pluralize failed, "record" %> failed -- each failure is marked with an
+      Error row in the ledger below. The rest were processed.
+    <% end %>
+  <% end %>
+
+  <div class="text-lg my-4">
+    <strong><%= pluralize @rows.size, "record" %></strong> processed
+  </div>
+
+  <%= render "common/ticketing_maintenance/results_table", rows: @rows %>
+<% else %>
+  <%= ui_empty_state "No matching records were found. Nothing changed.",
+                     icon: "circle-check", icon_type: :solid %>
+<% end %>

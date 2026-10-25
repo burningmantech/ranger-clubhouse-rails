@@ -1,0 +1,32 @@
+<%# locals: (value:, status: nil) %>
+<%#
+  One value cell of the summary table, tinted by the status of the document it
+  came from. Qualified documents (status nil) render as plain text, matching
+  upstream, which only tints claimed, banked, and submitted.
+
+  The icon and the screen-reader word carry the status too, so the tint is never
+  the only thing saying "claimed" or "banked", and the badge's title says it to
+  a pointer: the legend that explains the tints is folded away in the page's
+  About This Report card.
+%>
+<% if value.blank? %>
+  <span class="text-stone-muted">&mdash;</span>
+<% elsif status.blank? %>
+  <span class="text-body"><%= value %></span>
+<% else %>
+  <%
+    tint = {
+      "claimed" => { variant: :success, icon: "circle-check" },
+      "banked" => { variant: :warning, icon: "piggy-bank" },
+      "submitted" => { variant: :secondary, icon: "paper-plane" }
+    }.fetch(status, { variant: :secondary, icon: "circle-info" })
+  %>
+  <%# Block form so the icon can sit next to a screen-reader-only status word.
+      The icon inherits the badge's own colour, as the other block-form badges
+      in the app do. %>
+  <%= ui_badge tint[:variant], size: "base", title: status,
+               class: "inline-flex items-center gap-2 whitespace-nowrap" do %>
+    <%= fa_icon tint[:icon], :solid %>
+    <%= value %><span class="sr-only"> (<%= status %>)</span>
+  <% end %>
+<% end %>

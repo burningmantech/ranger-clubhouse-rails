@@ -1,0 +1,30 @@
+<%# First step: find out whether this reader belongs here at all. %>
+<p class="mb-4">
+  Thank you for visiting the Black Rock Ranger Secret Clubhouse.
+</p>
+
+<%= ui_callout_box :info, icon: "calendar" do %>
+  <strong>Ranger trainings are only offered late April through August.</strong>
+<% end %>
+
+<h2 class="heading-section text-heading mt-6 mb-3">Why You're Here</h2>
+
+<div class="stack-to-row-lg">
+  <%= ui_section "To Volunteer with the Rangers", icon: "people-group", icon_type: :solid,
+                 class: "flex-1" do %>
+    <p class="mb-3">
+      Becoming a Black Rock Ranger starts with a Volunteer Form, not a Clubhouse account.
+    </p>
+    <%= button_link "I Want to Volunteer", :secondary, register_path(step: "volunteer"),
+                    size: "base" %>
+  <% end %>
+
+  <%= ui_section "To Audit Ranger Training", icon: "graduation-cap", icon_type: :solid,
+                 class: "flex-1" do %>
+    <p class="mb-3">
+      Sit in on a training session as an Auditor, or as a Regional Ranger training this year.
+    </p>
+    <%= button_link "I Want to Audit a Training", :secondary, register_path(step: "acknowledge"),
+                    size: "base" %>
+  <% end %>
+</div>

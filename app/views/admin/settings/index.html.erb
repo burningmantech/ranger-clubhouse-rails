@@ -1,0 +1,65 @@
+<%= hero_panel icon: "gear", heading_level: :h1, id: "setting-header",
+               title: "System Settings",
+               description: "Adjust system settings" %>
+
+<%= ui_callout_box :info, title: "Credential #{@is_tech_ninja ? "Info" : "Warning"}" do %>
+  <% if @is_tech_ninja %>
+    Because you hold the Tech Ninja role, you are permitted to view and update any credential setting.
+  <% else %>
+    Note: you are not permitted to view credential settings.
+  <% end %>
+<% end %>
+
+<%= ui_section "Settings List" do %>
+  <%= ui_form @form, admin_settings_path, method: :get, local: true do |f| %>
+    <%= form_row class: "items-center" do %>
+      <%= f.text_field :filter, label: "Setting to Find", size: 40, layout: :horizontal, name: "filter" %>
+      <%= hidden_field_tag :sort_by, params[:sort_by] if params[:sort_by].present? %>
+      <%= hidden_field_tag :sort_dir, params[:sort_dir] if params[:sort_dir].present? %>
+      <div>
+        <%= f.submit "Search", class: "ml-4", name: '', data: { action: "click->form#submit" } %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <p class="mb-2 text-base text-body">
+    Showing <%= pluralize(@settings.size, "setting") %><%= @form.filter.present? ? " matching the current filter." : "." %>
+  </p>
+
+  <% if @settings.empty? %>
+    <%= ui_empty_state "No settings matched the current filter.", icon: "magnifying-glass", icon_type: :solid %>
+  <% else %>
+    <%= ui_table full_width: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Name" %>
+        <%= t.heading "Value" %>
+        <%= t.heading "Action" %>
+      <% end %>
+      <%= t.body do %>
+        <% @settings.each do |setting| %>
+          <%= t.row do %>
+            <%= t.cell setting.name %>
+            <%= t.cell do %>
+              <% if setting.is_credential && !@is_tech_ninja %>
+                <%= ui_badge "Hidden", :warning, icon: "lock" %>
+              <% elsif setting.value.nil? %>
+                <%= ui_badge "null", :secondary %>
+              <% elsif setting.value.blank? %>
+                <%= ui_badge "blank", :secondary %>
+              <% else %>
+                <%= truncate(setting.value.to_s.lines.first&.strip, length: 60) %>
+              <% end %>
+            <% end %>
+            <%= t.cell do %>
+              <% if setting.is_credential && !@is_tech_ninja %>
+                <span class="text-stone-muted">No access</span>
+              <% else %>
+                <%= edit_link(edit_admin_setting_path(setting.name, filter: @form.filter), "Edit", aria: { label: "Edit #{setting.name}" }) %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

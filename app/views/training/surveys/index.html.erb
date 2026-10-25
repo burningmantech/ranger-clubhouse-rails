@@ -1,0 +1,43 @@
+<% content_for :title, "#{@training.title} Surveys" %>
+
+<%= hero_panel icon: "square-poll-vertical", heading_level: :h1, id: "training-surveys-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> Surveys<% end %>
+  <% panel.description do %>
+    Feedback on the year's sessions.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "#{@year} Sessions", training_path(training_slug, year: @year) %>
+  <% end %>
+  <%# Surveys have been kept in the Clubhouse since 2012. %>
+  <% panel.year_selector year: @year, min_year: 2012, skip_pandemic: true %>
+<% end %>
+
+<%# Out of the hero, and only where there is a survey to read -- the same two
+    answers Alpha Surveys gives. %>
+<% if @sections.any? { |section| section.surveys.any? } %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Who answers, and when?</dt>
+      <dd>Trainees, trainers, and mentors answer these after a session.</dd>
+      <dt>Are the answers anonymous?</dt>
+      <dd>Names appear only where the person agreed to share theirs.</dd>
+    </dl>
+  <% end %>
+<% end %>
+
+<%# Upstream reached the mentor and mentee surveys through two more sidebar
+    links and a ?position_id= query parameter. One survey-management role
+    already covers all three audiences, so they are sections of one page. %>
+<% @sections.each do |section| %>
+  <%= ui_section section.title,
+                 badge: pluralize(section.surveys.size, "survey"),
+                 badge_color: section.surveys.any? ? :success : :secondary do %>
+    <% if section.surveys.empty? %>
+      <%= ui_empty_state "No #{section.position_title} surveys were created for #{@year}.",
+                         icon: "clipboard-question", icon_type: :solid %>
+    <% else %>
+      <%# Every survey in a section shares this page's year, so no year column. %>
+      <%= render "common/surveys/survey_table", surveys: section.surveys, show_year: false %>
+    <% end %>
+  <% end %>
+<% end %>

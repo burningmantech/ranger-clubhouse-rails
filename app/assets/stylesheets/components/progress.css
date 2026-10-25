@@ -1,0 +1,36 @@
+/*
+ * Progress Bar System
+ * DaisyUI progress components + custom sticky/labeled variants
+ * See: https://daisyui.com/components/progress/
+ */
+
+.sticky-progress-container {
+    @apply sticky top-0 left-0 right-0 w-full z-40 -mx-3 -mt-3 px-3 pt-3 pb-2 bg-base-100 border-b border-base-300 shadow-sm transition-all duration-200;
+}
+
+.progress-container {
+    @apply relative h-3 bg-base-300 rounded-full overflow-hidden;
+}
+
+.progress-bar {
+   @apply absolute inset-y-0 left-0 bg-linear-to-r from-primary to-warning rounded-full transition-all duration-500 ease-out;
+}
+
+.progress-bar-pulse {
+    @apply absolute inset-y-0 left-0 bg-linear-to-r from-primary/50 to-warning/50 rounded-full animate-pulse;
+}
+
+.progress-labels-container {
+    @apply mt-2 flex justify-between text-sm text-base-content/60;
+}
+
+/*
+ * The projected segment of ui_progress_bar (projected:): where the total lands
+ * once pending sign-ups count. The element carries the fill colour; the mask
+ * cuts it into 45-degree stripes with the track showing between them, so it
+ * reads as "not yet earned" by pattern rather than by a second, fainter hue --
+ * one hue at 40% cleared 3:1 against neither the track nor the fill.
+ */
+.progress-projected {
+    mask-image: repeating-linear-gradient(-45deg, #000 0 4px, transparent 4px 8px);
+}

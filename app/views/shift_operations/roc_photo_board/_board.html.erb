@@ -1,0 +1,76 @@
+<%# The board itself, without the frame around it: the page and the refresh
+    route each put their own around this, because only one of the two may name
+    where the next copy comes from. %>
+
+  <%# The countdown is left blank: the display fills it in the moment it starts,
+      and it is the one that decides how long the wait is. %>
+  <header class="photo-board-header" data-photo-board-target="header">
+    <div class="photo-board-loaded">Loaded <%= datetime_format(board.loaded_at) %></div>
+    <h1 class="photo-board-heading">ROC Photo Board</h1>
+    <div class="photo-board-countdown">
+      Refresh in <span data-photo-board-target="countdown"></span>s
+    </div>
+  </header>
+
+  <div class="photo-board-layout">
+    <div class="photo-board-groups">
+      <% board.groups.each do |group| %>
+        <section class="photo-board-group" data-photo-board-target="group">
+          <div class="photo-board-group-header">
+            <span class="photo-board-badge">Now showing</span>
+            <h2 class="photo-board-group-title"><%= group.title %></h2>
+            <span class="photo-board-group-count"><%= group.size %> on duty</span>
+          </div>
+
+          <% if group.entries.any? %>
+            <div class="photo-board-cards">
+              <% group.entries.each do |entry| %>
+                <div class="photo-board-card">
+                  <%= render "photo", person: entry.person %>
+                  <div class="photo-board-card-body">
+                    <div class="photo-board-callsign"><%= entry.person.callsign %></div>
+                    <div class="photo-board-position"><%= entry.position_title %></div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="photo-board-empty">
+              <%= fa_icon "circle-user", :regular, class: "fa-3x" %>
+              <div>No one is on duty in these positions.</div>
+            </div>
+          <% end %>
+        </section>
+      <% end %>
+    </div>
+
+    <nav class="photo-board-rail" aria-label="Groups on the board">
+      <h2 class="photo-board-rail-heading">Groups</h2>
+      <ol class="photo-board-rail-list">
+        <% board.groups.each do |group| %>
+          <li class="photo-board-rail-item" data-photo-board-target="railItem">
+            <span class="photo-board-rail-dot"></span>
+            <span class="photo-board-rail-title"><%= group.title %></span>
+            <span class="photo-board-rail-count"><%= group.size %></span>
+          </li>
+        <% end %>
+      </ol>
+
+      <h2 class="photo-board-rail-heading">Who to Ask</h2>
+      <% if board.hosts.any? %>
+        <% board.hosts.each do |entry| %>
+          <div class="photo-board-card photo-board-host">
+            <%= render "photo", person: entry.person %>
+            <div class="photo-board-card-body">
+              <div class="photo-board-callsign"><%= entry.person.callsign %></div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="photo-board-no-host">
+          <div>No ROC Star is on duty to answer questions.</div>
+          <div class="photo-board-no-host-next">Talk with a Khaki.</div>
+        </div>
+      <% end %>
+    </nav>
+  </div>

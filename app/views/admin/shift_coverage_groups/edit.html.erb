@@ -1,0 +1,10 @@
+<% content_for :title, "Edit Shift Type" %>
+
+<%# title_in_database: a rejected form comes back holding what was typed, and the heading
+    names the shift type being edited, not the title in a failed submission. %>
+<%= hero_panel icon: "table-cells", heading_level: :h1, id: "shift-coverage-group-form-header",
+               title: "Edit Shift Type: #{@group.title_in_database}",
+               description: "Name a shift type and choose the positions whose shifts set its periods.",
+               back_to: [@group.title_in_database, admin_shift_coverage_group_path(@group)] %>
+
+<%= render "form" %>

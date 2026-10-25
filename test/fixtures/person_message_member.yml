@@ -1,0 +1,30 @@
+# The members of person_message.yml's threads, each read past its newest row,
+# so no unread count, chip or prompt moves: last_read_message_id is that row's
+# id. The threads are named by their own ids, which person_message.yml sets.
+
+# The group thread.
+<% %w[inactive_ranger retired_ranger echelon_ranger].each do |member| %>
+search_group_crew_<%= member %>:
+  person_message_id: 1004 # search_group_crew
+  person: <%= member %>
+  last_read_message_id: 1005
+  created_at: <%= 5.days.ago.to_fs(:db) %>
+<% end %>
+
+# The one-to-one threads' two parties: InactiveRanger archived the radio
+# thread they sent.
+<% {
+     search_dirt_swap: [%i[inactive_ranger alpha_ranger], 1006, 1007],
+     search_radio_archived: [%i[plate_collision_ranger inactive_ranger], 1002, 1003],
+     search_khaki_notes: [%i[inactive_ranger plate_collision_ranger], 1001, 1001],
+     search_not_the_owners: [%i[plate_collision_ranger alpha_ranger], 1008, 1008]
+   }.each do |thread, (parties, id, newest)| %>
+<% parties.each do |party| %>
+<%= thread %>_<%= party %>:
+  person_message_id: <%= id %>
+  person: <%= party %>
+  archived: <%= thread == :search_radio_archived && party == :inactive_ranger %>
+  last_read_message_id: <%= newest %>
+  created_at: <%= 20.days.ago.to_fs(:db) %>
+<% end %>
+<% end %>

@@ -1,0 +1,10 @@
+<% content_for :title, "Edit Post" %>
+
+<%# title_in_database: a rejected form comes back holding what was typed, and the heading
+    names the post being edited, not the title in a failed submission. %>
+<%= hero_panel icon: "table-cells", heading_level: :h1, id: "shift-coverage-position-form-header",
+               title: "Edit Post: #{@post.title_in_database}",
+               description: "Choose the positions this post reads and how it shows them.",
+               back_to: [@group.title, admin_shift_coverage_group_path(@group)] %>
+
+<%= render "form" %>

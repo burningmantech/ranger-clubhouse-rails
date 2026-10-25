@@ -1,0 +1,170 @@
+<%#
+  The year's checkout ledger: one row per checkout event, barcode-then-time
+  ordered, matching the upstream report and the Assets Outstanding sibling. The
+  Type filter is also the radio opt-in -- handhelds are out of the default scope
+  because they alone add ~2,100 rows a year.
+%>
+<% content_for :title, "Asset History" %>
+
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1, id: "asset-history-header",
+               title: "Asset History" do |panel| %>
+  <% panel.description do %>
+    Every asset checkout recorded for <%= @year || "the event" %> — what went out, who took it,
+    who handed it over, and whether it came back.
+  <% end %>
+  <%# keep: -- the selector submits its own bare GET, so without it the filters
+      silently vanish the moment someone changes year. %>
+  <% if @available_years.any? %>
+    <% panel.year_selector year: @year,
+                           years: @available_years,
+                           include_current_year: false,
+                           include_year_argument: false,
+                           keep: active_filters(@filter_params) %>
+  <% end %>
+<% end %>
+
+<% if @available_years.empty? %>
+  <%= ui_empty_state "No asset records have been added yet.",
+                     icon: "boxes-stacked", icon_type: :solid %>
+<%# No empty-ledger branch above the filter bar: the default scope hides handheld
+    radios, so a year whose activity is all radios would otherwise report that
+    nothing went out AND withhold the one control that proves otherwise. %>
+<% else %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @checkout_count.to_s, "Checkouts Recorded",
+                    icon: "right-left", icon_type: :solid %>
+    <%= ui_stat_box @asset_count.to_s, "Assets Checked Out",
+                    icon: "boxes-stacked", icon_type: :solid %>
+    <%= ui_stat_box @holder_count.to_s, "People Who Took Assets",
+                    icon: "users", icon_type: :solid %>
+    <%= ui_stat_box @unreturned_count.to_s, "Never Returned",
+                    variant: @unreturned_count.positive? ? :warning : :secondary,
+                    icon: "triangle-exclamation", icon_type: :solid %>
+  <% end %>
+
+  <%# What the hero used to carry after its first sentence. The hero says what
+      the page does; how to read it lives here, one row until opened.
+      variant: :card -- boxed, with a chevron, it reads as a control for the
+      whole page; the inline summary is a line of text. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Where are the handheld radios?</dt>
+      <dd>Handheld radios are left out by default; choose Radio in the filters to include them.</dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "asset-history-filters",
+                 chips: asset_history_filter_chips(@filter_params, @year),
+                 clear_url: asset_management_asset_history_path(year: @year),
+                 count: "Showing #{pluralize(@filtered_rows.size, "checkout")}",
+                 actions: export_csv_link(asset_management_asset_history_path(**active_filters(@filter_params),
+                                          year: @year, format: :csv)),
+                 url: asset_management_asset_history_path do |f| %>
+    <%# Year-scoped page: without this the filters snap back to the current year. %>
+    <%= hidden_field_tag :year, @year %>
+
+    <%= form_row do %>
+      <%= f.select :type,
+                   asset_history_type_options(@selectable_types),
+                   label: "Type",
+                   selected: @filter_params[:type],
+                   width: "w-full",
+                   wrapper_class: "flex-1" %>
+      <%= f.select :outcome,
+                   asset_history_outcome_options,
+                   label: "Outcome",
+                   selected: @filter_params[:outcome],
+                   width: "w-full",
+                   wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <% if @filtered_rows.empty? %>
+    <%= ui_empty_state asset_history_empty_message(@filter_params, @year, @hidden_radio_checkouts),
+                       icon: "filter-circle-xmark", icon_type: :solid %>
+  <% else %>
+    <%= ui_section "Checkout Ledger", icon: "table-list", icon_type: :solid do %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Barcode" %>
+          <%= t.heading "Type" %>
+          <%= t.heading "Description" %>
+          <%= t.heading "Assignment" %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Checked Out / By" %>
+          <%= t.heading "Checked In / By" %>
+          <%= t.heading "Duration" %>
+        <% end %>
+
+        <%= t.body do %>
+          <% @page_rows.each do |asset, history| %>
+            <%= t.row do %>
+              <%# The record page carries this asset's own history plus its
+                  notes and expiration, which is the next question after "who
+                  had it". origin: sends its Back link here rather than to the
+                  inventory. %>
+              <%= t.row_header link_to(asset.barcode,
+                                       asset_management_record_path(asset,
+                                                                    **active_filters(@filter_params),
+                                                                    year: @year, page: @page,
+                                                                    origin: "history"),
+                                       class: LinkHelper::TABLE_LINK_CLASSES) %>
+              <%= t.cell asset_type_label(asset.type) %>
+              <%= t.cell value_or_dash(asset.description) %>
+              <%= t.cell asset_assignment_badge(asset) %>
+              <%= t.cell person_display_link(history.person, history.person_id) %>
+              <%# year: -- the reader browses arbitrary past years here, so a
+                  bare "Aug 27 @ 12:47" cannot be placed. %>
+              <%= t.cell do %>
+                <%= datetime_format(history.checked_out, year: true) %>
+                <% if history.check_out_person_id.present? %>
+                  <div class="text-body">
+                    by <%= person_display_link(history.check_out_person,
+                                               history.check_out_person_id) %>
+                  </div>
+                <% end %>
+              <% end %>
+              <%= t.cell do %>
+                <% if history.checked_in.present? %>
+                  <%= datetime_format(history.checked_in, year: true) %>
+                  <% if history.check_in_person_id.present? %>
+                    <div class="text-body">
+                      by <%= person_display_link(history.check_in_person,
+                                                 history.check_in_person_id) %>
+                    </div>
+                  <% end %>
+                <% else %>
+                  <%= ui_badge "Never returned", :warning %>
+                <% end %>
+              <% end %>
+              <%= t.cell asset_history_duration(history) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <% if @total_pages > 1 %>
+      <div class="my-4 flex flex-wrap items-center gap-4">
+        <%= button_row do %>
+          <% if @page > 1 %>
+            <%= button_link "Previous Page", :secondary,
+                            asset_management_asset_history_path(**active_filters(@filter_params),
+                                                                year: @year, page: @page - 1),
+                            icon: "arrow-left", icon_type: :solid %>
+          <% end %>
+          <% if @page < @total_pages %>
+            <%= button_link "Next Page", :secondary,
+                            asset_management_asset_history_path(**active_filters(@filter_params),
+                                                                year: @year, page: @page + 1) %>
+          <% end %>
+        <% end %>
+        <span class="text-body">Page <%= @page %> of <%= @total_pages %></span>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

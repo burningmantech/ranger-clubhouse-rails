@@ -1,0 +1,145 @@
+<%# locals: (person:, history:, year:, note_buttons: true) %>
+<%#
+  One person's full intake history: the year-by-year pipeline line, then each
+  team's ranks and notes with the training sessions in Training's slot.
+  Rendered into the Convert Prospectives table's lazy frame by detail.html.erb
+  and into the review pane by _review_pane.html.erb. Unlike the person page,
+  teams with nothing recorded are folded into a single line rather than each
+  getting an empty section of its own -- on a pipeline list that is four blocks
+  of "no notes" per person.
+
+  writable is empty on a read-only page (the training copy, matching upstream's
+  trainingNotesOnly), which is what removes every Edit/Delete/Add control --
+  and with it the need for an origin token, since nothing here can start a note
+  form. The _note partial stays under person/ and is addressed by full path;
+  it is the person page's own partial that this page borrows.
+%>
+<% writable = unified_flagging_writable_teams %>
+<% origin_params = unified_flagging_origin %>
+<% without_content = history[:teams].reject { |_, entries| entries.any? } %>
+
+<div class="border-t border-line pt-3">
+  <% if history[:pnv_history].any? %>
+    <div class="flex flex-wrap gap-x-5 gap-y-2 mb-4">
+      <% history[:pnv_history].reverse_each do |info| %>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="font-semibold text-heading"><%= info[:year] %></span>
+          <%= training_status_badge(info[:training_status]) %>
+          <% if info[:was_auditor] %>
+            <span class="text-sm text-stone-muted">was auditor</span>
+          <% elsif info[:passed_previously] %>
+            <span class="text-sm text-stone-muted">active status</span>
+          <% else %>
+            <%= mentee_status_badge(person.status, info[:mentor_status], info[:have_alpha_shift]) %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# The sections follow Intake::TEAM_ORDER, Training in its slot between VC and
+      Mentors, so the pane names the teams in the order its gray line does. %>
+  <% Intake::TEAM_ORDER.each do |team_key| %>
+    <% entries = history[:teams][team_key] %>
+    <% if team_key == "training" %>
+      <section class="mb-4">
+        <h4 class="heading-title text-heading mb-2">
+          <%= fa_icon("chalkboard-user", :solid, end: 1) %>Training
+        </h4>
+        <% if history[:trainings].blank? %>
+          <p class="text-stone-muted">No training sign-ups.</p>
+        <% else %>
+          <% history[:trainings].sort_by(&:slot_begins).reverse.each do |training| %>
+            <div class="mb-3 last:mb-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-heading"><%= mdy_format(training.slot_begins) %></span>
+                <% if training.slot_description.present? %>
+                  <span class="text-body"><%= training.slot_description %></span>
+                <% end %>
+                <span class="text-stone-muted">&lt;<%= training.person_status %>&gt;</span>
+                <% if training.slot_has_ended %>
+                  <%= training_pass_badge(training.training_status) %>
+                  <%= intake_rank_badge(training.training_rank) %>
+                <% else %>
+                  <%= ui_badge("training pending", :warning) %>
+                <% end %>
+              </div>
+
+              <% if training.slot_has_ended %>
+                <% notes = (training.training_notes || []).reject(&:is_log) %>
+                <% if notes.any? %>
+                  <%= ui_disclosure "Trainer Notes (#{notes.size})", class: "mt-1" do %>
+                    <ul class="mt-2 space-y-3">
+                      <% notes.each do |note| %>
+                        <li>
+                          <div class="text-sm text-stone-muted mb-1">
+                            <%= datetime_format(note.created_at, tz: "America/Los_Angeles", tz_abbr: "PT", year: true) %>
+                            by
+                            <% if note.person_source %>
+                              <%= note.person_source.callsign %>
+                            <% else %>
+                              <i>*imported*</i>
+                            <% end %>
+                          </div>
+                          <div class="text-body"><%= simple_format(note.note) %></div>
+                        </li>
+                      <% end %>
+                    </ul>
+                    <p class="mt-2 text-sm">
+                      <% if training.feedback_delivered %>
+                        <span class="text-success">
+                          <%= fa_icon("check", :solid, end: 1) %>Lead trainer delivered feedback to trainee.
+                        </span>
+                      <% else %>
+                        <span class="text-warning">
+                          <%= fa_icon("triangle-exclamation", :solid, end: 1) %>Lead trainer did not deliver feedback
+                          to trainee.
+                        </span>
+                      <% end %>
+                    </p>
+                  <% end %>
+                <% else %>
+                  <p class="text-stone-muted text-sm">No trainer notes.</p>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      </section>
+    <% elsif entries&.any? %>
+      <% label = intake_team_label(team_key) %>
+      <section class="mb-4">
+        <h4 class="heading-title text-heading mb-2">
+          <%= fa_icon(intake_team_icon(team_key), :solid, end: 1) %><%= label %>
+        </h4>
+        <% entries.reverse_each do |entry| %>
+          <div class="mb-3 last:mb-0">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <span class="font-semibold text-heading"><%= entry[:year] %></span>
+              <%= intake_rank_badge(entry[:rank]) %>
+            </div>
+            <% non_log_notes = entry[:notes].reject(&:is_log) %>
+            <% if non_log_notes.any? %>
+              <ul class="space-y-3">
+                <%= render partial: "person/unified_flagging/note", collection: non_log_notes, as: :note,
+                           locals: { person: person, label: label,
+                                     can_write: writable.include?(team_key),
+                                     origin_params: origin_params } %>
+              </ul>
+            <% else %>
+              <p class="text-body">No notes.</p>
+            <% end %>
+          </div>
+        <% end %>
+      </section>
+    <% end %>
+  <% end %>
+
+  <% if without_content.any? %>
+    <p class="text-stone-muted mb-4">
+      No notes yet: <%= without_content.map { |team_key, _| intake_team_label(team_key) }.to_sentence %>.
+    </p>
+  <% end %>
+
+  <%= render "common/unified_flagging/note_buttons", person: person, year: year if note_buttons %>
+</div>

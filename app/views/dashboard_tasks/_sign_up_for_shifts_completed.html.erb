@@ -1,0 +1,5 @@
+<%# locals: (step:,facts:)%>
+<% shift_signups = facts.shift_signups %>
+<b><%= shift_signups.slot_count %> shift<%= "s" unless shift_signups.slot_count == 1 %></b> signed up
+→ <b><%= format("%.2f", shift_signups.credits) %> credits</b> potential. Thanks!
+<div class="mt-2"><%= link_to "Go To Schedule / Sign-Ups", me_schedule_path, class: "tap-target-link" %></div>

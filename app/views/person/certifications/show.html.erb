@@ -1,0 +1,40 @@
+<%= hero_panel icon: "certificate", heading_level: :h1, id: "person-certification-header",
+               description: "Certification details.",
+               back_to: ["Certifications", person_certifications_path(@person)] do |panel| %>
+  <% panel.title do %>
+    <%= @person_certification.certification.title %> &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Certification Details", icon: "certificate", icon_type: :solid do %>
+  <dl class="grid grid-cols-[8rem_1fr] gap-y-2 gap-x-3 text-base">
+    <dt class="font-semibold text-base-content">Card #</dt>
+    <dd class="text-body"><%= @person_certification.card_number.presence || "—" %></dd>
+
+    <dt class="font-semibold text-base-content">Issued on</dt>
+    <dd class="text-body"><%= @person_certification.issued_on.presence || "—" %></dd>
+
+    <dt class="font-semibold text-base-content">Trained on</dt>
+    <dd class="text-body"><%= @person_certification.trained_on.presence || "—" %></dd>
+
+    <dt class="font-semibold text-base-content">Recorded by</dt>
+    <dd class="text-body">
+      <% if @person_certification.recorder_id %>
+        <%= link_to @person_certification.recorder.callsign,
+                    person_path(@person_certification.recorder), class: "underline" %>
+        at <%= datetime_format(@person_certification.created_at, year: true) %>
+      <% else %>
+        <i class="me-muted">— imported —</i>
+      <% end %>
+    </dd>
+
+    <dt class="font-semibold text-base-content">Notes</dt>
+    <dd class="text-body whitespace-pre-line"><%= @person_certification.notes.presence || "—" %></dd>
+  </dl>
+<% end %>
+
+<% if can?(:manage_certifications) %>
+  <%= button_row do %>
+    <%= edit_link edit_person_certification_path(@person, @person_certification), "Edit Certification" %>
+  <% end %>
+<% end %>

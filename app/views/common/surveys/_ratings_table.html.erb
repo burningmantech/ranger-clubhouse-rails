@@ -1,0 +1,36 @@
+<%# One ranked table for a summarized rating, best average first (SurveyBuilder
+    has already sorted it). Trainers link to their own feedback page; sessions
+    link to their session page when the survey belongs to this training.
+    Std Dev is a real standard deviation -- SurveyBuilder computes variance,
+    which upstream printed under this heading. %>
+<% by_trainer = summary.trainers.present? %>
+<% rows = by_trainer ? summary.trainers : summary.slots %>
+
+<%= ui_table full_width: true, striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading by_trainer ? survey_subject_label(@survey) : "Session" %>
+    <%= t.heading "Avg Rating" %>
+    <%= t.heading "Std Dev" %>
+    <%= t.heading "Ratings" %>
+    <%= t.heading "Distribution" %>
+  <% end %>
+  <%= t.body do %>
+    <% rows.each do |row| %>
+      <%= t.row do %>
+        <%= t.row_header do %>
+          <% if by_trainer %>
+            <%# report_id rides along so the person page's back link returns
+                to this report, not to "main". %>
+            <%= callsign_link row, survey_person_url(row.trainer_id, report_id: params[:report_id]) %>
+          <% else %>
+            <%= render "common/surveys/session_label", slot_response: row %>
+          <% end %>
+        <% end %>
+        <%= t.cell do %><%= survey_rating_meter row.mean %><% end %>
+        <%= t.cell survey_std_dev(row.variance) %>
+        <%= t.cell row.rating_count %>
+        <%= t.cell do %><%= survey_distribution row.distribution %><% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

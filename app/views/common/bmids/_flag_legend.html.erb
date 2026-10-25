@@ -1,0 +1,18 @@
+<%# The badge flag legend: the same icons bmid_flag_icons draws, carrying the
+    same sentences. Shared by the manage roster and the export review so the
+    two cannot drift apart.
+
+    Locals:
+      extra - optional captured HTML for page-specific flags (manage's Edit
+              Mode adds its unsaved-changes pen here) %>
+<p class="mb-3 flex flex-wrap gap-x-6 gap-y-1 text-base text-stone-muted">
+  <span class="inline-flex-center-gap-2">
+    <%= fa_icon "eye", :solid, class: "icon-error" %>
+    No approved photo on file.
+  </span>
+  <span class="inline-flex-center-gap-2">
+    <%= fa_icon "circle-exclamation", :solid, class: "icon-warning" %>
+    No ticket or SAP claimed, and no In-Person Training sign-up.
+  </span>
+  <%= local_assigns[:extra] %>
+</p>

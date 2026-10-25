@@ -1,0 +1,16 @@
+<%= hero_panel icon: "calendar-plus", heading_level: :h1, id: "scheduling-slot-form-header",
+               description: "The slot's year is set by its start time, regardless of the year being viewed.",
+               back_to: ["#{@year} Slots", scheduling_slots_path(year: @year)] do |panel| %>
+  <% panel.title do %>Create Slot for <%= @year %><% end %>
+<% end %>
+
+<% unless @is_current_year %>
+  <div class="my-2">
+    <%= ui_callout_box :warning, title: "Not the Current Year" do %>
+      You are creating a slot while viewing a prior year (<%= @year %>).
+      Double-check the start time is for the year you intend.
+    <% end %>
+  </div>
+<% end %>
+
+<%= render "form" %>

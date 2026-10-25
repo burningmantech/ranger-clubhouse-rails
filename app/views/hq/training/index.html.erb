@@ -1,0 +1,46 @@
+<%# Read-only HQ view of the /person training page: no online-course form, no Moodle
+    account tools, no year selector — the shell is locked to the current year. The
+    status partials are shared with /person/:id/training. %>
+<%= hero_panel icon: "graduation-cap", heading_level: :h1, id: "hq-training-header",
+               back_to: ["Shift Check In/Out", hq_shift_manage_path(@person)] do |panel| %>
+  <% panel.title do %>
+    <%= Current.year %> Training &amp; ARTs
+  <% end %>
+  <% panel.description do %>
+    View <%= @person.callsign %>'s online course, in-person training, and Advanced Ranger
+    Training status for <%= Current.year %>.
+  <% end %>
+<% end %>
+
+<% if @person.is_echelon? %>
+  <%= ui_callout_box :info, title: "Echelon Volunteer", icon: "hand-point-right" do %>
+    <%= @person.callsign %> is an Echelon Volunteer. Completing the online course or passing an
+    in-person training is not required.
+  <% end %>
+<% end %>
+
+<%= ui_section "Online Course", icon: "laptop", icon_type: :solid do %>
+  <%= render "common/training/online_course_status", event_info: @event_info, year: Current.year %>
+<% end %>
+
+<%= ui_section "In-Person Training", icon: "users", icon_type: :solid do %>
+  <% if @event_info.training %>
+    <%= render "common/training/education_detail", edu: @event_info.training %>
+  <% else %>
+    <%= ui_empty_state "No in-person training information is available for #{Current.year}." %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Advanced Ranger Trainings (ART)", icon: "medal", icon_type: :solid do %>
+  <% if @event_info.art_trainings.present? %>
+    <div class="two-column-lg">
+      <% @event_info.art_trainings.each do |art| %>
+        <%= ui_accent_card art.position_title, variant: :secondary, heading_level: :h3 do %>
+          <%= render "common/training/education_detail", edu: art %>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= ui_empty_state "No Advanced Ranger Trainings are required for this person." %>
+  <% end %>
+<% end %>

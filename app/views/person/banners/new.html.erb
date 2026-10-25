@@ -1,0 +1,9 @@
+<%= hero_panel icon: "plus", heading_level: :h1, id: "new-person-banner-header",
+               description: "Add an internal account banner message for this person.",
+               back_to: ["Manage Account Banners", person_banners_path(@person)] do |panel| %>
+  <% panel.title do %>
+    New Banner &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= render "form", person: @person, person_banner: @person_banner %>

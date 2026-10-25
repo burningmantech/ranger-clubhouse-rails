@@ -1,0 +1,61 @@
+<%#
+  One verdict group: what it means, then the applications in it. locals: group
+  (a Vc::CreateProspectivesHelper::GROUPS entry plus :results).
+
+  Every group shares the same five columns and adds up to two more: the account
+  involved, and the engine's reasons. A callsign conflict needs both -- the
+  holder's name alone does not say whether the callsign can ever be freed.
+%>
+<% account_label, account_reader = group[:account] %>
+<%= ui_section group[:title], icon: group[:icon], icon_type: :solid,
+               badge: group[:results].size.to_s, badge_color: group[:variant],
+               id: "group-#{group[:status]}" do %>
+  <p class="mb-3"><%= group[:intro] %></p>
+
+  <%= ui_table do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Application" %>
+      <%= t.heading "Name" %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Email" %>
+      <%= t.heading "Salesforce" %>
+      <%= t.heading account_label if account_label %>
+      <%= t.heading "Problem" if group[:problem] %>
+    <% end %>
+    <%= t.body do %>
+      <% group[:results].each do |result| %>
+        <% application = result.application %>
+        <%= t.row do %>
+          <%= t.row_header do %><%= application_link(application) %><% end %>
+          <%= t.cell "#{application.first_name} #{application.last_name}".strip %>
+          <%= t.cell value_or_dash(application.approved_handle.presence) %>
+          <%= t.cell email_link_or_dash(application.email) %>
+          <%= t.cell do %><%= application_salesforce_link(application) %><% end %>
+
+          <% if account_label %>
+            <%= t.cell do %>
+              <%= prospective_person_link(result.public_send(account_reader)) %>
+              <% if account_reader == :created_person && result.reassign_callsign %>
+                <div class="mt-1">
+                  Callsign reassigned from <%= prospective_person_link(result.reassign_callsign) %>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+
+          <% if group[:problem] %>
+            <%= t.cell do %>
+              <% if result.errors.any? %>
+                <% result.errors.each_with_index do |error, index| %>
+                  <div class="<%= index.zero? ? 'text-error font-semibold' : 'mt-1' %> whitespace-pre-wrap"><%= error %></div>
+                <% end %>
+              <% else %>
+                &mdash;
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

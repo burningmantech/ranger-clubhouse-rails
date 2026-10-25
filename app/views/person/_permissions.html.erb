@@ -1,0 +1,37 @@
+<%# locals: (rows:, nda_blocked:) %>
+<%= ui_section "Permissions", icon: "shield-halved", icon_type: :solid, badge: rows.size.to_s,
+    edit_link: (can_edit_permissions? ? person_permissions_path(@person) : nil) do %>
+  <% if rows.empty? %>
+    <%= ui_empty_state "No permissions granted.", icon: "shield-halved", icon_type: :solid %>
+  <% else %>
+    <% if nda_blocked %>
+      <%= ui_callout_box :warning do %>
+        All permissions are off because <%= @person.callsign %> has not signed the Sensitive Data Access and Use Policy.
+        <%# The same roles Person::AgreementsController admits, so the link never bounces. %>
+        <% if has_role?([Role::ADMIN, Role::EVENT_MANAGEMENT]) %>
+          <%= link_to "View Agreements", person_agreements_path(@person), class: "tap-target-link" %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <% active_count = rows.count(&:active) %>
+    <%= ui_accordion("#{pluralize(active_count, "active permission")}, #{rows.size - active_count} inactive",
+                     open: rows.size <= 4) do %>
+      <%= ui_table full_width: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Permission" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Granted Through" %>
+        <% end %>
+        <%= t.body do %>
+          <% rows.each do |row| %>
+            <%= t.row do %>
+              <%= t.row_header row.title %>
+              <%= t.cell permission_status(row.active) %>
+              <%= t.cell permission_paths(row, nda_blocked:) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

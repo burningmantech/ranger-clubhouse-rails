@@ -1,0 +1,53 @@
+<%# locals: (options:, filter_params:, shown:, total:, on_duty:) %>
+<%#
+  Narrowing the three rosters.
+
+  Every select is built by the controller from the rangers that pass the OTHER
+  filters, so each count promises the roster that choice delivers and an option
+  that could only return an empty roster is not offered. The sorts are
+  deliberately not here: there is one per roster, and each lives with the roster
+  it orders.
+
+  The hidden fields are load-bearing. filter_bar opens its own bare GET form, so
+  without them applying a filter would submit the filters alone and throw away
+  the shift being reported on, the live mode, the year, and every sort.
+%>
+<% context = shift_lead_context_params(filter_params) %>
+<%= filter_bar id: "shift-lead-filters",
+               chips: shift_lead_filter_chips(filter_params),
+               clear_url: scheduling_shift_lead_path(**context),
+               count: shift_lead_summary_count(shown: shown, total: total),
+               url: scheduling_shift_lead_path do |f| %>
+  <%= shift_lead_carried_fields context %>
+
+  <%= form_row do %>
+    <%= f.select :years, options[:years],
+                 label: "Years Rangered", selected: filter_params[:years],
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :position, options[:position],
+                 label: "Position", selected: filter_params[:position],
+                 width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.select :gender, options[:gender],
+                 label: "Gender", selected: filter_params[:gender],
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :vehicle, options[:vehicle],
+                 label: "Vehicle", selected: filter_params[:vehicle],
+                 width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%# The live report has no sign-ups, so nothing there has a start time. %>
+  <% unless on_duty %>
+    <%= form_row do %>
+      <%= f.select :start_time, options[:start_time],
+                   label: "Shift Start", selected: filter_params[:start_time],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters", variant: :secondary %>
+  <% end %>
+<% end %>

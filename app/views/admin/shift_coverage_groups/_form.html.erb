@@ -1,0 +1,54 @@
+<% chosen = Array(@group.base_position_ids) %>
+<%# Where a save goes, and where Cancel returns: the shift type, or the list for a new one. %>
+<% target_path = @group.persisted? ? admin_shift_coverage_group_path(@group) : admin_shift_coverage_groups_path %>
+<% default_type = ShiftCoverageReport::DEFAULT_TYPE %>
+
+<%= ui_form(@group, target_path) do |f| %>
+  <%= f.text_field :title, label: "Title", required: true, maxlength: ShiftCoverageGroup::TITLE_LIMIT,
+                   width: "w-full sm:w-96",
+                   help_text: "Shown in the report's Shift Type menu and heading." %>
+  <%= f.text_field :slug, label: "Slug", required: true, maxlength: ShiftCoverageGroup::SLUG_LIMIT,
+                   width: "w-full sm:w-96",
+                   help_text: "Lowercase letters, numbers and dashes. It is the report's web address and export " \
+                              "file name: changing it breaks saved links, and changing \"#{default_type}\" " \
+                              "changes which shift type the Shift Coverage menu opens." %>
+
+  <%= f.fieldset "Period Positions",
+                 aria: { describedby: token_list("base-positions-help",
+                                                 "base-positions-error": @group.errors.include?(:base_position_ids)) } do %>
+    <%= f.help_text_tag "Each shift of these positions becomes one period (row) of the report, rounded to the nearest hour.",
+                        "base-positions-help" %>
+    <%= f.error_message :base_position_ids, "base-positions-error" %>
+
+    <%# The blank first, so clearing every box still arrives and is refused rather than read as nothing sent. %>
+    <%= hidden_field_tag "shift_coverage_group[base_position_ids][]", "" %>
+    <%# Columns, not a grid: an alphabetical list of this length is scanned down, then across. %>
+    <div class="lg:columns-2 lg:gap-x-4">
+      <% @positions.each do |position| %>
+        <%= render layout: "common/checkbox_row",
+                   locals: { name: "shift_coverage_group[base_position_ids][]", value: position.id,
+                             checked: chosen.include?(position.id), id: "base-position-#{position.id}" } do %>
+          <%= title_marking_inactive(position) %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Shift Type" %>
+    <%= cancel_link target_path %>
+    <% if @group.persisted? %>
+      <%= delete_button admin_shift_coverage_group_path(@group), "Delete Shift Type",
+                        confirm_modal: {
+                          title: "Delete Shift Type",
+                          message: "Delete #{@group.title_in_database} and its " \
+                                   "#{pluralize(@group.shift_coverage_positions.size, "post")}? " \
+                                   "The Shift Coverage report stops offering it, and saved links to it open the " \
+                                   "default: #{default_type}, or the first shift type once #{default_type} is gone.",
+                          confirm_label: "Delete Shift Type",
+                          variant: :error,
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

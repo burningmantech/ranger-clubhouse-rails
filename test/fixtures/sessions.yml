@@ -1,0 +1,72 @@
+# Test fixtures for Session model
+
+active_ranger_session:
+  id: 1
+  person_id: 1
+  session_id: "test_session_active_ranger_123"
+  ip_address: "127.0.0.1"
+  user_agent: "Mozilla/5.0 Test Browser"
+  data: ""
+  created_at: <%= 1.hour.ago %>
+  updated_at: <%= 1.hour.ago %>
+
+custom_gender_session:
+  id: 2
+  person_id: 2
+  session_id: "test_session_custom_gender_456"
+  ip_address: "127.0.0.1"
+  user_agent: "Mozilla/5.0 Test Browser"
+  data: ""
+  created_at: <%= 1.hour.ago %>
+  updated_at: <%= 1.hour.ago %>
+
+prospective_session:
+  id: 3
+  person_id: 3
+  session_id: "test_session_prospective_789"
+  ip_address: "127.0.0.1"
+  user_agent: "Mozilla/5.0 Test Browser"
+  data: ""
+  created_at: <%= 1.hour.ago %>
+  updated_at: <%= 1.hour.ago %>
+
+auditor_session:
+  id: 4
+  person_id: 4
+  session_id: "test_session_auditor_101112"
+  ip_address: "127.0.0.1"
+  user_agent: "Mozilla/5.0 Test Browser"
+  data: ""
+  created_at: <%= 1.hour.ago %>
+  updated_at: <%= 1.hour.ago %>
+
+echelon_session:
+  id: 5
+  person_id: 5
+  session_id: "test_session_echelon_131415"
+  ip_address: "127.0.0.1"
+  user_agent: "Mozilla/5.0 Test Browser"
+  data: ""
+  created_at: <%= 1.hour.ago %>
+  updated_at: <%= 1.hour.ago %>
+
+past_prospective_session:
+  id: 6
+  person_id: 6
+  session_id: "test_session_past_prospective_161718"
+  ip_address: "127.0.0.1"
+  user_agent: "Mozilla/5.0 Test Browser"
+  data: ""
+  created_at: <%= 1.hour.ago %>
+  updated_at: <%= 1.hour.ago %>
+
+bonked_session:
+  id: 7
+  person_id: 7
+  session_id: "test_session_bonked_192021"
+  ip_address: "127.0.0.1"
+  user_agent: "Mozilla/5.0 Test Browser"
+  data: ""
+  created_at: <%= 1.hour.ago %>
+  updated_at: <%= 1.hour.ago %>
+

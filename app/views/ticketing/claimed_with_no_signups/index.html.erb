@@ -1,0 +1,135 @@
+<%# Ticketing -> Claimed, Didn't Ranger. Port of the Ember
+    vc/access-documents/claimed-with-no-signups page.
+
+    Retitled on purpose. Upstream called this "Claimed Tickets With No Sign
+    Ups", but sign-ups were never part of the filter — someone with a full
+    schedule still lands here if they skipped the online course. The heading now
+    says what the list is.
+
+    Upstream also drew the training dates and their outcomes as two parallel
+    columns the reader had to line up by hand, and never showed the rangering
+    column even though it decides half the list. Both are fixed below. %>
+<%= hero_panel icon: "ticket", heading_level: :h1, id: "ticketing-claimed-no-signups-header",
+               title: "Ticket Holders Who Didn't Ranger" do |panel| %>
+  <% panel.description do %>
+    Rangers who took a <%= Current.year %> ticket and have not both finished the
+    online course and rangered a shift.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%# All three stay the default tint. Most of these people are simply not
+      finished yet, so a coloured badge here would cry wolf. %>
+  <%= ui_stat_box number_with_delimiter(@total_count), "Ticket Holders" %>
+  <%= ui_stat_box number_with_delimiter(@no_course_count), "No Online Course" %>
+  <%= ui_stat_box number_with_delimiter(@not_rangered_count), "No Shifts Rangered" %>
+<% end %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Who lands on this list?</dt>
+    <dd>
+      <strong>Anyone holding a claimed or submitted ticket who has loose ends.</strong>
+      They have a special price ticket or staff credential in hand, and they have
+      either not finished the online course or have no <%= Current.year %> shifts on
+      their timesheet.
+    </dd>
+    <dt>Who never appears?</dt>
+    <dd>
+      People who finished the course and rangered at least one shift, and anyone
+      whose ticket is still unclaimed &mdash; an unclaimed ticket promises nothing yet.
+    </dd>
+    <dt>Why is everyone listed before the event?</dt>
+    <dd>
+      Rangering is counted from timesheets, so until the event starts no one has
+      any. This list is most useful during and after the event.
+    </dd>
+  </dl>
+<% end %>
+
+<%= render "filter_bar",
+           filter_params: @filter_params,
+           active_params: @index_params,
+           count: "Showing #{@filtered_count} of #{pluralize(@total_count, "ticket holder")}",
+           actions: (export_csv_link(ticketing_claimed_with_no_signups_path(@index_params.merge(format: :csv))) if @total_count.positive?) %>
+
+<%= ui_section "Ticket Holders", icon: "table-list", icon_type: :solid do %>
+  <% if @rows.empty? && @index_params.any? %>
+    <%= ui_empty_state "No ticket holders matched those filters. Try clearing one.",
+                       icon: "magnifying-glass", icon_type: :solid %>
+  <% elsif @rows.empty? %>
+    <%= ui_empty_state "Every ticket holder has finished the online course and rangered a shift. Nothing to chase.",
+                       icon: "circle-check", icon_type: :solid %>
+  <% else %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Name" %>
+        <%= t.heading "Tickets" %>
+        <%= t.heading "Online Course" %>
+        <%= t.heading "Signed Up" %>
+        <%= t.heading "Rangered" %>
+        <%= t.heading "Trained" %>
+        <%= t.heading "Training Sessions" %>
+      <% end %>
+
+      <%= t.body do %>
+        <% @rows.each do |row| %>
+          <% person = row.person %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%# Same treatment as the callsign link on the other ticketing pages. %>
+              <%= callsign_link person %>
+            <% end %>
+            <%= t.cell person.status %>
+            <%= t.cell do %>
+              <%= person.first_name %> <%= person.last_name %>
+              <% if person.preferred_name.present? %>
+                (<i><%= person.preferred_name %></i>)
+              <% end %>
+              <div>
+                <%= email_link_or_dash(person.email) %>
+              </div>
+            <% end %>
+            <%= t.cell do %>
+              <% row.documents.each do |document| %>
+                <div>
+                  <%= document.display_ref %> <%= document.short_type_label %> <%= document.status %>
+                </div>
+              <% end %>
+            <% end %>
+            <%= t.cell yes_no_badge(row.oc_completed) %>
+            <%= t.cell yes_no_badge(row.has_signups) %>
+            <%= t.cell yes_no_badge(row.rangered) %>
+            <%= t.cell yes_no_badge(row.trained?) %>
+            <%# Folded away by default: someone who trains and teaches can run
+                half a dozen lines, which would bury every other row. %>
+            <%= t.cell do %>
+              <% if row.trainings.any? %>
+                <%# No inline-flex on the summary: it drops the native
+                    disclosure triangle, leaving the count looking like plain
+                    bold text with nothing to say it opens. %>
+                <%= ui_disclosure pluralize(row.trainings.size, "session"),
+                                  summary_class: "font-semibold text-heading" do %>
+                  <ul class="ms-4 list-disc">
+                    <% row.trainings.each do |session| %>
+                      <li class="mt-1">
+                        <%# The date stays on one line — the column is narrow enough
+                            that it would otherwise break mid-date. %>
+                        <span class="font-semibold whitespace-nowrap"><%= session.begins_label %></span>
+                        <%= session.status %>
+                      </li>
+                    <% end %>
+                  </ul>
+                <% end %>
+              <% else %>
+                <%= value_or_dash(nil) %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

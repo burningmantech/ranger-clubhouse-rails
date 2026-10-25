@@ -1,0 +1,33 @@
+<%# locals: (f:) %>
+<%# What the broadcast says. Each channel is written separately: a text has to
+    fit in one message, while an email and a Clubhouse message share a subject
+    and a body. %>
+<%= ui_section "Text Message", icon: "comment-sms", icon_type: :solid do %>
+  <%= f.check_box :send_sms, inline_label: "Send a text message" %>
+  <%= f.text_area :sms_message, label: "Text to Send", rows: 2,
+                  maxlength: Rbs::SMS_LIMIT, show_counter: true,
+                  help_text: "\"#{Rbs::SMS_SUFFIX.strip}\" is added to the end of every text.",
+                  width: "w-full" %>
+<% end %>
+
+<%= ui_section "Email and Clubhouse Message", icon: "envelope", icon_type: :solid do %>
+  <dl class="instruction-list mb-3">
+    <dt>What is the difference?</dt>
+    <dd>An email arrives in a Ranger's inbox; a Clubhouse message waits for them on this site.</dd>
+    <dt>Who receives a Clubhouse message?</dt>
+    <dd>Everyone who matches, whatever they chose about texts and email.</dd>
+  </dl>
+
+  <%= form_row do %>
+    <%= f.check_box :send_email, inline_label: "Send an email", wrapper_class: "flex-1" %>
+    <%= f.check_box :send_clubhouse, inline_label: "Send a Clubhouse message", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= f.text_field :subject, label: "Subject", maxlength: RbsBroadcastForm::SUBJECT_LIMIT,
+                   show_counter: true, width: "w-full lg:w-[40rem]" %>
+  <%= f.text_area :message, label: "Message", rows: 8,
+                  maxlength: RbsBroadcastForm::MESSAGE_LIMIT, width: "w-full" %>
+  <%= f.datetime_field :expires_at, label: "No Longer Relevant After",
+                       help_text: "Rangers who read it later are told to ignore it. Twelve hours from now by default.",
+                       width: "w-full lg:w-64" %>
+<% end %>

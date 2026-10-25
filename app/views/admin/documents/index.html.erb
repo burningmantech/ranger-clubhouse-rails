@@ -1,0 +1,91 @@
+<% content_for :title, "Documents" %>
+
+<%= hero_panel icon: "file-lines", heading_level: :h1, id: "documents-header",
+               title: "Documents",
+               description: "Edit the documents the Clubhouse displays: agreements, dashboard links, contact sections, and bookmarks." %>
+
+<%= ui_callout_box :warning, title: "Tags Are Load-Bearing" do %>
+  <strong>The Clubhouse finds some documents by tag.</strong> Renaming one breaks the page
+  that reads it. Tags marked <%= ui_badge "Referenced", :primary %> are looked up by name —
+  leave those alone unless the Tech Team asks you to change one.
+<% end %>
+
+<%= button_row class: "my-4" do %>
+  <%= button_link "Add Document", :primary, new_admin_document_path,
+                  icon: "plus", icon_type: :solid %>
+<% end %>
+
+<% if @documents.any? %>
+  <%= ui_section pluralize(@documents.size, "document"), border: false do %>
+    <p class="mb-3">
+      <strong>Expand a document to see how it reads.</strong>
+      The preview shows it the same way the page that displays it does.
+    </p>
+
+    <%# striped: false because each document renders two rows — the summary and
+        the preview it opens into — so every summary row would land on the same
+        stripe. %>
+    <%= ui_table striped: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Tag" %>
+        <%= t.heading "Description" %>
+        <%= t.heading "Refresh" %>
+        <%= t.heading "Updated / By" %>
+        <%= t.heading "Created / By" %>
+        <%= t.heading "Actions" %>
+      <% end %>
+      <%= t.body do %>
+        <% @documents.each do |document| %>
+          <% preview_dom_id = "document-preview-#{document.id}" %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <span class="font-mono"><%= document.tag %></span>
+              <% if @referenced_tags.include?(document.tag) %>
+                <%= ui_badge "Referenced", :primary %>
+              <% end %>
+            <% end %>
+            <%= t.cell document.description %>
+            <%= t.cell value_or_dash(document.refresh_time && "#{document.refresh_time} min"),
+                       class: "whitespace-nowrap" %>
+            <%= t.cell do %>
+              <%= datetime_format(document.updated_at, year: true) %><br>
+              <%= person_display_link(document.person_update, document.person_update_id) %>
+            <% end %>
+            <%= t.cell do %>
+              <%= datetime_format(document.created_at, year: true) %><br>
+              <%= person_display_link(document.person_create, document.person_create_id) %>
+            <% end %>
+            <%= t.cell do %>
+              <div class="flex items-center gap-1 whitespace-nowrap">
+                <%= t.detail_row_toggle "Preview", id: preview_dom_id, describing: document.tag %>
+                <%= edit_link edit_admin_document_path(document), "Edit",
+                              aria: { label: "Edit #{document.tag}" } %>
+                <%# Bookmark documents have a page of their own the kiosks show.
+                    It needs no sign-in, so it opens in its own tab rather than
+                    taking this one. %>
+                <% if (slug = document.bookmark_slug) %>
+                  <%= ext_link "Open", bookmark_path(slug),
+                               aria: { label: "Open the #{document.tag} kiosk page in a new tab" } %>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+          <%# Below the fold each row becomes its own card, so the opened preview
+              carries the tag it belongs to. %>
+          <%= t.detail_row id: preview_dom_id, label: document.tag do %>
+            <%# loading: "lazy" holds the fetch until the frame is visible — the
+                first time the toggle above unhides this row. %>
+            <%# target: "_top" so the links inside the preview leave the frame —
+                without it they look for a frame the page they open has not got. %>
+            <%= turbo_frame_tag "document-body-frame-#{document.id}", target: "_top",
+                                src: body_admin_document_path(document), loading: "lazy" do %>
+              <p class="my-2">Loading preview&hellip;</p>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No documents have been added yet.", icon: "file-lines", icon_type: :regular %>
+<% end %>

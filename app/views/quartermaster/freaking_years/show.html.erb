@@ -1,0 +1,46 @@
+<%#
+  Level 2 of the drill-down: one service-year group's roster. The group is the
+  page, so there is no years column, and everyone here is Active, so there is no
+  status column either. An empty group never renders -- the controller sends it
+  back to the index.
+%>
+<% content_for :title, pluralize(@years, "Freaking Year") %>
+
+<%= hero_panel icon: "star", heading_level: :h1, id: "quartermaster-freaking-years-group-header",
+               title: pluralize(@years, "Freaking Year"),
+               description: "Active Rangers with exactly #{pluralize(@years, "service year")}.",
+               back_to: ["Freaking Years", quartermaster_freaking_years_path] %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @rows.size.to_s, "People" %>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= export_csv_link quartermaster_freaking_years_group_path(@years, format: :csv) %>
+  <% end %>
+</div>
+
+<%# A Quartermaster may read this page but not the person pages it would link
+    to, so they get plain callsigns rather than a roster of links that bounce. %>
+<% linked = can_view_person_page? %>
+<%= ui_table full_width: true, striped: true, id: "freaking-years-roster" do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading "Name" %>
+    <%= t.heading "First Year", right: true %>
+    <%= t.heading "Last Year", right: true %>
+  <% end %>
+  <%= t.body do %>
+    <% @rows.each do |row| %>
+      <%= t.row do %>
+        <%# The report returns value rows, not Person records, so callsign_link
+            cannot route from the object itself. %>
+        <%= t.row_header linked ? callsign_link(row, person_path(row.id)) : row.callsign %>
+        <%= t.cell row.name %>
+        <%= t.cell value_or_dash(row.first_year), right: true %>
+        <%= t.cell value_or_dash(row.last_year), right: true %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

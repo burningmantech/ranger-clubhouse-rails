@@ -1,0 +1,64 @@
+<%#
+  Export results. @result is transient -- the CSV and the exported-row list
+  only exist in the response to the POST that stamped the export comments --
+  so the download is a data: URI on this page and the mark-submitted form
+  carries the same rows, pre-checked, for step three.
+%>
+<%# A form-submission render keeps the submitting page's scroll position --
+    without this the reader lands wherever the submit button was instead of
+    at the summary. %>
+<div data-controller="scroll-to-top" hidden></div>
+
+<%= hero_panel icon: "file-export", heading_level: :h1, id: "ticketing-trs-export-ready-header",
+               back_to: ["TRS Export", ticketing_trs_export_path(filter: @filter.slug)] do |panel| %>
+  <% panel.title do %>TRS Export Ready<% end %>
+  <% panel.description do %>
+    The export is stamped and the CSV is ready to download.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @result[:rows].size, "Exported" %>
+  <% if @result[:skipped].any? %>
+    <%= ui_stat_box @result[:skipped].size, "Left Out", variant: :warning %>
+  <% end %>
+<% end %>
+
+<%= ui_callout_box :success do %>
+  <strong><%= pluralize(@result[:rows].size, "item") %> stamped with an export comment.</strong>
+  This page cannot be revisited &mdash; download the CSV before leaving.
+<% end %>
+
+<%= button_row do %>
+  <%= export_csv_link(trs_csv_data_uri(@result[:csv]), "Download #{@result[:filename]}",
+                      variant: :primary, download: @result[:filename]) %>
+<% end %>
+
+<%= render "skipped", skipped: @result[:skipped] %>
+
+<%= ui_callout_box :info, class: "my-4" do %>
+  <strong>After TRS accepts the upload:</strong> uncheck anything TRS rejected,
+  then mark the rest submitted. Leaving this page is fine too &mdash; the same
+  items can be selected again from the TRS Export page later.
+<% end %>
+
+<%= ui_form(nil, ticketing_trs_export_mark_submitted_path, method: :post) do |f| %>
+  <%= hidden_field_tag :filter, @filter.slug %>
+  <%= bulk_select do %>
+    <%= ui_section "Exported Items", icon: "table-list", icon_type: :solid, border: false do %>
+      <%= render "rows_table", rows: @result[:rows], selectable: true, checked: true %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Mark Selected as Submitted",
+                   data: { checkbox_select_all_target: "submit",
+                           turbo_confirm: confirm_modal_dialog(
+                             title: "Confirm Mark Submitted",
+                             message: "Mark the selected items as submitted? " \
+                                      "Only do this after TRS has accepted them.",
+                             confirm_label: "Mark Submitted"
+                           ) } %>
+      <%= cancel_button ticketing_trs_export_path(filter: @filter.slug) %>
+    <% end %>
+  <% end %>
+<% end %>

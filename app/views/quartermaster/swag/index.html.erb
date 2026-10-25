@@ -1,0 +1,27 @@
+<%= hero_panel icon: "shirt", heading_level: :h1, id: "quartermaster-swag-header", title: "Swag" do |panel| %>
+  <% panel.description do %>
+    Ranger shirts, service pins, and patches that can be issued to volunteers, grouped by type.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @total_count, "Items" %>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= button_link "Add Swag", :primary, quartermaster_new_swag_path,
+                    icon: "plus", icon_type: :solid %>
+  <% end %>
+</div>
+
+<div class="lg:w-3/4">
+  <% @types.each do |group| %>
+    <%= ui_drill_down_row quartermaster_swag_type_path(group[:type]), group[:label],
+                          meta: pluralize(group[:count], "item"),
+                          badges: (if group[:inactive].positive?
+                                     ui_badge "#{group[:inactive]} inactive", :warning, size: "base",
+                                              icon: "circle-xmark", icon_type: :solid
+                                   end) %>
+  <% end %>
+</div>

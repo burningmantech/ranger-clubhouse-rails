@@ -1,0 +1,151 @@
+<%#
+  The review step. Rendered from the POST at 422 -- Turbo drops a 200 response to
+  a form submission, and the pasted list is not in the URL for a GET to
+  re-derive. Turbo keeps the submitting page's scroll, so the reader would
+  otherwise land wherever the button was.
+
+  This page also renders when a commit fails partway, which is why the errors arm
+  below speaks about lines rather than about checking.
+%>
+<% content_for :title, "Review Bulk Sign In/Out" %>
+
+<div data-controller="scroll-to-top" hidden></div>
+
+<% error_count = @entries.sum { |entry| entry.errors.size } %>
+<% ready = @entries.reject { |entry| entry.errors.any? } %>
+<% problem_lines = @entries.size - ready.size %>
+<% entry_count = pluralize(@entries.size, "timesheet entry") %>
+
+<%= hero_panel icon: "clipboard-check", heading_level: :h1,
+               id: "shift-operations-bulk-sign-in-out-preview-header",
+               title: "Review #{pluralize(@entries.size, "line")}",
+               description: "Nothing has been saved yet — check every line below, then confirm." %>
+
+<% ready_actions = ready.map(&:action).tally %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box ready_actions[:in].to_i.to_s, "Sign-Ins",
+                  variant: :secondary, icon: "right-to-bracket", icon_type: :solid %>
+  <%= ui_stat_box ready_actions[:out].to_i.to_s, "Sign-Outs",
+                  variant: :secondary, icon: "right-from-bracket", icon_type: :solid %>
+  <%= ui_stat_box ready_actions[:inout].to_i.to_s, "Sign In & Outs",
+                  variant: :secondary, icon: "right-left", icon_type: :solid %>
+  <%# Lines, like the three boxes beside it. Counting errors here put "2
+      Problems" over a one-row table whenever a single line had two things wrong
+      with it; the callout below still gives both numbers. %>
+  <% if problem_lines.positive? %>
+    <%= ui_stat_box problem_lines.to_s, "Lines with Problems",
+                    variant: :error, icon: "triangle-exclamation", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<% if @have_error %>
+  <%# All-or-nothing, unlike the bulk upload pages -- so this says plainly that
+      the clean lines are not going through either, which is the thing a reader
+      would otherwise assume from every other bulk page in the application. %>
+  <%= ui_callout_box :error, icon: "triangle-exclamation", icon_type: :solid,
+                     title: "Nothing Has Been Saved" do %>
+    <p>
+      <strong><%= pluralize(error_count, "problem") %> on
+      <%= pluralize(problem_lines, "line") %>.</strong>
+      <%# Only worth saying when there are clean lines being held back. With
+          every line marked, "the 0 lines without a problem are waiting too"
+          is just noise on top of the bad news. %>
+      <% if ready.any? %>
+        This page saves every line or none of them, so the
+        <%= pluralize(ready.size, "line") %> without a problem
+        <%= (ready.size == 1) ? "is" : "are" %> waiting too.
+      <% end %>
+    </p>
+    <p class="mt-2">
+      Go back, fix what is marked below, and check the list again.
+    </p>
+  <% end %>
+<% else %>
+  <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+    <strong>No problems found.</strong>
+    Check the times and positions below before you confirm — a sign in with no time
+    starts the shift the moment you confirm.
+  <% end %>
+<% end %>
+
+<%= ui_section "Every Line You Entered", icon: "list-check", icon_type: :solid, border: false do %>
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Action" %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Sign In" %>
+      <%= t.heading "Sign Out" %>
+    <% end %>
+    <%= t.body do %>
+      <% @entries.each_with_index do |entry, index| %>
+        <% problem = entry.errors.any? %>
+        <%# The striped background wins on nth-child, so the problem tint needs
+            the important flag to show through it. The problem text rides inside
+            this row rather than in a row of its own: a second <tr> would take a
+            stripe turn and knock the banding out of step from there down. %>
+        <%= t.row id: "preview-entry-#{index}", state: (:error if problem) do %>
+          <%= t.row_header do %>
+            <div class="flex-center-gap-2">
+              <% if problem %>
+                <%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %>
+              <% end %>
+              <%= entry.person ? person_display_link(entry.person, entry.person_id) : entry.raw %>
+            </div>
+            <% if problem %>
+              <ul class="mt-1 ms-1 text-error list-disc list-inside">
+                <% entry.errors.each do |error| %>
+                  <li><%= error %></li>
+                <% end %>
+              </ul>
+            <% end %>
+          <% end %>
+          <%= t.cell BulkSignInOut::ACTION_LABELS[entry.action] %>
+          <%= t.cell value_or_dash(entry.position_title) %>
+          <%# year: true on both stamps. Without it a mistyped year is the one
+              mistake this table cannot show -- "08/15/98" reads as "Sat Aug 15
+              @ 08:45" whether it books 2026 or 2098. %>
+          <%= t.cell class: "whitespace-nowrap" do %>
+            <% if entry.signin %>
+              <%= datetime_format entry.signin, year: true %>
+            <% elsif entry.action == :in %>
+              now
+            <% else %>
+              —
+            <% end %>
+          <% end %>
+          <%= t.cell value_or_dash(datetime_format(entry.signout, year: true)),
+                     class: "whitespace-nowrap" %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_form(nil, shift_operations_apply_bulk_sign_in_out_path,
+            method: :post, no_error_summary: true) do |f| %>
+  <%# Re-posted verbatim: the apply rebuilds every entry from this and re-runs
+      every check rather than trusting the table above. %>
+  <%= hidden_field_tag :lines, params[:lines] %>
+
+  <%= button_row do %>
+    <% unless @have_error %>
+      <% one = @entries.one? %>
+      <%= f.submit "Create #{entry_count}", variant: :success,
+                   data: {
+                     turbo_confirm: confirm_modal_dialog(
+                       title: "Final Confirmation",
+                       message: "#{entry_count} will be created or closed for " \
+                                "#{one ? "this Ranger" : "these Rangers"}.",
+                       confirm_label: one ? "Create it" : "Create them"
+                     )
+                   } %>
+    <% end %>
+    <%# formaction sends this same form -- and the pasted list it carries -- back
+        to the form page instead of the commit. One form, so there is only one
+        copy of the list on the page and no way for the two to disagree. %>
+    <%= f.submit "Go Back and Edit", variant: :secondary,
+                 formaction: shift_operations_edit_bulk_sign_in_out_path %>
+  <% end %>
+<% end %>

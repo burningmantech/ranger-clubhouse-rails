@@ -1,0 +1,39 @@
+<%# Layout for the kiosk bookmark pages. No navbar, sidebar, modal frame, or
+    toasts -- no one is signed in here, so there is nothing behind them.
+
+    Unlike the wall display, the theme is not fixed: these machines stand in
+    daylight and in dim rooms both, so the page follows whatever the machine is
+    set to and remembers a change. That is the same `theme` controller the
+    navbar uses everywhere else; it works from any element, and without an icon
+    target it simply applies the setting. %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title><%= content_for(:title) || "Ranger Secret Clubhouse" %></title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%# Anyone with the address can read this page, which is the point of it. Search
+      engines are a different matter: the links inside these documents are meant
+      for Rangers standing at the machine, not for a public index. %>
+  <meta name="robots" content="noindex,nofollow">
+  <%# Arrive here the long way round -- a fresh load, not a swap of the page body.
+      The missing chrome is a different layout, and a Turbo visit only replaces
+      the body, so following a link here would otherwise leave the navbar up. %>
+  <meta name="turbo-visit-control" content="reload">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%# The proportional roman latin face is on the critical path for every page. The
+      italic, latin-ext and monospaced faces are declared in fonts.css and fetched
+      only when something actually asks for them. %>
+  <link rel="preload" href="<%= asset_path("atkinson-latin.woff2") %>" as="font" type="font/woff2" crossorigin>
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+  <%# Stimulus's own entry modules. They are inside the lazily-pinned controllers
+      directory, so without these two the browser only discovers them after
+      application.js has been fetched and parsed. %>
+  <link rel="modulepreload" href="<%= asset_path("controllers/index.js") %>">
+  <link rel="modulepreload" href="<%= asset_path("controllers/application.js") %>">
+</head>
+<body class="bg-base-100 text-base-content" data-controller="theme local-time">
+<%= yield %>
+</body>
+</html>

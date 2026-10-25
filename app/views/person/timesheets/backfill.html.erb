@@ -1,0 +1,37 @@
+<%= hero_panel icon: "calendar-plus", heading_level: :h1, id: "person-timesheet-backfill-header",
+               description: "Create placeholder timesheet entries so early volunteer years count toward years rangered.",
+               back_to: ["#{@year} Timesheet", person_timesheets_path(@person, year: @year)] do |panel| %>
+  <% panel.title do %>
+    Back Fill Years Rangered &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= ui_form nil, backfill_person_timesheets_path(@person), method: :post do |f| %>
+  <%= ui_section "Select Years to Back Fill", icon: "calendar-check", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What does this do?</dt>
+      <dd>
+        For each selected year, a single verified Dirt timesheet entry is created with an on-duty time of
+        Jan 1st at 12:00:00 and an off-duty time of Jan 1st at 12:01:00.
+      </dd>
+      <dt>What about years that already have entries?</dt>
+      <dd>Any year that already has a timesheet entry, regardless of position, will be skipped.</dd>
+    </dl>
+
+    <div class="grid grid-cols-2 gap-2 lg:grid-cols-5">
+      <% Person::TimesheetsController::BACKFILL_YEARS.each do |year| %>
+        <%= render layout: "common/checkbox_tile" do %>
+          <%= check_box_tag "years[]", year, false,
+                            id: "backfill-year-#{year}",
+                            class: "#{AppFormBuilder::CHECKBOX_CLASSES} shrink-0" %>
+          <span class="text-base text-body"><%= year %></span>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Back Fill Selected Years" %>
+    <%= cancel_button person_timesheets_path(@person, year: @year) %>
+  <% end %>
+<% end %>

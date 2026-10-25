@@ -1,0 +1,131 @@
+<%# locals: (entry:, schedule_signups_path_builder:, sign_up_slot_path_builder:) %>
+<% slot = entry.slot %>
+<% has_overlap = entry.overlapping_slots.present? %>
+<% signed_up = entry.person_assigned %>
+<%
+  card_class = if signed_up && has_overlap
+                 "box-accent box-accent-warning border-l-4"
+               elsif signed_up
+                 "box-accent box-accent-success border-l-4"
+               else
+                 "box box-default"
+               end
+%>
+<%= content_tag :div, id: dom_id(slot), class: "#{card_class} p-3 mb-2" do %>
+  <%
+    # max_effective, not slot.max: the card, the Add button and Signup.add all judge a
+    # trainer-bound slot by its trainer-multiplied capacity.
+    spots_available = entry.max_effective - slot.signed_up
+    percentage = entry.max_effective.positive? ? (slot.signed_up.to_f / entry.max_effective) * 100 : 0
+    # A trainer-bound slot holds no seats until a trainer signs up (max_effective is its max
+    # times the trainer slot's sign-ups), so there is no availability to report.
+    show_availability = !(slot.trainer_slot_id && entry.max_effective.zero?)
+
+    if show_availability
+      if percentage >= 100
+        availability_text = "Full - All #{pluralize entry.max_effective, "spot"} taken"
+        availability_class = "text-error"
+      elsif spots_available <= 2
+        availability_text = "#{pluralize spots_available, "open spot"} of #{entry.max_effective}"
+        availability_class = "text-warning"
+      elsif percentage >= 85
+        availability_text = "#{spots_available} open spots of #{entry.max_effective}"
+        availability_class = "text-warning"
+      else
+        availability_text = "#{spots_available} open spots of #{entry.max_effective}"
+        availability_class = "text-success"
+      end
+    end
+  %>
+
+  <% if signed_up || slot.has_ended || slot.has_started %>
+    <% status_indicator = capture do %>
+      <div class="shrink-0 min-w-0">
+        <% if slot.has_ended %>
+          <div>
+            <%= ui_badge :error do %>
+              <%= fa_icon "exclamation-circle", :solid %>
+              Shift has ended
+            <% end %>
+          </div>
+        <% elsif slot.has_started %>
+          <div>
+            <%= ui_badge :error do %>
+              <%= fa_icon "exclamation-circle", :solid %>
+              Shift in progress
+            <% end %>
+          </div>
+        <% end %>
+
+        <% if signed_up %>
+          <div class="flex flex-wrap gap-2">
+            <span>
+              <%= ui_badge :success do %>
+                <%= fa_icon "circle-check", :solid %>
+                Signed up
+              <% end %>
+            </span>
+            <% if has_overlap %>
+              <span>
+                <%= ui_badge :warning do %>
+                  <%= fa_icon "circle-exclamation", :solid %>
+                  Overlapping shift
+                <% end %>
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  <% else
+       status_indicator = nil %>
+  <% end %>
+
+  <%= render layout: "common/entry_card_grid", locals: {
+    title: slot.position.title,
+    duration: slot.duration,
+    credits: entry.credits,
+    title_id: dom_id(slot, :title),
+    description: slot.description,
+    status_indicator:
+  } do %>
+    <%= datetime_format slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr %>
+  <% end %>
+
+  <% if signed_up && has_overlap %>
+    <%= render partial: "common/scheduling/overlapping_sign_ups", locals: { entry: } %>
+  <% end %>
+
+  <% if show_availability && !signed_up %>
+    <div class="font-medium <%= availability_class %>" role="status" aria-label="<%= slot.signed_up %> of <%= entry.max_effective %> signed up">
+      <%= availability_text %>
+    </div>
+  <% end %>
+
+  <%= render partial: "common/scheduling/slot_additional_info", locals: { slot: } %>
+
+  <div class="flex flex-wrap items-center gap-2 mt-2">
+    <%= button_action "Show Sign-Ups", :secondary, controller: "toggle",
+                      icon: "users", icon_type: :solid,
+                      data: {
+                        toggle_dom_id_value: "signups-#{slot.id}",
+                        toggle_label_value: "#{fa_icon("minus", :solid, end: 1)} Hide Sign-Ups",
+                        toggle_turbo_src_value: schedule_signups_path_builder.call(slot, year: slot.begins_year)
+                      } %>
+
+    <% unless slot.has_started || slot.has_ended %>
+      <% if signed_up %>
+        <%= button_link "Remove from Schedule", :secondary,
+                        sign_up_slot_path_builder.call(entry.position.id, slot.id, year: slot.begins_year),
+                        icon: "calendar-xmark", icon_type: :solid,
+                        data: confirm_modal(title: "Confirm Shift Removal", message: render(partial: "common/scheduling/confirm_signup_removal", locals: { slot: }), method: :delete, variant: :error) %>
+      <% elsif spots_available.positive? %>
+        <%= button_link "Add to Schedule", :secondary,
+                        sign_up_slot_path_builder.call(entry.position.id, slot.id, year: slot.begins_year),
+                        icon: "calendar-plus", icon_type: :solid,
+                        method: :post %>
+      <% end %>
+    <% end %>
+  </div>
+  <%= turbo_frame_tag "signups-#{slot.id}" %>
+<% end %>

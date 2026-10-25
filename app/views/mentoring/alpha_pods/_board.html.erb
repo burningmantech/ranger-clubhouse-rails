@@ -1,0 +1,43 @@
+<%#
+  Everything about one shift's pods that a write can change: the counts and
+  the cards. Replaced wholesale by every mutation -- adding someone renumbers
+  a pod, moving someone touches two of them, and reordering touches them all,
+  so a per-card stream would be a stream per card in most cases anyway.
+
+  Locals: board (AlphaPodBoard::Board), slot.
+%>
+<div id="alpha-pods-board">
+  <%= ui_stat_row do %>
+    <%= ui_stat_box board.sets.size.to_s, "Pods", icon: "people-group", icon_type: :solid %>
+    <%= ui_stat_box board.count_of(Pod::TYPE_ALPHA).to_s, "Alphas in Pods",
+                    variant: :success, icon: "seedling", icon_type: :solid %>
+    <%= ui_stat_box board.count_of(Pod::TYPE_MENTOR).to_s, "Mentors",
+                    icon: "mitten", icon_type: :solid %>
+    <%= ui_stat_box board.count_of(Pod::TYPE_MITTEN).to_s, "MITtens",
+                    icon: "hand-sparkles", icon_type: :solid %>
+    <%# The number this page exists to drive to zero: an Alpha signed in and
+        standing at check-in with no one to walk with. %>
+    <%= ui_stat_box board.unassigned_count.to_s, "Signed In, No Pod",
+                    variant: board.unassigned_count.positive? ? :warning : :secondary,
+                    icon: "user-clock", icon_type: :solid %>
+  <% end %>
+
+  <% if board.unassigned_count.positive? %>
+    <%= ui_callout_box :warning, icon: "user-clock", icon_type: :solid, accent: true, class: "mb-4" do %>
+      <strong>Waiting for a pod:</strong>
+      <%= safe_join(board.unassigned_alphas.map { |person| callsign_link(person) }, ", ") %>
+    <% end %>
+  <% end %>
+
+  <% if board.any? %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+      <% board.sets.each do |set| %>
+        <%= render "mentoring/alpha_pods/pod_card", set: set, slot: slot,
+                   first: set == board.sets.first, last: set == board.sets.last %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= ui_empty_state "No pods have been formed for this shift yet. Use Add pod to make the first one.",
+                       icon: "people-group", icon_type: :solid %>
+  <% end %>
+</div>

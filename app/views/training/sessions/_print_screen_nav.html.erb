@@ -1,0 +1,8 @@
+<%# Screen-only return link + print hint shared by the print views
+    (signup sheet, trainer's report). %>
+<div class="print:hidden mb-4">
+  <%= back_to "Training Session", training_session_path(training_slug, @training_session.slot.id) %>
+  <p class="text-stone-muted mt-1">
+    Use your browser's print command. This message and the navigation are left off the paper.
+  </p>
+</div>

@@ -1,0 +1,8 @@
+<% content_for :title, "Edit #{@group.title}" %>
+
+<%= hero_panel icon: "layer-group", heading_level: :h1, id: "group-form-header",
+               title: "Edit Group",
+               description: "Change what this set of questions is called, or how its answers are reported.",
+               back_to: [@survey.title, communication_survey_path(@survey, group: @group.id)] %>
+
+<%= render "form" %>

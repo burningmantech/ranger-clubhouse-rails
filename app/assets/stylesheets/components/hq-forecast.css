@@ -1,0 +1,239 @@
+/*
+ * The HQ forecast's day chart: a Gantt chart of one day, midnight to midnight.
+ * The check-in/out traffic runs across the top, then a lane for each HQ desk
+ * with every shift a bar over the hours it runs.
+ *
+ * Only what utilities cannot say lives here -- the two columns, the hour lines,
+ * the geometry read from the custom properties the helper sets on each mark,
+ * the tooltips, the hit areas and the hatching. Layout is utilities in
+ * app/helpers/scheduling/hq_forecast_helper.rb.
+ *
+ *   --start  where a mark begins, in minutes from midnight
+ *   --span   how long it runs, in minutes, cut to the day
+ *   --share  how tall a traffic bar stands, as a percent of the day's busiest
+ */
+
+/*
+ * The column of lane names, then the day. The grid is never narrower than
+ * 40rem (min-w-160 in the helper): at a phone's width a two-hour shift would be
+ * a sliver, so the chart scrolls sideways in its own box instead, the names
+ * pinned beside it.
+ */
+.hq-gantt {
+    grid-template-columns: 6.5rem 1fr;
+}
+
+/*
+ * Printed with its colours. Every mark is a background, and a browser printing
+ * with its default settings drops backgrounds, leaving empty lanes.
+ */
+.hq-gantt-chart {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/*
+ * A line every three hours -- the hours the axis names -- behind the marks.
+ * Midnight at the far end is the lane's own border.
+ */
+.hq-gantt-lane {
+    background-image: repeating-linear-gradient(
+        to right,
+        var(--color-base-300) 0 1px,
+        transparent 1px 12.5%
+    );
+}
+
+/* 1440: the minutes in the day, GANTT_DAY_MINUTES in the helper. */
+.hq-gantt-mark {
+    left: calc(var(--start) / 1440 * 100%);
+    width: calc(var(--span) / 1440 * 100%);
+}
+
+.hq-gantt-fill {
+    height: calc(var(--share) * 1%);
+}
+
+/*
+ * A tooltip is narrower than daisyUI's own, so one centred on its mark fits
+ * inside the chart even at its narrowest (the helper opens it to the side near
+ * either end).
+ *
+ * A closed one takes no room. daisyUI only fades a tooltip out, and its box,
+ * hanging past midnight, would stretch the page or the chart sideways while
+ * no one can see it. Its tail goes with it.
+ */
+.hq-gantt-mark > .tooltip-content {
+    max-width: 14rem;
+}
+
+.hq-gantt-mark:not(:hover, :has(:focus-visible)) > .tooltip-content,
+.hq-gantt-mark:not(:hover, :has(:focus-visible))::after {
+    display: none;
+}
+
+/*
+ * The mark being read sits over everything, the pinned lane names included, so
+ * its tooltip is never cut off by them.
+ */
+.hq-gantt-mark:hover,
+.hq-gantt-mark:has(:focus-visible) {
+    z-index: 20;
+}
+
+.hq-gantt-hit:hover .hq-gantt-bar,
+.hq-gantt-mark:hover .hq-gantt-fill {
+    filter: brightness(1.15);
+}
+
+/*
+ * A bar is exactly as long as its shift, so a short one -- a runner's hour,
+ * the half hour a shift spills past midnight -- is narrower than the 36px touch
+ * floor. Its link reaches past the bar on both sides to make up the difference,
+ * without moving the bar off the hours it stands for; the helper lifts a short
+ * bar above its neighbours so that reach is its own. At the very start of a
+ * day the reach runs under the pinned lane names, the one place it falls short.
+ */
+.hq-gantt-hit::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: 50%;
+    width: max(100%, 2.25rem);
+    translate: -50% 0;
+}
+
+/*
+ * The ring goes round the bar the reader sees, not the taller hit area around
+ * it. The link keeps an outline, transparent, for forced colours, which drop
+ * the ring and paint the outline instead.
+ */
+.hq-gantt-hit:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: -2px;
+}
+
+.hq-gantt-hit:focus-visible .hq-gantt-bar {
+    @apply ring-2 ring-primary ring-offset-2 ring-offset-base-100;
+}
+
+/*
+ * A shift's count sits inside its bar only where it fits. A bar too short for
+ * it leaves the count to the tooltip and the bar's own words, rather than
+ * cropping it into something that reads as a different number. "1/1" fits
+ * where "12/12" does not, so the longer count gives up sooner. The bar is the
+ * container (@container in the helper).
+ */
+@container (width < 2rem) {
+    .hq-gantt-bar-text {
+        display: none;
+    }
+}
+
+@container (width < 3.25rem) {
+    .hq-gantt-bar-text-long {
+        display: none;
+    }
+}
+
+/*
+ * The table on the burn page follows its section down the screen: a table this
+ * tall is read a long way from its own header, and a row of staffing columns
+ * of bare numbers says nothing without it.
+ *
+ * Stuck to the cells rather than the thead: the table collapses its borders,
+ * and a border on a stuck thead is left behind by the row it belongs to. The
+ * shadow draws it instead. The heading only exists above the lg fold -- below
+ * it every row is a labeled card and the thead is screen-reader only.
+ *
+ * Bounded by the table, so the header leaves with the burn it belongs to.
+ */
+@media (width >= theme(--breakpoint-lg)) {
+    /*
+     * A sticky heading sticks to its nearest scrolling ancestor, and the table
+     * container is one by default. Clipped instead of scrolled: the container
+     * is never taller than its own rows, so a header stuck to it could never
+     * travel, and the page has to be the thing it follows. Nine columns at
+     * most -- three, then only the desks with a shift in the burn's periods --
+     * fit above this fold, and below it every row is a card, so nothing is
+     * ever clipped away.
+     */
+    .hq-forecast-pane {
+        overflow-x: clip;
+    }
+
+    .hq-forecast-table thead th {
+        @apply sticky z-20 bg-base-200;
+        /*
+         * The page's own padding, which a pinned header would otherwise stop
+         * short of -- leaving a band the rows scroll through above it.
+         */
+        top: -0.75rem;
+        box-shadow: inset 0 -1px 0 var(--color-base-300);
+    }
+}
+
+/*
+ * A shift no one has signed up for, and the legend key standing for it.
+ * Hatched as well as tinted: the texture is what tells it from a shift with
+ * people on it for a reader who cannot separate them by colour. One rule
+ * paints both, so the bars and the key that explains them cannot drift apart.
+ *
+ * The stripe is drawn in the page's own background colour, which runs the
+ * opposite way to the warning tint in each theme -- pale over the darker amber
+ * of the light theme, dark over the brighter amber of the night one -- so the
+ * texture stays legible either way. A fixed colour could only ever suit one of
+ * them.
+ */
+.hq-gantt-vacant {
+    @apply bg-warning;
+    background-image: repeating-linear-gradient(
+        45deg,
+        color-mix(in oklch, var(--color-base-100) 70%, transparent) 0,
+        color-mix(in oklch, var(--color-base-100) 70%, transparent) 2px,
+        transparent 2px,
+        transparent 5px
+    );
+}
+
+/* The count on a hatched bar sits on a solid patch, clear of the stripes. */
+.hq-gantt-vacant .hq-gantt-bar-text {
+    @apply rounded-xs bg-warning text-warning-content;
+}
+
+/*
+ * A period with no lead, short, or window on duty, and its legend key: the
+ * whole height of its column is striped, not its traffic bar, since a quiet
+ * gap has almost no bar to stripe and is still a gap. Thinner stripes of the
+ * warning colour than a vacant shift's, so the two read as different marks and
+ * the traffic bar drawn over them stays legible.
+ */
+.hq-gantt-gap {
+    background-image: repeating-linear-gradient(
+        45deg,
+        color-mix(in oklab, var(--color-warning) 45%, transparent) 0 2px,
+        transparent 2px 6px
+    );
+}
+
+/*
+ * Forced colours (Windows High Contrast) replace every background with the
+ * page's own, so the bars and the hatching would vanish. An outline survives
+ * -- the mode paints it in the system's text colour -- solid for a mark that
+ * stands for someone, dashed for no one. Last in the file so the dashed rule
+ * wins where a swatch carries both.
+ */
+@media (forced-colors: active) {
+    .hq-gantt-bar,
+    .hq-gantt-fill,
+    .hq-gantt-swatch {
+        outline: 1px solid;
+        outline-offset: -1px;
+    }
+
+    .hq-gantt-vacant,
+    .hq-gantt-gap {
+        outline: 1px dashed;
+        outline-offset: -1px;
+    }
+}

@@ -1,0 +1,109 @@
+<% scope = Vc::HandleCheckerForm::PARAM_SCOPE %>
+
+<%= hero_panel icon: "id-badge", heading_level: :h1, id: "handle-checker",
+               title: "Handle Checker",
+               description: "Check a proposed handle against every callsign and every reserved handle." %>
+
+<%= ui_form @form, vc_handle_checker_path,
+            scope: scope,
+            method: :get,
+            local: true,
+            no_error_summary: true do |f| %>
+  <%= hidden_field_tag "#{scope}[configured]", "1" %>
+  <% @form.checked_names.each do |name| %>
+    <%= hidden_field_tag "#{scope}[names][]", name, id: nil %>
+  <% end %>
+
+  <%= ui_section "Check a Handle", icon: "magnifying-glass", icon_type: :solid do %>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+      <%# Cleared once checked, so the handle lives in the history rather than
+          being re-submitted every time a rule is toggled. %>
+      <%= f.text_field :handle,
+                       label: "Proposed Handle",
+                       value: "",
+                       maxlength: 64,
+                       width: "w-full sm:w-72",
+                       wrapper_class: "mb-0",
+                       autofocus: true,
+                       autocomplete: "off" %>
+      <%= button_row class: "mb-1" do %>
+        <%= f.submit "Check Handle" %>
+        <% if @results.any? %>
+          <%= button_link "Clear History", :secondary, vc_handle_checker_path(@form.clear_history_params) %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= ui_section "Narrow the Results", icon: "sliders", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What do these do?</dt>
+      <dd>They change which conflicts are listed. Every handle you have checked is re-checked when you change one.</dd>
+    </dl>
+
+    <div class="flex flex-col gap-3" data-action="change->form#submit">
+      <%# Opened when narrowed, so a non-default selection is never hidden
+          behind a collapsed summary. %>
+      <%= ui_disclosure "Rules",
+                        variant: :card,
+                        open: @form.rules_narrowed?,
+                        subtitle: "#{@form.rule_ids.count} of #{HandleChecker.rule_ids.count} in use" do %>
+        <%= render "common/checkbox_grid",
+                   name: "#{scope}[rule_ids][]",
+                   options: HandleChecker.rule_options,
+                   selected: @form.rule_ids,
+                   id_prefix: "rule" %>
+      <% end %>
+
+      <%= ui_disclosure "Handle Types",
+                        variant: :card,
+                        open: @form.types_narrowed? || !@form.include_vintage,
+                        subtitle: "#{@form.entity_types.count} of #{@checker.entity_types.count} in use" do %>
+        <%# Paired with a hidden field so unchecking submits a value, matching
+            the tap target of the handle type checkboxes below. %>
+        <%= hidden_field_tag "#{scope}[include_vintage]", "0", id: nil %>
+        <%= render layout: "common/checkbox_tile" do %>
+          <%= check_box_tag "#{scope}[include_vintage]", "1", @form.include_vintage,
+                            id: "include-vintage",
+                            class: "#{AppFormBuilder::CHECKBOX_CLASSES} shrink-0" %>
+          <span class="text-sm text-body leading-snug">Always include vintage callsigns</span>
+        <% end %>
+        <p class="mt-2 text-sm text-stone-muted">
+          Vintage callsigns are reported even when their status is switched off.
+        </p>
+
+        <div class="mt-3">
+          <%= render "common/checkbox_grid",
+                     name: "#{scope}[entity_types][]",
+                     options: handle_checker_type_options(@checker.entity_types),
+                     selected: @form.entity_types,
+                     id_prefix: "entity-type" %>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @form.narrowed? %>
+      <%= button_row class: "mt-3" do %>
+        <%= button_link "Reset Rules and Types", :ghost,
+                        vc_handle_checker_path(@form.reset_narrowing_params) %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Results", icon: "list-check", icon_type: :solid, badge: @results.size.to_s do %>
+  <% if @results.empty? %>
+    <%= ui_empty_state "No handles checked yet. Enter a proposed handle above to see what it conflicts with.",
+                       icon: "magnifying-glass", icon_type: :solid %>
+  <% else %>
+    <%# The ordering rule, out of the hero and onto the results it orders. %>
+    <p class="mb-3">Conflicts are listed most serious first.</p>
+    <%# Cards sit side by side and wrap, as the Ember original did. Without
+        flex-wrap a few results push the page into horizontal scrolling. %>
+    <div class="flex flex-row flex-wrap items-start gap-4">
+      <% @results.each do |name, conflicts| %>
+        <%= render "result", name: name, conflicts: conflicts %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

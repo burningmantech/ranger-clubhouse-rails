@@ -1,0 +1,22 @@
+<%# locals: (application:) %>
+<%= ui_label_value label_width: "12rem", size: :base do |list| %>
+  <% list.row "BPGUID", application.bpguid %>
+  <% list.row "SFUID", application.sfuid %>
+  <% list.row "Salesforce ID" do %>
+    <% if application.salesforce_id.present? %>
+      <%= link_to application.salesforce_name, salesforce_record_url(application.salesforce_id),
+                  target: "_blank", rel: "noopener" %>
+    <% else %>
+      <span class="text-stone-muted">not recorded</span>
+    <% end %>
+  <% end %>
+  <% list.row "Actions" do %>
+    <%= delete_button vc_application_path(application), "Delete Application",
+                      confirm_modal: {
+                        title: "Delete Application",
+                        message: "Are you absolutely sure you want to delete application #{application.application_id}? Its notes and audit history will also be deleted.",
+                        confirm_label: "Delete Application",
+                        method: :delete
+                      } %>
+  <% end %>
+<% end %>

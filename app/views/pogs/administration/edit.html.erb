@@ -1,0 +1,25 @@
+<% recipient = person_display_name(@pog.person, @pog.person_id) %>
+<% content_for :title, "Edit Pog for #{recipient}" %>
+
+<%= hero_panel icon: "utensils", heading_level: :h1, id: "pog-administration-edit-header",
+               title: "Edit Pog for #{recipient}",
+               back_to: ["#{@year} Pog Administration", pogs_administration_path(return_params)] do |panel| %>
+  <% panel.description do %>
+    Issued <%= datetime_format(@pog.issued_at, year: true, tz: Time.zone.name) %> by <%= person_display_name(@pog.issued_by, @pog.issued_by_id) %>.
+  <% end %>
+<% end %>
+
+<%= ui_form(@pog, pogs_record_path(@pog, return_params), method: :patch) do |f| %>
+  <%= form_row do %>
+    <%= f.select :pog, PersonPog::POG_LABELS.invert, { label: "Pog", required: true } %>
+    <%= f.select :status, PersonPog::STATUS_LABELS.invert, { label: "Status", required: true } %>
+  <% end %>
+  <%= f.text_area :notes, label: "Notes (optional)", rows: 4 %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Pog" %>
+    <%= cancel_link pogs_administration_path(return_params) %>
+    <%= delete_button pogs_record_path(@pog, return_params), "Delete Pog",
+                      confirm_modal: pogs_administration_delete_confirm(@pog, recipient) %>
+  <% end %>
+<% end %>

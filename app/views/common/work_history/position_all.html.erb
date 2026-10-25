@@ -1,0 +1,45 @@
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1, id: "work-history-breakdown-header",
+               title: "#{@position.title}",
+               description: "Timesheet entries for #{@person.callsign}.",
+               back_to: ["Work History", url_for(action: :index)] %>
+
+<%= ui_section "Hours Breakdown", icon: "clock", icon_type: :solid do %>
+  <div class="flex flex-wrap gap-3 mb-4">
+    <%= ui_badge "#{pluralize @position.years.size, 'year'}", :secondary %>
+    <%= ui_badge "#{hour_format(@position.duration)} total", :primary %>
+  </div>
+
+  <div class="space-y-4">
+    <% @position.years.each do |year, event| %>
+      <div>
+        <div class="text-lg font-semibold text-heading mb-2 flex flex-wrap items-center gap-2">
+          <span>Event Year <%= year %></span>
+          <span class="text-stone-muted text-sm font-normal">
+            (<%= hour_format(event.duration) %>)
+          </span>
+        </div>
+        <%= ui_table responsive: false do |t| %>
+          <%= t.header do %>
+            <%= t.heading "Time" %>
+            <%= t.heading "Hours", right: true %>
+            <%= t.heading "Credits", right: true %>
+          <% end %>
+          <%= t.body do %>
+            <% event.entries.each do |entry| %>
+              <%= t.row do %>
+                <%= t.cell do %>
+                  <%= datetime_format(entry.on_duty, entry.off_duty || Current.time) %>
+                  <% if entry.is_echelon %>
+                    <div class="text-stone-muted text-sm">(as Echelon volunteer)</div>
+                  <% end %>
+                <% end %>
+                <%= t.cell hour_format(entry.duration), right: true %>
+                <%= t.cell "%.2f" % entry.credits, right: true %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

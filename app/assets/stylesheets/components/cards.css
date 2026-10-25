@@ -1,0 +1,43 @@
+/*
+ * Card Container Patterns
+ * DaisyUI card components
+ * See: https://daisyui.com/components/card/
+ */
+
+/* The app's one card.
+ *
+ * daisyUI's own card-border is deliberately not used: it resolves to
+ * base-200, which against a base-100 card is invisible in light mode. The rest
+ * of the app draws container edges with border-line (96 call sites), so that is
+ * what a card gets.
+ *
+ * No shadow, per DESIGN.md's flat-by-default rule -- region lift belongs to
+ * .box and the hero panel. A card that genuinely needs one adds shadow-xs at
+ * the call site.
+ *
+ * No padding: daisyUI expects it on a card-body child, and these cards put
+ * content straight in the container, so the call site keeps its own p-*.
+ * Background is here because a card is base-100 by definition; a caller sitting
+ * on another surface can still override it, because Tailwind emits its own
+ * utilities after this block.
+ */
+@utility card-standard {
+    @apply card bg-base-100 border border-line;
+}
+
+/*
+ * Inherited from daisyUI's card, and not obvious from the line above: a
+ * <figure> child is centred as a flex box, and a first or last <figure> takes
+ * the card's corner radii with overflow: hidden. Whatever puts a <figure> in a
+ * card gets that behaviour without asking for it.
+ *
+ * A saved table is the one thing that does: the rich text editor wraps each
+ * table in a <figure> so that a wide one can scroll sideways. Centred as a flex
+ * box it could not -- its left columns sat past the start of the scroll, out of
+ * reach -- so the wrapper is put back to what the editor's own sheet asks for.
+ * Outside any layer on purpose: daisyUI's rule lives in the utilities layer, and
+ * nothing in a lower one outranks it.
+ */
+.card-standard .lexxy-content__table-wrapper {
+    @apply block overflow-auto rounded-none;
+}

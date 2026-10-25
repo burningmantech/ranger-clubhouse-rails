@@ -1,0 +1,137 @@
+<%#
+  Shirt sizes for the current Prospectives and Alphas. The size runs come first
+  because ordering shirts is the job; the roster below is for handing them out.
+  Both read sizes through ShirtTotals so a row and its count cannot disagree.
+%>
+<% content_for :title, "Alpha Shirts" %>
+
+<%= hero_panel icon: "shirt", heading_level: :h1, id: "quartermaster-alpha-shirts-header",
+               title: "Alpha Shirts" do |panel| %>
+  <% panel.description do %>
+    Shirt sizes for everyone who is a Prospective or an Alpha right now.
+  <% end %>
+<% end %>
+
+<% if @people.empty? %>
+  <%= ui_empty_state "No one holds Prospective or Alpha status right now, so there are no shirts to count.",
+                     icon: "shirt", icon_type: :solid %>
+<% else %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @people.size.to_s, "People" %>
+    <%= ui_stat_box @prospective_count.to_s, "Prospectives" %>
+    <%= ui_stat_box @alpha_count.to_s, "Alphas" %>
+    <% if @incomplete_count.positive? %>
+      <%= ui_stat_box @incomplete_count.to_s, "Missing a Size", variant: :warning,
+                      icon: "circle-question", icon_type: :solid %>
+    <% end %>
+  <% end %>
+
+  <%# Out of the hero: what the two halves of the page are for. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>How are the two lists used?</dt>
+      <dd>Order against the size runs, then hand out from the roster.</dd>
+    </dl>
+  <% end %>
+
+  <%# Counts describes the size tables below, so it stays with them. The
+      roster export rides the filter bar that scopes it. %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link(quartermaster_alpha_shirts_counts_path, "Export Counts CSV") %>
+    <% end %>
+  </div>
+
+  <%# Sizes run smallest-first with Unknown last -- ShirtTotals orders them.
+      Three columns so the runs can be read against each other rather than
+      scrolled past one at a time. %>
+  <%# items-start so a short run does not stretch to match the longest column. %>
+  <div class="grid grid-cols-1 lg:grid-cols-3 items-start gap-0 lg:gap-4">
+    <% @kinds.each do |kind| %>
+      <%= ui_section kind.name, icon: "shirt", icon_type: :solid, border: false do %>
+        <% if kind.sizes.empty? %>
+          <p class="text-body px-4 pb-2">No sizes recorded for this shirt.</p>
+        <% else %>
+          <%= ui_table full_width: true, striped: true do |t| %>
+            <%= t.header do %>
+              <%= t.heading "Size" %>
+              <%= t.heading "Count", right: true %>
+            <% end %>
+            <%= t.body do %>
+              <% kind.sizes.each do |size| %>
+                <%= t.row do %>
+                  <%= t.row_header shirt_size_title(size.title) %>
+                  <%= t.cell size.count, right: true %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# The filters narrow the roster only. The size runs, the stats, and both
+      exports stay whole -- they are what gets ordered against, so the roster
+      export in the bar is the full roster however the chips read. %>
+  <%= filter_bar id: "alpha-shirts-filters",
+                 chips: alpha_shirts_filter_chips(@filter_params),
+                 clear_url: quartermaster_alpha_shirts_path,
+                 count: "Showing #{@filtered_people.size} of #{pluralize(@people.size, "person")}",
+                 actions: export_csv_link(quartermaster_alpha_shirts_path(format: :csv), "Export Roster CSV"),
+                 url: quartermaster_alpha_shirts_path do |f| %>
+    <%= form_row do %>
+      <%= f.select :status, alpha_shirts_status_options(@status_counts),
+                   label: "Status", selected: @filter_params[:status],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <% @kinds.each do |kind| %>
+        <%= f.select kind.param, alpha_shirts_size_options(kind),
+                     label: kind.name, selected: @filter_params[kind.param],
+                     width: "w-full", wrapper_class: "flex-1" %>
+      <% end %>
+    <% end %>
+    <%= f.check_box :missing, label: "Only people missing a size",
+                    checked: @filter_params[:missing] == ShirtFilterConcern::MISSING_ON %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Roster", icon: "users", icon_type: :solid, border: false do %>
+    <% if @filtered_people.empty? %>
+      <div class="px-4 pb-2">
+        <%= ui_empty_state "No one matched the current filters.",
+                           icon: "magnifying-glass", icon_type: :solid %>
+      </div>
+    <% else %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Name" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "T-Shirt" %>
+        <%= t.heading "T-Shirt Backup" %>
+        <%= t.heading "Long Sleeve" %>
+      <% end %>
+      <%= t.body do %>
+        <% @filtered_people.each do |person| %>
+          <%= t.row do %>
+            <%= t.row_header callsign_link(person) %>
+            <%# The email is a mailto: -- chasing down a missing size is the one
+                thing this page sends you off to do. %>
+            <%= t.cell safe_join([
+                  person.desired_full_name,
+                  tag.div(email_link_or_dash(person.email), class: "text-sm")
+                ]) %>
+            <%= t.cell(ui_badge(person.status,
+                                person.status == Person::ALPHA ? :success : :secondary)) %>
+            <% ShirtTotals::KINDS.each do |shirt| %>
+              <%= t.cell shirt_size_label(person, shirt[:reader]) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

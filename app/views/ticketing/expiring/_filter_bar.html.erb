@@ -1,0 +1,55 @@
+<%# locals: (filter_params:, active_params:, count: nil, actions: nil) %>
+<%# Ticket status, type, and already-expired filters for the expiring-tickets
+    table, in the standard filter_bar shell. All three are ordinary GET params
+    applied server-side.
+
+    Locals:
+      filter_params - { status:, type:, expired: }; "all" means that filter is off
+      active_params - filter_params without the "all" entries; one chip each
+      count         - result summary shown at the end of the bar
+      actions       - the page's Export CSV button, at the end of the row %>
+<%
+  all_option = UiComponents::FilterBarHelper::ALL_FILTER_OPTION
+
+  # Only these two statuses and two types can ever appear, so each select offers
+  # exactly what the report can return rather than the whole list.
+  status_options = ExpiringTicketsReport::STATUSES.map { |status| [status.capitalize, status] }
+  type_options = AccessDocument::REGULAR_TICKET_TYPES.map do |type|
+    [AccessDocument::TYPE_LABELS.fetch(type), type]
+  end
+  expired_labels = { "yes" => "Already expired", "no" => "Expires this year" }
+  expired_options = expired_labels.map { |value, label| [label, value] }
+
+  chip_labels = { status: "Ticket status", type: "Type", expired: "Expiry" }
+  chip_value = lambda do |key, value|
+    case key
+    when :status then value.capitalize
+    when :type then AccessDocument::TYPE_LABELS.fetch(value, value)
+    # A bare "Yes"/"No" chip would not say what the answer was to, so the chip
+    # carries the same wording as the select.
+    else expired_labels.fetch(value, value)
+    end
+  end
+  chips = filter_chips(active_params, chip_labels, value_label: chip_value) do |remaining|
+    ticketing_expiring_path(remaining)
+  end
+%>
+<%= filter_bar id: "expiring-ticket-filters",
+               chips: chips,
+               clear_url: ticketing_expiring_path,
+               count: count,
+               actions: actions,
+               url: ticketing_expiring_path do |f| %>
+  <%= form_row do %>
+    <%= f.select :status, [all_option, *status_options], label: "Ticket Status",
+                 selected: filter_params[:status], width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :type, [all_option, *type_options], label: "Type",
+                 selected: filter_params[:type], width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :expired, [all_option, *expired_options], label: "Expiry",
+                 selected: filter_params[:expired], width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>

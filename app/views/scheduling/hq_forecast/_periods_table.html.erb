@@ -1,0 +1,31 @@
+<%# locals: (periods:, desks:, interval:, caption:) %>
+<%# Only the desks with something scheduled in these periods get a column. %>
+<%= ui_table full_width: true, striped: true, caption: caption,
+             class: "hq-forecast-table", container_class: "hq-forecast-pane" do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Time" %>
+    <%= t.heading "Check In", right: true %>
+    <%= t.heading "Check Out", right: true %>
+    <% desks.each do |desk| %>
+      <%= t.heading desk.title, right: true %>
+    <% end %>
+  <% end %>
+  <%= t.body do %>
+    <% periods.each do |period| %>
+      <%= t.row state: hq_forecast_row_state(period) do %>
+        <%# No mobile label: below the lg breakpoint the time is the card's
+            heading, and "Time: 09:00" reads as a field. %>
+        <%= t.row_header data: { label: nil } do %>
+          <%= hq_forecast_period_cell(period) %>
+        <% end %>
+        <%= t.cell period.checkin, right: true %>
+        <%= t.cell period.checkout, right: true %>
+        <% desks.each do |desk| %>
+          <%= t.cell right: true do %>
+            <%= hq_forecast_staffing_cell(period, desk, interval) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

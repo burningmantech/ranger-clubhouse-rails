@@ -1,0 +1,14 @@
+<div class="space-y-4">
+  <%= ui_callout_box :secondary, accent: true, icon: false, role: "status", "aria-label": "Not authorized for personal vehicle use" do %>
+    <h3 class="heading-title text-heading-primary mb-2">Not Authorized</h3>
+    <p class="text-stone-emphasis">
+      You are not currently authorized to use your personal vehicle for Ranger business.
+    </p>
+  <% end %>
+
+  <%= ui_callout_box :info, accent: true, title: "Exceptions", icon: "info-circle", role: "note" do %>
+    <div class="text-warning">
+      Need an exception? If you have a legitimate operational need, speak with your manager BEFORE taking action.
+    </div>
+  <% end %>
+</div>

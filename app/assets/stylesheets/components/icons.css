@@ -1,0 +1,38 @@
+/*
+ * Status Icon Colors
+ * The four status inks, as icons. Each is the theme's own semantic colour, so
+ * a theme change moves them and no dark: pair is needed -- the tokens already
+ * carry both themes.
+ *
+ * These named Tailwind's palette until now (amber-600/amber-400 and friends),
+ * which is what made ~126 call sites unthemeable. icon-success had drifted
+ * half-way across on its own: text-success in light, text-green-400 in dark.
+ *
+ * Contrast against base-100 / base-300, light then dark, measured on the
+ * values below. The bar is 3:1, WCAG 1.4.11 for non-text content:
+ *
+ *   success   5.38 / 4.56   5.20 / 4.04
+ *   warning   6.38 / 5.42   7.20 / 5.59
+ *   error     9.49 / 8.05   4.20 / 3.26
+ *   info      4.67 / 3.96   5.71 / 4.43
+ *
+ * The light amber this replaces did not clear that bar: icon-warning measured
+ * 2.97 on base-100 and 2.52 on base-300. The dark values are all lower than
+ * the palette-400s they replace, which were brighter than the theme's own
+ * status colours; error on a hovered dark row is the tightest at 3.26.
+ */
+@utility icon-success {
+    @apply text-success;
+}
+
+@utility icon-warning {
+    @apply text-warning;
+}
+
+@utility icon-error {
+    @apply text-error;
+}
+
+@utility icon-info {
+    @apply text-info;
+}

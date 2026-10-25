@@ -1,0 +1,17 @@
+<%= hero_panel icon: "shirt", heading_level: :h1, id: "person-swag-new-header",
+               back_to: ["Swag", person_swag_index_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Record <%= @swag_title %> &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= render "form",
+           person:       @person,
+           person_swag:  @person_swag,
+           form_path:    person_swag_index_path(@person),
+           form_method:  :post,
+           swag_type:    @swag_type,
+           swag_title:   @swag_title,
+           swag_options: @swag_options,
+           submit_label: "Save Swag",
+           show_delete:  false %>

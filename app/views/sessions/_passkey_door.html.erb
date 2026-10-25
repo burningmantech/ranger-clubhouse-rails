@@ -1,0 +1,29 @@
+<%# locals: () -%>
+<%# The second way in: a passkey, with no email address asked for. It is drawn
+    hidden and shown by the script only where the browser can do it, so a
+    browser that cannot -- or one with no script at all -- never sees a button
+    that leads nowhere. A plain button, not a submit: the layout locks submit
+    buttons the moment a form goes, and the device's prompt may yet be cancelled. %>
+<div hidden
+     data-controller="passkey"
+     data-passkey-ceremony-value="get"
+     data-passkey-options-url-value="<%= passkey_options_path %>">
+  <div class="divider text-body text-sm mt-4 mb-2">or</div>
+
+  <%= button_action "Sign In with a Passkey", :secondary,
+                    icon: "fingerprint", icon_type: :solid, size: "lg", class: "w-full",
+                    data: { action: "passkey#run", passkey_target: "submit" } %>
+
+  <%# What goes wrong between the browser and the device, filled in by the script. %>
+  <div class="mt-3" data-passkey-target="error" hidden>
+    <%= ui_callout_box :warning do %>
+      <span data-passkey-target="errorMessage"></span>
+    <% end %>
+  </div>
+
+  <%# Carries what the device answered. A full page load, as for the password
+      form: a sign-in changes the whole document. %>
+  <%= ui_form nil, passkey_sign_in_path, data: { turbo: false, passkey_target: "form" } do |f| %>
+    <%= f.hidden_field :credential, data: { passkey_target: "credential" } %>
+  <% end %>
+</div>

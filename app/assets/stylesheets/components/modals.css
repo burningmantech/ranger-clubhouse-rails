@@ -1,0 +1,25 @@
+/*
+ * Modal System Extensions
+ * DaisyUI provides: modal, modal-box, modal-action, modal-backdrop, modal-toggle
+ * Custom utilities below use non-conflicting names for project patterns.
+ */
+
+/* Custom modal header with border */
+@utility modal-header-bar {
+    @apply flex items-center justify-between pb-2 border-b border-base-300;
+}
+
+/* Custom modal title text */
+@utility modal-title-text {
+    @apply text-xl font-semibold text-base-content;
+}
+
+/* Custom modal body content area */
+@utility modal-body-content {
+    @apply py-4;
+}
+
+/* Custom modal footer with border */
+@utility modal-footer-bar {
+    @apply modal-action pt-2 border-t border-base-300;
+}

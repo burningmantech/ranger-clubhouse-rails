@@ -1,0 +1,5 @@
+<%= render template: "common/schedule/signup_summary",
+           locals: {
+             back_link: back_to("Schedule", hq_scheduling_path(@person)),
+             description_text: "View scheduled hours and earned credits for #{@person.callsign} in #{@year}."
+           } %>

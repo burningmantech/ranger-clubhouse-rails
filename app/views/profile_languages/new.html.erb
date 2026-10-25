@@ -1,0 +1,4 @@
+<%= hero_panel icon: "language", heading_level: :h1, id: "add-language-header",
+               title: "Add Language",
+               back_to: ["Languages", languages_index_url] %>
+<%= render partial: "profile_languages/form", locals: { person:, language: } %>

@@ -1,0 +1,26 @@
+<%# locals: (logs:) %>
+<%= ui_table do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Timestamp" %>
+    <%= t.heading "User" %>
+    <%= t.heading "Action" %>
+  <% end %>
+  <%= t.body do %>
+    <% logs.each do |log| %>
+      <%= t.row do %>
+        <%= t.cell datetime_format(log.created_at) %>
+        <%= t.cell do %>
+          <% if log.create_person_id %>
+            <%= link_to log.creator&.callsign || "##{log.create_person_id}",
+                        person_path(log.create_person_id), class: "underline" %>
+          <% else %>
+            -
+          <% end %>
+        <% end %>
+        <%= t.cell do %>
+          <%= render partial: "person/timesheets/log_entry_data", locals: { log: log } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

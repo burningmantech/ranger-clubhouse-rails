@@ -1,0 +1,37 @@
+<%# locals: (t:, item:, name:, subtext: nil) %>
+<%# Single progress row (Ember port/components/hq-tickets-and-provisions-row.hbs).
+    item is a TicketsAndProvisionsProgress::ProgressItem whose value /
+    expected_total / needs_to_work / needs_to_schedule arrive pre-formatted
+    with units; threshold is raw and gets the measure appended. %>
+<% if item %>
+  <%= t.row do %>
+    <%= t.cell class: "leading-relaxed" do %>
+      <% if item.has_earned %>
+        <span class="font-bold text-success">
+          <%= fa_icon "check", :solid, end: 1 %><%= name %> &mdash; earned
+        </span>
+      <% else %>
+        <span class="font-bold"><%= name %></span>
+        <% if local_assigns[:subtext] %>
+          <em><%= subtext %></em>
+        <% end %>
+        <br>
+        <% if item.expected_to_earn %>
+          <span class="text-success"><%= fa_icon "thumbs-up", :solid, end: 1 %>Has enough scheduled sign-ups.</span>
+        <% else %>
+          <%= fa_icon "hand-point-right", :solid, end: 1 %>Needs <%= item.needs_to_schedule %> more in scheduled sign-ups.
+        <% end %>
+        <br>
+        <%# The lib zeroes needs_to_work exactly when the item is earned, so in
+            this unearned branch it is always > 0 — fixing the upstream bug
+            where a formatted "0:00" string still rendered this line. %>
+        <span class="text-warning">
+          <%= fa_icon "person-walking", :solid, end: 1 %>Needs <%= item.needs_to_work %> more on duty.
+        </span>
+      <% end %>
+    <% end %>
+    <%= t.cell "#{hq_threshold_display(item)} #{item.measure}", right: true %>
+    <%= t.cell item.value, right: true %>
+    <%= t.cell item.expected_total, right: true %>
+  <% end %>
+<% end %>

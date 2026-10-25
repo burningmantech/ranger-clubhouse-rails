@@ -1,0 +1,40 @@
+<%#
+  Level 1 of the drill-down: the service-year groups and how big each one is.
+  No filter bar and no table -- the people are one level down, each group with
+  its own export. The export here carries every group.
+%>
+<% content_for :title, "Freaking Years" %>
+
+<%= hero_panel icon: "star", heading_level: :h1, id: "quartermaster-freaking-years-header",
+               title: "Freaking Years",
+               description: "Browse Active Rangers by total service years, and select a group to view and export its people." %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What counts as a service year?</dt>
+    <dd>
+      Any year with a rangered event, an Echelon contribution, or a year-round recognition award,
+      not only the events rangered.
+    </dd>
+  </dl>
+<% end %>
+
+<% if @groups.present? %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link quartermaster_freaking_years_path(format: :csv), "Export All to CSV" %>
+    <% end %>
+  </div>
+
+  <div class="text-lg">
+    Showing <%= pluralize @rows.size, "person" %> in <%= pluralize @groups.size, "group" %>
+  </div>
+  <div class="lg:w-3/4">
+    <% @groups.each do |years, people| %>
+      <%= ui_drill_down_row quartermaster_freaking_years_group_path(years), pluralize(years, "Year"),
+                            meta: pluralize(people.size, "person") %>
+    <% end %>
+  </div>
+<% else %>
+  <%= ui_empty_state "There are no Active Rangers to report on.", icon: "star", icon_type: :solid %>
+<% end %>

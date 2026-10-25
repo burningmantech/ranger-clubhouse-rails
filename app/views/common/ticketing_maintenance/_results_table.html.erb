@@ -1,0 +1,53 @@
+<%#
+  Ledger table shared by every maintenance task's preview and results page,
+  plus the un-submit provisions ledger.
+
+  Locals:
+    rows - Array of TicketingMaintenance::Row. change reads old → new; detail
+           is the per-row explanation some tasks add; email is populated by
+           tasks whose operators notify people; error means the row's save
+           failed and the rest of the ledger still went through. The Detail
+           and Email columns appear whenever any row carries one.
+%>
+<% show_detail = rows.any? { |row| row.detail.present? } %>
+<% show_email = rows.any? { |row| row.email.present? } %>
+<% column_count = 4 + (show_detail ? 1 : 0) + (show_email ? 1 : 0) %>
+
+<%= ui_table do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Person" %>
+    <%= t.heading "Status" %>
+    <%= t.heading "Item" %>
+    <%= t.heading "Change" %>
+    <%= t.heading "Detail" if show_detail %>
+    <%= t.heading "Email" if show_email %>
+  <% end %>
+  <%= t.body do %>
+    <% rows.each do |row| %>
+      <%= t.row do %>
+        <%= t.row_header do %>
+          <% if row.person %>
+            <%# Same treatment as the callsign link on the other ticketing pages. %>
+            <%= callsign_link row.person %>
+          <% else %>
+            <span class="italic">unknown</span>
+          <% end %>
+        <% end %>
+        <%= t.cell value_or_dash(row.person&.status) %>
+        <%= t.cell row.ref ? "#{row.ref} #{row.type_label}" : "New #{row.type_label}" %>
+        <%= t.cell row.change %>
+        <%= t.cell value_or_dash(row.detail) if show_detail %>
+        <%= t.cell email_link_or_dash(row.email) if show_email %>
+      <% end %>
+      <% if row.error.present? %>
+        <%# Icon plus the literal word "Error" so the row does not rely on colour alone. %>
+        <%= t.row do %>
+          <%= t.cell colspan: column_count, class: "text-error font-medium" do %>
+            <%= fa_icon "triangle-exclamation", :solid, end: 2 %>
+            Error: <%= row.error %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

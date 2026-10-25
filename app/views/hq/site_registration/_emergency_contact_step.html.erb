@@ -1,0 +1,37 @@
+<%# locals: (person:) %>
+<%# Wizard step — Verify Emergency Contact Information (site-checkin.hbs
+    step 2). The edit gate is enforced server-side by save_emergency_contact;
+    operators who may not edit see the off-season notice and a plain Next
+    that advances without issuing a save (no no-op PATCH). %>
+<% if can_edit_emergency_contact? %>
+  <p class="mb-3">
+    <strong>Off-Playa:</strong>
+    Real world name, relationship (partner, friend, sibling, parent), phone number,
+    &amp; email.<br>
+    <strong>On-Playa:</strong>
+    Their playa name, real world name, relationship, camp location &amp; description.
+  </p>
+  <%= ui_form(person, hq_site_registration_emergency_contact_path(person),
+              method: :patch, data: { turbo_frame: "_top" }) do |f| %>
+    <%= f.text_area :emergency_contact, label: "Emergency Contact Information:", rows: 6 %>
+    <%= button_row do %>
+      <%= f.submit "Save & Next" %>
+      <%= button_action "Previous Step", :secondary, icon: "arrow-left", icon_type: :solid,
+                        data: { action: "hq-wizard#back" } %>
+      <%= button_action "Cancel", :secondary, data: { action: "hq-wizard#cancel" } %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_callout_box :error,
+                     title: "Emergency Contact Info Is Off Limits During the Off Season",
+                     icon: "circle-exclamation" do %>
+    Emergency contact details are only available while Ranger operations are running
+    on playa. Press <strong>Next</strong> to move on to the following step.
+  <% end %>
+  <%= button_row do %>
+    <%= button_action "Next", :primary, data: { action: "hq-wizard#advance" } %>
+    <%= button_action "Previous Step", :secondary, icon: "arrow-left", icon_type: :solid,
+                      data: { action: "hq-wizard#back" } %>
+    <%= button_action "Cancel", :secondary, data: { action: "hq-wizard#cancel" } %>
+  <% end %>
+<% end %>

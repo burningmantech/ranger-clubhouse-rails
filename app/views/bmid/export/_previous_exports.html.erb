@@ -1,0 +1,61 @@
+<%# The year's export batches, newest first, each with its CSV for
+    re-download. Rows imported from the Laravel era have no attached file --
+    their archives live on the old export store -- so those show the filename
+    without a link.
+
+    Locals:
+      exports       - [BmidExport]
+      year          - the event year the list is scoped to
+      unsubmittable - whether batches may be un-submitted (current year only:
+                      a previous year's badges have been through the printer) %>
+<%= ui_section "Previous Exports", icon: "clock-rotate-left", icon_type: :solid, badge: exports.size.to_s,
+               id: "previous-exports", border: false do %>
+  <% if exports.empty? %>
+    <%= ui_empty_state "No exports yet for #{year}. The first batch will appear here with its CSV.",
+                       icon: "file-export", icon_type: :solid %>
+  <% else %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "File" %>
+        <%= t.heading "Batch Info" %>
+        <%= t.heading "Badges", right: true %>
+        <%= t.heading "Exported By" %>
+        <%= t.heading "When" %>
+        <%= t.heading "" if unsubmittable %>
+      <% end %>
+      <%= t.body do %>
+        <% exports.each do |export| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <% if export.csv_file.attached? %>
+                <%= link_to safe_join([fa_icon("download", :solid, end: 2), export.filename]),
+                            rails_blob_path(export.csv_file, disposition: "attachment"),
+                            class: LinkHelper::TABLE_LINK_CLASSES %>
+              <% else %>
+                <%= export.filename %>
+              <% end %>
+            <% end %>
+            <%= t.cell value_or_dash(export.batch_info.presence) %>
+            <%= t.cell export.person_ids.size, right: true %>
+            <%= t.cell export.person&.callsign %>
+            <%= t.cell datetime_format(export.created_at, year: true) %>
+            <% if unsubmittable %>
+              <%= t.cell do %>
+                <%= delete_button bmid_export_unsubmit_path(export), "Un-Submit",
+                                  icon: "rotate-left", icon_type: :solid,
+                                  confirm_modal: {
+                                    title: "Un-Submit Export Batch",
+                                    message: "Return every badge in this batch to In Prep and make " \
+                                             "their meal and shower provisions available again? The " \
+                                             "batch record and its CSV are removed. Badges that " \
+                                             "changed since the export are left as they are.",
+                                    confirm_label: "Un-Submit"
+                                  } %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

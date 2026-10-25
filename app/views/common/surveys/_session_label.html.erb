@@ -1,0 +1,17 @@
+<%# A session a set of answers came from. SurveyBuilder carries only the slot
+    id, a stringified begins and the description, so the real slot supplies the
+    timezone -- slot.begins is already local wall-clock and must not be
+    converted. Mentor, mentee and Alpha surveys hang off shifts, which have no
+    session page, so those render as plain text (session_url returns nil). %>
+<% slot = @slots[slot_response.slot_id] %>
+<% label = slot_response.slot_description.presence || slot&.description.presence || "(no description)" %>
+<% when_held = slot ? training_session_time(slot) : nil %>
+<% url = session_url(slot) %>
+
+<% if url %>
+  <%= link_to url, class: LinkHelper::TABLE_LINK_CLASSES do %>
+    <%= label %><% if when_held %> · <%= when_held %><% end %>
+  <% end %>
+<% else %>
+  <span><%= label %><% if when_held %> · <%= when_held %><% end %></span>
+<% end %>

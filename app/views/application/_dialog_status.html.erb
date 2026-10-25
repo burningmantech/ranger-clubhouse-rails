@@ -1,0 +1,26 @@
+<%# locals: (controller:, close:, kind:, type:, title:, body:, button: "Try Again", action: "retry") %>
+<%# One error state of a dialog built on dialog_controller (the mega menu, the
+    search bar), hidden until the controller's showError picks it by kind.
+    Each carries Close: on a phone the mega menu fills the screen, and until it
+    loads its own close button does not exist. w-auto undoes the box's w-full,
+    which with the margins would overflow the dialog.
+
+    Sign In Again reloads the page, unless a form submission rendered it: that
+    page sits at the form's address, which may answer only to a POST, so the
+    button goes to the page the form was on (or the dashboard) instead. %>
+<%
+  button_data = { action: "#{controller}##{action}" }
+  if action == "signIn" && !request.get?
+    # self.controller: the local `controller` is the Stimulus identifier.
+    # url_from drops a referer from another host.
+    button_data[:"#{controller}-url-param"] = self.controller.url_from(request.referer) || me_root_path
+  end
+%>
+<%= ui_callout_box type, title:, heading_level: :h3, hidden: true, class: "mx-4 mt-4 w-auto",
+                   data: { "#{controller}-target": "error", kind: } do %>
+  <p><%= body %></p>
+  <%= button_row class: "mt-2" do %>
+    <%= button_action button, :primary, data: button_data %>
+    <%= button_action close, :secondary, data: { action: "#{controller}#close" } %>
+  <% end %>
+<% end %>

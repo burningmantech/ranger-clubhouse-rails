@@ -1,0 +1,14 @@
+<%# The read-only twin of this page, named so a reader who wanted the audit does
+    not record paperwork to find out. Named either way, but linked only when the
+    link would open rather than bounce the reader to the dashboard: this page
+    admits Vehicle Management, and the audit does not. %>
+<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+  <strong>This records paperwork; it does not check it.</strong>
+  <% if has_role?([Role::EVENT_MANAGEMENT, Role::VEHICLE_INFO_UPDATE]) %>
+    To see who is still missing a signature, use
+    <%= link_to "Vehicle Paperwork", vehicles_paperwork_path %>.
+  <% else %>
+    Who is still missing a signature is on the Vehicle Paperwork page, which needs
+    the Event Management or Vehicle Info Update role.
+  <% end %>
+<% end %>

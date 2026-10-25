@@ -1,0 +1,81 @@
+<%# Off-duty state: resume an accidentally ended shift, imminent scheduled
+    shifts (one-tap start), and the unscheduled position picker. %>
+<% imminent = @upcoming_slots.imminent %>
+
+<% if @recent_entry %>
+  <%= ui_callout_box :secondary, accent: true, title: "Resuming the Shift",
+                     icon: "rotate-left" do %>
+    <p class="mb-2">
+      Accidentally ended the shift? <%= shift_person.callsign %> was signed off <%= @recent_entry.position.title %> at
+      <%= datetime_format @recent_entry.off_duty %>. Resuming continues the same timesheet entry.
+    </p>
+    <%= button_link "Resume Shift", :secondary,
+                    shift_resignin_path(entry_id: @recent_entry.id),
+                    method: :post, icon: "rotate-left", icon_type: :solid,
+                    full_width: true, class: "text-base py-3" %>
+  <% end %>
+<% end %>
+
+<% if imminent.any? %>
+  <%= ui_section "Scheduled Shifts Starting Soon", icon: "calendar-check", icon_type: :solid do %>
+    <p class="mb-3">
+      <%= shift_person.callsign %> can check in to a scheduled shift below, or to an unscheduled
+      shift using the position picker underneath.
+    </p>
+    <%= ui_table striped: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Shift" %>
+        <%= t.heading "Time" %>
+        <%= t.heading "Action" %>
+      <% end %>
+      <%= t.body do %>
+        <% imminent.each do |shift| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%= shift.position_title %>
+              <% if shift.slot_description.present? %>
+                <div class="text-stone-muted"><%= shift.slot_description %></div>
+              <% end %>
+            <% end %>
+            <%= t.cell datetime_format(shift.slot_begins, shift.slot_ends) %>
+            <%= t.cell do %>
+              <%= button_link "Start Shift", :primary,
+                              shift_start_path(position_id: shift.position_id, slot_id: shift.slot_id),
+                              method: :post, icon: "person-walking", icon_type: :solid,
+                              full_width: true, class: "text-base py-3" %>
+            <% end %>
+          <% end %>
+          <% if shift.slot_info.present? %>
+            <%= t.row do %>
+              <%= t.cell colspan: 3 do %>
+                More information: <%= hyperlink_text(shift.slot_info) %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if shift_positions.empty? %>
+  <%= ui_section "Start a Shift", icon: "person-walking", icon_type: :solid, id: "start-shift" do %>
+    <%= ui_empty_state "No positions are available for check-in." %>
+  <% end %>
+<% else %>
+  <%= ui_form(nil, shift_start_path) do |f| %>
+    <%= ui_section "Start a Shift", icon: "person-walking", icon_type: :solid, id: "start-shift" do %>
+      <% if imminent.any? %>
+        <p class="mb-3">
+          To check in to a different shift or position, select it below and use Start Shift.
+        </p>
+      <% end %>
+      <%= f.select :position_id, shift_positions.map { |position| [position.title, position.id] },
+                   { label: "Shift / Position", required: true },
+                   { class: "w-full lg:w-96" } %>
+    <% end %>
+    <%= button_row sticky: shift_self_serve? do %>
+      <%= submit_button "Start Shift", size: "lg", full_width: true %>
+    <% end %>
+  <% end %>
+<% end %>

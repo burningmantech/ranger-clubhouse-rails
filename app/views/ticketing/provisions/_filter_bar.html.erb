@@ -1,0 +1,57 @@
+<%# locals: (filter_params:, active_params:, count: nil, actions: nil) %>
+<%# Type, Status, and Allocated filters for the current-provisions table, in the
+    standard filter_bar shell. All three are ordinary GET params applied
+    server-side.
+
+    Locals:
+      filter_params - { type:, status:, allocated: }; "all" means that filter is off
+      active_params - filter_params without the "all" entries; one chip each
+      count         - result summary shown at the end of the bar
+      actions       - the page's Export CSV button, at the end of the row %>
+<%
+  all_option = UiComponents::FilterBarHelper::ALL_FILTER_OPTION
+
+  type_options = TicketsProvisionsHelper::PROVISION_TYPE_OPTIONS
+  # Meals has no single model label, so the chip reads back through the same
+  # options the select offers rather than through Provision::TYPE_LABELS.
+  type_labels = type_options.to_h { |label, value| [value, label] }
+
+  allocated_options = TicketsProvisionsHelper::PROVISION_ALLOCATED_OPTIONS
+
+  type_choices = [all_option, *type_options]
+  status_choices = [all_option, *Provision::CURRENT_STATUSES.sort.map { |status| [status, status] }]
+  allocated_choices = [all_option, *allocated_options]
+
+  chip_labels = { type: "Type", status: "Status", allocated: "Allocated" }
+  chip_value = lambda do |key, value|
+    case key
+    when :type then type_labels.fetch(value, value)
+    # The chip already says "Allocated", so the value reads as a plain yes/no
+    # rather than repeating the word.
+    when :allocated then value == "1" ? "Yes" : "No"
+    else value
+    end
+  end
+  chips = filter_chips(active_params, chip_labels, value_label: chip_value) do |remaining|
+    ticketing_provisions_path(remaining)
+  end
+%>
+<%= filter_bar id: "provision-filters",
+               chips: chips,
+               clear_url: ticketing_provisions_path,
+               count: count,
+               actions: actions,
+               url: ticketing_provisions_path do |f| %>
+  <%= form_row do %>
+    <%= f.select :type, type_choices, label: "Type", selected: filter_params[:type],
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :status, status_choices, label: "Status", selected: filter_params[:status],
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :allocated, allocated_choices, label: "Allocated", selected: filter_params[:allocated],
+                 width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>

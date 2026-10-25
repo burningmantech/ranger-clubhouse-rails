@@ -1,0 +1,14 @@
+# Email-history fixtures for PersonSearch old-email matching tests.
+#
+# Reference these BY NAME (no fixtures :all ordering assumptions). person_id is a
+# valid reference to the person fixtures. search_old_email matches email_history.email
+# exactly, returns the owning person, and is gated on can_view_email? — a viewer without that
+# permission must not surface these rows.
+
+# A prior email address for retired_ranger. An "@email" search by a permitted viewer
+# resolves the owning person via this row; a non-permitted viewer gets nothing.
+retired_old_email:
+  person: retired_ranger
+  email: "former.moonbeam@example.com"
+  created_at: <%= 2.years.ago %>
+  updated_at: <%= 2.years.ago %>

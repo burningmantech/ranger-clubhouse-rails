@@ -1,0 +1,17 @@
+<%= hero_panel icon: "graduation-cap", heading_level: :h1, id: "training-sessions-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> Sessions<% end %>
+  <% panel.description do %>
+    The year's sessions with sign-up counts and trainer teams.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2008, skip_pandemic: true %>
+<% end %>
+
+<%= ui_section "In Progress & Upcoming Sessions" do %>
+  <%= render "session_table", sessions: @upcoming_sessions,
+             empty_message: "No upcoming sessions were found for #{@year}." %>
+<% end %>
+
+<%= ui_section "Past Sessions" do %>
+  <%= render "session_table", sessions: @past_sessions,
+             empty_message: "No past sessions were found for #{@year}." %>
+<% end %>

@@ -1,0 +1,20 @@
+<%# locals: (special:) %>
+<%#
+  The Special column: gift ticket, LSD ticket, and LSD vehicle pass counts for
+  one person. `special` is an AccessDocumentSummaryRow::Special.
+%>
+<% if special.empty? %>
+  <span class="text-stone-muted">&mdash;</span>
+<% else %>
+  <div class="flex flex-col gap-1 whitespace-nowrap text-body">
+    <% if special.gift.positive? %>
+      <span><%= special.gift %> Gift</span>
+    <% end %>
+    <% if special.lsd.positive? %>
+      <span><%= special.lsd %> LSD</span>
+    <% end %>
+    <% if special.lsd_vp.positive? %>
+      <span><%= special.lsd_vp %> LSD VP</span>
+    <% end %>
+  </div>
+<% end %>

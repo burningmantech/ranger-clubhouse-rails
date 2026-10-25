@@ -1,0 +1,15 @@
+#!/bin/bash -e
+
+# Enable jemalloc for reduced memory usage and latency.
+if [ -z "${LD_PRELOAD+x}" ]; then
+    LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit)
+    export LD_PRELOAD
+fi
+
+# Migrations are deliberately not run here. Run them before starting new code:
+#   docker compose run --rm web bin/rails db:migrate
+# Production's db tasks never load db/schema.rb, because of schema_dump: false in
+# config/database.yml; development still does. A restore from Clubhouse 2, or a fresh
+# database, needs more than that command: see docker-compose.yml first.
+
+exec "${@}"

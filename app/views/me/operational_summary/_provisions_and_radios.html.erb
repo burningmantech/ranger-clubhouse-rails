@@ -1,0 +1,61 @@
+<%= ui_section "Provisions & Radios", icon: "campground", icon_type: :solid do %>
+  <% if @provisions_available %>
+    <div class="space-y-4">
+      <div>
+        <div class="font-semibold text-heading mb-2">
+          <%= fa_icon "utensils", :solid, end: 2 %>Meals
+        </div>
+        <div class="text-body">
+          <%= ui_badge @meal_info.title, :success %><br>
+          <%= @meal_info.description %>
+        </div>
+      </div>
+
+      <div>
+        <div class="font-semibold text-heading mb-2">
+          <%= fa_icon "shower", :solid, end: 2 %>Showers
+        </div>
+        <% if @person_event.showers %>
+          <%= ui_badge "Wet Spot Access", :success, icon: "circle-check", icon_type: :solid %>
+          <p class="text-body mt-2">
+            Your BMID allows one shower per day at the Wet Spot. Valid during pre-event, event week, and post-event.
+          </p>
+        <% else %>
+          <%= ui_badge "Shower Pogs", :success %>
+          <p class="text-body mt-2">
+            Earn one shower pog for every 40 hours worked during event week. Each pog is good for a single visit to the
+            Wet Spot.
+          </p>
+        <% end %>
+        <p class="text-sm text-stone-muted mt-2">
+          <strong>Location:</strong> 5:30 and Esplanade, before DPW Depot (left side).<br>
+          <strong>Hours:</strong> Check HQ Window at Ranger HQ for current schedule.
+        </p>
+      </div>
+
+      <% if @person_event.radio_info_available %>
+        <div class="font-semibold text-heading mb-2">
+          <%= fa_icon "broadcast-tower", :solid, end: 2 %>Radios
+        </div>
+
+        <% if @person_event.radio_eligible %>
+          <%= ui_badge "Event Radio Eligible", :success, icon: "circle-check", icon_type: :solid %>
+          <div class="mt-2">
+            You may check out up to <%= pluralize @person_event.radio_max, "Event radio" %> for the duration of the
+            event.
+          </div>
+        <% else %>
+          <%= ui_badge "Shift Radios Only", :secondary, icon: "circle", icon_type: :regular %>
+          <div class="mt-2">
+            Check out a radio when you arrive at Ranger HQ for your shift. Return it at the end of your shift.
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= ui_callout_box :info do %>
+      Provision and radio information will be available once the Ranger Ticketing window opens or closes in
+      preparation for ticket submission.
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,37 @@
+<%# The last thing read before the confirm button, because a status change is
+    not only a status change: PersonStatusManagement grants and strips positions,
+    roles and team memberships behind it, and none of that is visible on the form
+    or in the table above.
+
+    Only the moves this page can actually make are described. The statuses that
+    strip a record bare -- deceased, dismissed, resigned, uberbonked -- are not
+    offered here and are not listed, and neither is anything a locked account
+    would do, since the batch refuses those lines outright.
+
+    Two arms because the page has two jobs: the flag changes no status and none
+    of this applies to it. %>
+<% if batch.action.handler == BulkUpload::StatusHandler %>
+  <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid do %>
+    <strong>A status change does more than change the status.</strong>
+    Everyone below gets a row in their status history, and:
+    <ul class="list-disc ms-5 mt-2">
+      <li><strong>Active</strong> grants every position all Rangers hold, and the roles a new
+        account starts with. Coming from Alpha or Bonked, it also grants Dirt - Shiny Penny.</li>
+      <li><strong>Alpha</strong> grants the Alpha position.</li>
+      <li><strong>Prospective</strong> takes away every position and role, then grants back only
+        the ones a new account starts with. An Echelon becoming Prospective keeps theirs.</li>
+      <li><strong>Retired</strong> removes every team membership, then takes positions and roles
+        back to those same defaults.</li>
+      <li><strong>Inactive</strong> changes nothing else.</li>
+      <li>Leaving <strong>Alpha</strong> removes the Alpha position, whichever status they move to.</li>
+    </ul>
+    Setting the status back afterwards does not return what was taken away.
+  <% end %>
+<% else %>
+  <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid do %>
+    <strong>A vintage callsign can never be released.</strong>
+    The flag also makes the callsign show as a conflict in the handle checker, whatever the
+    person's status. Only Council designates vintage callsigns.
+    This page cannot take the flag back off — that is a per-person edit on their callsign.
+  <% end %>
+<% end %>

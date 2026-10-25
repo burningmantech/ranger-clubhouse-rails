@@ -1,0 +1,15 @@
+<%# One headed run of languages on the index. Renders nothing when the group is
+    empty, so no heading is left standing over an empty space. %>
+<% if languages.any? %>
+  <div data-list-filter-target="group">
+    <%= ui_section_title title, class: "mt-4", badge: languages.size.to_s %>
+    <% languages.each do |language| %>
+      <%= ui_drill_down_row people_languages_known_detail_path(language.name,
+                                                              languages_known_carried(@query, @site)),
+                            language.name,
+                            meta: languages_known_row_meta(language),
+                            badges: languages_known_row_badges(language, @site),
+                            data: { list_filter_target: "row", name: language.name.downcase } %>
+    <% end %>
+  </div>
+<% end %>

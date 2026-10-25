@@ -1,0 +1,18 @@
+<%# locals: (name:, value:, checked:, id:, data: nil) %>
+<%# One checkbox in a list of them, posting into an array parameter. The whole
+    row is the label, so the 36px tap target is the hit area -- a min-height on
+    a bare div is not clickable. select-none so a row tapped twice on a phone
+    toggles twice instead of selecting its own label text, and
+    break-inside-avoid so a list set in CSS columns, as Shift Coverage's is,
+    never splits a row across two of them. text-base is the size
+    AppFormBuilder gives its own checkbox and radio labels; unclassed, the
+    text would take the browser's 16px. Unlike common/checkbox_tile it has no
+    border, and it renders the checkbox itself.
+
+    Rendered with `render layout:`: the caller's block is the label text. The
+    <span> keeps it one flex item, so the flex gap never splits a title from
+    its note. data: goes on the checkbox, for a Stimulus picker's hooks. %>
+<label for="<%= id %>" class="flex items-center gap-2 min-h-9 px-1 cursor-pointer select-none text-base text-body break-inside-avoid">
+  <%= check_box_tag name, value, checked, id:, class: AppFormBuilder::CHECKBOX_CLASSES, data: %>
+  <span><%= yield %></span>
+</label>

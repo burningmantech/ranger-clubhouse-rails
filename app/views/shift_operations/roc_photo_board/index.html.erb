@@ -1,0 +1,22 @@
+<%# The ROC wall display. No one stands here: the page pulls the board
+    in again on a timer and walks itself down the groups. The Stimulus
+    controller sits outside the frame so it keeps running while the board is
+    swapped out beneath it. %>
+<% content_for :title, "ROC Photo Board" %>
+
+<div class="photo-board"
+     data-controller="photo-board"
+     data-photo-board-source-value="<%= shift_operations_roc_photo_board_board_path %>">
+
+  <%# The frame is given no address to start with. The board is already drawn
+      inside it, and a frame that names a source fetches it the moment it
+      arrives -- drawing the board twice for one page. The display fills the
+      address in when its timer first comes round.
+
+      The answer that comes back must not name the address it came from either,
+      which Turbo reads as a loop and refuses to follow, leaving the frame
+      empty. %>
+  <%= turbo_frame_tag "photo-board", data: { photo_board_target: "frame" } do %>
+    <%= render "board", board: @board %>
+  <% end %>
+</div>

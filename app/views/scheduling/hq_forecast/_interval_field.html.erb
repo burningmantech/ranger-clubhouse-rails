@@ -1,0 +1,6 @@
+<%# locals: (f:, year:, interval:) %>
+<%# The year rides the filter form -- a GET form replaces the whole query
+    string, so without this every Apply would bounce back to the current year. %>
+<%= hidden_field_tag :year, year %>
+<%= f.select :interval, HqForecastReport.interval_options, label: "Period",
+             selected: interval, width: "w-full", wrapper_class: "flex-1" %>

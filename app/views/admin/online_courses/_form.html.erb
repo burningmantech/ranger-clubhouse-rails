@@ -1,0 +1,33 @@
+<%= ui_form(@online_course,
+            @online_course.persisted? ? admin_online_course_path(@online_course) : admin_online_courses_path) do |f| %>
+  <% unless @online_course.persisted? %>
+    <%= f.hidden_field :year %>
+    <%# Carries the Moodle catalog's course name through to save -- never a
+        visible field, matching the LMS Course Name display on the edit page. %>
+    <%= f.hidden_field :name %>
+  <% end %>
+
+  <%= f.fieldset "Course Details", icon: "graduation-cap", icon_type: :solid do %>
+    <%= f.select :position_id, @position_options,
+                 { label: "Position", required: true, prompt: "Select a position" } %>
+    <%= f.text_field :course_id, label: "LMS Course ID", required: true,
+                     maxlength: 10, width: "w-full sm:w-44" %>
+    <%= f.select :course_for, course_for_options, { label: "Audience", required: true } %>
+    <%= f.check_box :active, label: "Active",
+                    help_text: "Turn off to hide this course from the pickers people use to enroll." %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Online Course" %>
+    <%= cancel_link admin_online_courses_path(year: @online_course.year) %>
+    <% if @online_course.persisted? %>
+      <%= delete_button admin_online_course_path(@online_course), "Delete Online Course",
+                        confirm_modal: {
+                          title: "Confirm Online Course Deletion",
+                          message: "Delete this online course definition? This cannot be undone.",
+                          confirm_label: "Delete Online Course",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,198 @@
+<%#
+  Alpha Sign-Out: pick an Alpha shift, then end the shift for everyone still on
+  duty around it. Three states in one template -- the shift picker, the roster,
+  and the roster again after a sign-out with each submitted row's outcome
+  beside it. See Mentoring::AlphaSignoutController.
+
+  The top panel holds only Alphas still on duty, so it empties as the job
+  finishes. Rows ended by the submission that produced this render stay in it,
+  tinted, rather than dropping into the disclosure below -- the result belongs
+  where the reader was already looking.
+%>
+<% content_for :title, "Alpha Sign-Out" %>
+
+<%= hero_panel icon: "right-from-bracket", heading_level: :h1, id: "alpha-signout-header",
+               title: "Alpha Sign-Out" do |panel| %>
+  <% panel.description do %>
+    End the shift for Alphas still on duty after an Alpha walk.
+  <% end %>
+  <% if @roster %>
+    <%# The picker is a whole card grid, so it gives way to the roster rather
+        than sitting above it. This link is the way back to it. %>
+    <% panel.back_to do %>
+      <%= back_to "Choose another shift", mentoring_alpha_signout_path %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @results.any? %>
+  <%# Turbo preserves the submitting page's scroll, which on this render would
+      land the reader beside the button rather than on the result. %>
+  <div data-controller="scroll-to-top" hidden></div>
+
+  <% signed_out = @results.count { |_id, result| result == :signed_out } %>
+  <% refused = @results.size - signed_out %>
+
+  <% if signed_out.positive? %>
+    <%= ui_callout_box :success, icon: "circle-check", icon_type: :solid, accent: true, class: "my-4" do %>
+      <strong>Signed out <%= pluralize(signed_out, "Alpha") %>.</strong>
+      Each one&rsquo;s off-duty time is stamped as of now.
+      <% if @now_active.any? %>
+        <%= pluralize(@now_active.size, "account") %> converted back to Active status:
+        <%= @now_active.to_sentence %>.
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if refused.positive? %>
+    <%# Says so rather than quietly ending fewer shifts than were checked. %>
+    <%= ui_callout_box :error, icon: "triangle-exclamation", icon_type: :solid, accent: true, class: "my-4" do %>
+      <strong><%= pluralize(refused, "checked Alpha") %> could not be signed out.</strong>
+      The reason is beside each row below.
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @roster.nil? %>
+  <%# ---------------------------------------------------------------- picker %>
+  <%# Out of the hero, and only here: "pick a shift below" is true of the picker
+      and of neither roster state, which say who is listed in their own words. %>
+  <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>How do I choose who is signed out?</dt>
+      <dd>
+        Pick a shift below &mdash; Alphas who started in the window around it are offered, and you
+        choose which of them to sign out.
+      </dd>
+    </dl>
+  <% end %>
+
+  <div>
+    <%= button_row do %>
+      <%= button_link "Every Alpha Still on Duty", :secondary, mentoring_alpha_signout_path(on_duty: 1),
+                      icon: "tower-broadcast", icon_type: :solid %>
+    <% end %>
+  </div>
+
+  <% if @shifts.empty? %>
+    <%= ui_empty_state "No Alpha shifts are scheduled for #{@year}. Use Every Alpha Still on Duty to see who is on shift right now.",
+                       icon: "calendar-xmark", icon_type: :solid %>
+  <% else %>
+    <% alpha_schedule_days(@shifts).each do |day, shifts| %>
+      <h2 class="heading-section text-heading mt-6 mb-2"><%= mdy_format(day, full: true) %></h2>
+
+      <div class="two-column-lg">
+        <% shifts.each do |shift| %>
+          <%= render "common/mentoring/alpha_shift_card", shift: shift, label: "Sign Out This Shift",
+                     url: mentoring_alpha_signout_path(slot_id: shift.slot.id) %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% else %>
+  <%# ---------------------------------------------------------------- roster %>
+  <% if @mode == :everywhere %>
+    <%# Red is deliberate, matching the Shift Report's on-duty banner: it flags
+        live data that ignores the schedule, not an error state. %>
+    <%= ui_callout_box :error, icon: "tower-broadcast", icon_type: :solid, accent: true, class: "my-4" do %>
+      <strong>Every Alpha still on duty</strong> &mdash; as of <%= datetime_format Current.time %>.
+      This list ignores shift boundaries, so an entry left open since an earlier event appears here too.
+    <% end %>
+  <% else %>
+    <%= ui_callout_box :success, icon: "flag", icon_type: :solid, accent: true, class: "my-4" do %>
+      <strong><%= alpha_shift_title(@slot) %></strong> &mdash; <%= datetime_format(@slot.begins, @slot.ends) %>.
+      Alphas who started between <%= alpha_signout_window(@slot) %> are listed.
+    <% end %>
+  <% end %>
+
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @roster.on_duty.count { |entry| entry.off_duty.nil? }.to_s, "Still on Duty",
+                    variant: :warning, icon: "user-clock", icon_type: :solid %>
+    <% if @mode == :slot %>
+      <%= ui_stat_box @roster.signed_out.size.to_s, "Already Signed Out",
+                      variant: :success, icon: "circle-check", icon_type: :solid %>
+    <% end %>
+    <% if @roster.too_short_count.positive? %>
+      <%= ui_stat_box @roster.too_short_count.to_s, "Very Short Shift",
+                      variant: :error, icon: "stopwatch", icon_type: :solid %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Still on Duty", id: "alpha-signout-on-duty",
+                 icon: "user-clock", icon_type: :solid,
+                 badge: @roster.on_duty.size.to_s, badge_color: :warning do %>
+    <% if @roster.on_duty.empty? %>
+      <%# Covers both "everyone got signed out" and "no one ever checked in",
+          which the stat boxes above already tell apart. %>
+      <%= ui_empty_state "No Alpha is still on duty here.",
+                         icon: "circle-check", icon_type: :solid %>
+    <% elsif can?(:sign_out_alphas) %>
+      <%= ui_form(nil, mentoring_alpha_signout_path, method: :post) do |f| %>
+        <%# Which shift the roster came from has to survive the POST -- the
+            action re-derives it exactly as #index does. %>
+        <% if @mode == :everywhere %>
+          <%= hidden_field_tag :on_duty, 1 %>
+        <% else %>
+          <%= hidden_field_tag :slot_id, @slot.id %>
+        <% end %>
+
+        <%= bulk_select do %>
+          <%= bulk_select_all label: "Select every Alpha still on duty" %>
+
+          <%= render "on_duty_table", roster: @roster, results: @results, selectable: true %>
+
+          <%= ui_callout_box :warning, accent: true, class: "my-4" do %>
+            <strong>Signing out ends each checked Alpha&rsquo;s shift right now</strong> and stamps the current
+            time as their off-duty time. It also closes their place in any pod they are walking with.
+            This page cannot undo a sign-out.
+          <% end %>
+
+          <%= button_row do %>
+            <%# The submit target keeps the button disabled until something is
+                checked; bulk_select's live "N selected" carries the count, so
+                the label does not (a server-rendered number goes stale on the
+                first click). %>
+            <%= f.submit "Sign Out Selected Alphas", variant: :error,
+                         data: { checkbox_select_all_target: "submit",
+                                 turbo_confirm: confirm_modal_dialog(
+                                   title: "Confirm Sign-Out",
+                                   message: "End the shift for the selected Alphas? " \
+                                            "Their off-duty time is stamped as of now and this cannot be undone here.",
+                                   confirm_label: "Sign Out Alphas") } %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid, accent: true, class: "mb-4" do %>
+        <strong>This roster is read-only for you.</strong>
+        Signing an Alpha out ends a timesheet entry, which needs the Shift Management role.
+      <% end %>
+
+      <%= render "on_duty_table", roster: @roster, results: @results, selectable: false %>
+    <% end %>
+  <% end %>
+
+  <% if @mode == :slot && @roster.signed_out.any? %>
+    <%= ui_disclosure "Already Signed Out on This Shift (#{@roster.signed_out.size})",
+                      variant: :card, class: "my-4" do %>
+      <%= ui_table striped: true, responsive: false do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "On Duty" %>
+          <%= t.heading "Off Duty" %>
+          <%= t.heading "Duration", right: true %>
+        <% end %>
+        <%= t.body do %>
+          <% @roster.signed_out.each do |entry| %>
+            <%= t.row do %>
+              <%= t.row_header do %><%= callsign_link entry.person %><% end %>
+              <%= t.cell datetime_format(entry.on_duty) %>
+              <%= t.cell datetime_format(entry.off_duty) %>
+              <%= t.cell hour_minute_format(entry.duration), right: true %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

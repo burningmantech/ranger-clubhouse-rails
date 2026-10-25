@@ -1,0 +1,7 @@
+<%# locals: (f:, document:, help_text:) %>
+<%# The document text field, shared by every page that edits a document.
+
+    The rich text editor keeps a short list of formatting and drops the rest, so
+    a document carrying anything outside that list comes back changed the first
+    time it is saved. %>
+<%= f.rich_text_area :body, label: "Document Text", help_text:, required: true %>

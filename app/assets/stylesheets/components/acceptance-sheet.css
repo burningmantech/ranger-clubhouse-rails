@@ -1,0 +1,287 @@
+/*
+ * The Alpha acceptance form (mentoring/alpha_acceptance_sheets#print_sheets).
+ *
+ * A structural port of upstream's alpha-sheet.scss: the same section bands,
+ * the same label/field column split, the same fill-in rules and headshot box,
+ * re-typeset in this app's print idiom (points, ink-on-white, sized against US
+ * Letter rather than a browser's rem).
+ *
+ * One form per person, one person per sheet. Unlike the Alpha Schedule sheets
+ * this document has a HARD break between people -- a form is signed and handed
+ * over as a unit -- so the break rules carry both spellings: `break-before`
+ * for Chrome and Firefox, `page-break-before` for Safari, which still reads
+ * only the legacy property.
+ */
+
+.acceptance-sheet {
+  background: #fff;
+  color: #111;
+  font-size: 11pt;
+}
+
+/* Paper preview on screen; @page margins take over in print. */
+@media screen {
+  .acceptance-sheet {
+    max-width: 8.5in;
+    margin-inline: auto;
+    margin-bottom: 1.5rem;
+    padding: 0.5in;
+    border: 1px solid var(--color-line);
+  }
+}
+
+.acceptance-sheet + .acceptance-sheet {
+  break-before: page;
+  page-break-before: always;
+}
+
+/* Masthead: logo at the left, form title and count at the right. */
+.acceptance-masthead {
+  display: flex;
+  align-items: center;
+  gap: 12pt;
+  margin-bottom: 6pt;
+}
+
+.acceptance-logo {
+  height: 52pt;
+  width: auto;
+}
+
+.acceptance-title {
+  margin-left: auto;
+  text-align: right;
+  font-size: 15pt;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/*
+ * Section band. The gray is the sheet's only fill and it separates the four
+ * parts of the form, so it has to survive the printer's default of dropping
+ * backgrounds.
+ */
+.acceptance-band {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  background: var(--color-base-200);
+  padding: 3pt 10pt;
+  margin: 6pt 0 3pt;
+  font-weight: 700;
+  font-size: 12pt;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.acceptance-band-note {
+  font-size: 9pt;
+  font-weight: 400;
+}
+
+/* Identity block: details at the left, headshot at the right (upstream 8/4). */
+.acceptance-columns {
+  display: flex;
+  gap: 12pt;
+}
+
+.acceptance-columns .acceptance-details { flex: 2 1 0; }
+.acceptance-columns .acceptance-photo { flex: 1 1 0; }
+
+/* Two equal columns, as upstream's 6/6 mentoring rows. */
+.acceptance-pair {
+  display: flex;
+  gap: 12pt;
+}
+
+.acceptance-pair > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/*
+ * A labelled line. `acceptance-blank` is the version a mentor writes on, so it
+ * keeps its rule even when the value is empty -- that underline is the whole
+ * point of a paper form.
+ */
+.acceptance-line {
+  padding: 0 6pt;
+  margin-top: 5pt;
+}
+
+.acceptance-label {
+  display: inline-block;
+  width: 32%;
+  vertical-align: top;
+  font-size: 11pt;
+  font-weight: 600;
+}
+
+.acceptance-value {
+  display: inline-block;
+  width: 66%;
+  vertical-align: top;
+  font-size: 10.5pt;
+}
+
+.acceptance-blank {
+  display: inline-block;
+  width: 55%;
+  vertical-align: bottom;
+  border-bottom: 0.75pt solid #222;
+  min-height: 15pt;
+}
+
+.acceptance-label-auto {
+  width: auto;
+  margin-right: 6pt;
+}
+
+/*
+ * A half-width column gives a 32% label barely an inch, which wraps "Known
+ * Rangers:" onto two lines (upstream wraps here too). The pair rows carry
+ * short captions and short answers, so the label takes the larger share.
+ */
+.acceptance-pair .acceptance-label { width: 44%; }
+.acceptance-pair .acceptance-value { width: 54%; }
+.acceptance-pair .acceptance-blank { width: 52%; }
+
+.acceptance-handle {
+  font-size: 19pt;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.acceptance-handle small {
+  font-size: 10pt;
+  font-weight: 400;
+}
+
+.acceptance-fka {
+  font-size: 9.5pt;
+  color: var(--color-body);
+}
+
+/*
+ * Upstream's 210x300 box, trimmed to fit: at its full height the form ran
+ * about an inch past US Letter and every Alpha cost a second, near-empty
+ * sheet. The headshot and the three note boxes were the two places with slack.
+ */
+.acceptance-headshot {
+  height: 170pt;
+  width: 132pt;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.acceptance-headshot img {
+  max-width: 126pt;
+  max-height: 164pt;
+  object-fit: contain;
+}
+
+.acceptance-no-photo {
+  color: #777;
+  font-size: 9.5pt;
+}
+
+.acceptance-no-photo .fa-user {
+  font-size: 48pt;
+}
+
+/* The mentor sign-off grid: three named rows against four verdict columns. */
+.acceptance-signoff {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 7pt 0;
+  margin-top: 6pt;
+  break-inside: avoid;
+}
+
+.acceptance-signoff th {
+  font-size: 9pt;
+  font-weight: 700;
+  text-align: left;
+  padding: 2pt 4pt;
+}
+
+.acceptance-signoff td {
+  padding: 8pt 4pt 2pt;
+  font-size: 10pt;
+}
+
+.acceptance-signoff .acceptance-signoff-number {
+  text-align: right;
+  width: 4%;
+}
+
+/* The other four columns. These were style="width: …" on the header cells --
+   percentages no utility expresses, sitting a few lines away from the 4% above
+   that shares the same table. */
+.acceptance-signoff th:nth-child(2) {
+  width: 36%;
+}
+
+.acceptance-signoff th:nth-child(3),
+.acceptance-signoff th:nth-child(4),
+.acceptance-signoff th:nth-child(5) {
+  width: 20%;
+}
+
+.acceptance-signoff .acceptance-signoff-rule {
+  border-bottom: 0.75pt solid #222;
+}
+
+.acceptance-signoff .acceptance-legend {
+  font-size: 9pt;
+  padding: 6pt 10pt 0;
+  border-bottom: 0;
+}
+
+.acceptance-rank-legend {
+  font-size: 9.5pt;
+  margin: 6pt 0 0 6pt;
+}
+
+/*
+ * Comment boxes. The min-height is upstream's: a box has to hold a written
+ * answer even when nothing was typed into the Clubhouse.
+ */
+.acceptance-notes {
+  font-size: 10pt;
+  min-height: 34pt;
+  padding-left: 10pt;
+  margin: 3pt 0;
+}
+
+.acceptance-note-line {
+  font-size: 9.5pt;
+  line-height: 1.35;
+}
+
+.acceptance-training-entry {
+  margin-bottom: 6pt;
+}
+
+/* Upstream's bold red alarm for feedback a trainer never delivered. */
+.acceptance-alert {
+  font-weight: 700;
+  color: #a3000c;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/*
+ * Rank badges are the shared screen component; their background colors carry
+ * the rank's meaning, so they have to print rather than wash out.
+ */
+.acceptance-sheet .badge {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  font-size: 8pt;
+  vertical-align: baseline;
+}

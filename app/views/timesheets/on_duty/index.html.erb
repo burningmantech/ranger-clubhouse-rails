@@ -1,0 +1,170 @@
+<%#
+  Who is on duty, as a position roster board. One card per position so coverage
+  reads at a glance; positions holding someone who has been out too long sort
+  first, because that is why the page is open at 3am.
+%>
+<% content_for :title, "On Duty" %>
+
+<%= hero_panel icon: "clock", heading_level: :h1, id: "timesheets-on-duty-header",
+               title: "On Duty" do |panel| %>
+  <%# The filtered board is a different question from the whole board, so it
+      says so -- "Everyone who is on duty" over two of thirty cards reads as a
+      coverage gap that is not there. One sentence per mode; how to read the
+      rows is in the card below the stats. %>
+  <% panel.description do %>
+    <% if @excessive_only %>
+      Only the Rangers who had been on duty more than half again as long as their
+      shift was meant to run<%= " at #{full_datetime_format(@duty_date)}" if @duty_date %>,
+      grouped by position.
+    <% elsif @duty_date %>
+      Everyone who was on duty at <%= full_datetime_format(@duty_date) %>, grouped by
+      position.
+    <% else %>
+      Everyone who is on duty right now, grouped by position.
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%# Under "out longer than usual" the roster IS only the flagged rangers, so
+      the count means something different. The label says which. %>
+  <%= ui_stat_box @report.total_people.to_s,
+                  @excessive_only ? "Out longer than usual" : "On duty",
+                  variant: @excessive_only ? :warning : :secondary,
+                  icon: "users", icon_type: :solid %>
+  <% unless @excessive_only %>
+    <%= ui_stat_box @report.excessive_count.to_s, "Out Longer Than Usual",
+                    variant: @report.excessive_count.positive? ? :warning : :secondary,
+                    icon: "triangle-exclamation", icon_type: :solid %>
+  <% end %>
+  <%# Counted over whatever the board is showing, so under the filter it counts
+      only flagged rangers -- the label has to say so, or "0" reads as "everyone
+      out is on a scheduled shift" when most of them are not. %>
+  <%= ui_stat_box @report.no_shift_count.to_s,
+                  @excessive_only ? "No shift attached (of these)" : "No shift attached",
+                  icon: "calendar-xmark", icon_type: :solid %>
+<% end %>
+
+<% if @report.excessive_count.positive? %>
+  <%= ui_callout_box :warning, title: "Check On These Rangers" do %>
+    <p>
+      <%= safe_join(@report.excessive_entries.map { |entry| on_duty_person_label(entry) }, ", ") %>
+      <%= (@report.excessive_count == 1) ? "has" : "have" %> been on duty more than
+      half again as long as the shift was meant to run.
+    </p>
+    <% unless @excessive_only %>
+      <p class="mt-2">
+        <%= link_to "Show only these Rangers",
+                    on_duty_excessive_only_url(@filter_params), class: "link" %>
+      </p>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# Out of the hero, below the warning: a warning is for everyone, this is for
+    whoever asks. The amber legend follows the mode -- under the filter every
+    row is amber, so what it says there is who is missing. The six-hour rule is
+    how amber is measured when there is no shift to measure against, so it is
+    in all three. The figure beside each callsign carries what it is as a
+    tooltip, which only a pointer can reach, so the card says it too. %>
+<% elapsed_note = "Elapsed time on duty" %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What is the time beside each callsign?</dt>
+    <dd><%= elapsed_note %>.</dd>
+    <% if @excessive_only %>
+      <dt>Who is not shown?</dt>
+      <dd>Others may be on duty and are not shown.</dd>
+    <% elsif @duty_date %>
+      <dt>What does amber mean?</dt>
+      <dd>
+        Amber means they had been out more than half again as long as their shift was meant
+        to run.
+      </dd>
+    <% else %>
+      <dt>What does amber mean?</dt>
+      <dd>
+        Amber means someone has been out more than half again as long as their shift was
+        meant to run.
+      </dd>
+    <% end %>
+    <dt>What if no shift is attached?</dt>
+    <dd>Six hours is assumed when no shift is attached.</dd>
+  </dl>
+<% end %>
+
+<%= filter_bar id: "on-duty-filters",
+               chips: on_duty_filter_chips(@filter_params),
+               clear_url: timesheets_on_duty_path,
+               count: pluralize(@report.total_people, "Ranger"),
+               url: timesheets_on_duty_path do |f| %>
+  <%= form_row do %>
+    <%= f.datetime_field :duty_date,
+                         label: "As Of",
+                         value: params[:duty_date],
+                         help_text: "Leave blank to see who is on duty right now.",
+                         width: "w-full",
+                         wrapper_class: "flex-1" %>
+  <% end %>
+  <%# include_hidden: false -- this is a GET form, so the companion "0" field
+      would ride along in the URL beside the checked "1". Unchecked simply
+      drops the parameter. %>
+  <%= f.check_box :excessive_only,
+                  label: "Only Rangers who have been out longer than usual",
+                  include_hidden: false,
+                  checked: @excessive_only %>
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<% if @report.empty? %>
+  <% if @excessive_only %>
+    <%= ui_empty_state "No one has been out longer than their shift was meant to run.",
+                       icon: "circle-check", icon_type: :solid %>
+  <% elsif @duty_date %>
+    <%= ui_empty_state "No one was on duty at that date and time.",
+                       icon: "clock", icon_type: :solid %>
+  <% else %>
+    <%= ui_empty_state "No one is on duty right now.", icon: "clock", icon_type: :solid %>
+  <% end %>
+<% else %>
+  <%# items-start so a short position card does not stretch to match the
+      longest column. %>
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 items-start gap-4">
+    <% @report.positions.each do |position| %>
+      <%= ui_card do %>
+        <div class="flex flex-wrap items-baseline justify-between gap-2 border-b border-line px-4 py-3">
+          <h2 class="heading-section text-heading"><%= position.title %></h2>
+          <div class="flex-center-gap-2">
+            <% if position.excessive_count.positive? %>
+              <%= ui_badge "#{position.excessive_count} over", :warning,
+                           icon: "triangle-exclamation", icon_type: :solid, size: "sm" %>
+            <% end %>
+            <%= ui_badge position.entries.size.to_s, :secondary, size: "sm" %>
+          </div>
+        </div>
+
+        <%= ui_card_body class: "py-2" do %>
+          <% position.entries.each do |entry| %>
+            <div class="<%= on_duty_row_classes(entry) %>">
+              <%# Callsign and elapsed share the first line whatever the detail
+                  line below them runs to -- shrink-0 keeps the number from
+                  being pushed under it. %>
+              <div class="flex items-baseline justify-between gap-3">
+                <span class="font-medium truncate"><%= on_duty_person_label(entry) %></span>
+                <span class="<%= on_duty_elapsed_classes(entry) %>"
+                      title="<%= elapsed_note %>">
+                  <%= hour_minute_format(entry.elapsed) %>
+                </span>
+              </div>
+              <div class="text-sm text-body">
+                <%= on_duty_detail_line(entry, @duty_date) %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

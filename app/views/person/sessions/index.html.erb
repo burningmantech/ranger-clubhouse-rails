@@ -1,0 +1,64 @@
+<%= hero_panel icon: "key", heading_level: :h1, id: "person-sessions-header",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Login Sessions &mdash; <%= @person.callsign %>
+  <% end %>
+  <% panel.description do %>
+    Every device currently signed in as <%= @person.callsign %>.
+  <% end %>
+<% end %>
+
+<%# What Revoke does, out of the hero -- and only while there is a session to revoke. %>
+<% if @sessions.any? %>
+  <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What does Revoke do?</dt>
+      <dd>
+        Revoking a session logs that device out immediately &mdash; its next request is sent back to
+        the login page.
+      </dd>
+    </dl>
+  <% end %>
+<% end %>
+
+<%= ui_section "Active Login Sessions", icon: "key", icon_type: :solid, badge: @sessions.size.to_s do %>
+  <% if @sessions.any? %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "ID" %>
+        <%= t.heading "IP Address" %>
+        <%= t.heading "Browser" %>
+        <%= t.heading "Created" %>
+        <%= t.heading "Last Active" %>
+        <%= t.heading "Actions" %>
+      <% end %>
+      <%= t.body do %>
+        <% @sessions.each do |session| %>
+          <% is_current_session = session.id == Current.session&.id %>
+          <%= t.row do %>
+            <%= t.row_header session.session_id.truncate(15), title: session.session_id %>
+            <%= t.cell session.ip_address %>
+            <%= t.cell user_agent_format(session.user_agent) %>
+            <%= t.cell datetime_format(session.created_at) %>
+            <%= t.cell do %>
+              <%= datetime_format(session.updated_at) %>
+              <% if is_current_session %>
+                <%= ui_badge "This session", :primary %>
+              <% end %>
+            <% end %>
+            <%= t.cell do %>
+              <%= delete_button person_session_path(@person, session), "Revoke",
+                                 confirm_message: if is_current_session
+                                                    "This is your own current session. Revoking it will log you out immediately. Continue?"
+                                                  else
+                                                    "Revoke this login session? The device will be logged out immediately."
+                                                  end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No active sessions.", icon: "key", icon_type: :solid %>
+  <% end %>
+<% end %>

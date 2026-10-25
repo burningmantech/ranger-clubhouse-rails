@@ -1,0 +1,17 @@
+<%# locals: (step:,facts:)%>
+<% if facts.is_applicant || facts.is_echelon %>
+  <% if facts.is_applicant %>
+    <p>
+      <b>Your BMID = your Ranger ID badge.</b> Shows your callsign and photo. Required on duty.
+    </p>
+  <% else %>
+    <p>
+      <b>Your BMID = your ID badge.</b> Required on duty. Linked to your meal/shower passes (if issued).
+    </p>
+  <% end %>
+  <p>
+    <%= fa_icon "circle-info", :solid %>
+    Photo must meet <%= ext_link "BMID requirements", "https://docs.google.com/document/d/1hUqrJwdMG6XB5nk7Eh8nY2GH4uvAFTppmCKCmfidIvQ/edit?usp=sharing" %>.
+  </p>
+<% end %>
+<p class="mb-2"><%= link_to "Go To Upload Photo", new_me_profile_photo_path, class: "tap-target-link" %></p>

@@ -1,0 +1,51 @@
+<%#
+  One person's year: every position they turned hours in for, counting only
+  positions that count hours, with the totals those positions add up to.
+%>
+<% content_for :title, "#{@person.callsign} Timesheet Totals" %>
+
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1,
+               id: "timesheet-totals-report-person-header",
+               title: "#{@year} #{@person.callsign} Timesheet Totals",
+               back_to: ["#{@year} Timesheet Totals",
+                         timesheets_timesheet_totals_report_path(year: @year)] do |panel| %>
+  <% panel.description do %>
+    Every position <%= @person.callsign %> turned hours in for this year that
+    counts hours, with the totals they add up to.
+  <% end %>
+  <%# The selector posts an action-less GET, so it stays on this person and only
+      swaps the year. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box hour_minute_format(@detail.total_duration), "Hours",
+                  icon: "clock", icon_type: :solid %>
+  <%= ui_stat_box credit_format_short(@detail.total_credits), "Credits",
+                  variant: :success, icon: "circle-check", icon_type: :solid %>
+  <%= ui_stat_box @detail.positions.size.to_s, "Positions",
+                  variant: :secondary, icon: "list", icon_type: :solid %>
+<% end %>
+
+<% if @detail.positions.any? %>
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Hours", right: true %>
+      <%= t.heading "Credits", right: true %>
+    <% end %>
+    <%= t.body do %>
+      <% @detail.positions.each do |position| %>
+        <%= t.row do %>
+          <%= t.row_header position.title %>
+          <%= t.cell hour_minute_format(position.duration), right: true %>
+          <%= t.cell credit_format_short(position.credits), right: true %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "#{@person.callsign} turned in no #{@year} timesheets for positions " \
+                     "that count hours.",
+                     icon: "clock", icon_type: :solid %>
+<% end %>

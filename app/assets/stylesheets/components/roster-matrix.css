@@ -1,0 +1,82 @@
+/*
+ * Roster Management's person x position grid.
+ *
+ * The grid is wider than any screen, so the two identity columns are frozen
+ * while the position columns scroll under them. A frozen column needs both a
+ * width and the next column's left offset, and the two must agree exactly --
+ * they live here, adjacent, because a mismatch is invisible in the markup and
+ * shows up only as columns overlapping mid-scroll.
+ *
+ * The checkbox column is 3rem: the 36px touch target plus the table's own
+ * p-1.5 either side. The callsign column starts where it ends.
+ */
+
+@utility roster-col-select {
+    @apply sticky left-0 w-12;
+}
+
+@utility roster-col-callsign {
+    @apply sticky left-12 w-40 min-w-40;
+}
+
+/*
+ * Frozen body cells take their row's background -- including the striping and
+ * the hover -- so scrolled content passes behind them rather than through
+ * them. Header cells sit above both the frozen columns and the sticky header.
+ */
+@utility roster-frozen-cell {
+    @apply z-10;
+    background-color: inherit;
+}
+
+@utility roster-frozen-heading {
+    @apply z-30;
+}
+
+/*
+ * A sticky header sticks to its nearest scrolling ancestor, and for this grid
+ * that is the table container -- it has to scroll horizontally for the frozen
+ * columns to mean anything. Left to grow, the container never scrolls
+ * vertically, so the header has nothing to stick to and rolls off the top of
+ * a 496-row roster, leaving twelve columns of bare years with no labels.
+ *
+ * Bounding its height makes the grid a data pane: the header pins, the
+ * identity columns stay put, and the page keeps the summary and filters in
+ * reach above it. A short roster does not reach the bound and is unaffected.
+ */
+@utility roster-grid-pane {
+    @apply overflow-y-auto;
+    max-height: 70vh;
+}
+
+/*
+ * Every heading cell needs its own background, not just the frozen ones. A
+ * `th` is transparent by default and the thead's background does not paint
+ * behind it, so rows scrolling under a pinned header show straight through
+ * the position titles.
+ */
+.roster-grid thead th {
+    @apply bg-base-200;
+}
+
+/*
+ * Print gets the whole roster, not the first screenful. A bounded, scrolling
+ * pane clips to its height on paper, and a sticky header repeats or floats --
+ * upstream wrapped its equivalent rules in `@media not print` for the same
+ * reason. A manager printing a roster wants all 496 rows.
+ */
+@media print {
+    .roster-grid-pane {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .roster-grid thead {
+        position: static;
+    }
+
+    .roster-grid .roster-col-select,
+    .roster-grid .roster-col-callsign {
+        position: static;
+    }
+}

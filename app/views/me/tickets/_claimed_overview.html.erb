@@ -1,0 +1,209 @@
+<%# Full "What You've Claimed" detail. Ported from port/components/ticket-overview.hbs. %>
+<%# Reused by the hub (open, after finishing) and the closed period.                    %>
+<%# Locals: presenter (TicketOverviewPresenter), person.                                 %>
+<%
+  presenter ||= TicketOverviewPresenter.new(@ticket_package, @ticketing_info)
+  legal_name = "#{person.first_name} #{person.last_name}"
+  info = @ticketing_info
+%>
+
+<%= ui_section "What You've Claimed", icon: "clipboard-check", icon_type: :solid do %>
+  <div class="two-column-lg">
+
+    <%# 1. Ticket ------------------------------------------------------------ %>
+    <% if presenter.using_staff_credential? %>
+      <%= render "me/tickets/ticket_overview_item", title: "Staff Credential Claimed", icon: "id-card", type: "success" do %>
+        <ul class="space-y-1">
+          <li><strong>Pickup at Staff Credentialing</strong> under your legal name "<%= legal_name %>".</li>
+          <li>Provided free of charge. Cannot be mailed, transferred, or sold.</li>
+        </ul>
+        <div class="mt-2">
+          <% if presenter.ticket.access_any_time %>
+            <p><strong>Pickup any time</strong> from the locations below.</p>
+          <% elsif presenter.ticket.access_date %>
+            <p><strong>Pickup on or after <%= mdy_format presenter.ticket.access_date, full: true %></strong> at the
+              locations below.</p>
+          <% else %>
+            <p class="font-bold text-error">We don't have your pickup date on file. Contact the Ranger Ticketing
+              Team.</p>
+          <% end %>
+          <% if info.pickup_locations.present? %>
+            <div class="mt-1 text-body"><%= nl2br info.pickup_locations %></div>
+          <% else %>
+            <p class="font-bold text-error mt-1">Pickup locations aren't set yet. Contact the Ranger Ticketing Team.</p>
+          <% end %>
+        </div>
+      <% end %>
+    <% elsif presenter.ticket %>
+      <%= render "me/tickets/ticket_overview_item", title: "#{presenter.ticket.type_label} Claimed", icon: "ticket", type: "success" do %>
+        <% if presenter.using_will_call? %>
+          <p><strong>Pickup at Will Call</strong> under your legal name "<%= legal_name %>".</p>
+        <% elsif presenter.ticket.delivery_none? %>
+          <p class="font-bold text-error">No delivery method chosen. Contact the Ranger Ticketing Team.</p>
+        <% else %>
+          <p><strong>Mailed to you</strong> via USPS <%= presenter.ticket.delivery_postal? ? "Standard" : "Priority" %>
+            Mail.</p>
+        <% end %>
+        <div class="mt-2">
+          <p><strong>Payment:</strong> an invoice for <%= dollars(info.spt_cost) %>
+            <% unless presenter.ticket.delivery_will_call? %>
+              plus
+              <%= dollars(presenter.ticket.delivery_postal? ? info.mail_standard_price : info.mail_priority_price) %>
+              for mailing
+            <% end %>
+            will be sent.</p>
+          <p class="mt-1">Pay on time or you may not be able to attend.</p>
+        </div>
+      <% end %>
+    <% elsif presenter.ticket_not_claimed? %>
+      <div class="lg:col-span-2">
+        <%= render "me/tickets/ticket_overview_item", title: "No Ticket Claimed", icon: "ban", type: "error" do %>
+          <p>You have a ticket available but have not claimed it.</p>
+        <% end %>
+      </div>
+    <% elsif presenter.all_tickets_banked? %>
+      <div class="lg:col-span-2">
+        <%= render "me/tickets/ticket_overview_item", title: "All Tickets Banked", icon: "box-archive", type: "secondary" do %>
+          <p>You banked all your available tickets for a future year.</p>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%# 2. Vehicle Pass ------------------------------------------------------ %>
+    <% if presenter.using_vehicle_pass? %>
+      <%= render "me/tickets/ticket_overview_item", title: "Vehicle Pass Claimed", icon: "car-side", type: "success" do %>
+        <% if presenter.using_staff_credential? || presenter.using_will_call? %>
+          <p><strong>Pickup at <%= presenter.using_staff_credential? ? "Staff Credentialing" : "Will Call" %></strong>
+            under your legal name "<%= legal_name %>".</p>
+        <% else %>
+          <p><strong>Mailed to you.</strong></p>
+        <% end %>
+        <div class="mt-2">
+          <% if presenter.vehicle_pass.vehicle_pass_sp? %>
+            <p><strong>Payment:</strong> an invoice for <%= dollars(info.sp_vp_cost) %> will be sent. Pay
+              on time or you may not be able to drive in.</p>
+          <% else %>
+            <p>Provided free of charge with your Staff Credential.</p>
+          <% end %>
+        </div>
+      <% end %>
+    <% elsif presenter.ticket %>
+      <%= render "me/tickets/ticket_overview_item", title: "No Vehicle Pass", icon: "ban", type: "secondary" do %>
+        <p>You did not claim a Vehicle Pass.</p>
+      <% end %>
+    <% end %>
+
+    <%# 3. Gift Tickets ------------------------------------------------------ %>
+    <% if presenter.gift_ticket_count.positive? %>
+      <%= render "me/tickets/ticket_overview_item", title: "#{pluralize(presenter.gift_ticket_count, "Gift Ticket")} Claimed", icon: "gift", type: "success" do %>
+        <%= render "me/tickets/ticket_gift_conditions" %>
+        <div class="mt-2 space-y-1">
+          <p><strong>Watch your email</strong> on or after July 21st for a message from <%= info.ticket_vendor_email %>.
+          </p>
+          <p>You must click the link in that email and finish checkout for your Gift Ticket.</p>
+        </div>
+      <% end %>
+    <% end %>
+
+    <%# 4. Late Season Directed (LSD) ---------------------------------------- %>
+    <% if presenter.lsd_ticket_count.positive? %>
+      <%= render "me/tickets/ticket_overview_item", title: "#{pluralize(presenter.lsd_ticket_count, "Late Season Directed Ticket")} Claimed", icon: "gift", type: "success" do %>
+        <p>
+          <%= pluralize(presenter.lsd_ticket_count, "LSD Ticket") %><%= presenter.lsd_vp_count.positive? ? " and #{pluralize(presenter.lsd_vp_count, "LSD Vehicle Pass")}" : "" %>
+          claimed.
+        </p>
+        <p class="mt-1"><strong>All LSD items must be paid for in advance.</strong> Instructions will be emailed to you.
+        </p>
+      <% end %>
+    <% end %>
+
+    <%# 5. Setup Access Pass (SAP) ------------------------------------------- %>
+    <% if presenter.using_sap? %>
+      <%= render "me/tickets/ticket_overview_item", title: "Setup Access Pass (SAP) Claimed", icon: "passport", type: "success" do %>
+        <%
+          details = []
+          if presenter.using_staff_credential?
+            details << { icon: "circle-check", color: :success, text: "Staff Credential acts as your SAP. No separate document needed." }
+          end
+          if presenter.effective_sap.access_any_time
+            details << { icon: "arrow-right-to-bracket", color: :success, text: "Enter the event at any time" }
+          elsif presenter.effective_sap.access_date
+            details << { icon: "arrow-right-to-bracket", color: :success, text: "Enter on or after #{mdy_format presenter.effective_sap.access_date, full: true}" }
+            details << { icon: "ban", color: :warning, text: "<strong class=\"text-warning\">Do not arrive early. You will be turned away. NO exceptions!</strong>".html_safe }
+          else
+            details << { icon: "bug", color: :error, text: "<strong class=\"text-error\">No access date on file! Contact the Ranger Ticketing Team.</strong>".html_safe }
+          end
+        %>
+        <%= render partial: "me/tickets/item_details", locals: { details: } %>
+        <% unless presenter.using_staff_credential? %>
+          <p class="mt-2">Emailed to <strong><%= person.email %></strong> after the ticketing deadline, up to a week
+            before the event.</p>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= render "me/tickets/ticket_overview_item", title: "No Setup Access Pass (SAP)", icon: "ban", type: "secondary" do %>
+        <% if presenter.have_staff_credential? && presenter.all_tickets_banked? %>
+          <p>Your Staff Credential (which also acts as a SAP) is banked. Claim it, or contact the Ranger Ticketing Team
+            for a separate SAP.</p>
+        <% else %>
+          <p>No SAP claimed.</p>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%# 6. Significant Other SAPs -------------------------------------------- %>
+    <% if presenter.sap_so_list.any? %>
+      <%= render "me/tickets/ticket_overview_item", title: "#{pluralize(presenter.sap_so_list.count, "Significant Other SAP")} Claimed", icon: "people-group", type: "success" do %>
+        <p class="mb-2">Emailed to <strong><%= person.email %></strong> as a PDF after the deadline.</p>
+        <ul class="space-y-1">
+          <% presenter.sap_so_list.each do |so| %>
+            <%= ui_icon_item "user", :solid, tone: "text-stone-icon" do %>
+              <span class="font-medium text-heading"><%= so.name %></span> —
+              <% if so.access_any_time %>
+                may enter any time
+              <% elsif so.access_date %>
+                enter on or after <%= mdy_format so.access_date %> @ 00:01
+              <% else %>
+                <span class="font-bold text-error">no access date on file. Contact the Ranger Ticketing Team.</span>
+              <% end %>
+            <% end %>
+          <% end %>
+        </ul>
+      <% end %>
+    <% end %>
+
+    <%# 7. Provisions -------------------------------------------------------- %>
+    <% if presenter.has_provisions? && !presenter.package.provisions_banked %>
+      <%= render "me/tickets/ticket_overview_item", title: "Provisions Claimed", icon: "gear", type: "success" do %>
+        <ul class="space-y-1">
+          <% presenter.provision_items.each do |item| %>
+            <%= ui_icon_item item.icon, :solid, tone: "text-stone-icon" do %>
+              <%= item.label %>
+            <% end %>
+          <% end %>
+        </ul>
+        <% if presenter.radios.positive? %>
+          <p class="text-sm text-stone-muted mt-2">Event Radios are limited. You are not guaranteed to receive every
+            radio you qualify for.</p>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%# 8. Banked items ------------------------------------------------------ %>
+    <% if presenter.banked_items.any? %>
+      <div class="lg:col-span-2">
+        <%= render "me/tickets/ticket_overview_item", title: "#{pluralize(presenter.banked_items.count, "Banked Item")}", icon: "box-archive", type: "secondary" do %>
+          <ul class="space-y-1">
+            <% presenter.banked_items.each do |item| %>
+              <li>
+                <%= item[:name] %>
+                <% if item[:expires] %> <span class="text-stone-muted">— expires <%= item[:expires] %></span>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,23 @@
+<%# locals: (details:) %>
+<%# Looked up rather than interpolated. "icon-#{detail[:color]}" is invisible to
+    Tailwind's scanner, so those utilities were only ever compiled because other
+    files happen to spell them out literally -- the moment they stopped, these
+    icons would have gone colourless with nothing to show for it. fetch so an
+    unknown colour fails loudly instead; a detail with no colour keeps the
+    default icon colour. %>
+<% icon_class = {
+     success: "icon-success",
+     warning: "icon-warning",
+     error: "icon-error",
+     info: "icon-info"
+   }.freeze %>
+<div class="mt-2 p-2 border border-line rounded">
+  <ul class="space-y-1">
+    <% details.each do |detail| %>
+      <%= ui_icon_item detail[:icon], (detail[:style] || :solid),
+                       tone: (icon_class.fetch(detail[:color].to_sym) if detail[:color]) do %>
+        <%= detail[:text] %>
+      <% end %>
+    <% end %>
+  </ul>
+</div>

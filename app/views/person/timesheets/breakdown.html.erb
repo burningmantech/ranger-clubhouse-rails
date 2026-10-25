@@ -1,0 +1,20 @@
+<%= hero_panel icon: "chart-simple", heading_level: :h1, id: "person-timesheet-breakdown-header",
+               description: "Breakdown of #{@person.callsign}'s #{@year} volunteer hours and credits by event period and position.",
+               back_to: ["#{@year} Timesheet", person_timesheets_path(@person, year: @year)] do |panel| %>
+  <% panel.title do %>
+    <%= @year %> Hours &amp; Credits &mdash; <%= @person.callsign %>
+  <% end %>
+  <% panel.year_selector year: @year, years: @years %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box hour_format(@summary.total_duration), "Hours" %>
+  <%= ui_stat_box credit_format_short(@summary.total_credits), "Credits" %>
+  <%= ui_stat_box @position_summary.size, "Positions" %>
+<% end %>
+
+<%= render partial: "common/event_summary_breakdown",
+           locals: { summary: @summary,
+                     position_summary: @position_summary,
+                     year: @year,
+                     whose: "#{@person.callsign}'s" } %>

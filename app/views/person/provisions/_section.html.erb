@@ -1,0 +1,68 @@
+<%# locals: (person:, provisions:, package:, showing_all:, origin:, toggle_path:, collapsed: false) %>
+<%# Shared provisions section for the person admin interfaces (Tickets &         %>
+<%# Provisions, BMID). CRUD links carry origin: so the provision pages return    %>
+<%# here. See ProvisionManagementConcern.                                        %>
+
+<%
+  if collapsed
+    action_link = button_action "Edit Provisions", :secondary, controller: "toggle",
+                                id: "provisions-toggle",
+                                data: {
+                                  toggle_label_value: "Hide Edit",
+                                  toggle_dom_id_value: "provisions-collapsible-body"
+                                }
+  else
+    action_link = nil
+  end
+%>
+<%= ui_section "Provisions", icon: "gear", icon_type: :solid, id: "provisions", link: action_link do %>
+  <p class="mb-1">
+    <strong>Meals:</strong> <%= package.meals.title %>
+    <span class="mx-1">&middot;</span>
+    <strong>Showers:</strong> <%= package.showers ? "Yes" : "No" %>
+    <span class="mx-1">&middot;</span>
+    <strong>Event Radios:</strong> <%= package.radios %>
+  </p>
+
+  <% body_attrs = { id: "provisions-collapsible-body" } %>
+  <% body_attrs.merge!(class: "hidden hidden!", aria: { hidden: "true" }) if collapsed %>
+  <%= content_tag :div, body_attrs do %>
+    <p class="mb-3 me-muted">
+      Calculated from available, claimed, and submitted provisions. For multiple event radio
+      provisions, the record with the highest count is used — radio counts do not add up.
+    </p>
+
+    <% if package.have_allocated %>
+      <%= ui_callout_box :warning, title: "Allocated Provisions Present" do %>
+        <strong>All provisions, including banked ones, will be used this event.</strong>
+        Provisions with status available will be marked claimed upon BMID export.
+      <% end %>
+    <% end %>
+
+    <p class="mb-3 me-muted">
+      Showing <%= pluralize(provisions.size, "#{showing_all ? "" : "current "}provision") %>.
+    </p>
+
+    <%# The table itself is shared with the BMID manage grid's cell dialog --
+        see app/views/common/provisions/_list.html.erb. Only where a row links
+        to differs: here, the person-scoped page that returns to this origin. %>
+    <%= render "common/provisions/list",
+               provisions: provisions,
+               ref_path: ->(provision) { edit_person_provision_path(person, provision, origin: origin) },
+               empty_message: "No #{showing_all ? "" : "current "}provisions on file." %>
+
+    <%= button_row class: "mt-4" do %>
+      <%= button_link "Add Meal Pass", :secondary,
+                      new_person_provision_path(person, type: Provision::MEALS, origin: origin),
+                      icon: "plus", icon_type: :solid %>
+      <%= button_link "Add Shower Pass", :secondary,
+                      new_person_provision_path(person, type: Provision::WET_SPOT, origin: origin),
+                      icon: "plus", icon_type: :solid %>
+      <%= button_link "Add Event Radio", :secondary,
+                      new_person_provision_path(person, type: Provision::EVENT_RADIO, origin: origin),
+                      icon: "plus", icon_type: :solid %>
+      <%= button_link (showing_all ? "Show current provisions" : "Show all provisions"), :secondary,
+                      toggle_path %>
+    <% end %>
+  <% end %>
+<% end %>

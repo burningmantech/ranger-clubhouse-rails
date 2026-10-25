@@ -1,0 +1,7 @@
+<%= hero_panel icon: "calendar-plus", heading_level: :h1, id: "scheduling-slot-form-header",
+               description: "#{@slot.position_title} - #{@slot.description}",
+               back_to: ["#{@slot.position_title} Slots", @cancel_path] do |panel| %>
+  <% panel.title do %>Edit Slot #<%= @slot.id %><% end %>
+<% end %>
+
+<%= render "form" %>

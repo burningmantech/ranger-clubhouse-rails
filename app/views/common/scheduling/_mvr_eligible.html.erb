@@ -1,0 +1,56 @@
+<%# locals: (mvr:) %>
+<% signed_agreement = mvr.signed_motorpool_agreement %>
+<%= ui_callout_box :success,
+                title: "Shift Signed Up — You Can Now Submit an MVR Request", accent: true do %>
+  This position involves larger Ranger fleet vehicles. Once your MVR is submitted
+  <strong>and approved</strong>, you can drive Ranger trucks &amp; SUVs.
+<% end %>
+
+<%= ui_callout_box :info, title: "Quick Rules", icon: "car-side", accent: true do %>
+  <dl class="instruction-list space-y-3">
+    <dt>UTVs &amp; Golf Carts</dt>
+    <dd>
+      <% if signed_agreement %>
+        You signed the Vehicle Use Agreement — you're good to go.
+      <% else %>
+        Sign the <strong class="text-heading">Vehicle Use Protocol Agreement</strong> first
+        (visit Me &gt; Agreements).
+      <% end %>
+    </dd>
+
+    <dt>Trucks &amp; SUVs</dt>
+    <dd>Requires an <strong class="text-heading">approved MVR</strong> (separate from Vehicle Use
+      Agreement).
+    </dd>
+
+    <dt>No MVR Approval?</dt>
+    <dd>UTVs and golf carts only.</dd>
+
+    <dt>MVR Processing</dt>
+    <dd>
+      <ul class="list-disc pl-4 mt-1 space-y-1">
+        <li>Valid driver's license required</li>
+        <li>Takes <strong class="text-heading">2+ weeks</strong> (longer for non-US)</li>
+        <li>Most denials = form errors</li>
+      </ul>
+    </dd>
+
+    <dt>How to Submit</dt>
+    <dd>Visit your <strong class="text-heading">Clubhouse Dashboard</strong> and follow the
+      instructions.
+    </dd>
+  </dl>
+<% end %>
+
+<%# Skipped when MVRDeadline is unset: "Deadline: (blank) — No exceptions." is
+    worse than saying nothing. %>
+<% if mvr.deadline.present? %>
+  <%= ui_callout_box :error, title: "Deadline", icon: "clock", accent: true do %>
+    <p class="font-bold text-base mb-1">
+      <%= full_datetime_format mvr.deadline %> (Pacific)
+    </p>
+    <p class="text-sm">
+      No exceptions.
+    </p>
+  <% end %>
+<% end %>

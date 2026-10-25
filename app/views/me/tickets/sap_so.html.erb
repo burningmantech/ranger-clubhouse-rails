@@ -1,0 +1,107 @@
+<%# /me/tickets/sap-so — one decision: name the significant others who get an   %>
+<%# early-entry Significant Other Setup Access Pass (SAP), then back to the hub. %>
+<%#                                                                             %>
+<%# One form with a fixed slot per allowed pass (sap_so_max). Every slot is     %>
+<%# always submitted as a names[] row of { id, name }:                          %>
+<%#   - existing id + name        -> claim + rename that pass                   %>
+<%#   - existing id + blank name  -> cancel that pass                           %>
+<%#   - id "new" + name           -> create a new pass (guarded by max)         %>
+<%#   - id "new" + blank name     -> ignored (an unused slot)                   %>
+<%# Rows submit in slot order (existing first), so clearing one name and        %>
+<%# filling an empty slot in the same save frees the slot before the create.    %>
+<%
+  info = @ticketing_info
+  presenter = TicketOverviewPresenter.new(@ticket_package, info)
+  max = info.sap_so_max.to_i
+  passes = presenter.sap_so_list
+  count = passes.size
+  remaining = [max - count, 0].max
+  slots = [max, count].max
+  default_date = mdy_format(info.sap_so_default_date, full: true)
+%>
+
+<%= hero_panel icon: "people-group", heading_level: :h1, id: "sap-so-header",
+               title: "Significant Other Passes",
+               description: "Name the significant others who get an early-entry Setup Access Pass with you.",
+               back_to: ["Tickets & Provisions", me_tickets_path] %>
+
+<% if max <= 0 %>
+  <%# --- Not offered this year ------------------------------------------------ %>
+  <%= ui_callout_box :info, accent: true, title: "Significant Other Passes Aren't Available This Year" do %>
+    <p>There are no Significant Other Setup Access Passes (SAPs) to request right now.</p>
+  <% end %>
+
+  <%= render "contact_ticketing",
+             variant: :secondary,
+             message: "If you believe a significant other should have early-entry access, the Ranger Ticketing Team can help." %>
+
+<% else %>
+  <%# --- Status headline ------------------------------------------------------ %>
+  <% if count.positive? %>
+    <%= ui_callout_box :success, accent: true,
+                       title: "You've Requested #{pluralize(count, "Significant Other Pass")}" do %>
+      <p class="mb-1"><strong>You can change this until the ticketing deadline.</strong></p>
+      <p>
+        <%= remaining.positive? ? "#{pluralize(remaining, "more pass")} available." : "You've used all #{pluralize(max, "pass")}." %>
+      </p>
+    <% end %>
+  <% else %>
+    <%= ui_callout_box :secondary, icon: "people-group", accent: true,
+                       title: "No Significant Other Passes Yet" do %>
+      <p class="mb-1"><strong>Name a significant other below for each pass you need.</strong></p>
+      <p>You can request up to <%= pluralize(max, "pass") %>. Change your choices any time before the ticketing
+        deadline.</p>
+    <% end %>
+  <% end %>
+
+  <%# --- How it works --------------------------------------------------------- %>
+  <%= ui_section "How These Passes Work", icon: "circle-question", icon_type: :solid do %>
+    <dl class="instruction-list">
+      <dt>What is a significant other pass?</dt>
+      <dd>A Significant Other Setup Access Pass (SAP) lets one of your significant others enter the event early with
+        you.
+      </dd>
+      <dt>How is it delivered?</dt>
+      <dd>Each SAP is emailed to you as a PDF with your name on it. Your significant other's name is stored separately
+        in the ticketing system.
+      </dd>
+      <dt>When can they arrive?</dt>
+      <dd>On or after <strong><%= default_date %></strong>. Show up earlier and they will be turned away. <span class="text-error">NO EXCEPTIONS!</span></dd>
+    </dl>
+  <% end %>
+
+  <%# --- The passes: one slot per allowed pass ---------------------------------- %>
+  <%= ui_section "Your Significant Other Passes", icon: "id-card", icon_type: :solid do %>
+    <%= ui_callout_box :info do %>
+      <span class="font-semibold">Fill in their legal FIRST &amp; LAST name to request a pass. Clear a name to remove that pass.</span>
+    <% end %>
+    <%= ui_form(nil, me_tickets_sap_so_path, method: :patch, class: "mt-2") do |f| %>
+      <div class="grid grid-cols-1 gap-1">
+        <% slots.times do |i| %>
+          <% pass = passes[i] %>
+          <div>
+            <%# id first, then name — Rails groups each id/name pair into one names[] row %>
+            <%= hidden_field_tag "names[][id]", pass ? pass.id : "new", id: nil %>
+            <%= f.text_field :"so_name_#{i}",
+                             name: "names[][name]",
+                             value: pass&.name,
+                             label: "S.O. ##{i + 1} Legal First & Last Name",
+                             maxlength: 100,
+                             width: "w-full sm:w-80" %>
+          </div>
+        <% end %>
+      </div>
+
+      <%= button_row do %>
+        <%= f.submit "Save Passes" %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# --- Need more / earlier arrival ------------------------------------------ %>
+  <%= render "contact_ticketing",
+             variant: :secondary,
+             message: "Need more than #{pluralize(max, "pass")}, or a significant other arriving before #{default_date}? The Ranger Ticketing Team can help." %>
+<% end %>
+
+<%= render "wizard_nav", step: :sap_so, presenter: presenter %>

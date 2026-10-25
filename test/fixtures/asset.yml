@@ -1,0 +1,43 @@
+# Asset fixtures for autocomplete AssetAdapter tests (D2).
+#
+# year is pinned to 2026 so the adapter default (Current.year) matches without an
+# explicit :<year> suffix. Tests that must be year-independent pass ":2026".
+#
+# Reference these BY NAME (no fixtures :all ordering assumptions).
+
+# Current-year radio. barcode "RANGER1" intentionally equals the callsign of the
+# person fixture :plate_collision_ranger so the D2 guard test can prove that
+# "#RANGER1" returns ONLY this asset, never the person.
+radio_current_year:
+  barcode: "RANGER1"
+  type: "radio"
+  description: "HT Radio"
+  year: 2026
+  created_at: <%= 1.day.ago %>
+
+# A second current-year asset with a distinct barcode and NO description, to exercise
+# the nullable-description guard in _asset_item.html.erb.
+gear_no_description:
+  barcode: "GEAR0042"
+  type: "gear"
+  description: null
+  year: 2026
+  created_at: <%= 1.day.ago %>
+
+# A base station, not something anyone carries. Its description reads "Radio" so a
+# check that looks at the description instead of the type cannot pass.
+desktop_radio:
+  barcode: "DESK0001"
+  type: "desktop-radio"
+  description: "Radio base station"
+  year: 2026
+  created_at: <%= 1.day.ago %>
+
+# Same barcode as radio_current_year but pinned to a prior year (2024) to prove that
+# exact barcode + year scoping returns only the right-year row.
+radio_prior_year:
+  barcode: "RANGER1"
+  type: "radio"
+  description: "HT Radio 2024"
+  year: 2024
+  created_at: <%= 2.years.ago %>

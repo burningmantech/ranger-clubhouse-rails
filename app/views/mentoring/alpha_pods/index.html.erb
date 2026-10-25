@@ -1,0 +1,34 @@
+<%#
+  A year's Alpha shifts, grouped by the day they run on. Each card opens that
+  shift's pods. Only active shifts appear: pods are formed on the day from
+  people signed in to a running shift, so a dormant slot has nothing to manage.
+%>
+<% content_for :title, "Alpha Pod Management" %>
+<%= hero_panel icon: "people-group", heading_level: :h1, id: "alpha-pods-header",
+               title: "Alpha Pod Management" do |panel| %>
+  <% panel.description do %>
+    Form the pods that walk each Alpha shift &mdash; the mentors, MITtens, and Alphas who go out
+    together.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @shifts.empty? %>
+  <%= ui_empty_state "No active Alpha shifts are scheduled for #{@year}. Pick another year, or activate the shifts in Scheduling.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% else %>
+  <% alpha_schedule_days(@shifts).each do |day, shifts| %>
+    <h2 class="heading-section text-heading mt-6 mb-2"><%= mdy_format(day, full: true) %></h2>
+
+    <div class="two-column-lg">
+      <% shifts.each do |shift| %>
+        <% pods = @pod_counts[shift.slot.id].to_i %>
+        <%= render "common/mentoring/alpha_shift_card", shift: shift, label: "Manage Pods",
+                   url: mentoring_alpha_pods_shift_path(shift.slot, year: @year),
+                   extra_badge: ui_badge(pods.positive? ? pluralize(pods, "pod") : "No pods yet",
+                                         pods.positive? ? :primary : :secondary,
+                                         icon: "people-group", icon_type: :solid) %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

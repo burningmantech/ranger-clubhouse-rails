@@ -1,0 +1,51 @@
+<% content_for :title, "#{@training.title} Session" %>
+<% slot = @training_session.slot %>
+
+<%= hero_panel icon: "graduation-cap", heading_level: :h1, id: "training-session-header" do |panel| %>
+  <% panel.title do %>
+    <%= @training.title %> — <%= training_session_time slot %>
+  <% end %>
+  <% panel.description do %>
+    <%= slot.description %> · <%= slot.begins_year %>
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "#{slot.begins_year} Sessions", training_path(training_slug, year: slot.begins_year) %>
+  <% end %>
+<% end %>
+
+<div id="session-stats">
+  <%= render "stats" %>
+</div>
+
+<% if @training_session.trainer_groups.empty? %>
+  <%= ui_callout_box :error, title: "No Trainer Slots Were Found" do %>
+    <p>To track who is teaching this session, each trainer position needs a slot where:</p>
+    <ul class="list-disc ms-5 mt-1">
+      <li>the slot's description matches this session's description exactly, and</li>
+      <li>the slot begins within one hour of this session's start.</li>
+    </ul>
+  <% end %>
+<% elsif !@training_session.primary_trainers_signed_up? %>
+  <%= ui_callout_box :error, title: "No Trainer Sign-Ups" do %>
+    No trainers are signed up to teach this session.
+  <% end %>
+<% end %>
+
+<% if !@training_session.art? && @training_session.inactive_retired_count.positive? %>
+  <%= ui_callout_box :warning, title: "Inactive or Retired Sign-Ups" do %>
+    One or more signed-up Rangers are inactive or retired. They must attend the full day.
+  <% end %>
+<% end %>
+
+<% unless slot.active %>
+  <%= ui_callout_box :error, title: "Session Not Activated" do %>
+    Sign-ups are disabled until the session is activated on the
+    <%= link_to "schedule slots", scheduling_slots_path %> page.
+  <% end %>
+<% end %>
+
+<%= render "trainer_section" %>
+
+<div id="trainees-section">
+  <%= render "trainees_section" %>
+</div>

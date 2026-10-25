@@ -1,0 +1,109 @@
+<%#
+  The pods on paper: one column per pod, six to a table, landscape.
+
+  This is upstream's on-screen layout, kept for the one job it is best at.
+  A mentor lead wants the whole walk on one sheet, and columns side by side
+  are the only way that fits; the screen uses cards because a phone cannot
+  show six columns at all.
+
+  Pagination is the browser's -- each table is break-inside: avoid, so a pod
+  group never tears across sheets.
+%>
+<% shift_title = alpha_shift_title(@slot) %>
+<% content_for :title, "Pods — #{shift_title}" %>
+
+<%# Landscape belongs to this sheet alone. The print layout's bare @page rule
+    reaches every print view, so the orientation goes on a named rule that
+    only this page opts into. %>
+<% content_for :page_rules do %>
+  <style>
+    @page alpha-pod-sheet {
+      size: letter landscape;
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 7.5pt;
+        color: #444;
+        font-family: "Atkinson Hyperlegible", sans-serif;
+      }
+    }
+    .alpha-pod-sheet { page: alpha-pod-sheet; }
+  </style>
+<% end %>
+
+<div class="print:hidden mb-4">
+  <%= back_to "Pods", mentoring_alpha_pods_shift_path(@slot) %>
+  <p class="text-stone-muted mt-1">
+    Use your browser's print command, with landscape orientation. This message and the navigation
+    are left off the paper.
+  </p>
+</div>
+
+<section class="alpha-sheet alpha-sheet--wide alpha-pod-sheet">
+  <div class="alpha-masthead">
+    <div class="alpha-doc-label">Alpha pods</div>
+    <div class="flex flex-row justify-between items-center w-full mt-2">
+      <h1 class="alpha-shift"><%= shift_title %></h1>
+      <div class="alpha-when"><%= datetime_format(@slot.begins, @slot.ends) %>, <%= @slot.begins_year %></div>
+    </div>
+  </div>
+
+  <% if @board.any? %>
+    <div class="alpha-subline">
+      <span>
+        <%= pluralize(@board.sets.size, "pod") %> &middot;
+        <%= pluralize(@board.count_of(Pod::TYPE_ALPHA), "Alpha") %> &middot;
+        <%= pluralize(@board.count_of(Pod::TYPE_MENTOR), "mentor") %> &middot;
+        <%= pluralize(@board.count_of(Pod::TYPE_MITTEN), "MITten") %>
+      </span>
+      <span>Printed <%= datetime_format(Current.time) %></span>
+    </div>
+
+    <%# Six columns is the widest a landscape sheet holds before a callsign
+        starts wrapping; the rest continue in a table below. %>
+    <% @board.sets.each_slice(6) do |sets| %>
+      <table class="alpha-pod-table">
+        <thead>
+        <tr>
+          <% sets.each do |set| %>
+            <th style="width: <%= (100.0 / sets.size).round(2) %>%">Pod <%= set.number %></th>
+          <% end %>
+        </tr>
+        </thead>
+        <% Pod::ALPHA_SET_TYPES.each do |type| %>
+          <tbody>
+          <tr class="alpha-pod-band">
+            <% sets.each do |set| %>
+              <% group = set.group(type) %>
+              <td><%= AlphaPodBoard::GROUP_TITLES[type] %> (<%= group&.members&.size.to_i %>)</td>
+            <% end %>
+          </tr>
+          <tr>
+            <% sets.each do |set| %>
+              <% members = set.group(type)&.members || [] %>
+              <td>
+                <% if members.empty? %>
+                  <span class="alpha-pod-empty">None</span>
+                <% else %>
+                  <%= content_tag type == Pod::TYPE_ALPHA ? :ol : :ul do %>
+                    <% members.each do |member| %>
+                      <%# [B] marks a prior bonk on the Alpha list only -- see
+                          the note in _pod_card. %>
+                      <li>
+                        <%= member.person.callsign %><%
+                        %><% if member.lead? %> (Lead)<% end %><%
+                        %><% if type == Pod::TYPE_ALPHA && member.prior_bonk? %> [B]<% end %>
+                      </li>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              </td>
+            <% end %>
+          </tr>
+          </tbody>
+        <% end %>
+      </table>
+    <% end %>
+  <% else %>
+    <p class="mt-4">No pods have been formed for this shift yet.</p>
+  <% end %>
+</section>

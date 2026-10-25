@@ -1,0 +1,9 @@
+<%# locals: (errors:) %>
+<%= ui_callout_box :error do %>
+  <div class="font-medium">The following errors were found:</div>
+  <ul class="mt-2 ml-4 list-disc list-inside space-y-1">
+    <% errors.each do |error| %>
+      <li><%= error %></li>
+    <% end %>
+  </ul>
+<% end %>

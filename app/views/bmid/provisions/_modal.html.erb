@@ -1,0 +1,25 @@
+<%# locals: (provision:, person:) %>
+<%# The provision dialog the BMID manage grid opens from a meals or showers
+    cell. One partial draws all of its states -- a new provision, an existing
+    one, and either coming back with errors -- so a re-opened dialog always
+    replaces the previous one instead of stacking a second on top.
+
+    The form itself is the shared provision form every admin page uses; modal:
+    only changes how it is closed and where its buttons sit. %>
+<%= modal id: "bmid-provision-modal", size: :lg, close_button: false do |m| %>
+  <%= m.title do %>
+    <% if provision.new_record? %>
+      Add a Provision &mdash; <%= person.callsign %>
+    <% else %>
+      Edit <%= provision.display_ref %> (<%= provision.type_label %>) &mdash; <%= person.callsign %>
+    <% end %>
+  <% end %>
+  <%= m.body do %>
+    <p class="mb-3 text-body">
+      Meals and showers are printed from the person's provisions, so this saves on its own,
+      right away. It does not touch the badge, and it does not join the badge changes you
+      have in progress.
+    </p>
+    <%= render "common/provisions/form", provision:, modal: true %>
+  <% end %>
+<% end %>

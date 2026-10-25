@@ -1,0 +1,36 @@
+<%= modal_dialog id: "extracted-handles-dialog", size: :xl, title: "Review Extracted Handles" do %>
+  <%= render "vc/applications/account_created_warning", application: @application,
+             message: "No more handles should be recorded." %>
+  <% if @problem_handles.any? %>
+    <%= ui_callout_box :error do %>
+      <strong>Potentially problematic handles were flagged:</strong>
+      <ul class="list-disc ms-5">
+        <% @problem_handles.each do |handle, problems| %>
+          <li><strong><%= handle %></strong> &mdash; <%= Array(problems).join(" ") %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% else %>
+    <%= ui_callout_box :success do %>
+      No problematic handles found.
+    <% end %>
+  <% end %>
+  <%= form_with url: vc_application_path(@application), method: :patch,
+                builder: AppFormBuilder, data: { turbo_frame: "_top" } do |f| %>
+    <%= hidden_field_tag "prospective_application[problem_handles]", @problem_handles.to_json %>
+    <div class="two-column-lg">
+      <%= f.text_area "prospective_application[handles]", label: "Extracted Handles (editable)",
+                      required: true, rows: 10, value: @extracted_handles %>
+      <div>
+        <div class="font-medium mb-1">Original handles</div>
+        <div class="border border-line rounded-lg p-3 bg-base-200 min-h-40">
+          <%= simple_format @application.handles %>
+        </div>
+      </div>
+    </div>
+    <p class="text-sm text-stone-muted mt-2">
+      Saving replaces the submitted handles with the extracted list.
+    </p>
+    <%= modal_form_footer submit: "Save Extracted Handles" %>
+  <% end %>
+<% end %>

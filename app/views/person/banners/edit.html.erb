@@ -1,0 +1,9 @@
+<%= hero_panel icon: "pen", heading_level: :h1, id: "edit-person-banner-header",
+               description: "Update this internal account banner message.",
+               back_to: ["Manage Account Banners", person_banners_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Edit Banner &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= render "form", person: @person, person_banner: @person_banner %>

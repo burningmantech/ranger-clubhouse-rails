@@ -1,0 +1,28 @@
+description: "Asks an applicant for more radio handles to choose from"
+
+subject: "Hey {{ application.first_name }}, your Ranger Application needs attention!"
+
+body: |
+  <p>
+    Hey {{ application.first_name }} {{ application.last_name }},
+  </p>
+  <p>
+    The Ranger Handle Wranglers have reviewed the radio Ranger callsign options you have submitted,
+    and sadly, we were unable to approve any of them.
+  </p>
+  {% render "shared/mailer/on_hold" %}
+  <p>
+    Here is the message from the Ranger Handle Wranglers:
+  </p>
+  {{ message_to_user }}
+  <p>
+    Reply to this message with <b>FIVE MORE HANDLES TO CONSIDER</b>.
+  </p>
+  <p>
+    Please take a second to review the guidelines for Ranger radio callsigns (aka handles):<br>
+    <a href="https://ranger-clubhouse.burningman.org/HandleAdvice">https://ranger-clubhouse.burningman.org/HandleAdvice</a>
+  </p>
+  <p>
+    Your Friendly Black Rock Ranger Volunteer Coordinators
+  </p>
+  {% render "shared/mailer/application_footer", application: application %}

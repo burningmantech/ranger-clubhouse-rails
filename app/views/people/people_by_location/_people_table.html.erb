@@ -1,0 +1,45 @@
+<%# The people of one place.
+    Locals: people (Array<PeopleByLocationReport::Row>), show_state (Boolean),
+    country (String), year (Integer). %>
+<% show_email = can_view_email? %>
+
+<%= ui_table full_width: true, striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading "Status" %>
+    <%= t.heading "Name" %>
+    <% if show_email %>
+      <%= t.heading "Email" %>
+    <% end %>
+    <%= t.heading "City" %>
+    <% if show_state %>
+      <%= t.heading people_by_location_region_noun(country) %>
+    <% end %>
+    <%= t.heading "Postal Code" %>
+    <%= t.heading "#{year} Signed Up" %>
+    <%= t.heading "#{year} Rangered" %>
+  <% end %>
+  <%= t.body do %>
+    <% people.each do |row| %>
+      <%= t.row do %>
+        <%# All four roles that reach this page may open a person, so the link
+            never bounces. %>
+        <%= t.row_header do %><%= callsign_link row, person_path(row.id) %><% end %>
+        <%= t.cell row.status %>
+        <%= t.cell row.name.presence || "—" %>
+        <% if show_email %>
+          <%= t.cell email_link_or_dash(row.email) %>
+        <% end %>
+        <%= t.cell row.city.presence || "—" %>
+        <% if show_state %>
+          <%# The stored value, not the bucket name: a dash reads as an empty
+              cell here, while the drill-down row it came from needs words. %>
+          <%= t.cell row.state.presence || "—" %>
+        <% end %>
+        <%= t.cell row.zip.presence || "—" %>
+        <%= t.cell do %><%= yes_no_badge row.signed_up %><% end %>
+        <%= t.cell do %><%= yes_no_badge row.rangered %><% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

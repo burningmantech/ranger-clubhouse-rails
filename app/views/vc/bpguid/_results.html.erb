@@ -1,0 +1,121 @@
+<%# locals: (search:, person:) -%>
+<%# A refused link (D8) is streamed into this slot; the next search re-renders it empty. %>
+<div id="vc-bpguid-notice"></div>
+
+<% if search.refused? %>
+  <%# D16: nothing was sent, so this is advice, not a failure. %>
+  <%= ui_callout_box :warning, accent: true, heading_level: :h3, title: "Narrow the Search" do %>
+    <p><%= search.error %></p>
+  <% end %>
+<% elsif search.error %>
+  <%= ui_callout_box :error, accent: true, heading_level: :h3,
+                     title: search.signed_in? ? "Salesforce Could Not Run the Search" : "Could Not Sign In to Salesforce" do %>
+    <%# The prefix Salesforce#sosl_search opens every message with repeats the title. %>
+    <%= ui_data_block search.error.delete_prefix("Salesforce query failed: "), max_height: "max-h-56" %>
+    <% if search.signed_in? %>
+      <p class="mt-2">Check the name or email, then search again.</p>
+    <% else %>
+      <p class="mt-2">No search was sent. Ask an Admin to check the Salesforce settings, then search again.</p>
+    <% end %>
+  <% end %>
+<% else %>
+  <p class="mb-2"><%= search.summary %></p>
+
+  <% if search.capped? %>
+    <%# D11. role status, not alert: it describes the answer, it does not interrupt. %>
+    <%= ui_callout_box :warning, role: "status" do %>
+      <strong>Salesforce stops at 250 contacts, so there may be more.</strong>
+      Add more of the name or email to narrow the search.
+    <% end %>
+  <% end %>
+
+  <% if person.nil? && search.contacts.any? %>
+    <%# No one shown, so no row has a button: say why, where the buttons would be. %>
+    <%= ui_callout_box :info, role: "note" do %>
+      To link one of these BPGUIDs, look up the person's callsign first, then search again.
+    <% end %>
+  <% end %>
+
+  <% if search.contacts.any? { |contact| search.linkable?(contact) } %>
+    <%# D4: the consequence of the row buttons, beside them. role note, not alert:
+        it is announced on reading, not on every search. %>
+    <%= ui_callout_box :info, role: "note" do %>
+      A link takes effect at once for this person's shift sign-ups and tickets.
+      It can be replaced here, but only an Admin can remove it.
+    <% end %>
+  <% end %>
+
+  <% if search.contacts.any? %>
+    <%# Responsive (the default). The owner's seven fields in four columns, so the
+        row fits without scrolling. Rows carry no DOM id -- the RETURNING list has
+        no Id, and BPGUID__c can be blank or repeat. %>
+    <%= ui_table caption: "Salesforce Accounts that match the search." do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Contact" %>
+        <%= t.heading "Email" %>
+        <%= t.heading "Phone" %>
+        <%= t.heading "BPGUID" %>
+        <%# No one shown, no one to link to: the column and its buttons go. %>
+        <%= t.heading "Actions" if person %>
+      <% end %>
+      <%= t.body do %>
+        <% search.contacts.each do |contact| %>
+          <%= t.row do %>
+            <%# whitespace-normal: a long address wraps under the name, not widens the table. %>
+            <%= t.row_header class: "whitespace-normal" do %>
+              <span class="block font-semibold"><%= value_or_dash(contact.name) %></span>
+              <span class="block font-normal text-stone-subtle"><%= value_or_dash(contact.home_address) %></span>
+            <% end %>
+            <%# Every email address, then every phone number, Salesforce holds: once
+                each, whichever field it came from. %>
+            <% [[contact.emails, "No email addresses"], [contact.phones, "No phone numbers"]].each do |values, none| %>
+              <%= t.cell do %>
+                <% values.each do |value| %>
+                  <div class="lg:whitespace-nowrap"><%= value %></div>
+                <% end %>
+                <% if values.empty? %><span class="text-stone-subtle"><%= none %></span><% end %>
+              <% end %>
+            <% end %>
+            <%# Whether there is one to link, not the value: the row's button carries it. %>
+            <%= t.cell do %>
+              <% if contact.bpguid %>
+                <%= ui_badge "Present", :success, icon: "circle-check", icon_type: :solid %>
+              <% else %>
+                <%= ui_badge "None or Hidden", :error, icon: "circle-minus", icon_type: :solid %>
+              <% end %>
+            <% end %>
+            <% if person %>
+              <%# nowrap: the table sizes to its content and squeezes this column, and
+                  .btn is a fixed height, so a wrapped label spills out of the button. %>
+              <%# No BPGUID, nothing here: the BPGUID column already says None or Hidden. Folded into
+                  a card, the empty cell goes too, or its "Actions:" label would hang alone. %>
+              <%= t.cell class: class_names("whitespace-nowrap", "max-lg:hidden" => contact.bpguid.nil?) do %>
+                <%# D6: no button that would write a blank, or rewrite the current link. %>
+                <% if search.linked?(contact) %>
+                  <%= ui_badge "Linked", :success, icon: "circle-check", icon_type: :solid %>
+                <% elsif contact.bpguid %>
+                  <%
+                    source = [contact.name, contact.email].compact_blank.join(", ")
+                    # D4 (a): only a replacement asks first; a first link goes straight through.
+                    confirm = if person.bpguid.present?
+                                confirm_modal(title: "Replace BPGUID",
+                                              message: "#{person.callsign}'s BPGUID is #{person.bpguid}. " \
+                                                       "Replace it with #{contact.bpguid}#{", from #{source}" if source.present?}?",
+                                              confirm_label: "Replace BPGUID", variant: :error, method: :patch)
+                              end
+                  %>
+                  <%# The value travels only in the signed link_token; with method:, Turbo
+                      submits the href's query as the PATCH's form fields. %>
+                  <%= button_link "Use This BPGUID", :primary, vc_bpguid_person_path(person),
+                                  params: { link_token: search.link_token(contact) }, method: :patch,
+                                  aria: { label: ["Use This BPGUID", contact.name.presence, contact.bpguid].compact.join(" — ") },
+                                  data: confirm %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

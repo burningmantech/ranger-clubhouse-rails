@@ -1,0 +1,79 @@
+<%= hero_panel icon: "key", heading_level: :h1, id: "permissions-header",
+               title: "Permissions",
+               description: "Review every permission the Clubhouse grants, and what confers it." %>
+
+<% can_manage = can?(:manage_permissions) %>
+
+<%= ui_callout_box :info, title: "How a Permission Reaches a Person" do %>
+  A permission is granted by a team, by a position, or directly on a person's record.
+  The ART permissions below are composed from a training position, which is why their ID
+  numbers look unusual.
+  <% unless can_manage %>
+    Contact the Tech Team to change a permission.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @named_permissions.size.to_s, "System Permissions" %>
+  <%= ui_stat_box @composed_groups.sum { |_, roles| roles.size }.to_s, "ART Permissions" %>
+  <%= ui_stat_box @composed_groups.size.to_s, "ART Positions" %>
+<% end %>
+
+<% if can_manage %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= button_link "Create ART Permissions", :secondary, new_art_admin_permissions_path,
+                      icon: "wand-magic-sparkles", icon_type: :solid %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= ui_section "System Permissions", icon: "shield-halved", icon_type: :solid, border: false do %>
+  <%= ui_table striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "ID", right: true %>
+      <%= t.heading "Permission" %>
+      <%= t.heading "Granted By" %>
+      <% if can_manage %>
+        <%= t.heading "Action" %>
+      <% end %>
+    <% end %>
+    <%= t.body do %>
+      <% @named_permissions.each do |permission| %>
+        <%= render "row", permission: permission, can_manage: can_manage,
+                          detail_id: "permission-detail-#{permission.id}", t: t %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @composed_groups.any? %>
+  <%= ui_section "ART Permissions", id: "art-permissions",
+                 icon: "graduation-cap", icon_type: :solid do %>
+    <div class="flex flex-col gap-2">
+      <% @composed_groups.each do |position_title, permissions| %>
+        <%= ui_disclosure position_title, variant: :card,
+                          subtitle: pluralize(permissions.size, "permission") do %>
+          <%= ui_table striped: true do |t| %>
+            <%= t.header do %>
+              <%= t.heading "ID", right: true %>
+              <%= t.heading "Permission" %>
+              <%= t.heading "Type" %>
+              <%= t.heading "Granted By" %>
+              <% if can_manage %>
+                <%= t.heading "Action" %>
+              <% end %>
+            <% end %>
+            <%= t.body do %>
+              <% permissions.each do |permission| %>
+                <%= render "row", permission: permission, can_manage: can_manage,
+                                  detail_id: "art-detail-#{permission.id}",
+                                  show_type: true, t: t %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

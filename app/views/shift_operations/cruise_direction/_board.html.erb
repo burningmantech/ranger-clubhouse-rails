@@ -1,0 +1,36 @@
+<%# locals: (board:, year:) %>
+<%#
+  Everything about one shift's pods that a write can change: the counts and the
+  cards. Replaced wholesale by every mutation -- adding someone renumbers a
+  pod, moving someone touches two of them, and a drag renumbers the line, so a
+  per-card stream would be a stream per card in most cases anyway.
+
+  The grid is the sortable: dragging a card by its grip PATCHes the place it
+  landed in and the answer replaces this whole partial, so the numbers on the
+  cards come from the database rather than from where the browser put them.
+
+  The shift's counts are NOT here -- they render beside the picker, and are
+  streamed as their own target. See _stats.
+%>
+<div id="cruise-direction-board">
+  <% if board.unassigned_count.positive? %>
+    <%= ui_callout_box :warning, icon: "user-clock", icon_type: :solid, accent: true, class: "mb-4" do %>
+      <strong>Waiting for a pod:</strong>
+      <%= safe_join(board.unassigned.map { |candidate| person_display_link(candidate.person, candidate.person.id) }, ", ") %>
+    <% end %>
+  <% end %>
+
+  <% if board.any? %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4"
+         data-controller="sortable"
+         data-sortable-handle-value=".cruise-direction-pod-grip"
+         data-sortable-response-kind-value="turbo-stream">
+      <% board.cards.each do |card| %>
+        <%= render "shift_operations/cruise_direction/pod", card: card, year: year %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= ui_empty_state "No pods have gone out on this shift yet. Use Create pod to make the first one.",
+                       icon: "people-group", icon_type: :solid %>
+  <% end %>
+</div>

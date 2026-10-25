@@ -1,0 +1,51 @@
+<%= ui_form(@lineup,
+            @lineup.persisted? ? teams_positions_position_lineup_path(@lineup) : teams_positions_create_position_lineup_path,
+            method: @lineup.persisted? ? :patch : :post) do |f| %>
+  <%= ui_section "Lineup", icon: "layer-group", icon_type: :solid do %>
+    <%= f.text_field :description, label: "Description", required: true,
+                     maxlength: PositionLineupManagement::DESCRIPTION_MAX, show_counter: true,
+                     width: "w-full sm:w-96",
+                     help_text: "Names the lineup for other admins, such as \"Green Dot Mentor and Mentee\"." %>
+  <% end %>
+
+  <%= ui_section "Positions In This Lineup", icon: "id-badge", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What happens when I check one?</dt>
+      <dd>Its sign-ups are shown alongside every other position checked here.</dd>
+      <dt>Why are some marked already in another lineup?</dt>
+      <dd>A position belongs to one lineup at a time. Remove it from the other lineup first.</dd>
+    </dl>
+
+    <%= hidden_field_tag "position_lineup[position_ids][]", "" %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-1">
+      <% @positions.each do |position| %>
+        <%= render layout: "common/checkbox_row",
+                   locals: { name: "position_lineup[position_ids][]", value: position.id,
+                             checked: @position_ids.include?(position.id),
+                             id: "lineup-position-#{position.id}" } do %>
+          <%= position.title %>
+          <% if (other = @lineup_by_position[position.id]) %>
+            <span class="text-stone-muted italic">(in <%= other %>)</span>
+          <% elsif !position.active %>
+            <span class="text-stone-muted italic">(inactive)</span>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Lineup" %>
+    <%= cancel_link teams_positions_position_lineups_path %>
+    <% if @lineup.persisted? %>
+      <%= delete_button teams_positions_position_lineup_path(@lineup), "Delete Lineup",
+                        confirm_modal: {
+                          title: "Confirm Lineup Deletion",
+                          message: "Delete #{@lineup.description}? " \
+                                   "The positions themselves are not deleted — they simply stop being shown together. " \
+                                   "This cannot be undone.",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,30 @@
+<%# locals: (person:)  %>
+<%= hero_panel icon: "user", heading_level: :h1, id: "person-show-header" do |panel| %>
+  <% panel.title do %>
+    <%= person.callsign %>
+  <% end %>
+  <% panel.description class: "space-y-3" do %>
+    <div class="flex flex-wrap items-center gap-4">
+      <div><%= person_status_badge person.status, size: "base" %></div>
+      <% if person.vintage %>
+        <div><%= ui_badge "vintage", :secondary %></div>
+      <% end %>
+      <div>
+        <% if person.on_site %>
+          <%= ui_badge "On Site", :success, icon: "person-walking" %>
+        <% else %>
+          <%= ui_badge "Off Site", :secondary, icon: "moon", icon_type: "regular" %>
+        <% end %>
+      </div>
+      <div><%= person.desired_full_name %></div>
+      <div><%= pronouns_format person %></div>
+      <% if person.callsign_pronounce.present? %>
+        <div class="italic">"<%= person.callsign_pronounce %>"</div>
+      <% end %>
+    </div>
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "Switch to HQ Interface", person_redirect_to_hq_path(@person),
+                icon: "right-left", aria_label: "Switch to HQ Interface" %>
+  <% end %>
+<% end %>

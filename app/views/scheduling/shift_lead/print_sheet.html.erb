@@ -1,0 +1,274 @@
+<%#
+  The Shift Lead Report as a paper document.
+
+  A separate view rather than print rules on the screen page: the application
+  layout puts every page inside `body.h-screen` -> `.drawer-content` with its
+  own scrollbar, and a fixed-height body with an inner scroller prints as a
+  single sheet. The house answer to that is layouts/print, which this shares
+  with the training sign-up sheet and the trainer's report.
+
+  Everything the screen folds away is open here, and everything that only works
+  on a screen -- the picker, the mode button, the links -- is gone.
+%>
+<% mode_label = @report.on_duty? ? "ON DUTY" : "SCHEDULED" %>
+<% doc_label = "Black Rock Rangers · Shift Lead Report" %>
+<% shift_label = full_datetime_format(@report.shift_start) %>
+<%# The rosters are whatever the screen was showing, filters and sorts included.
+    A sheet that quietly held fewer people than the shift does would be the worst
+    kind of wrong, so the filters get named under the masthead. %>
+<% active_filters = UiComponents::FilterBarHelper.active_filters(
+                      @filter_params.except(*shift_lead_sort_keys)) %>
+<% filter_summary = active_filters.map { |key, value|
+     "#{Scheduling::ShiftLeadHelper::FILTER_CHIP_LABELS[key]}: " \
+       "#{shift_lead_filter_value_label(key, value)}"
+   } %>
+
+<%# The footer ("doc label — shift" bottom-left, "Page N of M" bottom-right)
+    rides a NAMED @page rule emitted into the print layout's head. Margin boxes
+    on the bare @page in layouts/print would reach every print view, including
+    the sign-up sheet, which carries no page numbers on purpose; and the
+    tailwind bundle cannot scope @page at all. The label is CSS-hex escaped so
+    ERB has nothing to HTML-escape inside the raw-text style element. %>
+<% page_footer = "#{doc_label} — #{mode_label} #{shift_label}".gsub(/[\\"'<>&]/) { |char| format("\\%x ", char.ord) } %>
+<% content_for :page_rules do %>
+  <style>
+    @page shift-lead-sheet {
+      size: letter portrait;
+      margin: 0.5in;
+      @bottom-left {
+        content: "<%= page_footer %>";
+        font-size: 7pt;
+        color: #444;
+        font-family: "Atkinson Hyperlegible", sans-serif;
+      }
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 7pt;
+        color: #444;
+        font-family: "Atkinson Hyperlegible", sans-serif;
+      }
+    }
+  </style>
+<% end %>
+
+<% content_for :title, "Shift Lead Report — #{shift_label}" %>
+
+<div class="print:hidden mb-4">
+  <%# The whole view the Print button carried here, not just the shift: a return
+      link that rebuilt three params by hand would land the reader on the
+      unfiltered roster in default order after a round trip through the sheet. %>
+  <%= back_to "Shift Lead Report",
+              scheduling_shift_lead_path(**shift_lead_all_params(@filter_params)) %>
+  <p class="text-stone-muted mt-1">
+    Use your browser's print command. This message and the navigation are left off the paper.
+  </p>
+</div>
+
+<section class="shift-lead-sheet">
+  <header class="sheet-masthead">
+    <div class="sheet-doc-label"><%= doc_label %></div>
+    <%# h1, not a span: this is a real browsable URL, not only a paper surface,
+        and a reader who follows the Print button lands on hundreds of rows with
+        nothing to navigate by. The sheet's own type scale is set in CSS, so the
+        heading level costs the paper nothing. %>
+    <div class="sheet-headline">
+      <h1 class="sheet-shift"><%= shift_label %></h1>
+      <span class="sheet-mode"><%= mode_label %> · <%= @year %></span>
+    </div>
+    <div class="sheet-subline">
+      <span>
+        <%= @shown_count == @total_count ? pluralize(@shown_count, "person") : "#{@shown_count} of #{@total_count} people" %>
+        <%= @report.on_duty? ? "on duty" : "scheduled" %>
+      </span>
+      <span>Printed <%= full_datetime_format(Time.current) %> by <%= Current.person.callsign %></span>
+    </div>
+    <% if filter_summary.any? %>
+      <div class="sheet-filters">
+        <b>Filtered</b> — <%= filter_summary.join(" · ") %>
+      </div>
+    <% end %>
+  </header>
+
+  <div class="sheet-stats">
+    <% shift_lead_headline_numbers(@report).each do |value, label, _variant| %>
+      <div class="sheet-stat">
+        <b><%= value %></b>
+        <span class="sheet-stat-label"><%= label %></span>
+      </div>
+    <% end %>
+  </div>
+
+  <%# --- below minimum ------------------------------------------------------ %>
+  <% if @report.fully_staffed? %>
+    <div class="sheet-band" role="heading" aria-level="2">Below minimum staffing — none</div>
+    <p>Every position has enough Rangers.</p>
+  <% else %>
+    <div class="sheet-band" role="heading" aria-level="2">
+      Below minimum staffing — <%= pluralize @report.below_min.size, "position" %>
+    </div>
+    <table>
+      <colgroup>
+        <col class="sheet-col-shortfall"><col class="sheet-col-window">
+        <col class="sheet-col-count"><col class="sheet-col-count"><col>
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Position</th>
+          <th>Window</th>
+          <th class="sheet-num"><%= @report.on_duty? ? "On duty" : "Signed up" %></th>
+          <th class="sheet-num">Needed</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @report.below_min.each do |row| %>
+          <tr>
+            <td><%= row.title %></td>
+            <td><%= shift_lead_time(row.begins) %> - <%= shift_lead_time(row.ends) %></td>
+            <td class="sheet-num">
+              <% if row.count.zero? %>
+                <span class="sheet-none">NONE</span>
+              <% else %>
+                <%= row.count %>
+              <% end %>
+            </td>
+            <td class="sheet-num"><%= row.need %></td>
+            <td></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+
+  <%# --- the three rosters --------------------------------------------------- %>
+  <%# Shorter than the screen's "Shift Start" / "Shift Ends": on paper these two
+      columns are sized by their headings rather than their values, and the long
+      pair pushed the roster past the sheet. %>
+  <% start_heading, end_heading = @report.on_duty? ? ["On duty", "Duration"] : ["Start", "Ends"] %>
+  <%# Same rosters the screen was showing, so a position filter collapses the
+      sheet to one band here too. %>
+  <% rosters = [
+       { title: "DIRT / GREEN DOTS", rangers: @dirt, all: @report.dirt },
+       { title: "COMMAND STAFF", rangers: @command, all: @report.command },
+       { title: "SPECIAL TEAMS", rangers: @special, all: @report.special }
+     ] %>
+  <% shift_lead_visible_rosters(rosters, @filter_params).each do |roster| %>
+    <% title = roster[:title] %>
+    <% rangers = roster[:rangers] %>
+    <% total = roster[:all].size %>
+    <% band = "#{title} — #{shift_lead_roster_count(rangers, @report.on_duty?, total: total)}" %>
+
+    <% if rangers.empty? %>
+      <div class="sheet-band" role="heading" aria-level="2"><%= band %></div>
+      <p>
+        <% if total.positive? %>
+          No one on this roster matches the current filters.
+        <% else %>
+          <%= @report.on_duty? ? "No one is on duty in these positions." : "No one has signed up." %>
+        <% end %>
+      </p>
+    <% else %>
+      <table class="sheet-roster">
+        <colgroup>
+          <col class="sheet-col-position"><col class="sheet-col-callsign">
+          <col class="sheet-col-pronouns"><col class="sheet-col-gender">
+          <col class="sheet-col-years"><col class="sheet-col-flag">
+          <col class="sheet-col-flag"><col>
+          <col class="sheet-col-time"><col class="sheet-col-time">
+        </colgroup>
+        <thead>
+          <%# The roster's name rides INSIDE the thead so it repeats on every
+              sheet. A band that is a sibling div prints once, and since all
+              three rosters carry an identical ten-column header, sheet two of a
+              hundred-Ranger roster would be unattributable once the masthead is
+              behind it. The training sign-up sheet solved this the same way. %>
+          <tr class="sheet-running-head">
+            <th colspan="10" role="heading" aria-level="2"><%= band %></th>
+          </tr>
+          <tr>
+            <th>Position</th>
+            <th>Callsign</th>
+            <th>Pronouns</th>
+            <th class="sheet-ctr">Gen</th>
+            <th class="sheet-num">Yrs</th>
+            <th class="sheet-ctr">GTR</th>
+            <th class="sheet-ctr">Veh</th>
+            <th>Positions / Certifications</th>
+            <th class="sheet-num"><%= start_heading %></th>
+            <th class="sheet-num"><%= end_heading %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% rangers.each do |ranger| %>
+            <tr>
+              <td><%= ranger.position_title %></td>
+              <td>
+                <% unless ranger.on_site %>
+                  <%# fa_icon is aria-hidden unconditionally, and this is a real
+                      browsable URL as well as a paper surface, so the meaning is
+                      said in text the way the screen partial says it. %>
+                  <%= fa_icon "ban", :solid %>
+                  <span class="sr-only">Not marked as being on site.</span>
+                <% end %>
+                <span class="sheet-callsign"><%= ranger.callsign %></span>
+                <% if ranger.green_dot %>
+                  <span class="sheet-chip sheet-chip-solid">GD</span>
+                <% end %>
+                <% if ranger.troubleshooter %>
+                  <span class="sheet-chip">TS</span>
+                <% end %>
+              </td>
+              <td><%= pronouns_format(ranger.person, true).presence || "-" %></td>
+              <td class="sheet-ctr"><%= ranger.gender.presence || "-" %></td>
+              <td class="sheet-num"><%= ranger.years %></td>
+              <td class="sheet-ctr"><%= shift_lead_vehicle_cell(ranger.gtr, "GTR") %></td>
+              <td class="sheet-ctr"><%= shift_lead_vehicle_cell(ranger.vehicle, "VEH") %></td>
+              <td>
+                <%= ranger.positions.any? ? ranger.positions.join(", ") : "-" %>
+                <% ranger.certifications.each do |certification| %>
+                  <span class="sheet-chip"><%= certification %></span>
+                <% end %>
+              </td>
+              <% if @report.on_duty? %>
+                <td class="sheet-num"><%= shift_lead_time(ranger.on_duty) %></td>
+                <td class="sheet-num"><%= hour_minute_format(ranger.duration) %></td>
+              <% else %>
+                <td class="sheet-num">
+                  <%= "#{"<" if ranger.begins_day_before}#{shift_lead_time(ranger.begins)}" %>
+                </td>
+                <td class="sheet-num">
+                  <%= "#{shift_lead_time(ranger.ends)}#{">" if ranger.ends_day_after}" %>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  <% end %>
+
+  <%# --- decoder ring -------------------------------------------------------- %>
+  <div class="sheet-legend">
+    <div class="sheet-legend-title">Decoder ring</div>
+    <div class="sheet-legend-cols">
+      <div><%= fa_icon "ban", :solid %> not marked as being on site</div>
+      <div><b>GD</b> qualified Green Dot &middot; <b>TS</b> Troubleshooter</div>
+      <div><b>GTR</b> signed the Vehicle Use Protocol</div>
+      <div><b>VEH</b> has Burning Man org insurance</div>
+      <div><b>-BL-</b> vehicle blacklisted, may not take a rig out</div>
+      <div><b>Gender</b> F Female, M Male, NB Non-binary, Q Queer, GF Gender Fluid,
+        TF Trans-Female, TM Trans-Male, TS Two Spirit, - not stated</div>
+      <div><b>&lt;06:30</b> starts the day before &middot;
+        <b>18:15&gt;</b> ends the day after</div>
+      <div>Dspch Dispatcher &middot; GD Green Dot &middot; GDLead Green Dot Lead &middot;
+        GerPat Gerlach Patrol &middot; GerLd Gerlach Patrol Lead</div>
+      <div>GTR Gator/Golf Cart &middot; HSP Hot Springs Patrol &middot;
+        IntDsp Intercept Dispatch &middot; IntOpr Intercept Operator</div>
+      <div>LNT Leave No Trace &middot; PM Personnel Manager &middot; Opr Operator &middot;
+        RSL Ranger Shift Lead &middot; RSLPre Ranger Shift Lead (pre-event)</div>
+      <div>SC Shift Coordinator &middot; Tow Tow Truck &middot; TowMnt Tow Truck Mentee &middot;
+        VEH Vehicle (SUV, pick-up)</div>
+      <div>A chip in the last column is a certification rather than a position.</div>
+    </div>
+  </div>
+</section>

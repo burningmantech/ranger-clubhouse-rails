@@ -1,0 +1,73 @@
+/*
+ * Messages Interface System
+ * The mailbox list and avatars shared by the templates in
+ * app/views/common/messages. The thread's cards and the pane are utilities in
+ * the markup (_message_card, _pane; the pane's height cap is review-pane.css).
+ */
+
+/* Conversation list item. Two lines of text beside a 48px avatar, so the
+   floor is the avatar plus its padding rather than the 36px minimum. Hover
+   is the row-hover fill (base-300): the list sits on a base-200 panel, where
+   base-200 hover was invisible on every read row. */
+@utility messages-conversation-item {
+    @apply flex items-start gap-3 py-3 px-3 min-h-18 rounded-lg;
+    @apply text-body hover:bg-default-strong transition-colors;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary;
+}
+
+/* Unread: the same warning tint the unread counts and chips wear -- except on
+   the selected row, whose primary tint (.review-line[aria-current], in the
+   components layer of components/review-pane.css) this utilities-layer rule
+   would otherwise cover. :where() keeps the rule at one class of specificity,
+   so the row's hover fill (two classes' worth) still wins. */
+@utility messages-conversation-unread {
+    &:where(:not([aria-current="true"])) {
+        @apply bg-warning/10;
+    }
+}
+
+/* A search's match in a hit's subject and snippet (MessagesHelper#
+   message_search_marks): the warning tint every unread mark wears, at a step
+   that still stands out on an unread row's 10% and the selected row's blue.
+   Owner-approved 2026-10-18. The text keeps its row's colour. The utilities
+   layer beats components/lexxy.css, which takes the browser's highlighter
+   off every <mark>. */
+@utility search-hit {
+    @apply bg-warning/30 text-inherit rounded-sm;
+}
+
+/* The reply box under a thread starts about four lines tall (the editor's text
+   is 0.9rem on a 1.625 line, so four lines are 5.85rem), not the 16rem every
+   other rich text field starts at (components/lexxy.css), so Send Reply sits
+   near the last card on a phone; it grows as the reply does. Owner-approved
+   2026-10-18; compose keeps 16rem. In rem rather than lh, so the box does not
+   grow when iOS enlarges the text of a focused field (base.css). The utilities
+   layer beats components/lexxy.css. */
+@utility messages-reply-editor {
+    --lexxy-editor-rows: 6rem;
+}
+
+/* Conversation avatar container */
+@utility messages-conversation-avatar {
+    @apply w-12 h-12 flex items-center justify-center;
+}
+
+/* Avatar placeholder (no photo). base-300 is the deepest neutral surface, so
+   the subtle-ink glyph clears 4.5:1 on it; on bg-secondary (L=48, within two
+   steps of the glyph) it was invisible. rounded-lg matches the photos. */
+@utility messages-avatar-placeholder {
+    @apply w-12 h-12 rounded-lg bg-base-300;
+    @apply flex items-center justify-center text-stone-icon;
+}
+
+/* RBS broadcast avatar - brand identity styling */
+@utility messages-avatar-rbs {
+    @apply w-12 h-12 rounded-lg bg-primary/10;
+    @apply flex items-center justify-center;
+}
+
+/* Team avatar - neutral styling; the group icon provides identity */
+@utility messages-avatar-team {
+    @apply w-12 h-12 rounded-lg bg-base-300;
+    @apply flex items-center justify-center text-stone-icon;
+}

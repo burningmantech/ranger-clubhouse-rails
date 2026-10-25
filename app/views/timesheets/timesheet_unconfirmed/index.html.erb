@@ -1,0 +1,80 @@
+<%#
+  Rangers who logged hours this year and have not confirmed their timesheet is
+  correct. Split into the two groups the /me timesheet flow creates, because
+  each is owed a different message: one still has entries to review, the other
+  only has to say they are finished.
+%>
+<%# The heading, the browser title, and the menu item all say "Unconfirmed
+    Timesheets". Only the URL keeps upstream's timesheet-unconfirmed spelling. %>
+<% content_for :title, "Unconfirmed Timesheets" %>
+
+<%= hero_panel icon: "clipboard-check", heading_level: :h1,
+               id: "timesheets-timesheet-unconfirmed-header",
+               title: "#{@year} Unconfirmed Timesheets" do |panel| %>
+  <% panel.description do %>
+    Everyone who turned in hours for <%= @year %> and has not confirmed their timesheet yet.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @total.zero? %>
+  <%= ui_empty_state "Everyone who rangered in #{@year} has confirmed their timesheet. " \
+                     "No one left to chase.",
+                     icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @total.to_s, "Unconfirmed", variant: :secondary,
+                    icon: "user-clock", icon_type: :solid %>
+    <%= ui_stat_box @to_verify.size.to_s, "Entries to Verify", variant: :warning,
+                    icon: "list-check", icon_type: :solid %>
+    <%= ui_stat_box @to_confirm.size.to_s, "One Click Away", variant: :primary,
+                    icon: "hand-pointer", icon_type: :solid %>
+  <% end %>
+
+  <%# Each group's heading, named once: its section prints it and the card
+      quotes it. %>
+  <% to_verify_heading = "Still Have Entries to Verify" %>
+  <% to_confirm_heading = "Have Not Confirmed Yet" %>
+
+  <%# What confirming is, then who is under each heading -- offered only when
+      the page has that group. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What is confirming?</dt>
+      <dd>
+        Confirming is the last step of a ranger's timesheet: the &ldquo;I have reviewed
+        and verified&rdquo; button on their own timesheet page.
+      </dd>
+      <% if @to_verify.any? %>
+        <dt>Who is under &ldquo;<%= to_verify_heading %>&rdquo;?</dt>
+        <dd>
+          Those rangers have entries waiting on them. The confirmation button stays
+          hidden until every entry is verified or disputed.
+        </dd>
+      <% end %>
+      <% if @to_confirm.any? %>
+        <dt>Who is under &ldquo;<%= to_confirm_heading %>&rdquo;?</dt>
+        <dd>
+          Nothing is wrong with those timesheets. Every entry is settled &mdash; the
+          rangers just have not said they are finished for <%= @year %>.
+        </dd>
+      <% end %>
+    </dl>
+  <% end %>
+
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link(timesheets_timesheet_unconfirmed_path(year: @year, format: :csv)) %>
+    <% end %>
+  </div>
+
+  <% if @to_verify.any? %>
+    <%= render "group", title: to_verify_heading, icon: "list-check",
+               entries: @to_verify, show_count: true, emails: @to_verify_emails %>
+  <% end %>
+
+  <% if @to_confirm.any? %>
+    <%= render "group", title: to_confirm_heading, icon: "hand-pointer",
+               entries: @to_confirm, show_count: false, emails: @to_confirm_emails %>
+  <% end %>
+<% end %>

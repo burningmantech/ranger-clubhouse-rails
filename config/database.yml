@@ -1,0 +1,104 @@
+# MySQL. Versions 5.6.4 and up are supported.
+#
+# Install the MySQL driver
+#   gem install mysql2
+#
+# Ensure the MySQL gem is defined in your Gemfile
+#   gem "mysql2"
+#
+# And be sure to use new-style password hashing:
+#   https://dev.mysql.com/doc/refman/5.7/en/password-hashing.html
+#
+default: &default
+  adapter: mysql2
+  encoding: utf8mb4
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: rangers
+  password: donothing
+  host: 127.0.0.1
+
+development:
+  primary: &primary_development
+    <<: *default
+    database: rangers-ch3
+  cable:
+    <<: *primary_development
+    database_tasks: false
+  queue:
+    <<: *primary_development
+    database_tasks: false
+
+
+# Warning: The database defined as "test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test:
+  <<: *default
+  database: clubhouse3_test
+
+# As with config/credentials.yml, you never want to store sensitive information,
+# like your database password, in your source code. If your source code is
+# ever seen by anyone, they now have access to your database.
+#
+# Instead, provide the password or a full connection URL as an environment
+# variable when you boot the app. For example:
+#
+#   DATABASE_URL="mysql2://myuser:mypass@localhost/somedatabase"
+#
+# If the connection URL is provided in the special DATABASE_URL environment
+# variable, Rails will automatically merge its configuration values on top of
+# the values provided in this file. Alternatively, you can specify a connection
+# URL environment variable explicitly:
+#
+#   production:
+#     url: <%= ENV["MY_APP_DATABASE_URL"] %>
+#
+# Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
+# for a full overview on how database connection configuration can be specified.
+#
+production:
+  primary: &primary_production
+    <<: *default
+    host: <%= ENV["RANGER_DB_HOST_NAME"] %>
+    database: <%= ENV["RANGER_DB_DATABASE_NAME"] %>
+    username: <%= ENV["RANGER_DB_USER_NAME"] %>
+    password: <%= ENV["RANGER_DB_PASSWORD"] %>
+    # Production never loads db/schema.rb. A production database with no schema_migrations table is a
+    # restore from Clubhouse 2, which the migrations build on, and loading the file into it would drop
+    # every table it defines and create it again empty (force: :cascade). Without this line, db:migrate and
+    # db:prepare load it in exactly that case. cache, queue and cable inherit this line through the merge below.
+    # A SCHEMA environment variable overrides it, so production never sets one.
+    schema_dump: false
+    <% if ENV["RANGER_DB_SSL_CA"].present? %>
+    # RDS refuses unencrypted connections (require_secure_transport). AWS sets RANGER_DB_SSL_CA to the RDS
+    # certificate bundle (config/rds-global-bundle.pem), and the connection checks the server's certificate
+    # and host name against it. Beta's own MariaDB has no TLS, so it leaves the variable unset.
+    sslca: <%= ENV["RANGER_DB_SSL_CA"] %>
+    ssl_mode: verify_identity
+    <% end %>
+  cache:
+    <<: *primary_production
+    database_tasks: false
+  queue:
+    <<: *primary_production
+    database_tasks: false
+  cable:
+    <<: *primary_production
+    database_tasks: false
+
+training:
+  primary: &primary_training
+    <<: *default
+    host: <%= ENV["RANGER_DB_CLONE_FROM_HOST_NAME"] %>
+    database: <%= ENV["RANGER_DB_CLONE_FROM_DATABASE_NAME"] %>
+    username: <%= ENV["RANGER_DB_CLONE_FROM_USER_NAME"] %>
+    password: <%= ENV["RANGER_DB_CLONE_FROM_PASSWORD"] %>
+  cache:
+    <<: *primary_training
+    database_tasks: false
+  queue:
+    <<: *primary_training
+    database_tasks: false
+  cable:
+    <<: *primary_training
+    database_tasks: false

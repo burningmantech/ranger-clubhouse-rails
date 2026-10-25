@@ -1,0 +1,22 @@
+<%# locals: (callsign:) %>
+<%# "No Event Radios Checked Out" interstitial (upstream checkForRadio modal
+    in port/controllers/hq/site-checkin.js). Turbo-streamed into the "modal"
+    region by radio_check — update, never append. Confirm advances the wizard
+    client-side via its data-hq-wizard-confirm marker (the hq-wizard
+    controller watches document clicks); Cancel simply closes so the operator
+    can check a radio out. No audit record is written, matching upstream. %>
+<%= modal(id: "hq-no-radio-modal", close_button: false) do |m| %>
+  <%= m.title "No Event Radios Checked Out" %>
+  <%= m.body do %>
+    <p>
+      <%= callsign %> is allowed an Event Radio, but no radios were checked out.
+      Press <strong>Confirm</strong> if they are not taking a radio right now.
+      Otherwise press <strong>Cancel</strong> and check the radio out first.
+    </p>
+  <% end %>
+  <%= m.footer do %>
+    <%= button_action "Confirm", :primary,
+                      data: { action: "modal#hide", hq_wizard_confirm: "1" } %>
+    <%= modal_close_button "Cancel" %>
+  <% end %>
+<% end %>

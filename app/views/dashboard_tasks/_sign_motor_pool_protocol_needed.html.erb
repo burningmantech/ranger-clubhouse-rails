@@ -1,0 +1,18 @@
+<%# locals: (step:,facts:)%>
+<% mvr_eligible = facts.mvr_eligible %>
+<p class="font-semibold"><%= fa_icon "car", :solid %> Want to drive a golf cart or UTV?</p>
+<p class="mb-2">
+  Sign the <b>Vehicle Use Protocol</b> at
+  <%= link_to(mvr_eligible ? "Vehicle Dashboard" : "Agreements", mvr_eligible ? me_vehicles_dashboard_path : me_agreements_path) %>.
+</p>
+
+<% if facts.is_applicant %>
+  <p class="text-sm text-stone-muted"><%= fa_icon "info-circle", :solid, class: "icon-info" %> Alphas don't drive Ranger vehicles.</p>
+<% else %>
+  <ul class="list-disc list-inside text-base">
+    <li>Vehicles assigned by <b>operational need</b> (limited resource)</li>
+    <% if mvr_eligible || facts.mvr_potential %>
+      <li>Not required — but you can't drive without it</li>
+    <% end %>
+  </ul>
+<% end %>

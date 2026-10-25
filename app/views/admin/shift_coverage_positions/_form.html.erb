@@ -1,0 +1,27 @@
+<%# Where a save goes: the post, or the list for a new one. %>
+<% target_path = @post.persisted? ? admin_shift_coverage_group_post_path(@group, @post) : admin_shift_coverage_group_posts_path(@group) %>
+
+<%= ui_form(@post, target_path) do |f| %>
+  <%= f.text_field :title, label: "Title", required: true, maxlength: ShiftCoveragePosition::TITLE_LIMIT,
+                   width: "w-full sm:w-64",
+                   help_text: "The column heading, e.g. OOD." %>
+  <%= f.check_box :count_only, label: "Headcount only",
+                  help_text: "Show how many people are scheduled instead of their callsigns." %>
+
+  <%= render "position_rows", f:, positions: @positions %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Post" %>
+    <%= cancel_link admin_shift_coverage_group_path(@group) %>
+    <% if @post.persisted? %>
+      <%= delete_button admin_shift_coverage_group_post_path(@group, @post), "Delete Post",
+                        confirm_modal: {
+                          title: "Delete Post",
+                          message: "Delete #{@post.title_in_database}? It is removed from the #{@group.title} report.",
+                          confirm_label: "Delete Post",
+                          variant: :error,
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

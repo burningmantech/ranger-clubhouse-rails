@@ -1,0 +1,19 @@
+<%# locals: (person_asset:, attachments:) %>
+<%# Turbo-streamed into the "modal" frame by AssetManagementConcern#asset_change_attachment.
+    Extracted from app/views/person/assets/change_attachment.html.erb; upstream:
+    the update-attachment dialog in port/components/hq-asset-table.hbs. %>
+<%= modal_dialog id: "asset-attachment-modal", title: "Change Attachment - #{person_asset.asset.type} ##{person_asset.asset.barcode}", frame: false do %>
+  <%# _top: escape the "modal" turbo-frame so the redirect renders the page. %>
+  <%= ui_form(person_asset,
+              assets_update_attachment_path(person_asset),
+              method: :patch,
+              no_error_summary: true,
+              data: { turbo_frame: "_top" }) do |f| %>
+    <%= f.collection_select :attachment_id,
+                            attachments,
+                            :id,
+                            :description,
+                            { include_blank: "No attachment", label: "Attachment" } %>
+    <%= modal_form_footer f, submit: "Save Attachment", close: "Close" %>
+  <% end %>
+<% end %>

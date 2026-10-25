@@ -1,0 +1,21 @@
+<%= hero_panel icon: "file-signature", heading_level: :h1, id: "review-sign-document-header",
+               title: "Review and Sign Document",
+               back_to: ["Agreements", me_agreements_path] %>
+
+<%= ui_section @agreement.title do %>
+  <%= @document.body.html_safe %>
+  <div class="mt-4 <%= "text-success" if @agreement.signed %>">
+    <% if @agreement.signed %>
+      <%= fa_icon "check", :solid, { end: 2 } %> Agreement has been signed.
+    <% else %>
+      <div class="flex gap-4">
+        <%= button_to sign_me_agreement_path(@agreement.tag),
+                      method: :patch,
+                      class: button_classes({}, :primary), form: { data: { turbo_stream: true } } do %>
+          <%= fa_icon "pencil", :solid, { end: 2 } %>Sign Agreement
+        <% end %>
+        <%= back_to "Agreements", me_agreements_path %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

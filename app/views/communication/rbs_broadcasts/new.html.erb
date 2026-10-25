@@ -1,0 +1,49 @@
+<%#
+  Step one of sending a broadcast: write it and choose who it goes to. Nothing
+  is sent from this page -- the next one shows the message and the exact list of
+  people before anything goes out.
+%>
+<% info = rbs_type(@type) %>
+<% content_for :title, info[:title] %>
+
+<%= hero_panel icon: info[:icon], heading_level: :h1, id: "rbs-compose-header",
+               title: info[:title],
+               back_to: ["Ranger Broadcast System", communication_rbs_root_path] do |panel| %>
+  <% panel.description do %>
+    <%= info[:situation] %>
+  <% end %>
+  <% panel.progress completed: 1, total: 3, start_label: "Write", end_label: "Sent" %>
+<% end %>
+
+<%= render "notices", type: @type, info:, during_event: @during_event, sandboxes: @sandboxes,
+                      test_address: @email_test_address %>
+
+<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+  <strong>Nothing is sent from this page.</strong>
+  The next page shows the message and every person it would reach, and asks you to confirm.
+<% end %>
+
+<%# The form's own action redraws this page, so changing the position of a
+    shift picker brings back that position's shifts with everything else kept.
+    The Review button names the next step itself.
+
+    novalidate because that redraw is a submit like any other: the browser
+    would refuse it while a required field further down is still empty -- which
+    it always is while the sender is still choosing who to send to. Every rule
+    is checked on the server, which redraws this page with the errors on it. %>
+<%= ui_form(@form, communication_rbs_edit_broadcast_path(@type),
+            scope: RbsBroadcastForm::PARAM_SCOPE,
+            html: { novalidate: true }) do |f| %>
+  <% if @form.simple? %>
+    <%= render "simple_fields", f: f %>
+  <% else %>
+    <%= render "audience_fields", f: f %>
+    <%= render "message_fields", f: f %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Review Message and Recipients",
+                 formaction: communication_rbs_review_broadcast_path(@type) %>
+    <%= cancel_link communication_rbs_root_path %>
+  <% end %>
+<% end %>

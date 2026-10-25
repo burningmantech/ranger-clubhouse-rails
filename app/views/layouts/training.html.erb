@@ -1,0 +1,9 @@
+<%# Training interface layout (Ember training.hbs UiSidebar) — the sidebar
+    renders the SAME per-position category the mega menu builds, so the two
+    can never drift. Phase 1 carries only the Sessions landing item; report
+    and session-management links grow in via TrainingMenu. %>
+<% sidebar_menu :training do %>
+  <%= sidebar_render_menu(TrainingMenu.definition(@training), @menu_context) %>
+<% end %>
+
+<%= render template: "layouts/application" %>

@@ -1,0 +1,26 @@
+<%# Says which statuses every count on the page is leaving out.
+    Without it the totals look like the whole roster, and someone reading the
+    page has no way to tell that a thousand retired Rangers are missing. %>
+<% hidden = people_by_location_hidden_statuses(@statuses) %>
+
+<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid,
+                   title: "Who These Counts Include" do %>
+  <% if hidden.any? %>
+    <p>
+      <strong><%= pluralize(hidden.size, "status") %> hidden.</strong>
+      <%= people_by_location_status_list(hidden) %>
+      <%= hidden.one? ? "is" : "are" %> left out of every count on this page.
+      <% if @statuses.any? %>
+        <%= people_by_location_status_list(@statuses) %>
+        <%= @statuses.one? ? "is" : "are" %> included.
+      <% else %>
+        Select <strong>Filters</strong> to add any of them back.
+      <% end %>
+    </p>
+  <% else %>
+    <p>
+      <strong>Every status is included</strong>, so no one on file is left out
+      of these counts.
+    </p>
+  <% end %>
+<% end %>

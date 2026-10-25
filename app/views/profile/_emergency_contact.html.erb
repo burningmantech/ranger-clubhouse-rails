@@ -1,0 +1,7 @@
+<%# locals: (person:) %>
+<%= ui_section "Emergency Contact",
+               icon: "truck-medical",
+               icon_type: :solid,
+               edit_link: (can_edit_profile? ? profile_edit_section_path("emergency-contact") : nil) do %>
+  <%= person.emergency_contact.present? ? simple_format(person.emergency_contact) : none_stated %>
+<% end %>

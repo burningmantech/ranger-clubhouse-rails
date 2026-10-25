@@ -1,0 +1,23 @@
+<%# locals: (rows:) %>
+<%# Shared by the page and RequestLogLiveChannel, so a streamed row cannot
+    drift from the rows the page loaded with. The headings feed the fold's
+    data-labels and are the ones _live draws. %>
+<%= ui_table_rows headings: request_log_live_headings, striped: false do |t| %>
+  <% rows.each do |row| %>
+    <%= t.row id: "request-log-live-#{row.id}", align: :middle do %>
+      <%= t.cell request_log_timestamp(row), class: log_text_class("whitespace-nowrap") %>
+      <%= t.cell class: log_text_class do %>
+        <%= request_log_person_label(row) %>
+      <% end %>
+      <%= t.cell row.method, class: log_text_class %>
+      <%= t.cell do %>
+        <%= request_log_status_badge(row) %>
+      <% end %>
+      <%# One line, as in Search mode: a long path would push the other
+          columns out of reach. The whole path is in the title. %>
+      <%= t.cell class: "max-w-xs" do %>
+        <%= log_truncated(row.url) %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

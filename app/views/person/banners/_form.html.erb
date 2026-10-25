@@ -1,0 +1,46 @@
+<%# locals: (person:, person_banner:) %>
+<%= ui_form(
+      person_banner,
+      person_banner.new_record? ? person_banners_path(person) : person_banner_path(person, person_banner),
+      method: person_banner.new_record? ? :post : :patch
+    ) do |f| %>
+  <%= ui_callout_box :warning, title: "Important" do %>
+    Account banner messages are visible to anyone with Event Management On Playa or Event Management permissions.
+    This includes HQ Window volunteers who check the person in and out, Mentors, Volunteer Coordinators, and other
+    groups authorized to look up accounts.
+  <% end %>
+
+  <%= ui_callout_box :error, accent: true, icon: "eye-slash" do %>
+    The person will not see this message.
+  <% end %>
+
+  <%= ui_section "Banner Details", icon: "message", icon_type: :solid do %>
+    <%= f.collection_radio_buttons :is_permanent,
+                                   [["Event only", false], ["Permanent", true]],
+                                   :last, :first,
+                                   label: "Event Only or Permanent",
+                                   layout: :horizontal,
+                                   label_position: :stacked,
+                                   wrapper_class: "w-full"
+    %>
+
+    <%= f.text_area :message,
+                    label: "Banner Message to Show",
+                    rows: 10,
+                    cols: 80,
+                    required: true %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Banner" %>
+    <%= cancel_link person_banners_path(person) %>
+    <% if person_banner.persisted? %>
+      <%= delete_button person_banner_path(person, person_banner),
+                        "Delete banner",
+                        variant: :error,
+                        confirm_modal: {
+                          message: "Delete this banner? This cannot be undone."
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,6 @@
+<%# The document on its own, answering the page's timer. The frame names no
+    source of its own -- an answer pointing back at the address it came from
+    reads as a loop, and Turbo refuses to follow it. %>
+<%= turbo_frame_tag "bookmark" do %>
+  <%= render "document", document: @document %>
+<% end %>

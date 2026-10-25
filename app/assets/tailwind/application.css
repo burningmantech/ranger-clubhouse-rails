@@ -1,0 +1,287 @@
+@import "tailwindcss" source(none);
+
+/* No --prefersdark on the dark theme, deliberately: this app has exactly one
+   dark switch and it is the `.dark` class.
+
+   --prefersdark gives daisyUI a second one -- it themes any document whose
+   <html> carries no data-theme through
+   @media (prefers-color-scheme: dark) { :root:not([data-theme]) }. That switch
+   moves daisyUI's own base colours and nothing else. The `dark:` variant is
+   class-based (@custom-variant below), and --color-heading,
+   --color-body-subtle and --color-line only take dark values under
+   `.dark, [data-theme="dark"]`. So a document it reached got dark surfaces
+   with light-theme ink on them: headings at 1.38:1 against base-100, the same
+   number the print layout measured before U9 pinned it.
+
+   layouts/application.html.erb sends a bare <html>; a script in its head adds
+   `.dark` before the first paint, from the saved preference or
+   prefers-color-scheme, and the theme controller on the navbar -- the full bar
+   when signed in, the door pages' bar (application/_public_menu) otherwise --
+   makes the same decision on connect and owns the toggle. Nothing is lost by
+   dropping it: an OS-dark reader still gets the dark theme on every page of
+   that layout. The layouts it does not reach pin their own theme or render
+   light and readable instead of dark and unreadable. */
+@plugin "daisyui" {
+    themes: light --default, dark;
+}
+
+@plugin "daisyui/theme" {
+    name: "light";
+    default: true;
+    prefersdark: false;
+    color-scheme: light;
+
+    --color-base-100: oklch(97.5% 0.005 80);
+    --color-base-200: oklch(96% 0.004 80);
+    --color-base-300: oklch(92% 0.004 80);
+    --color-base-content: oklch(40% 0.01 60);
+    --color-primary: oklch(0.52 0.2 262);
+    --color-primary-content: oklch(100% 0 0);
+    --color-secondary: oklch(48% 0 89.876);
+    --color-secondary-content: oklch(100% 0 0);
+    --color-accent: oklch(50% 0.2 300);
+    --color-accent-content: oklch(100% 0 0);
+    --color-neutral: oklch(30% 0.01 260);
+    --color-neutral-content: oklch(98% 0 0);
+    --color-info: oklch(55% 0.2 260);
+    --color-info-content: oklch(100% 0 0);
+    --color-success: oklch(48% 0.15 160);
+    --color-success-content: oklch(100% 0 0);
+    --color-warning: oklch(48% 0.138 52.532);
+    --color-warning-content: oklch(100% 0 0);
+    --color-error: oklch(0.395 0.16 24.035);
+    --color-error-content: oklch(100% 0 0);
+
+    --radius-selector: 1rem;
+    --radius-field: 0.5rem;
+    --radius-box: 0.75rem;
+    --size-selector: 0.25rem;
+    --size-field: 0.25rem;
+    --border: 1px;
+    --depth: 1;
+    --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+    name: "dark";
+    default: false;
+    /* false, for the reason at the top of this file. Both spellings emit a
+       prefers-color-scheme block -- the bundle used to carry two of them, one
+       from the themes list and one from here -- so both have to say no. */
+    prefersdark: false;
+    color-scheme: dark;
+
+    --color-base-100: oklch(18% 0.005 260);
+    --color-base-200: oklch(22% 0.005 260);
+    --color-base-300: oklch(28% 0.005 260);
+    --color-base-content: oklch(75% 0.01 80);
+    --color-primary: oklch(0.68 0.19 262);
+    --color-primary-content: oklch(18% 0.02 70);
+    --color-secondary: oklch(65% 0.01 260);
+    --color-secondary-content: oklch(18% 0.005 260);
+    --color-accent: oklch(65% 0.2 300);
+    --color-accent-content: oklch(100% 0 0);
+    --color-neutral: oklch(40% 0.01 260);
+    --color-neutral-content: oklch(90% 0 0);
+    --color-info: oklch(65% 0.18 260);
+    --color-info-content: oklch(0.398 0.072 264.921);
+    --color-success: oklch(60% 0.15 160);
+    --color-success-content: oklch(100% 0 0);
+    --color-warning: oklch(72% 0.17 55);
+    --color-warning-content: oklch(18% 0.02 55);
+    --color-error: oklch(0.598 0.237 28.536);
+    --color-error-content: oklch(97% 0.01 25);
+
+    --radius-selector: 1rem;
+    --radius-field: 0.5rem;
+    --radius-box: 0.75rem;
+    --size-selector: 0.25rem;
+    --size-field: 0.25rem;
+    --border: 1px;
+    --depth: 1;
+    --noise: 0;
+}
+
+@theme {
+    --font-sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-mono: "Atkinson Hyperlegible Mono", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace";
+
+    --color-default: var(--color-base-200);
+    --color-default-soft: var(--color-base-100);
+    --color-default-strong: var(--color-base-300);
+
+    /* A real step up from --color-body, the mirror of --color-body-subtle
+       below. It was defined as var(--color-base-content) -- identical to
+       --color-body -- so the ~213 places asking for a heading printed at the
+       same weight of ink as the paragraph under them. Worse, the @utility in
+       components/text-colors.css that meant to set this (text-stone-800
+       dark:text-stone-100) never applied: it and the variable both generate
+       .text-heading at equal specificity, and this one is emitted later, so
+       the alias won silently in both themes.
+       Lightness only, hue held at base-content's, so it reads as the same ink
+       deepened rather than a second colour. L=30 continues the ramp
+       body-subtle started -- 30 / 40 / 50 in even steps -- and lands at
+       10.8:1 on base-300, the row-hover fill. */
+    --color-heading: oklch(30% 0.01 60);
+    --color-body: var(--color-base-content);
+    /* A real step down from --color-body, not an alias of it. It was defined
+       as var(--color-base-content) -- identical to --color-body -- so the ~27
+       places asking for a secondary line (a paycode under a position, the
+       payable hours under the recorded ones, a search result's category) all
+       printed at full strength and the eye had no way to rank them. Lightness
+       only, hue held at base-content's, so it reads as the same ink lifted
+       rather than a second colour. L=50 is the lightest step that still clears
+       4.5:1 on base-300, which is the row-hover fill -- a subtle line inside a
+       hovered table row is the case that fails first.
+       Reached through text-stone-subtle and text-stone-icon. The
+       text-body-subtle utility Tailwind also generates from this name is
+       unused on purpose: it was a third spelling for the same rung. */
+    --color-body-subtle: oklch(50% 0.012 60);
+    --color-line: oklch(30% 0.01 260);
+
+    /* Chrome that is always dark in both themes. One value is shared -- the
+       black the sidebar sits on and the navbar sits on at 80% -- so it is named
+       for the chrome rather than for either of them. The rest belong to the
+       sidebar alone and say so. None of it follows base-* or takes a .dark
+       override. The HQ pair is brown where the default pair is grey because
+       that difference is the signal that you are in HQ; one neutral for both
+       would delete it.
+       Named here rather than left as hex inside sidebar.css and the markup: a
+       re-theme has one place to change, and the scanner no longer carries the
+       arbitrary values. Each oklch round-trips to the original hex exactly, so
+       nothing moved -- except sidebar-active, which stays hex because its oklch
+       does not round-trip bit-exactly and lands a hair outside sRGB.
+       The navbar's ink is not here: every control on that bar sets its own
+       (neutral-content, see navbar.css), and nothing inherits from the <nav>. */
+    --color-chrome: oklch(0% 0 0);                       /* was bg-[#000000] and bg-black */
+    --color-sidebar-content: oklch(95.5% 0 0);           /* was #f0f0f0, and text-white */
+    --color-sidebar-link: oklch(38.0% 0.011 248.1);      /* was #3e4348 */
+    --color-sidebar-link-hq: oklch(40.4% 0.030 77.0);    /* was #524737 */
+    --color-sidebar-title-hq: oklch(28.8% 0.059 70.7);   /* was #3d2503 */
+    --color-sidebar-divider: oklch(17.3% 0 0);           /* was #101010 */
+    --color-sidebar-active: #ffc107;                     /* the drill-trigger marker */
+
+    /* The hero panel's signature. DESIGN.md calls the faint amber ring the
+       thing that makes a /me page recognisable at a glance, and the amber stat
+       tile is the same signal at tile size. Both were spelled out as a palette
+       class plus a dark: twin in five places, so the one part of the app that
+       is meant to be recognisable was the one part a re-theme could not reach.
+       Named for the role rather than the hero panel, because the trophy cards
+       and the dashboard progress badge wear the same outline.
+       Each value is the palette colour it replaces, alpha included, so nothing
+       moved; the dark block below carries the twin. */
+    --color-signature-edge: oklch(92.4% 0.12 95.746 / 0.4);   /* was ring-amber-200/40 */
+    --color-hero-tile: oklch(98.7% 0.022 95.277);        /* was bg-amber-50 */
+    --color-hero-tile-content: oklch(47.3% 0.137 46.201); /* was text-amber-800 */
+
+    /* TEXT VARIABLES */
+    --text-2xs: 0.625rem;
+    --text-base: 0.9rem;
+    --text-base--line-height: 1.2;
+    --text-lg: 1.1rem;
+    --spacing-8xl: 90rem;
+
+    /* DaisyUI font size */
+    --font-size: 0.9rem;
+
+    --leading-9: 36px;
+    --leading-7: 28px;
+    --leading-8: 32px;
+    --leading-6: 24px;
+    --leading-4: 16px;
+    --leading-5: 20px;
+    --tracking-tighter: -0.8px;
+    --leading-heading-none: 60px;
+    --tracking-tight: -0.4px;
+
+    /* BORDER RADIUS VARIABLES */
+    --radius-0: 0px;
+    --radius-xxs: 2px;
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius: 8px;
+    --radius-base: 12px;
+    --radius-lg: 16px;
+
+    /* BORDER WIDTH VARIABLES */
+    --default-border-width: 1px;
+
+    /* CONTAINER SIZES */
+    /* The phone navbar's "Clubhouse" brand is 107px wide; this is that and a
+       little air. Its slot shows the brand only from here up
+       (@min-brand:inline-flex in application/_top_menu.html.erb). Named
+       because no stock container size is anywhere near that small -- the
+       smallest, 3xs, is 16rem. */
+    --container-brand: 7rem;
+}
+
+.dark, [data-theme="dark"] {
+    --color-line: oklch(52% 0.01 260); /* neutral is too dim for borders in dark; cannot raise --color-neutral without breaking navbar text contrast */
+    /* Steps toward the surface rather than away from it, mirroring the light
+       value: base-content is 75 here, so subtle sits below it at 66 -- the
+       lowest step still clearing 4.5:1 on this theme's base-300 hover fill. */
+    --color-body-subtle: oklch(66% 0.012 80);
+    /* Away from the surface, the same 10 steps the light theme takes: 85 / 75
+       / 66 against base-content's 75. Stopping at 85 rather than the near-white
+       the dead @utility asked for (stone-100, L=97) -- 97 glares against an
+       L=18 ground at 17:1, where 85 reads as a firm heading at 9.2:1 on the
+       base-300 hover fill. */
+    --color-heading: oklch(85% 0.01 80);
+
+    /* The hero signature, dark. Same three values the dark: twins carried. */
+    --color-signature-edge: oklch(55.5% 0.163 48.998 / 0.3);  /* was ring-amber-700/30 */
+    --color-hero-tile: oklch(41.4% 0.112 45.904 / 0.3);  /* was bg-amber-900/30 */
+    --color-hero-tile-content: oklch(96.2% 0.059 95.617); /* was text-amber-100 */
+}
+
+/* The only places Tailwind reads class names. source(none) on the import
+   above turns off automatic detection, which also compiled every class that
+   docs/, ai/, test/ and .github happened to mention -- 43 KB no page used.
+   A class string anywhere else never compiles. That includes .css files:
+   Tailwind does not read a stylesheet as content even when it is listed
+   here, though @apply inside one still works. AGENTS.md repeats this list;
+   change both together. */
+@source "../../javascript/**/*.{js,ts}";
+/* Not the vendored Lexxy bundle: 640 KB of minified code is full of ordinary
+   words, and a word that is also a daisyUI or Tailwind class name compiles. It
+   added 23 rules no page uses (.diff, .progress!, .lowercase). Only this file:
+   the calendar's bundle stays in the list on purpose, because the vc-* class
+   names it writes are what switch on daisyUI's own calendar styles (32 KB). */
+@source not "../../javascript/vendor/lexxy-*.js";
+@source "../../../config/**/*.rb";
+@source "../../../app/views/**/*.{erb,html}";
+@source "../../../app/helpers/**/*.rb";
+@source "../../../app/lib/**/*.rb";
+
+@import "../stylesheets/fonts";
+/* Generated by `bin/rails fontawesome:subset` from fontawesome-7.1.0-all.css,
+   which stays in the tree as the source to regenerate from. */
+@import "../stylesheets/fontawesome-subset";
+@import "../stylesheets/vanilla-calendar-pro";
+/* Lexxy ships its own chrome (border, padding, toolbar, min-height) and
+   components/lexxy.css re-themes it. Both are in @layer components, and these
+   come first, so the re-theme still wins on source order -- while a utility at
+   a call site beats them both, which is what the error state on a rich text
+   field relies on. Layering only one of the two would hand the vendored chrome
+   the win.
+   Vendored from the lexxy 1.0.0 gem (see config/importmap.rb). The content and
+   editor files each opened with `@import url("lexxy-variables.css")`, which is
+   removed: Tailwind does not inline a url() import, it warns "Unknown at rule"
+   and leaves the dead line in the output. The variables are imported here
+   instead, ahead of the two files that read them. */
+@import "../stylesheets/lexxy-variables" layer(components);
+@import "../stylesheets/lexxy-content" layer(components);
+@import "../stylesheets/lexxy-editor" layer(components);
+/* driver.js, the first-sign-in tour's popover and overlay (dist/driver.css,
+   verbatim; see config/importmap.rb). Layered for the same reason as Lexxy:
+   components/driver.css re-themes it from the same layer, later in source. */
+@import "../stylesheets/driver" layer(components);
+
+/* Custom Styles - Organized by Category */
+@import "../stylesheets/base";
+@import "../stylesheets/utilities";
+@import "../stylesheets/components";
+@import "../stylesheets/accessibility";
+@import "../stylesheets/login";
+
+@custom-variant dark (&:where(.dark, .dark *));

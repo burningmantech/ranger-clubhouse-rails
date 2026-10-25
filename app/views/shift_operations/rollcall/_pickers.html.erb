@@ -1,0 +1,46 @@
+<%# locals: (shift: true) %>
+<%#
+  The roster pickers, shared by both modes. Sign In chooses a position and then
+  a shift under it; Sign Out passes shift: false, because there is no shift to
+  choose -- only the position whose crew is coming off.
+
+  An action-less GET form: choosing a select reloads this page with the choice
+  in the query string. That is deliberate -- the roster it produces is the whole
+  page, so it should be a real URL that survives a reload and a back button,
+  unlike the taps on the rows below it.
+
+  Changing position carries the old slot_id along, which then matches nothing in
+  the new position and lands on "pick a shift" -- the same reset upstream does
+  client-side, without a second round of wiring to do it.
+%>
+<%= form_tag false, method: :get, data: { controller: "form" },
+             class: "flex flex-col lg:flex-row lg:items-end gap-3" do %>
+  <div>
+    <%= label_tag :position_id, "Position", class: "block font-medium text-heading mb-1" %>
+    <%= select_tag :position_id,
+                   grouped_options_for_select(rollcall_position_option_groups(@groups),
+                                              @group&.id),
+                   include_blank: "Select a position",
+                   class: "#{AppFormBuilder::SELECT_CLASSES} w-full lg:w-auto",
+                   data: { action: "change->form#submit" } %>
+  </div>
+
+  <% if shift %>
+    <div>
+      <%= label_tag :slot_id, "Shift", class: "block font-medium text-heading mb-1" %>
+      <%= select_tag :slot_id,
+                     options_for_select(rollcall_slot_options(@group), @slot&.id),
+                     include_blank: "Select a shift",
+                     disabled: @group.nil?,
+                     class: "#{AppFormBuilder::SELECT_CLASSES} w-full lg:w-auto",
+                     data: { action: "change->form#submit" } %>
+    </div>
+
+    <%# Carried, not dropped: an operator who set a check-in time is mid-task,
+        and changing shift is part of that task. %>
+    <%= hidden_field_tag :start_time, @start_time, id: nil if @start_time %>
+  <% end %>
+
+  <%# The pickers auto-submit, so this only ever fires without JavaScript. %>
+  <noscript><%= submit_button "Show Roster" %></noscript>
+<% end %>

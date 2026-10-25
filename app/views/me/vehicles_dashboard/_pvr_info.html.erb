@@ -1,0 +1,26 @@
+<%
+  if (dashboard.pvr_eligible? || dashboard.pvr_potential?) && !dashboard.personal_vehicle_agreement_signed?
+    badge = (dashboard.mvr_approved? ? "action needed" : "pending")
+    badge_color = :warning
+    status_partial = "pvr_status_agreement_needed"
+  elsif dashboard.pvr_eligible?
+    badge = "eligible to submit"
+    badge_color = :success
+    status_partial = "pvr_status_eligible"
+  elsif dashboard.pvr_potential?
+    badge = "not yet eligible"
+    badge_color = :warning
+    status_partial = "pvr_status_potential"
+  else
+    badge = "not permitted"
+    badge_color = :error
+    status_partial = "pvr_status_ineligible"
+  end
+%>
+
+<%= ui_section "Personal Vehicle Requests", badge:, badge_color: do %>
+  <p class="text-sm text-stone-subtle mt-1">
+    Request to use your personal vehicle for Ranger business
+  </p>
+  <%= render partial: status_partial, locals: { dashboard: } %>
+<% end %>

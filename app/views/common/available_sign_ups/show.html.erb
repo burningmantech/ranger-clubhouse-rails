@@ -1,0 +1,94 @@
+<%# locals: (back_link:, schedule_signups_path_builder:, sign_up_slot_path_builder:) %>
+<%= hero_panel icon: "calendar-plus", heading_level: :h1, id: "position-shifts-header",
+               title: "#{@year} #{@position.title} Shifts", back_to: back_link %>
+
+<div class="max-w-[900px]">
+  <% unless @position.count_hours %>
+    <%= render partial: "common/hours_not_eligible", locals: { is_training: @position.training? } %>
+  <% end %>
+
+  <%# Written by an admin, read by everyone holding the position, so sanitized
+      rather than trusted: scripts, handlers and javascript: links go, an image's
+      src stays (the policy every rich_text site shares). lexxy-content gives the
+      saved HTML its list markers and paragraph spacing back. %>
+  <% if @scheduling_header.present? %>
+    <%= ui_accent_card "#{@position.title} Information", variant: :info, heading_level: :h2,
+                       options: { class: "mb-4" } do %>
+      <div class="lexxy-content"><%= rich_text(@scheduling_header) %></div>
+    <% end %>
+  <% end %>
+
+  <% if @training_locked %>
+    <%= ui_callout_box :warning, title: "Online Course Required", heading_level: :h2 do %>
+      <p class="mb-2">
+        <strong>Complete the Online Course before you can sign up for an In-Person Training session.</strong>
+        No walk-ins are allowed.
+      </p>
+      <p>
+        Every Ranger who wishes to volunteer at this year's event must complete In-Person Training.
+        ART trainings do not count toward the In-Person requirement.
+      </p>
+    <% end %>
+  <% elsif @show_training_advisory %>
+    <%= ui_callout_box :error, title: "No Walk-Ins" do %>
+      Walk-ins are not allowed. All attendees must be signed up prior to the session's start time.
+    <% end %>
+    <div class="my-2">
+      <% if @needs_full_training %>
+        <%= ui_callout_box :error do %>
+          Because you are status "<%= @person_status %>", you MUST attend the FULL DAY In-Person Training.
+        <% end %>
+      <% else %>
+        <%= ui_callout_box :info, title: "Full Day Training Not Required" do %>
+          <strong>You may attend only the afternoon half of an In-Person Training.</strong>
+          With two or more years of experience, you can skip the morning. The second half usually starts right after lunch.
+          You are welcome to attend the full day and share your experience with new applicants and newer Rangers.
+        <% end %>
+      <% end %>
+    </div>
+    <div>
+      Additional training sessions will be posted through the end of Spring.
+    </div>
+  <% elsif @is_alpha_position %>
+    <%= render partial: "common/scheduling/alpha_shift_info" %>
+  <% end %>
+
+  <% if @is_current_year %>
+    <% if @overlapping_count.positive? %>
+      <%= render partial: "common/scheduling/overlapping_sign_ups_list", locals: { overlapping_entries: @overlapping_entries } %>
+    <% end %>
+
+    <%= ui_section_title do %>
+      Upcoming Shifts (<%= @upcoming_entries.any? ? pluralize(@upcoming_entries.size, "shift") : "no more shifts" %>
+      <%
+        unless @training_locked %>, <%= @signup_count.positive? ? pluralize(@signup_count, "sign-up") : "no sign-ups" %>
+      <% end %>)
+    <% end %>
+    <% if @upcoming_entries.any? %>
+      <%= render partial: "common/available_sign_ups/slots",
+                 locals: {
+                   entries: @upcoming_entries,
+                   schedule_signups_path_builder:,
+                   sign_up_slot_path_builder:
+                 } %>
+    <% else %>
+      <div class="text-error px-4">
+        No more upcoming shifts were found.
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= ui_section_title "Past Shifts (#{pluralize @past_entries.size, "shift"})" %>
+  <% if @past_entries.any? %>
+    <%= render partial: "common/available_sign_ups/slots",
+               locals: {
+                 entries: @past_entries,
+                 schedule_signups_path_builder:,
+                 sign_up_slot_path_builder:
+               } %>
+  <% else %>
+    <div class="text-error px-4">
+      No past shifts were found.
+    </div>
+  <% end %>
+</div>

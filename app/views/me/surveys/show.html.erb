@@ -1,0 +1,84 @@
+<%= hero_panel icon: "clipboard-list", heading_level: :h1, id: "survey-hero",
+               title: "#{@survey.title}",
+               back_to: ["Dashboard", me_root_path] do |panel| %>
+  <% if @slot %>
+    <% panel.description class: "text-lg" do %>
+      <%= @slot.position.title %> <%= @slot.description %> <span class="ml-4"><%= mdy_format @slot.begins %></span>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# Time estimate %>
+<%
+  # Estimate: 30s per rating question, 1 min per text question, 30s per trainer
+  total_questions = @survey.survey_groups.sum { |g| g.survey_questions.count }
+  rating_questions = @survey.survey_groups.sum { |g| g.survey_questions.count { |q| q.type == SurveyQuestion::TYPE_RATING } }
+  text_questions = total_questions - rating_questions
+  trainer_count = @trainers&.count || 0
+
+  # Calculate minutes: ratings * 0.5 + text * 1 + trainers * 0.5
+  estimated_minutes = ((rating_questions * 0.5) + (text_questions * 1.0) + (trainer_count * 0.5)).ceil
+  estimated_minutes = [estimated_minutes, 1].max # Minimum 1 minute
+%>
+<div class="mb-4 text-body flex items-center gap-2">
+  <%= fa_icon "clock", :regular %>
+  <span>Estimated time: <%= estimated_minutes %> <%= "minute".pluralize(estimated_minutes) %></span>
+</div>
+
+<% if @survey.prologue.present? %>
+  <%# Sanitized rather than trusted. The wording is written on the survey
+      management page, and the people who write it are not the people this
+      page is shown to. lexxy-content carries the rules that give a list its
+      markers and a table its borders, as the management page's preview does. %>
+  <%= ui_callout_box :info, class: "mb-6" do %>
+    <div class="lexxy-content">
+      <%= rich_text @survey.prologue %>
+    </div>
+  <% end %>
+<% end %>
+
+<%= ui_form(@survey_response, me_surveys_path(type: params[:type], slot_id: params[:slot_id], year: params[:year]), method: :post, scope: :survey, no_error_summary: true) do |form| %>
+  <% @survey.survey_groups.each_with_index do |group, group_idx| %>
+    <% if @survey.type == Survey::TRAINER %>
+      <%# For trainer surveys, show each trainer with all questions %>
+      <% @trainers.each do |trainer| %>
+        <%= render "question_group", group:, trainer:,
+                   trainer_name: @trainer_name,
+                   show_trainer_photo: (group_idx == 0),
+                   is_trainer_survey: true,
+                   form: %>
+      <% end %>
+    <% elsif group.type == SurveyGroup::TYPE_TRAINER %>
+      <%# For student surveys with trainer groups %>
+      <% @trainers.each do |trainer| %>
+        <%= render "question_group",
+                   group:,
+                   trainer:,
+                   trainer_name: @trainer_name,
+                   show_trainer_photo: true,
+                   is_trainer_survey: false,
+                   form: %>
+      <% end %>
+    <% else %>
+      <%# For normal groups %>
+      <%= render "question_group",
+                 group:,
+                 trainer: nil,
+                 trainer_name: @trainer_name,
+                 show_trainer_photo: false,
+                 is_trainer_survey: false,
+                 form: form %>
+    <% end %>
+  <% end %>
+
+  <% if @survey.epilogue.present? %>
+    <div class="lexxy-content my-6">
+      <%= rich_text @survey.epilogue %>
+    </div>
+  <% end %>
+
+  <%= button_row do %>
+    <%# Turbo swaps the label in and locks the button while the answers are on their way. %>
+    <%= submit_button "Submit Feedback", data: { turbo_submits_with: "Submitting…" } %>
+  <% end %>
+<% end %>

@@ -1,0 +1,20 @@
+<%# Upstream's "No Alphas Found" dialog. Rendered into the layout's modal
+    frame so the Info and Apparel buttons can say why they lead nowhere
+    before the reader leaves the roster. %>
+<%= modal_dialog id: "no-alphas-dialog", title: "No One Is Signed In Yet" do %>
+  <p class="mb-2">
+    No Alphas have signed into <strong><%= alpha_shift_title(@slot) %></strong>, so the
+    information and apparel sheets have nothing to print.
+  </p>
+  <p>
+    Print the <strong>sign-in sheet</strong> now, and come back to these once Alphas
+    start their shift.
+  </p>
+  <%= button_row do %>
+    <%= button_link "Print Sign-In Sheet", :primary,
+                    mentoring_alpha_schedule_signup_sheet_path(@slot),
+                    icon: "clipboard-list", icon_type: :solid,
+                    data: { turbo_frame: "_top" } %>
+    <%= modal_close_button "Close" %>
+  <% end %>
+<% end %>

@@ -1,0 +1,144 @@
+<%= ui_form(@vehicle,
+            @vehicle.persisted? ? vehicles_registry_path(@vehicle, @return_index_params) : vehicles_registry_index_path(@return_index_params),
+            method: @vehicle.persisted? ? :patch : :post) do |f| %>
+
+  <%= ui_section "Record Type and Assignment", icon: "clipboard-list", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What is the difference?</dt>
+      <dd>A fleet vehicle belongs to a team. A personal vehicle belongs to one
+        ranger, who is named by callsign.
+      </dd>
+      <dt>What happens when I choose Fleet?</dt>
+      <dd>Fleet vehicles are approved automatically and always carry a Staff
+        driving permit, whatever this form says.
+      </dd>
+    </dl>
+    <%= form_row do %>
+      <%= f.collection_radio_buttons :type,
+                                     [["Fleet", Vehicle::FLEET], ["Personal", Vehicle::PERSONAL]],
+                                     :last, :first,
+                                     { label: "Record Type", layout: :horizontal } %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.text_field :event_year, label: "Event Year", width: "w-full sm:w-32", required: true %>
+      <%= f.text_field :team_assignment, label: "Team Assignment",
+                       width: "w-full sm:w-64",
+                       help_text: "Fleet vehicles only. The team this vehicle belongs to." %>
+      <%= f.text_field :callsign, label: "Personal Vehicle Owner",
+                       width: "w-full sm:w-64",
+                       value: @vehicle.callsign.presence || @vehicle.person&.callsign,
+                       help_text: "Personal vehicles only. The owner's callsign, checked when you save." %>
+    <% end %>
+
+    <% if @vehicle.persisted? && @vehicle.person_id && @vehicle.event_year == Current.year %>
+      <p class="mt-2">
+        Setup Access Pass: <%= vehicle_sap_display(@sap_arrival) %>
+      </p>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Vehicle Description and Licensing", icon: "car", icon_type: :solid do %>
+    <%= form_row do %>
+      <%# Both of these columns default to an empty string, so without an
+          explicit blank option the browser would preselect the first entry and
+          every save would invent a class and a state the record never had.
+          options_including_current covers the other direction: a stored value
+          the list does not offer stays selected instead of being erased. %>
+      <%= f.select :vehicle_class, options_including_current(Vehicle::CLASS_OPTIONS, @vehicle.vehicle_class),
+                   { label: "Class", include_blank: "Not recorded" },
+                   { class: "w-full sm:w-56" } %>
+      <%= f.text_field :vehicle_year, label: "Year", width: "w-full sm:w-24", maxlength: 4 %>
+      <%= f.text_field :vehicle_make, label: "Make", width: "w-full sm:w-48",
+                       required: true, help_text: "For example Ford, GMC, Toyota." %>
+      <%= f.text_field :vehicle_model, label: "Model", width: "w-full sm:w-48",
+                       required: true, help_text: "For example F-350, Tacoma." %>
+      <%= f.text_field :vehicle_color, label: "Color", width: "w-full sm:w-40", required: true %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.select :license_state,
+                   options_including_current(CountryStateHelper::US_CANADA_OPTIONS, @vehicle.license_state),
+                   { label: "License State or Province", include_blank: "No plate on file" },
+                   { class: "w-full sm:w-56" } %>
+      <%= f.text_field :license_number, label: "License Plate Number", width: "w-full sm:w-44" %>
+      <%= f.text_field :sticker_number, label: "Driving Permit Number", width: "w-full sm:w-44" %>
+      <%= f.text_field :rental_number, label: "DPW Request ID", width: "w-full sm:w-44",
+                       disabled: @vehicle.type == Vehicle::PERSONAL,
+                       help_text: "Fleet vehicles only." %>
+    <% end %>
+  <% end %>
+
+  <% if @vehicle.persisted? && @vehicle.person_id %>
+    <%= ui_section "Personal Vehicle Eligibility", icon: "list-check", icon_type: :solid do %>
+      <%= ui_disclosure "Motor Vehicle Record and Personal Vehicle Details for #{@vehicle.person&.callsign}",
+                        variant: :card,
+                        subtitle: "Why this ranger may be eligible" do %>
+        <%= render "person/vehicles/eligibility_list",
+                   list: @mvr_signups, title: "Motor Vehicle Record Sign-Up", name: "MVR",
+                   is_signups: true %>
+        <%= render "person/vehicles/eligibility_list",
+                   list: @mvr_teams, title: "Motor Vehicle Record Eligible Team", name: "MVR" %>
+        <%= render "person/vehicles/eligibility_list",
+                   list: @mvr_positions, title: "Motor Vehicle Record Eligible Position", name: "MVR",
+                   is_position: true %>
+        <hr class="my-4 border-base-300">
+        <%= render "person/vehicles/eligibility_list",
+                   list: @pvr_teams, title: "Personal Vehicle Eligible Team", name: "Personal Vehicle" %>
+        <%= render "person/vehicles/eligibility_list",
+                   list: @pvr_positions, title: "Personal Vehicle Eligible Position", name: "Personal Vehicle",
+                   is_position: true, no_advisory: true %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Stickers and Other Items", icon: "id-badge", icon_type: :solid do %>
+    <%= f.collection_radio_buttons :driving_sticker, Vehicle::DRIVING_STICKER_OPTIONS, :last, :first,
+                                   { label: "Driving Permit", layout: :horizontal, label_position: :stacked } %>
+    <%= f.collection_radio_buttons :ranger_logo, Vehicle::RANGER_LOGO_OPTIONS, :last, :first,
+                                   { label: "Ranger Logo Decal", layout: :horizontal, label_position: :stacked } %>
+    <%= f.collection_radio_buttons :fuel_chit, Vehicle::FUEL_CHIT_OPTIONS, :last, :first,
+                                   { label: "Fuel Chit", layout: :horizontal, label_position: :stacked } %>
+    <%= f.collection_radio_buttons :amber_light, Vehicle::AMBER_LIGHT_OPTIONS, :last, :first,
+                                   { label: "Amber Light", layout: :horizontal, label_position: :stacked } %>
+  <% end %>
+
+  <%= ui_section "Notes and Request Status", icon: "note-sticky", icon_type: :solid do %>
+    <%= f.text_area :notes, label: "Private Notes",
+                    help_text: "Only registry reviewers see this." %>
+    <%= f.text_area :request_comment, label: "Comment from the Requester",
+                    disabled: @vehicle.type == Vehicle::FLEET,
+                    help_text: "Personal vehicles only." %>
+    <%= f.text_area :response, label: "Response to the Requester",
+                    disabled: @vehicle.type == Vehicle::FLEET,
+                    help_text: "Personal vehicles only. The requester sees this." %>
+
+    <% if @vehicle.type == Vehicle::FLEET %>
+      <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+        <strong>Fleet vehicles are approved on save.</strong>
+        The request status below applies to personal vehicles only.
+      <% end %>
+    <% end %>
+
+    <%= f.collection_radio_buttons :status,
+                                   [["Pending", Vehicle::PENDING],
+                                    ["Approved", Vehicle::APPROVED],
+                                    ["Denied", Vehicle::REJECTED]],
+                                   :last, :first,
+                                   { label: "Request Status", layout: :horizontal } %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit @vehicle.persisted? ? "Save vehicle" : "Add vehicle" %>
+    <%= cancel_link @cancel_path %>
+    <% if @vehicle.persisted? && can?(:delete_registry) %>
+      <%= delete_button vehicles_registry_path(@vehicle, @return_index_params),
+                        "Delete vehicle",
+                        confirm_modal: {
+                          title: "Delete Vehicle",
+                          message: "Delete this vehicle? This cannot be undone.",
+                          confirm_label: "Delete Vehicle"
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

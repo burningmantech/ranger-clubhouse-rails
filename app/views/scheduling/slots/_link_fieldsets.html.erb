@@ -1,0 +1,44 @@
+<%# locals: (slot:, link_slots:) %>
+<%# Rendered both inside the slot form and standalone by the link_options
+    Turbo Frame endpoint, so it builds its own slot-scoped fields. %>
+<%= fields :slot, model: slot, builder: AppFormBuilder do |f| %>
+  <% has_parent_position = slot.position&.parent_position_id.present? %>
+
+  <%= f.fieldset "Sign-Up Multiplier", icon: "people-group", icon_type: :solid do %>
+    <p class="my-2">
+      <strong>Linking a multiplier slot adjusts this slot's sign-up limit dynamically.</strong>
+      The Max Sign-Ups count becomes a multiplier applied to the number of mentors/trainers
+      signed up. For example, if the max count on this mentee shift is 2 and 3 mentors
+      sign up, then 6 mentees may sign up.
+    </p>
+    <% if slot.parent_signup_slot_id.present? %>
+      <p class="my-2">A parent slot has been set. A multiplier slot cannot be used at the same time.</p>
+    <% elsif slot.trainer_slot_id.present? || has_parent_position %>
+      <%= f.select :trainer_slot_id, slot_link_choices(link_slots),
+                   { label: "Sign-Up Multiplier Mentor/Trainer's Slot",
+                     include_blank: "(no multiplier slot)" } %>
+      <p class="my-2 text-error">
+        Warning: do not link the mentor/trainer slot back to this slot.
+        An infinite recursion loop will happen.
+      </p>
+    <% else %>
+      <p class="my-2">The selected position is not a child position, so no multiplier slot can be linked.</p>
+    <% end %>
+  <% end %>
+
+  <%= f.fieldset "Parent Sign-Up Count Adjustments", icon: "sitemap", icon_type: :solid do %>
+    <p class="my-2">
+      <strong>Linking a parent slot combines this slot's sign-up count with the parent's.</strong>
+      For example, if the parent shift has 3 sign-ups and this shift has 2, the parent's
+      effective sign-up count is 5. The combined count may not exceed the parent's sign-up limit.
+    </p>
+    <% if slot.trainer_slot_id.present? %>
+      <p class="my-2">A trainer multiplier slot has been set. A parent slot cannot be set at the same time.</p>
+    <% elsif slot.parent_signup_slot_id.present? || has_parent_position %>
+      <%= f.select :parent_signup_slot_id, slot_link_choices(link_slots),
+                   { label: "Link to Parent Slot", include_blank: "(no parent slot)" } %>
+    <% else %>
+      <p class="my-2">The selected position is not a child position, so no parent slot can be linked.</p>
+    <% end %>
+  <% end %>
+<% end %>

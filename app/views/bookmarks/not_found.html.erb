@@ -1,0 +1,11 @@
+<% content_for :title, "Bookmark Not Found" %>
+
+<%# A column rather than the width of the screen: these machines are sometimes
+    wide monitors, and one sentence ruled edge to edge across one reads as a
+    broken strip of chrome rather than as the page's answer. %>
+<main class="mx-auto w-full max-w-lg px-4 pt-16">
+  <h1 class="text-xl font-semibold mb-3">Bookmark Not Found</h1>
+
+  <%= ui_empty_state "That bookmark page was not found. Check the address, or ask the Tech Team to set it up.",
+                     icon: "circle-question", icon_type: :regular %>
+</main>

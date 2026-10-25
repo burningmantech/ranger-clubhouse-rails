@@ -1,0 +1,54 @@
+<%# locals: (summary:) %>
+<%= ui_table do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Contribution" %>
+    <%= t.heading "Total", right: true %>
+    <%= t.heading "Pre-Event", right: true %>
+    <%= t.heading "Event Week", right: true %>
+    <%= t.heading "Post-Event", right: true %>
+  <% end %>
+  <%= t.body do %>
+    <%= t.row do %>
+      <%= t.cell "Hours" %>
+      <%= t.cell right: true do %>
+        <%= hour_minute_words summary.counted_duration %>
+        <% if summary.other_duration.positive? %>
+          <span class="text-stone-muted text-sm">*</span>
+        <% end %>
+      <% end %>
+      <%= t.cell hour_minute_words(summary.pre_event_duration), right: true %>
+      <%= t.cell hour_minute_words(summary.event_duration), right: true %>
+      <%= t.cell hour_minute_words(summary.post_event_duration), right: true %>
+    <% end %>
+    <%= t.row do %>
+      <%= t.cell "Credits" %>
+      <%= t.cell credit_format(summary.total_credits), right: true %>
+      <%= t.cell credit_format(summary.pre_event_credits), right: true %>
+      <%= t.cell credit_format(summary.event_credits), right: true %>
+      <%= t.cell credit_format(summary.post_event_credits), right: true %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if summary.other_duration.positive? %>
+  <%= ui_callout_box :warning, icon: "circle-info", class: "mt-4" do %>
+    <div class="font-semibold">* Excluded hours: <%= hour_minute_words(summary.other_duration) %></div>
+    The following <%= pluralize summary.excluded_timesheets.length, "timesheet entry" %> hours are excluded.
+    <%= ui_table full_width: false, striped: false, responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Position" %>
+        <%= t.heading "Time" %>
+        <%= t.heading "Duration" %>
+      <% end %>
+      <%= t.body do %>
+        <% summary.excluded_timesheets.each do |entry| %>
+          <%= t.row do %>
+            <%= t.cell entry.position.title %>
+            <%= t.cell datetime_format(entry.on_duty, entry.off_duty) %>
+            <%= t.cell hour_minute_words(entry.duration) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

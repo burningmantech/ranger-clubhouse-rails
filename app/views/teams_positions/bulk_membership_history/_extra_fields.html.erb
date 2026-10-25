@@ -1,0 +1,20 @@
+<%# The team is chosen once here, rather than named on every line the way
+    upstream does. The reader may manage some teams and not others, and a team
+    name typed into a line could name one they do not — a scope this page can
+    only enforce on a value it drew the choices for itself.
+
+    Rendered above the action select because it is the first thing the reader
+    has to decide, and because the pasted list below means nothing without it. %>
+
+<%# Inactive teams are still offered — a team stood down for the season can
+    still need its history filled in — but the label says which, because picking
+    one by mistake leaves no trace on any roster afterwards. %>
+<% choices = manageable_teams.map { |team| [title_marking_inactive(team), team.id] } %>
+
+<%# to_s rather than to_i: a param can arrive array- or hash-shaped, and neither
+    answers to_i. Anything that is not a plain id simply selects nothing. %>
+<%= f.select :team_id,
+             options_for_select(choices, params[:team_id].to_s),
+             { label: "Team", required: true, prompt: "Choose a team",
+               help_text: "Listing the teams you may record history for." },
+             { class: "w-full sm:w-96" } %>

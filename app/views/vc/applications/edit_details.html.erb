@@ -1,0 +1,51 @@
+<%= hero_panel icon: "list-check", heading_level: :h1, id: "vc-edit-details-header",
+               back_to: ["Application #{@application.application_id}", vc_application_path(@application)] do |panel| %>
+  <% panel.title do %>
+    Edit Application Details &mdash; <%= @application.application_id %>
+  <% end %>
+  <% panel.description do %>
+    Correct the event attendance, age flag, and review paragraphs for
+    <%= @application.first_name %> <%= @application.last_name %>.
+  <% end %>
+<% end %>
+
+<%= ui_form @application, vc_application_path(@application) do |f| %>
+  <%= hidden_field_tag :section, "details" %>
+
+  <%= ui_section "Event Attendance", icon: "calendar", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Why does this matter?</dt>
+      <dd>Applicants must have attended an event within the last 10 events. The pandemic years 2020 and 2021 do not count.</dd>
+    </dl>
+    <fieldset>
+      <legend class="font-medium mb-2">Events attended</legend>
+      <div class="grid grid-cols-3 lg:grid-cols-6 gap-1">
+        <% (1986..current_year).to_a.reverse.each do |year| %>
+          <label class="inline-flex items-center gap-2 min-h-9 cursor-pointer">
+            <%= check_box_tag "prospective_application[event_years][]", year,
+                              @application.all_events.include?(year),
+                              id: "event_year_#{year}", class: "checkbox checkbox-sm" %>
+            <%= year %>
+          </label>
+        <% end %>
+      </div>
+    </fieldset>
+    <%= f.select :experience,
+                 ProspectiveApplication::EXPERIENCE_LABELS.map { |value, label| [label, value] },
+                 label: "Experience Type", width: "w-44" %>
+    <%= f.check_box :is_over_18, label: "Applicant is 18 years or older" %>
+  <% end %>
+
+  <%= ui_section "Review Paragraphs", icon: "file-lines", icon_type: :solid do %>
+    <%= f.text_area :why_volunteer, label: "Why Ranger?" %>
+    <%= f.text_area :regional_experience, label: "Regional Experience" %>
+    <%= f.text_field :regional_callsign, label: "Regional Callsign", width: "w-full sm:w-64" %>
+    <%= f.text_field :known_rangers, label: "Known Rangers" %>
+    <%= f.text_field :known_applicants, label: "Known Applicants" %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Details" %>
+    <%= cancel_link vc_application_path(@application) %>
+  <% end %>
+<% end %>

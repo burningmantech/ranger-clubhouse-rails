@@ -1,0 +1,133 @@
+<%# Position-by-year volunteer hours matrix (WorkHistoryReport) with
+    in-dialog drill-down: the hour links reload just the wh-detail frame with
+    that cell's entries, so drill-down requests skip the matrix render. %>
+<% history = @history %>
+<% person = @person %>
+<% path = ->(position_id, year) do
+     training_session_work_history_path(training_slug, @training_session.slot.id, person.id,
+                                        detail_position_id: position_id, detail_year: year)
+   end %>
+
+<% detail_frame = capture do %>
+  <%= turbo_frame_tag "wh-detail" do %>
+    <% if @detail_position || @detail_year %>
+      <% entries =
+           if @detail_position && @detail_year
+             @detail_position.years[@detail_year]&.entries || []
+           elsif @detail_position
+             @detail_position.entries
+           else
+             history.year_totals[@detail_year]&.entries || []
+           end %>
+      <h3 class="heading-title mt-4 mb-1">
+        <%= [@detail_year, @detail_position&.title].compact.join(" — ") %>
+      </h3>
+      <%= ui_table full_width: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Shift" %>
+          <%= t.heading "Position" %>
+          <%= t.heading "Hours", right: true %>
+          <%= t.heading "Credits", right: true %>
+        <% end %>
+        <%= t.body do %>
+          <% entries.each do |entry| %>
+            <%= t.row do %>
+              <%= t.cell do %>
+                <%= datetime_format entry.on_duty, entry.off_duty, year: true %>
+                <% if entry.is_echelon %>
+                  <div class="text-stone-muted">as Echelon volunteer</div>
+                <% end %>
+              <% end %>
+              <%= t.cell entry.position.title %>
+              <%= t.cell hour_format(entry.duration), right: true %>
+              <%= t.cell credit_format(entry.credits), right: true %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if turbo_frame_request_id == "wh-detail" %>
+  <%# Drill-down request: Turbo only swaps the inner frame -- skip the matrix. %>
+  <%= detail_frame %>
+<% else %>
+  <%= turbo_frame_tag "modal" do %>
+    <%= modal_dialog id: "work-history-dialog", title: "Work History — #{person.callsign}",
+                     size: :xl, frame: false do %>
+      <p class="mb-2">
+        Only on-playa volunteering with a timesheet entry is listed. Alpha, Deep Freeze, and
+        training entries are excluded. Click an hour total to see how the time was spent.
+      </p>
+
+      <% if history.inaccurate_years.any? %>
+        <%= ui_callout_box :warning do %>
+          <%= person.callsign %> has timesheet entries before 2008
+          (<%= history.inaccurate_years.join(", ") %>). Hours were not tracked before the 2008
+          event, so those entries are placeholders and are not shown here.
+        <% end %>
+      <% end %>
+
+      <% if history.years.any? %>
+        <p class="mb-2">
+          <%= pluralize history.years.size, "year" %> ·
+          <%= pluralize history.positions.size, "position" %>
+          <% if history.has_echelon_work %>
+            · <strong class="text-error">includes Echelon volunteer entries</strong>
+          <% end %>
+        </p>
+
+        <%= ui_table full_width: true, responsive: false do |t| %>
+          <%= t.header do %>
+            <%= t.heading "Position" %>
+            <%= t.heading "Total", right: true %>
+            <% history.years.each do |year| %>
+              <%= t.heading year.to_s, right: true %>
+            <% end %>
+          <% end %>
+          <%= t.body do %>
+            <%= t.row do %>
+              <%= t.row_header "All positions" %>
+              <%= t.cell hour_format(history.total_duration), right: true %>
+              <% history.years.each do |year| %>
+                <%= t.cell right: true do %>
+                  <%= link_to hour_format(history.year_totals[year].duration), path.call(nil, year),
+                              data: { turbo_frame: "wh-detail" } %>
+                <% end %>
+              <% end %>
+            <% end %>
+            <% history.positions.each do |row| %>
+              <%= t.row do %>
+                <%= t.row_header row.title %>
+                <%= t.cell right: true do %>
+                  <%= link_to hour_format(row.duration), path.call(row.id, nil),
+                              data: { turbo_frame: "wh-detail" } %>
+                <% end %>
+                <% history.years.each do |year| %>
+                  <%= t.cell right: true do %>
+                    <% cell = row.years[year] %>
+                    <% if cell %>
+                      <%= link_to hour_format(cell.duration), path.call(row.id, year),
+                                  data: { turbo_frame: "wh-detail" } %>
+                    <% else %>
+                      <span class="text-stone-muted">—</span>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <%= ui_empty_state "No countable timesheet entries were found." %>
+      <% end %>
+
+      <%= detail_frame %>
+
+      <%= button_row do %>
+        <%= modal_close_button "Close" %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

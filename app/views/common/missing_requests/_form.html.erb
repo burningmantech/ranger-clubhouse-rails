@@ -1,0 +1,57 @@
+<%# locals: (entry:,position_options:) %>
+<%= ui_callout_box :warning do %>
+  <div class="text-xl font-semibold mb-1">Use this form only for missing timesheet entries.</div>
+  If <%= timesheet_self_serve? ? "you need" : "#{timesheet_person.callsign} needs" %> to correct an existing entry,
+  return to the Timesheet Listing and click Request Correction.
+<% end %>
+
+<% if entry.status_rejected? %>
+  <%= ui_callout_box :error do %>
+    Sorry, this request has been rejected.
+  <% end %>
+<% end %>
+
+<%= ui_form entry, (entry.persisted? ? timesheet_missing_request_path(entry) : timesheet_missing_requests_path), data: { turbo: false} do |f| %>
+  <% if entry.notes.any? %>
+    <%= ui_section "Notes from #{timesheet_self_serve? ? "You" : timesheet_person.callsign} and the Timesheet Reviewers", icon: "comment", icon_type: :solid do %>
+      <%= render partial: "common/timesheet_notes", locals: { notes: entry.notes } %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Position", icon: "briefcase", icon_type: :solid do %>
+    <%= f.select :position_id, position_options,
+                 label: "Which position was the shift for?",
+                 help_text: "Note: no credit is given for OFF PLAYA trainings." %>
+  <% end %>
+
+  <%= ui_section "Time", icon: "clock", icon_type: :solid do %>
+    <div class="mb-4 text-stone-muted">
+      Requests for shifts performed outside the event period will not be approved.
+    </div>
+    <%= form_row do %>
+      <%= f.datetime_field :on_duty, label: "What was the START date & time of the shift?", wrapper_class: "flex-1" %>
+      <%= f.datetime_field :off_duty, label: "What was the END date & time of the shift?", wrapper_class: "flex-1" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Reason for Missing Entry", icon: "pen-to-square", icon_type: :solid do %>
+    <%= f.text_field :partner,
+                     label: "Shift Partner(s) or Lead Who Can Corroborate",
+                     help_text: "Enter callsign(s) of #{timesheet_whose} shift partner(s) or shift lead/manager",
+                     width: "w-full sm:w-96",
+                     maxlength: 100
+    %>
+
+    <%= f.text_area :additional_notes,
+                    label: (entry.status_rejected? ? "Additional information for appeal" : "Brief explanation"),
+                    help_text: (entry.status_rejected? ? "Provide additional details" : "Provide a BRIEF & CONCISE explanation in 1 to 3 sentences why #{timesheet_self_serve? ? "you" : timesheet_person.callsign} should be credited"),
+                    maxlength: 1500,
+                    data: input_counter_data
+    %>
+  <% end %>
+
+  <%= button_row class: "mt-4" do %>
+    <%= f.submit "Submit Request" %>
+    <%= cancel_link timesheet_missing_requests_path %>
+  <% end %>
+<% end %>

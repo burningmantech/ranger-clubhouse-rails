@@ -1,0 +1,75 @@
+<%= ui_form @vehicle,
+            @vehicle.new_record? ? me_vehicles_personal_vehicles_path : me_vehicles_personal_vehicle_path(@vehicle),
+            id: "vehicle-form" do |f| %>
+
+  <%= ui_callout_box :warning do %>
+    All fields are required.
+  <% end %>
+
+  <%= ui_section "Vehicle Description", icon: "car", icon_type: :solid do %>
+    <%= form_row do %>
+      <%= f.select :vehicle_class, Vehicle::CLASS_OPTIONS, label: "Vehicle Class" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.text_field :vehicle_year, label: "Vehicle Year", width: "w-24", maxlength: 4 %>
+      <%= f.text_field :vehicle_make, label: "Make", help_text: "e.g., Ford, GMC, etc." %>
+      <%= f.text_field :vehicle_model, label: "Model", help_text: "e.g., F-350, Tacoma, etc." %>
+      <%= f.text_field :vehicle_color, label: "Color" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.select :license_state,
+                   CountryStateHelper::US_CANADA_OPTIONS,
+                   label: "Vehicle License State or Province"
+                    %>
+      <%= f.text_field :license_number, label: "Vehicle License Number", width: "w-40" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Personal Vehicle Use Items (Permits & Other Items)", icon: "tag", icon_type: :solid do %>
+    <%= form_row do %>
+      <%= f.collection_radio_buttons :driving_sticker,
+                                     Vehicle::DRIVING_STICKER_OPTIONS,
+                                     :last, :first,
+                                     layout: :horizontal,
+                                     wrapper_class: "w-full",
+                                     label: "Request a Driving Permit if needed to drive your personal vehicle for Ranger business"
+      %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.collection_radio_buttons :ranger_logo, Vehicle::RANGER_LOGO_OPTIONS,
+                                     :last, :first,
+                                     layout: :horizontal,
+                                     wrapper_class: "w-full",
+                                     label: "Ranger Logo Decal" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.collection_radio_buttons :fuel_chit,
+                                     Vehicle::FUEL_CHIT_OPTIONS,
+                                     :last, :first,
+                                     layout: :horizontal,
+                                     wrapper_class: "w-full",
+                                     label: "Fuel Chit Requests" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.collection_radio_buttons :amber_light,
+                                     Vehicle::AMBER_LIGHT_OPTIONS,
+                                     :last, :first,
+                                     layout: :horizontal,
+                                     wrapper_class: "w-full",
+                                     label: "Amber Light" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.text_area :request_comment, label: "Comments for the Approver", rows: 2, cols: 40 %>
+    <% end %>
+  <% end %>
+  <%= button_row do %>
+    <%= f.submit @vehicle.new_record? ? "Submit Request" : "Save Request" %>
+    <%= cancel_link me_vehicles_dashboard_path %>
+  <% end %>
+<% end %>

@@ -1,0 +1,9 @@
+<%= hero_panel icon: "plus", heading_level: :h1, id: "new-provision-header",
+               description: "Create a meal pass, shower access, or event radio provision for this person.",
+               back_to: [provision_return_label, provision_return_path] do |panel| %>
+  <% panel.title do %>
+    New Provision &mdash; <%= @provision.person.callsign %>
+  <% end %>
+<% end %>
+
+<%= render "common/provisions/form", provision: @provision %>

@@ -1,0 +1,40 @@
+<%# One group of questions: its heading, and how its answers are reported. %>
+<%= ui_form(@group,
+            @group.persisted? ? communication_survey_group_path(@survey, @group) : communication_survey_groups_path(@survey)) do |f| %>
+  <%= f.fieldset "What people see", icon: "layer-group", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What is a group?</dt>
+      <dd>A heading with its own questions under it. A survey is answered a group at a time.</dd>
+    </dl>
+
+    <%= f.text_field :title, label: "Group Title", required: true, maxlength: 190,
+                     show_counter: true, width: "w-full",
+                     help_text: "The heading the person answering reads." %>
+
+    <%= f.text_area :description, label: "Group Description", rows: 3, width: "w-full",
+                    help_text: "Optional. Shown under the heading. Simple HTML is kept - <b>text</b> comes out bold." %>
+  <% end %>
+
+  <%= f.fieldset "How the answers are reported", icon: "chart-simple", icon_type: :solid do %>
+    <%= f.collection_radio_buttons :type, survey_group_type_options, :last, :first,
+                                   { label: "Group Type", required: true } %>
+
+    <%= f.text_field :report_title, label: "Report Title", maxlength: 190, width: "w-full lg:w-96",
+                     help_text: "Only for a group with a report of its own: what that report is called." %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit @group.persisted? ? "Save Group" : "Add Group" %>
+    <%= cancel_link communication_survey_path(@survey, group: @group.id) %>
+    <% if @group.persisted? %>
+      <%= delete_button communication_survey_group_path(@survey, @group), "Delete Group",
+                        confirm_modal: {
+                          title: "Confirm Group Deletion",
+                          message: "Delete \"#{@group.title}\"? Its questions, and every answer given " \
+                                   "to them, are deleted with it. This cannot be undone.",
+                          confirm_label: "Delete Group",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

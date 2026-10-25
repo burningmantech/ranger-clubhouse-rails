@@ -1,0 +1,41 @@
+<%# One question's answers. A rating question reports its statistics; every
+    other kind lists what people wrote, grouped by the session they answered
+    after. A manual-review group holds its answers directly, with no session. %>
+<% if question.type == SurveyQuestion::TYPE_RATING %>
+  <%= ui_table full_width: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Avg Rating" %>
+      <%= t.heading "Std Dev" %>
+      <%= t.heading "Ratings" %>
+      <%= t.heading "Distribution" %>
+    <% end %>
+    <%= t.body do %>
+      <%= t.row do %>
+        <%= t.row_header do %><%= survey_rating_meter question.mean %><% end %>
+        <%= t.cell survey_std_dev(question.variance) %>
+        <%= t.cell question.rating_count %>
+        <%= t.cell do %><%= survey_distribution question.distribution %><% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif question.respond_to?(:slots) && question.slots.present? %>
+  <div class="flex flex-col gap-6">
+    <% question.slots.each do |slot_response| %>
+      <% next if slot_response.responses.blank? %>
+      <div>
+        <%# ui_section's title is aria-level 2 under the page's h1, so a
+            session heading inside it is an h3. %>
+        <h3 class="heading-title text-heading">
+          <%= render "common/surveys/session_label", slot_response: slot_response %>
+        </h3>
+        <p class="text-stone-muted mb-2"><%= pluralize(slot_response.responses.size, "comment") %></p>
+        <%= render "common/surveys/answers", answers: slot_response.responses %>
+      </div>
+    <% end %>
+  </div>
+<% elsif question.responses.present? %>
+  <p class="text-stone-muted mb-2"><%= pluralize(question.responses.size, "comment") %></p>
+  <%= render "common/surveys/answers", answers: question.responses %>
+<% else %>
+  <%= ui_empty_state "No one answered this question.", icon: "comment-slash", icon_type: :solid %>
+<% end %>

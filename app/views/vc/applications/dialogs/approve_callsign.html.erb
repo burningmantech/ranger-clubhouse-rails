@@ -1,0 +1,26 @@
+<% pii_hold = @application.personal_info_issues? %>
+<% target_status = pii_hold ? ProspectiveApplication::STATUS_HOLD_PII_ISSUE : ProspectiveApplication::STATUS_APPROVED %>
+<%= modal_dialog id: "approve-callsign-dialog", size: :lg, title: "Assign Callsign & Approve" do %>
+  <%= render "vc/applications/account_created_warning", application: @application,
+             message: "Updating the callsign here will not update the Clubhouse account." %>
+  <% if pii_hold %>
+    <p class="mb-2">
+      The callsign will be approved, however <strong>the application will be placed on hold</strong>
+      because personal information is missing (<%= @application.blank_personal_info.join(", ") %>).
+      The applicant will be emailed asking for the missing information, and will NOT be told the
+      callsign assignment yet.
+    </p>
+  <% else %>
+    <p class="mb-2">
+      The application will be marked as <strong>ready for account creation</strong>, and the applicant
+      emailed about the approved callsign.
+    </p>
+  <% end %>
+  <%= form_with url: status_vc_application_path(@application), method: :post,
+                builder: AppFormBuilder, data: { turbo_frame: "_top" } do |f| %>
+    <%= hidden_field_tag :status, target_status %>
+    <%= f.text_field :approved_handle, label: "Approved Callsign", required: true,
+                     value: params[:handle].presence || @application.approved_handle %>
+    <%= modal_form_footer submit: "Save & Approve" %>
+  <% end %>
+<% end %>

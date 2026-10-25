@@ -1,0 +1,123 @@
+<% content_for :title, "Ranger Secret Clubhouse" %>
+<%# The beta notice is a fact about the service, not part of the door: one line
+    with the two things a tester must know, and the rest behind the chevron.
+    It used to be a card of four questions, taller than the form on a phone. %>
+<%= ui_disclosure safe_join([fa_icon("flask", :solid, class: "text-warning", end: 2),
+                             tag.strong("Clubhouse 3 Beta."),
+                             " Nothing here reaches production. No email or SMS is sent."]),
+                  variant: :card, class: "login-beta mb-4",
+                  summary_class: "login-beta-summary", content_class: "login-beta-body" do %>
+  <dl class="instruction-list">
+    <dt>Does anything here reach production?</dt>
+    <dd>No. Any change you make here does not update the production server.</dd>
+    <dt>Will an email be sent?</dt>
+    <dd>No. Any action that sends an email has been disabled, including resetting your password.</dd>
+    <dt>Will a text message be sent?</dt>
+    <dd>No. Any action that sends an SMS or text message has been disabled.</dd>
+    <%# A passkey belongs to the address it was made on, and this is not the
+        address the real Clubhouse answers at. %>
+    <% if Passkeys.enabled?(request) %>
+      <dt>Does a passkey carry over?</dt>
+      <dd>No. A passkey added on this beta signs in to this beta only. You will add it again on the real Clubhouse.</dd>
+    <% end %>
+  </dl>
+<% end %>
+
+<%# The Rangers' mark, faint across the whole page behind the door. Fixed, so it
+    fits the viewport rather than the narrow column, and decoration only: the
+    footer names the organisation in words. %>
+<div class="login-backdrop" aria-hidden="true"></div>
+
+<%# The door and the other doors: side by side from lg up, the doors under the
+    panel below it. %>
+<div class="login-columns">
+  <div class="login-panel">
+    <header class="text-center mb-5">
+      <h1 class="login-title">Black Rock Ranger<br>Secret Clubhouse</h1>
+      <div class="login-tagline">Riding The Edge Of Chaos Since 1992</div>
+      <%# The door keeps playa time. The message is one span, so the flex gap
+      falls only between the flame and the words. %>
+      <% days = EventDate.days_until_man_burn %>
+      <div class="login-status">
+        <%= fa_icon "fire-flame-curved", :solid, class: "text-warning" %>
+        <span>
+          <% if days.zero? %>
+            The Man burns tonight.
+          <% elsif days >= 360 %>
+            Exodus. <strong><%= days %></strong> days to the next burn.
+          <% else %>
+            <strong><%= days %></strong> <%= "day".pluralize(days) %> until The Man burns.
+          <% end %>
+        </span>
+      </div>
+    </header>
+
+    <% if Sso.client? %>
+      <%= render "sessions/sso_door", error: @sso_error %>
+    <% else %>
+      <%= render "sessions/password_form", form: @form %>
+      <%= render "sessions/passkey_door" if Passkeys.enabled?(request) %>
+    <% end %>
+
+  </div>
+
+  <%# The other doors, given the same weight as the sign-in panel: the
+      application, an auditor's account, and the two addresses that answer.
+      Clubhouse 2 said all of this beside its form too; here it is a panel of
+      its own, one row per way in. %>
+  <nav class="login-doors" aria-label="Audit Training? Want to be a Ranger?">
+    <h2 class="login-doors-title">Audit Training? Want to be a Ranger?</h2>
+    <ul class="login-doors-list">
+       <li>
+        <%= fa_icon "chalkboard-user", :solid %>
+        <div>
+          <%= link_to safe_join(["Auditing a Training? Create an Account", fa_icon("arrow-right", :solid, start: 2)]),
+                      register_path, class: "login-door-lead" %>
+          <p>
+            Read the <%= ext_link "auditor rules", "https://rangers.burningman.org/training/#audit" %> first.
+            Auditing is not a path to becoming a Ranger.
+          </p>
+        </div>
+      </li>
+      <li>
+        <%= fa_icon "person-walking", :solid %>
+        <div>
+          <%= ext_link "Becoming a Ranger", "https://rangers.burningman.org/ranger-application-process/",
+                       class: "login-door-lead" %>
+          <p>Read how to apply on the Rangers' site. Past prospective Rangers apply again each year.</p>
+        </div>
+      </li>
+      <li>
+        <%= fa_icon "headset", :solid %>
+        <div>
+          <%= mail_to EmailAddresses::VOLUNTEER_COORDINATORS_TEAM,
+                      safe_join(["Questions? Email the Volunteer Coordinators", fa_icon("arrow-right", :solid, start: 2)]),
+                      class: "login-door-lead" %>
+          <p>Can't sign in or register? <%= mail_to EmailAddresses::TECH_CADRE, "Email the Tech Ninjas" %>.</p>
+        </div>
+      </li>
+      <% if Rails.env.development? %>
+        <li>
+          <%= fa_icon "gear", :solid %>
+          <div>
+            <div class="login-door-lead">Development: Sign-In As</div>
+            <div>
+              <%= ui_form nil, sign_in_as_path, method: :get,
+                          class: "flex flex-column gap-2" do |f| %>
+                <%= f.text_field :callsign,
+                                 required: true,
+                                 required_label: "",
+                                 autocomplete: "off",
+                                 placeholder: "Enter callsign",
+                                 class: "bg-base-300/60",
+                                 wrapper_class: "mb-0" %>
+                <%= f.submit "Sign In", variant: :secondary %>
+              <% end %>
+            </div>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  </nav>
+</div>
+

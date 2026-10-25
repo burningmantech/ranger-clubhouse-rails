@@ -1,0 +1,19 @@
+<%# locals: (step:, step_counter:, group:, facts:, total_steps:) %>
+<%
+  is_last = (step_counter + 1) == total_steps
+  is_actionable = [DashboardTask::STATUS_ACTION_NEEDED, DashboardTask::STATUS_URGENT].include?(step.result)
+%>
+
+<%= ui_accent_card step.title,
+                   variant: dashboard_step_variant(step.result),
+                   icon: dashboard_step_icon_name(step.result),
+                   icon_type: dashboard_step_icon_type(step.result),
+                   badge: dashboard_step_badge(step.result),
+                   heading_level: :h3,
+                   options: { class: ("mb-3" unless is_last) } do %>
+  <% if step.partial.present? %>
+    <div class="pl-6 me-muted <%= "border-l-2 border-line ms-1" if is_actionable %>">
+      <%= render partial: "dashboard_tasks/#{step.partial}", locals: { step:, facts: } %>
+    </div>
+  <% end %>
+<% end %>

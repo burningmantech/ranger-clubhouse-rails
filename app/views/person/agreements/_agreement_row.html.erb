@@ -1,0 +1,20 @@
+<div class="flex flex-wrap items-center gap-x-3">
+  <div class="grow">
+    <%= f.check_box agreement.tag.to_sym,
+                    label: agreement.title,
+                    checked: agreement.signed,
+                    disabled: !can_edit %>
+  </div>
+  <div class="flex-center-gap-2">
+    <% unless agreement.visible %>
+      <%= ui_badge "Hidden from Ranger", :warning, icon: "eye-slash", icon_type: :solid %>
+    <% end %>
+    <% if show_availability %>
+      <% if agreement.available %>
+        <%= ui_badge "Available to sign", :success, icon: "circle-check", icon_type: :solid %>
+      <% else %>
+        <%= ui_badge "Not available to sign", :secondary, icon: "circle-minus", icon_type: :solid %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+<%= hero_panel icon: "list-check", heading_level: :h1, id: "person-dashboard-header",
+               description: "The Clubhouse dashboard as #{@person.callsign} currently sees it.",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Dashboard &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<% case @dashboard.type %>
+<% when Dashboard::TYPE_PAST_PROSPECTIVE %>
+  <%= render "me/dashboard/dashboard_past_prospective" %>
+<% when Dashboard::TYPE_BONKED %>
+  <%= render "me/dashboard/dashboard_bonked" %>
+<% else %>
+  <% groups = Array(@dashboard.groups) %>
+
+  <%= ui_callout_box :secondary, icon: "eye" do %>
+    <strong>Read-only view.</strong> Links inside tasks open your own Clubhouse pages,
+    not <%= @person.callsign %>'s.
+  <% end %>
+
+  <% if groups.any? %>
+    <%= render "common/dashboard_progress", groups: groups, heading: "#{@person.callsign}'s Current Progress" %>
+    <%= render partial: "common/dashboard_group", collection: groups, as: :group, locals: { facts: @dashboard.facts } %>
+  <% else %>
+    <%= ui_empty_state "No dashboard tasks for #{@person.callsign} right now." %>
+  <% end %>
+  <%= render "me/dashboard/dashboard_document", title: "Links & Things", body: @milestones.links %>
+<% end %>
+
+<%= render "me/dashboard/dashboard_document", title: "Who to Contact for Help", body: @milestones.contacts %>

@@ -1,0 +1,36 @@
+<%# locals: (id:, title:, rows:, empty:) %>
+<%#
+  One half of the report. Once anyone is listed both halves are drawn: an empty
+  one is the answer to its own question, and leaving it out reads as though the
+  question was never asked. No Paycom ID column -- every row in a half holds the
+  same value, and the heading already says which.
+%>
+<%= ui_section title, id:, badge: rows.size.to_s, border: false do %>
+  <% if rows.any? %>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Name" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Paid Positions" %>
+        <%= t.heading "Paid Shifts", right: true %>
+        <%= t.heading "First Paid Shift" %>
+      <% end %>
+      <%= t.body do %>
+        <% rows.each do |row| %>
+          <% person = row.person %>
+          <%= t.row do %>
+            <%= t.row_header payroll_missing_id_callsign(person) %>
+            <%= t.cell "#{person.first_name} #{person.last_name}" %>
+            <%= t.cell person_status_label(person) %>
+            <%= t.cell row.positions_text %>
+            <%= t.cell row.sign_ups.size, right: true %>
+            <%= t.cell slot_shift_time(row.first_slot) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state empty, icon: "user-check", icon_type: :solid %>
+  <% end %>
+<% end %>

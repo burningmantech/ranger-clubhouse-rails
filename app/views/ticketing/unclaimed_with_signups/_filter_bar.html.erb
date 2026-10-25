@@ -1,0 +1,50 @@
+<%# locals: (filter_params:, active_params:, count: nil, actions: nil) %>
+<%# Sign-up and Type filters for the unclaimed-tickets table, in the standard
+    filter_bar shell. Both are ordinary GET params applied server-side.
+
+    Locals:
+      filter_params - { signup:, type: }; "all" means that filter is off
+      active_params - filter_params without the "all" entries; one chip each
+      count         - result summary shown at the end of the bar
+      actions       - the page's Export CSV button, at the end of the row %>
+<%
+  all_option = UiComponents::FilterBarHelper::ALL_FILTER_OPTION
+
+  signup_options = [["Signed up", "yes"], ["No sign-up", "no"]]
+
+  # Only the two regular ticket types can ever appear, so the select offers
+  # exactly what the report can return rather than the whole type list.
+  type_options = AccessDocument::REGULAR_TICKET_TYPES.map do |type|
+    [AccessDocument::TYPE_LABELS.fetch(type), type]
+  end
+
+  signup_choices = [all_option, *signup_options]
+  type_choices = [all_option, *type_options]
+
+  chip_labels = { signup: "Shift Sign-Up", type: "Type" }
+  chip_value = lambda do |key, value|
+    # The chip already says "Shift Sign-Up", so the value reads as a plain
+    # yes/no rather than repeating the word.
+    key == :signup ? value.capitalize : AccessDocument::TYPE_LABELS.fetch(value, value)
+  end
+  chips = filter_chips(active_params, chip_labels, value_label: chip_value) do |remaining|
+    ticketing_unclaimed_with_signups_path(remaining)
+  end
+%>
+<%= filter_bar id: "unclaimed-ticket-filters",
+               chips: chips,
+               clear_url: ticketing_unclaimed_with_signups_path,
+               count: count,
+               actions: actions,
+               url: ticketing_unclaimed_with_signups_path do |f| %>
+  <%= form_row do %>
+    <%= f.select :signup, signup_choices, label: "Shift Sign-Up", selected: filter_params[:signup],
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :type, type_choices, label: "Type", selected: filter_params[:type],
+                 width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>

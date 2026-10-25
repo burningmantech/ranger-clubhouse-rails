@@ -1,0 +1,23 @@
+# Test fixtures for Award model
+
+special_service_award:
+  title: "Outstanding Service Award"
+  description: "Awarded for exceptional service to the Rangers"
+  awards_grants_service_year: true
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+volunteer_award:
+  title: "Volunteer Excellence"
+  description: "Recognizing dedicated volunteer efforts"
+  awards_grants_service_year: false
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+
+innovation_award:
+  title: "Innovation Award"
+  description: "For innovative contributions"
+  awards_grants_service_year: true
+  created_at: <%= 1.year.ago %>
+  updated_at: <%= 1.day.ago %>
+

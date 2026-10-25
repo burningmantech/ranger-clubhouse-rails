@@ -1,0 +1,113 @@
+<%# Rendered from the POST at 422 -- Turbo drops a 200 form response, and the
+    pasted list is not in the URL for a GET to re-derive. Turbo keeps the
+    submitting page's scroll position, so the reader would otherwise land
+    wherever the button was. %>
+<div data-controller="scroll-to-top" hidden></div>
+
+<%= hero_panel icon: "clipboard-check", heading_level: :h1, id: "bulk-positions-preview-header",
+               title: bulk_position_preview_title(@change),
+               description: "Nothing has been saved yet — check the list below, then confirm." %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @change.changing.size.to_s, "Will Change",
+                  variant: :success, icon: "circle-check", icon_type: :solid %>
+  <% if @change.skipping.any? %>
+    <%= ui_stat_box @change.skipping.size.to_s, "Unchanged",
+                    variant: :secondary, icon: "circle-minus", icon_type: :solid %>
+  <% end %>
+  <% if @change.problems.any? %>
+    <%= ui_stat_box @change.problems.size.to_s, "Problems",
+                    variant: :error, icon: "triangle-exclamation", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<%# Three arms, not two: with nothing to change there is no confirm button, so
+    the page has to say why rather than leave the reader looking for it. %>
+<% if @change.changing.none? %>
+  <%= ui_callout_box :warning, icon: "circle-exclamation", icon_type: :solid do %>
+    <strong>There is nothing to confirm.</strong>
+    Not one callsign on your list needs this change, so no button is offered.
+    Go back and edit the list.
+  <% end %>
+<% elsif @change.problems.any? %>
+  <%= ui_callout_box :error, icon: "triangle-exclamation", icon_type: :solid do %>
+    <strong><%= pluralize(@change.problems.size, "callsign") %> cannot be changed.</strong>
+    Go back and fix the list, or continue — only the
+    <%= pluralize(@change.changing.size, "person") %> marked ready will change, and the rest are
+    left alone.
+  <% end %>
+<% else %>
+  <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+    <strong>No problems found.</strong>
+    Check that the position and the direction are right before you confirm.
+  <% end %>
+<% end %>
+
+<%# The consequence a revoke does not wear on its face. %>
+<% if @change.changing.any? && !@change.grant? %>
+  <%= ui_callout_box :warning, icon: "calendar-xmark", icon_type: :solid do %>
+    <strong>This also cancels their sign-ups.</strong>
+    Everyone marked "Will be revoked" loses <%= @change.position.title %> and any shift they have
+    already signed up for with it.
+  <% end %>
+<% end %>
+
+<%= ui_section "Every Callsign You Entered", icon: "list-check", icon_type: :solid, border: false do %>
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Result" %>
+    <% end %>
+    <%= t.body do %>
+      <% @change.entries.each_with_index do |entry, index| %>
+        <%# The striped background wins on nth-child, so the problem tint needs
+            the important flag to show through it. %>
+        <%= t.row id: "preview-entry-#{index}", state: (:error if entry.category == :problem) do %>
+          <%= t.row_header do %>
+            <% if entry.person %>
+              <%= person_display_link(entry.person, entry.person.id) %>
+            <% else %>
+              <%= entry.raw %>
+            <% end %>
+          <% end %>
+          <%= t.cell entry.person ? entry.person.status : "—" %>
+          <%= t.cell do %>
+            <%= bulk_position_badge(entry) %>
+            <% if entry.message %>
+              <div class="mt-1"><%= entry.message %></div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_form(nil, teams_positions_apply_bulk_positions_path,
+            method: :post, no_error_summary: true) do |f| %>
+  <%# Everything the apply needs, re-posted verbatim: it rebuilds the change
+      from these and re-runs every check rather than trusting the table above. %>
+  <%= hidden_field_tag :position_id, @change.position.id %>
+  <%= hidden_field_tag :direction, @change.grant? ? "grant" : "revoke" %>
+  <%= hidden_field_tag :callsigns, params[:callsigns] %>
+
+  <%= button_row do %>
+    <% if @change.changing.any? %>
+      <%= f.submit bulk_position_preview_title(@change),
+                   variant: @change.grant? ? :success : :error,
+                   data: {
+                     turbo_confirm: confirm_modal_dialog(
+                       title: "Final Confirmation",
+                       message: bulk_position_consequence(@change),
+                       confirm_label: bulk_position_preview_title(@change)
+                     )
+                   } %>
+    <% end %>
+    <%# formaction sends this same form -- and the pasted list it carries -- back
+        to the form page instead of the commit. One form, so there is only one
+        copy of the list on the page and no way for the two to disagree. %>
+    <%= f.submit "Go Back and Edit", variant: :secondary,
+                 formaction: teams_positions_edit_bulk_positions_path %>
+  <% end %>
+<% end %>

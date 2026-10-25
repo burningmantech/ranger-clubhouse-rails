@@ -1,0 +1,41 @@
+<%= ui_form(@document,
+            @document.persisted? ? admin_document_path(@document) : admin_documents_path) do |f| %>
+  <%= f.fieldset "Identity", icon: "tag", icon_type: :solid do %>
+    <%= ui_callout_box :warning do %>
+      <strong>The Clubhouse finds this document by its tag.</strong>
+      Change the tag and whatever reads it stops finding it. Leave it alone unless the
+      Tech Team asks you to change it.
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.text_field :tag, label: "Tag", required: true, maxlength: 191, width: "w-full sm:w-72",
+                       help_text: "Lowercase, no spaces, and different from every other tag." %>
+      <%= f.number_field :refresh_time, label: "Refresh Minutes", width: "w-full sm:w-44",
+                         help_text: "Bookmark pages only: how often the kiosk reloads." %>
+    <% end %>
+
+    <%= f.text_field :description, label: "One-Line Description", required: true,
+                     maxlength: 191, width: "w-full sm:w-96",
+                     help_text: "Names this document in the list. Say what it is for." %>
+  <% end %>
+
+  <%= f.fieldset "Content", icon: "file-lines", icon_type: :solid do %>
+    <%= render "common/documents/body_field", f:, document: @document,
+               help_text: "Everyone who can reach the page that shows this document reads what you write here." %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Document" %>
+    <%= cancel_link admin_documents_path %>
+    <% if @document.persisted? %>
+      <%= delete_button admin_document_path(@document), "Delete Document",
+                        confirm_modal: {
+                          title: "Confirm Document Deletion",
+                          message: "Delete #{@document.tag_was}? " \
+                                   "Any page that reads this tag will stop finding it. This cannot be undone.",
+                          confirm_label: "Delete Document",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

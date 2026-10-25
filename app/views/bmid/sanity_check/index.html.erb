@@ -1,0 +1,110 @@
+<%= hero_panel icon: "id-card", heading_level: :h1, id: "bmid-sanity-check-header",
+               title: "#{@year} BMID Sanity Check",
+               description: "Shift sign-ups that disagree with SAP and Staff Credential access dates." %>
+
+<%= ui_callout_box :info do %>
+  The sanity check is only available for the current year's badges: it compares
+  sign-ups with today's access documents and box office date.
+<% end %>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 mb-2">
+  <% @report.counts.each do |key, count| %>
+    <% meta = sanity_check_meta(key) %>
+    <%= ui_stat_link bmid_sanity_check_path(check: key),
+                     aria_label: "Show only #{meta[:label]}, #{pluralize(count, "finding")}" do %>
+      <%= ui_stat_box count.to_s, meta[:short_label],
+                      variant: count.positive? ? :warning : :success,
+                      icon: count.positive? ? meta[:icon] : "circle-check" %>
+    <% end %>
+  <% end %>
+</div>
+
+<%# The check the warning and the card both name, by the label on its tile. %>
+<% spt_label = sanity_check_meta(:spt_before_box_office)[:short_label] %>
+
+<% unless @report.box_office_open %>
+  <%= ui_callout_box :warning do %>
+    The TAS_BoxOfficeOpenDate setting is blank, so the <%= spt_label %> check was skipped.
+  <% end %>
+<% end %>
+
+<%# Out of the hero, then what that check measures against -- offered only when
+    the date it measures against is set. %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>How do I clear a finding?</dt>
+    <dd>Fix the access document or the sign-up — a clean year shows four zeros.</dd>
+    <% if @report.box_office_open %>
+      <dt>What is <%= spt_label %>?</dt>
+      <dd>
+        <%= spt_label %> means a SAP access date before the box office opens on
+        <%= mdy_format(@report.box_office_open) %>.
+      </dd>
+    <% end %>
+  </dl>
+<% end %>
+
+<%= filter_bar id: "sanity-check-filters",
+               chips: sanity_check_filter_chips(@check),
+               clear_url: bmid_sanity_check_path,
+               count: "Showing #{@findings.size} of #{pluralize(@report.total, "finding")}",
+               url: bmid_sanity_check_path do |f| %>
+  <%= form_row do %>
+    <%= f.select :check, sanity_check_filter_options, label: "Check",
+                 selected: @check&.to_s || UiComponents::FilterBarHelper::ALL_FILTER,
+                 width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<% if @findings.empty? %>
+  <% if @report.total.zero? %>
+    <%= ui_empty_state "No findings for #{@year}. Every shift sign-up lines up with a SAP access date.",
+                       icon: "circle-check" %>
+  <% else %>
+    <%= ui_empty_state "No findings for \"#{sanity_check_meta(@check)[:label]}\".",
+                       icon: "magnifying-glass", icon_type: :solid %>
+  <% end %>
+<% else %>
+  <%= ui_section "Findings", icon: "list-check", icon_type: :solid, id: "findings-section",
+                 badge: @findings.size.to_s, badge_color: :warning, border: false do %>
+    <%# responsive: below lg each finding folds into a card. As a table it could
+        not fit a phone: an email address does not break, so the page scrolled
+        sideways. %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Person" %>
+        <%= t.heading "Check" %>
+        <%= t.heading "Reason" %>
+        <%= t.heading "Actions" %>
+      <% end %>
+      <%= t.body do %>
+        <% @findings.each do |finding| %>
+          <% person = finding.person %>
+          <% meta = sanity_check_meta(finding.check) %>
+          <%= t.row do %>
+            <%= t.cell do %>
+              <%= callsign_link person %>
+              <div class="text-sm text-stone-muted">
+                <%= person.first_name %> <%= person.last_name %> · <%= person.status %> ·
+                <%= email_link_or_dash(person.email) %>
+              </div>
+            <% end %>
+            <%= t.cell ui_badge(meta[:short_label], :warning, size: "sm", class: "whitespace-nowrap") %>
+            <%= t.cell finding.reason %>
+            <%= t.cell do %>
+              <span class="inline-flex flex-wrap gap-x-4">
+                <%= link_to "Schedule", person_scheduling_path(person.id),
+                            class: LinkHelper::TABLE_LINK_CLASSES %>
+                <%= link_to "Access docs", person_tickets_provisions_path(person.id),
+                            class: LinkHelper::TABLE_LINK_CLASSES %>
+              </span>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

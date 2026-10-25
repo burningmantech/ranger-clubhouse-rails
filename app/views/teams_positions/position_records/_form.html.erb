@@ -1,0 +1,267 @@
+<%# @return_params rides on the action URL: the redirect after saving rebuilds
+    the reader's filter from params, so a bare action lands them on all 221
+    positions while Cancel -- built during the GET -- keeps the filter. %>
+<%= ui_form(@position,
+            @position.persisted? ? teams_positions_position_record_path(@position, **@return_params) : teams_positions_create_position_record_path(@return_params),
+            method: @position.persisted? ? :patch : :post) do |f| %>
+  <%= ui_section "Description", icon: "id-badge", icon_type: :solid do %>
+    <%= f.text_field :title, label: "Title", required: true,
+                     maxlength: PositionManagement::TITLE_MAX, show_counter: true,
+                     width: "w-full sm:w-96" %>
+
+    <%= form_row do %>
+      <%# prompt: Rails forces a blank option onto a required select unless one
+          is given, and picking it would only bounce back a validation error. %>
+      <%# The orientation the New Position hero used to give, on the field it
+          is about. %>
+      <%= f.select :type, Position::TYPES,
+                   { label: "Type", required: true, prompt: "Select a type",
+                     help_text: "Type and team decide where the position appears; its attributes decide what it does." },
+                   { class: "w-full sm:w-44" } %>
+      <%= f.text_field :short_title, label: "Short Title",
+                       maxlength: PositionManagement::SHORT_TITLE_MAX, show_counter: true,
+                       width: "w-full sm:w-32",
+                       help_text: "Optional. Used where the full title will not fit, such as the schedule." %>
+    <% end %>
+
+    <%= f.text_field :resource_tag, label: "Trainer Resource Document Tag",
+                     maxlength: PositionManagement::RESOURCE_TAG_MAX,
+                     width: "w-full sm:w-64",
+                     help_text: "Only used by Training positions. Names the document shown on the trainer resource page." %>
+  <% end %>
+
+  <%= ui_section "Sign-Up Page Headers", icon: "message", icon_type: :solid do %>
+    <%# Chosen per reader by Position#scheduling_header_for. %>
+    <%= f.rich_text_area :ranger_scheduling_header, label: "Shown to Rangers and Echelon",
+                         help_text: "Appears above the shift list on this position's sign-up page for anyone active, inactive, on inactive extension, or retired, and for Echelon. Leave blank to show nothing." %>
+    <%= f.rich_text_area :applicant_scheduling_header, label: "Shown to Applicants",
+                         help_text: "Appears above the shift list for Prospectives and Alphas. Leave blank to show nothing." %>
+  <% end %>
+
+  <%= ui_section "Suggested Rangers per Shift", icon: "users", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What do these do?</dt>
+      <dd>They suggest how many Rangers a shift of this position wants. The schedule shows the range; nothing is enforced.</dd>
+    </dl>
+
+    <%= form_row do %>
+      <%= f.number_field :min, label: "Minimum", min: 0, width: "w-full sm:w-32" %>
+      <%= f.number_field :max, label: "Maximum", min: 0, width: "w-full sm:w-32" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Active and Grant Flags", icon: "toggle-on", icon_type: :solid do %>
+    <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid do %>
+      <strong>No accounts change on their own.</strong>
+      After deactivating a position, or changing who it is granted to, run the
+      Position Sanity Checker to bring existing accounts into line.
+    <% end %>
+
+    <div class="mt-3">
+      <%= f.check_box :active, label: "Active",
+                      help_text: "Only active positions can be scheduled or granted. Deactivate one to retire it without losing its history." %>
+      <%= f.check_box :all_rangers,
+                      label: "Grant to all Rangers",
+                      help_text: "Everyone active, inactive, on inactive extension, or retired." %>
+      <%= f.check_box :new_user_eligible, label: "Grant to new accounts" %>
+      <%= f.check_box :cruise_direction, label: "Selectable on the Cruise Direction page" %>
+    </div>
+  <% end %>
+
+  <%= ui_section "Team", icon: "people-group", icon_type: :solid do %>
+    <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid do %>
+      <strong>Changing the category grants nothing by itself.</strong>
+      Run the Position Sanity Checker afterwards to grant or revoke this
+      position for the team's members.
+    <% end %>
+
+    <div class="mt-3">
+      <%= form_row do %>
+        <%= f.select :team_id, @teams.map { |team| [team.title, team.id] },
+                     { label: "Team", include_blank: "No team" },
+                     { class: "w-full sm:w-64" } %>
+        <%= f.select :team_category,
+                     TeamsPositions::PositionRecordsHelper::TEAM_CATEGORY_LABELS.map { |value, label| [label, value] },
+                     { label: "Category", help_text: "Only applies when a team is set." },
+                     { class: "w-full sm:w-80" } %>
+      <% end %>
+
+      <%= f.check_box :deselect_on_team_join,
+                      label: "Recommend deselecting this position when someone joins the team",
+                      help_text: "Used for mentee positions, which a new member no longer needs." %>
+      <%= f.check_box :has_art_mentoring,
+                      label: "Has ART mentoring",
+                      help_text: "ARTs only. Mentors are paired with mentees on shift, in the ART mentor and mentee positions flagged on this team." %>
+      <%= f.check_box :is_art_mentor,
+                      label: "ART mentor position",
+                      help_text: "The position this team's ART mentors sign in to. One per team." %>
+      <%= f.check_box :is_art_mentee,
+                      label: "ART mentee position",
+                      help_text: "The position this team's ART mentees sign in to while they are mentored. One per team." %>
+    </div>
+  <% end %>
+
+  <%= ui_section "Service Awards", icon: "award", icon_type: :solid do %>
+    <%= f.check_box :awards_eligible, label: "Awards may be granted for this position",
+                    help_text: "Without it, this position cannot be chosen when granting someone an award." %>
+  <% end %>
+
+  <%= ui_section "Shift Check-In and Reports", icon: "clipboard-check", icon_type: :solid do %>
+    <%= f.check_box :no_training_required,
+                    label: "In-Person training is not needed to check in",
+                    help_text: "Training positions never require it, whatever this says." %>
+    <%= f.check_box :not_timesheet_eligible,
+                    label: "Scheduling only — no timesheet entries may be created" %>
+    <%= f.check_box :allow_echelon,
+                    label: "Echelon volunteers may ranger this position without In-Person Training or ART" %>
+    <%= f.check_box :is_checkin_time_restricted,
+                    label: "No early or late check-in",
+                    help_text: "Can still be overridden by someone with the right permission." %>
+    <%= f.check_box :count_hours,
+                    label: "Hours count towards provisions and appreciations",
+                    help_text: "Meal passes, showers, and shirts." %>
+    <%= f.check_box :prevent_multiple_enrollments,
+                    label: "Prevent multiple enrollments",
+                    help_text: "Usually set for Training positions." %>
+    <%= f.check_box :on_sl_report, label: "Show on the Shift Lead Report" %>
+    <%= f.check_box :on_trainer_report, label: "Show on the Trainer's Report" %>
+    <%= f.check_box :has_online_course,
+                    label: "Has an online course",
+                    help_text: "ARTs only. Adds an Online Course button to the dashboard's ART table." %>
+  <% end %>
+
+  <%= ui_section "Permission Grants", icon: "shield-halved", icon_type: :solid do %>
+    <% if @is_tech_ninja %>
+      <dl class="instruction-list mb-3">
+        <dt>What does this do?</dt>
+        <dd>Everyone granted this position is given the permissions checked here.</dd>
+        <dt>When does it take effect?</dt>
+        <dd>Immediately on saving.</dd>
+      </dl>
+
+      <%= f.check_box :require_training_for_roles,
+                      label: "ART training must be passed each year before permissions are granted",
+                      help_text: "Needs a training position, set below." %>
+      <%= f.check_box :require_signin_for_roles,
+                      label: "Permissions are only granted while signed into this position" %>
+
+      <%= hidden_field_tag "position[role_ids][]", "" %>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-x-1 mt-3">
+        <% @roles.each do |role| %>
+          <%= render layout: "common/checkbox_row",
+                     locals: { name: "position[role_ids][]", value: role.id,
+                               checked: @role_ids.include?(role.id), id: "position-role-#{role.id}" } do %>
+            <%= role.title %>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+        <strong>Only the Tech Team can change permission grants.</strong>
+        Contact them to adjust the permissions this position hands out.
+      <% end %>
+
+      <% if @role_ids.any? %>
+        <div class="flex flex-col gap-1 mt-3">
+          <% @roles.select { |role| @role_ids.include?(role.id) }.each do |role| %>
+            <div><%= role.title %></div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="mt-3 text-stone-muted italic">This position grants no permissions.</p>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Training and Parent Position", icon: "graduation-cap", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What is the training position?</dt>
+      <dd>The training someone must have passed this year before they can ranger this position during the event.</dd>
+      <dt>What is the parent position?</dt>
+      <dd>It links shifts together — a child shift's sign-ups count against its parent's, as with prime Troubleshooter shifts and TS Mentor.</dd>
+    </dl>
+
+    <%= form_row do %>
+      <%= f.select :training_position_id, @training_options,
+                   position_record_training_field_options(@training_position_locked),
+                   { class: "w-full sm:w-80" } %>
+      <%= f.select :parent_position_id, @parent_options,
+                   { label: "Parent Position", include_blank: "None" },
+                   { class: "w-full sm:w-80" } %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Driving", icon: "car", icon_type: :solid do %>
+    <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid do %>
+      <strong>Do not set the first two on a position granted to all Rangers or to new accounts.</strong>
+      Their dashboard prompts appear for everyone holding the position, whether
+      or not they have signed up for a shift.
+    <% end %>
+
+    <div class="mt-3">
+      <%= f.check_box :mvr_eligible,
+                      label: "Grants Motor Vehicle Record eligibility",
+                      help_text: "A submission link appears under the Vehicle Dashboard as soon as the position is granted." %>
+      <%= f.check_box :pvr_eligible,
+                      label: "Grants personal vehicle request eligibility",
+                      help_text: "A request may be submitted under the Vehicle Dashboard as soon as the position is granted." %>
+      <%= f.check_box :mvr_signup_eligible,
+                      label: "Grants Motor Vehicle Record eligibility on sign-up",
+                      help_text: "Safe to use with Grant to all Rangers — the prompt appears only after someone signs up for a shift." %>
+    </div>
+  <% end %>
+
+  <%= ui_section "Payroll and Automatic Sign-Out", icon: "clock", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What does a paycode do?</dt>
+      <dd>Any position with one appears in the Payroll page, and its timesheet entries are marked as paid.</dd>
+      <dt>What does automatic sign-out do?</dt>
+      <dd>It signs a timesheet entry out once the hour cap is reached, notes it in the audit trail, and emails the contact address below.</dd>
+    </dl>
+
+    <%= form_row do %>
+      <%= f.text_field :paycode, label: "Paycom Employee Code",
+                       maxlength: PositionManagement::PAYCODE_MAX, width: "w-full sm:w-48" %>
+      <%= f.number_field :sign_out_hour_cap, label: "Hour Cap", min: 0, step: "any",
+                         width: "w-full sm:w-32",
+                         help_text: "Fractional hours are fine, such as 10.5." %>
+    <% end %>
+
+    <%= f.check_box :no_payroll_hours_adjustment, label: "Hours are not adjusted during payroll export" %>
+    <%= f.check_box :auto_sign_out, label: "Sign timesheet entries out at the hour cap" %>
+  <% end %>
+
+  <%= ui_section "Notifications", icon: "envelope", icon_type: :solid do %>
+    <%= f.check_box :alert_when_no_trainers,
+                    label: "Email when the trainer or mentor shift empties while trainees are still signed up" %>
+    <%= f.check_box :alert_when_becomes_empty,
+                    label: "Email when sign-ups empty",
+                    help_text: "Only while Event Management On Playa is active." %>
+
+    <%= f.email_field :contact_email, label: "Contact Email",
+                      maxlength: PositionManagement::CONTACT_EMAIL_MAX,
+                      width: "w-full sm:w-96",
+                      help_text: "Optional. Receives the notifications above and the automatic sign-out notice." %>
+  <% end %>
+
+  <%# Stated above the buttons rather than behind a rejected click, so the reason
+      the delete is missing is where the reader goes looking for it. %>
+  <% if @position.persisted? && @counts[:timesheet_count].positive? %>
+    <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+      <%= position_record_undeletable_message(@counts) %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Position" %>
+    <%= cancel_link @cancel_path %>
+    <% if @position.persisted? && @counts[:timesheet_count].zero? %>
+      <%= delete_button teams_positions_position_record_path(@position, **@return_params), "Delete Position",
+                        confirm_modal: {
+                          title: "Confirm Position Deletion",
+                          message: position_record_delete_message(@position, @counts),
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

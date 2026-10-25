@@ -1,0 +1,17 @@
+<%# How full something is: the house bar plus the printed number, so the state
+    never rests on colour alone. Something that takes as many people as turn up
+    has no fraction to show and says so instead.
+
+    `counts` is anything knowing its own sign-ups and seats. %>
+<% fill = counts.fill_percentage %>
+<% if fill.nil? %>
+  <span class="whitespace-nowrap text-stone-subtle">No limit</span>
+<% else %>
+  <% variant = shift_signups_fill_variant(counts) %>
+  <div class="flex-center-gap-2">
+    <div class="w-20 shrink-0">
+      <%= ui_progress_bar fill, variant, size: :sm, aria: { label: label } %>
+    </div>
+    <span class="whitespace-nowrap <%= shift_signups_fill_emphasis(variant) %>"><%= fill %>%</span>
+  </div>
+<% end %>

@@ -1,0 +1,58 @@
+<%# The selectable badges, one checkbox each. Rows start checked when the
+    badge is print-ready (approved photo, qualifications met); the rest start
+    unchecked and carry data-skip-select-all, so "select all" passes over them
+    while they stay hand-selectable -- upstream parity. The flag icons carry
+    the row's warnings; the legend above the table spells them out. The
+    select-all header renders here so it can never drift from the checkboxes
+    it drives; the caller wraps this partial in the
+    bulk_select block.
+
+    Locals:
+      rows - [Bmid] the selectable, text-filtered badges %>
+<%= bulk_select_all label: "Select every printable badge", selected: rows.count(&:print_ready?) %>
+<%= ui_table do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Select", width: "1%" %>
+    <%= t.heading "Callsign" %>
+    <%= t.heading "Status" %>
+    <%= t.heading "Title 1" %>
+    <%= t.heading "Title 2" %>
+    <%= t.heading "Title 3" %>
+    <%= t.heading "MVR", title: "Motor vehicle record on file" %>
+    <%= t.heading "Showers" %>
+    <%= t.heading "Meals" %>
+    <%= t.heading "SAP" %>
+    <%= t.heading "Notes" %>
+  <% end %>
+  <%= t.body do %>
+    <% rows.each do |badge| %>
+      <% preselected = badge.print_ready? %>
+      <%= t.row id: "bmid-export-row-#{badge.person_id}" do %>
+        <%# The accent repeats what the flag icons already say, so the row
+            never depends on colour alone. %>
+        <%= t.cell class: bmid_row_accent_class(badge) do %>
+          <%= bulk_select_checkbox "ids[]", badge.person_id, checked: preselected,
+                                   id: "bmid-export-check-#{badge.person_id}",
+                                   aria_label: "Select the badge for #{badge.person.callsign}",
+                                   skip_select_all: !preselected %>
+        <% end %>
+        <%= t.row_header do %>
+          <%= callsign_link badge.person %>
+          <%= bmid_flag_icons(badge) %>
+          <div class="text-stone-muted"><%= badge.person.first_name %> <%= badge.person.last_name %></div>
+        <% end %>
+        <%= t.cell bmid_status_badge(badge) %>
+        <%= t.cell value_or_dash(badge.title1) %>
+        <%= t.cell value_or_dash(badge.title2) %>
+        <%= t.cell value_or_dash(badge.title3) %>
+        <%= t.cell badge.org_vehicle_insurance ? "Yes" : "—" %>
+        <%= t.cell badge.showers_granted ? "Yes" : "—" %>
+        <%= t.cell bmid_meals_short_label(badge) %>
+        <%= t.cell bmid_sap_cell(badge), center: true %>
+        <%= t.cell class: "max-w-md" do %>
+          <%= simple_format(badge.notes, class: "text-base") if badge.notes.present? %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

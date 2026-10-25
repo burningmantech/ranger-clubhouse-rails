@@ -1,0 +1,63 @@
+<%= hero_panel icon: "fingerprint", heading_level: :h1, id: "me-passkeys-header",
+               title: "Passkeys",
+               description: "Sign in with your fingerprint, face, screen lock, or a security key instead of your password.",
+               back_to: ["Profile", me_profile_path] %>
+
+<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+  New to passkeys? Read <%= link_to "About Passkeys", "#about-passkeys", class: "underline font-semibold" %> below.
+<% end %>
+
+<div class="my-4">
+  <%= button_link "Add Passkey", :primary, new_me_profile_passkey_path, icon: "plus", icon_type: :solid %>
+</div>
+
+<%= ui_section "Your Passkeys", icon: "fingerprint", icon_type: :solid, badge: @passkeys.size.to_s do %>
+  <% if @passkeys.any? %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Nickname" %>
+        <%= t.heading "Added" %>
+        <%= t.heading "Last Used" %>
+        <%= t.heading "Actions" %>
+      <% end %>
+      <%= t.body do %>
+        <% @passkeys.each do |passkey| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%= passkey.nickname %>
+              <%# Asked of the passkey, not of added_by: the Admin's account may be gone. %>
+              <% if passkey.added_by_admin? %>
+                <div class="text-body font-normal">Added by <%= passkey.added_by&.callsign || "an Admin" %></div>
+              <% end %>
+            <% end %>
+            <%= t.cell datetime_format(passkey.created_at) %>
+            <%= t.cell passkey.last_used_at ? datetime_format(passkey.last_used_at) : "Never" %>
+            <%= t.cell do %>
+              <%= delete_button me_profile_passkey_path(passkey), "Delete",
+                                 confirm_message: "Delete #{passkey.nickname}? It can no longer sign in to the Clubhouse. Delete it from your device or password manager too." %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No passkeys yet.", icon: "fingerprint", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<%= ui_section "About Passkeys", id: "about-passkeys", icon: "circle-question", icon_type: :solid do %>
+  <dl class="instruction-list">
+    <dt>What is a passkey?</dt>
+    <dd>A sign-in saved on your phone, laptop, password manager, or security key. You unlock it with your fingerprint, face, or screen lock, and the Clubhouse never sees that.</dd>
+    <dt>Does it replace my password?</dt>
+    <dd>No. Your password stays, and it is how you get back in if you lose a device.</dd>
+    <dt>Can I use a hardware security key?</dt>
+    <dd>Yes. Select Add Passkey and choose the security key when your browser asks where to save it.</dd>
+    <dt>What about a shared computer?</dt>
+    <dd>Never add a passkey on one. Anyone who knows that computer's PIN could use it. Carry a security key instead.</dd>
+    <dt>Will it sign me in on playa?</dt>
+    <dd>A passkey on the device in your hand, or a security key, signs in with no internet. Using your phone to sign in on another computer needs the internet.</dd>
+    <dt>I lost a device. Now what?</dt>
+    <dd>Sign in with your password and remove its passkey here. Can't sign in? Write to the Tech Team.</dd>
+  </dl>
+<% end %>

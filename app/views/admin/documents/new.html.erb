@@ -1,0 +1,8 @@
+<% content_for :title, "New Document" %>
+
+<%= hero_panel icon: "file-circle-plus", heading_level: :h1, id: "document-form-header",
+               title: "New Document",
+               description: "Write a document for the Clubhouse to display.",
+               back_to: ["Documents", admin_documents_path] %>
+
+<%= render "form" %>

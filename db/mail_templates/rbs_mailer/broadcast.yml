@@ -1,0 +1,31 @@
+description: "Carries one Ranger Broadcast message to one reader"
+
+subject: "{{ broadcast_subject }}"
+
+body: |
+  <p>Hello from the Black Rock Rangers,</p>
+
+  {% render "shared/mailer/do_not_reply" %}
+
+  {%- if expires_at %}
+    <p style="color:red;">
+      If you have received this message after
+      {{ expires_at }} (Pacific), please disregard it.
+    </p>
+  {%- endif %}
+
+  <p>
+    {{ broadcast_message }}
+  </p>
+
+  <p>
+    This message was sent through the Clubhouse. You may choose not to receive
+    these messages by adjusting your Alert Preferences
+    ("{{ alert.period }}: {{ alert.title }}")
+    in the Clubhouse.
+  </p>
+
+  <p>
+    Thank you,<br>
+    The Black Rock Rangers
+  </p>

@@ -1,0 +1,74 @@
+<%= hero_panel icon: "message", heading_level: :h1, id: "communication-person-banners-header",
+               title: "Account Banners" do |panel| %>
+  <% panel.description do %>
+    Review the banner messages shown to anyone who looks up a Ranger's account.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @total_count.to_s, "Banners", icon: "message", icon_type: :solid %>
+  <%= ui_stat_box @permanent_count.to_s, "Permanent", variant: :warning,
+                  icon: "thumbtack", icon_type: :solid %>
+  <%= ui_stat_box @event_count.to_s, "Event Only", variant: :secondary,
+                  icon: "calendar", icon_type: :solid %>
+  <%= ui_stat_box @people_count.to_s, "People", icon: "users", icon_type: :solid %>
+<% end %>
+
+<%= ui_callout_box :info, title: "Who Sees Banners" do %>
+  Who can see these banners? Account banner messages are visible to anyone with Event Management On Playa or Event Management
+  permissions. This includes HQ Window volunteers who check the person in and out, Mentors, Volunteer
+  Coordinators, and other groups authorized to look up accounts. The person named on the banner never
+  sees it.
+<% end %>
+
+<%= filter_bar id: "person-banner-filters",
+               chips: person_banner_filter_chips(@filter_params),
+               clear_url: communication_person_banners_path,
+               count: "Showing #{@banners.size} of #{@total_count} #{"banner".pluralize(@total_count)}",
+               url: communication_person_banners_path do |f| %>
+  <%= form_row do %>
+    <%= f.select :type,
+                 person_banner_type_filter_options,
+                 label: "Type",
+                 selected: @filter_params[:type],
+                 width: "w-full",
+                 wrapper_class: "flex-1" %>
+    <%= f.select :year,
+                 person_banner_year_filter_options(@years),
+                 label: "Year Posted",
+                 selected: @filter_params[:year],
+                 width: "w-full",
+                 wrapper_class: "flex-1" %>
+    <%= f.text_field :callsign,
+                     label: "Callsign",
+                     value: @filter_params[:callsign],
+                     help_text: "Matches any part of a callsign.",
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<% if @banners.empty? %>
+  <% if @total_count.zero? %>
+    <%= ui_empty_state "No account banners have been posted yet.", icon: "message", icon_type: :solid %>
+  <% else %>
+    <%= ui_empty_state "No banners matched the current filters.", icon: "magnifying-glass", icon_type: :solid %>
+  <% end %>
+<% else %>
+  <%# Event-only notes go stale on their own, so they lead. %>
+  <% if @event_banners.any? %>
+    <%= ui_section "Event Only", icon: "calendar", icon_type: :solid, border: false do %>
+      <%= render partial: "banner", collection: @event_banners, as: :banner %>
+    <% end %>
+  <% end %>
+
+  <% if @permanent_banners.any? %>
+    <%= ui_section "Permanent", icon: "thumbtack", icon_type: :solid, border: false do %>
+      <%= render partial: "banner", collection: @permanent_banners, as: :banner %>
+    <% end %>
+  <% end %>
+<% end %>

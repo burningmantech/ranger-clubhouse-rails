@@ -1,0 +1,24 @@
+<%# locals: (entry:, positions:) %>
+<%# Turbo-streamed into the "modal" frame from the Correct Position action. %>
+<%= modal_dialog id: "shift-correct-position-modal", title: "Correct Shift Position", frame: false do %>
+  <p class="mb-2">
+    This action corrects a shift check-in where the wrong position was selected.
+    The shift will NOT be ended.
+  </p>
+  <p class="mb-3 font-semibold">
+    When switching between an on-call shift (e.g., 007 Standby, Tech On Call) and an on-duty
+    shift (e.g., 007, Tech Team), or vice versa, end the current shift and start a new one
+    instead.
+  </p>
+  <%# _top: the modal lives in the "modal" turbo-frame — without this the
+      success redirect is trapped by the frame and the page never updates. %>
+  <%= ui_form(nil, shift_correct_position_path, method: :patch,
+              data: { turbo_frame: "_top" }) do |f| %>
+    <%= hidden_field_tag :entry_id, entry.id %>
+    <%= f.select :position_id, positions.map { |position| [position.title, position.id] },
+                 { label: "Correct Position", required: true,
+                   selected: entry.position_id },
+                 { class: "w-full" } %>
+    <%= modal_form_footer submit: "Save Position" %>
+  <% end %>
+<% end %>

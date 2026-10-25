@@ -1,0 +1,10 @@
+<%# Shift check in/out widget, shared by /me/shift-manage and /person/N/shift-manage.
+    State comes from ShiftManageConcern#load_shift_manage_state:
+    @on_duty_entry, @shift_positions, @upcoming_slots, @shift_training_passed. %>
+<%= render partial: "common/shift_manage/alerts" %>
+
+<% if @on_duty_entry %>
+  <%= render partial: "common/shift_manage/on_duty" %>
+<% elsif shift_person.can_work? %>
+  <%= render partial: "common/shift_manage/start_shift" %>
+<% end %>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+</head>
+<body class="bg-primary text-body">
+  <div class="max-w-lg mx-auto p-8">
+    <h1 class="text-xl font-bold mb-4">Autocomplete Test Fixture</h1>
+
+    <%# Standard autocomplete (no recents) %>
+    <%= render "shared/autocomplete",
+      url: autocomplete_search_path,
+      mode: "person_manage",
+      name: nil,
+      input_id: "test-autocomplete",
+      placeholder: "Search people...",
+      min_length: 2,
+      limit: 5,
+      delay: 300,
+      meta_mapping: nil,
+      submit_on_select: false,
+      recents_key: nil,
+      autofocus: false,
+      input_class: nil,
+      results_class: nil,
+      hidden_field_name: "selected_person_id",
+      hidden_field_id: "selected-person-id",
+      aria_label: "Search for a person" %>
+  </div>
+
+  <%# Recents variant - positioned with padding so it's accessible %>
+  <div class="max-w-lg mx-auto p-8" id="recents-fixture">
+    <h2 class="text-lg font-bold mb-4">Recents Variant</h2>
+    <%= render "shared/autocomplete",
+      url: autocomplete_search_path,
+      mode: "person_manage",
+      name: nil,
+      input_id: "test-recents-autocomplete",
+      placeholder: "Search with recents...",
+      min_length: 2,
+      limit: 5,
+      delay: 300,
+      meta_mapping: nil,
+      submit_on_select: false,
+      recents_key: "test_recents",
+      autofocus: false,
+      input_class: nil,
+      results_class: nil,
+      hidden_field_name: "selected_person_id_recents",
+      hidden_field_id: "selected-person-id-recents",
+      aria_label: "Search with recents" %>
+  </div>
+
+  <%# Inline + select-on-blur variant. Results render inline as in the search
+      dialog (no floating dropdown); the highlighted or sole result commits
+      when focus leaves the component. %>
+  <div class="max-w-lg mx-auto p-8" id="blur-fixture">
+    <h2 class="text-lg font-bold mb-4">Inline / Select-on-blur Variant</h2>
+    <%= render "shared/autocomplete",
+      url: autocomplete_search_path,
+      mode: "person_manage",
+      name: nil,
+      input_id: "test-blur-autocomplete",
+      placeholder: "Search (select on blur)...",
+      min_length: 2,
+      limit: 5,
+      delay: 300,
+      meta_mapping: nil,
+      submit_on_select: false,
+      recents_key: nil,
+      autofocus: false,
+      inline: true,
+      select_on_blur: true,
+      input_class: nil,
+      results_class: "ac-results-inline",
+      hidden_field_name: "selected_person_id_blur",
+      hidden_field_id: "selected-person-id-blur",
+      aria_label: "Search with select on blur" %>
+
+    <%# Focus sink to blur into %>
+    <input type="text" id="blur-sink" class="mt-4 border border-line rounded p-2" />
+  </div>
+
+  <%# Placement variant - pushed to bottom of viewport to test above-placement %>
+  <div style="min-height: 90vh;"></div>
+  <div class="max-w-lg mx-auto p-8" id="placement-fixture">
+    <h2 class="text-lg font-bold mb-4">Placement Variant</h2>
+    <%= render "shared/autocomplete",
+      url: autocomplete_search_path,
+      mode: "person_manage",
+      name: nil,
+      input_id: "test-placement-autocomplete",
+      placeholder: "Search near bottom...",
+      min_length: 2,
+      limit: 5,
+      delay: 300,
+      meta_mapping: nil,
+      submit_on_select: false,
+      recents_key: nil,
+      autofocus: false,
+      input_class: nil,
+      results_class: nil,
+      hidden_field_name: "selected_person_id_placement",
+      hidden_field_id: "selected-person-id-placement",
+      aria_label: "Search near bottom" %>
+  </div>
+</body>
+</html>

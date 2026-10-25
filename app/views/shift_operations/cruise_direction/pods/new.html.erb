@@ -1,0 +1,9 @@
+<%#
+  Make a pod. It goes on the end of the line, and the toast that comes back
+  says to put Rangers in it.
+%>
+<%= modal_dialog id: "cruise-direction-pod-dialog", title: "Create a Pod" do %>
+  <%= render "shift_operations/cruise_direction/pods/form", pod: @pod,
+             url: shift_operations_cruise_direction_pods_path(slot_id: @slot.id, year: @year),
+             method: :post, submit: "Save Pod" %>
+<% end %>

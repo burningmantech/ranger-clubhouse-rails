@@ -1,0 +1,71 @@
+<%= hero_panel icon: "graduation-cap", heading_level: :h1, id: "online-courses-header",
+               title: "Online Courses",
+               description: "Set which Moodle course each training position uses for a year." do |panel| %>
+  <% panel.year_selector year: @year, min_year: year_floor %>
+<% end %>
+
+<%= ui_callout_box :info do %>
+  <strong>The Training position can define two courses</strong> for the same year — one for
+  returning Rangers and one for new volunteers — instead of a single course for everyone.
+<% end %>
+
+<% if @overlap_position_ids.present? %>
+  <%= ui_callout_box :warning do %>
+    <strong>Check the courses marked "Audience overlap."</strong> A position with a course for
+    Everyone and another course for a specific audience is ambiguous — the LMS enrollment picks
+    one unpredictably.
+  <% end %>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= button_link "Add Course", :primary, new_admin_online_course_path(year: @year),
+                    icon: "plus", icon_type: :solid %>
+    <%= button_link "Browse Moodle Catalog", :secondary, moodle_catalog_admin_online_courses_path(year: @year),
+                    icon: "list", icon_type: :solid %>
+  <% end %>
+</div>
+
+<% if @online_courses.present? %>
+  <div class="text-lg my-2">Showing <%= pluralize(@online_courses.size, "online course") %></div>
+
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Audience" %>
+      <%= t.heading "LMS Course ID", right: true %>
+      <%= t.heading "LMS Course Name" %>
+      <%= t.heading "Actions" %>
+    <% end %>
+    <%= t.body do %>
+      <% @online_courses.each do |course| %>
+        <%= t.row do %>
+          <%= t.row_header position_title(course.position, course.position_id) %>
+          <%= t.cell do %>
+            <%= course_for_badge(course.course_for) %>
+            <% if @overlap_position_ids.include?(course.position_id) %>
+              <%= ui_badge "Audience overlap", :warning, size: "sm" %>
+            <% end %>
+            <% unless course.active? %>
+              <%= ui_badge "Inactive", :warning, size: "sm" %>
+            <% end %>
+          <% end %>
+          <%= t.cell course.course_id, right: true %>
+          <%= t.cell value_or_dash(course.name.presence) %>
+          <%# A plain flex row, not button_row: inside a table cell button_row
+              stacks its buttons full-width on every screen below desktop. %>
+          <%= t.cell do %>
+            <div class="flex flex-wrap items-center gap-2">
+              <%= button_link "Enrollment", :secondary, enrollment_admin_online_course_path(course),
+                              size: "sm", icon: "list", icon_type: :solid %>
+              <%= edit_link edit_admin_online_course_path(course), "Edit", size: "sm" %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No online courses have been defined for #{@year} yet.",
+                     icon: "graduation-cap", icon_type: :solid %>
+<% end %>

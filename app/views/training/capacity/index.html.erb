@@ -1,0 +1,120 @@
+<% content_for :title, "#{@training.title} Capacity" %>
+
+<%= hero_panel icon: "gauge-high", heading_level: :h1, id: "training-capacity-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> Capacity<% end %>
+  <% panel.description do %>
+    How full each session is — seats, sign-up mix, and pass counts.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "#{@year} Sessions", training_path(training_slug, year: @year) %>
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2008, skip_pandemic: true %>
+<% end %>
+
+<%# What three of the table's headings stand for. Each heading carries its line
+    as a tooltip, which only a pointer can reach, so the card says them too --
+    both read them from here. %>
+<% column_notes = {
+     "PNV" => "Prospectives and Alphas at session time",
+     "Returning" => "Returning Rangers, not auditing",
+     "Not Passed" => "No-shows, not passed, and not yet scored"
+   } %>
+
+<% if @report.rows.any? %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box "#{@report.totals.filled}%", "Seats Filled" %>
+    <%= ui_stat_box "#{@report.totals.signed_up} of #{@report.totals.max}", "Signed Up" %>
+    <%= ui_stat_box @report.totals.passed.to_s, "Passed" %>
+    <%= ui_stat_box @report.unique_trainers.to_s, "Unique Trainers" %>
+  <% end %>
+
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <%# Out of the hero, and only while a session is still to come: every
+          pass count is filled in once all of them have ended. %>
+      <% unless @report.rows.all?(&:scored) %>
+        <dt>Why is a session's pass count blank?</dt>
+        <dd>Pass counts appear after a session ends.</dd>
+      <% end %>
+      <% column_notes.each do |heading, note| %>
+        <dt>What does &ldquo;<%= heading %>&rdquo; count?</dt>
+        <dd><%= note %>.</dd>
+      <% end %>
+    </dl>
+  <% end %>
+
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link(training_capacity_path(training_slug, year: @year, format: :csv)) %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= ui_section "Sessions" do %>
+  <% if @report.rows.empty? %>
+    <%= ui_empty_state "No sessions were found for #{@year}.", icon: "calendar", icon_type: :regular %>
+  <% else %>
+    <p class="mb-4">Showing <%= pluralize(@report.rows.size, "active session") %>.</p>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%# A heading the card also explains takes its text and its tooltip from one key. %>
+        <% noted = ->(label) { t.heading label, right: true, title: column_notes.fetch(label) } %>
+        <%= t.heading "Session" %>
+        <%= t.heading "Date" %>
+        <%= t.heading "% Full" %>
+        <%= t.heading "Seats", right: true %>
+        <%= t.heading "Signed Up", right: true %>
+        <%= noted.call("PNV") %>
+        <%= noted.call("Returning") %>
+        <%= t.heading "Auditors", right: true %>
+        <%= t.heading "Passed", right: true %>
+        <%= noted.call("Not Passed") %>
+        <%= t.heading "Trainers", right: true %>
+      <% end %>
+      <%= t.body do %>
+        <% @report.rows.each do |row| %>
+          <% slot = row.slot %>
+          <%= t.row do %>
+            <%= t.row_header slot.description %>
+            <%= t.cell training_session_time(slot),
+                       class: "whitespace-nowrap" %>
+            <%= t.cell do %>
+              <%= render "fill_meter", filled: row.filled %>
+            <% end %>
+            <%= t.cell slot.max, right: true %>
+            <%= t.cell row.signed_up, right: true %>
+            <%= t.cell row.pnv_count, right: true %>
+            <%= t.cell row.veteran_count, right: true %>
+            <%= t.cell row.auditor_count, right: true %>
+            <% if row.scored %>
+              <%= t.cell row.passed, right: true %>
+              <%= t.cell row.not_passed, right: true %>
+            <% else %>
+              <%= t.cell "—", right: true %>
+              <%= t.cell "—", right: true %>
+            <% end %>
+            <%= t.cell row.trainer_count, right: true %>
+          <% end %>
+        <% end %>
+        <% totals = @report.totals %>
+        <%= t.row state: :total do %>
+          <%= t.row_header "Totals" %>
+          <%= t.cell "" %>
+          <%= t.cell do %>
+            <%= render "fill_meter", filled: totals.filled %>
+          <% end %>
+          <%= t.cell totals.max, right: true %>
+          <%= t.cell totals.signed_up, right: true %>
+          <%= t.cell totals.pnv_count, right: true %>
+          <%= t.cell totals.veteran_count, right: true %>
+          <%= t.cell totals.auditor_count, right: true %>
+          <%= t.cell totals.passed, right: true %>
+          <%= t.cell totals.not_passed, right: true %>
+          <%= t.cell right: true do %>
+            <%= @report.unique_trainers %> <span class="font-normal text-stone-muted">(unique)</span>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

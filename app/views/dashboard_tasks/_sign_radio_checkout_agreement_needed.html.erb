@@ -1,0 +1,6 @@
+<%# locals: (step:,facts:)%>
+<%= fa_icon "walkie-talkie", :solid %> <b>Sign the Radio Checkout Agreement</b> to check out a radio.
+<% if facts.is_applicant %>
+  <div class="text-sm text-stone-muted mt-1">You'll use a radio during your Alpha shift.</div>
+<% end %>
+<div class="mt-2"><%= link_to "Go To Agreements", me_agreements_path, class: "tap-target-link" %></div>

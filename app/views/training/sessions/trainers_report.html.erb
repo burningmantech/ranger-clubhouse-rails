@@ -1,0 +1,168 @@
+<% content_for :title, "Trainer's Report — #{@training.title}" %>
+<% slot = @training_session.slot %>
+<% session_title = "#{slot.begins_year} #{@training.title} — #{slot.description}" %>
+<% session_when = training_session_time(slot) %>
+<% doc_label = "#{@training.title} · Trainer's report" %>
+<% signed_up = @trainee_bands.sum { |_label, trainees| trainees.size } %>
+<% tile_labels = { "Prospectives" => "Prospective" } %>
+
+<%# The report's footer ("doc label — session title" bottom-left, "Page N of
+    M" bottom-right) rides a NAMED @page rule emitted into the print layout's
+    head: margin boxes on the bare @page in layouts/print would double up
+    with the sign-up sheet's masthead page numbers, and the tailwind bundle
+    cannot scope @page at all. The label is CSS-hex escaped so ERB has
+    nothing to HTML-escape inside the raw-text style element. %>
+<% page_footer = "#{doc_label} — #{session_title}".gsub(/[\\"'<>&]/) { |char| format("\\%x ", char.ord) } %>
+<% content_for :page_rules do %>
+  <style>
+    @page trainers-report {
+      @bottom-left {
+        content: "<%= page_footer %>";
+        font-size: 7.5pt;
+        color: #444;
+        font-family: "Atkinson Hyperlegible", sans-serif;
+      }
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 7.5pt;
+        color: #444;
+        font-family: "Atkinson Hyperlegible", sans-serif;
+      }
+    }
+  </style>
+<% end %>
+
+<%= render "print_screen_nav" %>
+
+<section class="trainers-report">
+  <header class="report-masthead">
+    <div class="report-doc-label"><%= doc_label %></div>
+    <div class="report-session-row">
+      <h1 class="report-session"><%= session_title %></h1>
+      <div class="report-when"><%= session_when %></div>
+    </div>
+  </header>
+
+  <div class="report-subline">
+    <span>sorted by years, then callsign</span>
+    <span>tick ✔&#xFE0E; at left when passed</span>
+    <% if @training_session.trainees.any? { |trainee| trainee_report_mark(trainee.training_status) } %>
+      <span>Y passed · N not passed · NS no show</span>
+    <% end %>
+  </div>
+
+  <div class="report-stats">
+    <div class="report-stat"><b><%= signed_up %><% if slot.max.positive? %><span class="report-stat-max">/<%= slot.max %></span><% end %></b> <span class="report-stat-label">Signed up</span></div>
+    <% @trainee_bands.each do |band_label, trainees| %>
+      <div class="report-stat"><b><%= trainees.size %></b> <span class="report-stat-label"><%= tile_labels.fetch(band_label, band_label) %></span></div>
+    <% end %>
+    <div class="report-stat"><b><%= @training_session.inactive_retired_count %></b> <span class="report-stat-label">Inact/Retired</span></div>
+    <div class="report-stat"><b><%= @training_session.trainer_count %></b> <span class="report-stat-label">Trainers</span></div>
+  </div>
+
+  <% if @training_session.trainer_groups.any? %>
+    <% @training_session.trainer_groups.each do |group| %>
+      <div class="report-trainers">
+        <b><%= group.position_title %> (<%= group.trainers.size %>):</b>
+        <% if group.trainers.any? %>
+          <%= group.trainers.map { |trainer| "#{trainer.person.callsign} (#{trainer.person.first_name} #{trainer.person.last_name})" }.join(" · ") %>
+        <% else %>
+          <span class="italic">No trainers signed up.</span>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="report-trainers"><b>No trainer slots were found.</b> <%= render "training/sessions/trainer_slot_rule" %></p>
+  <% end %>
+
+  <% unless @training_session.art? %>
+    <div class="report-callout">
+      <b>Email ahead:</b> inactive and retired Rangers must take the full-day training — reach out before the session.
+      <% if @full_day_callsigns.any? %>
+        <%= @full_day_callsigns.join(" · ") %>
+      <% else %>
+        <span class="italic">None signed up.</span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% row_number = 0 %>
+  <table>
+    <thead>
+    <tr>
+      <th class="report-num"><span class="sr-only">Row</span></th>
+      <th class="report-pass">✔&#xFE0E;</th>
+      <th>Callsign</th>
+      <th>Years</th>
+      <th>Teams</th>
+    </tr>
+    </thead>
+    <% @trainee_bands.each do |band_label, trainees| %>
+      <tbody class="report-band-body">
+      <tr class="report-band">
+        <td class="report-num"></td>
+        <td colspan="4"><%= band_label %> (<%= trainees.size %>)</td>
+      </tr>
+      </tbody>
+      <% if trainees.empty? %>
+        <tbody>
+        <tr class="report-empty-row">
+          <td class="report-num"></td>
+          <td colspan="4">None signed up.</td>
+        </tr>
+        </tbody>
+      <% end %>
+      <% trainees.each do |trainee| %>
+        <tbody>
+        <tr class="report-id-row">
+          <td class="report-num" rowspan="2"><%= row_number += 1 %></td>
+          <td class="report-pass" rowspan="2"><%= trainee_report_mark(trainee.training_status) || tag.span(class: "report-checkbox") %></td>
+          <td class="report-callsign"><%= trainee.person.callsign %></td>
+          <td class="report-years">
+            <% if trainee.years.zero? %>
+              <span class="report-years-pill report-new">NEW</span>
+            <% else %>
+              <span class="report-years-pill"><%= trainee.years %> <%= "yr".pluralize(trainee.years) %></span>
+            <% end %>
+          </td>
+          <td class="report-teams">
+            <%# The full-day flag leads the teams cell -- in the callsign cell
+                it wraps the glance line to three lines. %>
+            <% if @training_session.dirt? && (trainee.is_inactive || trainee.is_retired) %>
+              <span class="report-full-day">Full day required</span>
+            <% end %>
+            <% trainee.team_short_titles.each do |team| %>
+              <span class="report-chip"><%= team %></span>
+            <% end %>
+          </td>
+        </tr>
+        <tr class="report-detail-row">
+          <td colspan="3">
+            <%= trainee.person.first_name %> <%= trainee.person.last_name %> · <%= trainee.person.email %>
+            <% if trainee.fkas.any? %>
+              · <span class="report-fka">fka <%= trainee.fkas.join(", ") %></span>
+            <% end %>
+            <%# No status chip when the band label already states it (no
+                PROSPECTIVE chips inside Prospectives, no AUDITOR in Auditors). %>
+            <% unless trainee.is_active || band_label.downcase.include?(trainee.status.downcase) %>
+              · <span class="report-status"><%= trainee.status %></span>
+            <% end %>
+          </td>
+        </tr>
+        </tbody>
+      <% end %>
+    <% end %>
+  </table>
+
+  <% legend = @team_legend.select { |_title, short_title| short_title.present? } %>
+  <% if legend.any? %>
+    <div class="report-legend">
+      <div class="report-legend-title">Teams legend</div>
+      <div class="report-legend-cols">
+        <% legend.each do |title, short_title| %>
+          <div><b><%= short_title %></b> <%= title %></div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</section>

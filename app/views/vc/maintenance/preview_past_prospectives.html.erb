@@ -1,0 +1,44 @@
+<%#
+  Review step for "Reset Past Prospectives": the full list of accounts the task
+  will change, with the callsign each one would receive. Nothing has been saved
+  yet -- the commit POST below is what runs the task, and it renders its ledger
+  at 422 (Turbo drops a 200 form response).
+%>
+
+<%= hero_panel icon: "id-badge", heading_level: :h1, id: "vc-maintenance-preview-past-prospectives-header",
+               back_to: ["Maintenance Tasks", vc_maintenance_path] do |panel| %>
+  <% panel.title do %><%= @title %><% end %>
+  <% panel.description do %>
+    Nothing has changed yet &mdash; review the accounts below, then confirm or
+    cancel at the bottom of the list.
+  <% end %>
+<% end %>
+
+<% if @results.any? %>
+  <p class="text-lg my-4">
+    <strong><%= pluralize @results.size, "account" %></strong> still
+    <%= @results.size == 1 ? "has" : "have" %> an approved callsign and will be reset:
+  </p>
+
+  <%= render "results_table", results: @results, show_status: true,
+             callsign_heading: "Callsign", status_heading: "Current Status" %>
+
+  <%= ui_callout_box :warning, accent: true, class: "my-4" do %>
+    <strong>Confirming resets all <%= pluralize @results.size, "account" %> at once.</strong>
+    This cannot be undone.
+  <% end %>
+
+  <%= ui_form(nil, vc_maintenance_reset_past_prospectives_path, method: :post) do |f| %>
+    <%= button_row do %>
+      <%= f.submit "Reset All #{pluralize @results.size, "Account"}", variant: :error %>
+      <%= cancel_button vc_maintenance_path %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No Past Prospectives with approved callsigns found. " \
+                     "Running this task would change nothing.",
+                     icon: "id-badge", icon_type: :solid %>
+  <%= button_row do %>
+    <%= button_link "Back to Maintenance Tasks", :secondary, vc_maintenance_path %>
+  <% end %>
+<% end %>

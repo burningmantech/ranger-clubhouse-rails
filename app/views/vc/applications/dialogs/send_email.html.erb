@@ -1,0 +1,21 @@
+<%= modal_dialog id: "send-email-dialog", size: :lg, title: "Email #{@application.first_name} #{@application.last_name}" do %>
+  <p class="mb-2">
+    The email will be sent to <strong><%= @application.email %></strong> as
+    <strong><%= EmailAddresses::VOLUNTEER_COORDINATORS_TEAM %></strong>.
+  </p>
+  <%= form_with url: send_email_vc_application_path(@application), method: :post,
+                builder: AppFormBuilder, data: { turbo_frame: "_top" } do |f| %>
+    <%= hidden_field_tag :is_raw_email, 1 %>
+    <%= f.text_field :subject, label: "Subject", size: 70, required: true,
+                     value: "Hey #{@application.first_name}, we have a question about your Ranger application" %>
+    <%= f.text_area :message, label: "Message", required: true, rows: 8,
+                    value: "Hey #{@application.first_name} #{@application.last_name},\n\n*insert your message here*\n\nYour Friendly Black Rock Ranger Volunteer Coordinators\n" %>
+    <%= button_row do %>
+      <%= submit_button "Send Email" %>
+      <%= submit_button "Preview Email", variant: :secondary,
+                        formaction: preview_email_vc_application_path(@application),
+                        formmethod: "get", formtarget: "_blank" %>
+      <%= modal_close_button "Cancel" %>
+    <% end %>
+  <% end %>
+<% end %>

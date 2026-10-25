@@ -1,0 +1,10 @@
+<% if positions.present? %>
+  <div <% if local_assigns[:category] %>data-position-category="<%= category %>"<% end %>>
+    <div class="text-sm text-stone-muted mb-1"><%= title %></div>
+    <div class="ml-3">
+      <% positions.each do |position| %>
+        <%= render "position_checkbox", item: position, param_key: param_key %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

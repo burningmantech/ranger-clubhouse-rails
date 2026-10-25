@@ -1,0 +1,112 @@
+<%#
+  Everyone the intake teams touched in the year: a note, a rank, a raised
+  Personnel flag, or a bonk, whatever their status. The lines, the chips and
+  the review pane are the shared pipeline ones (UnifiedFlaggingConcern); this
+  page adds the roster rule, one list by callsign in place of the severity
+  sections, the Ranking and Notes filters, a jump list for a roster the VC
+  page never grows to, and the export.
+%>
+<% content_for :title, "#{@year} Unified Flagging" %>
+<%= hero_panel icon: "flag", heading_level: :h1, id: "people-unified-flagging-header",
+               title: "#{@year} Unified Flagging" do |panel| %>
+  <% panel.description do %>
+    Everyone with a note, rank, Personnel flag, or bonk recorded in <%= @year %> by Personnel, RRN, VC, Training,
+    or Mentors.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @total.zero? %>
+  <%= ui_empty_state "No notes, ranks, flags, or bonks were recorded in #{@year}.", icon: "flag" %>
+<% else %>
+  <%# The Personnel tile is the flag filter. %>
+  <%= render "common/unified_flagging/group_tiles", counts: @group_counts, active: @filter_params[:section],
+                                                    year: @year %>
+
+  <%= render "common/unified_flagging/personnel_warning", callsigns: @personnel_flagged %>
+
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Who is listed?</dt>
+      <dd>
+        Anyone with something recorded in <%= @year %>: a note from Personnel, RRN, VC, a trainer, or a Mentor, a
+        rank from any of them, a raised Personnel flag, or a bonk or self-bonk, whatever their status today.
+      </dd>
+      <%= render "common/unified_flagging/review_legend" %>
+      <%= render "common/unified_flagging/lead_legend" %>
+      <%= render "common/unified_flagging/rank_legend" %>
+      <dt>When does a name carry a training word?</dt>
+      <dd>
+        When that person was in the <%= @year %> intake pipeline, as an Auditor, Prospective, or Alpha, or had an
+        In-Person Training session that year. Training does not concern anyone else, so their line says nothing
+        about it, the Training filter&rsquo;s choices leave them out, and their export row leaves Training blank.
+      </dd>
+      <dt>What does the export contain?</dt>
+      <dd>
+        One row per person shown, with each team&rsquo;s <%= @year %> rank (Training lists every ranked session, so
+        a retake year shows two), the Personnel flag, a bonk, the training outcome, and which teams wrote notes and
+        when; the filters narrow it as they do the list.
+      </dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "people-unified-flagging-filters",
+                 chips: people_unified_flagging_filter_chips(@filter_params, @year),
+                 clear_url: unified_flagging_path(year: @year),
+                 count: "Showing #{@shown} of #{pluralize(@total, "person", plural: "people")}",
+                 # The export carries whatever the chips say is narrowing the list.
+                 actions: (export_csv_link(unified_flagging_path(**active_filters(@filter_params), year: @year,
+                                                                 format: :csv)) if @shown.positive?),
+                 url: unified_flagging_path do |f| %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.text_field :q, label: "Search by Callsign, Name, or Former Handle",
+                       value: @filter_params[:q], width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :rank, people_unified_flagging_rank_options,
+                   label: "Ranking", selected: @filter_params[:rank],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :notes, people_unified_flagging_notes_options,
+                   label: "Notes", selected: @filter_params[:notes],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= form_row do %>
+      <%= f.select :training, unified_flagging_training_filter_options,
+                   label: "Training", selected: @filter_params[:training],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :section, unified_flagging_section_filter_options,
+                   label: "Section", selected: @filter_params[:section],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @total.positive? && @shown.zero? %>
+  <%= ui_empty_state "No one listed for #{@year} matched those filters.",
+                     icon: "magnifying-glass", icon_type: :solid %>
+<% elsif @total.positive? %>
+  <%# A year's roster runs to hundreds, past what a reader scrolls through, so
+      the shared jump control goes above the list: pick a letter, then a
+      callsign, and land on that line. Only offered once there is more than
+      one person to choose between. %>
+  <% scroll_items = people_unified_flagging_scroll_items(@rows) %>
+  <% if scroll_items.many? %>
+    Jump to a callsign starting with the letter:
+    <%= dropdown_scroll_list scroll_items %>
+  <% end %>
+
+  <% pane = render "common/unified_flagging/review_pane", summary: @selected, history: @history, year: @year %>
+  <%# One section, by callsign -- the tiles above say who stands out, and the
+      lead chip and the red tint mark them in the list. %>
+  <%= render layout: "common/unified_flagging/review_workspace", locals: { pane: } do %>
+    <%= ui_section "Everyone Listed", icon: "users", icon_type: :solid,
+                   badge: @rows.size.to_s, badge_color: :secondary do %>
+      <%# extra: a trainer's note in the year, which the shared line does not name. %>
+      <%= render "common/unified_flagging/review_list", rows: @rows, year: @year, selected_id: @selected_id,
+                                                        extra: "people/unified_flagging/line_training_note" %>
+    <% end %>
+  <% end %>
+<% end %>

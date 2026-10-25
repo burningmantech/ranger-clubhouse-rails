@@ -1,0 +1,14 @@
+<%= modal_dialog id: "edit-approved-handle-dialog", title: "Edit Approved Callsign" do %>
+  <%= render "vc/applications/account_created_warning", application: @application,
+             message: "Updating the callsign here will not update the Clubhouse account." %>
+  <p class="mb-2">
+    Updating the approved callsign field will <strong>not</strong> email the applicant, nor update
+    the application&rsquo;s status.
+  </p>
+  <%= form_with url: vc_application_path(@application), method: :patch,
+                builder: AppFormBuilder, data: { turbo_frame: "_top" } do |f| %>
+    <%= f.text_field "prospective_application[approved_handle]", label: "Approved Callsign",
+                     required: true, value: @application.approved_handle %>
+    <%= modal_form_footer submit: "Save Callsign" %>
+  <% end %>
+<% end %>

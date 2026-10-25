@@ -1,0 +1,9 @@
+<%# What personal information the page shows, said before the data. Not gated
+    on any role: whoever can read the page can read the details, so everyone
+    gets the reminder.
+    Locals: shows (String) -- the fields the page displays, e.g.
+    "home addresses and email addresses". %>
+<%= ui_callout_box :warning, icon: "hand", title: "Personal Information" do %>
+  This report shows <%= shows %>.
+  Contact information is only for The BRC Ranger department use.
+<% end %>

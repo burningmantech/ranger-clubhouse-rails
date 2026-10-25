@@ -1,0 +1,169 @@
+<%= hero_panel icon: "clipboard-list", heading_level: :h1, id: "person-timesheets-header",
+               description: "Review and correct timesheet entries",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    <%= @year %> Timesheet &mdash; <%= @person.callsign %>
+  <% end %>
+  <% panel.year_selector year: @year, years: @years %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @timesheets.size, "ENTRIES" %>
+  <%= ui_stat_box @entries_verified, "VERIFIED" %>
+  <%= ui_stat_box @entries_unverified,
+                  "UNVERIFIED",
+                  variant: (@entries_unverified.positive? ? :warning : :secondary) %>
+  <%= ui_stat_box @entries_pending,
+                  "PENDING",
+                  variant: (@entries_pending.positive? ? :warning : :secondary) %>
+<% end %>
+
+<% if @year < 2008 %>
+  <%= ui_callout_box :warning do %>
+    The department did not start tracking volunteer hours until 2008. Timesheet entries prior to 2008 are
+    placeholders and do not represent the actual volunteer efforts.
+  <% end %>
+<% end %>
+
+<% if @entries_pending.positive? %>
+  <%= ui_callout_box :warning, icon: "arrow-right" do %>
+    <%= pluralize(@entries_pending, "timesheet entry") %> <%= @entries_pending == 1 ? "requires" : "require" %>
+    correction review.
+  <% end %>
+<% end %>
+
+<% if @missing_pending.positive? %>
+  <%= ui_callout_box :warning, icon: "arrow-right" do %>
+    <%= pluralize(@missing_pending, "Missing Timesheet Entry Request") %> <%= @missing_pending == 1 ? "requires" : "require" %>
+    attention. Jump to <%= link_to "Missing Entry Requests", "#missing-requests", class: "underline font-semibold" %>.
+  <% end %>
+<% end %>
+
+<% if @is_current_year %>
+  <% if @event.timesheet_confirmed %>
+    <%= ui_callout_box :success do %>
+      Timesheet confirmed correct on <%= datetime_format @event.timesheet_confirmed_at, year: true %> (Pacific).
+      Any further updates to the entries will un-confirm the entire timesheet.
+    <% end %>
+  <% elsif @timesheets.any? %>
+    <%= ui_callout_box :secondary, icon: "hand" do %>
+      <%= @person.callsign %> has not yet confirmed the <%= @year %> timesheet is correct.
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# Quick links - visible on mobile only (the action sidebar appears on desktop) %>
+<div class="flex flex-row flex-wrap gap-3">
+  <%= button_link "Audit Log", :secondary, log_person_timesheets_path(@person, year: @year),
+                  icon: "clock-rotate-left", icon_type: :solid,
+                  full_width: true, class: "text-base py-3" %>
+  <%= button_link "Hours & Credits", :secondary, breakdown_person_timesheets_path(@person, year: @year),
+                  icon: "chart-simple", icon_type: :solid,
+                  full_width: true, class: "text-base py-3" %>
+  <% if can?(:confirm_timesheet) && @is_current_year %>
+    <% confirmed = @event.timesheet_confirmed %>
+    <% verb = confirmed ? "Un-Confirm" : "Confirm" %>
+    <%= button_link "#{verb} Timesheet",
+                    :secondary,
+                    confirm_person_timesheets_path(@person, year: @year, confirmed: confirmed ? 0 : 1),
+                    icon: (confirmed ? "rotate-left" : "check"),
+                    icon_type: :solid,
+                    full_width: true, class: "text-base py-3",
+                    data: confirm_modal(
+                      title: "#{verb} Timesheet?",
+                      message: "#{verb.capitalize} this timesheet? The change is logged and can be reversed.",
+                      confirm_label: verb,
+                      method: :post
+                    ) %>
+  <% end %>
+  <% if can?(:backfill_timesheets) %>
+    <%= button_link "Back Fill Years Rangered", :secondary, backfill_person_timesheets_path(@person),
+                    icon: "calendar-plus", icon_type: :solid,
+                    full_width: true, class: "text-base py-3" %>
+  <% end %>
+  <% if can?(:manage_shifts) %>
+    <%= button_link "Shift Check In/Out", :secondary, person_shift_manage_path(@person),
+                    icon: "person-walking", icon_type: :solid,
+                    full_width: true, class: "text-base py-3" %>
+  <% end %>
+</div>
+
+<div class="flex flex-col lg:gap-6 mt-2">
+  <%= ui_section "#{@year} Timesheet Entries", icon: "clock", icon_type: :solid do %>
+    <% if @timesheets.any? %>
+      <%= filter_bar id: "timesheet-entry-filters",
+                     chips: timesheet_filter_chips(@filters, @filter_labels, @person, @year),
+                     clear_url: person_timesheets_path(@person, year: @year),
+                     count: "Showing #{@entries.size} of #{pluralize(@timesheets.size, "entry")}",
+                     url: person_timesheets_path(@person) do |f| %>
+        <%# Year-scoped page: without this, applying a filter snaps back to the
+            current year. %>
+        <%= hidden_field_tag :year, @year %>
+        <%# Two to a row, laid out from the filter table so adding a sixth
+            filter needs no change here. A choice the current rows cannot
+            satisfy is offered greyed rather than withheld. %>
+        <% @filter_options.each_slice(2) do |row| %>
+          <%= form_row do %>
+            <% row.each do |key, select| %>
+              <%= f.select key, select[:choices],
+                           label: Person::TimesheetsHelper::TIMESHEET_FILTER_NAMES[key],
+                           help_text: Person::TimesheetsHelper::TIMESHEET_FILTER_HELP_TEXT[key],
+                           selected: @filters[key], disabled: select[:disabled],
+                           width: "w-full", wrapper_class: "flex-1" %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <%= button_row do %>
+          <%= f.submit "Apply Filters" %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%# The rollups total what is on screen, so they follow the filter -- under
+        "Dirt only" a year total would read as the Dirt total. %>
+    <div class="mb-3 text-sm">
+      <span class="me-3"><span class="font-semibold text-heading">Credits:</span> <%= credit_format @total_credits %>
+      </span>
+      <span class="me-3"><span class="font-semibold text-heading">Appreciation Hours:</span> <%= hour_minute_words @counted_duration %>
+      </span>
+      <span><span class="font-semibold text-heading">Total hours:</span> <%= hour_minute_words @total_duration %></span>
+    </div>
+
+    <%# Overlaps are found across the whole year, not the filtered rows -- an
+        entry only overlaps because of one the filter may have hidden. %>
+    <% if @overlapping_ids.any? %>
+      <%= ui_callout_box :error do %>
+        Multiple entries are overlapping in time.
+      <% end %>
+    <% end %>
+
+    <% if @entries.any? %>
+      <% unless @entries.all? { |entry| entry.position.count_hours } %>
+        <div class="mb-2 text-body">
+          <%= fa_icon "ban", :solid, class: "icon-warning" %>
+          marks a position whose hours do not count toward provisions (meals, showers, clothing, or an
+          event radio). Credits and ticket eligibility are unaffected.
+        </div>
+      <% end %>
+      <%= render partial: "entries_table" %>
+    <% elsif @timesheets.any? %>
+      <%= ui_empty_state "No timesheet entries match the filters." %>
+    <% else %>
+      <%= ui_empty_state "No timesheet entries were found for #{@year}." %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "#{@year} Missing Timesheet Entry Requests", icon: "file-circle-question", icon_type: :solid, id: "missing-requests" do %>
+    <div class="mb-3 flex flex-wrap items-center gap-3">
+      <span><%= pluralize(@missing_requests.size, "missing entry request") %></span>
+      <%= button_link "Add Request", :secondary, new_person_missing_request_path(@person, year: @year),
+                      icon: "plus", icon_type: :solid %>
+    </div>
+
+    <% if @missing_requests.any? %>
+      <%= render partial: "missing_requests_table" %>
+    <% else %>
+      <%= ui_empty_state "No missing timesheet entry requests were found for #{@year}." %>
+    <% end %>
+  <% end %>
+</div>

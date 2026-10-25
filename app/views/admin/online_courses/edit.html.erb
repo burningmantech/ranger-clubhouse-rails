@@ -1,0 +1,14 @@
+<%= hero_panel icon: "pen", heading_level: :h1, id: "online-course-form-header",
+               title: "Edit #{@online_course.year} Online Course",
+               description: "Change which Moodle course this position uses.",
+               back_to: ["Online Courses", admin_online_courses_path(year: @online_course.year)] %>
+
+<div class="my-4">
+  <p class="text-body mb-2">
+    <strong>LMS Course Name:</strong> <%= value_or_dash(@online_course.name.presence) %>
+  </p>
+  <%= button_link "Sync Name from Moodle", :secondary, set_name_admin_online_course_path(@online_course),
+                  method: :post, size: "sm", icon: "arrows-rotate", icon_type: :solid %>
+</div>
+
+<%= render "form" %>

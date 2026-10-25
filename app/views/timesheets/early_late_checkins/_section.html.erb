@@ -1,0 +1,69 @@
+<%# locals: (kind:, entries:, period:) %>
+<%#
+  One half of the report: every early check-in, or every late one, worst first.
+  Both halves are always drawn -- an empty one is the answer to "how bad was the
+  early problem this year", and leaving it out reads as though the question was
+  never asked.
+
+  kind is :early or :late; period is that side's limit in seconds, which is zero
+  when the check is switched off. Reads @filters and @year for the empty line's
+  wording.
+%>
+<% early = kind == :early %>
+<% badge_color = early ? :warning : :error %>
+
+<%= ui_section "#{early ? "Early" : "Late"} Check-Ins", badge: entries.size.to_s,
+               badge_color:, border: false do %>
+  <% if !period.positive? %>
+    <%# Nothing was measured, so an empty table here is not a clean year. %>
+    <p class="text-stone-muted italic">
+      The <%= kind %> check-in limit is switched off, so no check-in is flagged as
+      <%= kind %>.
+    </p>
+  <% elsif entries.empty? %>
+    <p class="text-stone-muted italic">
+      No <%= kind %> check-in<%= " matched these filters" if @filters.any? %> in <%= @year %>.
+    </p>
+  <% else %>
+    <%# Six columns of audit detail: desktop-first, scrolling sideways on a
+        narrow screen rather than restacking, so a column can still be read
+        down. %>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Ranger" %>
+        <%= t.heading "Position" %>
+        <%= t.heading "Checked In" %>
+        <%= t.heading "Via" %>
+        <%= t.heading early ? "Early By" : "Late By", right: true %>
+        <%= t.heading "Scheduled Shift" %>
+      <% end %>
+      <%= t.body do %>
+        <% entries.each do |entry| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%= person_display_link entry.person, entry.person_id %>
+            <% end %>
+            <%= t.cell entry.position_title %>
+            <%# nowrap: left to wrap, "Thu Aug 21 @ 10:15" breaks over three
+                lines and the date column reads taller than the rest of the row. %>
+            <%= t.cell class: "whitespace-nowrap" do %><%= datetime_format entry.on_duty %><% end %>
+            <%= t.cell check_in_via_label(entry.via) %>
+            <%# The badge carries the icon as well as the color: the two halves
+                must be told apart without it, and a printed page has neither.
+                nowrap because a span said in days is two words, and left to wrap
+                it stacks inside the badge and doubles the height of every row. %>
+            <%= t.cell right: true, class: "whitespace-nowrap" do %>
+              <%= ui_badge check_in_distance(entry), badge_color,
+                           icon: early ? "hourglass-start" : "hourglass-end",
+                           icon_type: :solid %>
+            <% end %>
+            <%= t.cell do %>
+              <%= safe_join([datetime_format(entry.slot_begins),
+                             entry.slot_description.presence].compact, " · ") %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

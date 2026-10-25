@@ -1,0 +1,98 @@
+<%#
+  Everyone who turned in hours this year, one row each. Pick a callsign to see
+  their entries.
+%>
+<% content_for :title, "Timesheets by Callsign" %>
+
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1,
+               id: "timesheets-by-callsign-header",
+               title: "#{@year} Timesheets by Callsign" do |panel| %>
+  <% panel.description do %>
+    Every timesheet turned in for this year, grouped by the person who turned it
+    in.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%# Which positions the reader is seeing. Stated before the roster, because it
+    changes what an empty row means: a short list can be a quiet year or a
+    narrow permission, and only this line tells them apart. %>
+<% case @report.status %>
+<% when TimesheetByCallsignReport::PARTIAL_REPORT %>
+  <%= ui_callout_box :warning, icon: "hand", title: "Some Positions Are Hidden" do %>
+    You are seeing only the positions owned by the Cadres and Delegations you
+    belong to, and by the teams you manage.
+  <% end %>
+<% when TimesheetByCallsignReport::NO_MEMBERSHIP %>
+  <%= ui_callout_box :warning, icon: "hand", title: "No Positions to Show" do %>
+    You do not belong to a Cadre or Delegation that owns positions, and you do
+    not manage a team.
+  <% end %>
+<% end %>
+
+<% if @report.people.any? %>
+  <%= filter_bar id: "timesheets-by-callsign-filters",
+                 chips: timesheets_by_callsign_chips(@filter_params, @year),
+                 clear_url: timesheets_timesheets_by_callsign_path(year: @year),
+                 count: "Showing #{@people.size} of #{pluralize(@report.people.size, "person")}",
+                 actions: export_csv_link(timesheets_timesheets_by_callsign_path(year: @year, format: :csv), "Export All to CSV"),
+                 url: timesheets_timesheets_by_callsign_path do |f| %>
+    <%# Year-scoped page: a GET form replaces the whole query string, so without
+        this every Apply would bounce the roster back to the current year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.text_field :callsign, label: "Callsign Contains",
+                       value: @filter_params[:callsign],
+                       width: "w-full", wrapper_class: "flex-1" %>
+      <%# matching: -- the select navigates with the callsign filter still
+          applied, so its counts have to promise the roster the choice
+          delivers, not the roster before filtering. %>
+      <%= f.select :status, filter_status_options(@status_counts,
+                                                  matching: @matching_status_counts),
+                   label: "Status", selected: @filter_params[:status],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <% if @people.any? %>
+    <%# 777 people is far past what a reader scrolls through, so the shared
+        jump control goes above the roster: pick a letter, then the callsign,
+        and land on that row. Only offered once there is more than one person
+        to choose between. %>
+    <% if @people.many? %>
+      Jump to a callsign starting with the letter:
+      <%= dropdown_scroll_list timesheets_by_callsign_scroll_items(@people) %>
+    <% end %>
+
+    <div class="lg:w-3/4">
+      <% @people.each do |row| %>
+        <%# scroll-mt: the navbar is sticky and 64px tall, and the page sets no
+            scroll-padding, so a jumped-to row otherwise lands at the very top
+            of the scrollport and sits behind it -- the reader picks a callsign
+            and arrives at a row they cannot see. %>
+        <%= ui_drill_down_row timesheets_timesheets_by_callsign_person_path(row.person_id,
+                                                                           year: @year),
+                              row.callsign,
+                              id: timesheets_by_callsign_anchor(row),
+                              class: "scroll-mt-20",
+                              meta: timesheets_by_callsign_meta(row),
+                              badges: timesheets_by_callsign_badges(row) %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= ui_empty_state "No callsign matches these filters.",
+                       icon: "filter-circle-xmark", icon_type: :solid %>
+  <% end %>
+<% elsif @report.status == TimesheetByCallsignReport::PARTIAL_REPORT %>
+  <%# "none you can see", not "none were turned in": this reader is scoped to
+      their own teams' positions, and the year can be full of hours in
+      positions they are not shown. The person page says it the same way. %>
+  <%= ui_empty_state "No #{@year} timesheets were turned in for the positions you can see.",
+                     icon: "clock", icon_type: :solid %>
+<% elsif @report.status != TimesheetByCallsignReport::NO_MEMBERSHIP %>
+  <%= ui_empty_state "No #{@year} timesheets were turned in.",
+                     icon: "clock", icon_type: :solid %>
+<% end %>

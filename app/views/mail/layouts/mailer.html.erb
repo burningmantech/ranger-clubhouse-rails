@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%# Greys copied from the light theme's tokens -- mail clients drop var(),
+        so each is the token's sRGB value: base-100 #f8f6f3, base-200 #f3f1ef,
+        heading #322d29. %>
+    <style>
+      /* Reset styles */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        color: #322d29;
+        background-color: #f3f1ef;
+      }
+
+      /* Container */
+      .email-wrapper {
+        width: 100%;
+        background-color: #f3f1ef;
+        padding: 20px 0;
+      }
+
+      .email-content {
+        max-width: 650px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border: 5px solid #f3f1ef;
+        padding: 20px;
+      }
+
+      /* Typography */
+      h1, h2, h3, h4, h5, h6 {
+        margin-top: 0;
+        color: #322d29;
+      }
+
+      p {
+        margin: 0 0 15px 0;
+      }
+
+      a {
+        color: #0066cc;
+        text-decoration: underline;
+      }
+
+      /* Button styles */
+      .btn {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #0066cc;
+        color: #ffffff !important;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+
+      .btn-primary {
+        background-color: #0066cc;
+      }
+
+      .btn a {
+        color: #ffffff !important;
+        text-decoration: none;
+      }
+
+      /* Warning text */
+      .warning {
+        color: #ff0000;
+        font-weight: bold;
+      }
+
+      /* Table styles for data display */
+      table.data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+      }
+
+      table.data-table th,
+      table.data-table td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid #f3f1ef;
+      }
+
+      table.data-table th {
+        background-color: #f8f6f3;
+        font-weight: bold;
+      }
+
+      /* Responsive */
+      @media only screen and (max-width: 600px) {
+        .email-content {
+          width: 100% !important;
+          padding: 15px !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-wrapper">
+      <div class="email-content">
+        <%= yield %>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+<%= modal_dialog id: "adjust-status-dialog", title: "Adjust Status" do %>
+  <%= ui_callout_box :error, accent: true do %>
+    <strong>This is an emergency fix feature.</strong> No emails will be sent to the applicant.
+    Confirm with your fellow VCs before adjusting the status directly.
+  <% end %>
+  <%= form_with url: vc_application_path(@application), method: :patch, builder: AppFormBuilder,
+                data: { turbo_frame: "_top" } do |f| %>
+    <%= f.select "prospective_application[status]",
+                 grouped_filter_options(ProspectiveApplication::STATUS_OPTIONS, @application.status),
+                 label: "Status" %>
+    <%= modal_form_footer submit: "Save Status" %>
+  <% end %>
+<% end %>

@@ -1,0 +1,10 @@
+<%# locals: (person:) %>
+<%# Radio-agreement stop sign shared by the HQ shift-manage Radios & Gear
+    section and the HQ assets page — both show the same gate to the same
+    window operator, so the wording must not drift between them. %>
+<%= ui_callout_box :error, icon: "ban",
+                   title: "Radio Agreement Not Signed — Do Not Issue Radios or Gear" do %>
+  <%= person.callsign %> has not signed the Radio Checkout Agreement, so they may not
+  receive radios or gear. Send them to the kiosk shack to log in to the Clubhouse,
+  review the agreement, and sign it.
+<% end %>

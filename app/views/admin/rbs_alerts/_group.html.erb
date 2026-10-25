@@ -1,0 +1,37 @@
+<%# locals: (alerts:, can_manage:, blurb:) %>
+<p class="mb-3 px-3"><%= blurb %></p>
+
+<% if alerts.empty? %>
+  <%= ui_empty_state "No alerts in this group." %>
+<% else %>
+  <%= ui_table striped: true, full_width: true, responsive: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading "ID", right: true %>
+      <%= t.heading "Alert" %>
+      <%= t.heading "Channels" %>
+      <% if can_manage %>
+        <%= t.heading "Action" %>
+      <% end %>
+    <% end %>
+    <%= t.body do %>
+      <% alerts.each do |alert| %>
+        <%= t.row do %>
+          <%= t.cell alert.id, right: true, class: "whitespace-nowrap" %>
+          <%= t.cell do %>
+            <div class="font-semibold text-heading"><%= alert.title %></div>
+            <div class="text-body"><%= alert.description %></div>
+          <% end %>
+          <%= t.cell class: "whitespace-nowrap" do %>
+            <% label, variant = rbs_alert_channels(alert) %>
+            <%= variant ? ui_badge(label, variant) : label %>
+          <% end %>
+          <% if can_manage %>
+            <%= t.cell class: "whitespace-nowrap" do %>
+              <%= edit_link edit_admin_rbs_alert_path(alert) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

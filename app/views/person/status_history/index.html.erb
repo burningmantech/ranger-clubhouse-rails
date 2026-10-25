@@ -1,0 +1,60 @@
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1, id: "person-status-history-header",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Status History &mdash; <%= @person.callsign %>
+  <% end %>
+  <% panel.description do %>
+    Every recorded change to this person's account status.
+  <% end %>
+<% end %>
+
+<%# How far back the history can be trusted: the card says it, and so does the
+    empty state, because a person with no changes has no card to open and a gap
+    may be the whole reason. %>
+<% reliability_note = "The history may be inaccurate or have gaps prior to the 2020 PNV intake cycle." %>
+
+<%# The caveat, out of the hero -- and only while there are rows it applies to. %>
+<% if @history.any? %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>How far back is it reliable?</dt>
+      <dd><%= reliability_note %></dd>
+    </dl>
+  <% end %>
+<% end %>
+
+<%= ui_section do %>
+  <% if @history.any? %>
+    <p class="mb-3 me-muted">Showing <%= pluralize(@history.size, "status log") %>.</p>
+
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Timestamp" %>
+        <%= t.heading "Old Status" %>
+        <%= t.heading "New Status" %>
+        <%= t.heading "Changed By" %>
+        <%= t.heading "Reason" %>
+      <% end %>
+      <%= t.body do %>
+        <% @history.each do |row| %>
+          <%= t.row do %>
+            <%= t.cell datetime_format(row.created_at, year: true) %>
+            <%= t.cell row.old_status %>
+            <%= t.cell row.new_status %>
+            <%= t.cell do %>
+              <% if row.person_source %>
+                <%= callsign_link row.person_source %>
+              <% else %>
+                <span class="me-muted">* imported *</span>
+              <% end %>
+            <% end %>
+            <%= t.cell row.reason %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No status changes are recorded for this person. #{reliability_note}",
+                       icon: "clock-rotate-left", icon_type: :solid %>
+  <% end %>
+<% end %>

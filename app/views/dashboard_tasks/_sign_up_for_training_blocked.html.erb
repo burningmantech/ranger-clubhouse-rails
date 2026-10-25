@@ -1,0 +1,5 @@
+<%# locals: (step:,facts:)%>
+<b>Complete the Online Course first</b> → then sign up for training.
+<% unless facts.trainings_available %>
+  <div class="mt-1 text-stone-muted">Training schedule released mid-to-late April.</div>
+<% end %>

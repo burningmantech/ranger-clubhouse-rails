@@ -1,0 +1,18 @@
+<%# locals: (title:) %>
+<%# Four-column progress table shell (Ember
+    port/components/hq-tickets-and-provisions-table.hbs); rendered as a
+    partial layout, yielding the table builder for the caller's rows.
+    "Worked" is titled "On Duty" per the Clubhouse terminology rules. %>
+<div class="mb-4">
+  <%= ui_table striped: false, responsive: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading title, width: "55%" %>
+      <%= t.heading "Requires", right: true, width: "15%" %>
+      <%= t.heading "On Duty", right: true, width: "15%" %>
+      <%= t.heading "Expected Total", right: true, width: "15%" %>
+    <% end %>
+    <%= t.body do %>
+      <%= yield t %>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,82 @@
+<%#
+  Every position worth listing with how many people hold it, and how many are
+  missing one they are meant to have. The rosters are never loaded here.
+%>
+<% content_for :title, "Position Grants" %>
+
+<%= hero_panel icon: "id-badge", heading_level: :h1, id: "position-grants-header",
+               title: "Position Grants",
+               description: "Who holds each position today — and who is missing one every Ranger " \
+                            "is meant to hold." %>
+
+<%# Out of the hero -- and only while there are rows for it to read. %>
+<% if @total_count.positive? %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Which year is this?</dt>
+      <dd>Grants are not scoped to an event year &mdash; this is who holds each position today.</dd>
+    </dl>
+  <% end %>
+<% end %>
+
+<%# The totals ride in the filter bar's count slot rather than a stat-box row:
+    one summary line above the rows it describes, as the sibling drill-down
+    reports do. %>
+<% if @total_count.positive? %>
+  <%= filter_bar id: "position-grant-filters",
+                 chips: position_grants_filter_chips(@filter_params),
+                 # No filters at all, which the helper spells as status=all:
+                 # an absent status param would mean the Rangering set.
+                 clear_url: position_grants_url({}),
+                 count: position_grants_summary(shown: @positions.size,
+                                                total: @total_count,
+                                                grants: @grant_count,
+                                                unassigned: @unassigned_count),
+                 url: teams_positions_position_grants_path do |f| %>
+    <%= form_row do %>
+      <%= f.select :type, position_grants_type_options,
+                   label: "Type", selected: @filter_params[:type],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :status, position_grants_status_options,
+                   label: "Status", selected: @filter_params[:status],
+                   help_text: position_grants_status_help,
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.select :on_site, position_grants_on_site_options,
+                   label: "Location", selected: @filter_params[:on_site],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :matching, position_grants_matching_options,
+                   label: "Positions", selected: @filter_params[:matching],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @positions.any? %>
+  <%# Jumps to a position by name without hiding the ones around it, which is
+      what the list is scanned for -- the filters narrow, this one navigates. %>
+  <%= dropdown_scroll_list position_grants_scroll_items(@positions) %>
+
+  <div class="lg:w-3/4">
+    <% @positions.each do |position| %>
+      <%= ui_drill_down_row teams_positions_position_grants_position_path(position, @return_params),
+                            position.title,
+                            id: "position-#{position.id}",
+                            meta: position_grants_row_meta(position,
+                                                           @counts[position.id].to_i,
+                                                           @on_site_counts[position.id].to_i,
+                                                           @on_site_only),
+                            badges: position_grants_row_badges(position, @unassigned_counts[position.id].to_i) %>
+    <% end %>
+  </div>
+<% elsif @total_count.positive? %>
+  <%= ui_empty_state "No positions match the current filters.", icon: "filter", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No positions were found.", icon: "id-badge", icon_type: :solid %>
+<% end %>

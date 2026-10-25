@@ -1,0 +1,35 @@
+<%# locals: (document:) %>
+<%# Shared by every page that manages an entity's resource document. Where the
+    form posts and where it returns to are the controller's business — see
+    ResourceDocumentCrudConcern — so this partial only needs the record.
+
+    The tag is shown but never editable: it is derived from the owner, and
+    changing it would orphan the owner's pointer. %>
+<%= ui_form(
+      document,
+      resource_form_path,
+      method: document.new_record? ? :post : :patch
+    ) do |f| %>
+  <%= ui_section "Document Text", icon: "file-lines", icon_type: :solid do %>
+    <%= render "common/documents/body_field", f:, document:,
+               help_text: "Everyone who can reach this page reads what you write here." %>
+
+    <p class="mt-3 me-muted">
+      Filed under <span class="font-mono"><%= document.tag %></span>, named
+      &ldquo;<%= document.description %>&rdquo;. Both come from the position and
+      cannot be changed here.
+    </p>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Document" %>
+    <%= cancel_link resource_show_path %>
+    <% unless document.new_record? %>
+      <%= delete_button resource_form_path, "Delete Document",
+                        confirm_modal: {
+                          title: "Delete Document",
+                          message: "Delete the #{resource_document_label}? This cannot be undone."
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

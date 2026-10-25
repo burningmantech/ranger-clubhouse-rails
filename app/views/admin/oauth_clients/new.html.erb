@@ -1,0 +1,8 @@
+<% content_for :title, "New Client" %>
+
+<%= hero_panel icon: "key", heading_level: :h1, id: "oauth-client-form-header",
+               title: "New Client",
+               description: "Register a website that will sign people in through the Clubhouse.",
+               back_to: ["OAuth Clients", admin_oauth_clients_path] %>
+
+<%= render "form" %>

@@ -1,0 +1,45 @@
+<%# locals: (message:, folder:, reply_form:) %>
+<%# The pane's body: the thread's header with its controls, the messages as
+    cards, newest last, then the reply form or the callout that stands in for
+    it. data-review-id is how review_pane_controller knows which row is open. %>
+<div data-review-id="<%= message.id %>">
+  <%= turbo_frame_tag "messages-panel-header", class: "flex items-start gap-3 mb-3" do %>
+    <%= render partial: "common/messages/messages_panel_header", locals: { message:, folder: } %>
+  <% end %>
+
+  <%# Replies land here live (PersonMessage#announce_reply), on the
+      owner's own page and on the Person and HQ pages viewing their mailbox.
+      Where reading a thread marks it read (/me), one that lands while the page
+      is on screen is marked read too (thread_live_controller, ruling D6). A
+      broadcast, a team message or a walk-up takes no reply, so it listens for none. %>
+  <% live = message.accepts_replies? %>
+  <%= turbo_stream_from message_owner, message, channel: MailboxStreamsChannel if live %>
+  <%= tag.div id: "messages-thread", role: "log", aria: { label: "Conversation", live: "polite" },
+              data: ({ controller: "thread-live",
+                       thread_live_url_value: mark_read_message_path(message, folder:, q: search_query) } if live && mark_read_on_view?) do %>
+    <%= render partial: "common/messages/thread", locals: { message:, owner: message_owner } %>
+  <% end %>
+
+  <div class="border-t border-line pt-3">
+    <%= turbo_frame_tag "messages-reply-form" do %>
+      <% if message.accepts_replies? %>
+        <%= render partial: "common/messages/reply_form", locals: { message:, reply_form: } %>
+      <% else %>
+        <%= ui_callout_box :secondary, icon: message_no_reply_icon(message), role: "status" do %>
+          <% if message.from_rbs? %>
+            <strong>Broadcast message.</strong> Sent by the <%= message.sender_name %>; it cannot be replied to.
+          <% elsif message.from_team? %>
+            <strong>Team message.</strong> Sent by the <%= message.sender_name %>; it cannot be replied to.
+            <%# A team deleted since has no address (PersonMessage#sender_name names it by id). %>
+            <% if message.sender_team&.email.present? %>
+              <%# Team list addresses run to 50+ characters, wider than a phone's callout. %>
+              Email them at <%= mail_to message.sender_team.email, nil, class: "wrap-anywhere" %>.
+            <% end %>
+          <% else %>
+            <strong>No Clubhouse sender.</strong> The sender isn't linked to a Clubhouse account, so it cannot be replied to.
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

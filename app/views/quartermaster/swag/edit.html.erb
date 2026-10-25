@@ -1,0 +1,11 @@
+<%= hero_panel icon: "shirt", heading_level: :h1, id: "quartermaster-swag-form-header",
+               description: "Change the title, type, or description of swag ##{@swag.id}.",
+               back_to: [@type_label || "Swag", @cancel_path] do |panel| %>
+  <% panel.title do %>Edit <%= @swag.title %><% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @issued_count, "Issued" %>
+<% end %>
+
+<%= render "form" %>

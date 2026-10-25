@@ -1,0 +1,25 @@
+<%# locals: (letters:) %>
+<div class="flex flex-wrap gap-2 my-4" data-controller="dropdown-fit">
+  <% letters.each do |letter, links| %>
+    <%# name: one letter open at a time -- the browser closes the open <details>
+        in a named group when another opens, so the panels never stack.
+        dropdown-fit: a letter near the end of the row moves its panel left,
+        rather than past the page's right edge.
+        max-h/overflow: the menu is absolutely positioned, so a long letter
+        runs off the bottom of the page with nothing to scroll -- a roster of
+        777 callsigns puts 103 people under "S" and only the first handful
+        are reachable. flex-nowrap, or daisyUI's menu wraps the overflow into
+        a second column instead of scrolling it. %>
+    <%= dropdown_menu letter, name: "dropdown-scroll-list",
+                      data: { action: "toggle->dropdown-fit#fit" },
+                      menu_class: "max-h-96 overflow-y-auto flex-nowrap left-(--dropdown-fit-shift)" do %>
+      <%# data-turbo=false: Turbo 8.0.23 has no same-page shortcut, so a
+          fragment link it handles is a full visit of the same URL -- the
+          page refetched and re-rendered, and any unapplied filter text
+          thrown away. The browser's own fragment navigation just scrolls. %>
+      <% links.each do |link| %>
+        <%= dropdown_item link.title, "##{link.id}", data: { turbo: false } %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

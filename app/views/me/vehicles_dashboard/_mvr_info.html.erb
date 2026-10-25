@@ -1,0 +1,19 @@
+<%
+  if dashboard.mvr_approved?
+    badge = "completed"
+    badge_color = :success
+  else
+    badge = "action needed"
+    badge_color = :warning
+  end
+%>
+<%= ui_section "Motor Vehicle Record Request", badge:, badge_color: do %>
+  <p class="text-sm text-stone-subtle">
+    Authorization to operate Ranger trucks &amp; SUVs
+  </p>
+  <% if dashboard.mvr_approved? %>
+    <%= render partial: "mvr_status_approved", locals: { dashboard: dashboard } %>
+  <% else %>
+    <%= render partial: "mvr_status_eligible", locals: { dashboard: dashboard } %>
+  <% end %>
+<% end %>

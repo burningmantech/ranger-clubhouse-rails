@@ -1,0 +1,215 @@
+/*
+ * Button System Extensions
+ * Custom button styles that extend DaisyUI btn component
+ * DaisyUI provides: btn, btn-primary, btn-secondary, btn-success, btn-warning,
+ *   btn-error, btn-neutral, btn-ghost, btn-outline, btn-xs/sm/md/lg/xl
+ */
+
+/*
+ * Dark theme: --color-error stays bright so `text-error` reads on dark
+ * backgrounds, but that same red is too hot as a large button fill.
+ * Darken the fill for buttons only.
+ */
+[data-theme="dark"] .btn-error {
+    --btn-color: oklch(42% 0.15 25);
+}
+/*
+ * Button Row Container
+ * Flexbox container for button groups
+ */
+/*
+ * Wrapping is what keeps the row from ever overflowing, which is what the
+ * stacking rule below was really protecting against. With wrap in place the
+ * row asks whether the next button fits instead of a breakpoint guessing on
+ * its behalf, so a long row breaks onto a second line at any width rather
+ * than running off the side.
+ *
+ * The row gap is a custom property because the sticky spacer below has to add
+ * up the same gaps, and two copies of one number is how they stop agreeing.
+ */
+.button-row,
+.button-row-spacer {
+    --button-row-gap: 1.5vh;
+}
+
+.button-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: var(--button-row-gap);
+    column-gap: 1.5vw;
+}
+
+/*
+ * Stacking is a phone rule, so it stops at the phone.
+ *
+ * This was written as `< lg`, which is every width up to 1024px — a tablet
+ * included. Three ordinary buttons fit across an 820pt iPad with room to
+ * spare, and stacking them there spends three rows and the eye travel between
+ * them on a device that had the width all along. Below md the buttons genuinely
+ * do not fit side by side and the column is right.
+ *
+ * The stack asks nothing of its children. Every child of a column flex
+ * container is already a block-level item on a line of its own, so the controls
+ * keep DaisyUI's inline-flex here exactly as they do outside the stack.
+ *
+ * There was a child `display: block !important` on this rule, held over from
+ * the buttons that predate DaisyUI, and it took that inline-flex away. With it
+ * went `align-items` and `gap`: a stacked link drew its label against the top
+ * of a 36px button, and any icon sat flush against its label. It also outranked
+ * `hidden`, so a hidden control in a row would have been shown on a phone.
+ */
+@media (width < theme(--breakpoint-md))  {
+    .button-row {
+        flex-direction: column !important;
+        align-items: start !important;
+    }
+}
+
+/*
+ * Sticky Button Row Spacer
+ *
+ * `button_row` is fixed to the bottom edge below lg, so it takes no
+ * room in the flow and would sit on top of the end of its own form. The spacer
+ * the helper emits in front of it takes that room instead. It has to be as tall
+ * as the row: any shorter and the last field cannot be scrolled clear of the
+ * buttons, any taller and the page ends in a blank band.
+ *
+ * So the height is the row's own box, added up term for term, and it moves with
+ * everything that moves the row: how many controls the helper rendered
+ * (--button-row-controls), the viewport height the gap is a fraction of, and the
+ * home indicator.
+ *
+ * A sibling cannot read anything off the row, so each term is shared, not
+ * copied, wherever it can be. The gap and the bottom padding are properties both
+ * elements are given (above, and in safe-area.css). The control height is
+ * --size: the helper puts the row's tallest DaisyUI size class on the spacer, so
+ * it gets the same number the buttons get, 36px floor included. Where a row
+ * mixes sizes that reserves a little over; it never reserves under. Only the
+ * helper's `border-t pt-4` is restated, and the helper says so beside them.
+ *
+ * Three states, because the row has three (DESIGN-GUIDE, "The two sanctioned
+ * uses of `md`"): a stack below md, one line from md to lg, and nothing at lg,
+ * where the row is static and takes its own room.
+ */
+.button-row-spacer {
+    --button-row-lines: var(--button-row-controls, 1);
+
+    height: calc(
+        1px + 1rem                                                   /* border-t, pt-4 */
+        + var(--button-row-lines) * var(--size)
+        + (var(--button-row-lines) - 1) * var(--button-row-gap)
+        + var(--button-row-pad-bottom)
+    );
+}
+
+/*
+ * From md the row is one line again -- unless its controls are full-width bars
+ * (`full_width: true`), which stay one to a line all the way to lg.
+ */
+@media (width >= theme(--breakpoint-md)) {
+    .button-row-spacer:not(:has(+ .button-row > .w-full)) {
+        --button-row-lines: 1;
+    }
+}
+
+@media (width >= theme(--breakpoint-lg)) {
+    .button-row-spacer {
+        display: none;
+    }
+}
+
+@keyframes copy-zoom-fade {
+    100% {
+        transform: translateY(-1.5em);
+        scale: 2;
+        opacity: 0;
+    }
+}
+
+@keyframes copy-success {
+    0% {
+        color: var(--color-success);
+        scale: 0.8;
+    }
+    33% {
+        color: var(--color-success);
+        scale: 1;
+    }
+}
+
+/*
+ * ease-out-quart. This was the same curve with y1 at 1.25, which carried the
+ * scale past its keyframe value and let it settle back — a bounce on a
+ * confirmation that has already happened. Dropping y1 to 1 keeps the fast
+ * departure and the long settle, and the icon simply arrives.
+ */
+.btn-copy-success {
+    --success-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+    animation: copy-success 1s var(--success-timing-function);
+
+    .fa {
+        animation: copy-zoom-fade 500ms var(--success-timing-function);
+    }
+}
+
+/*
+ * The "Copied" tip. copy_to_clipboard_controller.js puts it inside the control
+ * that was pressed, so the control is what it is placed against, and takes it
+ * away again. It is dressed as a daisyUI tooltip, which is what the app's
+ * other tips are, without the tail: a tail cannot tell that its tip has gone
+ * below.
+ */
+.copy-tip {
+    @apply m-2 rounded-field border-0 bg-neutral px-2 py-1 text-sm leading-tight font-normal text-neutral-content pointer-events-none;
+}
+
+/*
+ * Where the browser can anchor it, the controller opens it as a popover. That
+ * puts it in the top layer, above the table or scrolling box the control sits
+ * in, which would clip a box that was only positioned.
+ *
+ * The control is the anchor. Every control answers to the one name, so the
+ * scope is what keeps each tip on its own control when two are up at once.
+ * The tip opens above, centred, moves along to stay inside the window, and
+ * goes below when there is no room above.
+ *
+ * The control is named by its controller, here and below, because a :has()
+ * with nothing in front of it is tried against every element of every page:
+ * measured, that put 4 to 6% on a whole-page restyle for a class that is
+ * almost never there.
+ */
+[data-controller~="copy-to-clipboard"]:has(> .copy-tip[popover]) {
+    anchor-name: --copy-tip;
+    anchor-scope: --copy-tip;
+}
+
+.copy-tip[popover] {
+    position-anchor: --copy-tip;
+    position-area: top;
+    position-try-fallbacks: flip-block;
+    inset: auto;
+}
+
+/*
+ * Elsewhere -- Safari before 26, Firefox before 147 -- it is a box above the
+ * control, centred. A scrolling table can clip that; it is still on the
+ * control, where an unanchored popover lands in the corner of the window.
+ *
+ * The control has to be what the box is placed against. Layered, so that this
+ * is only a default: a control positioned by a utility of its own keeps it.
+ */
+@layer components {
+    [data-controller~="copy-to-clipboard"]:has(> .copy-tip:not([popover])) {
+        position: relative;
+    }
+}
+
+.copy-tip:not([popover]) {
+    @apply absolute bottom-full left-1/2 z-10 mx-0 w-max -translate-x-1/2;
+}
+
+.btn-toast-close {
+    @apply btn btn-ghost btn-sm btn-circle;
+}

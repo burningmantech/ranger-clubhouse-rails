@@ -1,0 +1,65 @@
+<%# A sign-up the scheduling rules refused, with the force option Mentors hold
+    for Alpha slots (upstream's shiftManage confirm step). The status check
+    never lands here -- an ineligible account is refused outright, with no
+    force path. %>
+<%= modal_dialog id: "alpha-roster-blocked-dialog", title: "Could Not Add #{person.callsign}", frame: false do %>
+  <% message =
+       case verdict
+       when Scheduling::Verdict::Full
+         "The shift is full."
+       when Scheduling::Verdict::MissingRequirements
+         "#{person.callsign} has unmet requirements."
+       when Scheduling::Verdict::MultipleEnrollment
+         "#{person.callsign} is already signed up for another Alpha shift this year."
+       when Scheduling::Verdict::NoPosition
+         "#{person.callsign} does not hold the #{verdict.position_title} position."
+       when Scheduling::Verdict::OutsideWindow
+         "The shift has #{verdict.ended ? "ended" : "started"}."
+       else
+         "The sign-up was refused [#{status}]."
+       end %>
+
+  <%= ui_callout_box :warning do %>
+    <%= message %>
+  <% end %>
+
+  <% if verdict.is_a?(Scheduling::Verdict::MissingRequirements) && verdict.requirements.present? %>
+    <ul class="list-disc ms-5 mb-3">
+      <% verdict.requirements.each do |requirement| %>
+        <li><%= Scheduling::REQUIREMENT_LABELS[requirement] || requirement %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if verdict.is_a?(Scheduling::Verdict::MultipleEnrollment) && verdict.slots.present? %>
+    <ul class="list-disc ms-5 mb-3">
+      <% verdict.slots.each do |enrolled| %>
+        <li><%= enrolled.description %> &mdash; <%= datetime_format(enrolled.begins) %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <%# NoPosition is the one refusal force cannot clear: Scheduling::Signup
+      returns it before it works out whether the viewer may force at all, so
+      an "Add anyway" here would fail identically every time. Say what does
+      fix it instead. %>
+  <% if verdict.is_a?(Scheduling::Verdict::NoPosition) %>
+    <p class="mb-3">
+      Grant <%= person.callsign %> the <%= verdict.position_title %> position first, then add
+      them to the shift.
+    </p>
+    <%= button_row do %>
+      <%= button_link "Open #{person.callsign}", :primary, person_path(person),
+                      icon: "id-badge", icon_type: :solid, data: { turbo_frame: "_top" } %>
+      <%= modal_close_button "Cancel" %>
+    <% end %>
+  <% else %>
+    <%= form_with url: mentoring_alpha_schedule_roster_path(@slot),
+                  method: :post, builder: AppFormBuilder,
+                  data: { turbo_frame: "_top" } do %>
+      <%= hidden_field_tag :person_id, person.id, id: nil %>
+      <%= hidden_field_tag :force, "1", id: nil %>
+      <%= modal_form_footer submit: "Add Anyway", variant: :warning %>
+    <% end %>
+  <% end %>
+<% end %>

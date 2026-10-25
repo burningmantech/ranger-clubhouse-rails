@@ -1,0 +1,61 @@
+<%#
+  The Ranger Broadcast System launchpad. One card per kind of broadcast the
+  reader may send, grouped by when it is used, and -- for the Tech Team and
+  Admins -- the records of what has already gone out.
+%>
+<% content_for :title, "Ranger Broadcast System" %>
+
+<%= hero_panel icon: "tower-broadcast", heading_level: :h1, id: "rbs-header",
+               title: "Ranger Broadcast System",
+               description: "Send a text, email, or Clubhouse message to a group of Rangers, and review what was sent." %>
+
+<% unless @during_event %>
+  <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+    <strong>The event has not started.</strong> On playa broadcasts reach the people who are on site;
+    before <%= month_day_format(@event_start) %>, the broadcasts under &ldquo;Any time&rdquo; are the
+    ones to use.
+  <% end %>
+<% end %>
+
+<%= render "common/rbs/sandbox_notice", sandboxes: @sandboxes, test_address: @email_test_address,
+                                        others_live: true %>
+
+<% playa, anytime = @types.partition { |type| rbs_type_on_playa?(type) } %>
+
+<div class="flex flex-col lg:flex-row gap-4 mt-4">
+  <% if playa.any? %>
+    <%= ui_section "On Playa", icon: "sun", icon_type: :solid do %>
+      <%= render partial: "type_card", collection: playa, as: :type %>
+    <% end %>
+  <% end %>
+  <% if anytime.any? %>
+    <%= ui_section "Any Time", icon: "calendar-days", icon_type: :solid,
+                   column: playa.any? ? :next : :start do %>
+      <%= render partial: "type_card", collection: anytime, as: :type %>
+    <% end %>
+  <% end %>
+</div>
+
+<% if @show_records %>
+  <%= ui_section "Records", icon: "clipboard-list", icon_type: :solid, border: false do %>
+    <div class="px-3 pb-2 lg:w-3/4">
+      <%= ui_drill_down_row communication_rbs_history_path,
+                            "Broadcast History",
+                            meta: "#{pluralize(@broadcast_count, "broadcast")} this year",
+                            badges: (ui_badge("#{@failed_count} with failures", :warning, size: "base") if @failed_count.positive?) do %>
+        Every broadcast sent, who it reached, and anything that failed to send.
+      <% end %>
+      <%= ui_drill_down_row communication_rbs_messages_path,
+                            "Message Log",
+                            meta: "#{pluralize(@message_count, "message")} this year" do %>
+        Every text, email, and Clubhouse message recorded, outgoing and incoming.
+      <% end %>
+      <%= ui_drill_down_row communication_rbs_phone_numbers_path,
+                            "Phone Numbers",
+                            meta: "#{pluralize(@number_count, "number")} on file",
+                            badges: (ui_badge("#{@unusable_number_count} unusable", :warning, size: "base") if @unusable_number_count.positive?) do %>
+        Which numbers are confirmed, which are waiting on a code, and which have asked to stop.
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

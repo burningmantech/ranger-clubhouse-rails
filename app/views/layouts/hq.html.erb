@@ -1,0 +1,15 @@
+<%# HQ Window Interface layout (Ember port/templates/hq.hbs) — hq-themed
+    sidebar plus the shared shell chrome wrapped around every child page via
+    the nested-layout pattern (the Rails equivalent of the Ember parent
+    route's template around {{outlet}}). %>
+<% sidebar_menu :hq do %>
+  <%= sidebar_render_menu(Menus::HQ, @menu_context, theme: "hq") %>
+<% end %>
+
+<% content_for :main do %>
+  <%= render layout: "hq/shared/shell" do %>
+    <%= yield %>
+  <% end %>
+<% end %>
+
+<%= render template: "layouts/application" %>

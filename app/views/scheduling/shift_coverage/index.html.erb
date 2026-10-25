@@ -1,0 +1,108 @@
+<%#
+  One kind of shift, hour by hour: every coverage period down the page, every
+  post across it, and who is scheduled where.
+%>
+<% content_for :title, "Shift Coverage" %>
+
+<%# This report without a day chosen: where dropping the day chip lands, and
+    what the export covers. Spelled once so the three cannot disagree. %>
+<% whole_report_url = scheduling_shift_coverage_path(@index_params.except(:day)) %>
+
+<%= hero_panel icon: "table-cells", heading_level: :h1, id: "scheduling-shift-coverage-header",
+               title: "#{@year} Shift Coverage" do |panel| %>
+  <% panel.description do %>
+    <% if @coverage %>
+      Who is scheduled at each post for every period of the
+      <strong><%= @coverage.label %></strong> shift.
+    <% else %>
+      Who is scheduled at each post, once a shift type has been set up.
+    <% end %>
+  <% end %>
+  <%# keep: the shift type and day ride along, or changing the year silently
+      answers a different question than the one on screen. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: @index_params.except(:year) %>
+<% end %>
+
+<%# The legend, out of the hero -- and only when there is a grid for it to read. %>
+<% if @report.any? %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What does a dash mean?</dt>
+      <dd>
+        Posts with no one scheduled show a dash, so the gaps are as easy to find as the cover.
+      </dd>
+    </dl>
+  <% end %>
+<% end %>
+
+<%= filter_bar id: "shift-coverage-filters",
+               chips: shift_coverage_filter_chips(@report, @day, whole_report_url),
+               clear_url: whole_report_url,
+               count: (shift_coverage_count(@report, @days) if @report.any?),
+               # The page can be read one day at a time; the export is always
+               # the whole year, so the file matches the report rather than the
+               # current view. merge, not a second argument: a trailing options
+               # hash is taken as the route's own options and the params hash is
+               # dropped, which sent the reader the current year's default report
+               # whatever was on screen.
+               actions: (export_csv_link(scheduling_shift_coverage_path(@index_params.except(:day)
+                                                                       .merge(format: :csv)),
+                                         "Export All to CSV") if @report.any?),
+               url: scheduling_shift_coverage_path do |f| %>
+  <%# The year rides the filter form -- a GET form replaces the whole query
+      string, so without this every Apply would bounce back to the current year. %>
+  <%= hidden_field_tag :year, @year %>
+  <%= f.select :type, @type_options, label: "Shift Type",
+               selected: @type, width: "w-full", wrapper_class: "flex-1" %>
+  <%= f.select :day, shift_coverage_day_options(@report), label: "Day",
+               selected: @day, width: "w-full", wrapper_class: "flex-1" %>
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<%# No "nothing matched the day" state: a day that is not in the report is not
+    a filter the page will hold, so a chosen day always has its periods. %>
+<% if @report.any? %>
+  <% @days.each do |day| %>
+    <%= ui_section day.label, icon: "calendar-day", icon_type: :solid, border: false do %>
+      <%= ui_table full_width: true, striped: true,
+                   container_class: "shift-coverage-grid",
+                   caption: "#{day.label} coverage by post" do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Period", class: "shift-coverage-period" %>
+          <% @report.columns.each do |post| %>
+            <%= t.heading post.title %>
+          <% end %>
+        <% end %>
+        <%= t.body do %>
+          <% day.periods.each do |period| %>
+            <%= t.row do %>
+              <%# No mobile label: below the lg breakpoint the hours are the
+                  card's heading, and "Period: 06:00" reads as a field. %>
+              <%= t.row_header class: "shift-coverage-period", data: { label: nil } do %>
+                <%= period.span %>
+                <%= shift_coverage_vacant_line(period) %>
+              <% end %>
+              <% period.cells.each do |cell| %>
+                <%= t.cell class: shift_coverage_cell_class(cell) do %>
+                  <%= shift_coverage_cell(cell) %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif @coverage.nil? %>
+  <%= ui_empty_state "No shift types have been set up for this report yet.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% elsif @coverage.posts.empty? %>
+  <%= ui_empty_state "#{@coverage.label} has no posts set up yet.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No #{@year} #{@coverage.label} shifts have been scheduled.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

@@ -1,0 +1,57 @@
+<%= hero_panel icon: "fingerprint", heading_level: :h1, id: "person-passkeys-header",
+               description: "Every passkey that can sign in as #{@person.callsign}.",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Passkeys &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+  Lost or stolen device? Remove its passkey here, then revoke the device under
+  <%= link_to "Login Sessions", person_sessions_path(@person), class: "underline font-semibold" %>.
+  Removing a passkey does not sign anyone out.
+<% end %>
+
+<%# Nothing where this Clubhouse offers no passkeys: a key enrolled there could never sign in. %>
+<% if Passkeys.enabled?(request) %>
+  <div class="my-4">
+    <%= button_link "Add Security Key", :primary, new_person_passkey_path(@person), icon: "plus", icon_type: :solid %>
+  </div>
+<% end %>
+
+<%= ui_section "Registered Passkeys", icon: "fingerprint", icon_type: :solid, badge: @passkeys.size.to_s do %>
+  <% if @passkeys.any? %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Nickname" %>
+        <%= t.heading "Added" %>
+        <%= t.heading "Added By" %>
+        <%= t.heading "Last Used" %>
+        <%= t.heading "Actions" %>
+      <% end %>
+      <%= t.body do %>
+        <% @passkeys.each do |passkey| %>
+          <%= t.row do %>
+            <%= t.row_header passkey.nickname %>
+            <%= t.cell datetime_format(passkey.created_at) %>
+            <%= t.cell do %>
+              <%# Asked of the passkey, not of added_by: the Admin's account may be gone. %>
+              <% if passkey.added_by_admin? %>
+                <%= passkey.added_by&.callsign || "A deleted account" %> <%= ui_badge "Admin", :warning %>
+              <% else %>
+                Self
+              <% end %>
+            <% end %>
+            <%= t.cell passkey.last_used_at ? datetime_format(passkey.last_used_at) : "Never" %>
+            <%= t.cell do %>
+              <%= delete_button person_passkey_path(@person, passkey), "Delete",
+                                 confirm_message: "Delete #{passkey.nickname} from #{@person.callsign}'s account? It can no longer sign in. Devices already signed in stay signed in until revoked under Login Sessions." %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "#{@person.callsign} has no passkeys.", icon: "fingerprint", icon_type: :solid %>
+  <% end %>
+<% end %>

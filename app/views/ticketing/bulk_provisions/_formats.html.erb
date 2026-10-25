@@ -1,0 +1,31 @@
+<%# Thirteen provisions and four line formats between them, so no one sentence
+    under the textarea can be the format. Folded shut because most of the list
+    is "callsign" and a reader who picked an allocated pass needs none of it.
+
+    The years are printed rather than described: the default source year moves
+    in September, and a reader in April would otherwise have to know that. %>
+<% source_year, expiry_year = BulkUpload::ProvisionHandler.default_years %>
+
+<%= ui_disclosure "What Each Line May Carry", variant: :card, class: "my-4" do %>
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Provision" %>
+      <%= t.heading "Line Format" %>
+    <% end %>
+    <%= t.body do %>
+      <% bulk_actions.each do |provision_action| %>
+        <%= t.row do %>
+          <%= t.row_header provision_action.label %>
+          <%= t.cell provision_action.help, class: "font-mono" %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= ui_callout_box :info, icon: "calendar-days", icon_type: :solid do %>
+    <strong>Leave the years off an earned line and it is recorded as
+    earned in <%= source_year %>, expiring <%= expiry_year %>.</strong>
+    Allocated provisions ignore both years: they are granted for <%= Current.year %>
+    and expire at the end of it, so their lines take no years at all.
+  <% end %>
+<% end %>

@@ -1,0 +1,125 @@
+# Prospective (volunteer) applications in various workflow states.
+# Tests travel_to 2026 — event-year math in these fixtures assumes that year.
+
+pending_qualified:
+  bpguid: "APPLICANT-BPGUID-0001"
+  email: "alice.applicant@example.com"
+  year: 2026
+  status: "pending"
+  salesforce_name: "R-1001"
+  first_name: "Alice"
+  last_name: "Applicant"
+  events_attended: "2019;2023"
+  experience: "brc1"
+  is_over_18: true
+  why_volunteer: "I want to help the city."
+  why_volunteer_review: "unreviewed"
+  street: "1 Example St"
+  city: "Example City"
+  state: "NV"
+  country: "US"
+  postal_code: "99999"
+  phone: "775 555 0100"
+  handles: "Dusty Dawn\nSparkle Pony"
+  created_at: 2026-04-01 12:00:00
+  updated_at: 2026-04-01 12:00:00
+
+pending_unqualified:
+  bpguid: "APPLICANT-BPGUID-0002"
+  email: "pat.pandemic@example.com"
+  year: 2026
+  status: "pending"
+  salesforce_name: "R-1002"
+  first_name: "Pat"
+  last_name: "Pandemic"
+  events_attended: "2020;2021"
+  experience: "brc1"
+  is_over_18: false
+  why_volunteer: ""
+  why_volunteer_review: "unreviewed"
+  street: ""
+  city: "Example City"
+  state: ""
+  country: "US"
+  postal_code: "99999"
+  phone: ""
+  handles: ""
+  created_at: 2026-04-02 12:00:00
+  updated_at: 2026-04-02 12:00:00
+
+handle_check:
+  bpguid: "APPLICANT-BPGUID-0003"
+  email: "casey.callsign@example.com"
+  year: 2026
+  status: "handle-check"
+  salesforce_name: "R-1003"
+  first_name: "Casey"
+  last_name: "Callsign"
+  events_attended: "2022;2023;2024"
+  experience: "brc1"
+  is_over_18: true
+  why_volunteer: "Radio is life."
+  why_volunteer_review: "okay"
+  street: "2 Example St"
+  city: "Example City"
+  state: "NV"
+  country: "US"
+  postal_code: "99999"
+  phone: "775 555 0101"
+  handles: "Test Ranger\nMoonbeam"
+  created_at: 2026-04-03 12:00:00
+  updated_at: 2026-04-03 12:00:00
+
+created_account:
+  bpguid: "TESTRANGER-BPGUID-0001"
+  email: "testranger@example.com"
+  year: 2025
+  status: "created"
+  salesforce_name: "R-0900"
+  first_name: "Test"
+  last_name: "Ranger"
+  events_attended: "2023;2024"
+  experience: "brc2"
+  is_over_18: true
+  why_volunteer: "Returning."
+  why_volunteer_review: "okay"
+  street: "123 Example St"
+  city: "Example City"
+  state: "CA"
+  country: "US"
+  postal_code: "99999"
+  phone: "775 555 0102"
+  approved_handle: "TestRanger"
+  person: active_ranger
+  created_at: 2025-04-01 12:00:00
+  updated_at: 2025-04-01 12:00:00
+
+# Approved and ready for account creation — the create-prospectives happy path.
+approved_ready:
+  bpguid: "APPLICANT-BPGUID-0004"
+  email: "sunny.approved@example.com"
+  year: 2026
+  status: "approved"
+  salesforce_id: "a01SF9001"
+  salesforce_name: "R-9001"
+  first_name: "Sunny"
+  last_name: "Approved"
+  events_attended: "2022;2023"
+  experience: "brc2"
+  is_over_18: true
+  why_volunteer: "Ready to give back."
+  why_volunteer_review: "okay"
+  street: "4 Example St"
+  city: "Example City"
+  state: "NV"
+  country: "US"
+  postal_code: "99999"
+  phone: "775 555 0104"
+  sfuid: "005SF9001"
+  emergency_contact: "Moon Beam 775-555-0199 partner"
+  known_rangers: "Dusty Trails"
+  known_applicants: "River Stone"
+  handles: "Sunburst\nDaybreak"
+  approved_handle: "Sunburst"
+  created_at: 2026-04-04 12:00:00
+  updated_at: 2026-04-04 12:00:00

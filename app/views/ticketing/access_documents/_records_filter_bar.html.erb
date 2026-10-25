@@ -1,0 +1,63 @@
+<%# locals: (filter_params:, active_params:, count: nil, actions: nil) %>
+<%# Type and Status filters for the current-records table, in the standard
+    filter_bar shell. Both are ordinary GET params applied server-side.
+
+    Locals:
+      filter_params - { type:, status: }; "all" means that filter is off
+      active_params - filter_params without the "all" entries; one chip each
+      count         - result summary shown at the end of the bar
+      actions       - the page's Export CSV button, at the end of the row %>
+<%
+  all_option = UiComponents::FilterBarHelper::ALL_FILTER_OPTION
+
+  # Grouped exactly as upstream: the everyday items first, then the two
+  # families that ticketing awards separately.
+  type_groups = [
+    ["Regular Items", [
+      ["Special Price Ticket", AccessDocument::SPT],
+      ["Staff Credential", AccessDocument::STAFF_CREDENTIAL],
+      ["Setup Access Pass", AccessDocument::SAP],
+      ["S.O. Setup Access Pass", AccessDocument::SAPSO],
+      ["Vehicle Pass (Gift)", AccessDocument::VEHICLE_PASS_GIFT],
+      ["Vehicle Pass (Special Price)", AccessDocument::VEHICLE_PASS_SP]
+    ]],
+    ["Gift Items", [
+      ["Gift Ticket", AccessDocument::GIFT]
+    ]],
+    ["Late Season Directed", [
+      ["LSD Ticket", AccessDocument::LSD],
+      ["LSD Vehicle Pass", AccessDocument::VEHICLE_PASS_LSD]
+    ]]
+  ]
+
+  # "All" sits outside every group, so the choices are pre-rendered and the
+  # selection is baked in rather than passed as `selected:`.
+  type_choices = safe_join([
+    options_for_select([all_option], filter_params[:type]),
+    grouped_options_for_select(type_groups, filter_params[:type])
+  ])
+
+  status_choices = [all_option, *AccessDocument::CURRENT_STATUSES.sort.map { |status| [status.humanize, status] }]
+
+  chip_labels = { type: "Type", status: "Status" }
+  chip_value = ->(key, value) { key == :type ? AccessDocument::TYPE_LABELS.fetch(value, value) : value.humanize }
+  chips = filter_chips(active_params, chip_labels, value_label: chip_value) do |remaining|
+    ticketing_access_documents_records_path(remaining)
+  end
+%>
+<%= filter_bar id: "access-document-filters",
+               chips: chips,
+               clear_url: ticketing_access_documents_records_path,
+               count: count,
+               actions: actions,
+               url: ticketing_access_documents_records_path do |f| %>
+  <%= form_row do %>
+    <%= f.select :type, type_choices, label: "Type", width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :status, status_choices, label: "Status", selected: filter_params[:status],
+                 width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>

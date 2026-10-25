@@ -1,0 +1,18 @@
+<%# locals: (person:, src:) %>
+<%#
+  One person's history, fetched only once their row is first opened. The frame
+  id is the contract with detail.html.erb, which renders the reply into it.
+
+  target: "_top" so the note links inside the frame navigate the whole page.
+  Without it Turbo would try to resolve the person-layout note form into this
+  frame, find no matching id, and raise turbo:frame-missing. The frame's own
+  lazy src still renders here -- target only governs navigations started from
+  inside the frame.
+
+  The /mentoring/convert-prospectives table wraps this in a row carrying
+  uf_detail_id(person) and the hidden/aria-hidden state the toggle controller
+  drives.
+%>
+<%= turbo_frame_tag "uf-frame-#{person.id}", target: "_top", src: src, loading: "lazy" do %>
+  <p class="text-body my-2">Loading <%= person.callsign %>&rsquo;s history&hellip;</p>
+<% end %>

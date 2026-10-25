@@ -1,0 +1,105 @@
+<%# @return_params rides on the action URL, or the redirect after saving drops
+    the reader's filter while Cancel keeps it. %>
+<%= ui_form(@team,
+            @team.persisted? ? teams_positions_team_record_path(@team, **@return_params) : teams_positions_create_team_record_path(@return_params),
+            method: @team.persisted? ? :patch : :post) do |f| %>
+  <%= ui_section "Team Details", icon: "people-group", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What does the type do?</dt>
+      <dd>Cadres and delegations are listed in the directory automatically. A team is listed only if you say so below.</dd>
+      <dt>Who sees the description?</dt>
+      <dd>Everyone — it appears beside the team on the Directory page.</dd>
+    </dl>
+
+    <%= f.text_field :title, label: "Title", required: true,
+                     maxlength: TeamManagement::TITLE_MAX, show_counter: true,
+                     width: "w-full sm:w-96" %>
+
+    <%= form_row do %>
+      <%# prompt: Rails forces a blank option onto a required select unless one
+          is given, and picking it would only bounce back a validation error. %>
+      <%# The orientation the New Team hero used to give, on the field it is about. %>
+      <%= f.select :type, @type_options,
+                   { label: "Type", required: true, prompt: "Select a type",
+                     help_text: "Decides how the team appears in the directory." },
+                   { class: "w-full sm:w-44" } %>
+      <%= f.email_field :email, label: "Contact Email", width: "w-full sm:w-72",
+                        maxlength: TeamManagement::EMAIL_MAX,
+                        help_text: "Optional. Shown to team members." %>
+    <% end %>
+
+    <%= f.text_field :resource_tag, label: "Info Document Tag",
+                     maxlength: TeamManagement::RESOURCE_TAG_MAX,
+                     width: "w-full sm:w-64",
+                     help_text: "Optional. Names the team information document shown to its members." %>
+
+    <%= f.text_area :description, label: "Description", rows: 4,
+                    help_text: "Optional. Shown beside the team on the Directory page." %>
+  <% end %>
+
+  <%= ui_section "Team Flags", icon: "flag", icon_type: :solid do %>
+    <%= f.check_box :active, label: "Active",
+                    help_text: "Only active teams can be granted to people. Deactivate a team to retire it without losing its history." %>
+    <%= f.check_box :mvr_eligible, label: "Membership grants Motor Vehicle Record eligibility" %>
+    <%= f.check_box :pvr_eligible, label: "Membership grants personal vehicle eligibility" %>
+    <%# Not limited to teams, despite upstream disabling this for other types:
+        an award cannot be granted for a cadre or delegation either unless this
+        column is set, so disabling it there would make those awards
+        ungrantable. %>
+    <%= f.check_box :awards_eligible, label: "Awards may be granted for this team",
+                    help_text: "Required for every type. Without it, this team cannot be chosen when granting someone an award." %>
+    <%= f.check_box :include_in_directory, label: "List in the Cadre and Delegation Directory",
+                    help_text: "Cadres and delegations are listed automatically. Tick this to list a team as well." %>
+  <% end %>
+
+  <%= ui_section "Role Grants", icon: "shield-halved", icon_type: :solid do %>
+    <% if @is_tech_ninja %>
+      <dl class="instruction-list mb-3">
+        <dt>What does this do?</dt>
+        <dd>Everyone on this team is granted the permissions checked here, for as long as they are a member.</dd>
+        <dt>Which ones need care?</dt>
+        <dd>Admin and Tech Ninja hand every member full access, so you can only grant them if you hold them yourself. Granting Admin or View Personal Info needs prior approval by the Ranger Council.</dd>
+      </dl>
+
+      <%= hidden_field_tag "team[role_ids][]", "" %>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-x-1">
+        <% @roles.each do |role| %>
+          <%= render layout: "common/checkbox_row",
+                     locals: { name: "team[role_ids][]", value: role.id,
+                               checked: @role_ids.include?(role.id), id: "team-role-#{role.id}" } do %>
+            <%= role.title %>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+        <strong>Only the Tech Team can change role grants.</strong>
+        Contact them to adjust the permissions this team hands out.
+      <% end %>
+
+      <% if @role_ids.any? %>
+        <div class="flex flex-wrap gap-1 mt-3">
+          <% @roles.select { |role| @role_ids.include?(role.id) }.each do |role| %>
+            <%= ui_badge role.title, :secondary, size: "sm" %>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="mt-3 text-stone-muted italic">This team grants no permissions.</p>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Team" %>
+    <%= cancel_link @cancel_path %>
+    <% if @team.persisted? %>
+      <%= delete_button teams_positions_team_record_path(@team, **@return_params), "Delete Team",
+                        confirm_modal: {
+                          title: "Confirm Team Deletion",
+                          message: team_record_delete_message(@team, @member_count, @position_count,
+                                                              @award_count, @manager_count),
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

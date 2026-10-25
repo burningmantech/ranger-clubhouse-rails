@@ -1,0 +1,130 @@
+<%= hero_panel icon: "id-card", heading_level: :h1, id: "callsign-edit-header",
+               description: "Manage the callsign, vanity change status, and former known as (FKA) records.",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Edit Callsign &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<% if @person.vintage %>
+  <%= ui_callout_box :warning, accent: true do %>
+    The callsign has been marked as vintage. The callsign may not be released.
+  <% end %>
+<% elsif can?(:release_callsign) %>
+  <% release_description = capture do %>
+    Update the callsign to LastFYY, and mark it unapproved.
+    <% if Person::RELEASE_CALLSIGN_WARNING_STATUSES.include?(@person.status) %>
+      <div class="text-error mt-1 text-sm">
+        The account has status <%= @person.status %>. Releasing this callsign is HIGHLY not recommended.
+      </div>
+    <% end %>
+  <% end %>
+  <div class="hidden lg:flex flex-col gap-3 w-fit my-2">
+    <%= action_box(
+          title: "Release Callsign",
+          description: release_description,
+          url: release_person_callsign_path(@person),
+          icon: "arrows-rotate",
+          icon_type: :solid,
+          button_label: "Release",
+          options: {
+            button_data: confirm_modal(
+              title: "Confirm Releasing Callsign",
+              message: "Release the callsign #{@person.callsign}? It will be changed to a generic format (e.g., LastFYYY) and marked as unapproved.",
+              method: :post
+            )
+          })
+    %>
+  </div>
+<% end %>
+
+<%= ui_section "Callsign", icon: "id-card", icon_type: :solid do %>
+  <%= ui_form(@person, person_callsign_path(@person), method: :patch) do |f| %>
+    <%= f.text_field :callsign,
+                     label: "Callsign",
+                     required: true,
+                     maxlength: 60,
+                     show_counter: true,
+                     width: "w-full sm:w-72" %>
+
+    <%= f.check_box :callsign_approved, label: "Callsign approved" %>
+
+    <% if can_manage_vanity? %>
+      <%= f.check_box :used_vanity_change, label: "One-time vanity change request used" %>
+    <% else %>
+      <div class="text-sm text-stone-muted ml-8 -mt-1 mb-2">
+        Vanity use change flag may only be managed by the Volunteer Coordinators.
+      </div>
+    <% end %>
+
+    <% if @person.used_vanity_change && @person.vanity_changed_at.present? %>
+      <div class="text-sm text-stone-muted ml-8 -mt-1 mb-2">
+        Changed on <%= datetime_format @person.vanity_changed_at %>
+      </div>
+    <% end %>
+
+    <% if is_admin? %>
+      <%= f.check_box :vintage, label: "Vintage callsign" %>
+      <p class="text-sm text-stone-muted ml-8 -mt-1 mb-2">
+        As an administrator, you may update the vintage checkbox. Note: Only Council may designate vintage callsigns.
+      </p>
+    <% else %>
+      <div class="mb-2">
+        <span class="font-medium">Vintage:</span>
+        <% if @person.vintage %>
+          <%= ui_badge "vintage", :success %>
+        <% else %>
+          <div class="text-sm text-stone-muted mt-1">
+            <%= ui_badge "not vintage", :secondary, end: 2 %>
+            Only the Council is allowed to designate a vintage callsign.
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Save Callsign" %>
+      <%= cancel_link person_path(@person) %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Formerly Known as (FKAs)", icon: "clock-rotate-left", icon_type: :solid, badge: @person.person_fka.size.to_s do %>
+  <%= ui_callout_box :info, accent: true do %>
+    FKAs are automatically managed as the person's callsign changes. Only update the FKAs if a mistake was made.
+  <% end %>
+  <div class="mb-3">
+    <%= button_link "Add FKA", :primary, new_person_fka_path(@person), icon: "plus", icon_type: :solid, size: "sm" %>
+  </div>
+
+  <% if @person.person_fka.any? %>
+    <%= ui_table full_width: false, responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "FKA" %>
+        <%= t.heading "Created" %>
+        <%= t.heading "Actions", right: true %>
+      <% end %>
+      <%= t.body do %>
+        <% @person.person_fka.each do |fka| %>
+          <%= t.row do %>
+            <%= t.cell fka.fka %>
+            <%= t.cell do %>
+              <% if fka.created_at.present? %>
+                <%= datetime_format fka.created_at %>
+              <% else %>
+                <span class="text-stone-muted italic">unknown</span>
+              <% end %>
+            <% end %>
+            <%= t.cell right: true do %>
+              <div class="flex-center gap-2 justify-end">
+                <%= edit_link edit_person_fka_path(@person, fka) %>
+                <%= delete_button person_fka_path(@person, fka), nil, confirm_modal: { message: "Delete the FKA '#{fka.fka}'? This cannot be undone." } %>
+              </div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No former callsigns recorded." %>
+  <% end %>
+<% end %>

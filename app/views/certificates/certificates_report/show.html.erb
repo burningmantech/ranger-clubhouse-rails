@@ -1,0 +1,76 @@
+<%= hero_panel icon: "certificate", heading_level: :h1, id: "certificates-report-detail-header",
+               title: @certification.title,
+               description: "Everyone with an active status (active, inactive, inactive extension, " \
+                            "retired) who holds this certification.",
+               back_to: ["Certificates Report", certificates_report_path] %>
+
+<%# The status choices are built from the roster itself, so every one of them
+    returns someone: an empty roster can only mean no one holds this. %>
+<% if @total_count.positive? %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @total_count.to_s, "People", icon: "users", icon_type: :solid %>
+    <%= ui_stat_box @card_count.to_s, "Card Number on File",
+                    icon: "id-card", icon_type: :solid %>
+    <% if @missing_card_count.positive? %>
+      <%= ui_stat_box @missing_card_count.to_s, "Missing Card Number", variant: :warning,
+                      icon: "circle-exclamation", icon_type: :solid %>
+    <% end %>
+  <% end %>
+
+  <%= filter_bar id: "certificates-report-filters",
+                 chips: certificates_report_filter_chips(@filter_params, @certification),
+                 clear_url: certificates_report_detail_path(@certification),
+                 count: "Showing #{@shown_count} of #{pluralize(@total_count, "person")}",
+                 actions: export_csv_link(certificates_report_detail_path(@certification,
+                                          active_filters(@filter_params).merge(format: :csv))),
+                 url: certificates_report_detail_path(@certification) do |f| %>
+    <%= form_row do %>
+      <%= f.select :status,
+                   options_for_select(filter_status_options(@status_counts), @filter_params[:status]),
+                   { label: "Status", width: "w-full lg:w-64" } %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+
+  <%# A note runs to a paragraph while every other column holds a short value
+      that reads worse broken across lines. The table holds one line throughout
+      and Notes alone opts back out, taking whatever width is left over. %>
+  <%= ui_table full_width: true, striped: true, class: "whitespace-nowrap" do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Status" %>
+      <% if @show_names %>
+        <%= t.heading "Name" %>
+      <% end %>
+      <%= t.heading "Issued On" %>
+      <%= t.heading "Trained On" %>
+      <%= t.heading "Card/Certificate #" %>
+      <%= t.heading "Notes", width: "100%", class: "whitespace-normal" %>
+    <% end %>
+
+    <%= t.body do %>
+      <% @records.each do |record| %>
+        <% person = record.person %>
+        <%= t.row do %>
+          <%= t.row_header do %>
+            <%= person_display_link(person, record.person_id) %>
+          <% end %>
+          <%= t.cell person.status %>
+          <% if @show_names %>
+            <%= t.cell person.desired_full_name %>
+          <% end %>
+          <%= t.cell value_or_dash(record.issued_on) %>
+          <%= t.cell value_or_dash(record.trained_on) %>
+          <%= t.cell value_or_dash(record.card_number) %>
+          <%= t.cell value_or_dash(record.notes), class: "whitespace-normal" %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No one with an active status holds this certification.",
+                     icon: "certificate", icon_type: :solid %>
+<% end %>

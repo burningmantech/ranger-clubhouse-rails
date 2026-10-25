@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "app/assets/stylesheets/components/boxes.css"
+        ],
+        "createdAt": "2026-09-20T09:29:18.296Z",
+        "reason": "user confirmed: .box-accent is ui_accent_card, a documented component (DESIGN-GUIDE.md:1129 and design-components skill) with 20 call sites; the border is its specified visual hierarchy, and it predates this session"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "app/assets/stylesheets/components/tables.css"
+        ],
+        "createdAt": "2026-10-04T05:21:13.470Z",
+        "reason": "DESIGN.md:347-350 names the expanded detail cell under a table row as a sanctioned 4px Signal Blue start border (Left-Bar Rule, :354); table-detail-cell (2026-08-07) documents it as the only cue tying the panel to its row below lg; predates this session"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "1rem",
+        "files": [
+          "app/assets/stylesheets/base.css"
+        ],
+        "createdAt": "2026-10-17T21:22:36.777Z",
+        "reason": "Claude: iOS Safari zooms on focus below 16px; the touch-screen field rule in base.css must be exactly 1rem, as daisyUI's own iOS focus rule is"
+      }
+    ]
+  }
+}

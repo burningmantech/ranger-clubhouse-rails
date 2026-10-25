@@ -1,0 +1,141 @@
+<%#
+  Alpha Information — everything a mentor wants in hand before walking with
+  the Alphas who signed in. Ported to match upstream Ember
+  mentor/alphas-signed-in-sheet.hbs: no column headers, each value carries its
+  own caption above it, four rows per person (identity / who they know /
+  history and notes), and a blank separator row between people.
+
+  The controller guarantees at least one signed-in Alpha
+  (see require_signed_in_alphas), which is upstream's "No Alphas Found" modal
+  moved ahead of the click.
+%>
+<% slot = @roster.slot %>
+<% content_for :title, "Alpha Information — #{alpha_shift_title_text(slot)}" %>
+
+<%# Real page numbers, in the paper's own margin. Chrome renders @page margin
+    boxes, so counter(page)/counter(pages) is accurate however the browser
+    breaks the table -- which is why nothing here slices rows into pages. %>
+<% content_for :page_rules do %>
+  <style>
+    @page alpha-info {
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 8pt;
+        color: #444;
+        font-family: "Atkinson Hyperlegible", sans-serif;
+      }
+    }
+    .alpha-sheet { page: alpha-info; }
+  </style>
+<% end %>
+
+<%= render "print_screen_nav" %>
+
+<%# data-theme: the rank badges are shared screen components whose meaning is
+    carried by their colors, and daisyUI would give them dark-theme colors on
+    this deliberately white sheet. Pinning the paper surface to the light
+    theme keeps the on-screen preview matching what actually prints. %>
+<section class="alpha-sheet" data-theme="light">
+  <h1 class="alpha-info-title">
+    <%= slot.begins_year %> <%= slot.description %> &mdash;
+    <%= datetime_format(slot.begins) %> &mdash; Alpha Information
+  </h1>
+
+  <table class="alpha-info-table">
+    <%# The identity row repeats at the top of each printed page so a
+        continuation sheet still says which shift it belongs to. %>
+    <thead>
+      <tr class="alpha-running-head">
+        <th colspan="5">
+          <%= slot.begins_year %> <%= slot.description %> &mdash; Alpha Information
+        </th>
+      </tr>
+    </thead>
+    <% @roster.signed_in.each do |entry| %>
+      <% person = entry.person %>
+      <tbody>
+        <tr>
+          <td class="alpha-flag-cell">
+            <% if entry.flagged? %>
+              <%= fa_icon "flag", :solid, class: "text-2xl" %>
+            <% end %>
+          </td>
+          <td class="alpha-info-handle">
+            <span class="alpha-fill">Handle</span>
+            <span class="alpha-callsign"><%= person.callsign %></span>
+          </td>
+          <td class="alpha-info-gender">
+            <span class="alpha-fill">Gender</span>
+            <span class="alpha-value"><%= gender_format(person) %></span>
+          </td>
+          <td class="alpha-info-training">
+            <span class="alpha-fill">Training Location</span>
+            <% entry.trainings.each do |training| %>
+              <div class="alpha-value">
+                <%= ymd_format(training.slot_begins) %> <%= training.slot_description %>
+                <%= intake_rank_badge(training.training_rank) %>
+              </div>
+            <% end %>
+          </td>
+          <td class="alpha-info-home">
+            <span class="alpha-fill">Home</span>
+            <span class="alpha-value"><%= person.city %> <%= person.state %> <%= person.country %></span>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td colspan="2">
+            <span class="alpha-fill">Known Rangers</span>
+            <span class="alpha-value"><%= person.known_rangers_array.join(", ") %></span>
+          </td>
+          <td colspan="2">
+            <span class="alpha-fill">Known Alphas</span>
+            <span class="alpha-value"><%= person.known_pnvs_array.join(", ") %></span>
+          </td>
+        </tr>
+        <tr class="alpha-block-end">
+          <td></td>
+          <td colspan="2">
+            <span class="alpha-fill">Prior Mentors</span>
+            <% if entry.mentor_years.empty? %>
+              <em>None</em>
+            <% else %>
+              <% entry.mentor_years.each do |history| %>
+                <div class="alpha-value">
+                  <%= history[:year] %> (<%= mentor_short_status(history[:status]) %>)
+                  <%= history[:mentors].join(" / ") %>
+                </div>
+              <% end %>
+            <% end %>
+          </td>
+          <td colspan="2">
+            <span class="alpha-fill">Mentor Notes</span>
+            <%# Every mentor-team year, not only the ones carrying notes: a
+                year with a rank and no note still tells a mentor something. %>
+            <% if entry.mentor_team.empty? %>
+              <em>None</em>
+            <% else %>
+              <% entry.mentor_team.each do |team_year| %>
+                <div class="alpha-value">
+                  <%= team_year[:year] %> <%= intake_rank_badge(team_year[:rank]) %>:
+                </div>
+                <% team_year[:notes].each do |note| %>
+                  <div class="alpha-note-line">
+                    &mdash;
+                    <span class="alpha-note-source">
+                      <% if note.person_source %><%= note.person_source.callsign %><% else %><em>Unknown</em><% end %>
+                    </span>
+                    : <%= note.note %>
+                  </div>
+                <% end %>
+              <% end %>
+            <% end %>
+          </td>
+        </tr>
+        <tr class="alpha-separator">
+          <td colspan="5"></td>
+        </tr>
+      </tbody>
+    <% end %>
+  </table>
+</section>

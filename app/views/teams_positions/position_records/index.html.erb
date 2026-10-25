@@ -1,0 +1,132 @@
+<%= hero_panel icon: "id-badge", heading_level: :h1, id: "position-records-header",
+               title: "Position Records",
+               description: "Create and edit positions — their attributes, permission grants, training, and team." %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @total_count.to_s, "Total" %>
+  <%= ui_stat_box @active_count.to_s, "Active", variant: :success %>
+  <% if @inactive_count.positive? %>
+    <%= ui_stat_box @inactive_count.to_s, "Inactive", variant: :warning %>
+  <% end %>
+  <%= ui_stat_box @granting_count.to_s, "Grant Permissions" %>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= button_link "Add Position", :primary, teams_positions_new_position_record_path(@return_params),
+                    icon: "plus", icon_type: :solid %>
+    <%= button_link "Position Lineups", :secondary, teams_positions_position_lineups_path,
+                    icon: "layer-group", icon_type: :solid %>
+  <% end %>
+</div>
+
+<% if @total_count.positive? %>
+  <%= filter_bar id: "position-record-filters",
+                 chips: position_record_filter_chips(@filter_params, @teams_by_id),
+                 clear_url: teams_positions_position_records_path,
+                 count: "Showing #{@positions.size} of #{pluralize(@total_count, "position")}",
+                 url: teams_positions_position_records_path do |f| %>
+    <%= form_row do %>
+      <%= f.select :type, position_record_type_options(@matching_type_counts),
+                   label: "Type", selected: @filter_params[:type],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :active, position_record_active_options,
+                   label: "Status", selected: @filter_params[:active],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.select :team, position_record_team_options(@teams, @no_team_count),
+                   label: "Team", selected: @filter_params[:team],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :role, position_record_role_options(@granted_roles),
+                   label: "Permission Grant", selected: @filter_params[:role],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.select :attribute, position_record_attribute_options,
+                   label: "Attribute", selected: @filter_params[:attribute],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @positions.any? %>
+  <%= dropdown_scroll_list position_record_scroll_items(@positions) %>
+
+  <%= ui_table striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Team" %>
+      <%= t.heading "Attributes" %>
+      <%= t.heading "Grants Permissions" %>
+      <%= t.heading "Actions", right: true %>
+    <% end %>
+
+    <%= t.body do %>
+      <% @positions.each do |position| %>
+        <%= t.row id: "position-#{position.id}" do %>
+          <%= t.row_header do %>
+            <div class="flex items-start gap-2">
+              <% if position.active %>
+                <%= fa_icon "circle-check", :solid, class: "icon-success mt-1" %>
+              <% else %>
+                <%= fa_icon "circle-xmark", :solid, class: "icon-error mt-1" %>
+              <% end %>
+              <div>
+                <div class="font-semibold text-heading"><%= position.title %></div>
+                <div class="text-stone-muted">
+                  <%= position_record_type_label(position.type) %>
+                  <%
+                  %>
+                  <% if position.short_title.present? %> · <%= position.short_title %>
+                  <% end %>
+                  <%
+                  %>
+                </div>
+                <% unless position.active %>
+                  <div class="mt-1">
+                    <%= ui_badge "Inactive", :warning, size: "sm", class: "whitespace-nowrap" %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+
+          <%= t.cell do %>
+            <% if position.team %>
+              <%= position.team.title %>
+            <% else %>
+              <span class="text-stone-muted italic">No team</span>
+            <% end %>
+          <% end %>
+
+          <%= t.cell do %>
+            <% if position_record_slot_range(position) %>
+              <div><%= position_record_slot_range(position) %></div>
+            <% end %>
+            <%= value_list(
+                  position_record_link_labels(position, @linked_titles) +
+                  position_record_attribute_labels(position)
+                ) %>
+          <% end %>
+
+          <%= t.cell { value_list(@roles_by_position[position.id]) } %>
+
+          <%= t.cell right: true do %>
+            <%= edit_link teams_positions_edit_position_record_path(position, @return_params), "Edit Position" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif @total_count.positive? %>
+  <%= ui_empty_state "No positions match the current filters.", icon: "filter", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No positions have been added yet.", icon: "id-badge", icon_type: :solid %>
+<% end %>

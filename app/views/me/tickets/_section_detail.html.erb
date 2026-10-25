@@ -1,0 +1,173 @@
+<%# Rich "what you've claimed" detail for one checklist card, shown on the      %>
+<%# finished hub inside the section's own box. Falls back to the one-line       %>
+<%# summary when a section has no claimed detail to show.                       %>
+<%# Locals: sec (SectionStatus), presenter (TicketOverviewPresenter), person.   %>
+<%
+  info = @ticketing_info
+  legal_name = "#{person.first_name} #{person.last_name}"
+%>
+
+<% case sec.key %>
+<% when :ticket %>
+  <% if presenter.using_staff_credential? %>
+    <%
+      if presenter.ticket.access_any_time
+        access_time = { icon: "calendar-check", color: "success", text: "Pickup any time" }
+      elsif presenter.ticket.access_date
+        access_time = { icon: "calendar-check", color: "success", text: "Pickup on or after #{mdy_format presenter.ticket.access_date}" }
+      else
+        access_time = { icon: "triangle-exclamation", color: "error", text: "No pickup date on file! Contact the Ranger Ticketing Team." }
+      end
+
+      details = [
+        { icon: "person-walking", color: "success", text: "Pickup at Staff Credentialing (see below)" },
+        access_time,
+        { icon: "id-badge", color: "success", text: "Held under your legal name: <strong>#{legal_name}</strong>".html_safe },
+        { icon: "check", color: "success", text: "Provided free of charge" },
+        { icon: "ban", color: "error", text: "Cannot be mailed, transferred, or sold." }
+      ]
+    %>
+    <%= render partial: "me/tickets/item_details", locals: { details: } %>
+    <% if info.pickup_locations.present? %>
+      <div class="mt-1 text-body">
+        <div class="font-semibold">Pickup Locations:</div>
+        <%= nl2br info.pickup_locations %>
+      </div>
+    <% else %>
+      <p class="font-bold text-error mt-1">Pickup locations aren't set yet. Contact the Ranger Ticketing Team.</p>
+    <% end %>
+  <% elsif presenter.ticket %>
+    <%
+      details = []
+      if presenter.using_will_call?
+        details << { icon: "person-walking", color: "success", text: "Pickup at Will Call" }
+      elsif presenter.ticket.delivery_none?
+        details << { icon: "ban", color: "error", text: "No delivery method chosen yet. Open this section to pick Will Call or mail." }
+      else
+        details << { icon: :envelope, style: :regular, text: "Mailed via USPS #{presenter.ticket.delivery_postal? ? "Standard" : "Priority"}" }
+      end
+      if presenter.ticket.delivery_will_call?
+        mailing = ""
+      else
+        mailing = " plus #{dollars(presenter.ticket.delivery_postal? ? info.mail_standard_price : info.mail_priority_price)} for mailing"
+      end
+      details << { icon: "cart-shopping", text: "Price: #{dollars(info.spt_cost)}#{mailing}" }
+      details << { icon: "alarm-clock", style: :regular, color: "warning", text: "<strong class=\"text-warning\">Pay on time or you may not be able to attend.</strong>".html_safe }
+    %>
+    <%= render partial: "me/tickets/item_details", locals: { details: } %>
+    <div>Burning Man Ticketing will email an invoice.</div>
+    <div class="text-body">
+      You must click the link in that email and finish checkout.
+    </div>
+  <% elsif presenter.all_tickets_banked? && presenter.banked_items.any? %>
+    <ul class="space-y-1">
+      <% presenter.banked_items.each do |item| %>
+        <li><%= ui_badge "banked", :warning %> <%= item[:name] %>
+          <% if item[:expires] %> <span class="text-stone-muted">— expires after <%= item[:expires] %></span>
+          <% end %></li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-body"><%= sec.summary %></p>
+  <% end %>
+
+<% when :gift %>
+  <% if presenter.gift_ticket_count.positive? %>
+    <%= render "me/tickets/ticket_gift_conditions" %>
+    <% if presenter.using_gift_ticket? %>
+      <div class="mt-2 space-y-1">
+        <p><strong>Watch your email</strong> on or after July 21st for a message from <%= info.ticket_vendor_email %>.
+        </p>
+        <p>You must click the link in that email and finish checkout for your Gift Ticket.</p>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="text-body"><%= sec.summary %></p>
+  <% end %>
+
+<% when :vehicle_pass %>
+  <% if presenter.using_vehicle_pass? %>
+    <% if presenter.using_staff_credential? || presenter.using_will_call? %>
+      <p><strong>Pickup at <%= presenter.using_staff_credential? ? "Staff Credentialing" : "Will Call" %></strong>
+        under your legal name "<%= legal_name %>".</p>
+    <% else %>
+      <p><strong>Mailed to you.</strong></p>
+    <% end %>
+    <div class="mt-2">
+      <% if presenter.vehicle_pass.vehicle_pass_sp? %>
+        <p><strong>Payment:</strong> an invoice for <%= dollars(info.sp_vp_cost) %> will be sent. Pay on
+          time or you may not be able to drive in.</p>
+      <% else %>
+        <p>Provided free of charge with your Staff Credential.</p>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="text-body"><%= sec.summary %></p>
+  <% end %>
+
+<% when :provisions %>
+  <% if presenter.has_provisions? && !presenter.package.provisions_banked %>
+    <ul class="space-y-1">
+      <% presenter.provision_items.each do |item| %>
+        <%= ui_icon_item item.icon, :solid, tone: "text-stone-icon" do %>
+          <%= item.label %>
+        <% end %>
+      <% end %>
+    </ul>
+    <% if presenter.radios.positive? %>
+      <p class="text-sm text-stone-muted mt-2">Event Radios are limited. You are not guaranteed to receive every radio
+        you qualify for.</p>
+    <% end %>
+  <% else %>
+    <p class="text-body"><%= sec.summary %></p>
+  <% end %>
+
+<% when :sap %>
+  <% if presenter.using_sap? %>
+    <%
+      details = []
+      if presenter.using_staff_credential?
+        details << { icon: "circle-check", color: :success, text: "Staff Credential acts as your SAP. No separate document needed." }
+      end
+      if presenter.effective_sap.access_any_time
+        details << { icon: "arrow-right-to-bracket", color: :success, text: "Enter the event at any time" }
+      elsif presenter.effective_sap.access_date
+        details << { icon: "arrow-right-to-bracket", color: :success, text: "Enter on or after #{mdy_format presenter.effective_sap.access_date, full: true}" }
+        details << { icon: "ban", color: :warning, text: "<strong class=\"text-warning\">Do not arrive early. You will be turned away. NO exceptions!</strong>".html_safe }
+      else
+        details << { icon: "bug", color: :error, text: "<strong class=\"text-error\">No access date on file! Contact the Ranger Ticketing Team.</strong>".html_safe }
+      end
+    %>
+    <%= render partial: "me/tickets/item_details", locals: { details: } %>
+    <% unless presenter.using_staff_credential? %>
+      <p class="mt-2">Emailed to <strong><%= person.email %></strong> after the ticketing deadline, up to a week
+        before the event.</p>
+    <% end %>
+  <% else %>
+    <p class="text-body"><%= sec.summary %></p>
+  <% end %>
+
+<% when :sap_so %>
+  <% if presenter.sap_so_list.any? %>
+    <p class="mb-2">Emailed to <strong><%= person.email %></strong> as a PDF after the deadline.</p>
+    <ul class="space-y-1">
+      <% presenter.sap_so_list.each do |so| %>
+        <%= ui_icon_item "user", :solid, tone: "text-stone-icon" do %>
+          <span class="font-medium text-heading"><%= so.name %></span> —
+          <% if so.access_any_time %>
+            may enter any time
+          <% elsif so.access_date %>
+            enter on or after <%= mdy_format so.access_date %> @ 00:01
+          <% else %>
+            <span class="font-bold text-error">no access date on file. Contact the Ranger Ticketing Team.</span>
+          <% end %>
+        <% end %>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-body"><%= sec.summary %></p>
+  <% end %>
+
+<% else %>
+  <p class="text-body"><%= sec.summary %></p>
+<% end %>

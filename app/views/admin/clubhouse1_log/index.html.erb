@@ -1,0 +1,129 @@
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1, id: "admin-clubhouse1-log-header",
+               title: "Clubhouse 1 Log",
+               description: "Search the audit log the first Clubhouse kept from 2008 to 2019, by person, time range, and kind of entry." %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What period does the log cover?</dt>
+    <dd>Entries run from 16 July 2008 to 24 October 2019.</dd>
+    <dt>Can anything here change?</dt>
+    <dd>
+      Nothing has been added since 24 October 2019, and nothing here can be changed &mdash; the
+      log is kept for historical and investigative reading.
+    </dd>
+  </dl>
+<% end %>
+
+<%= filter_bar id: "clubhouse1-log-filters",
+               chips: clubhouse1_log_filter_chips(@form),
+               clear_url: admin_clubhouse1_log_path,
+               url: admin_clubhouse1_log_path, model: @form, scope: "filter" do |f| %>
+  <%= form_row do %>
+    <%= f.text_field :user_callsign,
+                     label: "User",
+                     help_text: "Who acted. A callsign or a person id.",
+                     maxlength: 64,
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+    <%= f.text_field :target_callsign,
+                     label: "Target",
+                     help_text: "Who was acted upon. A callsign or a person id.",
+                     maxlength: 64,
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.datetime_field :start_time,
+                         label: "Starts At",
+                         width: "w-full",
+                         wrapper_class: "flex-1" %>
+    <%= f.datetime_field :end_time,
+                         label: "Ends At",
+                         width: "w-full",
+                         wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.text_field :event_text,
+                     label: "Entry Contains",
+                     help_text: "Any part of the entry. Pair it with a time range to keep the search quick.",
+                     maxlength: 100,
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+    <%= f.select :sort, Clubhouse1LogFilterForm::SORT_OPTIONS,
+                 { label: "Order", width: "w-full", wrapper_class: "flex-1" } %>
+  <% end %>
+
+  <%= ui_disclosure "Kinds of Entry",
+                    variant: :card,
+                    open: @form.event_categories.any?,
+                    subtitle: @form.event_categories.any? ? pluralize(@form.event_categories.count, "kind") + " chosen" : "Choose the kinds to show" do %>
+    <%# PARAM_SCOPE, not the form object's own name: these boxes stand outside
+        the form builder, and the rest of the search arrives under filter[...].
+        Named after the object they would be dropped. %>
+    <%= render "common/checkbox_grid",
+               name: "#{Clubhouse1LogFilterForm::PARAM_SCOPE}[event_categories][]",
+               options: Clubhouse1LogFilterForm::EVENT_CATEGORIES.map { |c| [c[:key], c[:label]] },
+               selected: @form.event_categories,
+               id_prefix: "clubhouse1-log-category" %>
+  <% end %>
+
+  <%= button_row class: "mt-4" do %>
+    <%= f.submit "Search" %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Log Entries", icon: "table-list", icon_type: :solid do %>
+  <% pager = ui_pager(@meta, summary: "Page #{@meta[:page]}") { |page| admin_clubhouse1_log_path(@form.query_params(page:)) } %>
+  <% if @logs.empty? %>
+    <%= ui_empty_state clubhouse1_log_empty_message(@form, @meta), icon: "magnifying-glass", icon_type: :solid %>
+    <%# A reader who paged past the last entry needs one step back to the start,
+        not one Previous click per page they went past. %>
+    <% if @meta[:has_previous_page] %>
+      <div class="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <%= pager %>
+        <%= button_link "Back to the First Page", :primary, admin_clubhouse1_log_path(@form.query_params) %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="mb-3">
+      <%= pager %>
+    </div>
+
+    <%# responsive: below the fold each row becomes its own card. Without it
+        the entry column -- the widest by far and the point of the page -- sits
+        off the side of a phone screen. %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Timestamp" %>
+        <%= t.heading "User" %>
+        <%= t.heading "Target" %>
+        <%= t.heading "Entry" %>
+      <% end %>
+      <%= t.body do %>
+        <% @logs.each do |row| %>
+          <%= t.row class: "align-top" do %>
+            <%= t.cell clubhouse1_log_timestamp(row),
+                       class: log_text_class("align-top", "whitespace-nowrap") %>
+            <%= t.cell class: log_text_class("align-top") do %>
+              <%= clubhouse1_log_person_label(row.user_person, row.user_person_id) %>
+            <% end %>
+            <%= t.cell class: log_text_class("align-top") do %>
+              <%= clubhouse1_log_person_label(row.current_person, row.current_person_id) %>
+            <% end %>
+            <%# The entry is the whole record here, not a slug beside a message,
+                so it wraps rather than truncating. %>
+            <%= t.cell class: "align-top" do %>
+              <div class="font-mono text-sm leading-relaxed text-body whitespace-pre-wrap wrap-anywhere"><%= row.event %></div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <div class="mt-4">
+      <%= pager %>
+    </div>
+  <% end %>
+<% end %>

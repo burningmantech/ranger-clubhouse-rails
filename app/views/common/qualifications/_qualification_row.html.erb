@@ -1,0 +1,48 @@
+<%# locals: (item:, description: nil, subtext: nil) %>
+<% name = qualification_name(item) %>
+<%# Settled: earned, or closed for the year with nothing on track -- the bar and the count are spent either way %>
+<% settled = item.has_earned || (item.closed && !item.expected_to_earn) %>
+<div class="grid content-start gap-2 border-t border-base-300 py-3 first:border-t-0 first:pt-1" id="qual-<%= item.name %>-title">
+  <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+    <div class="flex items-baseline gap-2 <%= settled ? "font-medium text-stone-subtle" : "font-semibold text-heading" %>">
+      <span class="w-5 shrink-0 text-center"><%= qualification_icon item %></span>
+      <span><%= name %></span>
+    </div>
+    <%# ms-7: when the step wraps under the name, it lines up with the name, not the icon %>
+    <div class="ms-7">
+      <% if item.has_earned %>
+        Earned
+      <% elsif item.expected_to_earn %>
+        On track
+      <% elsif item.closed %>
+        Not earned this year
+      <% else %>
+        Sign up for <strong class="font-bold text-heading tabular-nums"><%= qualification_amount item.needs_to_schedule %></strong> more
+      <% end %>
+    </div>
+  </div>
+
+  <%# An earned row keeps what the item gets you; the bar, the count and how to qualify are spent.
+      A closed row keeps the eligibility line too: it says why the row closed. %>
+  <% unless settled %>
+    <%= ui_progress_bar item.percentage, :primary,
+                        projected: item.projected_percentage,
+                        class: "ring-1 ring-inset ring-base-content/35",
+                        aria: { label: "#{name} progress" } %>
+
+    <div class="flex flex-wrap justify-between gap-x-4 text-base text-stone-subtle tabular-nums">
+      <span><strong class="font-semibold text-heading"><%= qualification_done item %></strong> of <%= item.threshold %> <%= qualification_unit item %></span>
+      <% if item.expected_total != item.value %>
+        <span><%= qualification_amount item.expected_total %> with sign-ups</span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Divs, not <p>s: the base paragraph margin would leave rows with notes taller than rows without %>
+  <% if description %>
+    <div class="text-base text-stone-subtle"><%= description %></div>
+  <% end %>
+  <% if subtext && !item.has_earned %>
+    <div class="text-base text-stone-subtle">Eligibility: <%= subtext %></div>
+  <% end %>
+</div>

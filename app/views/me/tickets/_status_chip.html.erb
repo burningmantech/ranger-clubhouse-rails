@@ -1,0 +1,12 @@
+<%# Shared status chip for the ticketing checklist and section pages.        %>
+<%# Pass state: one of :decided, :needs_decision, :locked, :not_applicable.  %>
+<%# Optionally pass label: to override the default word.                     %>
+<%
+  chip = {
+    decided:        { variant: :success,   icon: "circle-check",       text: "Done" },
+    needs_decision: { variant: :warning,   icon: "circle-exclamation", text: "Ready to Claim" },
+    locked:         { variant: :secondary, icon: "lock",               text: "Locked" },
+    not_applicable: { variant: :secondary, icon: "minus",              text: "Not Needed" }
+  }.fetch(state.to_sym)
+%>
+<%= ui_badge (local_assigns[:label] || chip[:text]), chip[:variant], icon: chip[:icon], icon_type: :solid %>

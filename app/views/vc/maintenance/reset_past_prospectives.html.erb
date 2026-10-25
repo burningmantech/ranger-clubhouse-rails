@@ -1,0 +1,28 @@
+<%#
+  Results of the "Reset Past Prospectives" task.
+
+  @results is transient — it only exists in the response to the POST that ran the
+  task, so this page cannot be reached again by a GET. Print it in full here.
+%>
+<%# A form-submission render keeps the submitting page's scroll position --
+    without this the reader lands wherever the submit button was instead of
+    at the summary. %>
+<div data-controller="scroll-to-top" hidden></div>
+
+<%= hero_panel icon: "circle-check", heading_level: :h1, id: "vc-maintenance-reset-past-prospectives-header",
+               description: "This task has finished, and the accounts it changed are listed below.",
+               back_to: ["Maintenance Tasks", vc_maintenance_path] do |panel| %>
+  <% panel.title do %><%= @title %><% end %>
+<% end %>
+
+<% if @results.any? %>
+  <div class="text-lg my-4">
+    <strong><%= pluralize @results.size, "Past Prospective" %></strong>
+    with approved callsign(s) were reset
+  </div>
+
+  <%= render "results_table", results: @results, show_status: false %>
+<% else %>
+  <%= ui_empty_state "No Past Prospectives with approved callsigns were found.",
+                     icon: "id-badge", icon_type: :solid %>
+<% end %>

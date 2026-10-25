@@ -1,0 +1,40 @@
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1, id: "person-access-document-history-header",
+               description: "Every recorded create, modify, and delete for this access document.",
+               back_to: ["Edit #{@document.display_ref}", edit_person_access_document_path(@person, @document)] do |panel| %>
+  <% panel.title do %>
+    Change History for <%= @document.display_ref %> (<%= @document.type_label %>) &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Recorded Changes", icon: "clock-rotate-left", icon_type: :solid, badge: @changes.size.to_s do %>
+  <% if @changes.any? %>
+    <%= ui_table responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Timestamp" %>
+        <%= t.heading "Who" %>
+        <%= t.heading "Change" %>
+      <% end %>
+      <%= t.body do %>
+        <% @changes.each do |change| %>
+          <%= t.row do %>
+            <%= t.cell datetime_format(change.created_at, year: true) %>
+            <%= t.cell action_log_person_label(change.changer_person, change.changer_person_id) %>
+            <%= t.cell do %>
+              <strong><%= change.operation.titleize %></strong>
+              <% access_document_change_rows(change).each do |row| %>
+                <div>
+                  <%= row[:column] %>:
+                  <em><%= row[:old_value] %></em>
+                  <%= fa_icon "arrow-right", :solid, class: "me-muted mx-1" %>
+                  <em><%= row[:new_value] %></em>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No changes have been recorded for this document yet.", icon: "clock-rotate-left", icon_type: :solid %>
+  <% end %>
+<% end %>

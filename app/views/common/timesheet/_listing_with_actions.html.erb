@@ -1,0 +1,7 @@
+<%# locals: (entries:) %>
+
+<% entries.each do |entry| %>
+  <%= turbo_frame_tag "entry-#{entry.id}", class: "box box-default mb-3 rounded-xl border border-line shadow-sm" do %>
+    <%= render partial: "common/timesheet/entry_with_action", locals: { entry: } %>
+  <% end %>
+<% end %>

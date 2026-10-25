@@ -1,0 +1,66 @@
+<%# locals: (person:, person_award:, award_type:, entity_options:) %>
+<%= ui_form(
+      person_award,
+      person_award.new_record? ? person_awards_path(person, type: award_type) : person_award_path(person, person_award),
+      method: person_award.new_record? ? :post : :patch
+    ) do |f| %>
+  <%= ui_section "Award Details", icon: "award", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Who sees this award?</dt>
+      <dd><%= person.callsign %> sees the award, the year, and whether it counts as a service year.</dd>
+      <dt>Does it affect anything else?</dt>
+      <dd>No. Awards are honorary and never change tickets, provisions, or Ranger status.</dd>
+    </dl>
+
+    <% if award_type == "team" %>
+      <%= f.select :team_id, entity_options,
+                   label: "Team to Recognize",
+                   include_blank: "Select a team",
+                   required: true,
+                   width: "w-full sm:w-72" %>
+    <% elsif award_type == "position" %>
+      <%= f.select :position_id, entity_options,
+                   label: "Position to Recognize",
+                   include_blank: "Select a position",
+                   required: true,
+                   width: "w-full sm:w-72" %>
+    <% else %>
+      <%= f.select :award_id, entity_options,
+                   label: "Special Service Award",
+                   include_blank: "Select an award",
+                   required: true,
+                   width: "w-full sm:w-72" %>
+    <% end %>
+
+    <%= f.select :year, (PersonAward::FIRST_YEAR_PERMITTED..current_year).to_a.reverse,
+                 label: "Year to Recognize",
+                 required: true,
+                 width: "w-full sm:w-44" %>
+
+    <%= f.check_box :awards_grants_service_year,
+                    label: "Award grants service year",
+                    help_text: "Counts this year toward #{person.callsign}'s service years." %>
+
+    <%= f.text_area :notes,
+                    label: "Optional Notes About This Award (not shown to person)",
+                    rows: 4 %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit person_award.new_record? ? "Grant Award" : "Save Award" %>
+    <%= cancel_link person_awards_path(person) %>
+    <% if person_award.persisted? %>
+      <%# method: :delete is required -- confirm_modal defaults turbo-method to "get". %>
+      <%= delete_button person_award_path(person, person_award),
+                        "Delete Award",
+                        variant: :error,
+                        confirm_modal: {
+                          title: "Delete Award",
+                          message: "Delete the #{person_award.title} " \
+                                   "#{person_award.year} award? This cannot be undone.",
+                          confirm_label: "Delete Award",
+                          method: :delete
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

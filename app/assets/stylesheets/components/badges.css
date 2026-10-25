@@ -1,0 +1,41 @@
+/*
+ * Badge System Extensions
+ * DaisyUI provides: badge, badge-primary, badge-secondary, badge-success,
+ *   badge-warning, badge-error, badge-neutral, badge-soft, badge-outline,
+ *   badge-xs/sm/md/lg/xl
+ *
+ * Ruby helpers reference DaisyUI classes directly.
+ * This file is kept for any future custom badge extensions.
+ */
+
+/* Dark theme's secondary is a low-chroma 65% gray; badge-soft paints the text
+   in that gray over an 8% tint of it on base-100 — gray-on-gray, and the pill
+   itself lands within ~5% lightness of the page. Colored soft variants
+   survive on chroma; the gray one can't. Render it as a neutral chip instead
+   (same look as daisyUI's badge-neutral in dark): theme tokens only, ~6.8:1
+   text contrast, pill clearly distinct from base-100/200 surfaces. */
+[data-theme="dark"] .badge-soft.badge-secondary {
+  color: var(--color-neutral-content);
+  background-color: var(--color-neutral);
+  border-color: var(--color-neutral);
+}
+
+/* Dark theme's error is oklch(0.598 0.237 28.5); badge-soft paints that as the
+   text over an 8% tint of itself on base-100, which computes to 3.95:1 — under
+   the 4.5:1 floor, on the one badge that most needs reading (the unrecognized
+   status, and the "deleted" fallback for a person row that is gone). Lift the
+   text only and leave the tint where it is, so the pill still reads red:
+   oklch(70% 0.18 28.536) against the same fill is 6.11:1. Same shape as the
+   dark btn-error fill darkening, in the opposite direction — the token itself
+   cannot move without changing every error surface. */
+[data-theme="dark"] .badge-soft.badge-error {
+  color: oklch(70% 0.18 28.536);
+}
+
+/* ui_badge stamps `icon-<variant>` on its icon, and icons.css defines those in
+   raw Tailwind ramps (amber-600, red-400) that are neither the theme tokens nor
+   the colour the badge just set on its own text. Inside a badge the icon is
+   part of the label, not a separate signal, so it takes the badge's colour. */
+.badge :is(.icon-success, .icon-warning, .icon-error, .icon-info) {
+  color: inherit;
+}

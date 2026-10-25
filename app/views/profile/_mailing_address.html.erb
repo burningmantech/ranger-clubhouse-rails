@@ -1,0 +1,27 @@
+<%# locals: (person:) %>
+<%= ui_section "Mailing Address",
+               icon: :home,
+               icon_type: :solid,
+               edit_link: (can_edit_profile? ? profile_edit_section_path("mailing-address") : nil) do %>
+  <% if viewing_self? %>
+    <%= ui_callout_box :info do %>
+      Your Burner Profile (B.P.) and Clubhouse account addresses are NOT synced. Log into <a href="https://profiles.burningman.org/">profiles.burningman.org</a> to update
+      update your profile.
+    <% end %>
+  <% end %>
+
+  <% if person.street1.present? %>
+    <div class="text-base text-stone-emphasis leading-relaxed space-y-1">
+      <div><%= person.street1 %> <%= person.apt %></div>
+      <% if person.street2.present? %>
+        <div><%= person.street2 %></div>
+      <% end %>
+      <div><%= person.city %><%= ", #{person.state}" if person.state.present? %> <%= person.zip %></div>
+      <%# Some countries are on file by name rather than by code, so fall back to
+          whatever is stored rather than showing nothing. %>
+      <div><%= CountryStateHelper::COUNTRY_LABELS[person.country] || person.country %></div>
+    </div>
+  <% else %>
+    <%= none_stated %>
+  <% end %>
+<% end %>

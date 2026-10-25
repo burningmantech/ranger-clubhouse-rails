@@ -1,0 +1,12 @@
+<%= render template: "common/schedule/index",
+           locals: {
+             back_link: back_to_dashboard,
+             description_text: "View and manage your shifts, training sessions, and sign-ups for #{@year}.",
+             schedule_path_builder: ->(**options) { me_schedule_path(**options) },
+             schedule_export_path_builder: ->(**options) { me_schedule_export_path(**options) },
+             schedule_signup_summary_path_builder: ->(**options) { me_schedule_signup_summary_path(**options) },
+             schedule_qualifications_path_builder: ->(**options) { me_schedule_qualifications_path(**options) },
+             available_sign_ups_path_builder: ->(**options) { me_available_sign_up_path(**options) },
+             schedule_signups_path_builder: ->(slot, **options) { me_schedule_signups_path(slot_id: slot.id, **options) },
+             schedule_destroy_path_builder: ->(slot, **options) { me_schedule_destroy_path(slot_id: slot.id, **options) }
+           } %>

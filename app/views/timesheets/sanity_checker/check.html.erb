@@ -1,0 +1,62 @@
+<%#
+  One check's findings. The table shape follows the check: most are a row per
+  entry, two are a row per Ranger with their entries grouped inside.
+%>
+<% meta = timesheet_check_meta(@check) %>
+<% content_for :title, meta[:label] %>
+
+<%= hero_panel icon: meta[:icon], heading_level: :h1,
+               id: "sanity-check-#{@check.to_s.dasherize}-header",
+               title: "#{@year} #{meta[:label]}",
+               back_to: ["#{@year} Timesheet Sanity Checker",
+                         timesheets_sanity_checker_path(year: @year)] do |panel| %>
+  <% panel.description do %>
+    <%= meta[:blurb] %>
+  <% end %>
+  <%# The selector posts an action-less GET, so it stays on this check and
+      only swaps the year. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @findings.any? %>
+  <%# Only "No credits" can reach the cap: a year whose credit table was never
+      filled in prices every entry at zero, and a list of the whole year is not
+      a worklist. Said plainly, with the export offered as the way to see it
+      all -- a silently truncated page reads as "this is all there is". %>
+  <% if @truncated %>
+    <%= ui_callout_box :warning, icon: "list-ol", title: "Showing the First #{@findings.size}" do %>
+      This year has more findings than one page can carry, which usually means
+      the credits for it were never configured rather than that each entry is
+      wrong on its own. Export the CSV to see them all.
+    <% end %>
+  <% end %>
+
+  <div class="flex flex-row flex-wrap items-center gap-4 my-4">
+    <%= timesheet_check_badge(@check, @findings.size) %>
+    <%= export_csv_link(timesheet_check_path(@check, @year, format: :csv)) %>
+  </div>
+
+  <%# What the blurb used to say after its first sentence: the hero is one
+      sentence on what these rows are. Only where there are rows to act on, and
+      only for a check that has more to say -- too_short does not. %>
+  <% if meta[:question] %>
+    <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+      <dl class="instruction-list">
+        <dt><%= meta[:question] %></dt>
+        <dd><%= meta[:answer] %></dd>
+      </dl>
+    <% end %>
+  <% end %>
+
+  <% case @check %>
+  <% when :overlapping %>
+    <%= render "overlapping", findings: @findings %>
+  <% when :duplicate_alphas %>
+    <%= render "duplicate_alphas", findings: @findings %>
+  <% else %>
+    <%= render "entries", entries: @findings, check: @check %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "#{meta[:empty]} Nothing to do here for #{@year}.",
+                     icon: "circle-check", icon_type: :solid %>
+<% end %>

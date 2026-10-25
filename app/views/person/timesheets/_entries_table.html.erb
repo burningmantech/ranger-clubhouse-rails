@@ -1,0 +1,76 @@
+<%= ui_table full_width: false, size: "sm" do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Status" %>
+    <%= t.heading "Time" %>
+    <%= t.heading "Position" %>
+    <%= t.heading "Duration", right: true %>
+    <%= t.heading "Credits", right: true %>
+    <%= t.heading "Action" %>
+  <% end %>
+  <%= t.body do %>
+    <% @entries.each do |entry| %>
+      <% overlapping = @overlapping_ids.include?(entry.id) %>
+      <% on_duty = entry.off_duty.nil? %>
+      <%= t.row class: "align-middle", state: (:error if overlapping) do %>
+        <%= t.cell timesheet_status_badges(entry) %>
+        <%= t.cell do %>
+          <%= datetime_format entry.on_duty, entry.off_duty %>
+          <% if overlapping %>
+            <div class="text-error font-semibold">Time is overlapping.</div>
+          <% end %>
+          <% unless on_duty || entry.suppress_duration_warning %>
+            <% if timesheet_too_short?(entry) %>
+              <div class="text-error">Entry might be too short.</div>
+            <% elsif timesheet_too_long?(entry) %>
+              <div class="text-error">Entry might be too long.</div>
+            <% end %>
+            <% if entry.time_warnings&.status == "out-of-range" %>
+              <div class="text-error">Times are outside scheduled sign-ups.</div>
+            <% end %>
+          <% end %>
+        <% end %>
+        <%= t.cell do %>
+          <%= entry.position.title %>
+          <% if entry.is_echelon %>
+            <div class="italic text-stone-muted">(as Echelon volunteer)</div>
+          <% end %>
+        <% end %>
+        <%= t.cell right: true do %>
+          <% unless entry.position.count_hours %>
+            <%= fa_icon "ban", :solid, class: "icon-warning" %>
+          <% end %>
+          <%= hour_minute_words entry.duration %>
+        <% end %>
+        <%= t.cell credit_format(entry.credits), right: true %>
+         <%= t.cell do %>
+          <div class="flex flex-wrap gap-1">
+            <% if on_duty %>
+              <% if can?(:manage_timesheets) %>
+                <%= button_link "Correct Position / On Duty", :secondary,
+                                edit_person_timesheet_path(@person, entry, year: @year), size: "sm" %>
+              <% end %>
+              <% if can?(:sign_off) %>
+                <%= button_link "End Shift", :error, signoff_person_timesheet_path(@person, entry, year: @year),
+                                size: "sm",
+                                data: confirm_modal(
+                                  title: "End Shift",
+                                  message: "End the #{entry.position.title} shift for #{@person.callsign}?",
+                                  confirm_label: "End Shift",
+                                  method: :post
+                                ) %>
+              <% end %>
+            <% elsif can?(:manage_timesheets) %>
+              <%= button_link (entry.status_pending? ? "Review" : "Edit"),
+                              (entry.status_pending? ? :warning : :secondary),
+                              edit_person_timesheet_path(@person, entry, year: @year),
+                              icon: "pen-to-square", icon_type: :solid, size: "sm" %>
+            <% else %>
+              <%= button_link "View", :secondary, edit_person_timesheet_path(@person, entry, year: @year),
+                              icon: "magnifying-glass", icon_type: :solid, size: "sm" %>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,19 @@
+description: "Warns a team that no one is left signed up for a shift"
+
+subject: "[Clubhouse] A {{ slot.position_title }} shift has become empty"
+
+body: |
+  <p>
+    Heads up! A {{ slot.position_title }} shift has become empty.
+  </p>
+
+  <p>
+    <b>What:</b> {{ slot.position_title }} - {{ slot.description }}<br>
+    <b>When:</b> {{ slot.begins }}<br>
+    {%- if trainee_signups %}
+      <b>Trainee / Mentee Signups:</b> {{ trainee_signups }}<br>
+    {%- endif %}
+    <b>Person who dropped:</b> {{ dropped_by | default: "Unknown" }}
+  </p>
+
+  {% render "shared/mailer/bot_sign_off" %}

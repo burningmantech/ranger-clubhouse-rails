@@ -1,0 +1,334 @@
+/*
+ * The Alpha Schedule's three printable sheets
+ * (mentoring/alpha_schedule#signup_sheet, #info_sheet, #apparel).
+ *
+ * Print-first component: fixed ink-on-white colors on purpose -- these are
+ * paper documents, so they render as a white "paper" preview on screen in
+ * both themes and print solid black regardless of the muted theme colors.
+ * Greys that match a light-theme token are written as the token instead:
+ * layouts/print pins data-theme="light", so they cannot turn dark with the
+ * screen. The rest have no token close enough and stay literal.
+ *
+ * Pagination is the browser's, not ours: a person's block is one tbody with
+ * break-inside: avoid, and the thead repeats on every printed page. There are
+ * deliberately no rows-per-page constants -- block height varies with wrapped
+ * training text, so any fixed count drifts (see the note in
+ * Mentoring::AlphaScheduleController). The running-head row is what keeps a
+ * continuation page identifiable once the masthead is behind it, and page
+ * numbers come from an @page margin box (which Chrome does render) so they
+ * count physical sheets rather than guessing at them.
+ */
+
+.alpha-sheet {
+  background: #fff;
+  color: #111;
+  font-size: 11pt;
+}
+
+/* Paper preview on screen; @page margins take over in print. */
+@media screen {
+  .alpha-sheet {
+    max-width: 8.5in;
+    margin-inline: auto;
+    margin-bottom: 1.5rem;
+    padding: 0.5in;
+    border: 1px solid var(--color-line);
+  }
+}
+
+.alpha-masthead {
+  border-bottom: 2.5pt solid #111;
+  padding-bottom: 6pt;
+  margin-bottom: 2pt;
+}
+
+.alpha-doc-label {
+  font-size: 8.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-body);
+}
+
+.alpha-shift {
+  font-size: 17pt;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.alpha-when {
+  font-size: 11pt;
+  color: #222;
+}
+
+/*
+ * Repeats at the top of every printed page (browsers re-render thead per
+ * page), so a continuation sheet still says which shift and document it
+ * belongs to. Redundant on page 1 under the masthead, so it is hidden on
+ * screen and on the first printed page is simply a thin restatement.
+ */
+.alpha-running-head th {
+  font-size: 8pt;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--color-body-subtle);
+  border-bottom: 0.5pt solid #ccc;
+  padding-bottom: 3pt;
+}
+
+.alpha-subline {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 9pt;
+  @apply text-stone-muted;
+  padding: 3pt 0 8pt;
+}
+
+.alpha-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.alpha-sheet th {
+  font-size: 8pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-heading);
+  text-align: left;
+  padding: 2pt 6pt;
+  border-bottom: 1.25pt solid #111;
+}
+
+.alpha-sheet td {
+  padding: 3pt 6pt;
+  vertical-align: top;
+}
+
+/* One tbody per person: zebra by person, never torn across sheets. */
+.alpha-sheet tbody {
+  break-inside: avoid;
+}
+
+.alpha-sheet tbody:nth-of-type(even) td {
+  background: var(--color-base-200);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* The caption above a fill-in or data cell, as on a paper form. */
+.alpha-fill {
+  display: block;
+  font-size: 7pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #999;
+}
+
+.alpha-value {
+  font-size: 10.5pt;
+}
+
+/* Scoped under .alpha-sheet so these beat the bare td rules above. */
+.alpha-sheet .alpha-flag-cell {
+  width: 0.42in;
+  text-align: center;
+  font-size: 14pt;
+  vertical-align: middle;
+}
+
+.alpha-sheet .alpha-callsign {
+  font-size: 12pt;
+  font-weight: 700;
+}
+
+/* Sign-in sheet: three writing rows per person, the last two left blank. */
+.alpha-write-row td {
+  height: 0.34in;
+  border-bottom: 0.5pt dotted #bbb;
+}
+
+.alpha-sheet .alpha-initial {
+  border-left: 0.75pt solid #ccc;
+  vertical-align: top;
+}
+
+.alpha-block-end td {
+  border-bottom: 0.75pt solid #999;
+}
+
+/*
+ * Information sheet. Ported from upstream's alphas-signed-in-sheet: no column
+ * headers, every value captioned in place, four rows per person, and a blank
+ * separator band between people instead of zebra striping.
+ */
+.alpha-info-title {
+  font-size: 15pt;
+  font-weight: 700;
+  line-height: 1.2;
+  border-bottom: 2.5pt solid #111;
+  padding-bottom: 6pt;
+  margin-bottom: 4pt;
+}
+
+.alpha-info-table td {
+  vertical-align: top;
+  border-bottom: 0.5pt dotted #ccc;
+}
+
+/* Column widths follow upstream's w-5/w-20/w-5/w-25/w-25 identity row. */
+.alpha-info-table .alpha-info-handle { width: 20%; }
+.alpha-info-table .alpha-info-gender { width: 10%; }
+.alpha-info-table .alpha-info-training { width: 30%; }
+.alpha-info-table .alpha-info-home { width: 25%; }
+
+/* The separator band upstream draws between people. */
+.alpha-info-table .alpha-separator td {
+  height: 10pt;
+  border-bottom: 1.25pt solid #111;
+}
+
+/* This sheet separates people with the band above, so zebra would only add
+   noise to an already dense page. */
+.alpha-info-table tbody:nth-of-type(even) td {
+  background: none;
+}
+
+.alpha-note-line {
+  font-size: 9.5pt;
+  line-height: 1.35;
+}
+
+.alpha-note-source {
+  color: var(--color-body);
+}
+
+/*
+ * Rank badges come from the shared intake_rank_badge helper, which is built
+ * for screen: its background colors carry the meaning. Force them to print --
+ * a mentor reading this sheet needs the rank to stand out on paper too.
+ */
+.alpha-sheet .badge {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  font-size: 8pt;
+  vertical-align: baseline;
+}
+
+/* Apparel sheet: dense roster rows, then the totals boxes. */
+.alpha-apparel-row td {
+  height: 0.27in;
+  font-size: 10pt;
+  vertical-align: middle;
+  border-bottom: 0.5pt solid var(--color-base-300);
+}
+
+.alpha-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35in;
+  break-inside: avoid;
+}
+
+.alpha-totals section {
+  flex: 1 1 2in;
+  break-inside: avoid;
+}
+
+.alpha-totals caption {
+  caption-side: top;
+  text-align: left;
+  font-weight: 700;
+  font-size: 10pt;
+  padding-bottom: 2pt;
+}
+
+.alpha-totals td {
+  border-bottom: 0.5pt solid var(--color-base-300);
+  font-size: 10pt;
+}
+
+.alpha-total-count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Alpha Pod Management's pod sheet (mentoring/alpha_pods#print_sheet).
+ *
+ * The one place the pods stay a wide grid of columns: on paper the whole walk
+ * has to be readable at a glance, and the screen's card grid would run to
+ * several sheets. Landscape and six pods to a table, so a column never gets
+ * narrower than a callsign; further pods start a new table below.
+ */
+@media screen {
+  .alpha-sheet--wide {
+    max-width: 11in;
+  }
+}
+
+.alpha-pod-table {
+  table-layout: fixed;
+  margin-bottom: 14pt;
+  break-inside: avoid;
+}
+
+.alpha-pod-table th,
+.alpha-pod-table td {
+  border: 0.5pt solid #999;
+}
+
+.alpha-pod-table th {
+  font-size: 10pt;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 700;
+  text-align: center;
+  padding: 4pt 6pt;
+}
+
+/* The band naming each group, repeated across the pod columns. */
+.alpha-pod-table .alpha-pod-band td {
+  background: var(--color-base-300);
+  font-size: 7.5pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--color-heading);
+  padding: 2pt 6pt;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Zebra is per-person on the other sheets; here a row is a group across every
+   pod, so it would stripe unrelated people together. */
+.alpha-pod-table tbody:nth-of-type(even) td {
+  background: none;
+}
+
+.alpha-pod-table ol,
+.alpha-pod-table ul {
+  margin: 0;
+  padding-left: 14pt;
+  font-size: 10pt;
+}
+
+/* Alphas walk in this order, so the sheet has to number them. Restated
+   because the Tailwind reset clears list markers on every list. */
+.alpha-pod-table ol {
+  list-style: decimal;
+}
+
+.alpha-pod-table ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.alpha-pod-table li {
+  padding: 1pt 0;
+}
+
+.alpha-pod-empty {
+  color: #888;
+  font-style: italic;
+  font-size: 9pt;
+}

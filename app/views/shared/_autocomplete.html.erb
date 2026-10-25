@@ -1,0 +1,84 @@
+<%# locals: (url:, mode: nil, name: nil, input_id: nil, field_id: nil, describedby: nil, invalid: false, wrapper_class: nil, form_field: false, placeholder: "Search...", min_length: 2, limit: 5, delay: 300, meta_mapping: nil, submit_on_select: false, recents_key: nil, autofocus: false, input_class: nil, results_class: nil, hidden_field_name: nil, hidden_field_id: nil, aria_label: "Search", input_data: nil, inline: false, select_on_blur: false, keyboard_help: false) %>
+<%# field_id: the text input's own id, for a form label that names it; describedby: its help or error line;
+    wrapper_class: the component's own box, as a flex item in a field (callsign_chips_field);
+    form_field: a field with no hidden target, whose selection only dispatches autocomplete.change;
+    aria_label: nil when a <label for=field_id> names the input, since an aria-label would outrank it. %>
+<%
+  wrapper_id = input_id || "autocomplete-#{SecureRandom.hex(4)}"
+  results_id = "#{wrapper_id}-results"
+  input_field_id = field_id || "#{wrapper_id}-input"
+%>
+<div id="<%= wrapper_id %>"
+     data-controller="autocomplete"
+     data-autocomplete-url-value="<%= url %>"
+     data-autocomplete-response-type-value="json"
+     data-autocomplete-min-length-value="<%= min_length %>"
+     data-autocomplete-delay-value="<%= delay %>"
+     data-autocomplete-limit-value="<%= limit %>"
+     <% if mode.present? %>data-autocomplete-mode-value="<%= mode %>"<% end %>
+     <% if meta_mapping.present? %>data-autocomplete-meta-mapping-value="<%= meta_mapping.to_json %>"<% end %>
+     <% if submit_on_select %>data-autocomplete-submit-on-select-value="true"<% end %>
+     <% if form_field %>data-autocomplete-form-field-value="true"<% end %>
+     <% if inline %>data-autocomplete-inline-value="true"<% end %>
+     <% if select_on_blur %>data-autocomplete-select-on-blur-value="true"<% end %>
+     <% if recents_key.present? %>data-autocomplete-recents-key-value="<%= recents_key %>"<% end %>
+     role="combobox"
+     aria-expanded="false"
+     aria-haspopup="listbox"
+     aria-owns="<%= results_id %>"
+     class="<%= class_names("relative", wrapper_class) %>">
+
+  <input type="text"
+         id="<%= input_field_id %>"
+         <% if name.present? %>name="<%= name %>"<% end %>
+         data-autocomplete-target="input"
+         <% (input_data || {}).each do |key, value| %>data-<%= key %>="<%= value %>" <% end %>
+         placeholder="<%= placeholder %>"
+         autocomplete="off"
+         spellcheck="false"
+         autocorrect="off"
+         autocapitalize="off"
+         aria-autocomplete="list"
+         aria-controls="<%= results_id %>"
+         <% if aria_label %>aria-label="<%= aria_label %>"<% end %>
+         <% if describedby %>aria-describedby="<%= describedby %>"<% end %>
+         <% if invalid %>aria-invalid="true"<% end %>
+         <% if autofocus %>autofocus<% end %>
+         class="<%= input_class || "#{AppFormBuilder::INPUT_CLASSES} w-full" %>" />
+
+  <% if hidden_field_name.present? %>
+    <input type="hidden"
+           name="<%= hidden_field_name %>"
+           <% if hidden_field_id.present? %>id="<%= hidden_field_id %>"<% end %>
+           data-autocomplete-target="hidden" />
+  <% end %>
+
+  <%# Loading indicator %>
+  <div data-autocomplete-target="loading" hidden class="ac-loading">
+    <%= fa_icon "spinner", :solid, class: "animate-spin me-1" %>
+    Searching…
+  </div>
+
+  <%# Results container %>
+  <div id="<%= results_id %>"
+       data-autocomplete-target="results"
+       role="listbox"
+       class="ac-results <%= results_class %>"
+       hidden>
+  </div>
+
+  <%# Persistent keyboard-shortcut footer. When present, the controller toggles
+      this element instead of injecting a duplicate footer into the results. Kept
+      inside the controller element so Stimulus binds it as the keyboardHelp
+      target. Opt-in (default off) so existing callers are unchanged. %>
+  <% if keyboard_help %>
+    <div data-autocomplete-target="keyboardHelp"
+         class="ac-keyboard-help"
+         aria-hidden="true"
+         hidden>
+      <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> navigate</span>
+      <span><kbd>&crarr;</kbd> select</span>
+      <span><kbd>esc</kbd> close</span>
+    </div>
+  <% end %>
+</div>

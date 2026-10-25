@@ -1,0 +1,134 @@
+<%#
+  Where this year's Prospective and Alpha class stands, grouped by what happens
+  next for each person rather than by severity. The lines, the chips and the
+  review pane holding the selected person's history are the shared pipeline
+  ones -- see UnifiedFlaggingConcern. Read-only: no note controls appear.
+%>
+<% content_for :title, "Alpha Status" %>
+<%= hero_panel icon: "chart-line", heading_level: :h1, id: "alpha-status-header",
+               title: "#{@year} Alpha Status" do |panel| %>
+  <% panel.description do %>
+    Everyone who entered this year&rsquo;s Prospective and Alpha class, in the order you deal with them.
+  <% end %>
+<% end %>
+
+<% if @total.zero? %>
+  <%= ui_empty_state "No one has been made a Prospective or an Alpha in #{@year}.",
+                     icon: "chart-line", icon_type: :solid %>
+<% else %>
+  <%# @section_totals describes the class, while each section's badge below
+      counts the rows it is showing. They differ only while a filter is on. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @total.to_s, "In the Class", icon: "user-group", icon_type: :solid %>
+    <%= ui_stat_box @section_totals.fetch(:alpha, 0).to_s, "Became an Alpha",
+                    icon: "seedling", icon_type: :solid %>
+    <%# Upstream's "Status eligible", computed correctly -- see the controller. %>
+    <%= ui_stat_box @section_totals.fetch(:ready, 0).to_s, "Ready for Alpha Status",
+                    variant: :warning, icon: "user-plus", icon_type: :solid %>
+    <%= ui_stat_box @personnel_flag_count.to_s, "Personnel Flags",
+                    variant: @personnel_flag_count.positive? ? :error : :success,
+                    icon: "flag", icon_type: :solid %>
+  <% end %>
+
+  <% if @personnel_flag_count.positive? %>
+    <%= ui_callout_box :error, icon: "flag", icon_type: :solid, accent: true, class: "my-4" do %>
+      <strong>A Personnel Black Flag is raised on <%= pluralize(@personnel_flag_count, "person") %>.</strong>
+      Take no action on a flagged person until the flag is resolved. They are listed under Resolve first below.
+    <% end %>
+  <% end %>
+
+  <%# The order the hero's one sentence promises, who is under each section,
+      then the legend every pipeline page shares. Below the flag callout -- a
+      warning is for everyone, this is for whoever asks. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What order are people in?</dt>
+      <dd>
+        Concerns to resolve, Prospectives ready to become Alphas, Alphas already made, and everyone
+        still waiting on training.
+      </dd>
+      <%# A section title is an action, so the card says who is under each one
+          -- a person is placed in the first section that claims them, which is
+          not guessable from the title alone. %>
+      <% Mentoring::AlphaStatusHelper::SECTIONS.each do |section| %>
+        <dt>Who is under &ldquo;<%= section[:title] %>&rdquo;?</dt>
+        <dd><%= section[:who] %></dd>
+      <% end %>
+      <%= render "common/unified_flagging/review_legend" %>
+      <%= render "common/unified_flagging/lead_legend" %>
+      <%= render "common/unified_flagging/rank_legend" %>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "alpha-status-filters",
+                 chips: unified_flagging_filter_chips(@filter_params),
+                 clear_url: unified_flagging_path,
+                 count: "Showing #{@shown} of #{pluralize(@total, "person", plural: "people")}",
+                 url: unified_flagging_path do |f| %>
+    <%= form_row do %>
+      <%= f.text_field :q, label: "Search by Callsign, Name, or Former Handle",
+                       value: @filter_params[:q], width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :training, unified_flagging_training_filter_options,
+                   label: "Training", selected: @filter_params[:training],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :flagged, unified_flagging_flagged_filter_options,
+                   label: "Flagged By", selected: @filter_params[:flagged],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @total.positive? && @shown.zero? %>
+  <%= ui_empty_state "No one in this year's class matched those filters.",
+                     icon: "magnifying-glass", icon_type: :solid %>
+<% elsif @total.positive? %>
+  <% pane = render "common/unified_flagging/review_pane", summary: @selected, history: @history, year: @year %>
+  <%= render layout: "common/unified_flagging/review_workspace", locals: { pane: } do %>
+    <% Mentoring::AlphaStatusHelper::SECTIONS.each do |section| %>
+      <% rows = @sections[section[:key]] || [] %>
+      <%= ui_section section[:title], id: "alpha-status-#{section[:key]}",
+                     icon: section[:icon], icon_type: :solid,
+                     badge: rows.size.to_s, badge_color: section[:badge_color] do %>
+        <% if rows.empty? %>
+          <p class="text-stone-muted"><%= alpha_status_empty_message(section, filtering: @filtering) %></p>
+        <% elsif section[:key] == :resolve %>
+          <%# The only section holding more than one kind of concern: a Personnel
+              flag quarantines someone and a rank 3/4 does not, and that decides
+              what a mentor does next. %>
+          <% groups = rows.group_by { |summary| summary[:group] } %>
+          <% Mentoring::AlphaStatusHelper::ISSUE_GROUPS.each do |group| %>
+            <% group_rows = groups[group] || [] %>
+            <% next if group_rows.empty? %>
+            <% group_meta = UnifiedFlaggingHelper::GROUP_META[group] %>
+            <%= ui_subheading do %>
+              <%= group_meta[:title] %>
+              <%= ui_badge group_rows.size.to_s, group_meta[:badge_color] %>
+            <% end %>
+            <%= render "common/unified_flagging/review_list", rows: group_rows, year: @year,
+                       selected_id: @selected_id %>
+          <% end %>
+        <% elsif section[:key] == :waiting %>
+          <%# Split by how far off training is: no sign-up at all is the chase
+              list, and it reads first. %>
+          <% by_status = rows.group_by { |summary| summary[:training_status] } %>
+          <% Mentoring::AlphaStatusHelper::WAITING_SUBGROUPS.each do |subgroup| %>
+            <% sub_rows = by_status[subgroup[:status]] || [] %>
+            <% next if sub_rows.empty? %>
+            <%= ui_subheading do %>
+              <%= subgroup[:title] %>
+              <%= ui_badge sub_rows.size.to_s, subgroup[:badge_color] %>
+            <% end %>
+            <%= render "common/unified_flagging/review_list", rows: sub_rows, year: @year,
+                       selected_id: @selected_id %>
+          <% end %>
+        <% else %>
+          <%= render "common/unified_flagging/review_list", rows: rows, year: @year, selected_id: @selected_id %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

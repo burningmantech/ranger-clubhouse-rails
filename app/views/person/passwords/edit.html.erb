@@ -1,0 +1,30 @@
+<%= hero_panel icon: "key", heading_level: :h1, id: "person-password-edit-header",
+               description: "Set a new password for this account.",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Change Password &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Password Details", icon: "key", icon_type: :solid do %>
+  <%= ui_form(@password_form, person_password_path(@person), method: :patch) do |f| %>
+    <%= f.password_field :password,
+                         label: "New Password",
+                         width: "w-full sm:w-64",
+                         minlength: 8,
+                         maxlength: 80,
+                         autocomplete: "new-password",
+                         help_text: "Must be 8 to 80 characters." %>
+    <%= f.password_field :password_confirmation,
+                         label: "Confirm New Password",
+                         width: "w-full sm:w-64",
+                         minlength: 8,
+                         maxlength: 80,
+                         autocomplete: "new-password" %>
+
+    <%= button_row do %>
+      <%= f.submit "Change Password" %>
+      <%= cancel_link person_path(@person) %>
+    <% end %>
+  <% end %>
+<% end %>

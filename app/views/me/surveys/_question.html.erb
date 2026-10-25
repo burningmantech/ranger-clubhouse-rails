@@ -1,0 +1,27 @@
+<%# locals: (question:, trainer:, form:) %>
+<% field_attr = (trainer ? "question_#{question.id}_#{trainer.id}" : "question_#{question.id}").to_sym %>
+
+<% if question.type == SurveyQuestion::TYPE_TEXT %>
+  <%= form.text_area field_attr,
+    label: question.description,
+    required: question.is_required,
+    rows: 4 %>
+
+<% elsif question.type == SurveyQuestion::TYPE_RATING || question.type == SurveyQuestion::TYPE_OPTIONS %>
+  <% collection = if question.type == SurveyQuestion::TYPE_RATING
+       SurveyAnswer::RATING_OPTIONS.map { |o| [o[:title], o[:id]] }
+     else
+       question.option_list.map { |o| [o, o] }
+     end %>
+  <% question_label = question.is_required ?
+       safe_join([question.description, " ", ui_badge("required", :error, icon: "asterisk", icon_type: :solid)]) :
+       question.description %>
+  <%= form.collection_radio_buttons field_attr, collection, :last, :first,
+      { label: question_label, label_position: :stacked, layout: :auto }, question.is_required ? { required: true } : {} %>
+
+<% else %>
+  <div class="text-error">
+    Uh oh, question #<%= question.id %> has an unknown type "<%= question.type %>".
+    This is a bug, please report this to the tech team.
+  </div>
+<% end %>

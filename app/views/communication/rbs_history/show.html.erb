@@ -1,0 +1,133 @@
+<%#
+  One broadcast: what it said, how it was sent, and what became of each
+  person's copy.
+%>
+<% content_for :title, "Broadcast ##{@broadcast.id}" %>
+
+<%= hero_panel icon: "tower-broadcast", heading_level: :h1, id: "rbs-broadcast-header",
+               title: "Broadcast ##{@broadcast.id}",
+               back_to: ["Broadcast history", communication_rbs_history_path(year: @broadcast.created_at.year)] do |panel| %>
+  <% panel.description do %>
+    <%= safe_join(["Sent", datetime_format(@broadcast.created_at, year: true),
+                   "by #{person_display_name(@broadcast.sender, @broadcast.sender_id)}."], " ") %>
+  <% end %>
+<% end %>
+
+<% if @broadcast.failed? %>
+  <%# Both read from the rows, not the stored counts: a running retry moves
+      rows to sent batch by batch and recounts only once it is done. %>
+  <% retryable = @broadcast.failed_messages.count %>
+  <% stuck = @broadcast.unretryable_messages.count %>
+  <%= ui_callout_box :error, icon: "triangle-exclamation", icon_type: :solid do %>
+    <strong>
+      <%= [(pluralize(@broadcast.sms_failed, "text message") if @broadcast.sms_failed.positive?),
+           (pluralize(@broadcast.email_failed, "email") if @broadcast.email_failed.positive?)].compact.to_sentence %>
+      could not be sent.
+    </strong>
+    <%= rbs_unretryable_sentence(stuck, retryable) if stuck.positive? %>
+    <% if can?(:retry_broadcast) && retryable.positive? %>
+      Sending again reaches only the <%= "other " if stuck.positive? %><%= pluralize(retryable, "message") %> that
+      failed; everyone who already received it is left alone.
+      <div class="mt-2">
+        <%= button_link "Send Failed Messages Again", :error,
+                        communication_rbs_retry_history_broadcast_path(@broadcast),
+                        icon: "rotate-right", icon_type: :solid, size: "sm",
+                        data: confirm_modal(
+                          title: "Send Failed Messages Again",
+                          message: "Send the failed messages again? Only the #{pluralize(retryable, "message")} that failed and can go again will be sent. Everyone who already received this broadcast is left alone.",
+                          confirm_label: "Send Them Again",
+                          method: :post
+                        ) %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @broadcast.recipient_count.to_s, "People", icon: "users", icon_type: :solid %>
+  <%# Read from the rows, not @recipients, whose table stops at
+      RECIPIENT_LIMIT. "—" for a channel the broadcast didn't use, as the
+      results page shows. %>
+  <% attempted = @broadcast.attempted_counts %>
+  <%= ui_stat_box @broadcast.sent_sms ? attempted.fetch("sms", 0).to_s : "—", "Texts",
+                  icon: "comment-sms", icon_type: :solid %>
+  <%= ui_stat_box @broadcast.sent_email ? attempted.fetch("email", 0).to_s : "—", "Emails",
+                  icon: "envelope", icon_type: :solid %>
+  <%= ui_stat_box (@broadcast.sms_failed + @broadcast.email_failed).to_s, "Failed",
+                  variant: @broadcast.failed? ? :error : :success,
+                  icon: "triangle-exclamation", icon_type: :solid %>
+  <%# Counted from the rows: a bounce is not a failure, so no stored count
+      holds it. Neutral at 0, not green -- 0 can mean no report came. %>
+  <% bounced = @broadcast.bounced_messages.count %>
+  <%= ui_stat_box bounced.to_s, "Bounced", variant: bounced.positive? ? :error : :secondary,
+                  icon: "reply", icon_type: :solid %>
+<% end %>
+
+<div class="stack-to-row-lg">
+  <%= ui_section "Message", icon: "envelope-open-text", icon_type: :solid do %>
+    <% if @broadcast.sent_sms && @broadcast.sms_message.present? %>
+      <h3 class="heading-title text-heading mb-1"><%= fa_icon "comment-sms", :solid, fixed: true %> Text</h3>
+      <div class="rounded-base border border-line bg-default p-3 mb-3"><%= @broadcast.sms_message %></div>
+    <% end %>
+    <% if @broadcast.subject.present? || @broadcast.email_message.present? %>
+      <h3 class="heading-title text-heading mb-1"><%= fa_icon "envelope", :solid, fixed: true %> Email and Clubhouse message</h3>
+      <div class="rounded-base border border-line bg-default p-3 max-h-96 overflow-y-auto">
+        <div class="font-semibold"><%= @broadcast.subject %></div>
+        <% if @broadcast.email_message.present? %>
+          <div class="mt-2"><%= simple_format(@broadcast.email_message) %></div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Details", icon: "circle-info", icon_type: :solid do %>
+    <%= ui_label_value size: :base do |list| %>
+      <% list.row "Alert", rbs_alert_label(@broadcast.alert) %>
+      <% list.row "Sent by", rbs_channel_icons(@broadcast) %>
+      <% list.row "From", @broadcast.sender_address.presence || "—" %>
+      <% list.row "No longer relevant after",
+                  (@broadcast.expires_at ? datetime_format(@broadcast.expires_at, year: true) : "—") %>
+      <% list.row "Sent again" do %>
+        <% if @broadcast.retry_at %>
+          <%= safe_join([datetime_format(@broadcast.retry_at, year: true),
+                         "by #{person_display_name(@broadcast.retry_person, @broadcast.retry_person_id)}"], " ") %>
+        <% else %>
+          Never
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>
+
+<%= ui_section "Recipients (#{@recipients.size})", icon: "user-check", icon_type: :solid, border: false do %>
+  <% if @broadcast.recipient_count > @recipients.size %>
+    <p class="px-3 pb-2">
+      Showing the first <%= @recipients.size %> of
+      <%= number_with_delimiter(@broadcast.recipient_count) %> people this reached.
+    </p>
+  <% end %>
+  <% if @recipients.empty? %>
+    <%= ui_empty_state "No messages were recorded for this broadcast." %>
+  <% else %>
+    <%= ui_table striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Name" %>
+        <%= t.heading "Text" %>
+        <%= t.heading "Email" %>
+        <%= t.heading "Clubhouse" %>
+      <% end %>
+      <%= t.body do %>
+        <% @recipients.each do |person| %>
+          <%= t.row do %>
+            <%= t.row_header person_display_link(person[:person], person[:person_id]) %>
+            <%= t.cell "#{person[:first_name]} #{person[:last_name]}" %>
+            <%= t.cell rbs_recorded_cell(person[:sms]) %>
+            <%= t.cell rbs_recorded_cell(person[:email]) %>
+            <%= t.cell rbs_recorded_cell(person[:clubhouse]) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

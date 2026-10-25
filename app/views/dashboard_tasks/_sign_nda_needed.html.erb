@@ -1,0 +1,8 @@
+<%# locals: (step:,facts:)%>
+<p class="text-error font-bold">
+  <%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %> PRIVILEGES SUSPENDED
+</p>
+<p class="mb-2">
+  You have Event Management permissions → yearly agreement required.
+</p>
+<%= link_to "Go To Agreements", me_agreements_path, class: "tap-target-link" %>

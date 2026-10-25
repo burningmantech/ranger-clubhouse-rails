@@ -1,0 +1,10 @@
+<%= modal_dialog id: "problem-review-dialog", size: :lg, title: "Mark Paragraph as Problematic" do %>
+  <p class="mb-2">
+    The reason is recorded as a VC comment on the application. No email is sent to the applicant.
+  </p>
+  <%= form_with url: problem_review_vc_application_path(@application), method: :post,
+                builder: AppFormBuilder, data: { turbo_frame: "_top" } do |f| %>
+    <%= f.text_area :message, label: "Why is the paragraph problematic?", required: true, rows: 5 %>
+    <%= modal_form_footer submit: "Mark as Problem", variant: :warning %>
+  <% end %>
+<% end %>

@@ -1,0 +1,58 @@
+<%= hero_panel icon: "fingerprint", heading_level: :h1, id: "me-passkey-new-header",
+               title: "Add Passkey",
+               description: "Save a passkey on this device, in your password manager, or on a security key.",
+               back_to: ["Passkeys", me_profile_passkeys_path] %>
+
+<%# The page's script asks the Clubhouse for the options, has the device make
+    the passkey, puts what it made in the hidden field, and only then lets the
+    form go. A full page load, not a Turbo visit: the answer is a redirect, and
+    a form sent by script has no submitter for Turbo to re-enable. %>
+<%= ui_form(@form, me_profile_passkeys_path,
+            data: { turbo: false,
+                    controller: "passkey",
+                    passkey_ceremony_value: "create",
+                    passkey_options_url_value: options_me_profile_passkeys_path,
+                    action: "submit->passkey#run" }) do |f| %>
+  <%# Shown by the script when the browser cannot make a passkey. %>
+  <div data-passkey-target="unsupported" hidden>
+    <%= ui_callout_box :warning, title: "This Browser Can't Make Passkeys", heading_level: :h2 do %>
+      Update your browser, or use a current Chrome, Edge, Firefox or Safari. Your password still signs you in.
+    <% end %>
+  </div>
+
+  <%# What goes wrong between the browser and the device, filled in by the script. %>
+  <div data-passkey-target="error" hidden>
+    <%= ui_callout_box :error, accent: true do %>
+      <span data-passkey-target="errorMessage"></span>
+    <% end %>
+  </div>
+
+  <%= ui_section "Passkey Details", icon: "fingerprint", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>What happens next?</dt>
+      <dd>Your browser asks where to save the passkey, then checks your fingerprint, face, or screen lock.</dd>
+      <dt>On a shared computer?</dt>
+      <dd>Stop here. Add a passkey only on a device that is yours, or on a security key you carry.</dd>
+    </dl>
+
+    <%= f.text_field :nickname,
+                     label: "Nickname",
+                     required: true,
+                     width: "w-full sm:w-64",
+                     maxlength: PersonPasskey::NICKNAME_LIMIT,
+                     help_text: "A name that tells you which device or key this is." %>
+    <%= f.password_field :current_password,
+                         label: "Current Password",
+                         required: true,
+                         width: "w-full sm:w-64",
+                         autocomplete: "current-password",
+                         data: { passkey_target: "password" },
+                         help_text: "Confirms it's you adding the passkey." %>
+    <%= f.hidden_field :credential, data: { passkey_target: "credential" } %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Add Passkey", data: { passkey_target: "submit", pending_label: "Waiting for Your Device…" } %>
+    <%= cancel_link me_profile_passkeys_path %>
+  <% end %>
+<% end %>

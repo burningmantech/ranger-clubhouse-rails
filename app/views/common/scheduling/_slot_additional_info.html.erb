@@ -1,0 +1,38 @@
+<%# locals: (slot:, collapsed: false) %>
+<% info = slot.url %>
+<% if info.present? %>
+  <div class="mt-2">
+    <% if collapsed %>
+      <%= ui_disclosure "Details",
+                        summary_class: "font-semibold text-body",
+                        content_class: "text-stone-emphasis" do %>
+        <%= hyperlink_text info %>
+      <% end %>
+    <% else %>
+      <span class="font-semibold text-body">Details:</span>
+      <% if info.size > 75 %>
+        <span data-controller="read-more"
+              data-read-more-more-text-value="Show Details"
+              data-read-more-less-text-value="Hide Details">
+          <span data-read-more-target="short">
+            <%= truncate(sanitize(info), length: 75) %>
+          </span>
+          <span class="hidden" id="slot-details-<%= slot.id %>" data-read-more-target="full">
+            <%= hyperlink_text info %>
+          </span>
+          <%# Keeps the inner label target: the read-more controller swaps its text,
+              and the system tests assert on it. %>
+          <%= button_action tag.span("Show Details", data: { read_more_target: "label" }),
+                            :ghost,
+                            class: "btn-link font-normal align-baseline",
+                            "aria-expanded": "false",
+                            "aria-controls": "slot-details-#{slot.id}",
+                            data: { read_more_target: "toggle",
+                                    action: "click->read-more#toggle" } %>
+        </span>
+      <% else %>
+        <span class="text-stone-emphasis"><%= hyperlink_text info %></span>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

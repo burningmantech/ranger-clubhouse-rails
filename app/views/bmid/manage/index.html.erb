@@ -1,0 +1,130 @@
+<%# BMID management: every badge the event year needs, in one filtered, sortable
+    table. Port of the Ember vc/bmid page (Table View). Editing a whole column
+    at a time is Edit Mode, which lives on the same URL behind ?mode=edit. %>
+<%= hero_panel icon: "id-card", heading_level: :h1, id: "bmid-manage-header",
+               title: "#{@year} BMID Management" do |panel| %>
+  <% panel.description do %>
+    <% if @edit_mode %>
+      Every badge <%= @year %> needs, with every editable cell open at once.
+    <% else %>
+      Every badge <%= @year %> needs, whether or not it has been started yet.
+    <% end %>
+  <% end %>
+  <%# Same floor the controllers validate against, so the selector can only
+      offer a year the pages will accept. %>
+  <% panel.year_selector year: @year, min_year: year_floor %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box "#{@filtered_count} of #{@total_count}", "Showing" %>
+  <%= ui_stat_box @no_photo_count.to_s,
+                  "No Photo",
+                  variant: @no_photo_count.positive? ? :warning : :secondary %>
+  <%= ui_stat_box @unqualified_count.to_s,
+                  "Not Qualified",
+                  variant: @unqualified_count.positive? ? :warning : :secondary %>
+<% end %>
+
+<% unless @is_current_year %>
+  <%= ui_callout_box :warning do %>
+    <strong>You are viewing <%= @year %>, a previous year.</strong>
+    These badges have already been through the printer.
+  <% end %>
+<% end %>
+
+<% if @unqualified_in_prep %>
+  <%= ui_callout_box :warning, icon: "hand-point-right" do %>
+    <strong>One or more badges do not meet the printing qualifications.</strong>
+    They have no claimed ticket or SAP and no In-Person Training sign-up, and their
+    status is still Prep.
+  <% end %>
+<% end %>
+
+<% if @failed_badges.present? %>
+  <%= ui_callout_box :error, title: "Some Badges Were Not Saved" do %>
+    <p class="mb-2">
+      <%= pluralize(@saved_count, "badge") %> saved.
+      Fix the highlighted rows below and save again — their edits are still on screen.
+    </p>
+    <ul class="space-y-1">
+      <% @failed_badges.each do |failed| %>
+        <li><strong><%= failed.person.callsign %>:</strong> <%= bmid_row_error_sentence(failed) %></li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>
+
+<%# Out of the hero, and below the warnings rather than above them: a warning
+    is for everyone, the steps are for whoever asks. They differ by mode for the
+    reason the hero's sentence does. %>
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <% if @edit_mode %>
+      <dt>How does saving work?</dt>
+      <dd>
+        Change as many rows as you like, then save them all in one go — only the rows you
+        changed are saved.
+      </dd>
+    <% else %>
+      <dt>How do I find a badge?</dt>
+      <dd>
+        Pick a category to decide who is listed, then narrow by title, team, meals, showers, or
+        print qualification.
+      </dd>
+      <dt>How do I change one?</dt>
+      <dd>Edit a badge from its row, or switch to Edit Mode to change many at once.</dd>
+    <% end %>
+  </dl>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <% if @edit_mode %>
+      <%= button_link "Table View", :secondary,
+                      bmid_manage_path(@index_params.except(:mode)),
+                      icon: "table-list", icon_type: :solid %>
+    <% else %>
+      <%= button_link "Edit Mode", :primary,
+                      bmid_manage_path(@index_params.merge(mode: Bmid::ManageController::EDIT_MODE)),
+                      icon: "pen-to-square", icon_type: :solid %>
+    <% end %>
+  <% end %>
+</div>
+
+<%= render "filter_bar",
+           filter_params: @filter_params,
+           active_params: @active_params,
+           base_params: @base_params,
+           title_options: @title_options,
+           team_options: @team_options,
+           meals_offered: @meals_offered,
+           showers_offered: @showers_offered,
+           count: "Showing #{@filtered_count} of #{pluralize(@total_count, "badge")}",
+           # The export carries the active filters and sort, so it always matches
+           # the table below. Edit mode has no table to match, so no export.
+           actions: (export_csv_link(bmid_manage_path(@index_params.merge(format: :csv))) unless @edit_mode) %>
+
+<%= ui_section "Badges", icon: "table-list", icon_type: :solid do %>
+  <% edit_flag = capture do %>
+    <span class="inline-flex-center-gap-2">
+      <%= fa_icon "pen", :solid, class: "icon-warning" %>
+      Changed, not yet saved.
+    </span>
+  <% end if @edit_mode %>
+  <%= render "common/bmids/flag_legend", extra: edit_flag %>
+
+  <% if @badges.empty? && @active_params.any? %>
+    <%= ui_empty_state "No BMIDs match the filter criteria.",
+                       icon: "magnifying-glass", icon_type: :solid %>
+  <% elsif @badges.empty? %>
+    <%= ui_empty_state "No BMIDs were found for #{@year} matching the filter criteria.",
+                       icon: "id-card", icon_type: :solid %>
+  <% elsif @edit_mode %>
+    <%= render "edit_grid", badges: @badges, sort_state: @sort_state,
+                            ticketing_info: @ticketing_info,
+                            provisions_by_person: @provisions_by_person,
+                            form_url: bmid_manage_update_path(@index_params) %>
+  <% else %>
+    <%= render "table", badges: @badges, sort_state: @sort_state, view_params: @index_params %>
+  <% end %>
+<% end %>

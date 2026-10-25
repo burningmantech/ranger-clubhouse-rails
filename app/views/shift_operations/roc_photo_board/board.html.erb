@@ -1,0 +1,5 @@
+<%# The board on its own, for the display's timer. No src on this frame -- it is
+    the answer, and an answer that names its own address is a loop. %>
+<%= turbo_frame_tag "photo-board" do %>
+  <%= render "board", board: @board %>
+<% end %>

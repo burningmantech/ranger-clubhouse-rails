@@ -1,0 +1,63 @@
+<%# locals: (row:, mode:, position_id:, slot_id: nil, start_time: nil) %>
+<%#
+  One roster row, and the unit every turbo stream on this page replaces. The
+  whole row is the button: it is the largest target the layout can offer, which
+  is what a gloved thumb on a phone at night needs.
+
+  data-turbo-stream so Turbo accepts the stream the POST answers with;
+  data-turbo-submits-with so a second tap during the round trip cannot fire a
+  second write -- and it says "Saving", not "Working", because "work" is banned
+  UI vocabulary. The state carried in params is the roster the operator is
+  looking at -- the response needs it to recount the header.
+
+  An inert state renders the same row without a form: there is nothing left to
+  tap, and a button that could only ever be refused is worse than none.
+%>
+<% state = rollcall_row_state(row, mode, position_id) %>
+<% style = ShiftOperations::RollcallHelper::STATES.fetch(state) %>
+<% detail = rollcall_row_detail(row, state) %>
+<% face = capture do %>
+  <% if row.avatar %>
+    <%= photo_tag row.avatar, width: 44, height: 44, alt: "",
+                  class: "w-11 h-11 rounded-full object-cover shrink-0" %>
+  <% else %>
+    <span class="w-11 h-11 rounded-full bg-default-strong flex items-center justify-center
+                 shrink-0 text-stone-muted" aria-hidden="true">
+      <%= fa_icon "user", :solid %>
+    </span>
+  <% end %>
+
+  <span class="grow min-w-0">
+    <span class="block text-lg font-semibold text-heading truncate"><%= row.callsign %></span>
+    <% if detail %>
+      <span class="block text-sm text-stone-muted"><%= detail %></span>
+    <% end %>
+  </span>
+
+  <%= ui_badge style[:badge], style[:variant], icon: style[:icon], icon_type: :solid,
+               size: "sm", class: "shrink-0" %>
+<% end %>
+<% shell = "w-full min-h-9 flex items-center gap-3 p-2 text-start rounded-lg " \
+           "border border-s-4 #{style[:row]}" %>
+
+<div id="<%= rollcall_row_id(row.person_id) %>" data-list-filter-target="row"
+     data-callsign="<%= row.callsign.downcase %>">
+  <% if style[:inert] %>
+    <div class="<%= shell %>" role="status"
+         aria-label="<%= rollcall_row_aria_label(row, state) %>"><%= face %></div>
+  <% else %>
+    <% action = rollcall_row_action(state) %>
+    <%= button_to rollcall_row_path(action),
+                  method: :post,
+                  params: rollcall_row_params(row, action, mode: mode, position_id: position_id,
+                                              slot_id: slot_id, start_time: start_time),
+                  class: "#{shell} hover:bg-default-strong focus-visible:outline-none focus-visible:ring-2 " \
+                         "focus-visible:ring-primary focus-visible:ring-offset-2 transition-colors duration-200",
+                  form_class: "w-full",
+                  form: { data: rollcall_row_confirm(row, state) },
+                  data: { turbo_stream: true, turbo_submits_with: "Saving…" },
+                  aria: { label: rollcall_row_aria_label(row, state) } do %>
+      <%= face %>
+    <% end %>
+  <% end %>
+</div>

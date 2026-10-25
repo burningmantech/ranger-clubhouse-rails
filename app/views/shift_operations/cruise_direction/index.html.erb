@@ -1,0 +1,63 @@
+<%#
+  Cruise Direction: the pods deployed on one dirt shift.
+
+  The page shell -- header and the shift picker with its actions -- stays put;
+  everything a write can change lives in the board partial below, which every
+  mutation replaces wholesale.
+%>
+<% content_for :title, "Cruise Direction" %>
+
+<%= hero_panel icon: "people-group", heading_level: :h1, id: "cruise-direction-header",
+               title: "Cruise Direction" do |panel| %>
+  <% panel.description do %>
+    The Ranger pairs -- pods -- out on a dirt shift.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<% if @shifts.any? %>
+  <%# Picker and counts read as one thing: what shift, and what it adds up to.
+      They stay a row apart on a phone and sit at opposite ends on a desktop,
+      top-aligned so the shift's label line and the count boxes share a top
+      edge while the shift's actions hang under the select. %>
+  <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 my-4">
+    <%= render "shift_operations/cruise_direction/pickers", shifts: @shifts, slot: @slot, year: @year %>
+    <%= render "shift_operations/cruise_direction/stats", board: @board %>
+  </div>
+<% else %>
+  <%= ui_empty_state "No dirt shifts were scheduled for #{@year}.", icon: "calendar", icon_type: :solid %>
+<% end %>
+
+<% if @slot %>
+  <%# How the board is operated, out of the hero, with the positions list that
+      already lived in a fold here as its third answer -- one card rather than a
+      card beside an inline disclosure. Upstream puts the list in a dialog;
+      folded away instead: it is a dozen words, it answers one question ("why
+      isn't so-and-so offered?"), and a fold costs no round trip and cannot open
+      itself. %>
+  <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>How do I build a pod?</dt>
+      <dd>Make a pod for each group going out, then add the Rangers who have checked in.</dd>
+      <dt>How do I reorder pods, or move someone?</dt>
+      <dd>
+        Drag a pod's grip to change the order they are called in, and drag a Ranger's grip to
+        move them to another pod.
+      </dd>
+      <dt>Which positions can be added? (<%= @positions.size %>)</dt>
+      <dd>
+        A Ranger appears here once they are signed in to one of these positions. The list is set
+        per position, on the position record.
+        <ul class="list-disc ms-5">
+          <% @positions.each do |position| %>
+            <li><%= position.title %></li>
+          <% end %>
+        </ul>
+      </dd>
+    </dl>
+  <% end %>
+
+  <%= render "shift_operations/cruise_direction/board", board: @board, year: @year %>
+<% elsif @shifts.any? %>
+  <%= ui_empty_state "Pick a shift to see the pods out on it.", icon: "clock", icon_type: :solid %>
+<% end %>

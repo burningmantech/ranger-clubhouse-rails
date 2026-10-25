@@ -1,0 +1,6 @@
+<%# locals: (find_form:) %>
+<%= modal_dialog "data-modal-autofocus-on-close-id-value" => "#message_form_subject", title: "Find #{lookup_role_label}", frame: false do %>
+  <%= turbo_frame_tag "find-recipient" do %>
+    <%= render partial: "common/messages/find_recipient_form", locals: { people: nil, find_form: } %>
+  <% end %>
+<% end %>

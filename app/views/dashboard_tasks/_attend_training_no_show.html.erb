@@ -1,0 +1,7 @@
+<%# locals: (step:,facts:)%>
+<p class="text-error font-semibold"><%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %> Missed teaching<% if facts.training.slot %> on <%= mdy_format(facts.training.slot.begins, full: true) %><% end %></p>
+<p><b>To ranger on playa, you must:</b></p>
+<ul class="list-disc list-inside">
+  <li>Attend &amp; pass training as a trainee, OR</li>
+  <li>Teach another session</li>
+</ul>

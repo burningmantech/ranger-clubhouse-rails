@@ -1,0 +1,25 @@
+<%#
+  One number shown as its share of another: the label and the raw counts on one
+  line, the bar under them, and a sentence saying what the proportion means.
+
+  The counts are spelled out beside the bar on purpose -- a bar alone tells a
+  reader the shape of the answer but never the number they came for.
+
+  Locals:
+    label      - what is being counted
+    counts     - the counts in words, e.g. "1,536 of 1,842 expected"
+    percentage - 0..100
+    variant    - progress bar colour
+    caption    - one sentence explaining the proportion (optional)
+%>
+<div class="mb-4">
+  <div class="flex flex-wrap justify-between gap-x-4">
+    <span class="font-semibold text-heading"><%= label %></span>
+    <span><%= counts %></span>
+  </div>
+  <%= ui_progress_bar percentage, variant, class: "my-1",
+                      aria: { label: "#{label}: #{percentage}%" } %>
+  <% if local_assigns[:caption].present? %>
+    <div class="text-stone-subtle"><%= caption %></div>
+  <% end %>
+</div>

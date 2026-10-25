@@ -1,0 +1,22 @@
+<%# locals: (hours:, year:, default_url:, url:, count: nil, actions: nil, id: "shift-drop-filters") %>
+<%#
+  The window control, shared by both pages so they cannot drift apart -- they
+  are the same control, and a page offering a window the other does not would
+  make the drill-down answer a different question than the index that linked to
+  it.
+%>
+<%= filter_bar id: id,
+               chips: shift_drop_filter_chips(hours, default_url),
+               clear_url: default_url,
+               count: count,
+               actions: actions,
+               url: url do |f| %>
+  <%# The year rides the filter form -- a GET form replaces the whole query
+      string, so without this every Apply would bounce back to the current year. %>
+  <%= hidden_field_tag :year, year %>
+  <%= f.select :hours, shift_drop_hour_options, label: "Dropped Within",
+               selected: hours, width: "w-full", wrapper_class: "flex-1" %>
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>

@@ -1,0 +1,30 @@
+<%= ui_section do %>
+  <%= ui_form language, language.new_record? ? languages_index_url : language_url(language) do |f| %>
+    <%= form_row do %>
+      <%= f.select :language_name,
+                   PersonLanguage::LANGUAGE_NAME_OPTIONS,
+                   label: "Language",
+                   wrapper_class: "flex-1",
+                   data: {
+                     controller: "conditional-show",
+                     conditional_show_id_value: "language-custom-block",
+                     conditional_show_reveal_value: PersonLanguage::LANGUAGE_NAME_CUSTOM
+                   }
+      %>
+      <%= f.text_field :language_custom,
+                       label: "Language Name in English",
+                       width: "w-full sm:w-64",
+                       wrapper_id: "language-custom-block",
+                       wrapper_class: "flex-1",
+                       hidden: !language.is_custom?
+      %>
+    <% end %>
+    <%= form_row do %>
+      <%= f.collection_radio_buttons :proficiency, PersonLanguage::PROFICIENCY_OPTIONS, :last, :first, { label: "Your Proficiency Level" } %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Save" %>
+      <%= cancel_link languages_index_url %>
+    <% end %>
+  <% end %>
+<% end %>

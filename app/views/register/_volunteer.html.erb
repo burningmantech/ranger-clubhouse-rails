@@ -1,0 +1,25 @@
+<%# The turn-around. Someone here to become a Ranger does not open an account;
+    they submit a Volunteer Form and wait to be contacted. %>
+<%= ui_section "You're in the Wrong Place to Become a Ranger", icon: "circle-exclamation",
+               icon_type: :solid do %>
+  <%= ui_callout_box :error do %>
+    <strong>You do not create a Clubhouse account to become a Black Rock Ranger.</strong>
+  <% end %>
+
+  <dl class="instruction-list mb-4">
+    <dt>What should I do instead?</dt>
+    <dd>Go to profiles.burningman.org and submit a Volunteer Form.</dd>
+    <dt>What happens next?</dt>
+    <dd>The Ranger Volunteer Coordinators will reach out with your next steps once they have your application.</dd>
+    <dt>Who is this page for, then?</dt>
+    <dd>People who want to audit a training, and Regional Rangers training this year.</dd>
+  </dl>
+
+  <%= button_row do %>
+    <%= button_link "Go to the Volunteer Form", :primary, "https://profiles.burningman.org",
+                    icon: "arrow-up-right-from-square", icon_type: :solid, size: "base",
+                    target: "_blank", rel: "noopener noreferrer" %>
+    <%= button_link "Back to Start", :secondary, register_path, icon: "arrow-left",
+                    icon_type: :solid, size: "base" %>
+  <% end %>
+<% end %>

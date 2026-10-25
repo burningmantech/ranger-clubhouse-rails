@@ -1,0 +1,67 @@
+<%#
+  One person's year: every shift they signed up for, earliest first.
+%>
+<% content_for :title, "#{@person.callsign} Schedule" %>
+
+<%= hero_panel icon: "calendar-days", heading_level: :h1,
+               id: "schedule-by-callsign-person-header",
+               title: "#{@year} #{@person.callsign} Schedule",
+               back_to: ["#{@year} Schedule by Callsign",
+                         scheduling_schedule_by_callsign_path(year: @year)] do |panel| %>
+  <% panel.description do %>
+    Every shift <%= @person.callsign %> signed up for this year, earliest first.
+  <% end %>
+  <%# The selector posts an action-less GET, so it stays on this person and only
+      swaps the year. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @detail.shift_count.to_s, "Shifts",
+                  icon: "calendar-check", icon_type: :solid %>
+  <%= ui_stat_box hour_minute_format(@detail.total_duration), "Hours",
+                  variant: :secondary, icon: "clock", icon_type: :solid %>
+  <%= ui_stat_box @detail.position_count.to_s, "Positions",
+                  variant: :success, icon: "list-check", icon_type: :solid %>
+<% end %>
+
+<%# Every reader of this page holds a role that opens /person/:id, so these
+    links are live for all of them today. Gated on the controller that enforces
+    it anyway -- a copied role list is a link that keeps promising a page after
+    the page stops admitting the reader. %>
+<div class="my-4 flex flex-wrap gap-2">
+  <% if can_view_person_page? %>
+    <%= button_link "Account", :secondary, person_path(@person),
+                    icon: "user", icon_type: :solid %>
+    <%= button_link "Schedule", :secondary, person_scheduling_path(@person, year: @year),
+                    icon: "calendar", icon_type: :solid %>
+  <% end %>
+  <% if @detail.slots.any? %>
+    <%= export_csv_link(scheduling_schedule_by_callsign_person_path(@person, year: @year,
+                        format: :csv)) %>
+  <% end %>
+</div>
+
+<% if @detail.slots.any? %>
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Time" %>
+      <%= t.heading "Duration", right: true %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Description" %>
+    <% end %>
+    <%= t.body do %>
+      <% @detail.slots.each do |slot| %>
+        <%= t.row do %>
+          <%= t.row_header slot_shift_time(slot) %>
+          <%= t.cell hour_minute_format(slot.duration), right: true %>
+          <%= t.cell schedule_by_callsign_position(slot.position) %>
+          <%= t.cell value_or_dash(slot.description) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "#{@person.callsign} has no #{@year} shift sign-ups.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

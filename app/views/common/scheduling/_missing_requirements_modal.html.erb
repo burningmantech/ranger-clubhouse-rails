@@ -1,0 +1,10 @@
+<%# locals: (result:, **) %>
+<%= modal do |m| %>
+  <%= m.title "Missing Sign Up Prerequisite(s)" %>
+  <%= m.body do %>
+    <%= render partial: "common/scheduling/missing_requirements", locals: { verdict: result.verdict } %>
+  <% end %>
+  <%= m.footer do %>
+    <%= modal_close_button %>
+  <% end %>
+<% end %>

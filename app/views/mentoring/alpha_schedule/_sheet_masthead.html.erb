@@ -1,0 +1,12 @@
+<%# The masthead each Alpha sheet section opens with. It prints once, at the
+    top of its section; continuation pages are identified by the table's
+    repeating header instead (see the pagination note in
+    Mentoring::AlphaScheduleController). `first` marks the section that owns
+    the document's h1. %>
+<div class="alpha-masthead">
+  <div class="alpha-doc-label"><%= doc_label %></div>
+  <div class="flex flex-row justify-between items-center w-full mt-2">
+    <%= content_tag(first ? :h1 : :h2, shift_title, class: "alpha-shift") %>
+    <div class="alpha-when"><%= shift_when %></div>
+  </div>
+</div>

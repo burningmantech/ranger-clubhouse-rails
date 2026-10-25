@@ -1,0 +1,118 @@
+<%= hero_panel icon: "boxes-stacked", heading_level: :h1, id: "ops-assets-type-header",
+               title: "#{@year} #{asset_type_label(@type)} Assets",
+               description: "Review these records, filter by assignment details, and export them as CSV.",
+               back_to: ["Asset Inventory", asset_management_records_path(year: @year)] %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @total_count, "Records" %>
+  <% if @expired_count.positive? %>
+    <%= ui_stat_box @expired_count, "Expired", variant: :warning %>
+  <% end %>
+<% end %>
+
+<%# Only New Asset lives here now, so the wrapper goes when the reader cannot add
+    one -- its my-4 would otherwise be a blank band. %>
+<% if can?(:edit_assets) %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= button_link "Add Asset", :primary,
+                      new_asset_management_record_path(type: @type, year: @year),
+                      icon: "plus", icon_type: :solid %>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @total_count.positive? %>
+  <%= filter_bar id: "asset-filters",
+                 chips: asset_filter_chips(@filter_params, params[:type], @year),
+                 clear_url: asset_type_records_path(@type, year: @year),
+                 count: "Showing #{@assets.size} of #{pluralize(@total_count, "record")}",
+                 actions: (export_csv_link(asset_type_records_path(@type, **@index_params, format: :csv)) if @assets.any?),
+                 url: asset_type_records_path(@type) do |f| %>
+    <%= hidden_field_tag :year, @year %>
+
+    <%= form_row do %>
+      <%= f.select :description,
+                   asset_filter_options(@filter_option_assets, :description),
+                   label: "Description",
+                   selected: @filter_params[:description].presence || "all",
+                   width: "w-full",
+                   wrapper_class: "flex-1" %>
+      <%= f.select :group_name,
+                   asset_filter_options(@filter_option_assets, :group_name),
+                   label: "Asset Group",
+                   selected: @filter_params[:group_name].presence || "all",
+                   width: "w-full",
+                   wrapper_class: "flex-1" %>
+      <%= f.select :entity_assignment,
+                   asset_filter_options(@filter_option_assets, :entity_assignment),
+                   label: "Entity Assignment",
+                   selected: @filter_params[:entity_assignment].presence || "all",
+                   width: "w-full",
+                   wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.select :order_number,
+                   asset_filter_options(@filter_option_assets, :order_number),
+                   label: "Order Number",
+                   selected: @filter_params[:order_number].presence || "all",
+                   width: "w-full",
+                   wrapper_class: "flex-1" %>
+      <%= f.select :expire,
+                   asset_expire_filter_options(@filter_option_assets),
+                   label: "Expires",
+                   selected: @filter_params[:expire].presence || "all",
+                   width: "w-full",
+                   wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @assets.any? %>
+  <%= ui_table do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Barcode" %>
+      <%= t.heading "Description" %>
+      <%= t.heading "Assignment" %>
+      <%= t.heading "Entity Assignment" %>
+      <%= t.heading "Asset Group" %>
+      <%= t.heading "Order Number" %>
+      <%= t.heading "Expires On" %>
+      <%= t.heading "Actions", right: true %>
+    <% end %>
+
+    <%= t.body do %>
+      <% @assets.each do |asset| %>
+        <%= t.row do %>
+          <%= t.cell asset.barcode %>
+          <%= t.cell value_or_dash(asset.description) %>
+          <%= t.cell asset_duration_label(asset), center: true %>
+          <%= t.cell value_or_dash(asset.entity_assignment) %>
+          <%= t.cell value_or_dash(asset.group_name) %>
+          <%= t.cell value_or_dash(asset.order_number) %>
+          <%= t.cell expires_on_cell(asset) %>
+          <%= t.cell right: true do %>
+            <div class="flex flex-wrap justify-end gap-2">
+              <%= button_link "Details", :secondary,
+                              asset_management_record_path(asset, @index_params),
+                              icon: "rectangle-list", icon_type: :solid %>
+              <% if can?(:edit_assets) %>
+                <%= edit_link edit_asset_management_record_path(asset, @index_params), "Edit Asset" %>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif @total_count.positive? %>
+  <%= ui_empty_state "No records match the current filters.", icon: "filter", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No #{asset_type_label(@type).downcase} records were found for #{@year}.",
+                     icon: "boxes-stacked", icon_type: :solid %>
+<% end %>

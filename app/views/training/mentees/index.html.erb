@@ -1,0 +1,93 @@
+<% content_for :title, "#{@training.title} Current Mentees" %>
+
+<%= hero_panel icon: "user-graduate", heading_level: :h1,
+               id: "training-mentees-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> &mdash; Current Mentees<% end %>
+  <% panel.description do %>
+    Who still holds a mentee position.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "#{@year} Sessions", training_path(training_slug, year: @year) %>
+  <% end %>
+<% end %>
+
+<% if @report.people.empty? %>
+  <%= ui_empty_state "No one currently holds a #{@training.title} mentee position.",
+                     icon: "user-graduate", icon_type: :solid %>
+<% else %>
+  <% unless can_graduate? %>
+    <%= ui_callout_box :info do %>
+      You can read this roster but not revoke positions from it. Contact your cadre for help.
+    <% end %>
+  <% end %>
+
+  <%# Roster totals: the whole report, not the filtered view. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @report.people.size.to_s, "Mentees" %>
+    <%= ui_stat_box @never_count.to_s, "Never Rangered", variant: :warning,
+                    icon: "circle-exclamation", icon_type: :solid if @never_count.positive? %>
+    <%= ui_stat_box @stale_count.to_s, "Stale 2+ Years", variant: :error,
+                    icon: "hourglass-end", icon_type: :solid if @stale_count.positive? %>
+  <% end %>
+
+  <%# How to read the position columns, out of the hero. %>
+  <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What do the position columns show?</dt>
+      <dd>
+        Each position column shows the year it was granted and the year they last rangered it.
+      </dd>
+      <dt>Why does a grant say 2023 or unknown?</dt>
+      <dd>
+        Grant tracking began in 2023, so anything granted before then shows as 2023 or unknown.
+      </dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "mentees-filters",
+                 chips: mentees_filter_chips(@filter_params, training_slug),
+                 clear_url: training_mentees_path(training_slug),
+                 count: "Showing #{@people.size} of #{pluralize(@report.people.size, "person")}",
+                 # The CSV is the whole report, not the narrowed page, so the label
+                 # says so -- it sits beside chips that narrow the view.
+                 actions: export_csv_link(training_mentees_path(training_slug, format: :csv),
+                                          "Export All to CSV"),
+                 url: training_mentees_path(training_slug) do |f| %>
+    <%= form_row do %>
+      <%= f.select :status, mentees_status_options(@status_counts),
+                   label: "Status", selected: @filter_params[:status],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :rangering, mentees_rangering_options(@never_count, @stale_count),
+                   label: "Rangering", selected: @filter_params[:rangering],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.text_field :callsign, label: "Callsign Contains",
+                       value: @filter_params[:callsign],
+                       width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Mentees" do %>
+    <% if @people.empty? %>
+      <%= ui_empty_state "No one matched the current filters.",
+                         icon: "magnifying-glass", icon_type: :solid %>
+    <% else %>
+      <%# Headings are shared with destroy.turbo_stream so a replaced row's
+          responsive data-labels stay matched to the columns around it. %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <% mentees_headings(@report.positions, can_graduate?).each do |heading| %>
+            <%= t.heading heading %>
+          <% end %>
+        <% end %>
+        <%= t.body do %>
+          <% @people.each do |mentee| %>
+            <%= render "row", t:, mentee:, revoked: false, can_revoke: can_graduate? %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,30 @@
+description: "Reminds the Volunteer Coordinators that approved applications are waiting"
+
+subject: "[Clubhouse] Approved application(s) require attention"
+
+body: |
+  <p>
+    Hello V.C.s,
+  </p>
+  <p>
+    The following applications have been approved, and are awaiting for someone to press some buttons
+    to turn these into prospective accounts.
+  </p>
+  <table class="data-table">
+    <tr>
+      <th>Application</th>
+      <th>Name</th>
+      <th>Approved Callsign</th>
+    </tr>
+    {%- for row in applications %}
+      <tr>
+        <td>A-{{ row.id }}</td>
+        <td>{{ row.first_name }} {{ row.last_name }}</td>
+        <td>{{ row.approved_handle }}</td>
+      </tr>
+    {%- endfor %}
+  </table>
+  <p>
+    Forever your digital robotic servant,<br>
+    The Clubhouse Bot
+  </p>

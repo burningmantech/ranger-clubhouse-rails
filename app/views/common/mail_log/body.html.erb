@@ -1,0 +1,16 @@
+<%# One message body, loaded into the row that was expanded. The message is
+    third-party HTML, so the frame is sandboxed: no scripts, no forms, no
+    navigation. Images still load, so opening a message can tell its sender it
+    was read. %>
+<%= turbo_frame_tag "mail-log-body-frame-#{@mail.id}" do %>
+  <%# A row whose text was never kept: a sign-in link or a private message the
+      log leaves out (MailLog#body_withheld?). The words name no mailer, since
+      an older row can have no text for a reason nobody recorded. %>
+  <% if @mail.body_withheld? %>
+    <%= ui_empty_state "The text of this email isn't kept, so it can't be shown.",
+                       icon: "eye-slash", icon_type: :solid %>
+  <% else %>
+    <iframe sandbox="" srcdoc="<%= mail_body_srcdoc(@mail) %>" class="w-full min-h-96 border border-line rounded-lg my-2"
+            title="Email message: <%= @mail.subject %>"></iframe>
+  <% end %>
+<% end %>

@@ -1,0 +1,44 @@
+<% content_for :title, "Forgot Password | Ranger Secret Clubhouse" %>
+
+<%= ui_accent_card "Reset Password Disabled", variant: :warning, options: { class: "mb-4" } do %>
+  The reset password feature is currently disabled. Reach out to the Tech Cadre for help.
+<% end %>
+<div class="login-panel">
+  <%= render "sessions/heading", title: "Reset Your Password",
+             lede: "Enter your email address and we'll send you a reset link." %>
+
+  <%= ui_form @form, reset_password_path, method: :post,
+              html: { role: "form", "aria-label": "Password reset request form" } do |f| %>
+
+    <%= form_row do %>
+      <%= f.email_field :email,
+                        label: "Email Address",
+                        required: true,
+                        required_label: "",
+                        autofocus: true,
+                        autocomplete: "email",
+                        placeholder: "you@example.com",
+                        maxlength: 100,
+                        icon: "envelope",
+                        icon_type: :solid,
+                        icon_class: "absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-warning",
+                        replace_class: true,
+                        class: "login-input",
+                        wrapper_class: "login-field",
+                        help_text: "Enter the email address associated with your Clubhouse account",
+                        hide_label: false %>
+    <% end %>
+
+    <div>
+      <%= submit_button "Send Reset Link",
+                        variant: :warning,
+                        size: "lg",
+                        class: "login-submit-button",
+                        data: { pending_label: "Sending…" },
+                        "aria-label": "Send password reset link" %>
+    </div>
+
+    <%= render "sessions/footer_link", label: "Back to sign in", path: root_path,
+               aria_label: "Return to sign in page", wrapper_class: "mt-4" %>
+  <% end %>
+</div>

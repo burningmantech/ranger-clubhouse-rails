@@ -1,0 +1,110 @@
+<%# Rendered from the POST at 422 -- Turbo drops a 200 form response, and the
+    pasted list is not in the URL for a GET to re-derive. Turbo keeps the
+    submitting page's scroll position, so the reader would otherwise land
+    wherever the button was. %>
+<div data-controller="scroll-to-top" hidden></div>
+
+<%= hero_panel icon: "clipboard-check", heading_level: :h1,
+               id: "#{controller_name.dasherize}-preview-header",
+               title: bulk_upload_preview_title(@batch),
+               description: "Nothing has been saved yet — check the list below, then confirm." %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @batch.changing.size.to_s, "Will Change",
+                  variant: :success, icon: "circle-check", icon_type: :solid %>
+  <% if @batch.skipping.any? %>
+    <%= ui_stat_box @batch.skipping.size.to_s, "Unchanged",
+                    variant: :secondary, icon: "circle-minus", icon_type: :solid %>
+  <% end %>
+  <% if @batch.problems.any? %>
+    <%= ui_stat_box @batch.problems.size.to_s, "Problems",
+                    variant: :error, icon: "triangle-exclamation", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<%# Three arms, not two: with nothing to change there is no confirm button, so
+    the page has to say why rather than leave the reader looking for it. %>
+<% if @batch.changing.none? %>
+  <%= ui_callout_box :warning, icon: "circle-exclamation", icon_type: :solid do %>
+    <strong>There is nothing to confirm.</strong>
+    Not one line on your list needs this change, so no button is offered.
+    Go back and edit the list.
+  <% end %>
+<% elsif @batch.problems.any? %>
+  <%= ui_callout_box :error, icon: "triangle-exclamation", icon_type: :solid do %>
+    <strong><%= pluralize(@batch.problems.size, "line") %> cannot be used.</strong>
+    Go back and fix the list, or continue — only the
+    <%= pluralize(@batch.changing.size, "person") %> marked ready will change, and the rest are
+    left alone.
+  <% end %>
+<% else %>
+  <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+    <strong>No problems found.</strong>
+    Check that the action and the list are right before you confirm.
+  <% end %>
+<% end %>
+
+<%# What this particular page does that the form cannot show on its face --
+    status side effects, a provision being replaced, every document a SAP date
+    lands on. Pages with nothing hidden ship no partial. %>
+<% if @batch.changing.any? && bulk_upload_partial?("consequence") %>
+  <%= render "consequence", batch: @batch %>
+<% end %>
+
+<%= ui_section "Every Line You Entered", icon: "list-check", icon_type: :solid, border: false do %>
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Result" %>
+    <% end %>
+    <%= t.body do %>
+      <% @batch.entries.each_with_index do |entry, index| %>
+        <%= t.row id: "preview-entry-#{index}", state: (:error if entry.category == :problem) do %>
+          <%= t.row_header do %>
+            <% if entry.person %>
+              <%= person_display_link(entry.person, entry.person.id) %>
+            <% else %>
+              <%= entry.raw %>
+            <% end %>
+          <% end %>
+          <%= t.cell entry.person ? entry.person.status : "—" %>
+          <%= t.cell do %>
+            <%= bulk_upload_badge(entry) %>
+            <% if entry.message %>
+              <div class="mt-1"><%= entry.message %></div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_form(nil, bulk_path(:apply), method: :post, no_error_summary: true) do |f| %>
+  <%# Everything the apply needs, re-posted verbatim: it rebuilds the batch from
+      these and re-runs every check rather than trusting the table above. %>
+  <%= hidden_field_tag :bulk_action, @batch.action.id %>
+  <%= hidden_field_tag :records, params[:records] %>
+  <%= hidden_field_tag :reason, params[:reason] %>
+  <% bulk_page_config[:extra_params].each do |name| %>
+    <%= hidden_field_tag name, params[name] %>
+  <% end %>
+
+  <%= button_row do %>
+    <% if @batch.changing.any? %>
+      <%= f.submit bulk_upload_confirm_label(@batch), variant: :success,
+                   data: {
+                     turbo_confirm: confirm_modal_dialog(
+                       title: "Final Confirmation",
+                       message: bulk_upload_consequence(@batch),
+                       confirm_label: bulk_upload_confirm_label(@batch)
+                     )
+                   } %>
+    <% end %>
+    <%# formaction sends this same form -- and the pasted list it carries -- back
+        to the form page instead of the commit. One form, so there is only one
+        copy of the list on the page and no way for the two to disagree. %>
+    <%= f.submit "Go Back and Edit", variant: :secondary, formaction: bulk_path(:edit) %>
+  <% end %>
+<% end %>

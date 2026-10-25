@@ -1,0 +1,15 @@
+<%= modal do |m| %>
+  <%= m.body do %>
+    <% if slot.url.present? %>
+      <%= ui_callout_box :info, icon: "hand-point-right", icon_type: :regular, title: "Additional Shift Information" do %>
+        <%= hyperlink_text slot.url %>
+      <% end %>
+    <% end %>
+    <% if result.verdict.mvr %>
+      <%= render partial: "common/scheduling/mvr_eligible", locals: { mvr: result.verdict.mvr } %>
+    <% end %>
+    <% if result.verdict.linked_slots_became_full %>
+      <%= render partial: "common/scheduling/linked_slots_full", locals: { verdict: result.verdict } %>
+    <% end %>
+  <% end %>
+<% end %>

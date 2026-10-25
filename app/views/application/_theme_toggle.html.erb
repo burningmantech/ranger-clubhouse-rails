@@ -1,0 +1,21 @@
+<%# The theme toggle, on every bar. Both icons are in the button and the `dark:`
+    variant -- class-based, keyed on <html> (application.css) -- shows one at a
+    time, so the icon is a pure function of the theme: nothing paints it after
+    load, and a morphing render (a page refresh, a form re-rendered at 422)
+    cannot lose it. The sun shows in the dark theme, the moon in the light one:
+    each names the theme a press brings.
+
+    The classes sit on a span around each icon, not on the <i>: the Font
+    Awesome sheet is imported unlayered (application.css), so its own display
+    rule on .fa-regular beats a `hidden` utility on the icon itself.
+
+    The button is a plain btn-sm, 36px tall like the rest of the bar, and as
+    wide as the icon and the word need: in a btn-circle the word spilled past
+    the circle's fixed width, out of the bar and past the viewport's edge,
+    where it bought the sign-in page a horizontal scrollbar and, under a
+    full-height body, a vertical one with it. %>
+<%= button_action safe_join([tag.span(fa_icon("sun", :regular), class: "hidden dark:inline"),
+                             tag.span(fa_icon("moon", :regular), class: "dark:hidden"), " Theme"]), :ghost,
+                  id: "theme-selector",
+                  data: { action: "click->theme#toggle" },
+                  aria: { label: "Toggle theme" } %>

@@ -1,0 +1,41 @@
+<%# locals: (application:, review:, checks:) %>
+<div class="sticky-progress-container" id="vc-action-bar">
+  <div class="flex flex-wrap items-center gap-2">
+    <span class="font-bold text-heading"><%= application.application_id %></span>
+    <%= application_status_badge application.status %>
+
+    <nav class="hidden xl:flex items-center gap-1" aria-label="Review checks">
+      <% checks.each do |check, anchor| %>
+        <%= vc_check_link check, anchor %>
+      <% end %>
+    </nav>
+    <a href="#stage-decision" class="text-sm font-semibold whitespace-nowrap" title="Jump to the decision recap">
+      <%= application_checks_passed(checks) %>/<%= checks.size %><span class="sr-only"> checks passed</span>
+    </a>
+
+    <span class="grow"></span>
+
+    <%= dropdown_menu "Assign", class: "dropdown-end" do %>
+      <% unless application.assigned_person_id == current_user.id %>
+        <%= dropdown_item "Assign to self",
+                          vc_application_path(application, prospective_application: { assigned_person_id: current_user.id }),
+                          data: { turbo_method: :patch } %>
+      <% end %>
+      <%= dropdown_item "Assign to VC…", dialog_vc_application_path(application, dialog: "assign"),
+                        data: { turbo_frame: "modal" } %>
+      <% if application.assigned_person_id %>
+        <%= dropdown_item "Clear assignment",
+                          vc_application_path(application, prospective_application: { assigned_person_id: "" }),
+                          data: { turbo_method: :patch } %>
+      <% end %>
+    <% end %>
+
+    <%= button_link "Email", :secondary, dialog_vc_application_path(application, dialog: "send_email"),
+                    icon: "envelope", icon_type: :solid, data: { turbo_frame: "modal" },
+                    "aria-label": "Email Applicant", title: "Email Applicant" %>
+    <% if (next_stage = review.first_actionable) %>
+      <%= button_link next_stage.jump_label, :primary, "#stage-#{next_stage.key}",
+                      icon: "arrow-down", icon_type: :solid %>
+    <% end %>
+  </div>
+</div>

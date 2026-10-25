@@ -1,0 +1,68 @@
+<%# locals: (entry:) %>
+
+<div class="my-2 shadow-lg">
+  <% if entry.status_approved? %>
+    <%= ui_callout_box :success do %>
+      The correction request has been approved. Please review the new timesheet entry for accuracy.
+    <% end %>
+  <% elsif entry.status_pending? %>
+    <%= ui_callout_box :warning do %>
+      The requested corrections are pending review.
+    <% end %>
+  <% elsif entry.status_rejected? %>
+    <%= ui_callout_box :error do %>
+      <% if timesheet_self_serve? %>
+        The submitted corrections request has been denied. You may submit an appeal. If you do not wish to do so,
+        the entry still needs to be verified to indicate no further correction requests will be submitted for this
+        entry.
+      <% else %>
+        The submitted corrections request has been denied. <%= timesheet_person.callsign %> may submit an appeal.
+        Otherwise, the entry still needs to be verified to indicate no further correction requests will be submitted
+        for this entry.
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_callout_box :error do %>
+      Uh oh, a bug has been tripped over.
+    <% end %>
+  <% end %>
+
+  <div class="p-3">
+    <div class="lg:flex lg:gap-2">
+      <div class="lg:w-50"><%= entry.position.title %></div>
+      <div><%= hour_minute_words entry.duration %></div>
+      <div><%= credit_format entry.credits %></div>
+    </div>
+    <%= datetime_format entry.on_duty, entry.off_duty %>
+    <% if entry.notes.any? %>
+      <div class="my-2">
+        Last note left from <%= entry.notes.last.from_label(current_user.id) %>
+        at <%= datetime_format entry.notes.last.created_at %>
+      </div>
+    <% end %>
+
+    <div class="mt-4">
+      <%= button_row do %>
+        <% if entry.status_pending? || entry.status_rejected? %>
+          <%= button_link((entry.status_pending? ? "Add More Info" : "Submit Appeal"), :secondary, timesheet_edit_missing_request_path(entry)) %>
+        <% end %>
+        <% if entry.notes.any? %>
+          <%= button_action "Show Notes", :secondary, controller: "toggle",
+                            data: {
+                              toggle_label_value: "Hide Notes",
+                              toggle_dom_id_value: "entry-notes-#{entry.id}"
+                            },
+                            aria_hidden: "true" %>
+        <% end %>
+        <% unless entry.status_approved? %>
+          <%= button_link "Delete", :secondary, timesheet_missing_request_path(entry), data: confirm_modal(message: "Delete this request? This cannot be undone.", method: :delete, variant: :error) %>
+        <% end %>
+      <% end %>
+      <% if entry.notes.any? %>
+        <div id="entry-notes-<%= entry.id %>" class="hidden mt-2" aria-hidden="true">
+          <%= render partial: "common/timesheet_notes", locals: { notes: entry.notes } %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

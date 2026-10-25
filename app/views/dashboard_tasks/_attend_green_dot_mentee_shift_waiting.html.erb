@@ -1,0 +1,7 @@
+<%# locals: (step:,facts:)%>
+<% gd = facts.art_trainings.find { |a| a.is_green_dot_mentee } %>
+<p><%= fa_icon "calendar-check", :solid, class: "icon-success" %> <b>Green Dot Mentee shift booked!</b></p>
+<% if gd&.mentee_slot %>
+  <p class="my-2"><%= fa_icon "clock", :solid %> <%= datetime_format gd.mentee_slot.begins %></p>
+<% end %>
+<p class="text-sm text-stone-muted">Can't make it? <%= link_to "Schedule", me_schedule_path %></p>

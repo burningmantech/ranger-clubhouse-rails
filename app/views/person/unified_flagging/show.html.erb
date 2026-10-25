@@ -1,0 +1,101 @@
+<%= hero_panel icon: "flag", heading_level: :h1, id: "unified-flagging-header",
+               title: "Unified Flagging — #{@person.callsign}",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.description do %>
+    Per-team notes and ranks/flags, training &amp; Alpha shift history, and known Rangers/Applicants for
+    <%= @person.callsign %>.
+  <% end %>
+<% end %>
+
+<% if @history[:personnel_issue] %>
+  <%= ui_callout_box :error, title: "Personnel Flag Raised for #{@person.callsign}",
+                      icon: "flag", accent: true do %>
+    <p>
+      All training and mentor activity should be suspended and no further actions taken until the situation is
+      resolved.
+    </p>
+    <p>Contact the Personnel Manager for more information.</p>
+  <% end %>
+<% end %>
+
+<% if @rrn_only %>
+  <%= ui_callout_box :info do %>
+    You only have the Regional Management permission. Only your Regional Ranger Network flagging notes will be
+    visible.
+  <% end %>
+<% end %>
+
+<% @history[:teams].each do |team_key, entries| %>
+  <%= render "team_notes",
+             person: @person,
+             team_key: team_key,
+             label: intake_team_label(team_key),
+             icon: intake_team_icon(team_key),
+             entries: entries,
+             can_write: can_write_intake_notes?(team_key) %>
+  <%# Training is a read-only note group (TraineeNote, not PersonIntakeNote); it
+      sits between VC and Mentors as in the Ember page, and only when not RRN-only. %>
+  <% if team_key == "vc" && !@rrn_only %>
+    <%= render "training_notes", person: @person, trainings: @history[:trainings] %>
+  <% end %>
+<% end %>
+
+<% unless @rrn_only %>
+  <%= ui_section "Training & Alpha Shift History", icon: "graduation-cap", icon_type: :solid do %>
+    <% if @history[:pnv_history].any? %>
+      <%= ui_table responsive: false do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Year" %>
+          <%= t.heading "In-Person Training" %>
+          <%= t.heading "Alpha Shift Outcome" %>
+        <% end %>
+        <%= t.body do %>
+          <% @history[:pnv_history].reverse_each do |info| %>
+            <%= t.row do %>
+              <%= t.row_header info[:year] %>
+              <%= t.cell do %>
+                <%= training_status_badge(info[:training_status]) %>
+              <% end %>
+              <%= t.cell do %>
+                <% if info[:was_auditor] %>
+                  was auditor
+                <% elsif info[:passed_previously] %>
+                  active status
+                <% else %>
+                  <%= mentee_status_badge(@person.status, info[:mentor_status], info[:have_alpha_shift]) %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= ui_empty_state "No training or Alpha shift information available.",
+                         icon: "graduation-cap", icon_type: :solid %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Known Rangers & Applicants", icon: "user-group", icon_type: :solid do %>
+    <p class="text-body mb-3">
+      Known Rangers &amp; Applicants (aka PNVs) are usually imported from Salesforce as part of the VolQ.
+      The fields will be populated on various Mentor pages and reports.
+    </p>
+
+    <% if @can_edit_known_folks %>
+      <%= ui_form(@person, person_unified_flagging_known_folks_path(@person), method: :patch) do |f| %>
+        <%= f.text_field :known_rangers, label: "Known Rangers", maxlength: 150, width: "w-full sm:w-96" %>
+        <%= f.text_field :known_pnvs, label: "Known Fellow Applicants", maxlength: 150, width: "w-full sm:w-96" %>
+        <%= button_row do %>
+          <%= f.submit "Save Known Rangers/Applicants" %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <dl class="instruction-list mb-3">
+        <dt>Known Rangers</dt>
+        <dd><%= @person.known_rangers.presence || "None" %></dd>
+        <dt>Known Fellow Applicants</dt>
+        <dd><%= @person.known_pnvs.presence || "None" %></dd>
+      </dl>
+    <% end %>
+  <% end %>
+<% end %>

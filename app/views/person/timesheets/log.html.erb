@@ -1,0 +1,55 @@
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1, id: "person-timesheet-log-header",
+               back_to: ["#{@year} Timesheet", person_timesheets_path(@person, year: @year)] do |panel| %>
+  <% panel.title do %>
+    <%= @year %> Timesheet Audit Log &mdash; <%= @person.callsign %>
+  <% end %>
+  <% panel.description do %>
+    Every recorded change to the <%= @year %> timesheet entries: shift starts and ends, corrections,
+    verifications, and confirmations.
+  <% end %>
+  <% panel.year_selector year: @year, years: @years %>
+<% end %>
+
+<% if @entries.empty? %>
+  <% if @year < 2018 %>
+    <%= ui_callout_box :warning do %>
+      Timesheet logs are not available prior to 2018.
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No timesheet logs were found for #{@year}." %>
+  <% end %>
+<% else %>
+  <div class="space-y-3 mt-4">
+    <% @entries.each do |entry| %>
+      <% entry_summary = capture do %>
+        <span class="font-semibold">#<%= entry[:timesheet_id] %></span>
+        <% if entry[:deleted] %>
+          <span class="text-error font-semibold mx-1">DELETED</span>
+        <% end %>
+        <% if entry[:timesheet] %>
+          <%= entry[:timesheet][:position_title] %>:
+          <% if entry[:timesheet][:off_duty].present? %>
+            <%= datetime_format entry[:timesheet][:on_duty], entry[:timesheet][:off_duty] %>
+          <% else %>
+            <%= datetime_format entry[:timesheet][:on_duty] %> &mdash; <i class="text-error">Still On Duty</i>
+          <% end %>
+        <% else %>
+          <span class="text-error font-semibold">Timesheet association failure</span>
+        <% end %>
+      <% end %>
+      <%= ui_disclosure entry_summary, variant: :card do %>
+        <%= render partial: "log_table", locals: { logs: entry[:logs] } %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @year >= 2018 %>
+  <%= ui_section "Other Timesheet Actions", icon: "list-ul", icon_type: :solid do %>
+    <% if @other_logs.any? %>
+      <%= render partial: "log_table", locals: { logs: @other_logs } %>
+    <% else %>
+      <%= ui_empty_state "No other timesheet logs were found for #{@year}." %>
+    <% end %>
+  <% end %>
+<% end %>

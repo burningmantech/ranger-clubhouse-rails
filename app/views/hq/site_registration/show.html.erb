@@ -1,0 +1,109 @@
+<%# On-Site Registration page (Ember port/templates/hq/site-checkin.hbs):
+    agreements + provisions landing sections, then the staged registration
+    wizard. Every step is server-rendered up front inside one <dialog> — the
+    upstream ui-wizard-step renders each active step in a ModalDialog — and
+    the hq-wizard Stimulus controller (port/components/ui-wizard*.{js,hbs})
+    shows one at a time, only advancing when the server streams the advance
+    signal into the signal region — or when the operator confirms the
+    no-radio interstitial (which stacks above the wizard dialog natively). %>
+<h2 class="heading-section text-heading mb-4">On-Site Registration</h2>
+
+<% if @person.on_site %>
+  <%= ui_callout_box :success, title: "#{@person.callsign} Marked On Site",
+                     icon: "check" do %>
+    <p class="mb-3">
+      On-Site Registration is complete. <%= @person.callsign %> is ready to start a shift.
+    </p>
+    <%= button_link "Start Shift Check-In", :primary, hq_shift_manage_path(@person), size: "lg" %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Agreements" do %>
+  <%= render "hq/site_registration/radio_authorization_status",
+             variant: :agreement, person_event: @person_event,
+             event_info: @event_info, callsign: @person.callsign %>
+  <% if @person_event.signed_motorpool_agreement %>
+    <h3 class="heading-title text-success">
+      <%= fa_icon "check", :solid, end: 2 %>The Vehicle Use Protocol has been signed.
+    </h3>
+  <% else %>
+    <h3 class="heading-title text-warning">
+      <%= fa_icon "triangle-exclamation", :solid, end: 2 %>Vehicle Use Protocol <strong>not signed</strong>
+      &mdash; <%= @person.callsign %> may not drive Ranger gators, UTVs, or golf carts.
+    </h3>
+    <p>
+      Ask <%= @person.callsign %> whether they will drive Ranger gators, UTVs, or golf
+      carts while on duty. If yes, send them to a kiosk to agree to the Vehicle Use
+      Protocol.
+    </p>
+  <% end %>
+<% end %>
+
+<%= ui_section "Provisions Summary" do %>
+  <%= render "hq/site_registration/radio_authorization_status",
+             variant: :summary, person_event: @person_event,
+             event_info: @event_info, callsign: @person.callsign %>
+  <hr class="my-4 border-base-300">
+  <%= render "hq/shared/provision_info",
+             event_periods: @event_periods, showers: @event_info.showers %>
+<% end %>
+
+<%= turbo_frame_tag "site-registration-wizard" do %>
+  <% if @person.on_site %>
+    <div class="my-4">
+      <%= button_action "Begin On-Site Registration", :primary,
+                        size: "lg", class: "w-full", disabled: true %>
+    </div>
+  <% else %>
+    <div data-controller="hq-wizard"
+         data-action="click@document->hq-wizard#documentClick">
+      <div class="my-4">
+        <%= button_action "Begin On-Site Registration", :primary,
+                          size: "lg", class: "w-full",
+                          data: { action: "hq-wizard#start" } %>
+      </div>
+      <%# Driven by hq-wizard, not the modal controller — that one auto-opens
+          on connect and removes itself from the DOM on close, while this
+          dialog opens on Begin and must survive a close to be reopenable.
+          No backdrop-close: the steps are data entry, so only Cancel/ESC
+          leave (both routed through the not-completed notice). %>
+      <dialog class="modal modal-middle" aria-label="On-Site Registration steps"
+              data-hq-wizard-target="dialog"
+              data-action="close->hq-wizard#closed">
+        <div class="modal-box max-w-2xl">
+          <% steps = wizard_steps %>
+          <% steps.each_with_index do |step, index| %>
+            <section data-hq-wizard-target="step" hidden>
+              <div class="modal-header-bar">
+                <h3 class="modal-title-text">
+                  Step <%= index + 1 %> of <%= steps.size %> — <%= step.title %>
+                </h3>
+              </div>
+              <div class="modal-body-content">
+                <div id="hq-step-<%= step.name %>">
+                  <% if step.name == "radios" %>
+                    <%= render "hq/site_registration/radios_step",
+                               person: @person, person_event: @person_event,
+                               event_info: @event_info, active_assets: @active_assets,
+                               attachments: @attachments, checkout_form: @checkout_form %>
+                  <% else %>
+                    <%= render "hq/site_registration/#{step.name.underscore}_step",
+                               person: @person %>
+                  <% end %>
+                </div>
+              </div>
+            </section>
+          <% end %>
+        </div>
+      </dialog>
+      <div id="hq-wizard-signal" data-hq-wizard-target="signal" hidden></div>
+      <div data-hq-wizard-target="abandoned" hidden>
+        <%= ui_callout_box :warning, title: "On-Site Registration Not Completed",
+                           icon: "hand-point-right" do %>
+          You closed On-Site Registration before finishing every step.
+          Press <strong>Begin On-Site Registration</strong> again and complete the rest.
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

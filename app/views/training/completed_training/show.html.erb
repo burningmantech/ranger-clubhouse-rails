@@ -1,0 +1,45 @@
+<% slot = @session.slot %>
+<% content_for :title, "Completed #{@training.title} Session" %>
+
+<%= hero_panel icon: "circle-check", heading_level: :h1, id: "training-completed-session-header" do |panel| %>
+  <% panel.title do %>
+    <%= training_session_time slot %>
+  <% end %>
+  <% panel.description do %>
+    <%= slot.description %> · Completed <%= @training.title %>
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "All #{@year} Sessions",
+                training_completed_training_path(training_slug, year: @year) %>
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @session.trainees.size.to_s, "Passed",
+                  variant: @session.trainees.any? ? :success : :warning,
+                  icon: "circle-check", icon_type: :solid %>
+  <%= ui_stat_box @session.trainers.size.to_s, "Trainers Attended",
+                  icon: "chalkboard-user", icon_type: :solid %>
+<% end %>
+
+<%= render "pager" %>
+
+<%= ui_section "Trainees", badge: "#{@session.trainees.size} passed",
+               badge_color: @session.trainees.any? ? :success : :warning do %>
+  <% if @session.trainees.empty? %>
+    <%= ui_empty_state "No one passed this session. It may not have been scored yet.",
+                       icon: "circle-question", icon_type: :regular %>
+  <% else %>
+    <%= render "people_table", people: @session.trainees, list_name: "trainees" %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Trainers", badge: pluralize(@session.trainers.size, "trainer"),
+               badge_color: @session.trainers.any? ? :success : :warning do %>
+  <% if @session.trainers.empty? %>
+    <%= ui_empty_state "No trainers were marked as attended for this session.",
+                       icon: "circle-question", icon_type: :regular %>
+  <% else %>
+    <%= render "people_table", people: @session.trainers, list_name: "trainers" %>
+  <% end %>
+<% end %>

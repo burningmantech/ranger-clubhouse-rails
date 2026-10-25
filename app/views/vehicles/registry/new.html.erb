@@ -1,0 +1,9 @@
+<%= hero_panel icon: "car", heading_level: :h1, id: "vehicle-registry-new-header",
+               title: "Add a Vehicle",
+               description: "Register a fleet or personal vehicle for #{@vehicle.event_year}." do |panel| %>
+  <% panel.back_to do %>
+    <%= back_to "Vehicle Registry", @cancel_path %>
+  <% end %>
+<% end %>
+
+<%= render "form" %>

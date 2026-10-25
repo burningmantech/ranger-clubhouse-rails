@@ -1,0 +1,57 @@
+description: "Asks the list keepers to move someone to a new email address"
+
+subject: "[Clubhouse] Update mailing list subscriptions for {{ person.callsign }}"
+
+body: |
+  <p>Hello from the Clubhouse Bot,</p>
+
+  <p>
+    {{ person.callsign }} recently updated their email address in the Clubhouse and has requested
+    the Ranger mailing lists be updated as well.
+  </p>
+
+  <p>
+    Old email address: {{ old_email }}<br>
+    New email address: {{ person.email }}<br>
+  </p>
+
+  <p>
+    <a href="{{ person.url }}">
+      {{ person.url }}
+    </a>
+  </p>
+
+  <p>
+    {%- if teams.size > 0 %}
+      The person is a member of the following Clubhouse Teams:<br>
+      {%- for team in teams %}
+        {{ team }}<br>
+      {%- endfor %}
+    {%- else %}
+      The person does not appear to be a member of any Clubhouse Team.
+    {%- endif %}
+  </p>
+
+  {%- if additional_lists %}
+    <p>
+      {{ person.callsign }} left the following message about updating other Ranger mailing lists besides Allcom
+      &amp; Announce:
+    </p>
+    <p>
+      {{ additional_lists }}
+    </p>
+  {%- else %}
+    <p>
+      {{ person.callsign }} did not state if other mailing lists should be updated.
+    </p>
+  {%- endif %}
+
+  <p>
+    You can use the link below to respond to {{ person.callsign }} at their new address.
+  </p>
+
+  <p>
+    <a href="mailto:{{ person.email }}?subject=Ranger mailing list subscriptions">
+      Send email to {{ person.callsign }} at {{ person.email }}
+    </a>
+  </p>

@@ -1,0 +1,28 @@
+<%# Ticketing period: OFF SEASON. Ported from port/components/ticketing-offseason.hbs. %>
+<% if person.is_applicant? %>
+  <%= ui_callout_box :secondary, icon: "bed", accent: true, title: "Setup Access Passes Are Closed for Now" do %>
+    <strong>Nothing to do yet.</strong> This page opens again closer to the event. Please check back later.
+  <% end %>
+<% else %>
+  <%= ui_callout_box :warning, icon: "bed", accent: true, title: "Off Season — Ticketing Hasn't Opened" do %>
+    <p class="mb-2"><strong>Ticketing for the <%= event_year %> event hasn't started yet.</strong></p>
+    <ul class="list-disc pl-4 space-y-1">
+      <li><strong>Announcements:</strong> late January</li>
+      <li><strong>Ticketing window:</strong> June or July</li>
+      <li><strong>Stay informed:</strong> watch the Ranger Announce mailing list</li>
+    </ul>
+  <% end %>
+
+  <%= ui_section "Your Banked Tickets", icon: "box-archive", icon_type: :solid do %>
+    <% if @ticket_package.tickets.any? %>
+      <p class="mb-3"><strong>You have <%= pluralize @ticket_package.tickets.count, "banked ticket" %></strong> from previous rangering:</p>
+      <ul class="list-disc pl-4 space-y-2">
+        <% @ticket_package.tickets.each do |ticket| %>
+          <li><strong><%= ticket.type_label %></strong> — earned <%= ticket.source_year %>, expires September <%= ticket.expiry_date&.year %></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <%= ui_empty_state "No banked tickets from previous volunteer efforts." %>
+    <% end %>
+  <% end %>
+<% end %>

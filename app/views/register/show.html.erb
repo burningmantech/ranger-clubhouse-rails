@@ -1,0 +1,20 @@
+<%# The whole registration page. Which step is shown travels in the address, so
+    the browser's back button walks back through it the way a reader expects.
+    The column is capped at the width a form reads well at. %>
+<% content_for :title, "Register | Ranger Secret Clubhouse" %>
+<% content_for :head do %>
+  <meta name="description" content="Create a Ranger Secret Clubhouse account to audit Black Rock Ranger training.">
+<% end %>
+<div class="mx-auto max-w-4xl">
+  <%= hero_panel icon: "user-plus", heading_level: :h1, id: "register-header",
+                 title: "Auditor Registration",
+                 description: "Create a Clubhouse account to audit Black Rock Ranger training." %>
+
+  <%= register_step_chips(@step) %>
+
+  <%= render partial: @step %>
+
+  <%# The form carries this line itself, above its sticky button row, so the fixed
+      bar never lands on top of it; every other step shows it here at the foot. %>
+  <%= render "questions" unless @step == "form" %>
+</div>

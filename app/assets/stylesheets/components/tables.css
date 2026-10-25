@@ -1,0 +1,263 @@
+/*
+ * Table System
+ * DaisyUI table components
+ * See: https://daisyui.com/components/table/
+ */
+
+th:not(.text-center):not(.text-end):not(.text-right) {
+    text-align: left;
+}
+
+/*
+ * Atkinson Hyperlegible sets proportional figures by default, so a column of hour
+ * totals or dates would not line up on its own. The family ships a real tabular
+ * feature; asking for it inside tables restores the column alignment the monospaced
+ * cut used to give us for free, without pushing prose into a mono face.
+ */
+table {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Table container wrapper with overflow handling */
+@utility table-container {
+    @apply relative overflow-x-auto bg-base-100 shadow-xs rounded-box border border-base-300;
+}
+
+/* Table header (thead) */
+@utility table-header {
+    @apply text-base-content bg-base-200 border-b border-base-300;
+}
+
+/* Table heading (th) */
+@utility table-heading {
+    @apply p-1.5 font-semibold;
+}
+
+/* Table row header (th in tbody) */
+@utility table-row-header {
+    @apply p-1.5 text-heading whitespace-nowrap;
+
+    /*
+     * One line is for the desktop table. Folded into a card, the row header is
+     * one more field and has to wrap like the rest -- but the no-wrap above is
+     * a utility, which outranks the card's layered `whitespace-normal`, so a
+     * long header pushed its whole card sideways: at 390px, Shift Coverage's
+     * vacant-post line scrolled its card by 270px.
+     *
+     * Nested so it compiles right after the rule it undoes and at the same
+     * weight -- `:where()` holds it to one class -- so a call site's own
+     * `whitespace-nowrap` still wins, as it does on a td. Same query as the
+     * fold below.
+     */
+    @media (width < theme(--breakpoint-lg)) {
+        :where(.responsive-table) & {
+            @apply whitespace-normal;
+        }
+    }
+}
+
+@utility table-cell-td {
+    @apply p-1.5;
+}
+
+/* Table row base styling */
+@utility table-row-base {
+    @apply bg-base-100 border-b border-base-300;
+}
+
+/* Table row hover state */
+@utility table-row-hover {
+    @apply hover:bg-base-300;
+}
+
+/* Striped row variant */
+@utility table-row-striped {
+    @apply odd:bg-base-100 even:bg-base-200 border-b border-base-300;
+}
+
+/*
+ * Rows top-align by default. Where cells hold different amounts -- a wrapped
+ * note beside a callsign, a stack of links beside a single date -- middle
+ * alignment floats the short cells away from the row's first line and the eye
+ * loses which value belongs to which record.
+ *
+ * Set on the tbody rather than the cells because the UA stylesheet has
+ * `tr, td, th { vertical-align: inherit }`, so one declaration reaches every
+ * row, including the tbody the parser inserts for a table whose rows were
+ * written without one. :where() holds the specificity at 0: an `align-middle`
+ * or `align-bottom` utility on a tr or a single cell still wins, since a
+ * directly-applied value always beats an inherited one.
+ */
+:where(.table-container tbody) {
+    vertical-align: top;
+}
+
+/*
+ * Detail row — the full-width row a summary row expands into. Deliberately not
+ * a `table-row-*` variant: it must never take the striped background, because
+ * `odd:`/`even:` is `:nth-child` and a hidden detail row still counts. A table
+ * that uses detail rows should pass `striped: false` for the same reason —
+ * with two rows per record every summary row lands on the same parity and the
+ * stripes stop telling records apart.
+ *
+ * The start border is what ties the panel to the row above, which is the only
+ * cue left below the lg breakpoint where every row becomes its own card.
+ */
+@utility table-detail-row {
+    @apply bg-base-200 border-b border-base-300;
+}
+
+@utility table-detail-cell {
+    @apply p-3 border-s-4 border-primary;
+}
+
+/*
+ * The chevron on a detail-row toggle points down while the row is closed and
+ * up once it is open. The button already carries aria-expanded, so this only
+ * makes the state visible; without it a reader scrolling a long table cannot
+ * tell which rows they have already opened.
+ */
+.table-container button[aria-expanded="true"] .fa-chevron-down {
+    @apply rotate-180;
+}
+
+/*
+ * Responsive table — desktop is a native <table> (so columns auto-size to
+ * their widest content). When the table-container drops below the @3xl
+ * (~768px) container-query breakpoint, each row collapses into a labeled
+ * card. The label text is read from the cell's `data-label` attribute (the
+ * helper auto-derives this from the column heading).
+ */
+
+/*
+ * `width <`, not `max-width:` -- this has to be the exact negation of Tailwind's
+ * `lg:` variant, which compiles to `width >= 64rem`. Both bounds are inclusive,
+ * so a `max-width: 64rem` fold matched at the same time as `lg:` at exactly
+ * 1024px and a cell carrying `hidden lg:table-cell` stayed hidden while its
+ * `lg:hidden` mobile stand-in had already gone -- the content belonged to
+ * neither layout and rendered nowhere. That width is an iPad in landscape.
+ */
+@media (width < theme(--breakpoint-lg)) {
+    /*
+     * Layered, so a utility at a call site wins on its own. These rules sat
+     * outside a layer and beat every utility however specific, which this file
+     * paid for twice in patches of its own and the action log paid for in two
+     * `!` utilities on a continuation row. A utility is meant to be the last
+     * word; here it finally is.
+     */
+    @layer components {
+        .responsive-table {
+            display: block;
+            width: 100%;
+        }
+        .responsive-table thead {
+            @apply sr-only;
+        }
+        .responsive-table tbody,
+        .responsive-table tr,
+        .responsive-table th,
+        .responsive-table td {
+            display: block;
+        }
+        .responsive-table tr {
+            @apply px-3 py-3;
+        }
+        /*
+         * A value carrying no break opportunity -- an email address, an
+         * identifier, a pasted token -- is wider than the phone reading it, and
+         * nothing in this layout can shrink it: the stacked cells are flex items
+         * with a width floor, so the cell simply grows and the card ends up with a
+         * horizontal scrollbar of its own, inside the layout that exists so a
+         * phone never has to scroll sideways. Measured on the Action Log at 375px,
+         * an ordinary long address took the card to 383px and a 120-character
+         * token took it to 919px.
+         *
+         * `anywhere` rather than `break-word`, because only `anywhere` also lowers
+         * the cell's min-content width -- and min-content is the number flex sizes
+         * from, so `break-word` would wrap the text and leave the box just as wide.
+         *
+         * No padding here: a field keeps its cell's own `p-1.5` (table-cell-td,
+         * table-row-header), which is the card's design. A `px-0 py-1` sat here
+         * and lost to those utilities from the day this block was layered.
+         */
+        .responsive-table th,
+        .responsive-table td {
+            @apply whitespace-normal;
+            overflow-wrap: anywhere;
+        }
+        .responsive-table th[data-label]::before,
+        .responsive-table td[data-label]::before {
+            @apply text-xs font-semibold text-body me-2;
+            content: attr(data-label) ": ";
+        }
+
+        /*
+         * A detail row is one panel, not a card of labeled fields: its cell's
+         * `p-3` (table-detail-cell) is the inset, so the row gives up its card
+         * padding and the two do not stack into a double inset.
+         */
+        .responsive-table tr.table-detail-row {
+            @apply p-0;
+        }
+
+        /*
+         * Records wider than one column. A phone has room for a single column of
+         * labeled fields and nothing else, but the fold runs all the way to lg,
+         * and between a phone and that boundary the same single column throws the
+         * screen away: at 834px the Clubhouse 1 Log showed four records where the
+         * desktop table shows twenty-five, each value sitting in the leftmost 15%
+         * with 600px of dead space beside it. A tablet is a real admin device
+         * here, not a wide phone.
+         *
+         * No breakpoint of its own -- flex-wrap already asks the only question
+         * that matters, which is whether another field fits. Below roughly 700px
+         * the answer is no and every field takes its own line, which is exactly
+         * the phone layout this replaces; above it, fields pack. The band sizes
+         * itself instead of guessing at device widths.
+         *
+         * Flex with a floor width rather than a grid, which is the difference
+         * between this reading as columns and reading as debris. Equal 1fr tracks
+         * align beautifully until one column holds free text -- a log entry, a
+         * note -- and then that cell is capped at a third of the row and breaks
+         * mid-word while the two short cells beside it sit half empty. A flex item
+         * can outgrow the floor, so short fields settle at a common width and line
+         * up down the page while a long one takes the width it needs and wraps to
+         * a line of its own.
+         *
+         * Detail rows are excluded because they are one full-width panel, not a
+         * set of labeled fields. `.hidden` is excluded because a row that is
+         * closed should not be laid out at all -- it no longer has to be, now that
+         * these rules are layered and `.hidden` beats them on its own, but saying
+         * so in the selector keeps the intent readable.
+         */
+        .responsive-table tr:not(.table-detail-row, .hidden) {
+            display: flex;
+            flex-wrap: wrap;
+            column-gap: 1.5rem;
+        }
+
+        /*
+         * The floor is what buys the alignment: every short value reserves the
+         * same width, so the field that follows it starts at the same x in every
+         * record. Without it each cell shrinks to its own content and the third
+         * column jitters by the length of whatever callsign happens to land on
+         * that row.
+         */
+        .responsive-table tr:not(.table-detail-row, .hidden) > th,
+        .responsive-table tr:not(.table-detail-row, .hidden) > td {
+            min-width: 11rem;
+        }
+    }
+
+    /*
+     * NOT layered, and the one rule here that must not be. TableHelper writes
+     * `text-end` for `right: true`, which is a column alignment for the
+     * desktop table. In a card the cell is a labelled row, and right-aligning
+     * the value pushes it away from the label naming it, with the width of the
+     * card in between. So the card layout keeps the last word on alignment.
+     */
+    .responsive-table th,
+    .responsive-table td {
+        @apply text-left;
+    }
+}

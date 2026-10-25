@@ -1,0 +1,75 @@
+# What the Clubhouse does on its own, and when.
+#
+# Times are read in the application's time zone (America/Phoenix).
+#
+# The training server runs on a copy of the real database, so everything that
+# sends mail, talks to another service, or deletes records is held back there.
+# It reloads its own copy each morning instead.
+# Only the tasks that touch nothing outside this machine. The rest are left out
+# on purpose: the dev database is a copy of the real one, so they would email
+# real addresses, talk to the live learning site, or delete records from the
+# copy. Run one of those by hand when you want to watch it:
+#
+#   bin/rails runner 'PhotoPendingJob.perform_now'
+development:
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    schedule: every hour at minute 12
+
+production:
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    schedule: every hour at minute 12
+<% if ENV["RANGER_CLUBHOUSE_GROUNDHOG_DAY_TIME"].present? %>
+  reload_training_database:
+    command: "GroundHogDay.reload_training_database!"
+    schedule: at 4am every day
+<% else %>
+  clear_failed_tasks:
+    class: ClearFailedTasksJob
+    schedule: at 4am every day
+  daily_report:
+    class: DailyReportJob
+    schedule: at 3am every day
+  cleanup_mail_log:
+    class: CleanupMailLogJob
+    schedule: at 3:30am every day
+  expire_oauth_codes:
+    class: ExpireOauthCodesJob
+    schedule: every 5 minutes
+  expire_handle_reservations:
+    class: ExpireHandleReservationsJob
+    schedule: at 5am every day
+  expire_announcements:
+    class: ExpireAnnouncementsJob
+    schedule: at 5am every day
+  expire_request_logs:
+    class: ExpireRequestLogsJob
+    schedule: at 5am every day
+  photo_pending:
+    class: PhotoPendingJob
+    schedule: "0 9,21 * * *"
+  vehicle_pending:
+    class: VehiclePendingJob
+    schedule: at 7pm every day
+  pending_applications:
+    class: PendingApplicationsJob
+    schedule: at 5pm every day
+  # April through August, then the first ten days of September: every ten
+  # minutes, so a finished course shows up while somebody is still signing up.
+  moodle_completion_season:
+    class: MoodleCompletionJob
+    schedule: "0,10,20,30,40,50 * * 4-8 *"
+  moodle_completion_september:
+    class: MoodleCompletionJob
+    schedule: "0,10,20,30,40,50 * 1-10 9 *"
+  # Monday mornings through July and August, while there is still time to grant
+  # a pass to anybody the report turns up.
+  rangers_who_need_saps:
+    class: RangersWhoNeedSapsJob
+    schedule: "30 2 * 7-8 1"
+  # Once the event is over, the badge export archives are no longer needed.
+  delete_bmid_exports:
+    class: DeleteBmidExportsJob
+    schedule: "30 5 15 9 *"
+<% end %>

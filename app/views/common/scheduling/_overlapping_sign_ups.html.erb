@@ -1,0 +1,25 @@
+<%# locals: (entry:) %>
+<% conflicts = entry.overlapping_slots %>
+
+<%= ui_callout_box :warning, title: "Overlapping Shift", class: "my-1" do %>
+  <p class="mb-1">Credit is granted only for the shift you check into.</p>
+
+  <% if conflicts.one? %>
+    <% conflict = conflicts.first %>
+    <p class="mb-0">
+      <strong>Overlaps with:</strong>
+      <%= conflict.position.title %>
+      (<%= datetime_format conflict.slot.begins, conflict.slot.ends, tz: conflict.slot.timezone, tz_abbr: conflict.slot.timezone_abbr %>)
+    </p>
+  <% elsif conflicts.many? %>
+    <p class="mb-1"><strong>Overlaps with:</strong></p>
+    <ul class="list-disc list-inside ms-5">
+      <% conflicts.each do |conflict| %>
+        <li>
+          <span class="me-2"><%= conflict.position.title %></span>
+          <%= datetime_format conflict.slot.begins, conflict.slot.ends, tz: conflict.slot.timezone, tz_abbr: conflict.slot.timezone_abbr %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>

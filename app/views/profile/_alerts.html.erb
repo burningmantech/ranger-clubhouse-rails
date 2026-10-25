@@ -1,0 +1,108 @@
+<%# locals: (person:, alerts:) %>
+<%= ui_section "Alert Preferences",
+               icon: "bell",
+               edit_link: (can_edit_alert_preferences? && profile_alerts_edit_path ? profile_alerts_edit_path : nil) do %>
+  <%# SMS phone number status %>
+  <div class="flex items-center gap-2 mb-4">
+    <span class="font-semibold text-stone-emphasis">SMS Number:</span>
+    <% if person.sms_number.present? %>
+      <span><%= phone_format(person.sms_number) %></span>
+      <% if person.sms_stopped? %>
+        <%= ui_badge "Stopped", :error, icon: "ban", icon_type: :solid %>
+      <% elsif person.sms_verified? %>
+        <%= ui_badge "Verified", :success, icon: "circle-check", icon_type: :solid %>
+      <% else %>
+        <%= ui_badge "Not Verified", :warning, icon: "clock", icon_type: :solid %>
+      <% end %>
+    <% else %>
+      <span class="italic text-stone-muted">No number on file</span>
+    <% end %>
+  </div>
+
+  <% off_playa_alerts = alerts.select { |a| !a.on_playa } %>
+  <% on_playa_alerts = alerts.select { |a| a.on_playa } %>
+  <% sms_usable = person.sms_usable? %>
+
+  <div class="stack-to-row-lg">
+    <%= ui_table full_width: false, striped: false, responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Alert" %>
+        <%= t.heading "SMS", center: true %>
+        <%= t.heading "Email", center: true %>
+      <% end %>
+      <%= t.body do %>
+        <tr>
+          <td colspan="3" class="px-3 py-2 font-semibold text-stone-emphasis bg-base-200">
+            Pre &amp; Post Event
+          </td>
+        </tr>
+        <% off_playa_alerts.each do |alert| %>
+          <%= t.row do %>
+            <%= t.cell alert.title %>
+            <%= t.cell(center: true) do %>
+              <% if alert.no_opt_out %>
+                <%= fa_icon("circle-check", :solid, class: "icon-success") %>
+              <% elsif alert.email_only %>
+                &mdash;
+              <% elsif alert.use_sms && sms_usable %>
+                <%= fa_icon("circle-check", :solid, class: "icon-success") %>
+              <% else %>
+                <%= fa_icon("circle-xmark", :solid, class: "text-stone-muted") %>
+              <% end %>
+            <% end %>
+            <%= t.cell(center: true) do %>
+              <% if alert.no_opt_out %>
+                <%= fa_icon("circle-check", :solid, class: "icon-success") %>
+              <% elsif alert.sms_only %>
+                &mdash;
+              <% elsif alert.use_email %>
+                <%= fa_icon("circle-check", :solid, class: "icon-success") %>
+              <% else %>
+                <%= fa_icon("circle-xmark", :solid, class: "text-stone-muted") %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= ui_table full_width: false, striped: false, responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Alert" %>
+        <%= t.heading "SMS", center: true %>
+        <%= t.heading "Email", center: true %>
+      <% end %>
+      <%= t.body do %>
+        <tr>
+          <td colspan="3" class="px-3 py-2 font-semibold text-stone-emphasis bg-base-200">On Playa</td>
+        </tr>
+        <% on_playa_alerts.each do |alert| %>
+          <%= t.row do %>
+            <%= t.cell alert.title %>
+            <%= t.cell(center: true) do %>
+              <% if alert.no_opt_out %>
+                <%= fa_icon("circle-check", :solid, class: "icon-success") %>
+              <% elsif alert.email_only %>
+                &mdash;
+              <% elsif alert.use_sms && sms_usable %>
+                <%= fa_icon("circle-check", :solid, class: "icon-success") %>
+              <% else %>
+                <%= fa_icon("circle-xmark", :solid, class: "text-stone-muted") %>
+              <% end %>
+            <% end %>
+            <%= t.cell(center: true) do %>
+              <% if alert.no_opt_out %>
+                <%= fa_icon("circle-check", :solid, class: "icon-success") %>
+              <% elsif alert.sms_only %>
+                &mdash;
+              <% elsif alert.use_email %>
+                <%= fa_icon("circle-check", :solid, class: "icon-success") %>
+              <% else %>
+                <%= fa_icon("circle-xmark", :solid, class: "text-stone-muted") %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

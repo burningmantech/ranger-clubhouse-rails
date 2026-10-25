@@ -1,0 +1,23 @@
+<%# locals: (t:) %>
+<%#
+  The column set a group shows. Applicants have no rangering history, and the
+  group that sets the vintage mark has no use for a column reading the same on
+  every row.
+%>
+<%= t.header do %>
+  <%= t.heading "Set", width: "1%" %>
+  <%= t.heading "Callsign" %>
+  <%= t.heading "Current Status" %>
+  <% if @group.sets_status? %>
+    <%= t.heading "Proposed Status" %>
+  <% end %>
+  <% if @group.shows_history? %>
+    <%= t.heading "Last Year Rangered", right: true %>
+    <%= t.heading "Years Rangered", right: true %>
+    <%= t.heading "Alpha Year", right: true %>
+  <% end %>
+  <%= t.heading "Email" %>
+  <% if @group.shows_vintage? %>
+    <%= t.heading "Vintage" %>
+  <% end %>
+<% end %>

@@ -1,0 +1,80 @@
+<%#
+  Everyone who signed up for a shift this year, one row each. Pick a callsign to
+  see their schedule.
+%>
+<% content_for :title, "Schedule by Callsign" %>
+
+<%= hero_panel icon: "calendar-days", heading_level: :h1,
+               id: "schedule-by-callsign-header",
+               title: "#{@year} Schedule by Callsign" do |panel| %>
+  <% panel.description do %>
+    Every shift sign-up for this year, grouped by the person who signed up.
+  <% end %>
+  <%# keep: the selector posts an action-less GET carrying only :year, so
+      without this switching the year silently drops the filters -- chips and
+      all -- and the reader is looking at a different roster than they asked
+      for. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true,
+                         keep: @filter_params %>
+<% end %>
+
+<% if @report.any? %>
+  <%= filter_bar id: "schedule-by-callsign-filters",
+                 chips: schedule_by_callsign_chips(@filter_params, @year),
+                 clear_url: scheduling_schedule_by_callsign_path(year: @year),
+                 count: "Showing #{@people.size} of #{pluralize(@report.size, "person")}",
+                 actions: export_csv_link(scheduling_schedule_by_callsign_path(year: @year, format: :csv), "Export All to CSV"),
+                 url: scheduling_schedule_by_callsign_path do |f| %>
+    <%# Year-scoped page: a GET form replaces the whole query string, so without
+        this every Apply would bounce the roster back to the current year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.text_field :callsign, label: "Callsign Contains",
+                       value: @filter_params[:callsign],
+                       width: "w-full", wrapper_class: "flex-1" %>
+      <%# matching: -- the select navigates with the callsign filter still
+          applied, so its counts have to promise the roster the choice
+          delivers, not the roster before filtering. %>
+      <%= f.select :status, filter_status_options(@status_counts,
+                                                  matching: @matching_status_counts),
+                   label: "Status", selected: @filter_params[:status],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <% if @people.any? %>
+    <%# Hundreds of people is far past what a reader scrolls through, so the
+        shared jump control goes above the roster: pick a letter, then the
+        callsign, and land on that row. Only offered once there is more than one
+        person to choose between. %>
+    <% if @people.many? %>
+      Jump to a callsign starting with the letter:
+      <%= dropdown_scroll_list schedule_by_callsign_scroll_items(@people) %>
+    <% end %>
+
+    <div class="lg:w-3/4">
+      <% @people.each do |row| %>
+        <%# scroll-mt: the navbar is sticky and 64px tall, and the page sets no
+            scroll-padding, so a jumped-to row otherwise lands at the very top
+            of the scrollport and sits behind it -- the reader picks a callsign
+            and arrives at a row they cannot see. %>
+        <%= ui_drill_down_row scheduling_schedule_by_callsign_person_path(row.person_id,
+                                                                               year: @year),
+                              row.callsign,
+                              id: schedule_by_callsign_anchor(row),
+                              class: "scroll-mt-20",
+                              meta: schedule_by_callsign_meta(row),
+                              badges: schedule_by_callsign_badges(row) %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= ui_empty_state "No callsign matches these filters.",
+                       icon: "filter-circle-xmark", icon_type: :solid %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No #{@year} schedules were found.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

@@ -1,0 +1,100 @@
+<%# The Eventree export (Ember vc/bmid-print port): review the qualified
+    badges for the year, select a batch, download the vendor CSV, and mark
+    everything in the batch as submitted. Badges with a blocking status sit in
+    the disclosures above the table; no-photo and unqualified rows stay in the
+    table, unchecked, so they can still be exported by hand. %>
+<%= hero_panel icon: "file-export", heading_level: :h1, id: "bmid-export-header",
+               title: "#{@year} BMID Export" do |panel| %>
+  <% panel.description do %>
+    Send badges to Eventree for printing.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @printable_count, "Printable" %>
+  <%= ui_stat_box @no_photo_count, "No Photo", variant: @no_photo_count.positive? ? :warning : :secondary %>
+  <%= ui_stat_box @unqualified_count,
+                  "Not Qualified",
+                  variant: @unqualified_count.positive? ? :warning : :secondary %>
+  <%= ui_stat_box @buckets[:submitted].size, "Submitted" %>
+<% end %>
+
+<% unless @is_current_year %>
+  <%= ui_callout_box :warning do %>
+    <strong>You are viewing <%= @year %>, a previous year.</strong>
+    These badges have already been through the printer.
+  <% end %>
+<% end %>
+
+<%# Out of the hero. What the download costs is not repeated here: the
+    "Exporting is a commitment" callout says it beside the button that does it. %>
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>How do I export a batch?</dt>
+    <dd>Pick a category, review the list, then download the CSV.</dd>
+  </dl>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= button_link "Manage Badges", :secondary,
+                    bmid_manage_path(year: @year, filter: @category_filter),
+                    icon: "pen-to-square", icon_type: :solid %>
+    <%= button_link "Previous Exports", :secondary, "#previous-exports",
+                    icon: "clock-rotate-left", icon_type: :solid %>
+  <% end %>
+</div>
+
+<%= render "filter_bar", q: @q,
+           base_params: { year: @year, filter: @category_filter },
+           count: "Showing #{@rows.size} of #{pluralize(@selectable.size, "selectable badge")}" %>
+
+<%= render "buckets", buckets: @buckets, year: @year %>
+
+<% if @rows.empty? %>
+  <%= ui_empty_state "No selectable badges in this category#{" match the search" if @q.present?}. " \
+                     "Try another category, or check the disclosures above for badges that were set aside.",
+                     icon: "id-card", icon_type: :solid %>
+<% else %>
+  <%= ui_form(nil, bmid_export_create_path, method: :post) do |f| %>
+    <%# id: nil -- the filter_bar above already owns id="year" and id="filter". %>
+    <%= hidden_field_tag :year, @year, id: nil %>
+    <%= hidden_field_tag :filter, @category_filter, id: nil %>
+    <%= bulk_select do %>
+      <%= ui_section "Review and Select", icon: "table-list", icon_type: :solid, border: false do %>
+        <%= render "common/bmids/flag_legend" %>
+        <%= render "selection_table", rows: @rows %>
+      <% end %>
+
+      <%= ui_callout_box :warning, accent: true, class: "my-4" do %>
+        <strong>Exporting is a commitment.</strong> Every badge in the download is
+        marked Submitted, its meal and shower provisions are consumed, and an export
+        note is stamped on the badge.
+      <% end %>
+
+      <%= form_row do %>
+        <%= f.text_field :batch_info, label: "Batch Information",
+                         maxlength: BmidExport::BATCH_INFO_LIMIT, show_counter: true,
+                         width: "w-full lg:w-96",
+                         help_text: "Examples: \"Batch #1, specials\" or \"Batch #3, alphas\". " \
+                                    "Your callsign and the date are recorded with the batch automatically." %>
+      <% end %>
+
+      <%= button_row do %>
+        <%= f.submit "Download Export & Mark as Submitted",
+                     data: { checkbox_select_all_target: "submit",
+                             turbo_confirm: confirm_modal_dialog(
+                               title: "Confirm Export",
+                               message: "Download the selected badges as a CSV and mark every one " \
+                                        "of them as Submitted? Their meal and shower provisions " \
+                                        "will be consumed.",
+                               confirm_label: "Export"
+                             ) } %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= render "previous_exports", exports: @previous_exports, year: @year,
+           unsubmittable: @is_current_year %>

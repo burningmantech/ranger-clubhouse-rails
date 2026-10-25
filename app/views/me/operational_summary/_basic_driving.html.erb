@@ -1,0 +1,28 @@
+<% if current_user.vehicle_blacklisted %>
+  <%= ui_section "Driving Prohibited", icon: "ban", icon_type: :solid do %>
+    <%= ui_badge "Blacklisted", :error, icon: "triangle-exclamation", icon_type: :solid %>
+    <p class="text-body mt-2">
+      You are not permitted to operate gators, cars, or trucks on playa for Ranger-related activities.
+    </p>
+  <% end %>
+<% else %>
+  <%= ui_section "Ranger Golf Carts & Gators (UTVs)", icon: "car", icon_type: :solid do %>
+    <% if @person_event.signed_motorpool_agreement %>
+      <%= ui_badge "Authorized", :success, icon: "circle-check", icon_type: :solid %>
+      <p class="text-body mt-2">
+        You are authorized to drive golf carts &amp; gators (UTVs) on playa for Ranger business.
+      </p>
+      <p class="text-sm text-stone-muted mt-1">
+        Vehicle must have a valid Burning Man driving permit.
+      </p>
+    <% else %>
+      <%= ui_badge "Not Authorized", :warning, icon: "circle-exclamation", icon_type: :solid %>
+      <p class="text-body mt-2">
+        You are NOT authorized to drive golf carts &amp; gators (UTVs) on the playa for Ranger business.
+      </p>
+      <p class="text-body mt-2">
+        You can fix this by agreeing to the <%= link_to "Vehicle Use Protocol", me_agreements_path, class: "underline font-semibold" %>.
+      </p>
+    <% end %>
+  <% end %>
+<% end %>

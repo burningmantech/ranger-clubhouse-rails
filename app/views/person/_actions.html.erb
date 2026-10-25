@@ -1,0 +1,73 @@
+<%
+  edit_items = []
+  if can_manage_callsign_or_status?
+    edit_items << dropdown_item("Edit Callsign", edit_person_callsign_path(person))
+    edit_items << dropdown_item("Edit Status", edit_person_status_path(person))
+  end
+  manage_items = []
+  if can_manage_banners?
+    manage_items << dropdown_item("Manage Account Banners", person_banners_path(person))
+  end
+  if is_admin? || has_role?(Role::VC)
+    manage_items << dropdown_item("Manage Photo", new_person_photo_path(person))
+    manage_items << dropdown_item("Status History", person_status_history_path(person))
+  end
+  if is_admin?
+    manage_items << dropdown_item("Change Password", person_password_path(person))
+  end
+  if person.prospective? && can?(:resend_welcome)
+    manage_items << dropdown_item(
+      "Resend Welcome Message",
+      person_resend_welcome_path(person),
+      data: confirm_modal(message: "Send #{person.callsign} another welcome message with a new login link?",
+                          confirm_label: "Send",
+                          method: :post))
+  end
+  if person.on_boarded_at.present? && can?(:reset_onboarding)
+    manage_items << dropdown_item(
+      "Reset Onboarding Tour",
+      person_reset_onboarding_path(person),
+      data: confirm_modal(message: "Show #{person.callsign} the onboarding tour again at their next visit to the dashboard?",
+                          confirm_label: "Reset Tour",
+                          method: :post))
+  end
+
+  danger_items = []
+  if can?(:delete_account)
+    danger_items << dropdown_item("Delete Account",
+                                  person_path(person),
+                                  data: confirm_modal(title: "Delete #{person.callsign}'s Account",
+                                                      message: "Delete #{person.callsign}'s account? This removes the account and everything attached to it. It cannot be undone.",
+                                                      confirm_label: "Delete Account",
+                                                      variant: :error,
+                                                      method: :delete))
+  end
+
+  action_menu_items = []
+  [edit_items, manage_items, danger_items].reject(&:empty?).each do |group|
+    action_menu_items << dropdown_divider if action_menu_items.any?
+    action_menu_items.concat(group)
+  end
+%>
+
+<% if action_menu_items.any? || can?(:toggle_onsite) %>
+  <div class="flex flex-col gap-2 lg:flex-row lg:items-start">
+    <% if can?(:toggle_onsite) %>
+      <%= button_link "Mark #{person.on_site ? "Off Site" : "On Site"}",
+                      :secondary,
+                      person_toggle_onsite_path(person),
+                      method: :post,
+                      icon: person.on_site ? "moon" : "person-walking",
+                      icon_type: :solid,
+                      full_width: true %>
+    <% end %>
+
+    <% if action_menu_items.any? %>
+      <%= dropdown_menu "Actions", class: "dropdown-end w-full lg:w-auto",
+                        summary_class: "w-full justify-between lg:w-auto",
+                        menu_class: "w-full lg:w-64" do %>
+        <%= safe_join(action_menu_items) %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

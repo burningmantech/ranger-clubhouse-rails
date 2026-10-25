@@ -1,0 +1,50 @@
+# Test fixtures for Motd (Announcements) model
+
+# Announcement for auditors only
+auditor_announcement:
+  person: active_ranger
+  subject: "Important Auditor Announcement"
+  message: "<p>This is an announcement for auditors only.</p>"
+  for_auditors: true
+  for_pnvs: false
+  for_rangers: false
+  expires_at: <%= 1.week.from_now %>
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>
+
+# Announcement for PNVs (Prospective and Alpha)
+applicant_announcement:
+  person: active_ranger
+  subject: "Welcome Prospective Rangers"
+  message: "<p>This is an announcement for prospective and alpha statuses.</p>"
+  for_auditors: false
+  for_pnvs: true
+  for_rangers: false
+  expires_at: <%= 1.week.from_now %>
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>
+
+# Announcement for rangers
+ranger_announcement:
+  person: active_ranger
+  subject: "Ranger Update Bulletin"
+  message: "<p>This is an announcement for rangers.</p>"
+  for_auditors: false
+  for_pnvs: false
+  for_rangers: true
+  expires_at: <%= 1.week.from_now %>
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>
+
+# Expired announcement for rangers (to test expired filtering)
+expired_ranger_announcement:
+  person: active_ranger
+  subject: "Expired Ranger Announcement"
+  message: "<p>This announcement has expired.</p>"
+  for_auditors: false
+  for_pnvs: false
+  for_rangers: true
+  expires_at: <%= 1.day.ago %>
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.week.ago %>
+

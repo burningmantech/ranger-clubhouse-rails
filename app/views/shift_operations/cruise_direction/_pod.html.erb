@@ -1,0 +1,106 @@
+<%# locals: (card:, year:) %>
+<%#
+  One pod as a card: where it is, how it gets around, and who is in it.
+
+  Two drag targets, and they are separate on purpose. The grip in the header
+  drags the whole card into a new place in the order; the grip on a member
+  drags that Ranger into another pod. Upstream makes the member's PHOTO both
+  the drag handle and the button that opens their dialog, so a slow drag opens
+  a dialog and a fast tap starts a drag.
+
+  data-pod-id is what the receiving list is identified by when someone is
+  dropped into it; data-sortable-update-url is where each drag reports to.
+%>
+<% pod = card.pod %>
+<% pod_name = cruise_direction_pod_name(pod) %>
+<div data-sortable-update-url="<%= shift_operations_cruise_direction_pod_position_path(pod, year: year) %>">
+  <%= ui_card do %>
+    <%= ui_card_body class: "py-3" do %>
+      <%# One line says everything about the pod at a glance: its name, where it
+          is, and how it gets around. The location sits centred at the name's
+          weight -- on a board of a dozen cards it is the fact the operator scans
+          for -- and the transport hangs at the end in a quieter voice. %>
+      <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
+        <%# The grip is not a control -- it is a texture that says "drag me",
+            and the keyboard path for reordering is in the pod's own dialog. %>
+        <span class="cruise-direction-pod-grip cursor-grab text-stone-subtle min-h-9 min-w-9 flex items-center justify-center"
+              aria-hidden="true"><%= fa_icon "grip-vertical", :solid %></span>
+        <%# h2: the hero's h1 is the only heading above the grid. %>
+        <h2 class="heading-section text-heading"><%= pod_name %></h2>
+        <%# A pod that emptied out, as opposed to one just made and not yet
+            filled -- the two look identical otherwise, and only one of them
+            went somewhere. %>
+        <% if card.disbanded? && card.empty? %>
+          <%= ui_badge "Disbanded", :warning, icon: "circle-pause", icon_type: :solid %>
+        <% end %>
+        <span class="grow min-w-0 text-center font-semibold text-heading">
+          <%= fa_icon "location-dot", :solid, end: 1, class: "text-stone-icon" %>
+          <% if card.location.present? %>
+            <%= card.location %>
+          <% else %>
+            <span class="text-stone-subtle italic">No location yet</span>
+          <% end %>
+        </span>
+        <span class="ms-auto whitespace-nowrap text-sm text-stone-muted">
+          <%= fa_icon cruise_direction_transport_icon(card.transport), :solid, end: 1 %>
+          <%= cruise_direction_transport_label(card.transport) %>
+        </span>
+      </div>
+
+      <% if card.empty? %>
+        <p class="text-stone-subtle italic py-2">No one is in this pod yet.</p>
+      <% end %>
+
+      <%# The list is a drop target even when empty, so a Ranger can be dragged
+          into a pod that has just been made. %>
+      <ul class="space-y-1 min-h-9"
+          data-controller="pod-people"
+          data-pod-people-handle-value=".cruise-direction-person-grip"
+          data-pod-id="<%= pod.id %>">
+        <% card.members.each do |member| %>
+          <li class="flex items-center gap-2 py-1 px-1 rounded-lg hover:bg-default-strong transition-colors duration-200"
+              data-sortable-update-url="<%= shift_operations_cruise_direction_person_path(pod, member.person, year: year) %>">
+            <span class="cruise-direction-person-grip cursor-grab text-stone-subtle min-h-9 min-w-9 flex items-center justify-center"
+                  aria-hidden="true"><%= fa_icon "grip-vertical", :solid %></span>
+
+            <% if member.person.avatar_photo %>
+              <%= photo_tag member.person.avatar_photo, width: 44, height: 44, alt: "",
+                            class: "w-11 h-11 rounded-full object-cover shrink-0" %>
+            <% else %>
+              <span class="w-11 h-11 rounded-full bg-default-strong flex items-center justify-center
+                           shrink-0 text-stone-muted" aria-hidden="true">
+                <%= fa_icon "user", :solid %>
+              </span>
+            <% end %>
+
+            <span class="grow min-w-0">
+              <%= link_to member.person.callsign,
+                          shift_operations_edit_cruise_direction_person_path(pod, member.person, year: year),
+                          class: "link link-primary font-semibold inline-flex min-h-9 items-center",
+                          data: { turbo_frame: "modal" },
+                          aria: { label: "Change #{member.person.callsign} in #{pod_name}" } %>
+              <span class="block text-sm text-stone-muted truncate">
+                <% if member.on_duty? %>
+                  <%= member.position_title %> &middot; on duty <%= format_date(member.on_duty_at, DateTimeHelper::HOUR_MINS) %>
+                <% else %>
+                  <span class="italic">Not checked in</span>
+                <% end %>
+              </span>
+            </span>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <%= ui_card_footer class: "justify-start pb-3 gap-2 flex-wrap" do %>
+      <%= button_link "Add Ranger", :secondary,
+                      shift_operations_new_cruise_direction_person_path(pod, year: year),
+                      icon: "plus", icon_type: :solid,
+                      data: { turbo_frame: "modal" },
+                      aria: { label: "Add a Ranger to #{pod_name}" } %>
+      <%= edit_link shift_operations_edit_cruise_direction_pod_path(pod, year: year),
+                    data: { turbo_frame: "modal" },
+                    aria: { label: "Edit #{pod_name}" } %>
+    <% end %>
+  <% end %>
+</div>

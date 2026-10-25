@@ -1,0 +1,62 @@
+<%= hero_panel icon: "utensils", heading_level: :h1, id: "person-pogs-header",
+               back_to: [@person.callsign, person_path(@person)] do |panel| %>
+  <% panel.title do %>
+    Meal &amp; Shower Pogs &mdash; <%= @person.callsign %>
+  <% end %>
+  <% panel.year_selector year: @year, years: @years %>
+<% end %>
+
+<p class="text-body mb-4">
+  Pog tracking is only available for the 2023 and later events.
+</p>
+
+<% if can?(:manage_pogs) %>
+  <p class="mb-4">
+    <%= button_link "Add Pog", :primary, new_person_pog_path(@person, year: @year), icon: "plus", icon_type: :solid %>
+  </p>
+<% end %>
+
+<%= ui_section "Pog History", icon: "utensils", icon_type: :solid do %>
+  <div class="mb-2 text-base-content/80">
+    Showing <%= pluralize(@person_pogs.size, "pog") %>
+  </div>
+  <% if @person_pogs.any? %>
+    <%= ui_table caption: "Pogs issued to #{@person.callsign}" do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Pog" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Issued At" %>
+        <%= t.heading "Issued By" %>
+        <% if can?(:manage_pogs) %>
+          <%= t.heading "Actions", right: true %>
+        <% end %>
+      <% end %>
+      <%= t.body do %>
+        <% @person_pogs.each do |pog| %>
+          <%= t.row do %>
+            <%= t.row_header(pog.pog_label) %>
+            <%= t.cell(pog.status_label) %>
+            <%= t.cell(datetime_format(pog.issued_at, year: true)) %>
+            <%= t.cell(pog.issued_by&.callsign) %>
+            <% if can?(:manage_pogs) %>
+              <%= t.cell right: true do %>
+                <%= button_row do %>
+                  <%= edit_link edit_person_pog_path(@person, pog, year: @year), aria: { label: "Edit #{pog.pog_label}" } %>
+                  <%= delete_button person_pog_path(@person, pog, year: @year),
+                                    "Delete",
+                                    aria: { label: "Delete #{pog.pog_label}" },
+                                    confirm_modal: {
+                                      title: "Delete Pog",
+                                      message: "Delete this pog for #{@person.callsign}? This cannot be undone."
+                                    } %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No pogs have been recorded yet.", icon: "utensils", icon_type: :solid %>
+  <% end %>
+<% end %>

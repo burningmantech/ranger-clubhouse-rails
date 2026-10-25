@@ -1,0 +1,31 @@
+<%# locals: (person:, person_membership:) %>
+<%= ui_section "Teams & Positions", icon: "people-group", icon_type: :solid, edit_link: is_team_manager? ? edit_person_membership_path(person) : nil do %>
+  <% if person_membership.teams.empty? %>
+    <%= ui_empty_state "No team memberships.", icon: "people-group", icon_type: :solid %>
+  <% else %>
+    <%= ui_accordion("Team Membership (#{pluralize(person_membership.teams.size, "team")})") do %>
+      <div class="text-sm text-body lg:columns-2 lg:gap-x-8">
+        <% person_membership.teams.each do |team| %>
+          <div>
+            <%= team.title %>
+            <% if team.is_manager %>
+              <%= ui_badge "manager", :success, size: "xs", class: "ml-2" %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if person_membership.positions.empty? %>
+    <%= ui_empty_state "No positions granted.", icon: "user-shield", icon_type: :solid %>
+  <% else %>
+    <%= ui_accordion("Positions (#{pluralize(person_membership.positions.size, "position")})") do %>
+      <div class="text-sm text-body lg:columns-2 lg:gap-x-8">
+        <% person_membership.positions.each do |position| %>
+          <div><%= position.title %></div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

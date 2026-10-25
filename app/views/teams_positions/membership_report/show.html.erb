@@ -1,0 +1,67 @@
+<%#
+  One team's roster: a section for the people who manage it, a section for the
+  people who belong to it. The two lists overlap.
+%>
+<% content_for :title, "#{@team.title} Roster" %>
+
+<%= hero_panel icon: "people-group", heading_level: :h1,
+               id: "teams-positions-membership-report-team-header",
+               title: "#{@team.title} Roster",
+               back_to: ["Membership Report",
+                         teams_positions_membership_report_path(@return_params)] do |panel| %>
+  <% panel.description do %>
+    Everyone on this <%= team_record_type_label(@team.type).downcase %> today, and everyone
+    who manages it.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @members.size.to_s, "Members",
+                  icon: "users", icon_type: :solid %>
+  <%# Error-coloured only when there is a problem: a red zero on a healthy team
+      would call for attention it does not need. %>
+  <%= ui_stat_box @managers.size.to_s, "Managers",
+                  variant: @managers.any? ? :secondary : :error,
+                  icon: "user-shield", icon_type: :solid %>
+  <% inactive = @members.count { |person| person.status != Person::ACTIVE } %>
+  <%= ui_stat_box inactive.to_s, "Not Active",
+                  variant: inactive.positive? ? :warning : :secondary,
+                  icon: "user-clock", icon_type: :solid %>
+<% end %>
+
+<%# Out of the hero: the one thing a year-scoped app's reader will assume wrongly. %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Which year is this?</dt>
+    <dd>Membership is not scoped to an event year &mdash; this is who belongs today.</dd>
+  </dl>
+<% end %>
+
+<%= ui_section "Managers", icon: "user-shield", icon_type: :solid, border: false do %>
+  <% if @managers.any? %>
+    <p class="text-base text-body mb-2"><%= pluralize @managers.size, "manager" %></p>
+    <%= render "roster", people: @managers, kind: "manager" %>
+  <% else %>
+    <%# Not an empty state: a team with no one managing it is the finding this
+        report exists to surface, and the index flags it the same way. %>
+    <%= ui_callout_box :error do %>
+      <strong>No managers assigned.</strong>
+      No one is listed as managing this team, so team-manager tools cannot reach its roster.
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Members", icon: "users", icon_type: :solid, border: false do %>
+  <% if @members.any? %>
+    <p class="text-base text-body mb-2"><%= pluralize @members.size, "member" %></p>
+    <%= render "roster", people: @members, kind: "member" %>
+  <% else %>
+    <%= ui_empty_state "No one holds membership on this team.",
+                       icon: "user-slash", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<% summary = membership_report_overlap_summary(@members, @managers) %>
+<% if summary %>
+  <p class="mt-2 text-base text-body"><%= summary %></p>
+<% end %>

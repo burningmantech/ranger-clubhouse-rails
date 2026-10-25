@@ -1,0 +1,36 @@
+<%# The mailing address as the post office reads it, shared by every page that
+    asks for one. Which fields are insisted on varies by status and by who is
+    signed in, so the caller works that out and passes the answers in.
+
+    autocomplete: the browser offers the reader's own address. True only where
+    the reader is filling in their own record -- on a page where one person
+    fills in another's, the offer is the wrong address.
+
+    required_label: passed straight to the required fields, so a caller can quiet
+    the marker to a bare asterisk ("") where a page is mostly required and the
+    full "required" pill on every row would only add noise. Left nil here, which
+    is the field default -- the pill -- for every caller that does not ask. %>
+<%# locals: (f:, address_required:, state_required:, autocomplete: false, required_label: nil) %>
+<%# Country leads: it decides which states the row below offers. %>
+<%= f.select :country, CountryStateHelper::COUNTRY_OPTIONS, label: "Country", width: "w-full sm:w-44",
+             required: address_required, required_label: required_label, data: country_data_attributes %>
+<%= form_row do %>
+  <%= f.text_field :street1, label: "Street Line 1", width: "w-full sm:w-80", maxlength: 128,
+                   required: address_required, required_label: required_label,
+                   autocomplete: ("address-line1" if autocomplete) %>
+  <%= f.text_field :apt, label: "Apt / Unit", width: "w-24", maxlength: 10 %>
+<% end %>
+<%= f.text_field :street2, label: "Street Line 2", width: "w-full sm:w-80", maxlength: 128,
+                 autocomplete: ("address-line2" if autocomplete) %>
+<%= form_row do %>
+  <%= f.text_field :city, label: "City", width: "w-full sm:w-48", maxlength: 50,
+                   required: address_required, required_label: required_label,
+                   autocomplete: ("address-level2" if autocomplete) %>
+  <%# The choices are filled in to match the country, and the field is greyed
+      out for the countries that have none. %>
+  <%= f.select :state, [], label: "State", width: "w-full sm:w-44",
+               required: state_required, required_label: required_label, data: state_data_attributes %>
+  <%= f.text_field :zip, label: "Postal Code", width: "w-28", maxlength: 10,
+                   required: address_required, required_label: required_label,
+                   autocomplete: ("postal-code" if autocomplete) %>
+<% end %>

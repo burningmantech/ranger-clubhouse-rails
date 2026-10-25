@@ -1,0 +1,81 @@
+<% if vehicles.empty? %>
+  <%= ui_empty_state "No requests submitted yet." %>
+<% else %>
+  <div class="flex flex-col gap-4">
+    <% vehicles.each do |vehicle| %>
+      <div class="card-standard shadow-sm overflow-hidden transition-shadow hover:shadow-md" aria-labelledby="vehicle-title-<%= vehicle.id %>">
+        <div class="p-4 flex flex-col gap-3">
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 id="vehicle-title-<%= vehicle.id %>" class="text-base font-semibold text-heading">
+                <%= vehicle.vehicle_year %> <%= vehicle.vehicle_make %> <%= vehicle.vehicle_model %>
+              </h4>
+              <p class="me-muted text-sm mt-1">
+                <%= vehicle.vehicle_color %> &bull;
+                <span class="font-mono bg-default px-1 rounded"><%= vehicle.license_state %>
+                  -<%= vehicle.license_number %></span>
+              </p>
+            </div>
+
+            <% status_variant = case vehicle.status
+                                when Vehicle::APPROVED then :success
+                                when Vehicle::REJECTED then :error
+                                when Vehicle::PENDING then :warning
+                                else :secondary
+                                end
+               status_label = case vehicle.status
+                              when Vehicle::APPROVED then "Approved"
+                              when Vehicle::REJECTED then "Denied"
+                              when Vehicle::PENDING then "Pending"
+                              else vehicle.status
+                              end %>
+
+            <%= ui_badge status_label, status_variant %>
+          </div>
+
+          <% if vehicle.response.present? %>
+            <div class="text-sm bg-default p-3 rounded text-body border border-line">
+              <span class="font-bold block uppercase tracking-wider me-muted mb-1">Response</span>
+              <%= vehicle.response %>
+            </div>
+          <% end %>
+
+          <div class="grid grid-cols-2 gap-y-2 gap-x-4 text-sm me-muted mt-1">
+            <div class="flex flex-col">
+              <span class="uppercase tracking-wider font-semibold">Permit</span>
+              <span class="font-medium text-heading"><%= vehicle.driving_sticker_label %></span>
+            </div>
+            <div class="flex flex-col">
+              <span class="uppercase tracking-wider font-semibold">Logo</span>
+              <span class="font-medium text-heading"><%= vehicle.ranger_logo_label %></span>
+            </div>
+            <div class="flex flex-col">
+              <span class="uppercase tracking-wider font-semibold">Fuel</span>
+              <span class="font-medium text-heading"><%= vehicle.fuel_chit_label %></span>
+            </div>
+            <div class="flex flex-col">
+              <span class="uppercase tracking-wider font-semibold">Amber</span>
+              <span class="font-medium text-heading"><%= vehicle.amber_light_label %></span>
+            </div>
+          </div>
+
+          <% if vehicle.status == Vehicle::PENDING || vehicle.status == Vehicle::REJECTED %>
+            <div class="flex gap-3 mt-2 pt-3 border-t border-line">
+              <% if vehicle.status == Vehicle::PENDING %>
+                <%= button_link nil, :primary, edit_me_vehicles_personal_vehicle_path(vehicle) do %>
+                  <%= fa_icon "pen", :solid, end: 2 %> Edit
+                <% end %>
+              <% end %>
+
+              <%= button_link nil, :secondary,
+                              me_vehicles_personal_vehicle_path(vehicle),
+                              data: confirm_modal(message: "Delete this vehicle request? This cannot be undone.", method: :delete, variant: :error) do %>
+                <%= fa_icon "trash", :solid, end: 2 %> Delete
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

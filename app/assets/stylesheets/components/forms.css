@@ -1,0 +1,38 @@
+/*
+ * Form Fieldset Styling
+ * Clear visual grouping for form sections - ADHD-friendly chunking
+ * Uses left accent border pattern for clear visual hierarchy
+ */
+
+.form-fieldset,
+form fieldset {
+    @apply relative mb-2 ps-4;
+    @apply border-l-4 border-primary;
+    @apply bg-linear-to-r from-primary/5 to-transparent;
+    @apply rounded-r-lg;
+}
+
+.form-legend,
+form fieldset > legend {
+    @apply block w-full;
+    @apply font-semibold text-lg text-base-content;
+    @apply border-b border-base-200;
+}
+
+/* Icon prefix padding override for DaisyUI inputs */
+.input.has-icon,
+.select.has-icon {
+    padding-inline-start: 2.5rem;
+}
+
+/*
+ * Option listing of a select.
+ * daisyUI opts .select into Chrome's customizable select (appearance: base-select),
+ * whose UA stylesheet gives the listing min-inline-size: anchor-size(self-inline) --
+ * as wide as the control. Under the w-full controls the filter bars use, that is
+ * the whole row for a list of single letters. Let the listing size to its options;
+ * the control itself keeps the width it was given.
+ */
+.select::picker(select) {
+    min-inline-size: 0;
+}

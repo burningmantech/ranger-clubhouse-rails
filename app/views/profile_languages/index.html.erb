@@ -1,0 +1,59 @@
+<%= hero_panel icon: "language", heading_level: :h1, id: "languages-header",
+               title: "Known Languages for #{person.callsign}",
+               description: "Help Khaki with translations.",
+               back_to: ["Profile", profile_index_path] %>
+
+<%= ui_callout_box :info do %>
+  <dl class="instruction-list">
+    <dt>Why we ask</dt>
+    <dd>Khaki may need, on very rare occasion, a Ranger to help translate during a shift.
+    </dd>
+    <dt>What to enter</dt>
+    <dd>
+      Add any languages you're comfortable translating while on duty.
+    </dd>
+    <dt>Don't enter English</dt>
+    <dd>We assume you're already proficient enough with the language.</dd>
+  </dl>
+<% end %>
+
+<%= ui_section do %>
+  <% if person.person_language.present? %>
+    <%= ui_table striped: false, class: "mb-3" do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Language" %>
+        <%= t.heading "Proficiency" %>
+        <% if can_edit_languages? %>
+          <%= t.heading "Action" %>
+        <% end %>
+      <% end %>
+      <%= t.body do %>
+        <% person.person_language.sort_by(&:actual_name).each do |row| %>
+          <%= t.row do %>
+            <%= t.row_header row.actual_name %>
+            <%= t.cell row.proficiency_label %>
+            <% if can_edit_languages? %>
+              <%= t.cell do %>
+                <%= button_row do %>
+                  <%= edit_link language_edit_url(row) %>
+                  <%= button_link "Delete", :secondary, language_url(row),
+                                  data: confirm_modal(message: "Delete #{row.actual_name}? You can add it again.", method: :delete, variant: :error)
+                  %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= ui_empty_state "No languages have been stated.", icon: "language", icon_type: :solid %>
+  <% end %>
+
+  <%= button_row do %>
+    <% if can_edit_languages? %>
+      <%= button_link "Add Language", :primary, language_new_url %>
+    <% end %>
+    <%= cancel_link profile_index_path %>
+  <% end %>
+<% end %>

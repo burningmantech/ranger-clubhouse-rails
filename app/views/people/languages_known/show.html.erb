@@ -1,0 +1,66 @@
+<%# Everyone who speaks one language, and what each of them is doing right now. %>
+<% content_for :title, @name %>
+
+<%= hero_panel icon: "language", heading_level: :h1, id: "languages-known-detail-header",
+               title: @name,
+               description: "The Rangers who speak this language, how well, and where they are.",
+               back_to: ["Languages Known",
+                         people_languages_known_path(languages_known_carried(@query, @site))] %>
+
+<%# Who to count. The page opens counting everybody, so the reader has to ask to
+    be shown a narrower group. %>
+<div class="my-4">
+  <%= filter_bar id: "languages-known-detail-filters",
+                 chips: languages_known_filter_chips(@site, people_languages_known_detail_path(@name)),
+                 clear_url: people_languages_known_detail_path(@name),
+                 url: people_languages_known_detail_path(@name) do |f| %>
+    <%= form_row do %>
+      <%= f.select :site, languages_known_site_options,
+                   label: "Speakers", selected: @site,
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+</div>
+
+<% if @language %>
+  <%= ui_stat_row id: "languages-known-stats" do %>
+    <%= ui_stat_box @language.speaker_count.to_s, "Speakers", icon: "users", icon_type: :solid %>
+    <%# Left out when everyone listed is on a shift: it would only repeat the count beside it. %>
+    <% unless narrowed_to_on_duty?(@site) %>
+      <%= ui_stat_box @language.on_duty_count.to_s, "On Duty", variant: :success,
+                      icon: "clock", icon_type: :solid %>
+    <% end %>
+    <%= ui_stat_box @language.radio_count.to_s, "Radios", variant: :secondary,
+                    icon: "walkie-talkie", icon_type: :solid %>
+    <% languages_known_levels(@language).each do |label, count, variant| %>
+      <%= ui_stat_box count.to_s, label, variant: %>
+    <% end %>
+  <% end %>
+
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Callsign" %>
+      <%= t.heading "Proficiency" %>
+      <%= t.heading "Right Now" %>
+    <% end %>
+
+    <%= t.body do %>
+      <% @language.speakers.each do |speaker| %>
+        <%= t.row do %>
+          <%# Every role that reaches this page may open a person, so the link
+              never bounces. %>
+          <%= t.row_header do %>
+            <%= callsign_link speaker, person_path(speaker.person_id) %>
+          <% end %>
+          <%= t.cell languages_known_proficiency(speaker) %>
+          <%= t.cell languages_known_status(speaker, @site) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state languages_known_missing(@site), icon: "language", icon_type: :solid %>
+<% end %>

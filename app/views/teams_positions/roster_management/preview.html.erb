@@ -1,0 +1,89 @@
+<%# Rendered from the POST at 422 -- Turbo drops a 200 form response, and the
+    selected ids are not in the URL for a GET to re-derive. Turbo keeps the
+    submitting page's scroll position, so the reader would otherwise land
+    wherever the button was. %>
+<div data-controller="scroll-to-top" hidden></div>
+
+<%= hero_panel icon: "clipboard-check", heading_level: :h1, id: "roster-preview-header",
+               title: roster_action_title(@action),
+               description: "Nothing has been saved yet — check what will change, then confirm.",
+               back_to: ["#{@team.title} Roster",
+                         teams_positions_roster_management_team_path(@team, **@return_params)] %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @action.changing.size.to_s, "Will Change" %>
+  <% if @action.skipping.any? %>
+    <%= ui_stat_box @action.skipping.size.to_s, "Unchanged", variant: :warning,
+                    icon: "circle-minus", icon_type: :solid %>
+  <% end %>
+<% end %>
+
+<%= ui_callout_box roster_action_variant(@action), icon: "triangle-exclamation", icon_type: :solid do %>
+  <%= roster_action_consequence(@action, @team) %>
+<% end %>
+
+<% if @action.changing.any? %>
+  <%= ui_section "These #{pluralize(@action.changing.size, "Person")} Will Change",
+                 icon: "user-check", icon_type: :solid do %>
+    <%= ui_table striped: true, responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Status" %>
+        <%= t.heading @action.grant? ? "Gains" : "Loses" %>
+      <% end %>
+      <%= t.body do %>
+        <% @action.changing.each do |person| %>
+          <%= t.row id: "preview-person-#{person.id}" do %>
+            <%= t.cell person.callsign %>
+            <%= t.cell person.status %>
+            <%= t.cell do %>
+              <% titles = @action.effect_on(person).filter_map { |id| @report.column(id)&.title } %>
+              <% if titles.any? %>
+                <%= titles.sort.to_sentence %>
+              <% else %>
+                <span class="text-stone-muted">team membership only</span>
+              <% end %>
+              <% if @action.remove_from_team? && person.member? %>
+                <div class="text-sm text-stone-muted">and their <%= @team.title %> membership</div>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No one selected needs this change — there is nothing to confirm.",
+                     icon: "circle-check", icon_type: :solid %>
+<% end %>
+
+<% if @action.skipping.any? %>
+  <%= ui_section "Skipped: #{pluralize(@action.skipping.size, "Person")}",
+                 icon: "circle-minus", icon_type: :solid do %>
+    <p class="mb-2">Left alone because each one <%= @action.skip_reason %>.</p>
+    <p><%= @action.skipping.map(&:callsign).sort.to_sentence %></p>
+  <% end %>
+<% end %>
+
+<%= ui_form(nil, teams_positions_roster_management_apply_path(@team, **@return_params),
+            method: :post, local: true, no_error_summary: true) do |f| %>
+  <%= hidden_field_tag :action_type, @action.type %>
+  <%= hidden_field_tag :position_id, @action.position&.id %>
+  <% @action.changing.each do |person| %>
+    <%= hidden_field_tag "person_ids[]", person.id, id: "confirm-person-#{person.id}" %>
+  <% end %>
+
+  <%= button_row do %>
+    <% if @action.changing.any? %>
+      <%= f.submit roster_action_confirm_label(@action), variant: roster_action_variant(@action),
+                   data: {
+                     turbo_confirm: confirm_modal_dialog(
+                       title: "Final Confirmation",
+                       message: roster_action_consequence(@action, @team),
+                       confirm_label: roster_action_confirm_label(@action)
+                     )
+                   } %>
+    <% end %>
+    <%= cancel_link teams_positions_roster_management_team_path(@team, **@return_params) %>
+  <% end %>
+<% end %>

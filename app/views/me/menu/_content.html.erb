@@ -1,0 +1,127 @@
+<div id="mega-menu-content" class="mega-menu-content">
+  <%# Every star submits #mega-menu-star-form, in application/_mega_menu %>
+  <header class="mega-menu-header">
+    <label class="sr-only" for="mega-menu-search">Search the menu</label>
+    <%= search_field_tag "mega_menu_search", nil,
+                         id: "mega-menu-search",
+                         class: "input mega-menu-search",
+                         placeholder: "Search the menu",
+                         autocomplete: "off",
+                         autofocus: true,
+                         data: { mega_menu_target: "search", action: "input->mega-menu#search" } %>
+    <%= button_action "Close", :ghost,
+                      icon: "xmark", icon_type: :solid,
+                      class: "btn-square mega-menu-close",
+                      data: { action: "mega-menu#close" },
+                      aria: { label: "Close menu" } %>
+  </header>
+
+  <%# Mobile tab bar %>
+  <div class="mega-menu-tabs flex lg:hidden">
+    <%= mega_chrome_button "Favorites", "favorites" %>
+    <%= mega_chrome_button "Recently visited", "recent" %>
+    <%= mega_chrome_button "Categories", "categories" %>
+  </div>
+
+  <div class="mega-menu-body">
+    <%# Desktop side column: convenience area above, categories below %>
+    <nav class="mega-menu-side hidden lg:flex" aria-label="Menu sections">
+      <%= mega_chrome_button "Favorites", "favorites", icon: "star", icon_type: :solid %>
+      <%= mega_chrome_button "Recently visited", "recent", icon: "clock-rotate-left", icon_type: :solid %>
+      <div class="mega-menu-side-divider" aria-hidden="true"></div>
+      <% @mega_categories.each do |category| %>
+        <%= mega_chrome_button category[:title], MegaMenu.panel_key(category),
+                               icon: category[:icon], icon_type: :solid %>
+      <% end %>
+    </nav>
+
+    <div class="mega-menu-panels">
+      <%= mega_panel "recent" do %>
+        <h3 class="mega-menu-panel-title">Recently Visited</h3>
+        <% if mega_recent_items.any? %>
+          <div class="mega-menu-items">
+            <% mega_labeled(mega_recent_items).each do |item, category_title| %>
+              <%= render "me/menu/item", item:, panel_key: "recent", category_title: %>
+            <% end %>
+          </div>
+        <% else %>
+          <%= ui_empty_state "No recently visited pages yet. Pages you visit will show up here." %>
+        <% end %>
+      <% end %>
+
+      <%= mega_panel "favorites" do %>
+        <h3 class="mega-menu-panel-title">Favorites</h3>
+        <% if mega_favorite_items.none? && mega_favorite_categories.none? %>
+          <%= ui_empty_state "No favorites yet. Select the star beside any link or category heading to pin it here." %>
+        <% end %>
+        <% if mega_favorite_items.any? %>
+          <div class="mega-menu-items">
+            <% mega_labeled(mega_favorite_items).each do |item, category_title| %>
+              <%= render "me/menu/item", item:, panel_key: "favorites", category_title: %>
+            <% end %>
+          </div>
+        <% end %>
+        <%# Starred categories are shortcuts that open their panel %>
+        <% if mega_favorite_categories.any? %>
+          <h4 class="mega-menu-section-title">Categories</h4>
+          <div class="mega-menu-items">
+            <% mega_favorite_categories.each do |category| %>
+              <div class="mega-menu-item">
+                <%= mega_category_star_button category, "favorites" %>
+                <%= mega_category_index_button category, class: "flex-1" %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+
+      <%# Mobile-only index of categories; drills into each category panel %>
+      <%= mega_panel "categories" do %>
+        <h3 class="mega-menu-panel-title">Categories</h3>
+        <div class="mega-menu-items">
+          <% @mega_categories.each do |category| %>
+            <%= mega_category_index_button category %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% @mega_categories.each do |category| %>
+        <%= mega_panel MegaMenu.panel_key(category) do %>
+          <%= button_action "Categories", :ghost,
+                            icon: "chevron-left", icon_type: :solid,
+                            class: "mega-menu-back lg:hidden",
+                            data: { action: "mega-menu#show", mega_menu_panel_param: "categories" } %>
+          <%# The star sits beside the heading, never inside it, or its label
+              would join the heading's accessible name %>
+          <div class="flex items-center gap-1">
+            <%= mega_category_star_button category, MegaMenu.panel_key(category) %>
+            <h3 class="mega-menu-panel-title"><%= category[:title] %></h3>
+          </div>
+          <% mega_category_groups(category).each do |section_title, items| %>
+            <% if section_title %>
+              <h4 class="mega-menu-section-title"><%= section_title %></h4>
+            <% end %>
+            <div class="mega-menu-items">
+              <%= render partial: "me/menu/item", collection: items,
+                         locals: { panel_key: MegaMenu.panel_key(category) } %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%# Flat, deduplicated index of every visible link. Rendered once and
+          filtered in the browser as the person types; never server-active. %>
+      <%= mega_panel "search" do %>
+        <h3 class="mega-menu-panel-title">Search Results</h3>
+        <div class="mega-menu-items" data-mega-menu-target="results">
+          <% mega_search_items.each_value do |item, category_title| %>
+            <%= render "me/menu/item", item:, panel_key: "search", category_title: %>
+          <% end %>
+        </div>
+        <div data-mega-menu-target="noResults" hidden>
+          <%= ui_empty_state "No menu links match your search. Try a shorter word." %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

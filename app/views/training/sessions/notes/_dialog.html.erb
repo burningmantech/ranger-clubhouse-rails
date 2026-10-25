@@ -1,0 +1,17 @@
+<%# Edit one of your own trainer notes. Saving returns to the trainee's
+    score dialog. %>
+
+<%= modal_dialog id: "note-dialog", title: "Edit Your Note", frame: false do %>
+  <% if local_assigns[:error] %>
+    <%= ui_callout_box :error do %><%= local_assigns[:error] %><% end %>
+  <% end %>
+
+  <p class="mb-2">
+    Written <%= datetime_format note.created_at, year: true %>.
+  </p>
+
+  <%= ui_form(note, training_session_note_path(training_slug, @training_session.slot.id, note.id)) do |f| %>
+    <%= f.text_area :note, label: "Your Note" %>
+    <%= modal_form_footer f, submit: "Save Note" %>
+  <% end %>
+<% end %>

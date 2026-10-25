@@ -1,0 +1,63 @@
+<%#
+  Review step for one maintenance task: the full ledger of records the task
+  will change. Nothing has been saved yet -- the commit POST below is what runs
+  the task, and it renders its results at 422 (Turbo drops a 200 form response).
+%>
+
+<%= hero_panel icon: "screwdriver-wrench", heading_level: :h1, id: "ticketing-maintenance-preview-header",
+               description: "Review every record this task will change before you confirm it.",
+               back_to: ["Maintenance Tasks", ticketing_maintenance_path] do |panel| %>
+  <% panel.title do %><%= @task.title %><% end %>
+<% end %>
+
+<%# What the task does, in the task's own words -- the description its card
+    carries on the Maintenance Tasks page. It used to be the hero description,
+    but most run to two or three sentences ("Only run AFTER Clean Provisions
+    ..."), and the hero is one sentence on what THIS page does. Above the branch
+    below so all three states keep it, as they did. %>
+<p class="my-4"><%= @task.description %></p>
+
+<% if @blocked %>
+  <%= ui_callout_box :error, accent: true, title: "This Task Cannot Run Yet" do %>
+    <%= @blocked %>
+  <% end %>
+  <%= button_row do %>
+    <%= button_link "Back to Maintenance Tasks", :secondary, ticketing_maintenance_path %>
+  <% end %>
+<% elsif @rows.empty? %>
+  <%= ui_empty_state "No matching records found. Running this task would change nothing.",
+                     icon: "circle-check", icon_type: :solid %>
+  <%= button_row do %>
+    <%= button_link "Back to Maintenance Tasks", :secondary, ticketing_maintenance_path %>
+  <% end %>
+<% else %>
+  <p class="text-lg my-4">
+    <strong>Nothing has changed yet.</strong>
+    <%= pluralize @rows.size, "record" %> will be processed as shown:
+  </p>
+
+  <%= render "common/ticketing_maintenance/results_table", rows: @rows %>
+
+  <%= ui_callout_box :warning, accent: true, class: "my-4" do %>
+    <strong>Confirming processes all <%= pluralize @rows.size, "record" %> at once.</strong>
+    This cannot be undone.
+  <% end %>
+
+  <%= ui_form(nil, ticketing_maintenance_commit_path(@task.slug), method: :post) do |f| %>
+    <% if @task.requires_reason? %>
+      <% if @reason_error %>
+        <p class="text-error font-medium mb-2" role="alert">
+          <%= fa_icon "triangle-exclamation", :solid, end: 2 %>
+          Error: <%= @reason_error %>
+        </p>
+      <% end %>
+      <%= f.text_area :reason, label: "Reason", required: true,
+                      value: params[:reason],
+                      help_text: @task.reason_prompt %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Run #{@task.title} Now", variant: :error %>
+      <%= cancel_button ticketing_maintenance_path %>
+    <% end %>
+  <% end %>
+<% end %>

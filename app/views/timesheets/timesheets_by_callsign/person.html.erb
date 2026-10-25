@@ -1,0 +1,126 @@
+<%#
+  One person's year: every timesheet they turned in, oldest first, with the
+  shift each one was signed up for.
+%>
+<% content_for :title, "#{@person.callsign} Timesheets" %>
+
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1,
+               id: "timesheets-by-callsign-person-header",
+               title: "#{@year} #{@person.callsign} Timesheets",
+               back_to: ["#{@year} Timesheets by Callsign",
+                         timesheets_timesheets_by_callsign_path(year: @year)] do |panel| %>
+  <% panel.description do %>
+    Every timesheet <%= @person.callsign %> turned in for this year, oldest
+    first, with the shift each one was signed up for.
+  <% end %>
+  <%# The selector posts an action-less GET, so it stays on this person and only
+      swaps the year. %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box hour_minute_format(@detail.total_duration), "Hours",
+                  icon: "clock", icon_type: :solid %>
+  <%= ui_stat_box hour_minute_format(@detail.total_appreciation_duration),
+                  "Hours Toward Provisions",
+                  variant: :secondary, icon: "utensils", icon_type: :solid %>
+  <%= ui_stat_box credit_format_short(@detail.total_credits), "Credits",
+                  variant: :success, icon: "circle-check", icon_type: :solid %>
+<% end %>
+
+<%# A legend for rows is all the card holds, so it is offered only when a row
+    carries the mark. Without it "Hours toward provisions" is an unexplained
+    smaller number in the box above. %>
+<% unless @detail.entries.all? { |entry| entry.position&.count_hours } %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What does the ban icon <%= fa_icon "ban", :solid, class: "icon-warning" %> mean?</dt>
+      <%# "a position marked", not "this position": the table holds many
+          positions and only some carry the icon, so the sentence has to name
+          which rows it is about. %>
+      <dd>
+        Hours in a position marked with it still earn credits and count toward
+        tickets, but do not count toward provisions and appreciations.
+      </dd>
+    </dl>
+  <% end %>
+<% end %>
+
+<%# Timesheet Management reads this report but cannot open the person pages, so
+    each link is gated on the controller that enforces it rather than on a role
+    list copied here -- a copied list is a link that keeps promising a page
+    after the page stops admitting the reader. %>
+<div class="my-4 flex flex-wrap gap-2">
+  <% if can_view_person_page? %>
+    <%= button_link "Account", :secondary, person_path(@person),
+                    icon: "user", icon_type: :solid %>
+  <% end %>
+  <% if person_timesheets_readable? %>
+    <%= button_link "Timesheet & Corrections", :secondary,
+                    person_timesheets_path(@person, year: @year),
+                    icon: "pen-to-square", icon_type: :solid %>
+  <% end %>
+  <% if can_view_person_page? %>
+    <%= button_link "Schedule", :secondary, person_scheduling_path(@person, year: @year),
+                    icon: "calendar", icon_type: :solid %>
+  <% end %>
+  <% if @detail.entries.any? %>
+    <%= export_csv_link(timesheets_timesheets_by_callsign_person_path(@person, year: @year,
+                        format: :csv)) %>
+  <% end %>
+</div>
+
+<% if @detail.entries.any? %>
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Time" %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Duration", right: true %>
+      <%= t.heading "Credits", right: true %>
+      <%= t.heading "Shift Begins" %>
+      <%= t.heading "Shift Duration", right: true %>
+      <%= t.heading "Shift Description" %>
+    <% end %>
+    <%= t.body do %>
+      <% @detail.entries.each do |entry| %>
+        <%= t.row do %>
+          <%= t.row_header timesheet_entry_time(entry) %>
+          <%= t.cell entry.position&.title %>
+          <%= t.cell right: true do %>
+            <% unless entry.position&.count_hours %>
+              <%# The sentence that explains the mark is folded away in the card
+                  above, so the mark says what it means itself. %>
+              <%= fa_icon "ban", :solid, class: "icon-warning",
+                          label: "Does not count toward provisions" %>
+            <% end %>
+            <%= hour_minute_format(entry.duration) %>
+          <% end %>
+          <%# The report's own credits, not entry.credits: the model recomputes
+              against the year's credit cache on every call, and this table is
+              one of many rows. %>
+          <%= t.cell credit_format_short(@detail.credits.fetch(entry.id, 0.0)), right: true %>
+          <% if entry.slot %>
+            <%= t.cell timesheet_shift_time(entry.slot) %>
+            <%# hour_minute_format, matching the Duration column beside it: two
+                duration columns in one row reading "5:00" and "6.50" cannot be
+                compared without first noticing they are in different units. %>
+            <%= t.cell hour_minute_format(entry.slot.duration), right: true %>
+            <%= t.cell entry.slot.description %>
+          <% else %>
+            <%# Not signed up for a shift -- an on-the-spot start, which is
+                normal, so it reads as absent rather than as missing. %>
+            <%= t.cell "—" %>
+            <%= t.cell "—", right: true %>
+            <%= t.cell "—" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%# Only a full-report reader gets here: the controller turns a scoped reader
+      with nothing to see back at the roster rather than confirm the callsign,
+      so this claim is one the page can actually make. %>
+  <%= ui_empty_state "#{@person.callsign} turned in no #{@year} timesheets.",
+                     icon: "clock", icon_type: :solid %>
+<% end %>

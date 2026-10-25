@@ -1,0 +1,36 @@
+<%# locals: (person:) %>
+<%= hero_panel icon: "envelope", heading_level: :h1, id: "edit-mailing-header",
+               title: "Edit Mailing Address",
+               back_to: ["Profile", profile_index_path] do |panel| %>
+  <% panel.description do %>
+    <% if viewing_self? %>
+      Update your mailing address for Ranger-related mailings.
+    <% else %>
+      Update <%= person.callsign %>'s mailing address.
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_form person, profile_section_path("mailing-address"), { data: country_form_data_attributes(person.state) } do |f| %>
+  <%= ui_section "Mailing Address", icon: "location-dot", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Why do we need this?</dt>
+      <dd>We use your mailing address for Ranger-related mailings and, from time to time, to send a small gift.</dd>
+      <% if viewing_self? %>
+        <dt>Is this the same as my Burner Profile?</dt>
+        <dd><strong>No.</strong> The address in your Burner Profile is separate from the Clubhouse mailing address. Updates to one do not automatically update the other.</dd>
+      <% end %>
+    </dl>
+
+    <%# Marked required to match what a save will insist on: someone who has left
+        the department keeps the address already on file and is not asked for one. %>
+    <%= render "common/mailing_address_fields", f: f,
+                                               address_required: person.mailing_address_required?,
+                                               state_required: person.state_required? %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Changes" %>
+    <%= cancel_link profile_index_path %>
+  <% end %>
+<% end %>

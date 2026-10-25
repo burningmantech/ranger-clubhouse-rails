@@ -1,0 +1,17 @@
+<%# Fill meter: house progress bar + printed percentage, so the threshold
+    state is never conveyed by color alone. ui_progress_bar clamps the bar at
+    100 -- over-subscribed sessions keep a full track and say so in the
+    number (e.g. 105%). Thresholds are upstream's: 90 danger, 70 warning. %>
+<% level, emphasis = if filled >= 90
+                       [:error, "text-error font-semibold"]
+                     elsif filled >= 70
+                       [:warning, "text-warning font-semibold"]
+                     else
+                       [:success, ""]
+                     end %>
+<div class="flex-center-gap-2">
+  <div class="w-20 shrink-0">
+    <%= ui_progress_bar filled, level, size: :sm, aria: { label: "#{filled}% full" } %>
+  </div>
+  <span class="whitespace-nowrap <%= emphasis %>"><%= filled %>%</span>
+</div>

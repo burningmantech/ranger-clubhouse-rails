@@ -1,0 +1,9 @@
+<%# locals: (message:) -%>
+<%# D8: streamed into #vc-bpguid-notice in place of a redirect and a toast that
+    hides itself. ui_callout_box's role="alert" announces it, and it stays. %>
+<%# The slot sits above the results, so a button lower in the table would get
+    no visible answer: each stream connects this anew and brings the slot into view. %>
+<div data-controller="scroll-to-element" data-scroll-to-element-id-value="vc-bpguid-notice" hidden></div>
+<%= ui_callout_box :error, accent: true, heading_level: :h3, title: "BPGUID Not Linked" do %>
+  <p><%= message %></p>
+<% end %>

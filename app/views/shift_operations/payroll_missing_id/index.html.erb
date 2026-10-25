@@ -1,0 +1,54 @@
+<%#
+  Who holds a paid sign-up in the year with no Paycom Employee ID to be paid
+  against. Two halves: no id at all, which someone has to fix, and the "0" that
+  clears a person to take paid shifts unpaid, which someone should confirm.
+%>
+<% content_for :title, "Missing Paycom Employee IDs" %>
+
+<%= hero_panel icon: "id-card", heading_level: :h1,
+               id: "shift-operations-payroll-missing-id-header",
+               title: "#{@year} Missing Paycom Employee IDs",
+               description: "People signed up for a paid shift in #{@year} whose Paycom Employee ID is missing or set to 0." do |panel| %>
+  <% panel.year_selector year: @year, min_year: year_floor %>
+<% end %>
+
+<%# Unguarded: who is listed is what an empty year most needs explained. %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Who is listed?</dt>
+    <dd>
+      Everyone signed up for a <%= @year %> shift on a position with a Paycom
+      employee code whose Paycom Employee ID is missing or set to 0. IDs and
+      codes are read as they stand today, not as they were in <%= @year %>.
+    </dd>
+    <dt>What does 0 mean?</dt>
+    <dd>It clears someone to take paid shifts without pay, so Payroll Export leaves them out.</dd>
+    <dt>Who can set an ID?</dt>
+    <dd>An Admin, on the person's External IDs page.</dd>
+  </dl>
+<% end %>
+
+<% if @report.empty? %>
+  <%# Two answers, not one: for months each year the current year has no paid
+      sign-ups at all, and "everyone has an ID" would be true of nobody. %>
+  <% if @report.anyone_signed_up %>
+    <%= ui_empty_state "Everyone signed up for a paid shift in #{@year} has a Paycom Employee ID.",
+                       icon: "user-check", icon_type: :solid %>
+  <% else %>
+    <%= ui_empty_state "No one is signed up for a paid shift in #{@year}.",
+                       icon: "calendar-xmark", icon_type: :solid %>
+  <% end %>
+<% else %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link shift_operations_payroll_missing_id_path(year: @year, format: :csv) %>
+    <% end %>
+  </div>
+
+  <%= render "section", id: "payroll-missing-id-missing", title: "No ID on File",
+                        rows: @report.missing,
+                        empty: "No one signed up for a paid shift in #{@year} is missing a Paycom Employee ID." %>
+  <%= render "section", id: "payroll-missing-id-unpaid", title: "Set to 0",
+                        rows: @report.unpaid,
+                        empty: "No one signed up for a paid shift in #{@year} is set to 0." %>
+<% end %>

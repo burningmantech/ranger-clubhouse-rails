@@ -1,0 +1,38 @@
+{
+  "family": "clubhouse3-web",
+  "requiresCompatibilities": ["FARGATE"],
+  "networkMode": "awsvpc",
+  "cpu": "1024",
+  "memory": "2048",
+  "runtimePlatform": {"cpuArchitecture": "ARM64", "operatingSystemFamily": "LINUX"},
+  "executionRoleArn": "arn:aws:iam::407444941814:role/clubhouse3-execution",
+  "taskRoleArn": "arn:aws:iam::407444941814:role/clubhouse3-task",
+  "containerDefinitions": [{
+    "name": "web",
+    "image": "407444941814.dkr.ecr.us-west-2.amazonaws.com/clubhouse3:latest",
+    "portMappings": [{"containerPort": 3000, "protocol": "tcp"}],
+    "stopTimeout": 45,
+    "linuxParameters": {"initProcessEnabled": true},
+    "environment": [
+      {"name": "RAILS_ENV", "value": "production"},
+      {"name": "TZ", "value": "America/Phoenix"},
+      {"name": "RAILS_MAX_THREADS", "value": "8"},
+      {"name": "AWS_REGION", "value": "us-west-2"},
+      {"name": "RANGER_DB_HOST_NAME", "value": "clubhouse3.cit7gvsupthj.us-west-2.rds.amazonaws.com"},
+      {"name": "RANGER_DB_DATABASE_NAME", "value": "clubhouse"},
+      {"name": "RANGER_DB_USER_NAME", "value": "clubhouse"},
+      {"name": "RANGER_DB_SSL_CA", "value": "/app/config/rds-global-bundle.pem"},
+      {"name": "RANGER_CLUBHOUSE_HOST", "value": "amazon.clubhouse3.dev"},
+      {"name": "RANGER_CLUBHOUSE_STORAGE_SERVICE", "value": "amazon"},
+      {"name": "RANGER_CLUBHOUSE_S3_BUCKET", "value": "clubhouse3-storage-407444941814"},
+      {"name": "RANGER_CLUBHOUSE_SES_MAIL_LIVE", "value": "true"},
+      {"name": "RANGER_CLUBHOUSE_MAIL_TEST_ADDRESS", "value": "mike+?@burg.me"}
+    ],
+    "secrets": [
+      {"name": "RAILS_MASTER_KEY", "valueFrom": "arn:aws:ssm:us-west-2:407444941814:parameter/clubhouse3/RAILS_MASTER_KEY"},
+      {"name": "RANGER_DB_PASSWORD", "valueFrom": "arn:aws:ssm:us-west-2:407444941814:parameter/clubhouse3/RANGER_DB_PASSWORD"}
+    ],
+    "logConfiguration": {"logDriver": "awslogs", "options": {
+      "awslogs-group": "/ecs/clubhouse3", "awslogs-region": "us-west-2", "awslogs-stream-prefix": "web"}}
+  }]
+}

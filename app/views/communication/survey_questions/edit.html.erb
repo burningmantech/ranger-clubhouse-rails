@@ -1,0 +1,8 @@
+<% content_for :title, "Edit Question" %>
+
+<%= hero_panel icon: "clipboard-question", heading_level: :h1, id: "question-form-header",
+               title: "Edit Question",
+               description: "Change what this question asks or how it is answered.",
+               back_to: [@survey.title, communication_survey_path(@survey, group: @group.id)] %>
+
+<%= render "form" %>

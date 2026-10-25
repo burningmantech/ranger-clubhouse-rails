@@ -1,0 +1,4 @@
+<%= form_with(model: model, url: url, builder: AppFormBuilder) do |f| %>
+  <%= render "common/error_summary", errors: model.errors.full_messages if model.errors.any? %>
+  <%= yield f %>
+<% end %>

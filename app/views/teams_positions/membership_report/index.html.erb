@@ -1,0 +1,76 @@
+<%#
+  Every active team with its member and manager counts. Pick a team to see who
+  is on it. The rosters themselves are never loaded here.
+%>
+<% content_for :title, "Membership Report" %>
+
+<%= hero_panel icon: "people-group", heading_level: :h1, id: "membership-report-header" do |panel| %>
+  <% panel.title do %>Membership Report<% end %>
+  <% panel.description do %>
+    Every active team, cadre, and delegation &mdash; who belongs to it, and who manages it.
+  <% end %>
+<% end %>
+
+<%# The legend, out of the hero -- and only while there are rows for it to read. %>
+<% if @total_count.positive? %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What is flagged?</dt>
+      <dd>A team with no one managing it is flagged below.</dd>
+    </dl>
+  <% end %>
+<% end %>
+
+<%# The totals ride in the filter bar's count slot rather than a stat-box row:
+    one summary line above the rows it describes, as the sibling drill-down
+    reports do. %>
+<% if @total_count.positive? %>
+  <%= filter_bar id: "membership-report-filters",
+                 chips: membership_report_filter_chips(@filter_params),
+                 clear_url: teams_positions_membership_report_path,
+                 count: membership_report_summary_count(shown: @teams.size,
+                                                        total: @total_count,
+                                                        memberships: @membership_count,
+                                                        people: @people_count,
+                                                        unmanaged: @missing_manager_count),
+                 url: teams_positions_membership_report_path do |f| %>
+    <%= form_row do %>
+      <%= f.select :type, membership_report_type_options,
+                   label: "Type", selected: @filter_params[:type],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :managers, membership_report_manager_options,
+                   label: "Managers", selected: @filter_params[:managers],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.text_field :title, label: "Team Name Contains",
+                       value: @filter_params[:title],
+                       width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :sort, membership_report_sort_options,
+                   label: "Sort By", selected: @filter_params[:sort],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @teams.any? %>
+  <div class="lg:w-3/4">
+    <% @teams.each do |team| %>
+      <% managers = @manager_counts[team.id].to_i %>
+      <%= ui_drill_down_row teams_positions_membership_report_team_path(team, @return_params),
+                            team.title,
+                            id: "team-#{team.id}",
+                            meta: membership_report_row_meta(@member_counts[team.id].to_i, managers),
+                            badges: membership_report_row_badges(managers) %>
+    <% end %>
+  </div>
+<% elsif @total_count.positive? %>
+  <%= ui_empty_state "No teams match the current filters.", icon: "filter", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No active teams were found.", icon: "people-group", icon_type: :solid %>
+<% end %>

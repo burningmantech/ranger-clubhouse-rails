@@ -1,0 +1,169 @@
+<%# /me/tickets/ticket — one decision: claim or bank your event ticket.        %>
+<%# Ported from port/components/ticket-info.hbs. Renders shared partials         %>
+<%# (status_chip, contact_ticketing) read-only; buttons PATCH documents/:id/status. %>
+<%
+  presenter = TicketOverviewPresenter.new(@ticket_package, @ticketing_info)
+  info = @ticketing_info
+
+  # Every regular ticket (Special Price Ticket / Staff Credential) the member owns.
+  tickets = @ticket_package.access_documents.select(&:regular_ticket?)
+  # The one that is actually in use (claimed or already submitted), if any.
+  using = presenter.ticket
+%>
+
+<%= hero_panel icon: "ticket", heading_level: :h1, id: "ticket-header",
+               title: "Event Ticket",
+               description: "Claim your ticket to use it this year, or bank it for a future event.",
+               back_to: ["Tickets & Provisions", me_tickets_path] %>
+
+<div class="flex items-center gap-2 mb-4">
+  <span class="text-body font-medium">Status:</span>
+  <%= render "status_chip", state: presenter.section_status(:ticket).state %>
+</div>
+
+<div class="space-y-4">
+  <% if using && using.status == AccessDocument::SUBMITTED %>
+    <%# --- Locked: already uploaded to Burning Man ticketing ----------------- %>
+    <%= ui_callout_box :info, icon: "lock", accent: true, title: "Your Ticket Is Locked In" do %>
+      <p class="mb-2">Your <%= using.type_label %> is uploaded to the Burning Man ticketing system.</p>
+      <p><strong>You can't change it from the Clubhouse anymore.</strong></p>
+    <% end %>
+    <%= render "contact_ticketing",
+               variant: :info,
+               message: "Need a change after your ticket is submitted? The Ranger Ticketing Team can help." %>
+
+  <% elsif tickets.size > 1 %>
+    <%# --- Multiple tickets: claim one (others auto-bank) or bank each ------- %>
+    <%= ui_callout_box :warning, icon: "circle-exclamation", accent: true, title: "Choose One Ticket to Use" do %>
+      <p class="mb-2">You earned more than one ticket. Pick the one you'll use this year.</p>
+      <p><strong>Only one ticket works per year. Claiming one automatically banks the rest, and banked tickets can't be
+        transferred.</strong></p>
+    <% end %>
+
+    <% if presenter.all_tickets_banked? %>
+      <%= ui_callout_box :secondary, icon: "box-archive" do %>
+        <strong>All your tickets are banked.</strong> Claim one below if you want to attend this year.
+      <% end %>
+    <% end %>
+
+    <%= ui_section "Your Tickets", icon: "ticket", icon_type: :solid do %>
+      <div class="grid grid-cols-1 gap-2">
+        <% tickets.each do |t| %>
+          <%
+            claimed = t.is_using?
+            status_label = if claimed
+                             "Claimed"
+                           elsif t.is_banked?
+                             "Banked"
+                           else
+                             "Available"
+                           end
+          %>
+          <div class="flex flex-col rounded-lg border border-line p-4">
+            <div class="flex items-start justify-between gap-1">
+              <div class="min-w-0">
+                <h3 class="<%= token_list "heading-title text-heading", {"text-success": claimed} %>"><%= t.type_label %> - <%= status_label %></h3>
+                <p class="text-body">Earned in <%= t.source_year %>. Expires after <%= t.expiry_date.year %>.</p>
+              </div>
+              <% if t.is_using? %>
+                <%= ui_badge "In use", :success, icon: "circle-check", icon_type: :solid %>
+              <% elsif t.is_banked? %>
+                <%= ui_badge "Banked", :secondary, icon: "box-archive", icon_type: :solid %>
+              <% else %>
+                <%= ui_badge "Ready to claim", :warning, icon: "circle-exclamation", icon_type: :solid %>
+              <% end %>
+            </div>
+            <ul class="text-body space-y-1">
+              <li>
+                <%= t.type == AccessDocument::SPT ? "Ticket price: #{dollars(info.spt_cost)}" : "Free of charge" %>
+              </li>
+              <% if t.type == AccessDocument::SPT && t.is_using? && !t.delivery_none? %>
+                <li>Getting it via <strong><%= t.delivery_method_label %></strong>.</li>
+              <% end %>
+            </ul>
+            <div class="mt-auto space-y-3">
+              <%= render "claim_buttons", ticket: t %>
+              <% if claimed %>
+                <%= button_link "Bank This Ticket", :secondary, me_tickets_document_status_path(t),
+                                method: :patch, params: { status: AccessDocument::BANKED },
+                                icon: "box-archive", icon_type: :solid %>
+              <% elsif t.is_qualified? %>
+                <%= button_link "Bank It", :secondary, me_tickets_document_status_path(t),
+                                method: :patch, params: { status: AccessDocument::BANKED },
+                                icon: "box-archive", icon_type: :solid %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <p class="text-body mt-3">Want none of these this year? Bank each ticket to set them all aside.</p>
+    <% end %>
+
+  <% elsif tickets.size == 1 %>
+    <% t = tickets.first %>
+    <% case t.status %>
+  <% when AccessDocument::CLAIMED %>
+      <%# --- Claimed: using it this year -------------------------------------- %>
+      <%= ui_callout_box :success, accent: true, title: "You're Using Your #{t.type_label}" do %>
+        <p class="mb-2">This is the ticket you'll use for this year's event.</p>
+        <% if t.type == AccessDocument::SPT && !t.delivery_none? %>
+          <p class="mb-2">You're getting it via <strong><%= t.delivery_method_label %></strong>. Change that below any
+            time before the deadline.</p>
+        <% end %>
+        <p><strong>Plans changed? You can bank it until the deadline. It
+          expires <%= mdy_format t.expiry_date, full: true %>.</strong></p>
+      <% end %>
+      <%= render "claim_buttons", ticket: t %>
+      <%= button_row do %>
+        <%= button_link "Bank This Ticket", :secondary, me_tickets_document_status_path(t),
+                        method: :patch, params: { status: AccessDocument::BANKED },
+                        icon: "box-archive", icon_type: :solid %>
+      <% end %>
+
+    <% when AccessDocument::BANKED %>
+      <%# --- Banked: set aside for a future year ------------------------------ %>
+      <%= ui_callout_box :secondary, icon: "box-archive", accent: true, title: "Your #{t.type_label} Is Banked" do %>
+        <p class="mb-2">You've set this ticket aside for a future year.</p>
+        <p><strong>Want to attend this year? Claim it before the deadline. It
+          expires <%= mdy_format t.expiry_date, full: true %>.</strong></p>
+      <% end %>
+      <%= render "claim_buttons", ticket: t %>
+
+    <% when AccessDocument::QUALIFIED %>
+      <%# --- Qualified: THE decision — claim or bank -------------------------- %>
+      <%= ui_callout_box :warning, icon: "circle-exclamation", accent: true, title: "You Earned a #{t.type_label}" do %>
+        <p class="mb-2">Decide now: claim it for this year's event, or bank it for a future year.</p>
+        <% if t.type == AccessDocument::SPT %>
+          <p class="mb-2">Claiming includes choosing how you get it: free pickup at Will Call, or mailed to you for a
+            fee.</p>
+        <% end %>
+        <p><strong>You can change this until the deadline. Your ticket
+          expires <%= mdy_format t.expiry_date, full: true %>.</strong></p>
+      <% end %>
+      <%= render "claim_buttons", ticket: t %>
+      <%= button_row do %>
+        <%= button_link "Bank for Later", :secondary, me_tickets_document_status_path(t),
+                        method: :patch, params: { status: AccessDocument::BANKED },
+                        icon: "box-archive", icon_type: :solid %>
+      <% end %>
+
+    <% else %>
+      <%# --- Unknown status: hand off to a human ------------------------------ %>
+      <%= render "contact_ticketing",
+                 message: "We can't tell the status of your ticket right now, so we don't want to guess. The Ranger Ticketing Team can sort this out for you." %>
+    <% end %>
+
+  <% else %>
+    <%# --- No ticket earned this year --------------------------------------- %>
+    <%= ui_callout_box :secondary, icon: "circle-info", accent: true, title: "No Ranger Ticket to Claim This Year" do %>
+      <p class="mb-2">You earned <%= credit_format(@ticket_package.credits_earned) %> credits last event.</p>
+      <ul class="space-y-1 mb-2">
+        <li>A Special Price Ticket needed <%= credit_format(info.spt_credits) %> credits.</li>
+        <li>A Staff Credential needed <%= credit_format(info.sc_credits) %> credits.</li>
+      </ul>
+      <p><strong>There's nothing to claim or bank here.</strong></p>
+    <% end %>
+  <% end %>
+
+  <%= render "wizard_nav", step: :ticket, presenter: presenter %>
+</div>

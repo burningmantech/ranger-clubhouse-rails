@@ -1,0 +1,2 @@
+module Me::AlertsHelper
+end

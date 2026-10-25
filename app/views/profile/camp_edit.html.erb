@@ -1,0 +1,40 @@
+<%# locals: (person:) %>
+<%= hero_panel icon: "campground", heading_level: :h1, id: "edit-camp-header",
+               title: "Edit Camp Name & Location",
+               back_to: ["Profile", profile_index_path] do |panel| %>
+  <% panel.description do %>
+    <% if viewing_self? %>
+      Tell us where you're camping on playa.
+    <% else %>
+      Update <%= person.callsign %>'s camp name and location.
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_callout_box :info do %>
+  <dl class="instruction-list mb-3">
+    <dt>What should I include?</dt>
+    <dd>Your camp's name, the street address, and street side (man-side, mountainside, plaza, etc.).</dd>
+    <dt>What if my camp location isn't known yet?</dt>
+    <dd><strong>No worries!</strong> Enter what you know now and update it later when placement is confirmed.</dd>
+    <dt>Example format:</dt>
+    <dd class="italic">"Camp Specificity, 9:15 &amp; D, Mountainside."</dd>
+  </dl>
+<% end %>
+
+<%= ui_section "Camp Information", icon: "tent", icon_type: :solid do %>
+  <%= ui_form person, profile_section_path(:camp) do |f| %>
+    <%= f.text_area :camp_location,
+                    label: "Camp Name and Location",
+                    rows: 4,
+                    cols: 80,
+                    maxlength: 200,
+                    data: input_counter_data
+    %>
+
+    <%= button_row do %>
+      <%= f.submit "Save" %>
+      <%= cancel_link profile_index_path %>
+    <% end %>
+  <% end %>
+<% end %>

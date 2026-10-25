@@ -1,0 +1,142 @@
+<%#
+  Check-ins that landed outside the window around their scheduled shift start.
+  Early and late are shown apart, each ordered by how far outside it landed --
+  the check-in that missed by three hours is the one worth reading about, and it
+  is nowhere near the top in check-in order.
+%>
+<% content_for :title, "Early / Late Check-Ins" %>
+
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1,
+               id: "timesheets-early-late-checkins-header",
+               title: "#{@year} Early / Late Check-Ins" do |panel| %>
+  <% panel.description do %>
+    Check-ins made outside the window around their scheduled shift.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%# Out of the hero. Captured once and drawn in both branches: the window is what
+    the empty state was measured against as much as the sections, and in the
+    populated branch it belongs under the stat row like every report's card. %>
+<% about_this_report = capture do %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What are the limits?</dt>
+      <%# Said as two named limits rather than folded into a sentence: either can
+          be switched off, and a sentence has to be rewritten to admit that where
+          a label only changes its value. %>
+      <dd>
+        Early limit: <strong><%= check_in_limit_words @report.early_period %></strong>.
+        Late limit: <strong><%= check_in_limit_words @report.late_period %></strong>.
+      </dd>
+      <dt>What is not counted?</dt>
+      <dd>
+        A ranger who came off another shift within the hour is not counted — that is a handoff,
+        not a late start.
+      </dd>
+    </dl>
+  <% end %>
+<% end %>
+
+<% if @report.empty? %>
+  <%= ui_empty_state check_in_empty_message(@report, @year),
+                     icon: "circle-check", icon_type: :solid %>
+  <%= about_this_report %>
+<% else %>
+  <%# Counts the filtered set, like the rollups below and the count in the bar:
+      three tiles totalling the whole year under a narrowed table would be
+      answering a question no one asked. Amber and red match the two sections'
+      own badges, so a tile and the table it counts are the same colour. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @early.size.to_s, "Early Check-Ins", variant: :warning,
+                    icon: "hourglass-start" %>
+    <%= ui_stat_box @late.size.to_s, "Late Check-Ins", variant: :error,
+                    icon: "hourglass-end" %>
+    <%# Not a third kind of flag: it is how the row was written, and it falls on
+        both halves. Uncoloured because it is the number that explains flags
+        rather than one that counts them. %>
+    <%= ui_stat_box @missing_entries.to_s, "Via Missing Entry Request",
+                    icon: "file-pen" %>
+  <% end %>
+
+  <%= about_this_report %>
+
+  <%= filter_bar id: "early-late-checkins-filters",
+                 chips: check_in_filter_chips(@filters, @report.positions, @year),
+                 clear_url: timesheets_early_late_checkins_path(year: @year),
+                 count: "Showing #{@early.size + @late.size} of #{pluralize(@report.entries.size, "check-in")}",
+                 actions: export_csv_link(timesheets_early_late_checkins_path(year: @year, format: :csv, **@filters)),
+                 url: timesheets_early_late_checkins_path do |f| %>
+    <%# Year-scoped page: without this, applying a filter snaps back to the
+        current year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= f.select :position_id, check_in_position_options(@report.positions),
+                 label: "Position", selected: @filters[:position_id],
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= form_row do %>
+      <%= f.text_field :callsign, label: "Callsign Contains",
+                       value: @filters[:callsign],
+                       width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :via, check_in_via_options(@via_counts),
+                   label: "Entered Via", selected: @filters[:via],
+                   width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%= render "section", kind: :early, entries: @early, period: @report.early_period %>
+  <%= render "section", kind: :late, entries: @late, period: @report.late_period %>
+
+  <%# The two rollups upstream kept in tabs. Closed: they answer "who does this
+      repeatedly", which is a second question, asked after the rows are read. %>
+  <div class="my-6 flex flex-col gap-3">
+    <%# Card variant, not inline: these are the only controls for two full
+        tables, so they should look like controls -- boxed, with a chevron --
+        not like a line of text. %>
+    <%= ui_disclosure "Totals by Ranger (#{@people.size})", variant: :card do %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Ranger" %>
+          <%= t.heading "Flagged", right: true %>
+          <%= t.heading "Positions" %>
+        <% end %>
+        <%= t.body do %>
+          <% @people.each do |person| %>
+            <%= t.row do %>
+              <%= t.row_header do %>
+                <%= person_display_link person.person, person.person_id %>
+              <% end %>
+              <%= t.cell person.total, right: true %>
+              <%= t.cell do %>
+                <div class="flex flex-col gap-y-1">
+                  <% person.positions.each do |position| %>
+                    <div><%= position.title %> (<%= position.total %>)</div>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= ui_disclosure "Totals by Position (#{@positions.size})", variant: :card do %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Position" %>
+          <%= t.heading "Flagged", right: true %>
+        <% end %>
+        <%= t.body do %>
+          <% @positions.each do |position| %>
+            <%= t.row do %>
+              <%= t.row_header position.title %>
+              <%= t.cell position.total, right: true %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

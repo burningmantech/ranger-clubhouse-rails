@@ -1,0 +1,48 @@
+<%# locals: (person:, tshirt_options:, long_sleeve_options:) %>
+<%= hero_panel icon: "shirt", heading_level: :h1, id: "edit-clothing-header",
+               title: "Edit Clothing Choices",
+               back_to: ["Profile", profile_index_path] do |panel| %>
+  <% panel.description do %>
+    <% if viewing_self? %>
+      Select your preferred shirt sizes for Ranger swag.
+    <% else %>
+      Update <%= person.callsign %>'s preferred shirt sizes.
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= ui_form person, profile_section_path(:clothing) do |f| %>
+  <%= ui_callout_box :info, title: "How Shirts Are Awarded", icon: "award" do %>
+    <dl class="instruction-list mb-3">
+      <dt>How do I earn a shirt?</dt>
+      <dd><strong>Shirts are awarded based on total on-duty volunteer hours, not credits.</strong> The t-shirt threshold is lower than the long-sleeve threshold, and requirements may vary year to year.</dd>
+      <dt>What if I meet the long-sleeve threshold?</dt>
+      <dd>If you meet the long-sleeve threshold, you earn both shirts.</dd>
+      <dt>Will my preferred sizes always be available?</dt>
+      <dd>We do our best to stock both t-shirt and long-sleeve options, but sometimes sizes may be unavailable due to vendor supply issues or running out during the event.</dd>
+      <dt>Can I get my shirts mailed?</dt>
+      <dd><strong>No.</strong> Earned shirts must be claimed from the Quartermaster on playa before the end of the event. We don't have the budget or resources to mail shirts.</dd>
+    </dl>
+  <% end %>
+
+  <%= ui_section "T-Shirt Preferences", icon: "shirt", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>Why a backup choice?</dt>
+      <dd>In case your first choice is unavailable, we'll use your backup selection.</dd>
+    </dl>
+
+    <div class="flex flex-col lg:flex-row gap-3 mb-3">
+      <%= f.select :tshirt_swag_id, tshirt_options, label: "T-Shirt Choice", width: "w-full lg:w-auto" %>
+      <%= f.select :tshirt_secondary_swag_id, tshirt_options, label: "Backup T-Shirt Choice", width: "w-full lg:w-auto" %>
+    </div>
+  <% end %>
+
+  <%= ui_section "Long Sleeve Preferences", icon: "shirt", icon_type: :solid do %>
+    <%= f.select :long_sleeve_swag_id, long_sleeve_options, label: "Long Sleeve Shirt Choice", width: "w-full lg:w-auto" %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Changes" %>
+    <%= cancel_link profile_index_path %>
+  <% end %>
+<% end %>

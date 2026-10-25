@@ -1,0 +1,23 @@
+<%# locals: (person:, person_pog:, form_path:, form_method:, submit_label:, show_delete:, year:) %>
+<%= ui_form(person_pog, form_path, method: form_method) do |f| %>
+  <%= form_row do %>
+    <%= f.select :pog, PersonPog::POG_LABELS.invert, { label: "Pog", required: true, include_blank: "Select a pog" } %>
+    <%= f.select :status, PersonPog::STATUS_LABELS.invert, { label: "Status", required: true, include_blank: "Select a status" } %>
+  <% end %>
+  <%= form_row do %>
+    <%= f.text_area :notes, label: "Notes (optional)", rows: 4, cols: 80 %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit submit_label %>
+    <%= button_link "Cancel", :secondary, person_pogs_path(person, year: year) %>
+    <% if show_delete %>
+      <%= delete_button person_pog_path(person, person_pog, year: year),
+                        "Delete",
+                        confirm_modal: {
+                          title: "Delete Pog",
+                          message: "Delete this pog? This cannot be undone."
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

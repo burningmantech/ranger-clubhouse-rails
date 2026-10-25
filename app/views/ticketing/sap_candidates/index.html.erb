@@ -1,0 +1,110 @@
+<%# Ticketing -> SAP Candidates. Port of the Ember vc/access-documents/waps
+    page ("Ranger SAP Candidates"), which drew a bare table and dumped every
+    sign-up inline, so one busy schedule pushed the rest of the row out of
+    reach. The two reasons a person is listed are now header counts, and the
+    schedule folds away.
+
+    The look-back year comes from the report class, which is also what the
+    query uses, so the column heading cannot drift away from the rows under it.
+
+    Upstream's companion "grant SAPs to everyone listed" action was not ported. %>
+<%= hero_panel icon: "ticket", heading_level: :h1, id: "ticketing-sap-candidates-header",
+               title: "SAP Candidates" do |panel| %>
+  <% panel.description do %>
+    Rangers who look like they still need a Setup Access Pass.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%# All three stay the default tint. A candidate list is routine — no one is
+      in trouble — so a coloured badge here would cry wolf. %>
+  <%= ui_stat_box number_with_delimiter(@total_count), "SAP Candidates" %>
+  <%= ui_stat_box number_with_delimiter(@with_ticket_count), "Holds a Ticket" %>
+  <%= ui_stat_box number_with_delimiter(@signed_up_count), "Signed Up, No Ticket" %>
+<% end %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Who lands on this list?</dt>
+    <dd>
+      <strong>Rangers with nothing that gets them in early.</strong> Everyone here
+      has volunteered since <%= @start_year %> or signed up for a
+      <%= Current.year %> shift, and they either hold a special price ticket or
+      have a sign-up with no ticket at all.
+    </dd>
+    <dt>Who never appears?</dt>
+    <dd>
+      Anyone already holding a SAP, and anyone holding a staff credential &mdash;
+      a credential is an event ticket and a SAP in one, so it already gets them in.
+    </dd>
+  </dl>
+<% end %>
+
+<% if @total_count.positive? %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= export_csv_link(ticketing_sap_candidates_path(format: :csv)) %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= ui_section "SAP Candidates", icon: "table-list", icon_type: :solid do %>
+  <% if @rows.empty? %>
+    <%= ui_empty_state "No Ranger appears to need a SAP right now. Nothing to do.",
+                       icon: "circle-check", icon_type: :solid %>
+  <% else %>
+    <%= ui_table do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Has SPT" %>
+        <%= t.heading "Years with Shifts Since #{@start_year}" %>
+        <%= t.heading "Sign-Ups This Year" %>
+      <% end %>
+
+      <%= t.body do %>
+        <% @rows.each do |row| %>
+          <%= t.row do %>
+            <%= t.row_header do %>
+              <%# Same treatment as the callsign link on the other ticketing pages. %>
+              <%= callsign_link row.person %>
+            <% end %>
+            <%= t.cell row.person.status %>
+            <%= t.cell do %>
+              <%= yes_no_badge row.has_spt %>
+              <% row.tickets.each do |ticket| %>
+                <div class="mt-1 text-stone-muted">
+                  <%= ticket.display_ref %> <%= ticket.short_type_label %> <%= ticket.status %>
+                </div>
+              <% end %>
+            <% end %>
+            <%= t.cell value_or_dash(row.years.join(", ")) %>
+            <%# Folded away by default: a full schedule can run a dozen lines,
+                which would bury every other row on the page. %>
+            <%= t.cell do %>
+              <% if row.schedule.any? %>
+                <%# No inline-flex on the summary: it drops the native
+                    disclosure triangle, leaving the count looking like plain
+                    bold text with nothing to say it opens. %>
+                <%= ui_disclosure pluralize(row.schedule.size, "sign-up"),
+                                  summary_class: "font-semibold text-heading" do %>
+                  <ul class="ms-4 list-disc">
+                    <% row.schedule.each do |signup| %>
+                      <li class="mt-1">
+                        <span class="font-semibold"><%= signup.begins_label %></span>
+                        <%= signup.position_title %>
+                        <%= signup.description %>
+                      </li>
+                    <% end %>
+                  </ul>
+                <% end %>
+              <% else %>
+                <%= value_or_dash(nil) %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

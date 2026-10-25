@@ -1,0 +1,33 @@
+<%# locals: (entry:, desired_position_options:) %>
+<%# Correction-request dialog (Ember Me::TimesheetReviewEdit opened with
+    @isMe=false from hq-timesheet-verification). Turbo-streamed into the
+    "modal" frame; also rendered inline by index for the
+    end-shift-and-submit-correction flow. Mirrors
+    Me::TimesheetController#update's param surface. %>
+<%= modal_dialog id: "hq-correction-modal", size: :lg, title: "Submit Timesheet Correction", frame: false do %>
+  <div class="mb-3">
+    The <strong><%= entry.position.title %></strong> entry on
+    <%= datetime_format entry.on_duty, entry.off_duty %>
+    lasted <%= hour_minute_words entry.duration %>.
+  </div>
+  <%# _top: the dialog lives in the "modal" turbo-frame — without this the
+      success redirect is trapped by the frame and the page never updates. %>
+  <%= ui_form(entry,
+              hq_shift_manage_submit_correction_path(shift_person, entry.id, **shift_context),
+              method: :patch, data: { turbo_frame: "_top" }) do |f| %>
+    <%= f.select :desired_position_id, desired_position_options,
+                 label: "Correct Position" %>
+    <%= form_row do %>
+      <%= f.datetime_field :desired_on_duty, label: "Correct Start Time",
+                           wrapper_class: "flex-1" %>
+      <%= f.datetime_field :desired_off_duty, label: "Correct End Time",
+                           wrapper_class: "flex-1" %>
+    <% end %>
+    <%= f.text_area :additional_notes,
+                    label: "Why does this entry need to be corrected?",
+                    help_text: "Provide a brief explanation, 1 to 3 sentences, and name the " \
+                               "shift partner or lead who can corroborate it.",
+                    maxlength: 1000 %>
+    <%= modal_form_footer f, submit: "Submit Correction" %>
+  <% end %>
+<% end %>

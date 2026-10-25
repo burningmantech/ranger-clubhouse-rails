@@ -1,0 +1,16 @@
+<%= hero_panel icon: "chart-simple", heading_level: :h1, id: "event-summary-header",
+               description: "Breakdown of your #{@year} volunteer hours and credits by event period and position.", back_to: back_to_timesheet_dashboard(@year) do |panel| %>
+  <% panel.title do %>Event Summary<% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box hour_format(@summary.total_duration), "TOTAL HOURS" %>
+  <%= ui_stat_box credit_format_short(@summary.total_credits), "CREDITS" %>
+  <%= ui_stat_box @position_summary.size, "POSITIONS" %>
+<% end %>
+
+<%= render partial: "common/event_summary_breakdown",
+           locals: { summary: @summary,
+                     position_summary: @position_summary,
+                     year: @year,
+                     whose: "Your" } %>

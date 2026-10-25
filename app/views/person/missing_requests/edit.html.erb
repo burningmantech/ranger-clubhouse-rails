@@ -1,0 +1,156 @@
+<%# safe_join, not interpolation: datetime_format returns markup, and a plain
+    string would print the tags in the header. %>
+<%= hero_panel icon: "file-circle-question", heading_level: :h1, id: "person-missing-request-edit-header",
+               description: safe_join([@entry.position.title, ", ", datetime_format(@entry.on_duty, @entry.off_duty, year: true)]),
+               back_to: ["#{@year} Timesheet", person_timesheets_path(@person, year: @year)] do |panel| %>
+  <% panel.title do %>
+    Missing Timesheet Request #<%= @entry.id %> &mdash; <%= @person.callsign %>
+  <% end %>
+<% end %>
+
+<% if @entry.status_approved? %>
+  <%= ui_callout_box :success, title: "Request Approved" do %>
+    Request has been approved. Review is not needed at this time.
+  <% end %>
+<% elsif @entry.status_rejected? %>
+  <%= ui_callout_box :error, title: "Request Rejected", icon: "xmark" do %>
+    Request was rejected. Review is not needed at this time.
+  <% end %>
+<% end %>
+
+<%= ui_section "Requested Shift", icon: "clock", icon_type: :solid do %>
+  <%= ui_table striped: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Time" %>
+      <%= t.heading "Duration" %>
+      <%= t.heading "Credits", right: true %>
+    <% end %>
+    <%= t.body do %>
+      <%= t.row do %>
+        <%= t.cell @entry.position.title %>
+        <%= t.cell datetime_format(@entry.on_duty, @entry.off_duty) %>
+        <%= t.cell hour_minute_words(@entry.duration, full: true) %>
+        <%= t.cell credit_format(@entry.credits), right: true %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render partial: "common/time_warnings",
+             locals: { warnings: @entry.time_warnings,
+                       start_time: @entry.on_duty,
+                       finish_time: @entry.off_duty,
+                       lead_in: "The date/times are outside the scheduled sign-up date ranges. This might indicate
+                                 the date/times were entered incorrectly by the person, or the wrong position was
+                                 selected:" } %>
+<% end %>
+
+<%= ui_section "Partner Shifts", icon: "user-group", icon_type: :solid do %>
+  <% partner_info = @entry.partner_info %>
+  <% if partner_info.present? %>
+    <%= ui_table striped: false, responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Partner" %>
+        <%= t.heading "Time" %>
+        <%= t.heading "Position" %>
+        <%= t.heading "Action" %>
+      <% end %>
+      <%= t.body do %>
+        <% partner_info.each do |partner| %>
+          <% partner = partner.with_indifferent_access %>
+          <%= t.row class: "align-middle" do %>
+            <%= t.cell partner[:callsign] %>
+            <% if partner[:on_duty].present? %>
+              <%= t.cell datetime_format(partner[:on_duty], partner[:off_duty]) %>
+              <%= t.cell partner[:position_title] %>
+            <% elsif partner[:person_id].present? %>
+              <%= t.cell colspan: 2 do %>
+                <span class="text-error">
+                  No partner shift was found within <%= TimesheetMissing::PARTNER_SHIFT_STARTS_WITHIN %> minutes
+                  of <%= datetime_format @entry.on_duty %>.
+                </span>
+              <% end %>
+            <% else %>
+              <%= t.cell colspan: 2 do %>
+                <span class="text-error">Callsign not found.</span>
+              <% end %>
+            <% end %>
+            <%= t.cell do %>
+              <% if partner[:person_id].present? %>
+                <%= button_link "View Timesheet", :secondary,
+                                person_timesheets_path(partner[:person_id], year: @year) %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="text-error">No shift partner name(s) stated.</div>
+  <% end %>
+<% end %>
+
+<%= ui_form @entry, person_missing_request_path(@person, @entry, year: @year), method: :patch do |f| %>
+  <%= ui_section "User & Timesheet Reviewer Notes", icon: "comment", icon_type: :solid do %>
+    <%= render partial: "common/timesheet_notes",
+               locals: { notes: @entry.notes, empty_message: "No notes have been entered." } %>
+    <%= f.text_area :additional_wrangler_notes,
+                    label: "New Note to #{@person.callsign} (your callsign & the time will automatically be added)",
+                    rows: 2 %>
+  <% end %>
+
+  <%= ui_section "Administration Notes (Not Shown to User)", icon: "user-shield", icon_type: :solid do %>
+    <%= render partial: "common/timesheet_notes",
+               locals: { notes: @entry.admin_notes, empty_message: "No administration notes have been entered." } %>
+    <%= f.text_area :additional_admin_notes,
+                    label: "New Admin Note (your callsign & the time will automatically be added)",
+                    rows: 2 %>
+  <% end %>
+
+  <%= ui_section "Review Decision", icon: "list-check", icon_type: :solid do %>
+    <%= f.collection_radio_buttons :review_status,
+                                   [["Missing Entry Request approved: #{@person.callsign} will still need to verify the new entry", TimesheetMissing::STATUS_APPROVED],
+                                    ["Missing Entry Request rejected", TimesheetMissing::STATUS_REJECTED],
+                                    ["Missing Request pending: awaiting review", TimesheetMissing::STATUS_PENDING]],
+                                   :last, :first,
+                                   { label: "Correction Status", layout: :vertical, label_position: :stacked } %>
+  <% end %>
+
+  <%= ui_section "New Timesheet Entry", icon: "calendar-plus", icon_type: :solid do %>
+    <dl class="instruction-list mb-3">
+      <dt>When is the entry created?</dt>
+      <dd>
+        Only when the correction status is set to Approved and the checkbox below is checked.
+        The request's notes are copied to the new entry for the audit trail.
+      </dd>
+    </dl>
+    <%= f.check_box :create_entry, label: "Create the timesheet entry on approval" %>
+    <%= form_row do %>
+      <%= f.datetime_field :new_on_duty, label: "On Duty", wrapper_class: "flex-1" %>
+      <%= f.datetime_field :new_off_duty, label: "Off Duty", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= f.select :new_position_id, @position_options, { label: "Position" } %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Request" %>
+    <% if @next_pending %>
+      <%= f.submit "Save & Review Next", name: "save_and_next", value: "1" %>
+    <% end %>
+    <%= cancel_button person_timesheets_path(@person, year: @year) %>
+    <%# Plain text, not datetime_format: a confirmation is carried in an
+        attribute and shown as text, so markup would appear as tags. %>
+    <% requested_times = [@entry.on_duty, @entry.off_duty].compact
+                                                          .map { |time| full_datetime_format(time) }
+                                                          .join(" to ") %>
+    <%= button_link "Delete Request", :error, person_missing_request_path(@person, @entry, year: @year),
+                    class: "ms-auto",
+                    data: confirm_modal(
+                      title: "Delete Missing Timesheet Request",
+                      message: "Delete the #{@entry.position.title} request for #{requested_times}? This cannot be undone.",
+                      confirm_label: "Delete Request",
+                      method: :delete,
+                      variant: :error
+                    ) %>
+  <% end %>
+<% end %>

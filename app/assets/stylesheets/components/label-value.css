@@ -1,0 +1,48 @@
+/*
+ * Label-Value List Component
+ * CSS Grid layout for semantic dl/dt/dd definition lists.
+ * Mobile: stacked (single column, label above value)
+ * Desktop (lg): side-by-side with configurable label width via --label-width
+ */
+
+/*
+ * Layered so a call site can override the grid. Unlayered, this beat every
+ * utility regardless of specificity: an lg:gap-x-4 on a .ui-label-value did
+ * nothing, so callers hand-rolled the whole grid instead of using the
+ * component.
+ */
+@layer components {
+    .ui-label-value {
+      display: grid;
+      grid-template-columns: 1fr;
+      row-gap: theme(spacing.1);
+    }
+
+    .ui-label-value dt {
+      @apply font-bold text-heading;
+    }
+
+    .ui-label-value dd {
+      margin: 0 0 theme(spacing.2) 0;
+    }
+
+    .ui-label-value dd:last-child {
+      margin-bottom: 0;
+    }
+
+    @media (width >= 1024px) {
+      .ui-label-value {
+        grid-template-columns: var(--label-width, auto) 1fr;
+        column-gap: theme(spacing.2);
+      }
+
+      .ui-label-value dt {
+        grid-column: 1;
+      }
+
+      .ui-label-value dd {
+        grid-column: 2;
+        margin-bottom: 0;
+      }
+    }
+}

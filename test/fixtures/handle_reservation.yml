@@ -1,0 +1,36 @@
+slur:
+  handle: "Testslur"
+  normalized_handle: "testslur"
+  reservation_type: "slur"
+  reason: "Reserved for testing"
+
+obscene:
+  handle: "Testobscenity"
+  normalized_handle: "testobscenity"
+  reservation_type: "obscene"
+  reason: "Reserved for testing"
+
+ranger_term:
+  handle: "Khaki"
+  normalized_handle: "khaki"
+  reservation_type: "ranger_term"
+  reason: ""
+
+phonetic_tango:
+  handle: "Tango"
+  normalized_handle: "tango"
+  reservation_type: "phonetic-alphabet"
+  reason: ""
+
+phonetic_charlie:
+  handle: "Charlie"
+  normalized_handle: "charlie"
+  reservation_type: "phonetic-alphabet"
+  reason: ""
+
+expiring:
+  handle: "Temporary"
+  normalized_handle: "temporary"
+  reservation_type: "uncategorized"
+  reason: "Expires in the past"
+  expires_on: <%= 1.year.ago.to_date.to_fs(:db) %>

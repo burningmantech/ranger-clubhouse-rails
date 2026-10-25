@@ -1,0 +1,180 @@
+<%# /me/tickets/sap — Setup Access Pass (SAP) decision page.                    %>
+<%# One decision: claim or release your own early-entry Setup Access Pass.      %>
+<%# A claimed Staff Credential acts as the SAP, so several states are           %>
+<%# informational (SC-provided) or point the member back to the ticket page.   %>
+<%
+  presenter = TicketOverviewPresenter.new(@ticket_package, @ticketing_info)
+  docs      = @ticket_package.access_documents
+
+  sap_doc = docs.find { |ad| ad.type == AccessDocument::SAP }
+  sc_doc  = docs.find(&:staff_credential?)
+
+  sap_submitted = sap_doc&.status == AccessDocument::SUBMITTED
+  sap_using     = sap_doc&.is_using?
+  sc_claimed    = sc_doc&.status == AccessDocument::CLAIMED
+
+  regular_tickets    = docs.select(&:regular_ticket?)
+  no_tickets_touched = regular_tickets.present? && regular_tickets.none? { |t| t.is_using? || t.is_banked? }
+
+  # Ember decision order, most specific first.
+  own_sap         = sap_doc.present? && !sc_claimed
+  sc_banked_nosap = sc_doc&.is_banked? && sap_doc.nil?
+  sc_is_sap       = sc_doc.present?
+  all_banked      = presenter.all_tickets_banked?
+
+  deadline = @ticketing_info.submit_date
+%>
+
+<%= hero_panel icon: "passport", heading_level: :h1, id: "sap-header",
+               title: "Setup Access Pass (SAP)",
+               description: "Your Setup Access Pass lets you, and only you, enter the event early.",
+               back_to: ["Tickets & Provisions", me_tickets_path] %>
+
+<%# What a SAP is not, out of the hero: the one thing every state below has in common. %>
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Is it a ticket?</dt>
+    <dd>No. A Setup Access Pass is not a ticket and not a vehicle pass.</dd>
+  </dl>
+<% end %>
+
+<% if own_sap %>
+  <%# ---- You have your own SAP document ---------------------------------- %>
+  <%= ui_section border: true do %>
+    <% if sap_using %>
+      <%= render "section_header",
+            title: "Your Setup Access Pass Is #{sap_submitted ? "Submitted" : "Claimed"}",
+            state: :decided, label: (sap_submitted ? "Submitted" : "Claimed") %>
+    <% else %>
+      <%= render "section_header",
+            title: "You Qualified for a Setup Access Pass",
+            state: :needs_decision, label: "Ready to Claim" %>
+    <% end %>
+
+    <% if sap_using %>
+      <%# Claimed / submitted: show when the member may enter. %>
+      <% if sap_doc.access_any_time %>
+        <p class="text-base text-body mb-3"><strong>You can enter the event at any time.</strong></p>
+      <% elsif sap_doc.access_date.present? %>
+        <p class="text-base text-body mb-3">
+          <strong>You can enter on or after <%= mdy_format sap_doc.access_date, full: true %> at 00:01.</strong>
+        </p>
+        <%= ui_callout_box :warning, accent: true, title: "Do Not Arrive Early" do %>
+          You will be turned away at the gate if you try to enter before that date and time. No exceptions.
+        <% end %>
+        <p class="text-base text-body mt-3">
+          Need to be on playa sooner for an operational reason? Contact your Cadre or Manager.
+        </p>
+      <% else %>
+        <%= render "contact_ticketing", message: "Your Setup Access Pass is claimed, but its entry date is missing. The ticketing team can fix this." %>
+      <% end %>
+
+      <% if sap_submitted %>
+        <%= ui_callout_box :info, icon: "paper-plane" do %>
+          <strong>Sent to Burning Man Ticketing.</strong> Nothing more to do here.
+        <% end %>
+      <% else %>
+        <p class="text-base text-body mt-4 mb-3">Change your mind? You can release your SAP if you no longer need early entry.</p>
+        <p class="text-base text-body mb-3">
+          <strong>You can claim it again any time<%= deadline ? " before #{full_datetime_format(deadline)}" : " before the deadline" %>.</strong>
+        </p>
+        <%= button_link "Release Setup Access Pass", :secondary, me_tickets_document_status_path(sap_doc),
+              method: :patch, params: { status: AccessDocument::QUALIFIED },
+              icon: "arrow-rotate-left", icon_type: :solid %>
+      <% end %>
+    <% else %>
+      <%# Qualified: offer to claim. %>
+      <p class="text-base text-body mb-3">Claim it to lock in early entry to the event.</p>
+      <p class="text-base text-body mb-3">
+        <strong>You can release it later<%= deadline ? " until #{full_datetime_format(deadline)}" : " before the deadline" %> if your plans change.</strong>
+      </p>
+      <%= button_link "Claim Setup Access Pass", :success, me_tickets_document_status_path(sap_doc),
+            method: :patch, params: { status: AccessDocument::CLAIMED },
+            icon: "circle-check", icon_type: :solid %>
+    <% end %>
+  <% end %>
+
+<% elsif sc_banked_nosap %>
+  <%# ---- Staff Credential banked, no SAP -------------------------------- %>
+  <%= ui_section border: true do %>
+    <%= render "section_header", title: "You Banked Your Staff Credential", state: :not_applicable, label: "Ask the Team" %>
+    <p class="text-base text-body mb-4">
+      <strong>Because your Staff Credential is banked, you have no Setup Access Pass right now.</strong>
+    </p>
+    <%= render "contact_ticketing",
+          variant: :secondary,
+          message: "Need a separate SAP for yourself or your significant others? The ticketing team can set one up." %>
+  <% end %>
+
+<% elsif sc_is_sap %>
+  <%# ---- Staff Credential acts as the SAP ------------------------------- %>
+  <%= ui_section border: true do %>
+    <%= render "section_header",
+          title: "Your Staff Credential Is Your Setup Access Pass",
+          state: (sc_doc.is_using? ? :decided : :locked),
+          label: (sc_doc.is_using? ? "Covered by SC" : "Claim your SC first") %>
+    <p class="text-base text-body mb-3">
+      You do not claim a separate SAP. Your Staff Credential already covers early entry.
+    </p>
+
+    <% if sc_doc.is_using? %>
+      <% if sc_doc.access_any_time %>
+        <p class="text-base text-body mb-3"><strong>You can enter the event at any time.</strong></p>
+      <% elsif sc_doc.access_date.present? %>
+        <p class="text-base text-body mb-3">
+          <strong>You can enter on or after <%= mdy_format sc_doc.access_date, full: true %> at 00:01.</strong>
+        </p>
+        <%= ui_callout_box :warning, accent: true, title: "Do Not Arrive Early" do %>
+          You will be turned away at the gate if you try to enter before that date and time. No exceptions.
+        <% end %>
+        <p class="text-base text-body mt-3">
+          Need to be on playa sooner for an operational reason? Contact your Cadre or Manager.
+        </p>
+      <% else %>
+        <%= render "contact_ticketing", message: "Your Staff Credential is claimed, but its entry date is missing. The ticketing team can fix this." %>
+      <% end %>
+    <% else %>
+      <%= ui_callout_box :info, accent: true, title: "Claim Your Staff Credential First" do %>
+        <p class="mb-3"><strong>Once you claim your Staff Credential, we can show your exact entry date.</strong></p>
+        <%= button_link "Go to Event Ticket", :primary, me_tickets_ticket_path, icon: "arrow-right", icon_type: :solid %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+<% elsif all_banked %>
+  <%# ---- All tickets banked --------------------------------------------- %>
+  <%= ui_section border: true do %>
+    <%= render "section_header", title: "You Banked All Your Tickets", state: :not_applicable, label: "Ask the Team" %>
+    <p class="text-base text-body mb-4">
+      <strong>You do not have a Setup Access Pass set up.</strong>
+    </p>
+    <%= render "contact_ticketing",
+          variant: :secondary,
+          message: "Still planning to Ranger this event and need a SAP even though you are not using your tickets? The ticketing team can help." %>
+  <% end %>
+
+<% elsif no_tickets_touched %>
+  <%# ---- Tickets untouched: claim/bank a ticket first ------------------- %>
+  <%= ui_section border: true do %>
+    <%= render "section_header", title: "Claim a Ticket First", state: :locked, label: "Locked" %>
+    <p class="text-base text-body mb-3">
+      Your Setup Access Pass unlocks once you have claimed or banked one of your event tickets.
+    </p>
+    <p class="text-base text-body mb-4"><strong>Come back here after you have handled your ticket.</strong></p>
+    <%= button_link "Go to Event Ticket", :primary, me_tickets_ticket_path, icon: "arrow-right", icon_type: :solid %>
+  <% end %>
+
+<% else %>
+  <%# ---- No SAP and no Staff Credential: likely a mistake --------------- %>
+  <%= ui_section border: true do %>
+    <%= render "section_header", title: "We Can't Find Your Setup Access Pass", state: :not_applicable, label: "Ask the Team" %>
+    <p class="text-base text-body mb-4">
+      <strong>This is most likely a mistake.</strong> Every returning Ranger in good standing qualifies for a
+      Setup Access Pass, with early entry from Thursday at 00:01.
+    </p>
+    <%= render "contact_ticketing",
+          message: "We can't find a Setup Access Pass on your record. Let the ticketing team know so they can look into it." %>
+  <% end %>
+<% end %>
+
+<%= render "wizard_nav", step: :sap, presenter: presenter %>

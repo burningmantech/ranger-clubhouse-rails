@@ -1,0 +1,9 @@
+<%# locals: (step:,facts:)%>
+<p><b>Not available yet.</b></p>
+<div class="mt-1">
+  <% if facts.alpha_shift_publish_date.present? %>
+    Opens: <b><%= month_day_format(facts.alpha_shift_publish_date) %> after noon Pacific</b><br>
+  <% end %>
+  <span class="text-stone-muted">OR Wednesday after you pass training (whichever is later)</span>
+</div>
+<div class="mt-2"><%= fa_icon "calendar-days", :solid %> Alpha shifts: Sat–Tue only</div>

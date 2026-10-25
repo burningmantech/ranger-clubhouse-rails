@@ -1,0 +1,89 @@
+<%#
+  Ticketing > Statistics.
+
+  Ported from the Ember vc/access-documents/statistics page, which drew the same
+  counts as eleven one-row tables. @statistics comes from TicketingStatistics,
+  which does every count; this template only decides how they look.
+
+  The four hero counts are people. Everything in the cards is documents. The two
+  sections at the foot are people again.
+%>
+<% people = @statistics[:people] %>
+<% sapso = @statistics[:sapso] %>
+<% provisions = @statistics[:provisions] %>
+
+<%= hero_panel icon: "chart-simple", heading_level: :h1, id: "ticketing-statistics-header",
+               description: "Where every ticket, pass, and credential stands right now." do |panel| %>
+  <% panel.title do %>Ticketing Statistics<% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%# All four stay the default tint. Most people not having claimed yet is
+      ordinary for most of the year, so an amber badge would cry wolf. %>
+  <%= ui_stat_box number_with_delimiter(people[:claimed]), "Claimed a Ticket" %>
+  <%= ui_stat_box number_with_delimiter(people[:unclaimed]), "Nothing Claimed Yet" %>
+  <%= ui_stat_box number_with_delimiter(people[:banked]), "Banked Everything" %>
+  <%= ui_stat_box number_with_delimiter(people[:submitted]), "Submitted" %>
+<% end %>
+
+<%# Every explanation on the page, the two sections' own included: the body
+    below is numbers only. %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What do the numbers count?</dt>
+    <dd>The four counts above are people. The cards below are documents.</dd>
+    <dt>Who do the four counts at the top describe?</dt>
+    <dd>
+      People holding a special price ticket or a staff credential, counted once each
+      no matter how many they hold.
+    </dd>
+    <dt>Which year is this?</dt>
+    <dd>These numbers describe right now &mdash; they are not tied to a year.</dd>
+    <dt>What does unclaimed mean?</dt>
+    <dd>The person earned the document but has not claimed it yet. Its status is &ldquo;qualified&rdquo;.</dd>
+    <dt>What does submitted mean?</dt>
+    <dd>The document has been sent to the ticket vendor.</dd>
+    <dt>Why do only two cards count banked documents?</dt>
+    <dd>Only special price tickets and staff credentials can be saved for a later year.</dd>
+    <dt>What are significant other setup access passes?</dt>
+    <dd>Setup access passes held on behalf of a partner.</dd>
+    <dt>What do the Provisions counts cover?</dt>
+    <dd>Meal passes, shower passes, and event radios. Each count is people, not passes.</dd>
+  </dl>
+<% end %>
+
+<%= ui_section "Tickets, Passes, and Credentials", icon: "ticket", icon_type: :solid do %>
+  <div class="two-column-lg">
+    <% @statistics[:types].each do |type_count| %>
+      <%= render "pipeline_card", type_count: type_count %>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-x-4">
+  <%= ui_section "Significant Other Setup Access Passes", icon: "users", icon_type: :solid do %>
+    <%# Three columns at every width: one tile per row turns three small numbers
+        into a screenful of scrolling on a phone. %>
+    <div class="grid grid-cols-3 gap-2">
+      <%= ui_stat_box number_with_delimiter(sapso[:people]), "People Holding One",
+                      icon: "users", icon_type: :solid %>
+      <%= ui_stat_box number_with_delimiter(sapso[:claimed]), "Claimed",
+                      variant: :success, icon: "circle-check", icon_type: :solid %>
+      <%= ui_stat_box number_with_delimiter(sapso[:submitted]), "Submitted",
+                      icon: "paper-plane", icon_type: :solid %>
+    </div>
+  <% end %>
+
+  <%= ui_section "Provisions", icon: "utensils", icon_type: :solid do %>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+      <%= ui_stat_box number_with_delimiter(provisions[:earned]), "Earned",
+                      icon: "award", icon_type: :solid %>
+      <%= ui_stat_box number_with_delimiter(provisions[:allocated]), "Allocated",
+                      icon: "hand-holding-heart", icon_type: :solid %>
+      <%= ui_stat_box number_with_delimiter(provisions[:both]), "Both",
+                      icon: "layer-group", icon_type: :solid %>
+      <%= ui_stat_box number_with_delimiter(provisions[:banked]), "Banked",
+                      variant: :warning, icon: "piggy-bank", icon_type: :solid %>
+    </div>
+  <% end %>
+</div>

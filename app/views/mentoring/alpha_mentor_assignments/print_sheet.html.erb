@@ -1,0 +1,63 @@
+<%#
+  The worksheet on paper, matching upstream's print view: the filtered rows,
+  with the mentors and result read out rather than editable. Portrait letter
+  with 0.5in margins comes free from layouts/print, so this view declares no
+  page rules of its own.
+%>
+<% content_for :title, "#{@year} Alpha Mentor Assignments" %>
+
+<div class="print:hidden mb-4">
+  <%= back_to "Mentor assignments", mentoring_alpha_mentor_assignments_path(@back_params) %>
+  <p class="text-stone-muted mt-1">
+    Use your browser's print command. This message and the navigation are left off the paper.
+  </p>
+</div>
+
+<%# .alpha-sheet is the house paper surface -- fixed ink-on-white, 11pt, and a
+    bordered page preview on screen. Reused rather than forked, the way the
+    Alpha Pods sheet reuses it: a print view styled with theme utilities comes
+    out light-grey-on-white and prints as very nearly nothing. data-theme pins
+    the shared table component to light colours on that white paper. %>
+<section class="alpha-sheet" data-theme="light">
+  <h1 class="text-2xl font-semibold"><%= @year %> Alpha Mentor Assignments</h1>
+  <p class="mb-4">
+    Showing <%= pluralize(@entries.size, "Alpha") %> of <%= @total %>.
+  </p>
+
+  <% if @entries.empty? %>
+    <%= ui_empty_state "No Alphas matched those filters." %>
+  <% else %>
+    <%= ui_table full_width: true, striped: false, responsive: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Name" %>
+        <%= t.heading "Mentor Shift" %>
+        <%= t.heading "Mentor 1" %>
+        <%= t.heading "Mentor 2" %>
+        <%= t.heading "Mentor 3" %>
+        <%= t.heading "Result" %>
+      <% end %>
+      <%= t.body do %>
+        <% @entries.each do |entry| %>
+          <%= t.row do %>
+            <%= t.row_header entry.person.callsign %>
+            <%= t.cell entry.person.desired_full_name %>
+            <%= t.cell do %>
+              <% if entry.alpha_slots.empty? %>
+                &mdash;
+              <% else %>
+                <% entry.alpha_slots.each do |slot| %>
+                  <div><%= alpha_mentor_slot_label(slot) %></div>
+                <% end %>
+              <% end %>
+            <% end %>
+            <% AlphaMentorAssignment::MENTOR_SLOTS.times do |index| %>
+              <%= t.cell entry.mentors.dig(index, :callsign) || "—" %>
+            <% end %>
+            <%= t.cell mentor_result_label(entry.status) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</section>

@@ -1,0 +1,142 @@
+<% content_for :title, "#{@training.title} Untrained People" %>
+
+<%= hero_panel icon: "user-xmark", heading_level: :h1,
+               id: "training-untrained-people-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> &mdash; Untrained People<% end %>
+  <% panel.description do %>
+    Who signed up for a shift that requires <%= @training.title %> but is not trained yet.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "#{@year} Sessions", training_path(training_slug, year: @year) %>
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2008, skip_pandemic: true %>
+<% end %>
+
+<% if @report.no_positions %>
+  <%= ui_callout_box :warning do %>
+    <%= @training.title %> has no positions that require it, so there are no shift sign-ups to
+    check. The position is most likely still being set up.
+  <% end %>
+<% elsif @report.no_sessions %>
+  <%= ui_empty_state "No #{@training.title} sessions have been scheduled for #{@year} yet, so there is no training to sign up for.",
+                     icon: "calendar-days", icon_type: :solid %>
+<% elsif @report.no_shifts %>
+  <%= ui_empty_state "No shifts requiring #{@training.title} have been scheduled for #{@year} yet, so there is nothing to check against.",
+                     icon: "calendar-days", icon_type: :solid %>
+<% elsif @report.people.empty? %>
+  <%= ui_empty_state "Everyone signed up for a #{@year} shift has #{@training.title} passed or on their schedule. Nothing to chase.",
+                     icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%# Season totals: the whole report, not the filtered view. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @report.people.size.to_s, "People", variant: :warning %>
+    <%= untrained_people_blocker_stat_boxes @blocker_counts %>
+  <% end %>
+
+  <%# The legend for the two blockers, out of the hero. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Which blocker needs chasing?</dt>
+      <dd>
+        <strong>No training sign-up</strong> needs chasing; <strong>not passed (yet)</strong> may
+        just be a session that has not happened.
+      </dd>
+    </dl>
+  <% end %>
+
+  <%# Only the copy button lives here now, and it has nothing to copy from an
+      empty list -- the wrapper's my-4 would otherwise be a blank band. %>
+  <% if @people.any? %>
+    <div class="my-4">
+      <%= button_row do %>
+        <%# The copy list follows the active filter, so either blocker group --
+            or everyone -- can be emailed from the same button. %>
+        <%= button_action "Copy #{pluralize(@people.size, "Email")}", :secondary, controller: "copy-to-clipboard",
+                          icon: "copy", icon_type: :regular,
+                          data: { action: "copy-to-clipboard#copy",
+                                  copy_to_clipboard_content_value: @people.map(&:email).uniq.join(", "),
+                                  copy_to_clipboard_success_class: "btn-copy-success" } %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= filter_bar id: "untrained-people-filters",
+                 chips: untrained_people_filter_chips(@filter_params, training_slug, @year),
+                 clear_url: training_untrained_people_path(training_slug, year: @year),
+                 count: "Showing #{@people.size} of #{pluralize(@report.people.size, "person")}",
+                 # The CSV is the whole report, not the narrowed page, so the label
+                 # says so -- it sits beside chips that narrow the view.
+                 actions: export_csv_link(training_untrained_people_path(training_slug, year: @year, format: :csv),
+                                          "Export All to CSV"),
+                 url: training_untrained_people_path(training_slug) do |f| %>
+    <%# The year rides the filter form -- a GET form replaces the query string,
+        so without this every Apply would bounce the page back to this year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :blocker, untrained_people_blocker_options(@blocker_counts),
+                   label: "Blocker", selected: @filter_params[:blocker],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.text_field :callsign, label: "Callsign Contains",
+                       value: @filter_params[:callsign],
+                       width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "People" do %>
+    <% if @people.empty? %>
+      <%= ui_empty_state "No one matched the current filters.",
+                         icon: "magnifying-glass", icon_type: :solid %>
+    <% else %>
+      <%# A pending trainer's "session" is their trainer slot, which the session
+          page rejects -- only real sessions get a link. %>
+      <% session_position_ids = Training.session_position_ids(@training.id) %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Blocker" %>
+          <%= t.heading "Email" %>
+          <%= t.heading "Training Session" %>
+          <%= t.heading "Shift Sign-Ups" %>
+        <% end %>
+        <%= t.body do %>
+          <% @people.each do |row| %>
+            <%= t.row do %>
+              <%= t.row_header do %>
+                <%= person_display_link row.person, row.person.id %>
+                <span class="block text-sm text-stone-muted"><%= row.person.desired_full_name %></span>
+              <% end %>
+              <%= t.cell do %><%= untrained_people_blocker_badge row.blocker %><% end %>
+              <%= t.cell email_link_or_dash(row.email) %>
+              <%= t.cell do %>
+                <% if row.training_slot %>
+                  <div class="flex flex-col gap-y-1">
+                    <%= training_session_link row.training_slot, year: @year,
+                                              linkable: session_position_ids.include?(row.training_slot.position_id) %>
+                  </div>
+                <% else %>
+                  <span class="text-stone-muted">&mdash;</span>
+                <% end %>
+              <% end %>
+              <%= t.cell do %>
+                <div class="flex flex-col gap-y-1">
+                  <% row.shifts.each do |shift| %>
+                    <div>
+                      <span class="whitespace-nowrap tabular-nums"><%= datetime_format shift.begins,
+                                                                                       tz: shift.timezone,
+                                                                                       tz_abbr: shift.timezone_abbr %></span>
+                      &middot; <%= shift.description %>
+                      <span class="text-stone-muted">(<%= shift.position.title %>)</span>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

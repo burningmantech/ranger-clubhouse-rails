@@ -1,0 +1,13 @@
+<%# locals: (application:, review:, checks:) %>
+<% if review.post_decision? %>
+  <p class="mb-3"><strong><%= application.status_label %>.</strong> Use Adjust Status if this outcome needs to change.</p>
+  <%= button_link "Adjust Status", :ghost, dialog_vc_application_path(application, dialog: "adjust_status"),
+                  data: { turbo_frame: "modal" } %>
+<% else %>
+  <ul class="flex flex-wrap gap-2 mb-3" aria-label="Review check recap">
+    <% checks.each do |check, anchor| %>
+      <li><%= vc_check_link check, anchor %></li>
+    <% end %>
+  </ul>
+  <%= render "status_actions", application: application %>
+<% end %>

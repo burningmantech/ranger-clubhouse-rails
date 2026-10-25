@@ -1,0 +1,52 @@
+# Test fixtures for PersonIntake model (table: person_intake)
+#
+# One PNV -- prospective_ranger -- carries the full intake history across years/teams
+# so scenarios connect coherently (see .scratch/unified-flagging/PRD.md and
+# port/api/Intake.php buildPnvEntry). prospective_ranger already has two "pass" mentor
+# shifts for 2024 in person_mentor.yml (mentee_passed, mentee_second_mentor); the ranks
+# below build on that same 2024 year. Current test year is 2026 (matches the
+# `travel_to Time.zone.local(2026, 4, 16, ...)` convention used across person/*
+# controller tests), so the black-flag banner scenario lives in the 2026 row.
+#
+# Rank scale: 1 Green (above average), 2 Normal (average), 3 Yellow (concern),
+# 4 FLAG (highly problematic; personnel_rank 4 in the current year = black flag).
+
+# 2023: earliest intake year, no ranks assigned yet -- notes-only (see
+# prospective_personnel_note_2023 in person_intake_note.yml). Covers the
+# "no ranks at all" scenario.
+prospective_ranger_2023:
+  person: prospective_ranger
+  year: 2023
+  created_at: 2023-09-05 10:00:00
+  updated_at: 2023-09-05 10:00:00
+
+# 2024: RRN rank set first (normal), Mentor rank set after the Alpha shift pass
+# recorded in person_mentor.yml's mentee_passed/mentee_second_mentor (both "pass").
+# Covers rank 1 (mentor_rank) and rank 2 (rrn_rank).
+prospective_ranger_2024:
+  person: prospective_ranger
+  year: 2024
+  mentor_rank: 1
+  rrn_rank: 2
+  created_at: 2024-08-10 09:00:00
+  updated_at: 2024-08-27 18:30:00
+
+# 2025: VC raises a concern. Covers rank 3 (vc_rank).
+prospective_ranger_2025:
+  person: prospective_ranger
+  year: 2025
+  vc_rank: 3
+  created_at: 2025-06-10 11:00:00
+  updated_at: 2025-06-10 11:00:00
+
+# 2026 (current test year): two Personnel concern notes escalate to a FLAG.
+# Covers rank 4 (personnel_rank) AND the black-flag banner scenario -- personnel_rank
+# == 4 in Current.year. Row created when the first note was logged (rank still nil),
+# then updated when the rank changed to 4 (see prospective_personnel_rank_change_2026
+# log note in person_intake_note.yml).
+prospective_ranger_2026:
+  person: prospective_ranger
+  year: 2026
+  personnel_rank: 4
+  created_at: 2026-06-01 08:00:00
+  updated_at: 2026-06-16 09:15:00

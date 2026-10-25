@@ -1,0 +1,33 @@
+<%# Shared missing timesheet request list — self-serve at /me, third person at
+    /hq (see the TimesheetConcern contract for subject, voice, and paths). %>
+<%= hero_panel icon: "clock", heading_level: :h1, id: "missing-requests-header",
+               title: "Missing Timesheet Requests",
+               back_to: (timesheet_self_serve? ? back_to_timesheet_dashboard : back_to("Timesheet", timesheet_return_path)) %>
+
+<div class="mt-4 mb-2">
+  <%= button_link "Add Missing Timesheet Request", :primary, timesheet_new_missing_request_path %>
+</div>
+
+<% if @missing_requests.any? %>
+  <% if @unapproved_requests.any? %>
+    <%= ui_section "Pending and Rejected Requests" do %>
+      Showing <%= pluralize @unapproved_requests.length, "request" %>
+      <% @unapproved_requests.each do |entry| %>
+        <%= render partial: "common/missing_requests/entry", locals: { entry: } %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @approved_requests.any? %>
+    <%= ui_section "Approved Requests" do %>
+      Showing <%= pluralize @approved_requests.length, "request" %>
+      <% @approved_requests.each do |entry| %>
+        <%= render partial: "common/missing_requests/entry", locals: { entry: } %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <div class="mt-4">
+    No missing timesheet requests have been submitted.
+  </div>
+<% end %>

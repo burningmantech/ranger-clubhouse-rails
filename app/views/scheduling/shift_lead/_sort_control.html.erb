@@ -1,0 +1,31 @@
+<%# locals: (section:, title:, filter_params:) %>
+<%#
+  One roster's sort order.
+
+  A sort per roster rather than one for the page: the dirt roster is the long
+  one a shift lead scans by callsign, while command staff is two dozen people
+  who read best in position order. Each control changes only its own roster.
+
+  An action-less GET, like the shift picker: the ordered page is a real URL that
+  survives a reload, a back button and the Print button. Everything the page is
+  currently showing rides along as hidden fields -- including the OTHER two
+  sorts, so re-ordering one roster does not reset the others.
+%>
+<% key = :"sort_#{section}" %>
+
+<%= form_tag false, method: :get, data: { controller: "form" },
+             class: "flex-center-gap-2" do %>
+  <%= shift_lead_carried_fields shift_lead_all_params(filter_params), except: [key] %>
+  <%# The roster's name is in the label but not on screen: three controls all
+      reading "Sort by" are one undifferentiated list in a screen reader's form
+      rotor, and picking the wrong one silently re-orders a roster the reader is
+      not looking at. Sighted readers have the heading directly above instead. %>
+  <%= label_tag key, safe_join(["Sort by", tag.span(" #{title}", class: "sr-only")]),
+                class: "text-sm text-stone-muted whitespace-nowrap" %>
+  <%= select_tag key, options_for_select(Scheduling::ShiftLeadHelper::SORT_LABELS.invert.to_a,
+                                         filter_params[key]),
+                 class: "#{AppFormBuilder::SELECT_CLASSES}",
+                 data: { action: "change->form#submit" } %>
+  <%# The select auto-submits, so this only ever fires without JavaScript. %>
+  <noscript><%= submit_button "Sort" %></noscript>
+<% end %>

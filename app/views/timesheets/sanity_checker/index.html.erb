@@ -1,0 +1,100 @@
+<%#
+  The triage board: eight checks grouped by who acts on them, each drilling
+  into its own page. Checks that found nothing drop to the bottom rather than
+  disappearing -- a quiet check must not read as a removed one.
+%>
+<% content_for :title, "Timesheet Sanity Checker" %>
+
+<%= hero_panel icon: "stethoscope", heading_level: :h1,
+               id: "sanity-checker-header",
+               title: "#{@year} Timesheet Sanity Checker" do |panel| %>
+  <% panel.description do %>
+    Timesheet entries that look wrong, grouped by what to do about them.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: year_floor, skip_pandemic: true %>
+<% end %>
+
+<%# Three numbers, each counting one kind of thing. Rangers and entries are
+    never added together, and neither total includes the credits check --
+    which has no number here at all, see the row below. %>
+<%= ui_stat_row do %>
+  <%= ui_stat_box @summary.rangers_to_contact.to_s, "Rangers to Contact",
+                  variant: @summary.rangers_to_contact.zero? ? :success : :error,
+                  icon: "phone" %>
+  <%= ui_stat_box @summary.entries_to_review.to_s, "Entries to Review",
+                  variant: @summary.entries_to_review.zero? ? :success : :warning,
+                  icon: "magnifying-glass" %>
+  <%= ui_stat_box "#{@summary.clear_count} of #{@summary.checked_count}", "Checks Clear",
+                  variant: @summary.clear_count == @summary.checked_count ? :success : :secondary,
+                  icon: "circle-check" %>
+<% end %>
+
+<%# Each band with the checks in it that found something. A band whose every
+    check came back clean is left out: its rows are already waiting under Clear
+    below, and an empty heading promising work that is not there is worse than
+    no heading. The card and the board both read this. %>
+<% bands = TimesheetSanityCheckReport::BANDS.filter_map do |band|
+     keys = TimesheetSanityCheckReport.keys_in_band(band)
+            .select { |key| @summary.counts.fetch(key, 1).positive? }
+     [timesheet_check_band_meta(band), keys] if keys.any?
+   end %>
+
+<%# A band's title is an action, so the card says what is under each one that
+    is on the board. The credits check is never clear, so there is always one. %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <% bands.each do |meta, _keys| %>
+      <dt>What is under &ldquo;<%= meta[:title] %>&rdquo;?</dt>
+      <dd><%= meta[:what] %></dd>
+    <% end %>
+  </dl>
+<% end %>
+
+<div class="lg:w-3/4 flex flex-col gap-6">
+  <% bands.each do |meta, keys| %>
+    <section class="flex flex-col gap-2">
+      <div class="border-b border-line pb-1">
+        <h2 class="heading-section text-heading"><%= meta[:title] %></h2>
+      </div>
+
+      <% keys.each do |key| %>
+        <% check = timesheet_check_meta(key) %>
+        <% count = @summary.counts[key] %>
+        <%= ui_drill_down_row timesheet_check_path(key, @year), check[:label],
+                              icon: "arrow-right",
+                              meta: check[:summary],
+                              badges: [count ? timesheet_check_badge(key, count, size: "base") : nil] do %>
+          <% unless count %>
+            <%# The one check with no number. Pricing every entry of the year
+                against the credit table is the most expensive thing this
+                report does, and paying for it on every load of every year to
+                put one more figure on the board is not worth it. %>
+            <span class="text-sm text-stone-subtle">
+              Open to check — this one is counted when you look at it.
+            </span>
+          <% end %>
+        <% end %>
+      <% end %>
+    </section>
+  <% end %>
+
+  <% clear = @summary.counts.select { |_, count| count.zero? }.keys %>
+  <% if clear.any? %>
+    <section class="flex flex-col gap-2">
+      <div class="border-b border-line pb-1">
+        <h2 class="heading-section text-heading">Clear</h2>
+        <p class="text-sm text-stone-muted">
+          <%= pluralize(clear.size, "check") %> found nothing for <%= @year %>.
+        </p>
+      </div>
+
+      <% clear.each do |key| %>
+        <% check = timesheet_check_meta(key) %>
+        <%= ui_drill_down_row timesheet_check_path(key, @year), check[:label],
+                              class: "opacity-75",
+                              meta: check[:summary],
+                              badges: [timesheet_check_badge(key, 0, size: "base")] %>
+      <% end %>
+    </section>
+  <% end %>
+</div>

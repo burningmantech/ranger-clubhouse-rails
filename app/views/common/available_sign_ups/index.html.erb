@@ -1,0 +1,32 @@
+<%# locals: (back_link:, description_text:, sign_ups_position_path_builder:) %>
+<%= hero_panel icon: "calendar-plus", heading_level: :h1, id: "available-sign-ups-header",
+               description: "#{description_text}", back_to: back_link do |panel| %>
+  <% panel.title do %><%= @is_current_year ? "Available Sign-Ups" : "#{@year} Sign-Ups" %>
+  <% end %>
+<% end %>
+
+<% if @positions.any? %>
+  <div class="text-lg">
+    Showing <%= pluralize @positions.size, "position" %>
+  </div>
+  <div class="lg:w-3/4">
+    <% @positions.each do |position| %>
+      <% no_signups_allowed = prevent_training_signup?(position.id) %>
+      <%= ui_drill_down_row sign_ups_position_path_builder.call(position.id, year: @year), position.title,
+                            meta: pluralize(position.slot_count, "shift"),
+                            badges: (if position.sign_ups.positive?
+                                       ui_badge pluralize(position.sign_ups, "sign-up"), :success, size: "base"
+                                     end) do %>
+        <% if no_signups_allowed %>
+          <div class="text-error">
+            Complete the Online Course to sign up. Sessions are listed for preview only.
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="mt-4 text-error">
+    No available sign-ups were found for year <%= @year %>.
+  </div>
+<% end %>

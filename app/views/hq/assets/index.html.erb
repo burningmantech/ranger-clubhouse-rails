@@ -1,0 +1,40 @@
+<%# HQ assets page (Ember port/assets.hbs) — both sections render the shared
+    AssetTable port (common/assets/_table). Checkout gates on the radio
+    agreement exactly like the shift-manage Radios & Gear section; the
+    concern's checkout guard chain handles everything past the form. %>
+<%= hero_panel icon: "boxes-stacked", heading_level: :h1, id: "hq-assets-header",
+               title: "#{Current.year} Assets",
+               back_to: ["Shift Check In/Out", hq_shift_manage_path(@person)] do |panel| %>
+  <% panel.description do %>
+    Check out radios and gear to <%= @person.callsign %>, check them back in,
+    and review this year's checkout history.
+  <% end %>
+<% end %>
+
+<%= ui_section "Asset Checkout", icon: "barcode", icon_type: :solid do %>
+  <% if @person_event.asset_authorized %>
+    <%= render "common/assets/checkout_form",
+               checkout_form: @checkout_form,
+               attachments: @attachments %>
+  <% else %>
+    <%= render "common/assets/radio_agreement_warning", person: @person %>
+  <% end %>
+
+  <% if @assets_checked_out.any? %>
+    <%= render "common/assets/table",
+               person_assets: @assets_checked_out,
+               allow_attachment_change: true %>
+  <% else %>
+    <%= ui_empty_state "No assets are currently checked out." %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Asset Check In / Out History", icon: "clock-rotate-left", icon_type: :solid do %>
+  <% if @assets_history.any? %>
+    <%= render "common/assets/table",
+               person_assets: @assets_history,
+               allow_attachment_change: false %>
+  <% else %>
+    <%= ui_empty_state "No assets checked in yet for #{Current.year}." %>
+  <% end %>
+<% end %>

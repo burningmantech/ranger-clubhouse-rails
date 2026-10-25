@@ -1,0 +1,189 @@
+<%= hero_panel icon: "right-left", heading_level: :h1, id: "admin-request-logs-header",
+               title: "Request Log",
+               description: "Search the requests the Clubhouse answered, or watch them arrive." %>
+
+<%# Named once: the column prints it and the card quotes it. The pair that
+    quotes it is true only while the log still holds entries Clubhouse 2 wrote,
+    which the nightly cleanup removes within a week of the cutover. It goes
+    then, and this local with it. %>
+<% time_heading = "Time" %>
+<%# How far back the log goes: said in the card, and again by a search that
+    finds nothing, which past that window is the whole reason. %>
+<% retention_note = "Only the last #{pluralize(RequestLog::EXPIRE_DAYS_DEFAULT, "day")} are kept." %>
+
+<%# Two ways to read the log: search what was recorded, or watch it arrive.
+    The mode showing is the filled button (request_log_mode_button). %>
+<% live = !@live_logs.nil? %>
+<%= button_row class: "my-4" do %>
+  <%= request_log_mode_button "Search", icon: "magnifying-glass", url: admin_request_logs_path, current: !live %>
+  <%= request_log_mode_button "Live", icon: "tower-broadcast", url: admin_request_logs_path(mode: "live"),
+                                      current: live %>
+<% end %>
+
+<% if live %>
+  <%= render "admin/request_logs/live", logs: @live_logs, logging_on: @logging_on %>
+<% else %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>How far back does the log go?</dt>
+    <dd><%= retention_note %></dd>
+    <dt>Which entries have the wrong &ldquo;<%= time_heading %>&rdquo;?</dt>
+    <dd>
+      Entries recorded before the Clubhouse began answering its own requests report an elapsed
+      time ten times shorter than the real one.
+    </dd>
+  </dl>
+<% end %>
+
+<%= filter_bar id: "request-log-filters",
+               chips: request_log_filter_chips(@form),
+               clear_url: admin_request_logs_path,
+               url: admin_request_logs_path, model: @form, scope: "filter" do |f| %>
+  <%= form_row do %>
+    <%= f.text_field :person_callsign,
+                     label: "Person",
+                     help_text: "A callsign or a person id.",
+                     maxlength: 64,
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+    <%= f.text_field :ip,
+                     label: "Address",
+                     help_text: "Any part of the address. Pair it with a time range to keep the search quick.",
+                     maxlength: 64,
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.datetime_field :start_time,
+                         label: "Starts at",
+                         width: "w-full",
+                         wrapper_class: "flex-1" %>
+    <%= f.datetime_field :end_time,
+                         label: "Ends at",
+                         width: "w-full",
+                         wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.select :status_class, RequestLog::STATUS_CLASS_OPTIONS,
+                 { label: "Outcome", include_blank: "Any outcome", width: "w-full", wrapper_class: "flex-1" } %>
+    <%= f.select :http_method, RequestLog::HTTP_METHODS,
+                 { label: "Verb", include_blank: "Any verb", width: "w-full", wrapper_class: "flex-1" } %>
+  <% end %>
+
+  <%= button_row class: "mt-4" do %>
+    <%= f.submit "Search" %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Request Log Entries", icon: "table-list", icon_type: :solid do %>
+  <% pager = ui_pager(@meta, noun: "request") { |page| admin_request_logs_path(@form.query_params(page:)) } %>
+  <% if @logs.empty? %>
+    <% if @form.query_params.any? %>
+      <%= ui_empty_state "No requests matched the current filters. #{retention_note}",
+                         icon: "magnifying-glass", icon_type: :solid %>
+    <% else %>
+      <%= ui_empty_state "No requests have been recorded yet.", icon: "right-left", icon_type: :solid %>
+    <% end %>
+  <% else %>
+    <div class="mb-3">
+      <%= pager %>
+    </div>
+
+    <%# striped: false because each request renders two rows -- the summary and
+        the detail it opens into -- so every summary row would land on the same
+        stripe. %>
+    <%= ui_table striped: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Timestamp" %>
+        <%= t.heading "Person" %>
+        <%= t.heading "Address" %>
+        <%= t.heading "Verb" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Request" %>
+        <%= t.heading "Size", right: true %>
+        <%= t.heading time_heading, right: true %>
+      <% end %>
+      <%= t.body do %>
+        <% @logs.each do |row| %>
+          <% detail_dom_id = "request-log-detail-#{row.id}" %>
+          <% timestamp = request_log_timestamp(row) %>
+          <%= t.row class: "align-middle" do %>
+            <%= t.cell class: "align-top whitespace-nowrap" do %>
+              <%= t.detail_row_toggle timestamp, id: detail_dom_id, describing: "request details",
+                                      class: "justify-start px-1 text-left normal-case" %>
+            <% end %>
+            <%= t.cell class: log_text_class("align-middle") do %>
+              <%= request_log_person_label(row) %>
+            <% end %>
+            <%# No nowrap: an IPv6 address is long enough on its own to push the
+                columns after it off the table. %>
+            <%= t.cell request_log_ip(row), class: log_text_class("align-middle", "break-all") %>
+            <%= t.cell row.method, class: log_text_class("align-middle") %>
+            <%= t.cell class: "align-middle" do %>
+              <%= request_log_status_badge(row) %>
+            <% end %>
+            <%# Kept to one line: a path is long enough to wrap two or three
+                times and push every other column out of reach. The whole path
+                is in the detail row below. %>
+            <%= t.cell class: "align-middle max-w-xs" do %>
+              <%= log_truncated(row.url) %>
+            <% end %>
+            <%= t.cell request_log_size(row), right: true,
+                       class: log_text_class("align-middle", "whitespace-nowrap") %>
+            <%= t.cell request_log_duration(row), right: true,
+                       class: log_text_class("align-middle", "whitespace-nowrap") %>
+          <% end %>
+
+          <%# Below the fold each row becomes its own card, so the opened detail
+              carries the timestamp it belongs to. %>
+          <%= t.detail_row id: detail_dom_id, label: timestamp do %>
+            <div class="space-y-4 py-2">
+              <%= ui_label_value label_width: "8rem" do |list| %>
+                <%= list.row "Address" do %>
+                  <%= row.ips.presence || "-" %>
+                <% end %>
+                <%= list.row "Request" do %>
+                  <span class="break-all"><%= row.method %> <%= row.url %></span>
+                <% end %>
+                <%= list.row "Response" do %>
+                  <%= row.status %> · <%= request_log_size(row) %> · <%= request_log_duration(row) %>
+                <% end %>
+              <% end %>
+
+              <% if request_log_payloads?(row) %>
+                <% if row.request_payload.present? %>
+                  <div>
+                    <div class="<%= log_heading_class %>">What was sent</div>
+                    <%= request_log_payload_block(row.request_payload) %>
+                  </div>
+                <% end %>
+                <% if row.response_payload.present? %>
+                  <div>
+                    <div class="<%= log_heading_class %>">What came back</div>
+                    <%= request_log_payload_block(row.response_payload) %>
+                  </div>
+                <% end %>
+              <% else %>
+                <p class="text-sm text-stone-muted">
+                  Sent and returned values are kept only for rejected requests.
+                </p>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Outside the branch above: a search or a stale page number empties the
+      table while the log still holds requests, and the reader still needs a way
+      back to the other pages. %>
+  <div class="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <%= pager %>
+    <%= delete_button expire_admin_request_logs_path, "Delete Old Entries", size: "sm",
+                      confirm_message: "Delete every request recorded more than #{pluralize(RequestLog::EXPIRE_DAYS_DEFAULT, 'day')} ago? A nightly task does this on its own." %>
+  </div>
+<% end %>
+<% end %>

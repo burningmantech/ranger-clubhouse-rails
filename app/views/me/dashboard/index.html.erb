@@ -1,0 +1,36 @@
+<% if current_user.is_ranger? || current_user.is_echelon? %>
+  <%= render "welcome_hero_stats", person: current_user %>
+<% elsif current_user.is_applicant? %>
+  <h1 class="text-2xl font-bold text-heading mb-4">
+    Welcome Ranger Applicant <%= current_user.callsign %>!
+  </h1>
+<% else %>
+  <%= hero_panel icon: "home", heading_level: :h1, id: "dashboard-header", title: "Clubhouse Dashboard" %>
+<% end %>
+<% case @dashboard.type %>
+<% when Dashboard::TYPE_PAST_PROSPECTIVE %>
+  <%= render partial: "dashboard_past_prospective" %>
+<% when Dashboard::TYPE_BONKED %>
+  <%= render partial: "dashboard_bonked" %>
+<% else %>
+  <%# Progress summary %>
+  <% if @dashboard.groups.present? %>
+    <%= render "common/dashboard_progress", groups: @dashboard.groups %>
+  <% end %>
+
+  <%# Announcements %>
+  <% if @motds.any?  %>
+    <%= render "announcements_section", announcements: @motds %>
+  <% end %>
+  <%= render partial: "common/dashboard_group", collection: @dashboard.groups, as: :group, locals: { facts: @dashboard.facts } %>
+  <%# The id is where the first-sign-in tour points (me/dashboard/_onboarding). %>
+  <%= render "dashboard_document", title: "Links & Things", body: @milestones.links, id: "links-and-things" %>
+
+  <%# The first-sign-in tour, until the person has taken it, and again on ?tour=1.
+      In this branch only: the two above get no tour. %>
+  <% if current_user.on_boarded_at.nil? || @replay_tour %>
+    <%= render "onboarding", dashboard: @dashboard, person: current_user, replay: @replay_tour %>
+  <% end %>
+<% end %>
+
+<%= render "dashboard_document", title: "Who to Contact for Help", body: @milestones.contacts %>

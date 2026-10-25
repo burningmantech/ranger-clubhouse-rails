@@ -1,0 +1,200 @@
+<%# locals: (enabled: false) %>
+<%
+  # Mode descriptors from the policy (ordered; the hq mode appears only while
+  # the HQ Window Interface is enabled for the viewer).
+  mode_options = SearchBarPolicy.mode_options
+
+  # Default-selected mode: auto-selects hq when the viewer is on duty in an
+  # HQ Window / mentor position. That onduty-driven default overrides the
+  # persisted mode client-side (see search_bar_controller.js restoreMode), so
+  # flag it for the Stimulus controller.
+  default_mode = SearchBarPolicy.default_mode
+  onduty_default = default_mode == SearchBarPolicy::MODE_HQ
+
+  # Mode-aware search hint, shown as a visible label above the input (the input
+  # itself carries only a short placeholder). The email field is only hinted when
+  # the viewer can view email, and the vehicle hint uses license / rental / sticker
+  # phrasing (no "state"). JSON-encoded so the Stimulus controller can swap the
+  # label text when the mode changes, without re-deriving copy client-side.
+  fields = ["callsign", "name"]
+  fields << "email" if Current.can_view_email?
+  fields << "FKA"
+  person_fields = fields.to_sentence(two_words_connector: " or ", last_word_connector: ", or ")
+  person_hint = "Search by #{person_fields}, #barcode, !vehicle"
+  hq_hint = "Search HQ by callsign"
+
+  mode_labels = {
+    SearchBarPolicy::MODE_PERSON_MANAGE => person_hint,
+    SearchBarPolicy::MODE_HQ => hq_hint,
+    SearchBarPolicy::MODE_TIMESHEET => "Search by #{person_fields} to open their timesheets",
+    SearchBarPolicy::MODE_SWAG => "Search by #{person_fields} to open their swag"
+  }
+
+  # Where each mode sends a person, so switching the mode on a /person/N or
+  # /hq/N page can re-route the person already on screen. Only modes the viewer
+  # may use are emitted.
+  mode_paths = SearchBarPolicy::MODE_PATHS.slice(*SearchBarPolicy.enabled_modes)
+%>
+<div data-controller="search-bar"
+     data-search-bar-autocomplete-outlet="#search-bar-autocomplete"
+     data-action="keydown.ctrl+k@document->search-bar#hotkey keydown.meta+k@document->search-bar#hotkey"
+     data-search-bar-enabled-value="<%= enabled %>"
+     data-search-bar-default-mode-value="<%= default_mode %>"
+     data-search-bar-onduty-default-value="<%= onduty_default %>"
+     data-search-bar-enabled-modes-value="<%= SearchBarPolicy.enabled_modes.to_json %>"
+     data-search-bar-labels-value="<%= mode_labels.to_json %>"
+     data-search-bar-mode-paths-value="<%= mode_paths.to_json %>">
+
+  <% if enabled %>
+    <%# Search trigger. A ghost button like every other control on the bar, so
+        navbar.css's --btn-rest-fg override reaches it and its hover matches
+        its neighbours. px-2 below lg keeps the icon-only button at the 36px
+        floor: the phone bar has no width to spare (see the note in
+        application/_top_menu). The icon and px-2 come to 33px, so min-w-9 is
+        what holds the floor here; btn-square would also fix the width of the
+        labelled button from lg. The kbd chip is spelled out rather than shared
+        with the mega-menu trigger's: two occurrences, and this codebase
+        extracts on the third. Spacing is .btn's own flex gap, which only falls
+        between items that are laid out -- so below lg, where the label and the
+        chip are display:none, the icon is alone and stays centred in the 36px
+        icon-only button with no breakpoint to keep in sync. %>
+    <%= button_action safe_join([fa_icon("magnifying-glass", :solid, class: "text-neutral-content/70"),
+                                 tag.span("Search", class: "hidden md:inline-block"),
+                                 tag.kbd(tag.span(kbd_shortcut("K"), class: "text-xs"),
+                                         class: "hidden md:inline-flex items-center gap-1 px-2 py-1 " \
+                                                "rounded border font-sans text-xs font-semibold " \
+                                                "tracking-wide text-neutral-content/75 " \
+                                                "bg-neutral-content/12 border-neutral-content/22")]),
+                      :ghost,
+                      class: "min-w-9 px-2 lg:px-3",
+                      data: { action: "search-bar#open" },
+                      aria: { keyshortcuts: "Control+K Meta+K",
+                              label: "Open search (#{kbd_modifier_name}+K)" } %>
+  <% end %>
+
+  <%# The search dialog. A native modal dialog: the browser supplies the
+      backdrop, the focus trap, Escape, and putting focus back where it was on
+      close. The dialog element is the box itself, so a click that lands on it
+      -- and not on something inside -- is a click on the backdrop. Held near
+      the top of the screen rather than centred, so the results have room to
+      grow downward. The autocomplete reports a failed search by event, and
+      the dialog answers with one of the callouts at its foot; any edit to the
+      box (an input event) takes the callout down again. %>
+  <dialog data-search-bar-target="dialog"
+          data-action="click->search-bar#backdropClose
+                       autocomplete.error->search-bar#searchFailed
+                       input->search-bar#searchEdited"
+          class="mx-auto mt-[15vh] mb-auto w-[calc(100%-2rem)] max-w-2xl lg:max-w-3xl xl:max-w-4xl p-0
+                 bg-base-100 text-base-content rounded-xl shadow-2xl border border-line overflow-hidden
+                 backdrop:bg-base-content/40 backdrop:backdrop-blur-sm"
+          aria-label="Search">
+    <%# Mode switcher. Rendered only when more than one mode exists (the hq
+        mode is present only for viewers with the HQ Window Interface enabled;
+        the policy only emits selectable modes). DaisyUI join+radio segmented
+        control on >=lg; a plain DaisyUI select on small screens. %>
+    <% if mode_options.length > 1 %>
+      <div class="flex items-center gap-3 px-4 py-2 border-b border-line">
+        <span id="search-mode-label" class="text-sm font-semibold text-body">Mode</span>
+
+        <%# Desktop: segmented radio group %>
+        <div class="join hidden lg:inline-flex" role="radiogroup" aria-labelledby="search-mode-label">
+          <% mode_options.each do |opt| %>
+            <label class="join-item btn btn-sm min-h-9 has-[:checked]:bg-primary has-[:checked]:text-primary-content has-[:checked]:border-primary has-[:checked]:hover:bg-primary">
+              <input type="radio"
+                     name="search-mode-radio"
+                     class="sr-only"
+                     value="<%= opt[:value] %>"
+                     <%= "checked" if opt[:value] == default_mode %>
+                     data-search-bar-target="modeInput"
+                     data-action="change->search-bar#modeChange"
+                     aria-label="<%= opt[:label] %>">
+              <span><%= opt[:label] %></span>
+            </label>
+          <% end %>
+        </div>
+
+        <%# Small screens: native select. %>
+        <select class="select select-sm min-h-9 w-auto lg:hidden"
+                aria-labelledby="search-mode-label"
+                data-search-bar-target="modeSelect"
+                data-action="change->search-bar#modeChange">
+          <% mode_options.each do |opt| %>
+            <option value="<%= opt[:value] %>"
+                    <%= "selected" if opt[:value] == default_mode %>>
+              <%= opt[:label] %>
+            </option>
+          <% end %>
+        </select>
+      </div>
+    <% end %>
+
+    <%# Descriptive search-syntax hint shown as a visible label above the input;
+        the controller swaps this text when the mode changes. %>
+    <p data-search-bar-target="modeHint"
+       class="px-4 pt-1 text-sm text-body">
+      <%= mode_labels[default_mode] %>
+    </p>
+
+    <%# The autocomplete component spans the dialog: its input is the search
+        header, and results render inline below it (no floating dropdown).
+        The leading search icon and trailing esc hint are positioned over the
+        input row; the input carries data-search-bar-target so the dialog can
+        focus it on open. No select_on_blur: as in Clubhouse 2, losing focus
+        never opens a result here. %>
+    <div class="relative">
+      <%# Both overlays are centred on the input's first text line, not on this
+          wrapper -- the wrapper also holds the results list and the keyboard
+          footer, so its height varies. top-3 h-6 mirrors the input's own
+          py-3 / leading-6, which keeps the icon and the chip on exactly the
+          same centre line as the placeholder text. %>
+      <div class="pointer-events-none absolute start-4 top-3 h-6 flex items-center z-10 text-stone-muted">
+        <%= fa_icon "magnifying-glass", :solid %>
+      </div>
+      <div class="pointer-events-none absolute end-4 top-3 h-6 flex items-center z-10">
+        <kbd class="inline-flex items-center px-2 py-1 text-xs text-stone-muted bg-base-200 rounded border border-line">
+          esc
+        </kbd>
+      </div>
+      <%= render "shared/autocomplete",
+        url: autocomplete_search_path,
+        mode: default_mode,
+        name: nil,
+        input_id: "search-bar-autocomplete",
+        placeholder: "Search…",
+        min_length: 2,
+        limit: 5,
+        delay: 300,
+        meta_mapping: nil,
+        submit_on_select: false,
+        recents_key: nil,
+        autofocus: true,
+        inline: true,
+        input_class: "w-full bg-transparent border-b border-line outline-none ps-11 pe-14 py-3 text-heading placeholder:text-stone-muted",
+        results_class: "ac-results-inline",
+        hidden_field_name: nil,
+        hidden_field_id: nil,
+        aria_label: "Search people, assets, vehicles",
+        keyboard_help: true,
+        input_data: { "search-bar-target" => "input" } %>
+
+      <%# The keyboard-shortcut footer is rendered by shared/_autocomplete
+          (keyboard_help: true) inside the autocomplete element, so the
+          controller toggles that single footer instead of duplicating one
+          here. Hints: arrow keys navigate, Enter selects, Esc closes. %>
+    </div>
+
+    <%= render "application/dialog_status", controller: "search-bar", close: "Close Search",
+               kind: "offline", type: :error,
+               title: "Can't Reach the Clubhouse",
+               body: "Check your internet connection, then try again." %>
+    <%= render "application/dialog_status", controller: "search-bar", close: "Close Search",
+               kind: "failed", type: :error,
+               title: "The Clubhouse Had a Problem",
+               body: "Try again in a minute. If it keeps happening, reload the page." %>
+    <%= render "application/dialog_status", controller: "search-bar", close: "Close Search",
+               kind: "expired", type: :error,
+               title: "You've Been Signed Out",
+               body: "Sign in again to search.",
+               button: "Sign In Again", action: "signIn" %>
+  </dialog>
+</div>

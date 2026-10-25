@@ -1,0 +1,14 @@
+<%# app/views/me/tickets/_ticket_gift_conditions.html.erb %>
+<div class="mt-2 p-2 border border-line rounded">
+  <ul class="space-y-1">
+    <%= ui_icon_item "circle-check", :solid, tone: "icon-success" do %>
+      Can be transferred to anyone
+    <% end %>
+    <%= ui_icon_item "circle-xmark", :solid, tone: "icon-error" do %>
+      Cannot be sold
+    <% end %>
+    <%= ui_icon_item "envelope", :solid, tone: "text-stone-icon" do %>
+      Contact Ranger Ticketing if unused
+    <% end %>
+  </ul>
+</div>

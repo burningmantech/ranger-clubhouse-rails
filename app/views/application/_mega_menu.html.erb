@@ -1,0 +1,47 @@
+<%# The frame load and the star form both fetch through this dialog, so it
+    hears every Turbo request the menu makes. The display utilities wait for
+    [open]: a closed dialog given display: flex would show. %>
+<dialog id="mega-menu-dialog"
+        class="mega-menu-dialog open:flex open:flex-col"
+        data-mega-menu-target="dialog"
+        data-action="click->mega-menu#backdropClose cancel->mega-menu#cancel
+                     turbo:before-fetch-request->mega-menu#fetchStarted
+                     turbo:before-fetch-response->mega-menu#fetchAnswered
+                     turbo:fetch-request-error->mega-menu#unreachable
+                     turbo:frame-missing->mega-menu#frameMissing"
+        aria-label="Clubhouse menu">
+  <%# Every star submits this one form (form= + formaction=): one CSRF token,
+      not a form per star, and stars stay plain flex children of their row.
+      Outside the frame, so a reload can't swap it out from under a star in
+      flight: a form taken out of the page sends its Turbo events to <html>,
+      past this dialog and its handlers. %>
+  <%= form_tag me_toggle_favorite_path, id: "mega-menu-star-form", hidden: true,
+               data: { action: "turbo:submit-start->mega-menu#rememberStar turbo:submit-end->mega-menu#starSubmitted" } do %><% end %>
+
+  <%# Outside the frame, so a star re-render never wipes them %>
+  <%= render "application/dialog_status", controller: "mega-menu", close: "Close Menu",
+             kind: "offline", type: :error,
+             title: "Can't Reach the Clubhouse",
+             body: "Check your internet connection, then try again." %>
+  <%= render "application/dialog_status", controller: "mega-menu", close: "Close Menu",
+             kind: "failed", type: :error,
+             title: "The Clubhouse Had a Problem",
+             body: "Try again in a minute. If it keeps happening, reload the page." %>
+  <%= render "application/dialog_status", controller: "mega-menu", close: "Close Menu",
+             kind: "expired", type: :error,
+             title: "You've Been Signed Out",
+             body: "Sign in again to use the menu.",
+             button: "Sign In Again", action: "signIn" %>
+  <%= render "application/dialog_status", controller: "mega-menu", close: "Close Menu",
+             kind: "slow", type: :warning,
+             title: "Still Loading",
+             body: "Your connection may be slow. Keep waiting, or try again." %>
+
+  <%= turbo_frame_tag "mega-menu", src: me_menu_path, loading: :lazy, target: "_top", class: "mega-menu-frame",
+                      data: { mega_menu_target: "frame" } do %>
+    <div class="flex-center gap-2 p-8" role="status">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <span class="sr-only">Loading menu…</span>
+    </div>
+  <% end %>
+</dialog>

@@ -1,0 +1,121 @@
+<% content_for :title, "#{@training.title} Trained, No Rangering" %>
+
+<%= hero_panel icon: "person-circle-question", heading_level: :h1,
+               id: "training-trained-no-work-header" do |panel| %>
+  <% panel.title do %><%= @training.title %> &mdash; Trained, No Rangering<% end %>
+  <% panel.description do %>
+    Who passed training &mdash; or taught a session &mdash; but never rangered a shift that
+    requires it.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "#{@year} Sessions", training_path(training_slug, year: @year) %>
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2008, skip_pandemic: true %>
+<% end %>
+
+<% if @report.no_positions %>
+  <%= ui_callout_box :warning do %>
+    <%= @training.title %> has no working positions that require it, so there is nothing to
+    compare against. The position is most likely still being set up.
+  <% end %>
+<% elsif @report.no_slots %>
+  <%= ui_empty_state "Nothing has been scheduled for #{@year} yet, so there are no shifts to check against.",
+                     icon: "calendar-days", icon_type: :solid %>
+<% elsif @report.no_trained %>
+  <%= ui_empty_state "No one has passed #{@training.title} in #{@year} yet.",
+                     icon: "graduation-cap", icon_type: :solid %>
+<% elsif @report.people.empty? %>
+  <%= ui_empty_state "Everyone who trained in #{@year} rangered at least one shift. Nothing to chase.",
+                     icon: "circle-check", icon_type: :solid %>
+<% else %>
+  <%# Season totals: the whole report, not the filtered view. %>
+  <%= ui_stat_row do %>
+    <%= ui_stat_box @report.people.size.to_s, "People", variant: :warning %>
+    <% Person::ACTIVE_STATUSES.each do |status| %>
+      <% count = @status_counts.fetch(status, 0) %>
+      <%= ui_stat_box count.to_s, status if count.positive? %>
+    <% end %>
+  <% end %>
+
+  <%# Out of the hero: when this list can be trusted. %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>When should I run this?</dt>
+      <dd>
+        Best run after the event: earlier in the season the shifts have not been signed off
+        yet, so the list will overstate the problem.
+      </dd>
+    </dl>
+  <% end %>
+
+  <%= filter_bar id: "trained-no-work-filters",
+                 chips: trained_no_work_filter_chips(@filter_params, training_slug, @year),
+                 clear_url: training_trained_no_work_path(training_slug, year: @year),
+                 count: "Showing #{@people.size} of #{pluralize(@report.people.size, "person")}",
+                 # The CSV is the whole report, not the narrowed page, so the label
+                 # says so -- it sits beside chips that narrow the view.
+                 actions: export_csv_link(training_trained_no_work_path(training_slug, year: @year, format: :csv),
+                                          "Export All to CSV"),
+                 url: training_trained_no_work_path(training_slug) do |f| %>
+    <%# The year rides the filter form -- a GET form replaces the query string,
+        so without this every Apply would bounce the page back to this year. %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :status, trained_no_work_status_options(@status_counts),
+                   label: "Status", selected: @filter_params[:status],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :via, trained_no_work_via_options(@via_counts),
+                   label: "Qualified Via", selected: @filter_params[:via],
+                   width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.text_field :callsign, label: "Callsign Contains",
+                       value: @filter_params[:callsign],
+                       width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters" %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "People" do %>
+    <% if @people.empty? %>
+      <%= ui_empty_state "No one matched the current filters.",
+                         icon: "magnifying-glass", icon_type: :solid %>
+    <% else %>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Qualified Via" %>
+          <%= t.heading "Session" %>
+        <% end %>
+        <%= t.body do %>
+          <% @people.each do |trainee| %>
+            <%= t.row do %>
+              <%= t.row_header do %><%= person_display_link trainee.person, trainee.person.id %><% end %>
+              <%= t.cell do %><%= person_status_badge trainee.status %><% end %>
+              <%# The last two columns line up row for row: one line per reason. %>
+              <%= t.cell do %>
+                <div class="flex flex-col gap-y-1">
+                  <% trainee.qualifications.each do |qualification| %>
+                    <%= trained_no_work_qualification_badge qualification %>
+                  <% end %>
+                </div>
+              <% end %>
+              <%= t.cell do %>
+                <div class="flex flex-col gap-y-1">
+                  <%# Descriptions are left out: this column is one date per
+                      reason, lined up against the badges beside it. %>
+                  <% trainee.qualifications.each do |qualification| %>
+                    <%= link_to training_session_time(qualification.slot),
+                                training_session_path(training_slug, qualification.slot.id, year: @year),
+                                class: class_names(LinkHelper::TABLE_LINK_CLASSES, Training::SessionLinkHelper::STAMP_CLASSES) %>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,109 @@
+<%#
+  Convert Alphas: the two outcomes this year's mentor verdicts point at, each in
+  its own section with its own button. Both sections come from
+  _section.html.erb, so mint and bonk cannot drift apart.
+
+  The convert POST re-renders this template with @converted set, so the people a
+  mentor just converted stay on screen instead of silently dropping off the
+  roster they are no longer part of. See Mentoring::AlphasConvertController.
+%>
+<% content_for :title, "Convert Alphas" %>
+
+<%= hero_panel icon: "coins", heading_level: :h1, id: "alphas-convert-header",
+               title: "Convert Alphas" do |panel| %>
+  <% panel.description do %>
+    Alphas whose mentors have recorded a verdict for <%= @year %>.
+  <% end %>
+<% end %>
+
+<% if @converted.any? %>
+  <%# Turbo preserves the submitting page's scroll, which on this render would
+      land the reader beside the button rather than on the result. %>
+  <div data-controller="scroll-to-top" hidden></div>
+
+  <%= ui_callout_box :success, icon: "circle-check", icon_type: :solid, accent: true, class: "my-4" do %>
+    <% if @target == Person::ACTIVE %>
+      <strong>Minted <%= pluralize(@converted.size, "Shiny Penny", plural: "Shiny Pennies") %>:</strong>
+    <% else %>
+      <strong>Bonked <%= pluralize(@converted.size, "Alpha") %>:</strong>
+    <% end %>
+    <%= @converted.map(&:callsign).to_sentence %>.
+  <% end %>
+<% end %>
+
+<% if @skipped_count.positive? %>
+  <%# Says so rather than quietly converting fewer people than were checked. %>
+  <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid, accent: true, class: "my-4" do %>
+    <strong><%= pluralize(@skipped_count, "checked person", plural: "checked people") %> could not be converted.</strong>
+    They no longer hold Alpha status, or their <%= @year %> verdict does not call for that outcome.
+  <% end %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @mint_count.to_s, "Ready to Mint", variant: :success, icon: "coins", icon_type: :solid %>
+  <%= ui_stat_box @bonk_count.to_s, "Ready to Bonk", variant: :error, icon: "circle-xmark", icon_type: :solid %>
+<% end %>
+
+<%# Out of the hero. What minting and bonking do is not repeated here: each
+    section below says it beside its own button. %>
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Where is everyone else?</dt>
+    <dd>
+      Alphas still walking, or with no verdict recorded yet, are on
+      <%= link_to "Alpha Status", mentoring_alpha_status_path, class: "link link-primary" %>
+      rather than here.
+    </dd>
+  </dl>
+<% end %>
+
+<% if @rows.empty? %>
+  <%= ui_empty_state nil, icon: "hourglass-half", icon_type: :solid do %>
+    No Alpha has a recorded <%= @year %> mentor verdict yet, so there is no one to convert. Verdicts are recorded on
+    <%= link_to "Mentor Assignments", mentoring_alpha_mentor_assignments_path, class: "link link-primary" %>.
+  <% end %>
+<% else %>
+  <% mint_consequence = capture do %>
+    <strong>Minting makes each checked Alpha an active Ranger</strong> and grants them the Dirt - Shiny Penny position.
+  <% end %>
+
+  <% bonk_consequence = capture do %>
+    <strong>Bonking sets each checked Alpha to bonked status</strong>, removes every position they hold, and drops
+    their future shift sign-ups.
+  <% end %>
+
+  <%= render "section",
+             title: pluralize(@mint_rows.size, "Shiny Penny candidate"),
+             rows: @mint_rows,
+             target: Person::ACTIVE,
+             group: "mint",
+             check_label: "Mint",
+             select_all_label: "Select all Shiny Penny candidates",
+             submit_label: "Mint Selected Shiny Pennies",
+             button_variant: :success,
+             consequence: mint_consequence,
+             confirm: { title: "Confirm Minting",
+                        message: "Mint the selected Shiny Penny candidates into active Rangers?",
+                        confirm_label: "Mint Shiny Pennies" },
+             empty_message: "No Alpha has a passing #{@year} verdict yet.",
+             empty_icon: "hourglass-half",
+             converted_ids: @converted_ids %>
+
+  <%= render "section",
+             title: pluralize(@bonk_rows.size, "Bonked Alpha"),
+             rows: @bonk_rows,
+             target: Person::BONKED,
+             group: "bonk",
+             check_label: "Bonk",
+             select_all_label: "Select all bonked Alphas",
+             submit_label: "Bonk Selected Alphas",
+             button_variant: :error,
+             consequence: bonk_consequence,
+             confirm: { title: "Confirm Bonking",
+                        message: "Move the selected Alphas to bonked status? Every position they hold and every " \
+                                 "future shift sign-up is removed.",
+                        confirm_label: "Bonk Alphas" },
+             empty_message: "No Alpha was bonked or self-bonked in #{@year}.",
+             empty_icon: "circle-check",
+             converted_ids: @converted_ids %>
+<% end %>

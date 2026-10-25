@@ -1,0 +1,62 @@
+<%= hero_panel icon: "layer-group", heading_level: :h1, id: "position-lineups-header",
+               title: "Position Lineups",
+               description: "Group positions whose sign-ups should be shown together on the Schedule page.",
+               back_to: ["Position Records", teams_positions_position_records_path] %>
+
+<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+  <strong>A lineup decides what the Sign-Ups button shows.</strong>
+  Clicking Sign-Ups on the Schedule page lists every position in the same
+  lineup together — most often a mentor position beside its mentee position.
+  A position belongs to one lineup at a time.
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= button_link "Add Lineup", :primary, teams_positions_new_position_lineup_path,
+                    icon: "plus", icon_type: :solid %>
+  <% end %>
+</div>
+
+<% if @lineups.any? %>
+  <%= ui_table striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Lineup" %>
+      <%= t.heading "Positions" %>
+      <%= t.heading "Actions", right: true %>
+    <% end %>
+
+    <%= t.body do %>
+      <% @lineups.each do |lineup| %>
+        <%= t.row do %>
+          <%= t.row_header do %>
+            <div class="font-semibold text-heading"><%= lineup.description %></div>
+          <% end %>
+
+          <%= t.cell do %>
+            <% rows = @positions_by_lineup[lineup.id] %>
+            <% if rows.present? %>
+              <div class="flex flex-col gap-1">
+                <% rows.each do |_id, title, active| %>
+                  <div>
+                    <%= title %>
+                    <% unless active %>
+                      <span class="text-stone-muted italic">(inactive)</span>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <span class="text-stone-muted italic">No positions linked yet</span>
+            <% end %>
+          <% end %>
+
+          <%= t.cell right: true do %>
+            <%= edit_link teams_positions_edit_position_lineup_path(lineup), "Edit Lineup" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No position lineups have been added yet.", icon: "layer-group", icon_type: :solid %>
+<% end %>

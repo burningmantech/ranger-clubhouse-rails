@@ -1,0 +1,58 @@
+<% event_banners = person_banners.reject(&:is_permanent) %>
+<% permanent_banners = person_banners.select(&:is_permanent) %>
+
+<% if event_banners.any? %>
+  <%= ui_callout_box :warning,
+                     title: "Important #{Current.year} Event Account #{"Note".pluralize(event_banners.size)}",
+                     heading_level: :h2 do %>
+    <% event_banners.each do |banner| %>
+      <div class="mb-1">
+        <span class="text-sm">Posted <%= datetime_format(banner.updated_at || banner.created_at, year: true) %></span>
+        <p><%= banner.message %></p>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if permanent_banners.any? %>
+  <%= ui_callout_box :info,
+                     title: "Permanent Account #{"Note".pluralize(permanent_banners.size)}",
+                     heading_level: :h2,
+                     role: "region",
+                     aria: { label: "Permanent account notes" } do %>
+    <% permanent_banners.each do |banner| %>
+      <div class="mb-1">
+        <span class="text-sm">Posted <%= datetime_format(banner.updated_at || banner.created_at, year: true) %></span>
+        <p><%= banner.message %></p>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# Status notices %>
+<% if person.status == Person::SUSPENDED %>
+  <%= ui_callout_box :error do %>
+    Account is suspended.
+  <% end %>
+<% elsif person.status == Person::DECEASED %>
+  <%= ui_callout_box :error do %>
+    Account holder is deceased.
+  <% end %>
+<% elsif person.status == Person::RESIGNED %>
+  <%= ui_callout_box :warning do %>
+    Account has resigned.
+  <% end %>
+<% end %>
+
+<%# The row for the person's current address, if any (EmailSuppression). It
+    names no address: not every role that sees this banner may see contact
+    details. %>
+<% if email_suppression %>
+  <%= ui_callout_box :warning, id: "email-suppression-banner" do %>
+    Email to this account's address <%= email_suppression.complaint? ? "was reported as spam" : "bounced" %>
+    on <%= datetime_format(email_suppression.last_reported_at, year: true) %>.
+    <% if Current.has_role?([Role::ADMIN, Role::TECH_NINJA]) %>
+      <div class="mt-2"><%= email_suppression_clear_button(person, email_suppression) %></div>
+    <% end %>
+  <% end %>
+<% end %>

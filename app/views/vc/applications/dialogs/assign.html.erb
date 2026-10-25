@@ -1,0 +1,10 @@
+<%= modal_dialog id: "assign-dialog", title: "Assign Application" do %>
+  <%= form_with url: vc_application_path(@application), method: :patch, builder: AppFormBuilder,
+                data: { turbo_frame: "_top" } do |f| %>
+    <%= f.select "prospective_application[assigned_person_id]",
+                 options_for_select([["- Unassigned -", ""]] + @vcs.map { |vc| [vc[:callsign], vc[:id]] },
+                                    @application.assigned_person_id),
+                 label: "Assign to Volunteer Coordinator" %>
+    <%= modal_form_footer submit: "Save Assignment" %>
+  <% end %>
+<% end %>

@@ -1,0 +1,60 @@
+description: "Tells an applicant which radio handle they have been given"
+
+subject: "Hey {{ application.first_name }}, your Ranger Radio Handle has been approved!"
+
+body: |
+  {% render "shared/mailer/ranger_header_image", logo_url: logo_url %}
+  <p>
+    Hey Ranger Applicant {{ application.first_name }} {{ application.last_name }},
+  </p>
+  <p>
+    The Ranger Handle Wranglers have been hard at work sorting through stacks of radio callsigns, and
+    they've found one of yours that works.
+  </p>
+  <p style="font-size: 18px; font-weight: bold;">
+    You shall hereby be known as: {{ application.approved_handle }}. Congratulations!
+  </p>
+  <p>
+    This is the handle you will be using in training, on the Black Rock Ranger radios, and as a way to
+    identify yourself in person while Rangering. As a courtesy to the hard working Handle Wranglers,
+    please do not request changes to your handle between now and the conclusion of this year's event.
+  </p>
+  <p>
+    Our next step is to load your information into the Ranger scheduling tool called
+    <i>The Ranger Secret Clubhouse.</i>
+    Look for an email from the Clubhouse asking you to create a password for your account. Please note
+    there may be a delay of up to two weeks before you receive an email from the Clubhouse. Thank you
+    for your patience.
+  </p>
+  <p>
+    We will also subscribe you to the Ranger Applicant News email group, which we use for all of our
+    important communication to Ranger applicants.
+  </p>
+  <p style="font-size: 18px; font-weight: bold;">
+    What can you do now?
+  </p>
+  <p>
+    <b>Take a look at these guidelines for BMID (Burning Man ID) photos</b>
+    <a href="https://docs.google.com/document/d/1hUqrJwdMG6XB5nk7Eh8nY2GH4uvAFTppmCKCmfidIvQ/edit">HERE</a>.
+    You won't be able to upload one just yet, but you'll need to do so before you can sign up for training.
+  </p>
+  <p>
+    <b>Read the most recent version of the Ranger Manual</b> found on the main Ranger website.
+    (<a href="http://rangers.burningman.org/">http://rangers.burningman.org/</a>)
+  </p>
+  <p>
+    Check out Ranger trainings near you, or on Playa, and plan on attending one:
+    <a href="https://rangers.burningman.org/training/">https://rangers.burningman.org/training/</a>
+    Trainings will be posted between April and June, as they are scheduled.
+  </p>
+  <p>
+    <b style="color: #c90000;">
+      Note: You are required to complete the Online Course prior to signing up for In Person Training.
+    </b>
+    In-Person Training sign-ups will not be available to you in the Clubhouse until the Online Course
+    is completed.
+  </p>
+  <p>
+    Your Friendly Black Rock Ranger Volunteer Coordinators
+  </p>
+  {% render "shared/mailer/application_footer", application: application %}

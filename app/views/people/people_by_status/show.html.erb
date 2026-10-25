@@ -1,0 +1,22 @@
+<%#
+  Everyone currently holding one status. Alphabetical by callsign; no filter
+  box here, since the browser's own find already covers a plain list.
+%>
+<% content_for :title, "#{@status} — People by Status" %>
+
+<%= hero_panel icon: "users-rectangle", heading_level: :h1, id: "people-by-status-detail-header",
+               title: @status,
+               description: "The people who hold this status right now.",
+               back_to: ["People by Status", people_by_status_path] %>
+
+<div class="text-lg my-4">
+  <%= pluralize(number_with_delimiter(@people.length), "person") %> with this status
+</div>
+
+<%= ui_section @status, badge: @people.size.to_s, border: false do %>
+  <div class="callsign-list">
+    <% @people.each do |person| %>
+      <%= callsign_link(person) %>
+    <% end %>
+  </div>
+<% end %>

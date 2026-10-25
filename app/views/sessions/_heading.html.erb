@@ -1,0 +1,10 @@
+<%# locals: (title:, lede: nil, lede_role: nil) -%>
+<%# The top of a page in the sessions layout: the title and the one sentence
+    under it. Shared by the password pages and the single sign-on pages, so
+    they stay one shape. lede may carry markup (an icon) when it is html_safe. %>
+<header class="text-center mb-8">
+  <h1 class="text-3xl sm:text-4xl font-bold text-heading tracking-tight">
+    <%= title %>
+  </h1>
+  <%= tag.p lede, class: "mt-3 text-body text-base", role: lede_role if lede.present? %>
+</header>

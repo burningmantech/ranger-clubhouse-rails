@@ -1,0 +1,49 @@
+<%# locals: (id:, title:, state: :idle, summary: nil) %>
+<%# HQ accordion section (plan-approved pattern; Ember
+    port/components/hq-shift-manage-section.hbs over UiSection). DaisyUI
+    collapse via native details/summary.
+
+    Guided flow: only the :current section renders open, so the operator faces
+    one decision at a time. Every other section collapses to a one-line status
+    row — the summary local says what is outstanding there, so nothing is
+    hidden, only folded. Any row is one tap away for out-of-order requests
+    (a walk-up pog), and the hq-shift controller re-opens and scrolls to a
+    section for the checkout choreography.
+
+    The "you are here" spotlight rides Tailwind's open:/group-open: variants
+    rather than the server-rendered state, so it follows the section the
+    operator is actually looking at — including one the controller folded mid
+    turbo-stream, or one they opened by hand. A snapshot class would keep
+    claiming "you are here" on a section that had since closed.
+
+    Emphasis is border colour, never a background tint: an area tint reads as a
+    loud slab in dark mode, while a border reads the same in both themes. The
+    summary badge (not a separate marker icon) carries what is outstanding, so
+    there is one source of truth to keep fresh — see the summary streams in
+    Hq::ShiftManageController. %>
+<%
+  border = state == :attention ? "border-warning" : "border-base-300"
+  surface = state == :complete ? "bg-base-200" : "bg-base-100"
+  section_class = "collapse collapse-arrow group mb-4 border #{border} #{surface} " \
+                  "open:border-primary"
+%>
+<details id="<%= id %>" data-hq-section <%= "open" if state == :current %>
+         class="<%= section_class %>">
+  <summary class="collapse-title min-h-9 text-lg font-semibold text-heading cursor-pointer">
+    <div class="flex flex-wrap items-center gap-x-2 gap-y-1 pe-6">
+       <span class="hidden group-open:inline text-primary">
+        <%= fa_icon "arrow-right", :solid %>
+      </span>
+      <span><%= title %></span>
+      <% if summary.present? %>
+        <%# lg:ms-auto, not ms-auto: once the row wraps on a narrow screen the
+            summary lands on its own line, where pushing it to the far edge
+            strands it away from the title it belongs to. %>
+        <span class="ms-2 font-semibold text-lg">&bullet; <%= summary %></span>
+      <% end %>
+    </div>
+  </summary>
+  <div class="collapse-content">
+    <%= yield %>
+  </div>
+</details>

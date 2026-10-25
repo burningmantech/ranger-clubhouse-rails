@@ -1,0 +1,21 @@
+<%# locals: (person:, year:) %>
+<%#
+  One Add-note button per team the viewer may write for. Empty on a read-only
+  page (the training copy), where unified_flagging_writable_teams is [] and
+  nothing here can start a note form. The Convert Prospectives detail frame
+  shows them at its history's foot; the review pane shows them at its head,
+  where they stay in reach.
+%>
+<% writable = unified_flagging_writable_teams %>
+<% if writable.any? %>
+  <div class="flex flex-wrap gap-2">
+    <% writable.each do |team_key| %>
+      <%# year: seeds the form's event year from the year being viewed --
+          without it a note filed from a past year silently defaults to the
+          current one and vanishes from the page that opened the form. %>
+      <%= button_link "Add #{intake_team_chip_label(team_key)} Note", :secondary,
+                      new_person_intake_note_path(person, unified_flagging_origin.merge(type: team_key, year: year)),
+                      icon: "plus", icon_type: :solid %>
+    <% end %>
+  </div>
+<% end %>

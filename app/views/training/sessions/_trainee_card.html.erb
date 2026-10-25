@@ -1,0 +1,81 @@
+<%# One trainee: photo, callsign line (FKA appended inline), status badges,
+    trainer notes, the Signed Up timestamp on its own line, and the actions.
+    Layout decided 2026-07-31 (Option A, modified). %>
+<% person = trainee.person %>
+<% session = @training_session %>
+
+<div id="trainee-<%= person.id %>" class="flex gap-3 border-b border-line py-3 last:border-b-0">
+  <div class="shrink-0 w-16">
+    <% if person.avatar_photo %>
+      <%= photo_tag person.avatar_photo, width: 64, class: "rounded-lg object-cover",
+                    alt: "#{person.callsign} photo" %>
+    <% else %>
+      <div class="w-16 h-16 rounded-lg bg-default flex-center justify-center text-stone-muted">
+        <%= fa_icon "user", :solid, size: "lg" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="grow min-w-0">
+    <div>
+      <span class="text-lg font-semibold"><%= person_display_link person, person.id %></span>
+      <span class="text-stone-muted">· <%= trainee.status %></span>
+      <% if trainee.is_active || trainee.is_retired || trainee.is_inactive %>
+        <span class="text-stone-muted">· <%= pluralize trainee.years, "year" %></span>
+    <% end %>
+      <% if trainee.fkas.any? %>
+        <span class="text-stone-muted">· FKA <%= trainee.fkas.join(", ") %></span>
+      <% end %>
+      <% if trainee.status != trainee.current_status %>
+        <%= ui_badge "now #{trainee.current_status}", :secondary, size: "xs" %>
+      <% end %>
+    </div>
+
+    <% if !session.art? && (trainee.is_inactive || trainee.is_retired) %>
+      <div class="font-semibold">
+        <%= fa_icon "person-walking-arrow-loop-left", :solid %>
+        As <%= trainee.is_retired ? "a retired" : "an inactive" %> Ranger, a full day's training is required.
+      </div>
+    <% end %>
+
+    <div class="flex flex-wrap items-center gap-2 mt-1">
+      <%= trainee_status_badge trainee.training_status %>
+      <% if trainee.rank %>
+        <%= ui_badge "Rank #{trainee.rank_label}", (trainee.rank == 4 ? :error : :primary) %>
+      <% elsif trainee.needs_rank? %>
+        <%= ui_badge "Needs rank", :warning, icon: "circle-exclamation", icon_type: :solid %>
+      <% end %>
+      <% if trainee.is_art_prospective %>
+        <%= ui_badge "ART Prospective", :primary, icon: "asterisk", icon_type: :solid %>
+      <% end %>
+    </div>
+
+    <div class="mt-1">
+      <% if trainee.trainer_notes.any? %>
+        <% trainee.trainer_notes.each do |note| %>
+          <div><%= note.note %></div>
+        <% end %>
+      <% else %>
+        <span class="text-stone-muted italic">No notes yet.</span>
+      <% end %>
+    </div>
+
+    <div class="text-stone-muted text-sm mt-1">
+      Signed up <%= datetime_format trainee.signed_up_at, tz: session.slot.timezone,
+                                    tz_abbr: session.slot.timezone_abbr, year: true %>
+    </div>
+  </div>
+
+  <div class="shrink-0 flex flex-col items-end gap-2">
+    <% if can_manage_session? %>
+      <%= button_link "Score", :primary,
+                      training_session_edit_score_path(training_slug, session.slot.id, person.id),
+                      icon: "pen-to-square", icon_type: :solid, data: { turbo_frame: "modal" } %>
+    <% end %>
+    <% if can_graduate? %>
+      <%= button_link "Work History", :secondary,
+                      training_session_work_history_path(training_slug, session.slot.id, person.id),
+                      data: { turbo_frame: "modal" } %>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,43 @@
+<%# locals: (section:, link_to_person:, send_message_path_builder:) %>
+<%#
+  One ART's walks for a person (ArtMentoring::PersonHistory::Section), laid
+  out as the Alpha sections are: for each year, the mentors who walked them
+  and the mentees they walked, a card per walk with its shift and result.
+  Read-only: a walk is recorded on the ART's roster, and on the Person tab a
+  reader with the ART's trainer role gets a View Verdicts button for that
+  year. `send_message_path_builder` (Me › Mentoring only) adds Send Message to
+  every card, mentor and mentee alike, as the Alpha cards have it (ruled
+  2026-10-22). Notes are never shown (ruled 2026-10-22).
+%>
+<% sides = [[section.as_mentee, "Mentors", "person-walking", false], [section.as_mentor, "Mentees", "users", true]] %>
+<% sides.each do |cohorts, label, icon, mentor_side| %>
+  <% cohorts.each do |cohort| %>
+    <% title = "#{cohort.year} #{section.title} #{label}" %>
+    <% title += " (#{pluralize cohort.mentee_count, "mentee"})" if mentor_side %>
+    <% contact = send_message_path_builder.present? %>
+    <%= ui_section title, icon:, icon_type: :solid,
+                   link: (art_history_verdicts_link(section.training, cohort.year) if link_to_person) do %>
+      <% if mentor_side %>
+        <%= mentor_tally_row do %>
+          <%= ui_badge "#{cohort.passed} passed", :success %>
+          <% if cohort.bonked > 0 %>
+            <%= ui_badge "#{cohort.bonked} bonked", :error %>
+          <% end %>
+          <% if cohort.pending > 0 %>
+            <%= ui_badge "#{cohort.pending} pending", :warning %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= mentor_card_row do %>
+        <% cohort.rows.each do |row| %>
+          <%= render "common/mentoring/mentee_card",
+                     name: (link_to_person && row.other ? link_to(row.other.callsign, person_path(row.other_id)) : person_display_name(row.other, row.other_id)),
+                     avatar: row.avatar, badge: mentor_result_badge(row.status), contact:,
+                     message_path: (send_message_path_builder.call(row.other.callsign) if contact && row.can_message?) do %>
+            <%= ui_card_section "Shift" do %><%= art_walk_shift_label(row.on_duty, short: true) %><% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

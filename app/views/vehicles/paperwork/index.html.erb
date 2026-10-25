@@ -1,0 +1,197 @@
+<%# Vehicle Paperwork audit (Ember reports/vehicle-paperwork port). One table
+    carrying every column, narrowed by the filter panel rather than by switching
+    views: the questions people bring here ("who is eligible but has no approved
+    record?", "which Green Dot members may bring a personal vehicle?") are
+    combinations, and a fixed view can only answer one of them at a time. %>
+<%= hero_panel icon: "clipboard-check", heading_level: :h1, id: "vehicle-paperwork-header",
+               title: "Vehicle Paperwork",
+               description: "Who may drive an org vehicle or bring a personal one in #{@year}." do |panel| %>
+  <%# keep: — the selector submits its own bare GET, so without these every
+      active filter silently vanishes the moment someone changes year. %>
+  <% panel.year_selector year: @year, min_year: year_floor, keep: @filters %>
+<% end %>
+
+<%= ui_stat_row do %>
+  <%= ui_stat_box @result.total_count.to_s, "People", icon: "users" %>
+  <%= ui_stat_box @result.vup_count.to_s, "Signed the Protocol", variant: :success,
+                  icon: "file-signature" %>
+  <%= ui_stat_box @result.record_approved_count.to_s, "Record Approved", variant: :success,
+                  icon: "circle-check" %>
+  <%= ui_stat_box @result.mvr_eligible_count.to_s, "Record Eligible", icon: "id-card" %>
+  <%= ui_stat_box @result.pvr_approved_count.to_s, "Personal Vehicle Agreement",
+                  variant: :success, icon: "file-signature" %>
+  <%= ui_stat_box @result.pvr_eligible_count.to_s, "Personal Vehicle Eligible", icon: "car" %>
+<% end %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Who appears in this report?</dt>
+    <dd>
+      Any one of these puts a person on the list:
+      <ul class="list-disc ps-6 mt-1 space-y-1">
+        <li>Signed the Vehicle Use Protocol.</li>
+        <li>Has an approved Motor Vehicle Record.</li>
+        <%# Teams and granted positions are not kept by year, so for a past year
+            neither one puts anyone on the list. %>
+        <% if @result.memberships_checked? %>
+          <li>Belongs to a team that may request a Motor Vehicle Record or a personal vehicle.</li>
+          <li>Holds a position that may request a Motor Vehicle Record.</li>
+        <% end %>
+        <li>Signed up for a shift in a position that may request a personal vehicle.</li>
+        <li>Signed up for a shift that grants Motor Vehicle Record eligibility on its own, such as Intercept.</li>
+        <li>Was marked eligible for either one under Person Manage &rsaquo; Event Info.</li>
+      </ul>
+    </dd>
+  </dl>
+<% end %>
+
+<%= filter_bar id: "vehicle-paperwork-filters",
+               chips: paperwork_filter_chips(@filters, @year),
+               clear_url: vehicles_paperwork_path(year: @year),
+               count: "#{@result.rows.size} of #{pluralize(@result.total_count, "person")}",
+               actions: (export_csv_link(vehicles_paperwork_path(index_params.merge(format: :csv))) if @result.any?),
+               url: vehicles_paperwork_path do |f| %>
+  <%# filter_bar owns its own GET form, so the year has to travel with it. %>
+  <%= hidden_field_tag :year, @year %>
+
+  <%# Every row stacks below lg, so on a phone this is one full-width control
+      per line rather than four squeezed side by side. %>
+  <%= form_row do %>
+    <%= f.search_field :callsign, label: "Callsign", value: @callsign,
+                       width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.select :mvr_approval, Vehicles::PaperworkHelper::APPROVAL_OPTIONS,
+                 label: "Motor Vehicle Record Approval",
+                 selected: @filters[:mvr_approval] || VehiclePaperworkReport::ALL,
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :mvr_eligible, Vehicles::PaperworkHelper::ELIGIBLE_OPTIONS,
+                 label: "Motor Vehicle Record Eligible",
+                 selected: @filters[:mvr_eligible] || VehiclePaperworkReport::ALL,
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :pvr_approval, Vehicles::PaperworkHelper::APPROVAL_OPTIONS,
+                 label: "Personal Vehicle Agreement",
+                 selected: @filters[:pvr_approval] || VehiclePaperworkReport::ALL,
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :pvr_eligible, Vehicles::PaperworkHelper::ELIGIBLE_OPTIONS,
+                 label: "Personal Vehicle Eligible",
+                 selected: @filters[:pvr_eligible] || VehiclePaperworkReport::ALL,
+                 width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.select :mvr_team, paperwork_title_options(@result.mvr_team_options),
+                 label: "Motor Vehicle Record Team",
+                 selected: @filters[:mvr_team] || VehiclePaperworkReport::ALL,
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :mvr_position, paperwork_title_options(@result.mvr_position_options),
+                 label: "Motor Vehicle Record Position",
+                 selected: @filters[:mvr_position] || VehiclePaperworkReport::ALL,
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :pvr_team, paperwork_title_options(@result.pvr_team_options),
+                 label: "Personal Vehicle Team",
+                 selected: @filters[:pvr_team] || VehiclePaperworkReport::ALL,
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :pvr_position, paperwork_title_options(@result.pvr_position_options),
+                 label: "Personal Vehicle Position",
+                 selected: @filters[:pvr_position] || VehiclePaperworkReport::ALL,
+                 width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<%= ui_section "#{@year} Vehicle Paperwork", icon: "table-list", icon_type: :solid do %>
+  <% if @result.empty_year? %>
+    <%= ui_empty_state "No one has vehicle paperwork on file for #{@year} yet.",
+                       icon: "clipboard-check", icon_type: :solid %>
+  <% elsif @result.rows.empty? %>
+    <%= ui_empty_state "No one in #{@year} matched these filters.",
+                       icon: "magnifying-glass", icon_type: :solid %>
+  <% else %>
+    <% unless @result.memberships_checked? %>
+      <%# Upstream only ever ran on the current year, so this never came up
+          there. Name every column that is not the selected year's, not just
+          the teams -- telling the reader to distrust one column implies the
+          rest are history, and Status is today's value too. %>
+      <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+        <strong>Some of this is today's information, not <%= @year %>'s.</strong>
+        The Vehicle Use Protocol, approved-record, agreement and sign-up columns
+        are <%= @year %>'s. Team membership and position grants are not kept by
+        year, so teams and granted positions read "Not checked" rather than
+        guess — and the team and Motor Vehicle Record position filters offer
+        nothing; Status is the person's status now; and the eligibility verdicts
+        are built from the <%= @year %> columns alone.
+      <% end %>
+    <% end %>
+
+    <%# striped: false -- the striped variant is odd:/even:, which is :nth-child,
+        and a closed detail row still counts. With two rows per person every
+        summary row lands on the same parity, so the stripes would stop telling
+        people apart. The row border already separates them. %>
+    <%= ui_table full_width: true, striped: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Callsign" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Signed Protocol" %>
+        <%= t.heading "MVR Approved" %>
+        <%= t.heading "MVR Eligible" %>
+        <%= t.heading "PV Agreement" %>
+        <%= t.heading "PV Eligible" %>
+        <%# The three "via" columns were the only multi-line cells on the page
+            and between them forced the horizontal scroll. They explain verdicts
+            the row already states, so they moved into the row below -- with the
+            counts left here, because the questions this page is opened for
+            ("who is eligible only through a sign-up?") are about the whole
+            roster and cannot be answered a click at a time. %>
+        <%= t.heading "Why Eligible" %>
+      <% end %>
+
+      <%= t.body do %>
+        <% @result.rows.each do |row| %>
+          <%= t.row do %>
+            <%= t.row_header do %><%= callsign_link row.person %><% end %>
+            <%= t.cell row.status %>
+            <%= t.cell do %><%= paperwork_flag row.signed_vup, "signed" %><% end %>
+            <%= t.cell do %><%= paperwork_flag row.record_approved, "MVR" %><% end %>
+            <%= t.cell do %><%= paperwork_flag row.mvr_eligible?, "eligible" %><% end %>
+            <%= t.cell do %><%= paperwork_flag row.pvr_approved, "PVR" %><% end %>
+            <%= t.cell do %><%= paperwork_flag row.pvr_eligible?, "eligible" %><% end %>
+            <%= t.cell do %>
+              <%= paperwork_why_toggle t, row, memberships_checked: @result.memberships_checked? %>
+            <% end %>
+          <% end %>
+
+          <%# label: -- below lg every row becomes its own card, so the opened
+              detail needs to say whose it is. %>
+          <%= t.detail_row id: paperwork_detail_id(row), label: row.callsign do %>
+            <div class="flex flex-wrap gap-x-8 gap-y-3">
+              <%# Both sides have an "eligible via" group, so each names its
+                  side: two headings reading "Eligible via" would put two
+                  identically labelled lists side by side. %>
+              <%= paperwork_detail_group "Record eligible via" do %>
+                <%= paperwork_sources teams: row.mvr_teams, positions: row.mvr_positions,
+                                      positions_label: "Granted positions",
+                                      checkbox: row.mvr_checkbox,
+                                      teams_checked: @result.memberships_checked?,
+                                      positions_checked: @result.memberships_checked? %>
+              <% end %>
+              <%= paperwork_detail_group "Eligible sign-ups" do %>
+                <%= paperwork_signups row.mvr_signups %>
+              <% end %>
+              <%= paperwork_detail_group "Personal vehicle eligible via" do %>
+                <%= paperwork_sources teams: row.pvr_teams, positions: row.pvr_positions,
+                                      positions_label: "Signed-up positions",
+                                      checkbox: row.pvr_checkbox,
+                                      teams_checked: @result.memberships_checked? %>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,20 @@
+<%# Opens once, on the page after the End Shift redirect, when ending the shift
+    restored the person from Inactive to Active (ShiftManageConcern#end_shift
+    sets the flash flag; load_shift_manage_state reads it). A modal rather than
+    a toast: a toast dismisses itself, and this has to be seen. Auto-shows on
+    connect via the modal Stimulus controller. %>
+<%= modal id: "shift-converted-modal" do |m| %>
+  <%= m.title "Account Restored to Active" %>
+  <%= m.body do %>
+    <p class="mb-2">
+      <% if shift_self_serve? %>
+        Your account was Inactive. Ending the shift automatically restored it to Active status.
+        Welcome back to the department!
+      <% else %>
+        <%= shift_person.callsign %>'s account was Inactive. Ending the shift automatically restored
+        it to Active status. Welcome them back to the department!
+      <% end %>
+    </p>
+    <p>The Volunteer Coordinators have been notified by email.</p>
+  <% end %>
+<% end %>

@@ -1,0 +1,17 @@
+<%# locals: (step:,facts:)%>
+<% slot = facts.training.slot %>
+<p class="text-error font-semibold">
+  <%= fa_icon "circle-xmark", :solid, class: "icon-error" %> Training incomplete<% if slot %> on <%= mdy_format(slot.begins, full: true) %><% end %>
+</p>
+<% if slot %>
+  <p class="mb-2">Location: <%= slot.description %></p>
+<% end %>
+<% if facts.is_applicant %>
+  <p><b>You need to complete training</b> to walk an Alpha shift.</p>
+<% else %>
+  <p class="text-error font-bold"><%= fa_icon "ban", :solid, class: "icon-error" %> Without training, HQ will turn you away.</p>
+<% end %>
+<%= ui_callout_box :warning, accent: true, class: "mt-2" do %>
+  <b>Blocked from sign-ups.</b> To try again, email Training Academy:<br>
+  <%= mail_to EmailAddresses::TRAINING_ACADEMY %>
+<% end %>

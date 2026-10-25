@@ -1,0 +1,82 @@
+<%#
+  Sign Rangers into one shift by tapping their names.
+
+  Pickers are a plain auto-submitting GET form, so choosing a position or a
+  shift is an ordinary page load with the choice in the URL -- shareable,
+  back-button-able, and reloadable. Only the taps use turbo streams, because
+  only the taps must not move the operator's place in a long roster.
+%>
+<% content_for :title, "Roll Call — Sign In" %>
+
+<%= hero_panel icon: "person-walking", heading_level: :h1,
+               id: "shift-operations-rollcall-sign-in-header",
+               title: "Roll Call — Sign In" do |panel| %>
+  <% panel.description do %>
+    Pick a shift, then tap each Ranger as they check in.
+  <% end %>
+  <% panel.back_to do %>
+    <%= back_to "Roll Call", shift_operations_rollcall_path %>
+  <% end %>
+<% end %>
+
+<% if @groups.empty? %>
+  <%= ui_empty_state "No shifts are starting or running right now. Roll call offers shifts " \
+                     "that began within the last four hours or start within the next two.",
+                     icon: "calendar-xmark", icon_type: :solid %>
+<% else %>
+  <%= ui_section "Shift", icon: "calendar-day", icon_type: :solid do %>
+    <%= render "shift_operations/rollcall/pickers" %>
+
+    <%# No echo of the chosen position and shift here: the two selects directly
+        above already read as that sentence, and repeating it cost most of a
+        phone screen before the roster -- which is the only thing on this page
+        the operator is actually looking at. %>
+    <% if @slot %>
+      <div class="mt-3">
+        <% if @start_time %>
+          <%= ui_callout_box :warning, icon: "clock", icon_type: :solid do %>
+            Every sign-in below is recorded at <strong><%= @start_time %></strong> today, not at
+            the time you tap. This is logged and reviewed.
+            <%= link_to "Clear the time",
+                        shift_operations_rollcall_sign_in_path(position_id: @group.id,
+                                                               slot_id: @slot.id),
+                        class: "underline font-semibold" %>.
+          <% end %>
+        <% else %>
+          <%= button_link "Set Check-In Time", :secondary,
+                          shift_operations_rollcall_sign_in_path(position_id: @group.id,
+                                                                 slot_id: @slot.id,
+                                                                 set_time: 1),
+                          icon: "clock", icon_type: :solid %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if @slot.nil? %>
+    <%= ui_empty_state "Pick a position and a shift to see who signed up.",
+                       icon: "hand-pointer", icon_type: :solid %>
+  <% elsif @rows.empty? %>
+    <%= ui_empty_state "No one signed up for this shift.",
+                       icon: "user-slash", icon_type: :solid %>
+  <% else %>
+    <%# Out of the hero, and only above the roster it is about. %>
+    <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+      <dl class="instruction-list">
+        <dt>What if someone is already on duty?</dt>
+        <dd>Tapping someone who is already on duty signs them out instead.</dd>
+      </dl>
+    <% end %>
+
+    <%= render "shift_operations/rollcall/roster",
+               rows: @rows, counts: @counts, mode: :sign_in, position_id: @group.id,
+               slot_id: @slot.id, start_time: @start_time %>
+  <% end %>
+<% end %>
+
+<%# The Set Time dialog, opened by ?set_time=1 so it survives a reload. The
+    layout supplies the "modal" turbo-frame, so this renders outside one. %>
+<% if params[:set_time].present? && @slot %>
+  <%= render "shift_operations/rollcall/set_time_dialog" %>
+<% end %>
+

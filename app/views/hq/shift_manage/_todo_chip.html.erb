@@ -1,0 +1,38 @@
+<%# locals: (todo:, ask_if_done: false, next_up: false) %>
+<%# One suggested-task checklist chip (plan-approved pattern; Ember
+    port/components/hq-todo-task.hbs + port/constants/hq-todo.js). The
+    hq-shift Stimulus controller re-derives icon and text styling from the
+    data attributes whenever it completes, revives, or ignores a chip —
+    paintChip and paintNextChip there must stay in step with the branches
+    below.
+
+    Colour follows what is left to do. The completed chip used to be the only
+    coloured thing in the row, which pointed the row's whole chroma at the work
+    already behind the operator; done and ignored now recede together to muted
+    and are told apart by their glyph. The single chip that is next takes the
+    same primary as the "Next:" arrow above it, so the spelled-out next action
+    and its position in the checklist read as one signal instead of two things
+    to reconcile. Everything else open stays plain body colour: still to do,
+    but not now. %>
+<%
+  if todo.ignore
+    chip_class = "text-stone-muted"
+    icon_class = "fa-solid fa-ban"
+  elsif todo.completed
+    chip_class = "text-stone-muted"
+    icon_class = "fa-solid fa-check"
+  else
+    chip_class = [ ("text-primary" if next_up), ("animate-pulse" if todo.blink) ].compact.join(" ")
+    icon_class = "fa-regular fa-circle"
+  end
+%>
+<div class="inline-flex items-center gap-2 me-4 text-base <%= chip_class %>"
+     data-hq-shift-target="todo"
+     data-task="<%= todo.task %>"
+     data-completed="<%= todo.completed %>"
+     data-ignore="<%= todo.ignore %>"
+     data-blink="<%= todo.blink %>"
+     <% if ask_if_done %>data-ask-if-done="true"<% end %>>
+  <i class="<%= icon_class %>" aria-hidden="true"></i>
+  <span><%= todo.label %></span>
+</div>

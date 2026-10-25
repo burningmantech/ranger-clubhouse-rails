@@ -1,0 +1,49 @@
+<%= hero_panel icon: "calendar-days", heading_level: :h1, id: "scheduling-slots-header",
+               title: "#{@year} Slots" do |panel| %>
+  <% panel.description do %>
+    Create and manage the shift slots volunteers can sign up for.
+  <% end %>
+  <% panel.year_selector year: @year, min_year: 2008, skip_pandemic: true %>
+<% end %>
+
+<% if @event_date&.pre_event_slot_start && @event_date&.pre_event_slot_end %>
+  <p class="my-2">
+    The <%= @year %> pre-event period is
+    <%= datetime_format @event_date.pre_event_slot_start, year: true %>
+    to <%= datetime_format @event_date.pre_event_slot_end, year: true %>.
+  </p>
+<% else %>
+  <div class="my-2">
+    <%= ui_callout_box :error, title: "#{@year} Pre-Event Slot Dates Are Not Set Up" do %>
+      Pre-event slots may not be properly vetted.
+      Contact the Tech Team to set up the Event Date records.
+    <% end %>
+  </div>
+<% end %>
+
+<div class="my-4">
+  <%= button_row do %>
+    <%= button_link "Add Slot", :primary, scheduling_new_slot_path(year: @year),
+                    icon: "plus", icon_type: :solid %>
+    <% if @total_slots.positive? %>
+      <%= button_link "Copy Slots", :secondary, scheduling_new_slot_copy_path(year: @year),
+                      icon: "copy" %>
+    <% end %>
+  <% end %>
+</div>
+
+<% if @positions.any? %>
+  <div class="text-lg">
+    Showing <%= pluralize @positions.size, "position" %> with <%= pluralize @total_slots, "slot" %>
+  </div>
+  <div class="lg:w-3/4">
+    <% @positions.each do |position| %>
+      <% inactive = @inactive_counts[position.id].to_i %>
+      <%= ui_drill_down_row scheduling_slots_position_path(position.id, year: @year), position.title,
+                            meta: pluralize(@slot_counts[position.id], "slot"),
+                            badges: (ui_badge("#{inactive} inactive", :warning, size: "base") if inactive.positive?) %>
+    <% end %>
+  </div>
+<% else %>
+  <%= ui_empty_state "No slots were found for #{@year}.", icon: "calendar-xmark", icon_type: :solid %>
+<% end %>

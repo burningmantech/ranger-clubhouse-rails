@@ -1,0 +1,8 @@
+<% content_for :title, "Add Group" %>
+
+<%= hero_panel icon: "layer-group", heading_level: :h1, id: "group-form-header",
+               title: "Add Group",
+               description: "Name this set of questions, and choose how its answers are reported.",
+               back_to: [@survey.title, communication_survey_path(@survey)] %>
+
+<%= render "form" %>

@@ -1,0 +1,18 @@
+<% content_for :main do %>
+  <% if content_for? :timesheet_header %>
+    <%= content_for :timesheet_header %>
+  <% end %>
+
+  <% if @year < 2008 %>
+    <%= ui_callout_box :warning do %>
+      You are viewing timesheet entries created prior to 2008. The department did not start tracking volunteer hours
+      until 2008. Any timesheet entry from before 2008 are placeholders and do not represent the actual rangering
+      performed.
+    <% end %>
+  <% end %>
+
+
+  <%= yield %>
+<% end %>
+
+<%= render template: "layouts/me" %>

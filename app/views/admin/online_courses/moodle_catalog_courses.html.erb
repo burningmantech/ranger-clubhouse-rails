@@ -1,0 +1,38 @@
+<%= turbo_frame_tag "online-course-catalog", target: "_top" do %>
+  <% if @error_message %>
+    <%= render "moodle_error" %>
+  <% elsif @courses.blank? %>
+    <%= ui_empty_state "The LMS has no courses available." %>
+  <% else %>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Moodle Course" %>
+        <%= t.heading "Course ID", right: true %>
+        <%= t.heading "Linked Online Courses" %>
+        <%= t.heading "Action" %>
+      <% end %>
+      <%= t.body do %>
+        <% @courses.each do |course| %>
+          <%= t.row do %>
+            <%= t.row_header course.fullname %>
+            <%= t.cell course.id, right: true %>
+            <%= t.cell do %>
+              <% if course.online_courses.present? %>
+                <% course.online_courses.each do |linked| %>
+                  <div><%= linked[:year] %> &middot; <%= linked[:title] %> (<%= course_for_label(linked[:course_for]) %>)</div>
+                <% end %>
+              <% else %>
+                <span class="text-stone-subtle">— none —</span>
+              <% end %>
+            <% end %>
+            <%= t.cell do %>
+              <%= button_link "Add Course", :primary,
+                              new_admin_online_course_path(year: @year, course_id: course.id, course_name: course.fullname),
+                              size: "sm" %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

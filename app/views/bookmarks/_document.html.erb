@@ -1,0 +1,32 @@
+<%# One bookmark document: its name, a thin status line, then the links.
+
+    This whole partial lives inside the refreshing frame, so the name and the
+    "updated" time are both renewed along with the document. The timer sits
+    outside the frame and finds its two targets again after every load. %>
+<header class="border-b border-line">
+  <%# Two of these machines stand in HQ carrying different documents. Without
+      the name on the screen the only place it appears is the window title,
+      which a kiosk browser is usually not showing. %>
+  <h1 class="text-xl font-semibold px-3 pt-3"><%= document.description %></h1>
+
+  <%# Three fixed columns rather than a row spread apart: the countdown and the
+      clock both change width as they run, and anything spread apart would let
+      them shove the middle reading back and forth every second. Each column
+      keeps its own third of the line whatever is written in it. tabular-nums
+      holds the digits themselves still. %>
+  <div class="grid grid-cols-1 md:grid-cols-3 tabular-nums me-muted text-sm px-3 py-2">
+    <div data-bookmark-target="countdown"></div>
+    <div class="md:text-center">
+      Document updated <%= datetime_format(document.updated_at || document.created_at, year: true) %>
+    </div>
+    <div class="md:text-right">
+      Current time <span data-bookmark-target="clock"></span>
+    </div>
+  </div>
+</header>
+
+<%# lexxy-content carries the spacing and list markers a saved document needs;
+    without it the links would run together in one block. %>
+<div class="lexxy-content px-3 py-4">
+  <%= document.body.html_safe %>
+</div>

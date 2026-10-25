@@ -1,0 +1,6 @@
+<%= hero_panel icon: "calendar-days", heading_level: :h1, id: "event-date-form-header",
+               title: "Edit #{@stored_year} Event Dates",
+               description: "Change the three date windows for this event year.",
+               back_to: ["Event Dates", admin_event_dates_path] %>
+
+<%= render "form" %>
