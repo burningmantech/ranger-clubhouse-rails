@@ -24,8 +24,8 @@ Clubhouse 2's hostnames; nothing changes in DNS.
 
 Deploys happen only through GitHub Actions (`.github/workflows/`):
 
-1. **Every pull request** runs Lint, Tests and Build Docker image. `main` takes nothing but a pull
-   request with those three checks green, with no bypass.
+1. **Every pull request** runs Lint, Tests, System tests and Build Docker image. `main` takes nothing
+   but a pull request with those four checks green, with no bypass.
 2. **A merge to `main`** runs them again, pushes the image to ECR as `:<sha>` and `:staging`, migrates
    the staging database with a one-off task, and rolls the staging service (`deploy-staging` in
    `cicd.yml`). Check your change at the staging hostname.
