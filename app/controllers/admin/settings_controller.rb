@@ -44,12 +44,12 @@ class Admin::SettingsController < ApplicationController
   def set_setting
     @setting = Setting.find(params.expect!(:id))
     unless @setting
-      redirect_to  action: :index, error: "Setting not found."
+      redirect_to action: :index, error: "Setting not found."
       return false
     end
 
     if @setting.is_credential && !@is_tech_ninja
-      redirect_to  action: :index, error: "You are not authorized to access that setting."
+      redirect_to action: :index, error: "You are not authorized to access that setting."
       return false
     end
     true

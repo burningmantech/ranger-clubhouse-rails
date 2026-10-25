@@ -105,7 +105,7 @@ class ErrorLog < ApplicationRecord
         # to_unsafe_h, and the filter keeps passwords and secrets out of a log
         # more people can read than should hold them.
         data[:parameters] = request.parameters.to_hash
-        data[:headers] = request.headers.env.select{|k, _| k =~ /^HTTP_/}
+        data[:headers] = request.headers.env.select { |k, _| k =~ /^HTTP_/ }
 
         error[:ip] = request.remote_ip
         error[:user_agent] = request.user_agent
@@ -148,7 +148,7 @@ class ErrorLog < ApplicationRecord
         data[:method] = request.method
         data[:url] = request.original_url
         data[:parameters] = request.parameters.to_hash
-        data[:headers] = request.headers.env.select{|k, _| k =~ /^HTTP_/}
+        data[:headers] = request.headers.env.select { |k, _| k =~ /^HTTP_/ }
       end
 
       data.merge!(extra)

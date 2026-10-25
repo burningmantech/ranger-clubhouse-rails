@@ -36,7 +36,7 @@ module Sso
 
   class << self
     def mode
-      #ENV[MODE_VAR].presence
+      # ENV[MODE_VAR].presence
       "server"
     end
 

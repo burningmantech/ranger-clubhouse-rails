@@ -1,0 +1,182 @@
+# Docs: https://docs.github.com/en/actions
+#
+# Every pull request: lint, tests, Docker image build. The deploy jobs
+# (staging on a merge to main, production by hand) are the next slices of
+# .scratch/github-cicd/PRD.md and follow burningmantech/ranger-ims-go.
+
+name: CI/CD
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  # Production runs on Phoenix time, and so do the tests: datetimes are stored
+  # as the process's local wall clock (config.active_record.default_timezone).
+  TZ: America/Phoenix
+
+jobs:
+
+  lint:
+    name: Lint
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+
+      - name: Checkout source code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
+        with:
+          bundler-cache: true
+
+      - name: RuboCop
+        run: bin/rubocop
+
+      - name: Brakeman
+        run: bin/brakeman --no-pager
+
+      - name: CSS ratchet
+        run: ruby bin/css_lint.rb --strict
+
+      - name: Importmap audit
+        run: bin/importmap audit
+
+
+  test:
+    name: Tests
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      mariadb:
+        image: mariadb:12.3.3
+        env:
+          MARIADB_ROOT_PASSWORD: donothing
+          MARIADB_USER: rangers
+          MARIADB_PASSWORD: donothing
+          MARIADB_DATABASE: clubhouse3_test
+          TZ: America/Phoenix
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      RAILS_ENV: test
+      CI: true
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+
+      - name: Checkout source code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y default-libmysqlclient-dev libvips-dev
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
+        with:
+          bundler-cache: true
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      # Tailwind resolves the daisyUI plugin from node_modules.
+      - name: Build CSS
+        run: npm ci && bin/rails tailwindcss:build
+
+      # The test workers each create their own database (clubhouse3_test-<n>).
+      - name: Let the test user create databases
+        run: mariadb --host 127.0.0.1 --user root --password=donothing -e "GRANT ALL ON *.* TO 'rangers'@'%'"
+
+      - name: Prepare the database
+        run: bin/rails db:prepare
+
+      - name: Run tests
+        run: bin/rails test:all
+
+      - name: Keep failed system-test screenshots
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: screenshots
+          path: tmp/screenshots
+          if-no-files-found: ignore
+          retention-days: 7
+
+
+  docker-build:
+    name: Build Docker image
+
+    # Fargate runs the image on arm64 (Graviton); build it natively.
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+
+      - name: Checkout source code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build Docker image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: linux/arm64
+          pull: true
+          load: true
+          tags: "ranger-clubhouse-rails:${{ github.sha }}"
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # `load: true` exports to the local daemon, which can't take the
+          # attestation manifest list buildx would otherwise attach.
+          provenance: false
+
+      # The deploy job of the same run will push this image, so it never has
+      # to be built twice.
+      - name: Save Docker image
+        run: docker image save "ranger-clubhouse-rails:${{ github.sha }}" | gzip -1 > docker_image.tgz
+
+      - name: Upload Docker image artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: docker
+          path: docker_image.tgz
+          retention-days: 1

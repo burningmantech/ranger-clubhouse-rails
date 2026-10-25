@@ -42,7 +42,7 @@ class OauthClient < ApplicationRecord
   # compared as written. Nothing after a # -- the browser keeps that part to
   # itself, so a code could never follow it.
   # REDIRECT_URI_FORMAT = %r{\Ahttps?://[^\s#]+\z}
-  #validates :redirect_uri, presence: true, length: { maximum: TEXT_COLUMN_LIMIT },
+  # validates :redirect_uri, presence: true, length: { maximum: TEXT_COLUMN_LIMIT },
   #                         format: { with: REDIRECT_URI_FORMAT, allow_blank: true }
 
   # Callbacks

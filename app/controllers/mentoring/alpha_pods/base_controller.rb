@@ -53,7 +53,7 @@ class Mentoring::AlphaPods::BaseController < ApplicationController
           ui_toast_stream(message, type)
         ]
       end
-      format.html { redirect_to  shift_path, type => message }
+      format.html { redirect_to shift_path, type => message }
     end
   end
 

@@ -1,0 +1,308 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "1f3cf27423a45dccd830054ae6c1b199c847788bad0c496326190c7b4f186770",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "config/initializers/active_record_extensions.rb",
+      "line": 11,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "where(\"#{column} >= ? AND #{column} < ?\", Time.local(first), Time.local((last + 1)))",
+      "render_path": null,
+      "location": null,
+      "user_input": "column",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "column is a string literal at every call site (grep where_like/where_year); values are bound with ?."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "44d5233dc02215021ba4580eed13a625514ccc9e120ce9770204f2b5c18bd2b2",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/models/position.rb",
+      "line": 473,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "joins(:person_position).where(:person_position => ({ :person_id => person_id })).where(:active => true).where(\"#{vehicle_type}_eligible\" => true)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Position",
+        "method": "Position.vehicle_eligible_for_person"
+      },
+      "user_input": "vehicle_type",
+      "confidence": "Weak",
+      "cwe_id": [
+        89
+      ],
+      "note": "vehicle_type is the literal \"mvr\" or \"pvr\" at every call site, and the hash form quotes the column."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "57b86c2b4dae60c3a4f1fb4590d1355dfef909f82957bf54fdefef3df3fed50e",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/models/position.rb",
+      "line": 486,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "joins(:person_position).where(:person_position => ({ :person_id => person_id })).where(:active => true).where(\"#{vehicle_type}_eligible\" => true)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Position",
+        "method": "Position.vehicle_potential?"
+      },
+      "user_input": "vehicle_type",
+      "confidence": "Weak",
+      "cwe_id": [
+        89
+      ],
+      "note": "vehicle_type is the literal \"mvr\" or \"pvr\" at every call site, and the hash form quotes the column."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "7c758e729e46277886b4fbd46f6d9a10fd0262b67b8155ab0312b233bae3cc32",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/controllers/training/mentoring/assignments_controller.rb",
+      "line": 52,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "ArtMentoring::Shifts.new(Training.find_training_position(params[:slug]), (nil or if params[:year].to_s.match?(/\\A\\d{4}\\z/) and params[:year].to_s.to_i.between?(year_floor, current_year) then\n  params[:year].to_s.to_i\nelse\n  current_year\nend)).group(params[:key].to_s)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Training::Mentoring::AssignmentsController",
+        "method": "load_shift"
+      },
+      "user_input": "params[:key].to_s",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "ArtMentoring::Shifts#group is Array#find by key, not SQL GROUP BY."
+    },
+    {
+      "warning_type": "Denial of Service",
+      "warning_code": 76,
+      "fingerprint": "80d89c317a269bbc6dc45584ab617db62360f31083c019902981381b362d3e4c",
+      "check_name": "RegexDoS",
+      "message": "Model attribute used in regular expression",
+      "file": "app/helpers/messages_helper.rb",
+      "line": 154,
+      "link": "https://brakemanscanner.org/docs/warning_types/denial_of_service/",
+      "code": "/(#{PersonMessage.search_pattern(query)})/",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "MessagesHelper",
+        "method": "message_search_pattern"
+      },
+      "user_input": "PersonMessage.search_pattern(query)",
+      "confidence": "Medium",
+      "cwe_id": [
+        20,
+        185
+      ],
+      "note": "PersonMessage.search_pattern escapes every word with Regexp.escape before building the pattern."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "b553090559fa5203fac52e08fbac3c9c3b63b31d9310b01f8d8e9ccde0533aeb",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/controllers/training/mentoring/assignments_controller.rb",
+      "line": 44,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "ArtMentoring::Shifts.new(Training.find_training_position(params[:slug]), (nil or if params[:year].to_s.match?(/\\A\\d{4}\\z/) and params[:year].to_s.to_i.between?(year_floor, current_year) then\n  params[:year].to_s.to_i\nelse\n  current_year\nend)).group(params[:key].to_s)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Training::Mentoring::AssignmentsController",
+        "method": "save"
+      },
+      "user_input": "params[:key].to_s",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "ArtMentoring::Shifts#group is Array#find by key, not SQL GROUP BY."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "b57a56eeead3ebfe36aa7a9f5a09c5f819cfdcaf318146f358811cd55004083f",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/lib/person_search.rb",
+      "line": 342,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "Arel.sql(((((\"CASE\" + \" WHEN CONCAT(first_name, ' ', last_name) LIKE #{sanitize_sql_value(\"%#{query}%\")} THEN CONCAT('12', first_name, ' ', last_name)\") + \" WHEN CONCAT(preferred_name, ' ', last_name) LIKE #{sanitize_sql_value(\"%#{query}%\")} THEN CONCAT('12', preferred_name, ' ', last_name)\") + \" WHEN last_name LIKE #{sanitize_sql_value(\"#{query}%\")} THEN CONCAT('11', last_name)\") + \" ELSE CONCAT('99', callsign) END\"))",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "PersonSearch",
+        "method": "search_name"
+      },
+      "user_input": "sanitize_sql_value(\"#{query}%\")",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "Every interpolated value goes through sanitize_sql_value; only the CASE skeleton is literal."
+    },
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 2,
+      "fingerprint": "d5541f453b441bd073518f947e42067b09245a43ec0ca01dd1ea0290694938b9",
+      "check_name": "CrossSiteScripting",
+      "message": "Unescaped model attribute",
+      "file": "app/views/me/vehicles_dashboard/mvr_submit.html.erb",
+      "line": 8,
+      "link": "https://brakemanscanner.org/docs/warning_types/cross_site_scripting",
+      "code": "Document.find_id_or_tag(\"mvr-form-instructions\").body",
+      "render_path": [
+        {
+          "type": "controller",
+          "class": "Me::VehiclesDashboardController",
+          "method": "mvr_submit",
+          "line": 24,
+          "file": "app/controllers/me/vehicles_dashboard_controller.rb",
+          "rendered": {
+            "name": "me/vehicles_dashboard/mvr_submit",
+            "file": "app/views/me/vehicles_dashboard/mvr_submit.html.erb"
+          }
+        }
+      ],
+      "location": {
+        "type": "template",
+        "template": "me/vehicles_dashboard/mvr_submit"
+      },
+      "user_input": null,
+      "confidence": "Medium",
+      "cwe_id": [
+        79
+      ],
+      "note": "Document bodies are HTML written by admins on the Documents page; rendering them unescaped is the feature."
+    },
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 2,
+      "fingerprint": "d555e114a3adc2b46cd959957fa06b3f96b10b3aac601d737b252adb459ab9df",
+      "check_name": "CrossSiteScripting",
+      "message": "Unescaped model attribute",
+      "file": "app/views/admin/documents/body.html.erb",
+      "line": 16,
+      "link": "https://brakemanscanner.org/docs/warning_types/cross_site_scripting",
+      "code": "Document.find(params.expect!(:id)).body",
+      "render_path": [
+        {
+          "type": "controller",
+          "class": "Admin::DocumentsController",
+          "method": "body",
+          "line": 21,
+          "file": "app/controllers/admin/documents_controller.rb",
+          "rendered": {
+            "name": "admin/documents/body",
+            "file": "app/views/admin/documents/body.html.erb"
+          }
+        }
+      ],
+      "location": {
+        "type": "template",
+        "template": "admin/documents/body"
+      },
+      "user_input": null,
+      "confidence": "High",
+      "cwe_id": [
+        79
+      ],
+      "note": "Document bodies are HTML written by admins on the Documents page; rendering them unescaped is the feature."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "d984e416b00d7666605d58bcd57ba62cf187813b5b357114e9d67f8739a86fa0",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/lib/person_search.rb",
+      "line": 313,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "Arel.sql((((((((\"CASE\" + \" WHEN callsign_normalized = #{sanitize_sql_value(WordUtils.normalize_word(query))} THEN CONCAT('01', callsign)\") + \" WHEN callsign_normalized LIKE #{sanitize_sql_value(\"#{WordUtils.normalize_word(query)}%\")} THEN CONCAT('02', callsign)\") + \" WHEN callsign_normalized LIKE #{sanitize_sql_value(\"%#{WordUtils.normalize_word(query)}%\")} THEN CONCAT('03', callsign)\") + \" WHEN callsign_soundex = #{sanitize_sql_value(WordUtils.metaphone(query))} THEN CONCAT('04', callsign)\") + \" WHEN callsign_soundex LIKE #{sanitize_sql_value(\"#{WordUtils.metaphone(query)}%\")} THEN CONCAT('05', callsign)\") + \" WHEN callsign_soundex LIKE #{sanitize_sql_value(\"%#{WordUtils.metaphone(query)}%\")} THEN CONCAT('06', callsign)\") + \" ELSE CONCAT('99', callsign) END\"))",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "PersonSearch",
+        "method": "search_callsign"
+      },
+      "user_input": "sanitize_sql_value(\"%#{WordUtils.metaphone(query)}%\")",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "Every interpolated value goes through sanitize_sql_value; only the CASE skeleton is literal."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "df26f92c01037c3b900cb89298d61487b6ae64cad27924b9ac5d9a4a6f684a9e",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "config/initializers/active_record_extensions.rb",
+      "line": 18,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "where(\"#{column} LIKE ?\", match)",
+      "render_path": null,
+      "location": null,
+      "user_input": "column",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "column is a string literal at every call site (grep where_like/where_year); values are bound with ?."
+    },
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 2,
+      "fingerprint": "e4199d14aaf5d6c53ca7fd31c1e4a36f3425b2f591ce5dbe10f85136fbacc0dc",
+      "check_name": "CrossSiteScripting",
+      "message": "Unescaped model attribute",
+      "file": "app/views/me/agreements/show.html.erb",
+      "line": 6,
+      "link": "https://brakemanscanner.org/docs/warning_types/cross_site_scripting",
+      "code": "Document.find_id_or_tag(Agreements.retrieve(current_user).find do\n (agreement.tag == params.expect!(:id))\n end.tag).body",
+      "render_path": [
+        {
+          "type": "controller",
+          "class": "Me::AgreementsController",
+          "method": "show",
+          "line": 16,
+          "file": "app/controllers/me/agreements_controller.rb",
+          "rendered": {
+            "name": "me/agreements/show",
+            "file": "app/views/me/agreements/show.html.erb"
+          }
+        }
+      ],
+      "location": {
+        "type": "template",
+        "template": "me/agreements/show"
+      },
+      "user_input": null,
+      "confidence": "Medium",
+      "cwe_id": [
+        79
+      ],
+      "note": "Document bodies are HTML written by admins on the Documents page; rendering them unescaped is the feature."
+    }
+  ],
+  "updated": "2026-10-25 16:56:17 -0800",
+  "brakeman_version": "8.0.6"
+}
