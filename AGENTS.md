@@ -130,6 +130,13 @@ See `docs/UI-COMPONENTS.md` for complete API reference and `docs/DESIGN-GUIDE.md
 - Take deploy facts from the repo (`docker-compose.yml`, `Dockerfile`, `bin/docker-entrypoint`) and call them
   unverified on beta
 
+### Staging and Production on AWS
+- Staging and production run on ECS in the `rangers` cluster and are deployed only by the workflows in
+  `.github/workflows/`: a merge to `main` rolls staging, and `deploy.yml` promotes staging's image to production
+  when an allow-listed person runs it. Never dispatch, re-run or cancel those workflows
+- Never change the AWS services, task definitions or databases from a session: the task definition in AWS holds the
+  environment, and a deploy swaps only the image. Read-only `aws` inventory is fine
+
 ## Skills Reference
 
 Invoke the appropriate skill(s) BEFORE starting work.
