@@ -7,7 +7,11 @@
   <% if flash[:error] %>
     <%= ui_callout_box :error do %><%= flash[:error] %><% end %>
   <% end %>
-  <% if @status.nil? %>
+  <% if Current.is_ghd_server? %>
+    <%= ui_callout_box :info do %>
+      Live Twilio account reads are not available on the Groundhog Day Server.
+    <% end %>
+  <% elsif @status.nil? %>
     <%= ui_callout_box :warning do %>
       The Clubhouse cannot ask Twilio about the account until the Account SID and Auth Token are set.
     <% end %>
@@ -91,8 +95,8 @@
       <% end %>
     <% end %>
 
-    <%# The training server holds the same live credentials, so it is never
-        offered the change. %>
+    <%# Offered once every Notify service was read; the Groundhog Day Server
+        never gets this far. %>
     <% lock = twilio_incoming_lock(@status) %>
     <% if messaging.any? && lock.nil? %>
       <%= ui_form(nil, admin_sms_management_incoming_path, scope: :twilio_incoming, method: :patch,

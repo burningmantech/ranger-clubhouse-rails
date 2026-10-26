@@ -99,14 +99,12 @@ module Admin::SmsManagementHelper
   # Why the panel does not offer to change where Twilio sends incoming texts,
   # or nil when it does. It is offered only where every Notify service was
   # read, since the change reads each one again and stops at the first it
-  # cannot.
+  # cannot. (The Groundhog Day Server never draws the panel at all.)
   def twilio_incoming_lock(status)
-    if !SmsManagement.incoming_changes_allowed?
-      "The training server cannot change where Twilio sends incoming texts."
-    elsif status[:services].any? { |service| service.key?(:error) }
-      "Twilio could not read every Notify service above, so the address can be changed here " \
-        "once TwilioServiceId lists only services Twilio knows."
-    end
+    return unless status[:services].any? { |service| service.key?(:error) }
+
+    "Twilio could not read every Notify service above, so the address can be changed here " \
+      "once TwilioServiceId lists only services Twilio knows."
   end
 
   # One of TwilioStatus's answers: the block's rendering of what Twilio said,

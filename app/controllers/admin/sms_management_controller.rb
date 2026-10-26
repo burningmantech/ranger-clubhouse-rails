@@ -29,15 +29,17 @@ class Admin::SmsManagementController < ApplicationController
 
   # The Twilio Account panel, loaded into its frame on its own so the page
   # never waits on Twilio. Refresh asks Twilio again instead of reading the
-  # cached answer.
+  # cached answer. The Groundhog Day Server holds the same live credentials
+  # and never asks (the owner's ruling, 2026-10-26), as it never asks Moodle.
   def twilio
-    @status = TwilioStatus.fetch(refresh: params[:refresh].present?)
+    @status = TwilioStatus.fetch(refresh: params[:refresh].present?) unless Current.is_ghd_server?
     render layout: false
   end
 
-  # One page of Twilio's message log, loaded into its frame the same way.
+  # One page of Twilio's message log, loaded into its frame the same way, and
+  # never asked for on the Groundhog Day Server, as the panel is not.
   def messages
-    @log = TwilioMessageLog.page(@form.criteria, page: @form.page, token: @form.page_token)
+    @log = TwilioMessageLog.page(@form.criteria, page: @form.page, token: @form.page_token) unless Current.is_ghd_server?
     render layout: false
   end
 
@@ -111,8 +113,10 @@ class Admin::SmsManagementController < ApplicationController
   end
 
   def export
-    export = TwilioMessageLog.export(@form.criteria)
-    problem = if export.nil?
+    export = TwilioMessageLog.export(@form.criteria) unless Current.is_ghd_server?
+    problem = if Current.is_ghd_server?
+                "live Twilio reads are not available on the Groundhog Day Server"
+              elsif export.nil?
                 "the Account SID and Auth Token are not set"
               elsif export[:error]
                 helpers.sms_mask_sids(export[:error])

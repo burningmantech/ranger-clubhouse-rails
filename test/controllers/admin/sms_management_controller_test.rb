@@ -435,7 +435,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     assert_not ActionLog.exists?(event: "twilio-incoming-update")
   end
 
-  test "the training server is neither offered the change nor allowed it" do
+  test "the training server asks Twilio nothing about the account, and is not allowed the change" do
     configure_twilio
     fake = FakeTwilioClient.new
 
@@ -443,12 +443,12 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
 
     with_env("RANGER_CLUBHOUSE_GROUNDHOG_DAY_TIME" => "2026-08-01 12:00:00") do
       with_fake_twilio(fake) do
-        get admin_sms_management_twilio_path
+        get admin_sms_management_twilio_path(refresh: 1)
 
         assert_response :success
-        assert_select "turbo-frame#sms-twilio dd", text: /Another server/
+        assert_select "turbo-frame#sms-twilio", text: /Live Twilio account reads are not available on the Groundhog Day Server\./
         assert_select "form[action=?]", admin_sms_management_incoming_path, 0
-        assert_select "turbo-frame#sms-twilio p", text: "The training server cannot change where Twilio sends incoming texts."
+        assert_empty fake.asked
 
         patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
       end
@@ -456,6 +456,34 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to me_root_path
     assert_not_includes fake.asked, :messaging_update
+  end
+
+  test "the training server asks Twilio nothing for the log or the export, and offers no export" do
+    configure_twilio
+    fake = FakeTwilioClient.new(texts: [FakeTwilioClient.text])
+
+    sign_in_as(@tech_ninja)
+
+    with_env("RANGER_CLUBHOUSE_GROUNDHOG_DAY_TIME" => "2026-08-01 12:00:00") do
+      with_fake_twilio(fake) do
+        get admin_sms_management_path
+
+        assert_response :success
+        assert_select "a[href*='.csv']", 0
+
+        get admin_sms_management_messages_path
+
+        assert_select "turbo-frame#sms-log", text: /Live Twilio text logs are not available on the Groundhog Day Server\./
+
+        get admin_sms_management_path(format: :csv)
+
+        assert_redirected_to admin_sms_management_path
+        assert_equal "The texts could not be exported: live Twilio reads are not available on the Groundhog Day Server.",
+                     flash[:error]
+      end
+    end
+
+    assert_empty fake.asked
   end
 
   test "a change Twilio does not answer may have been made, so it is recorded and said so" do

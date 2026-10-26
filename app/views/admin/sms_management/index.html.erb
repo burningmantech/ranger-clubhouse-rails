@@ -83,7 +83,7 @@
 <%= filter_bar id: "sms-filters",
                chips: sms_filter_chips(@form),
                clear_url: admin_sms_management_path,
-               actions: (if @settings[:account_sid] && @settings[:auth_token]
+               actions: (if @settings[:account_sid] && @settings[:auth_token] && !Current.is_ghd_server?
                           export_csv_link(admin_sms_management_path(@form.query_params.merge(format: :csv)))
                         end),
                url: admin_sms_management_path, model: @form, scope: SmsFilterForm::PARAM_SCOPE do |f| %>

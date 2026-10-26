@@ -1,5 +1,9 @@
 <%= turbo_frame_tag "sms-log", target: "_top" do %>
-  <% if @log.nil? %>
+  <% if Current.is_ghd_server? %>
+    <%= ui_callout_box :info do %>
+      Live Twilio text logs are not available on the Groundhog Day Server.
+    <% end %>
+  <% elsif @log.nil? %>
     <%= ui_callout_box :warning do %>
       The Clubhouse cannot ask Twilio for the texts until the Account SID and Auth Token are set.
     <% end %>
