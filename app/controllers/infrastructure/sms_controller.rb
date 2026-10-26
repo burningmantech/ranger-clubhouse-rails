@@ -7,6 +7,8 @@ class Infrastructure::SmsController < ApplicationController
 
   # Block known web crawlers from this unpublished endpoint
   before_action :reject_crawlers
+  # Then anything Twilio did not sign, which could STOP or START any number.
+  include TwilioSignatureConcern
 
   # Process an inbound SMS message from Twilio
   def inbound
