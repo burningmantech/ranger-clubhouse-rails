@@ -713,7 +713,6 @@ Controller: `app/controllers/me/agreements_controller.rb` (`index`, `show`, `sig
 Owner: `Agreements` (`app/lib/agreements.rb`), `Document` (`app/models/document.rb`), `PersonEvent` (`app/models/person_event.rb`)
 Touches: `person_event` (w), `person` (w), `action_logs` (w), `document`, `setting`, `slot`
 Verify: `test/controllers/me/agreements_controller_test.rb`, `test/lib/agreements_test.rb`, `test/lib/role_manager_test.rb`
-Trap: `redirect_to action: :show, flash: { ... }` (and `find_agreement`'s `index` redirects) pass one hash, so `flash:` lands in the query string and no flash shows — put the flash in a second hash.
 Trap: `RoleManager` strips every role from an Event Management holder until the dept NDA is signed (then `sign_agreement` calls `PersonRole.clear_cache`) — the NDA is listed and signable only for a raw holder (`Agreements::DOCUMENTS[:role]`, checked in `is_document_visible?` and `can_sign_document?`), so test it with `has_raw_role?(Role::EVENT_MANAGEMENT)`, never `has_role?`.
 
 ### Me › Service Recognition (awards)
@@ -3313,7 +3312,7 @@ Gate: `ADMIN`; a credential setting (`Setting#is_credential`) also needs `TECH_N
 Controller: `app/controllers/admin/settings_controller.rb` (`index`, `edit`, `update`)
 Owner: `Setting` (`app/models/setting.rb`), `SettingsSearchForm` (`app/forms/settings_search_form.rb`)
 Touches: `setting` (w)
-Verify: `test/controllers/admin/settings_controller_test.rb` (saving an unstored setting only), `test/models/role_cache_invalidation_test.rb`, `test/models/setting_test.rb`, `test/lib/admin_menu_test.rb` (menu gate only)
+Verify: `test/controllers/admin/settings_controller_test.rb` (saving an unstored setting, and the error each refusal shows), `test/models/role_cache_invalidation_test.rb`, `test/models/setting_test.rb`, `test/lib/admin_menu_test.rb` (menu gate only)
 Trap: An unstored setting is a new record, so its edit form passes `method: :patch` -- without it `form_with` POSTs to `/admin/settings/:id`, which has no route, and the save is lost.
 Trap: `Setting` has no `audit_model`, so saves write no `action_logs` row, and the "Setting Changes" filter (`setting-%`) and `DailyReportJob::SETTING_EVENTS` (`setting-update`) find nothing this app writes.
 Trap: `Setting.find` never raises (nil if unknown, unsaved `Setting.new` if unstored), and `cache_delete("*")` clears only a key named `*` — the real clear is `Setting#clear_cache` (after_commit; see the Settings (feature switches) trap), plus `RoleManager.purge_all` for `RoleManager::ROLE_SETTINGS`.

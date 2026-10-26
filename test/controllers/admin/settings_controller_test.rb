@@ -27,4 +27,25 @@ class Admin::SettingsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_settings_path(filter: "mailtest")
     assert_equal "test+?@example.com", Setting.find_by!(name:).value
   end
+
+  # Both refusals used to put their message in the list's query string, where
+  # nothing reads it, rather than in the flash.
+  test "an unknown setting returns to the list, which says why" do
+    get edit_admin_setting_path("NoSuchSetting")
+
+    assert_redirected_to admin_settings_path
+    follow_redirect!
+    assert_select "[data-controller=toast]", text: /Setting not found\./
+  end
+
+  test "a credential setting is refused to an Admin who is not a Tech Ninja" do
+    name = Setting::GEMINI_API_KEY
+
+    assert_no_changes -> { Setting.find_by(name:)&.value } do
+      patch admin_setting_path(name), params: { setting: { value: "not-a-key" } }
+    end
+
+    assert_redirected_to admin_settings_path
+    assert_equal "You are not authorized to access that setting.", flash[:error]
+  end
 end

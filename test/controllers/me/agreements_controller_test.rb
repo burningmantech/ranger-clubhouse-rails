@@ -12,8 +12,8 @@ class Me::AgreementsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@person)
   end
 
-  def create_agreement_document
-    Document.create!(tag: TAG, description: "Behavioral Standards", body: "<p>Be excellent.</p>",
+  def create_agreement_document(tag = TAG)
+    Document.create!(tag:, description: "Behavioral Standards", body: "<p>Be excellent.</p>",
                      person_create_id: @person.id, person_update_id: @person.id)
   end
 
@@ -50,5 +50,35 @@ class Me::AgreementsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "Be excellent.", response.body
+  end
+
+  # Each redirect used to put its message in the query string, where nothing
+  # reads it, rather than in the flash.
+  test "signing an agreement returns to it and says it was signed" do
+    create_agreement_document
+
+    patch sign_me_agreement_path(TAG)
+
+    assert_redirected_to me_agreement_path(TAG)
+    follow_redirect!
+    assert_select "[data-controller=toast]", text: /Agreement signed\./
+    assert @person.reload.behavioral_agreement
+  end
+
+  test "an unknown agreement returns to the list, which says why" do
+    get me_agreement_path("no-such-agreement")
+
+    assert_redirected_to me_agreements_path
+    assert_equal "Agreement was not found.", flash[:error]
+  end
+
+  # The Vehicle Use Protocol is listed all year, but signable only while its setting is on.
+  test "an agreement not open for signing returns to the list, which says why" do
+    create_agreement_document(Document::MOTORPOOL_POLICY_TAG)
+
+    get me_agreement_path(Document::MOTORPOOL_POLICY_TAG)
+
+    assert_redirected_to me_agreements_path
+    assert_equal "Agreement is not available at this time.", flash[:error]
   end
 end

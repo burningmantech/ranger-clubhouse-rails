@@ -17,7 +17,7 @@ class Me::AgreementsController < ApplicationController
 
   def sign
     Agreements.sign_agreement(current_user, @agreement.tag)
-    redirect_to action: :show, success: "Agreement signed."
+    redirect_to me_agreement_path(@agreement.tag), success: "Agreement signed."
   end
 
   private
@@ -31,18 +31,18 @@ class Me::AgreementsController < ApplicationController
     @agreement = @agreements.find { |agreement| agreement.tag == tag }
 
     unless @agreement
-      redirect_to action: :index, error: "Agreement was not found."
+      redirect_to me_agreements_path, error: "Agreement was not found."
       return false
     end
 
     unless @agreement.available
-      redirect_to action: :index, error: "Agreement is not available at this time."
+      redirect_to me_agreements_path, error: "Agreement is not available at this time."
       return false
     end
 
     @document = Document.find_id_or_tag(@agreement.tag)
     unless @document
-      redirect_to action: :index, error: "Agreement document was not found."
+      redirect_to me_agreements_path, error: "Agreement document was not found."
       return false
     end
 
