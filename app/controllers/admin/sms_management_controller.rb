@@ -42,8 +42,8 @@ class Admin::SmsManagementController < ApplicationController
   end
 
   # Points every incoming text at another address, starting with the next
-  # one: this server's at the cutover from Clubhouse 2, or back again. Only a
-  # server set up for it may (SmsManagement.incoming_changes_allowed?). The
+  # one: this server's at the cutover from Clubhouse 2, or back again. Never
+  # the training server (SmsManagement.incoming_changes_allowed?). The
   # account panel's frame then reloads past its cache to show the change.
   def update_incoming
     url = params.expect(twilio_incoming: [:url])[:url].to_s.strip

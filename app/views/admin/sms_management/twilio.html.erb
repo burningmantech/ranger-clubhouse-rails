@@ -91,8 +91,8 @@
       <% end %>
     <% end %>
 
-    <%# Every copy of the database holds the live credentials, so only the
-        server set up for it is offered the change. %>
+    <%# The training server holds the same live credentials, so it is never
+        offered the change. %>
     <% lock = twilio_incoming_lock(@status) %>
     <% if messaging.any? && lock.nil? %>
       <%= ui_form(nil, admin_sms_management_incoming_path, scope: :twilio_incoming, method: :patch,

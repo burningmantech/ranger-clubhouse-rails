@@ -82,11 +82,6 @@ Rails.application.configure do
   # Only recorded here: the keys and the app's own code are not loaded yet.
   config.x.ses_mail_live = ENV["RANGER_CLUBHOUSE_SES_MAIL_LIVE"] == "true"
 
-  # Administration › SMS Management may point Twilio's incoming texts at
-  # another address only on the server this is switched on for: the one Twilio
-  # should post them to. Every other copy holds the same credentials.
-  config.x.twilio_incoming_live = ENV["RANGER_CLUBHOUSE_TWILIO_INCOMING_LIVE"] == "true"
-
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
   # config.action_mailer.smtp_settings = {
   #   user_name: Rails.application.credentials.dig(:smtp, :user_name),

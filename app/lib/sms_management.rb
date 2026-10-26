@@ -57,13 +57,9 @@ module SmsManagement
     Twilio::REST::Client.new(sid, token, nil, nil, Twilio::HTTP::Client.new(timeout: TIMEOUT))
   end
 
-  # Whether this server may change where Twilio sends incoming texts. Every
-  # copy of the database holds the live credentials, so only the server Twilio
-  # should post to is set up for it (RANGER_CLUBHOUSE_TWILIO_INCOMING_LIVE),
-  # and never the training server.
-  def incoming_changes_allowed?
-    Rails.configuration.x.twilio_incoming_live == true && !Current.is_ghd_server?
-  end
+  # Whether this server may change where Twilio sends incoming texts: any but
+  # the training server, which holds the same live credentials.
+  def incoming_changes_allowed? = !Current.is_ghd_server?
 
   # Why Twilio cannot post incoming texts to url, or nil when it can: it posts
   # them from the internet, so the address must be https on a public name. A
@@ -100,7 +96,7 @@ module SmsManagement
   # missing.
   def point_incoming_texts(url)
     unless incoming_changes_allowed?
-      return { changed: [], error: "this server is not set up to change where Twilio sends incoming texts" }
+      return { changed: [], error: "the training server cannot change where Twilio sends incoming texts" }
     end
 
     client = self.client or return

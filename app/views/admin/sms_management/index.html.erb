@@ -15,7 +15,7 @@
     <dt>What does the export hold?</dt>
     <dd>The newest <%= number_with_delimiter(TwilioMessageLog::EXPORT_LIMIT) %> texts the filters match, as Twilio lists them.</dd>
     <dt>How do I move incoming texts to this server?</dt>
-    <dd>Use Update Incoming Address in the Twilio Account panel, offered only on the server set up to take the texts. Twilio sends the next text a Ranger sends to the address entered, and the server that had them stops getting replies. To move them back, enter the old address, which the message after the change names; an Admin can also find it in the action log.</dd>
+    <dd>Use Update Incoming Address in the Twilio Account panel. Twilio sends the next text a Ranger sends to the address entered, and the server that had them stops getting replies. To move them back, enter the old address, which the message after the change names; an Admin can also find it in the action log.</dd>
     <dt>How current is this page?</dt>
     <dd>The log asks Twilio each time it is shown. The account panel asks at most once every five minutes, and Refresh asks it again.</dd>
   </dl>

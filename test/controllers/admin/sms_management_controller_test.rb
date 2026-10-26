@@ -446,7 +446,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
         assert_response :success
         assert_select "turbo-frame#sms-twilio dd", text: /Another server/
         assert_select "form[action=?]", admin_sms_management_incoming_path, 0
-        assert_select "turbo-frame#sms-twilio p", text: "This server is not set up to change where Twilio sends incoming texts."
+        assert_select "turbo-frame#sms-twilio p", text: "The training server cannot change where Twilio sends incoming texts."
 
         patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
       end
@@ -454,30 +454,6 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to me_root_path
     assert_not_includes fake.asked, :messaging_update
-  end
-
-  test "a server not set up for it is neither offered the change nor allowed it" do
-    configure_twilio
-    fake = FakeTwilioClient.new
-
-    sign_in_as(@tech_ninja)
-
-    with_twilio_incoming_live(false) do
-      with_fake_twilio(fake) do
-        get admin_sms_management_twilio_path
-
-        assert_select "form[action=?]", admin_sms_management_incoming_path, 0
-        assert_select "turbo-frame#sms-twilio p", text: "This server is not set up to change where Twilio sends incoming texts."
-
-        patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
-      end
-    end
-
-    assert_redirected_to admin_sms_management_twilio_path(refresh: 1)
-    assert_equal "Twilio was not changed: this server is not set up to change where Twilio sends incoming texts.",
-                 flash[:error]
-    assert_not_includes fake.asked, :messaging_update
-    assert_not ActionLog.exists?(event: "twilio-incoming-update")
   end
 
   test "a change Twilio does not answer may have been made, so it is recorded and said so" do

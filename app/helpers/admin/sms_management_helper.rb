@@ -97,7 +97,7 @@ module Admin::SmsManagementHelper
   # cannot.
   def twilio_incoming_lock(status)
     if !SmsManagement.incoming_changes_allowed?
-      "This server is not set up to change where Twilio sends incoming texts."
+      "The training server cannot change where Twilio sends incoming texts."
     elsif status[:services].any? { |service| service.key?(:error) }
       "Twilio could not read every Notify service above, so the address can be changed here " \
         "once TwilioServiceId lists only services Twilio knows."

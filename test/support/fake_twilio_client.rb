@@ -168,16 +168,6 @@ module FakeTwilioTestHelper
     SmsManagement.define_singleton_method(:build_client, original)
   end
 
-  # Whether this server may change where Twilio sends incoming texts, for one
-  # block. Production reads it from the server; the tests start with it on.
-  def with_twilio_incoming_live(value)
-    original = Rails.configuration.x.twilio_incoming_live
-    Rails.configuration.x.twilio_incoming_live = value
-    yield
-  ensure
-    Rails.configuration.x.twilio_incoming_live = original
-  end
-
   def configure_twilio(sid: "deadbeef", token: "token-never-shown",
                        service_ids: "ISservice0001")
     { Setting::TWILIO_ACCOUNT_SID => sid, Setting::TWILIO_AUTH_TOKEN => token,
