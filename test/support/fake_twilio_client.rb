@@ -5,9 +5,12 @@ require "faraday"
 # A stand-in for Twilio::REST::Client answering what SMS Management asks:
 # the account, its balance, the Notify services and the Messaging Service each
 # sends through (which an update changes), the message list (a page at a time,
-# or all at once) and the alerts, from plain values. A part named in
+# or all at once) and the alerts, from plain values; and what the send path
+# sends: a Notify service's notifications, and texts made with
+# messages.create, each answered with a SID of its own. A part named in
 # errors: raises the error given instead. asked records every part asked for,
-# in order, and params the keywords each part was last asked with. A Notify
+# in order, and params the keywords each part was last asked with;
+# notifications and created_texts keep every send, in order. A Notify
 # service is a name, sending through MESSAGING_SERVICE_SID, or a Service
 # naming its own Messaging Service.
 class FakeTwilioClient
@@ -24,6 +27,8 @@ class FakeTwilioClient
   MESSAGING_SERVICE_SID = "MG0123456789abcdef0123456789abcdef"
   CLUBHOUSE2_INCOMING = "https://ranger-clubhouse.burningman.org/api/sms/inbound"
   Text = Data.define(:date_sent, :date_created, :direction, :status, :error_code, :from, :to, :body)
+  # A text messages.create took: the SID Twilio answers with.
+  CreatedText = Data.define(:sid)
   Alert = Data.define(:date_generated, :error_code, :log_level, :alert_text)
 
   # One call Twilio would answer: fetch for a record.
@@ -50,12 +55,20 @@ class FakeTwilioClient
   # client.notify.v1 and client.messaging.v1: each its own list of services.
   NotifyV1 = Struct.new(:client) do
     def v1 = self
-    def services(id) = Call.new(-> { client.answer(:services) { client.notify_service(id) } })
+    def services(id) = NotifyCall.new(client, id)
   end
 
   MessagingV1 = Struct.new(:client) do
     def v1 = self
     def services(sid) = MessagingCall.new(client, sid)
+  end
+
+  # One Notify service: read it, or send through it
+  # (services(id).notifications.create).
+  NotifyCall = Struct.new(:client, :id) do
+    def fetch = client.answer(:services) { client.notify_service(id) }
+    def notifications = self
+    def create(**params) = client.answer(:notification_create, params) { client.notify_through(id, params) }
   end
 
   # One Messaging Service: read it, or change where it sends incoming texts.
@@ -64,14 +77,16 @@ class FakeTwilioClient
     def update(**params) = client.answer(:messaging_update, params) { client.update_messaging_service(sid, params) }
   end
 
-  # client.messages: the list the panel counts and the export reads, and the
-  # pages the log reads.
+  # client.messages: the list the panel counts and the export reads, the
+  # pages the log reads, and a text to send.
   MessageList = Struct.new(:client) do
     def list(**params) = client.answer(:messages, params) { client.texts }
 
     def page(**params)
       client.answer(:message_page, params) { MessagePage.new(client.texts, client.next_page_url, client.previous_page_url) }
     end
+
+    def create(**params) = client.answer(:message_create, params) { client.create_text(params) }
   end
 
   # A text as Twilio lists it. A field not given reads as a delivered text,
@@ -94,7 +109,7 @@ class FakeTwilioClient
     end
   end
 
-  attr_reader :asked, :params, :texts, :next_page_url, :previous_page_url
+  attr_reader :asked, :params, :texts, :next_page_url, :previous_page_url, :notifications, :created_texts
 
   def initialize(account: MAIN_ACCOUNT, balance: Balance.new("412.37", "USD"),
                  services: { "ISservice0001" => "Ranger Alerts" }, messaging_service_sid: MESSAGING_SERVICE_SID,
@@ -112,6 +127,8 @@ class FakeTwilioClient
     @errors = errors
     @asked = []
     @params = {}
+    @notifications = []
+    @created_texts = []
   end
 
   # The way to a call, not a call: client.api.v2010.accounts(sid) and
@@ -137,6 +154,20 @@ class FakeTwilioClient
 
   def messaging_service(sid) = @messaging_services.fetch(sid) { raise not_found(sid) }
 
+  # A notification through a Notify service Twilio knows, kept with the
+  # service's id. Notify checks no number, so every one is taken.
+  def notify_through(id, params)
+    notify_service(id)
+    @notifications << { service: id, **params }
+  end
+
+  # A text made with messages.create, kept as asked, and answered with a
+  # message SID of its own.
+  def create_text(params)
+    @created_texts << params
+    CreatedText.new(format("SM%032d", @created_texts.size))
+  end
+
   def update_messaging_service(sid, params)
     @messaging_services[sid] = messaging_service(sid).with(**params.slice(:inbound_request_url, :inbound_method,
                                                                           :fallback_url, :use_inbound_webhook_on_number))
@@ -159,13 +190,13 @@ class FakeTwilioClient
 end
 
 module FakeTwilioTestHelper
-  # SmsManagement builds every client in one place; this hands it the fake there.
+  # TwilioAccount builds every client in one place; this hands it the fake there.
   def with_fake_twilio(fake)
-    original = SmsManagement.method(:build_client)
-    SmsManagement.define_singleton_method(:build_client) { |*| fake }
+    original = TwilioAccount.method(:build_client)
+    TwilioAccount.define_singleton_method(:build_client) { |*| fake }
     yield fake
   ensure
-    SmsManagement.define_singleton_method(:build_client, original)
+    TwilioAccount.define_singleton_method(:build_client, original)
   end
 
   def configure_twilio(sid: "deadbeef", token: "token-never-shown",

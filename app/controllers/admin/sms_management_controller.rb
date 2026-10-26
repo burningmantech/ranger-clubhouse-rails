@@ -22,7 +22,7 @@ class Admin::SmsManagementController < ApplicationController
 
   def index
     respond_to do |format|
-      format.html { @settings = SmsManagement.settings }
+      format.html { @settings = TwilioAccount.settings }
       format.csv { export }
     end
   end

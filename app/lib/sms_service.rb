@@ -9,8 +9,6 @@
 # Converted from SMSService.php (Laravel/PHP)
 #
 
-class SmsException < StandardError; end
-
 class SmsService
   # Do not reply to stop replies
   NO_STOP_REPLIES = 1
@@ -52,10 +50,8 @@ class SmsService
     # @raise [RuntimeError] if TwilioAccountSID or TwilioAuthToken is not configured
     #
     def get_tokens
-      sid = Setting.get_value(Setting::TWILIO_ACCOUNT_SID)
+      sid, auth_token = TwilioAccount.settings.values_at(:account_sid, :auth_token)
       raise "TwilioAccountSID is not configured" if sid.blank?
-
-      auth_token = Setting.get_value(Setting::TWILIO_AUTH_TOKEN)
       raise "TwilioAuthToken is not configured" if auth_token.blank?
 
       [sid, auth_token]
@@ -72,10 +68,8 @@ class SmsService
     def broadcast(phone_numbers, message)
       account_sid, auth_token = get_tokens
 
-      service_ids = Setting.get_value(Setting::TWILIO_SERVICE_ID)
-      raise "TwilioServiceId is not configured" if service_ids.blank?
-
-      service_ids = service_ids.split(",")
+      service_ids = TwilioAccount.settings[:service_ids]
+      raise "TwilioServiceId is not configured" if service_ids.all?(&:blank?)
 
       # Build up request - normalize the numbers
       bindings = phone_numbers.map do |phone|
@@ -86,7 +80,7 @@ class SmsService
       chunk_size = (bindings.length + (service_count - 1)) / service_count
       binding_chunks = bindings.each_slice(chunk_size).to_a
 
-      twilio = Twilio::REST::Client.new(account_sid, auth_token)
+      twilio = TwilioAccount.build_client(account_sid, auth_token)
       service_ids.each_with_index do |service_id, idx|
         chunk = binding_chunks[idx]
         next if chunk.blank?
@@ -120,7 +114,7 @@ class SmsService
     def sms_capable?(phone_number)
       account_sid, auth_token = get_tokens
 
-      twilio = Twilio::REST::Client.new(account_sid, auth_token)
+      twilio = TwilioAccount.build_client(account_sid, auth_token)
 
       begin
         info = twilio.lookups.v1.phone_numbers(phone_number)

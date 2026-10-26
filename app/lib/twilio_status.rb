@@ -28,14 +28,14 @@ class TwilioStatus
   # balance, the texts and the alerts, plus one per service carrying its id.
   # An answer is { value: } or { error: }.
   def self.fetch(refresh: false)
-    sid, token, service_ids = SmsManagement.settings.values_at(:account_sid, :auth_token, :service_ids)
+    sid, token, service_ids = TwilioAccount.settings.values_at(:account_sid, :auth_token, :service_ids)
     return if sid.nil? || token.nil?
 
     key = ["twilio-status", CACHE_VERSION, Digest::SHA256.hexdigest([sid, token, *service_ids].join("|"))]
     cached = Rails.cache.read(key) unless refresh
     return cached if cached
 
-    reader = new(SmsManagement.build_client(sid, token))
+    reader = new(TwilioAccount.build_client(sid, token))
     status = reader.read(sid, service_ids)
     Rails.cache.write(key, status, expires_in: CACHE_FOR) unless reader.missed?
     status
@@ -85,18 +85,18 @@ class TwilioStatus
     return { error: @unreachable } if @unreachable
 
     { value: yield }
-  rescue *SmsManagement::ERRORS => e
-    error = SmsManagement.describe(e)
-    if SmsManagement.unanswered?(e)
+  rescue *TwilioAccount::ERRORS => e
+    error = TwilioAccount.describe(e)
+    if TwilioAccount.unanswered?(e)
       @missed = true
-      @unreachable = error unless SmsManagement.slow_answer?(e)
+      @unreachable = error unless TwilioAccount.slow_answer?(e)
     end
     { error: }
   end
 
   # An id Twilio cannot be asked about is answered for without asking.
   def service_answer(id)
-    answer = SmsManagement.usable_id?(id) ? ask { service(id) } : { error: SmsManagement::UNUSABLE_ID }
+    answer = TwilioAccount.usable_id?(id) ? ask { service(id) } : { error: TwilioAccount::UNUSABLE_ID }
     answer.merge(id:)
   end
 

@@ -89,7 +89,7 @@ class TwilioStatusTest < ActiveSupport::TestCase
     status = with_fake_twilio(fake) { TwilioStatus.fetch }
 
     assert_equal ["ISservice0001", " ISservice0002", "", "ISservice0003"], status[:services].pluck(:id)
-    assert_equal [SmsManagement::UNUSABLE_ID] * 2, status[:services][1..2].pluck(:error)
+    assert_equal [TwilioAccount::UNUSABLE_ID] * 2, status[:services][1..2].pluck(:error)
     assert_equal 2, fake.asked.count(:services)
   end
 

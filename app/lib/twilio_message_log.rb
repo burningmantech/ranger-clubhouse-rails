@@ -23,7 +23,7 @@ class TwilioMessageLog
     # neighbouring page being { page:, token: } or nil. { error: } when
     # Twilio cannot answer, and nil while the settings to ask with are missing.
     def page(criteria, page: 0, token: nil)
-      client = SmsManagement.client or return
+      client = TwilioAccount.client or return
       filters = twilio_filters(criteria)
       return { texts: [], people: {}, page: 0, next_page: nil, previous_page: nil } unless filters
 
@@ -31,21 +31,21 @@ class TwilioMessageLog
       texts = result.map { |message| text(message) }
       { texts:, people: people(texts), page:,
         next_page: neighbour(result.next_page_url), previous_page: neighbour(result.previous_page_url) }
-    rescue *SmsManagement::ERRORS => e
-      { error: SmsManagement.describe(e) }
+    rescue *TwilioAccount::ERRORS => e
+      { error: TwilioAccount.describe(e) }
     end
 
     # The newest EXPORT_LIMIT texts the filters match, as { texts:, people: },
     # with the same { error: } and nil as page.
     def export(criteria)
-      client = SmsManagement.client or return
+      client = TwilioAccount.client or return
       filters = twilio_filters(criteria)
       return { texts: [], people: {} } unless filters
 
       texts = client.messages.list(**filters, limit: EXPORT_LIMIT, page_size: EXPORT_LIMIT).map { |message| text(message) }
       { texts:, people: people(texts) }
-    rescue *SmsManagement::ERRORS => e
-      { error: SmsManagement.describe(e) }
+    rescue *TwilioAccount::ERRORS => e
+      { error: TwilioAccount.describe(e) }
     end
 
     private
