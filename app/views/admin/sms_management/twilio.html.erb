@@ -47,7 +47,7 @@
         <% end %>
         <% messaging.each do |service| %>
           <div>
-            <%= twilio_incoming_badge(service, infrastructure_sms_inbound_url) %>
+            <%= twilio_incoming_badge(service, sms_incoming_address) %>
             <code class="break-all"><%= sms_url_shown(service[:incoming_url]) %></code>
             <% if service[:fallback_url] %>
               <div>When that address fails, Twilio sends the text to <code class="break-all"><%= sms_url_shown(service[:fallback_url]) %></code>.</div>
@@ -97,7 +97,7 @@
     <% if messaging.any? && lock.nil? %>
       <%= ui_form(nil, admin_sms_management_incoming_path, scope: :twilio_incoming, method: :patch,
                   class: "mt-4", no_error_summary: true) do |f| %>
-        <%= f.url_field :url, label: "Send Incoming Texts To", value: infrastructure_sms_inbound_url, required: true,
+        <%= f.url_field :url, label: "Send Incoming Texts To", value: sms_incoming_address, required: true,
                               maxlength: 255, width: "w-full",
                               help_text: "This server's address is filled in. To move the texts back, enter the address they came from." %>
         <%= button_row class: "mt-3" do %>

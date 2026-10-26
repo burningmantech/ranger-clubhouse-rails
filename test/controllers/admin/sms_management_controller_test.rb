@@ -98,7 +98,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "deadbeef"
     assert_not_includes response.body, "token-never-shown"
     assert_includes response.body, "A broadcast is split evenly across them."
-    assert_includes response.body, infrastructure_sms_inbound_url
+    assert_includes response.body, TwilioSignatureConcern.address(infrastructure_sms_inbound_path)
     # The fixtures hold broadcast texts back.
     assert_includes response.body, "Broadcast texts are recorded but not sent."
     assert_select "a[href=?]", admin_sms_management_path(format: :csv)
@@ -328,17 +328,19 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
       assert_select ".badge", text: "Another server", count: 1
       assert_select "form[action=?]", admin_sms_management_incoming_path do
         assert_select "input[name=_method][value=patch]"
-        assert_select "input[type=url][name=?][value=?]", "twilio_incoming[url]", infrastructure_sms_inbound_url
+        assert_select "input[type=url][name=?][value=?]", "twilio_incoming[url]",
+                      TwilioSignatureConcern.address(infrastructure_sms_inbound_path)
         assert_select "[type=submit][data-turbo-confirm*='stops getting STOP, START and HELP replies']"
       end
     end
   end
 
   test "pointing Twilio at this server changes the Messaging Service, records it, and says so" do
-    https!
     configure_twilio(service_ids: "ISservice0001,ISservice0002")
     fake = FakeTwilioClient.new(services: { "ISservice0001" => "Ranger Alerts", "ISservice0002" => "Ranger News" })
-    here = infrastructure_sms_inbound_url
+    # The address its signatures are checked against, not the one this page
+    # is reached at (http://www.example.com).
+    here = TwilioSignatureConcern.address(infrastructure_sms_inbound_path)
 
     sign_in_as(@tech_ninja)
 

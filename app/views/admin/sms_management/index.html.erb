@@ -55,7 +55,7 @@
         <% end %>
       <% end %>
       <%= list.row "Incoming Texts" do %>
-        <code class="break-all"><%= infrastructure_sms_inbound_url %></code>
+        <code class="break-all"><%= sms_incoming_address %></code>
         <div>This server's address for the texts Rangers send. The Twilio Account panel shows where Twilio sends them now, and changes it.</div>
       <% end %>
       <%= list.row "Delivery Reports" do %>

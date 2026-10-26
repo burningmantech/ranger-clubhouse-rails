@@ -77,6 +77,11 @@ module Admin::SmsManagementHelper
                      .uniq { |service| service[:messaging_service] }
   end
 
+  # This server's address for the texts Rangers send: the one their signatures
+  # are checked against, never the address this page was reached at, so it is
+  # the one Twilio must be given.
+  def sms_incoming_address = TwilioSignatureConcern.address(infrastructure_sms_inbound_path)
+
   # Where Twilio posts the texts Rangers send, against this server's own
   # address for them.
   def twilio_incoming_badge(service, here)

@@ -63,7 +63,9 @@ Rails.application.configure do
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
-  # Set host to be used by links generated in mailer templates.
+  # Set host to be used by links generated in mailer templates. Twilio's
+  # webhooks are checked against it too (TwilioSignatureConcern.address), so it
+  # must be the name Twilio is given for this server.
   config.action_mailer.default_url_options = { host: ENV["RANGER_CLUBHOUSE_HOST"].presence || "clubhouse3.dev" }
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
