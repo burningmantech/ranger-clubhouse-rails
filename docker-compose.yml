@@ -70,6 +70,9 @@ services:
       # X-Clubhouse-Original-Recipients header (broadcast email has its own test address). A value that is not one
       # email address stops the boot. Recreate after changing either of these, as above.
       # - RANGER_CLUBHOUSE_MAIL_TEST_ADDRESS=<an inbox the maintainer reads>
+      # Administration › SMS Management can point Twilio's incoming texts (every STOP, START and HELP reply) at
+      # another address only on a server where this is "true". Set it only on the server Twilio should post to.
+      # - RANGER_CLUBHOUSE_TWILIO_INCOMING_LIVE=true
     volumes:
       - storage:/app/storage   # Active Storage uploads: person photos, BMID exports
     depends_on:

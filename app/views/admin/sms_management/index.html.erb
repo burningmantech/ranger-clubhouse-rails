@@ -1,0 +1,113 @@
+<% content_for :title, "SMS Management" %>
+
+<%= hero_panel icon: "comment-sms", heading_level: :h1, id: "admin-sms-header",
+               title: "SMS Management",
+               description: "Read Twilio's log of the Clubhouse's texts, and check the account and the settings it texts with." %>
+
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Where does the log come from?</dt>
+    <dd>From Twilio's own message list: every text Twilio sent or received on the account, newest first, with what became of it. The Clubhouse's record of the texts it asked Twilio to send is the <%= link_to "RBS message log", communication_rbs_messages_path %>.</dd>
+    <dt>What do Twilio's outcomes mean?</dt>
+    <dd>Delivered means the carrier confirmed the text arrived, and sent that the carrier took it without confirming. Undelivered means the carrier could not deliver it, and failed that Twilio could not send it; the error code says why.</dd>
+    <dt>How do the filters work?</dt>
+    <dd>To and From take a callsign or a phone number. Twilio filters by the date in UTC, so a day here begins at 17:00 the evening before, Arizona time.</dd>
+    <dt>What does the export hold?</dt>
+    <dd>The newest <%= number_with_delimiter(TwilioMessageLog::EXPORT_LIMIT) %> texts the filters match, as Twilio lists them.</dd>
+    <dt>How do I move incoming texts to this server?</dt>
+    <dd>Use Update Incoming Address in the Twilio Account panel, offered only on the server set up to take the texts. Twilio sends the next text a Ranger sends to the address entered, and the server that had them stops getting replies. To move them back, enter the old address, which the message after the change names; an Admin can also find it in the action log.</dd>
+    <dt>How current is this page?</dt>
+    <dd>The log asks Twilio each time it is shown. The account panel asks at most once every five minutes, and Refresh asks it again.</dd>
+  </dl>
+<% end %>
+
+<div class="grid gap-x-4 lg:grid-cols-2">
+  <%= ui_section "Twilio Settings", icon: "gear", icon_type: :solid do %>
+    <%= ui_label_value label_width: "9rem" do |list| %>
+      <%= list.row "Account SID" do %>
+        <%= sms_setting_badge(@settings[:account_sid]) %>
+        <% if @settings[:account_sid] %>
+          <span class="font-mono"><%= sms_masked_id(@settings[:account_sid]) %></span>
+        <% end %>
+      <% end %>
+      <%= list.row "Auth Token" do %>
+        <%= sms_setting_badge(@settings[:auth_token]) %>
+      <% end %>
+      <%= list.row "Notify Services" do %>
+        <% if @settings[:service_ids].empty? %>
+          <%= sms_setting_badge(false) %>
+        <% else %>
+          <% @settings[:service_ids].each do |service_id| %>
+            <div class="font-mono"><%= sms_masked_id(service_id) %></div>
+          <% end %>
+          <% if @settings[:service_ids].size > 1 %>
+            <div>A broadcast is split evenly across them.</div>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= list.row "Text Sandbox" do %>
+        <% if @settings[:sandbox] %>
+          <%= ui_badge "On", :warning, icon: "triangle-exclamation", icon_type: :solid %>
+          Broadcast texts are recorded but not sent. Confirmation codes still go out.
+        <% else %>
+          <%= ui_badge "Off", :success, icon: "circle-check", icon_type: :solid %>
+          Broadcast texts go out.
+        <% end %>
+      <% end %>
+      <%= list.row "Incoming Texts" do %>
+        <code class="break-all"><%= infrastructure_sms_inbound_url %></code>
+        <div>This server's address for the texts Rangers send. The Twilio Account panel shows where Twilio sends them now, and changes it.</div>
+      <% end %>
+      <%= list.row "Delivery Reports" do %>
+        <%= ui_badge "Not received", :secondary, icon: "circle-minus", icon_type: :solid %>
+        Twilio does not report back to the Clubhouse whether each text arrived; the log below shows what Twilio knows.
+      <% end %>
+    <% end %>
+
+    <%# Settings is an Admin page, and its Twilio settings also need Tech Ninja. %>
+    <% if has_role?(Role::ADMIN) %>
+      <div class="mt-3">
+        <%= button_link "Edit Twilio Settings", :secondary, admin_settings_path(filter: "twilio"),
+                        icon: "gear", icon_type: :solid %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Twilio Account", icon: "tower-broadcast", icon_type: :solid do %>
+    <%= turbo_frame_tag "sms-twilio", src: admin_sms_management_twilio_path, loading: "lazy" do %>
+      <%= render "shared/frame_spinner", label: "Asking Twilio about the account…" %>
+    <% end %>
+  <% end %>
+</div>
+
+<%= filter_bar id: "sms-filters",
+               chips: sms_filter_chips(@form),
+               clear_url: admin_sms_management_path,
+               actions: (if @settings[:account_sid] && @settings[:auth_token]
+                          export_csv_link(admin_sms_management_path(@form.query_params.merge(format: :csv)))
+                        end),
+               url: admin_sms_management_path, model: @form, scope: SmsFilterForm::PARAM_SCOPE do |f| %>
+  <%= form_row do %>
+    <%= f.text_field :to, label: "To", help_text: "A callsign or a phone number.", maxlength: 64,
+                          width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.text_field :from, label: "From", help_text: "A callsign or a phone number.", maxlength: 64,
+                            width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+  <%= form_row do %>
+    <%= f.date_field :sent_after, label: "Sent on or After", help_text: "A date in UTC, as Twilio keeps it.",
+                                  width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.date_field :sent_before, label: "Sent on or Before", help_text: "A date in UTC, as Twilio keeps it.",
+                                   width: "w-full", wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= button_row class: "mt-4" do %>
+    <%= f.submit "Apply Filters" %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Text Message Log", icon: "table-list", icon_type: :solid do %>
+  <% log_src = admin_sms_management_messages_path(@form.query_params(page: @form.page, page_token: @form.page_token)) %>
+  <%= turbo_frame_tag "sms-log", src: log_src, loading: "lazy", target: "_top" do %>
+    <%= render "shared/frame_spinner", label: "Asking Twilio for the texts…" %>
+  <% end %>
+<% end %>

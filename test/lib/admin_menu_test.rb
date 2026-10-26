@@ -59,6 +59,7 @@ class AdminMenuTest < ActiveSupport::TestCase
     assert_includes titles, "Salesforce Query"
     assert_includes titles, "Error Logs"
     assert_includes titles, "Shift Coverage Setup"
+    assert_includes titles, "SMS Management"
     assert_not_includes titles, "Settings"
   end
 
@@ -71,8 +72,9 @@ class AdminMenuTest < ActiveSupport::TestCase
     assert_includes titles, "Action Logs"
     assert_includes titles, "Mail Log"
     assert_includes titles, "Shift Coverage Setup"
-    # Tech Ninja only: Admin alone does not open it.
+    # Tech Ninja only: Admin alone does not open them.
     assert_not_includes titles, "Salesforce Query"
+    assert_not_includes titles, "SMS Management"
   end
 
   # The category disappears because every item in it is hidden. That only holds

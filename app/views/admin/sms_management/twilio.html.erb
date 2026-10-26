@@ -1,0 +1,124 @@
+<%= turbo_frame_tag "sms-twilio" do %>
+  <%# An incoming-address update answers into this frame, so its outcome is
+      shown here rather than as a toast the frame could not draw. %>
+  <% if flash[:success] %>
+    <%= ui_callout_box :success do %><%= flash[:success] %><% end %>
+  <% end %>
+  <% if flash[:error] %>
+    <%= ui_callout_box :error do %><%= flash[:error] %><% end %>
+  <% end %>
+  <% if @status.nil? %>
+    <%= ui_callout_box :warning do %>
+      The Clubhouse cannot ask Twilio about the account until the Account SID and Auth Token are set.
+    <% end %>
+  <% else %>
+    <% messaging = twilio_messaging_services(@status) %>
+    <%= ui_label_value label_width: "9rem" do |list| %>
+      <%= list.row "Account" do %>
+        <%= twilio_answer(@status[:account]) do |account| %>
+          <%= account[:name] %> <%= twilio_account_badges(account) %>
+        <% end %>
+      <% end %>
+      <%= list.row "Balance" do %>
+        <%= twilio_answer(@status[:balance]) do |balance| %>
+          <% if balance[:main_account] %>
+            Kept on the main account, which Twilio bills this subaccount's texts to.
+          <% else %>
+            <%= number_with_precision(balance[:amount], precision: 2, delimiter: ",") %> <%= balance[:currency] %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= list.row "Notify Services" do %>
+        <% if @status[:services].empty? %>
+          —
+        <% end %>
+        <% @status[:services].each do |service| %>
+          <div>
+            <span class="font-mono"><%= sms_masked_id(service[:id]) %></span>
+            <%= twilio_answer(service) do |found| %>
+              <%= found[:name] %>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+      <%= list.row "Incoming Texts" do %>
+        <% if messaging.empty? %>
+          —
+        <% end %>
+        <% messaging.each do |service| %>
+          <div>
+            <%= twilio_incoming_badge(service, infrastructure_sms_inbound_url) %>
+            <code class="break-all"><%= sms_url_shown(service[:incoming_url]) %></code>
+            <% if service[:fallback_url] %>
+              <div>When that address fails, Twilio sends the text to <code class="break-all"><%= sms_url_shown(service[:fallback_url]) %></code>.</div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+      <%= list.row "Texts, Last 24 Hours" do %>
+        <%= twilio_answer(@status[:texts]) do |texts| %>
+          <%= twilio_text_counts(texts[:counts]) %>
+          <% if texts[:sampled] %>
+            <div>Counted from the latest <%= number_with_delimiter(TwilioStatus::MESSAGE_LIMIT) %> texts Twilio lists.</div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= ui_subheading "Twilio Alerts, Last 24 Hours" %>
+    <%= twilio_answer(@status[:alerts]) do |alerts| %>
+      <% if alerts.empty? %>
+        <%= ui_empty_state "Twilio raised no alerts in the last 24 hours.", icon: "circle-check", icon_type: :solid %>
+      <% else %>
+        <%= ui_table full_width: true, caption: "Alerts Twilio raised in the last 24 hours, newest first" do |t| %>
+          <%= t.header do %>
+            <%= t.heading "Time" %>
+            <%= t.heading "Level" %>
+            <%= t.heading "Code" %>
+            <%= t.heading "What Twilio Said" %>
+          <% end %>
+          <%= t.body do %>
+            <% alerts.each do |twilio_alert| %>
+              <%= t.row do %>
+                <%= t.row_header log_time_format(twilio_alert[:at]), class: log_text_class("whitespace-nowrap") %>
+                <%= t.cell twilio_alert_badge(twilio_alert[:level]) %>
+                <%= t.cell twilio_error_link(twilio_alert[:code]) %>
+                <%= t.cell twilio_alert[:text], class: log_text_class %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%# Every copy of the database holds the live credentials, so only the
+        server set up for it is offered the change. %>
+    <% lock = twilio_incoming_lock(@status) %>
+    <% if messaging.any? && lock.nil? %>
+      <%= ui_form(nil, admin_sms_management_incoming_path, scope: :twilio_incoming, method: :patch,
+                  class: "mt-4", no_error_summary: true) do |f| %>
+        <%= f.url_field :url, label: "Send Incoming Texts To", value: infrastructure_sms_inbound_url, required: true,
+                              maxlength: 255, width: "w-full",
+                              help_text: "This server's address is filled in. To move the texts back, enter the address they came from." %>
+        <%= button_row class: "mt-3" do %>
+          <%= f.submit "Update Incoming Address",
+                       data: { turbo_confirm: confirm_modal_dialog(
+                         title: "Update Incoming Address",
+                         message: "Twilio will send every text a Ranger sends to the address entered, starting with the next one, " \
+                                  "with no fallback address. The server that gets them now, Clubhouse 2 included, " \
+                                  "stops getting STOP, START and HELP replies.",
+                         confirm_label: "Update Incoming Address"
+                       ) } %>
+        <% end %>
+      <% end %>
+    <% elsif lock %>
+      <p class="mt-4"><%= lock %></p>
+    <% end %>
+
+    <div class="mt-3 flex flex-wrap items-center gap-3">
+      <%= button_link "Refresh", :secondary, admin_sms_management_twilio_path(refresh: 1),
+                      icon: "arrows-rotate", icon_type: :solid %>
+      <span class="text-sm">Checked <%= log_time_format(@status[:checked_at]) %></span>
+    </div>
+  <% end %>
+<% end %>

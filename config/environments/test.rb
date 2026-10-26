@@ -42,6 +42,9 @@ Rails.application.configure do
   # every SES client is a stand-in, so the tests can send to Rangers as
   # production does and see exactly what SES was asked.
   config.x.rbs_email_rangers = true
+  # Twilio is a stand-in here too (FakeTwilioClient), so SMS Management may
+  # change where it sends incoming texts, as the one live server may.
+  config.x.twilio_incoming_live = true
   Aws.config[:sesv2] = { stub_responses: true }
 
   # Set host to be used by links generated in mailer templates.

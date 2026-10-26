@@ -1,0 +1,59 @@
+<%= turbo_frame_tag "sms-log", target: "_top" do %>
+  <% if @log.nil? %>
+    <%= ui_callout_box :warning do %>
+      The Clubhouse cannot ask Twilio for the texts until the Account SID and Auth Token are set.
+    <% end %>
+  <% elsif @log[:error] %>
+    <%= ui_callout_box :warning do %>
+      Twilio could not be asked for the texts: <%= sms_mask_sids(@log[:error]) %>
+    <% end %>
+  <% elsif @log[:texts].empty? && @log[:previous_page].nil? %>
+    <% if @form.active_filters.any? %>
+      <%= ui_empty_state "No texts match the current filters.", icon: "filter", icon_type: :solid %>
+    <% else %>
+      <%= ui_empty_state "Twilio lists no texts for this account.", icon: "comment-sms", icon_type: :solid %>
+    <% end %>
+  <% else %>
+    <% pager = ui_pager({ page: @log[:page], has_previous_page: @log[:previous_page].present?,
+                          has_next_page: @log[:next_page].present? }, summary: "Page #{@log[:page] + 1}") do |number|
+         sms_log_page_path(@form, number > @log[:page] ? @log[:next_page] : @log[:previous_page])
+       end %>
+    <div class="mb-3">
+      <%= pager %>
+    </div>
+
+    <%# A later page can come back empty: it keeps the pager to go back by. %>
+    <% if @log[:texts].empty? %>
+      <%= ui_empty_state "Twilio lists no more texts.", icon: "comment-sms", icon_type: :solid %>
+    <% else %>
+      <%= ui_table full_width: true, striped: true, caption: "Texts Twilio sent and received, newest first" do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Sent" %>
+          <%= t.heading "Person" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Direction" %>
+          <%= t.heading "Number" %>
+          <%= t.heading "Text" %>
+          <%= t.heading "Error" %>
+        <% end %>
+        <%= t.body do %>
+          <% @log[:texts].each do |text| %>
+            <%= t.row do %>
+              <%= t.row_header log_time_format(text.sent_at), class: log_text_class("whitespace-nowrap") %>
+              <%= t.cell sms_text_person(@log[:people], text) %>
+              <%= t.cell twilio_status_badge(text.status), class: "whitespace-nowrap" %>
+              <%= t.cell rbs_direction_cell(text), class: "whitespace-nowrap" %>
+              <%= t.cell PhoneFormatter.format(text.number), class: "whitespace-nowrap" %>
+              <%= t.cell value_or_dash(text.body), class: "min-w-48 break-words" %>
+              <%= t.cell twilio_error_link(text.error_code) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <div class="mt-4">
+      <%= pager %>
+    </div>
+  <% end %>
+<% end %>

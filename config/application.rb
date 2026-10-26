@@ -52,5 +52,11 @@ module Clubhouse3
     # Whether all other mail goes out through Amazon SES. Off here for the same
     # reason; only production can turn it on. See SesMailDelivery.install!.
     config.x.ses_mail_live = false
+
+    # Whether this server may change where Twilio sends incoming texts
+    # (Administration › SMS Management). Off here for the same reason: every copy
+    # of the database holds the live Twilio credentials, and a change moves every
+    # Ranger's replies. See SmsManagement.incoming_changes_allowed?.
+    config.x.twilio_incoming_live = false
   end
 end

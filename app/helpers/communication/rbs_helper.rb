@@ -341,11 +341,24 @@ module Communication
     # Which way one message points: out from the Clubhouse, or in from a phone.
     # Never whether it went; the Outcome says that.
     def rbs_direction_cell(message)
-      if message.direction == "inbound"
-        safe_join([fa_icon("arrow-left", :solid, class: "text-stone-icon"), " incoming"])
-      else
-        safe_join([fa_icon("arrow-right", :solid, class: "text-stone-icon"), " outgoing"])
-      end
+      icon = message.direction == "inbound" ? "arrow-left" : "arrow-right"
+      safe_join([fa_icon(icon, :solid, class: "text-stone-icon"), " #{rbs_direction_word(message.direction)}"])
+    end
+
+    # The one pair of words for a direction, wherever it is written out: the
+    # log's cell, and an export.
+    def rbs_direction_word(direction)
+      direction == "inbound" ? "incoming" : "outgoing"
+    end
+
+    # The broadcast a message went out in, as a link to its record. A message
+    # outside any broadcast -- a text a phone sent in, a reply, a confirmation
+    # code -- has a dash.
+    def rbs_broadcast_link(message)
+      return tag.span("—", class: "text-stone-subtle") unless message.broadcast_id
+
+      link_to "##{message.broadcast_id}", communication_rbs_history_broadcast_path(message.broadcast_id),
+              class: "underline"
     end
 
     # Whether a message carries text worth opening: what a phone sent in, and

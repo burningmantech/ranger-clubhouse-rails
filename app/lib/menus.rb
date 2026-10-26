@@ -233,7 +233,10 @@ module Menus
             visible_if: { roles: [Role::ADMIN] } },
           { title: "Request Log", path: :admin_request_logs_path, root: true,
             description: "Review the requests the Clubhouse answered",
-            visible_if: { roles: [Role::ADMIN, Role::TECH_NINJA] } }
+            visible_if: { roles: [Role::ADMIN, Role::TECH_NINJA] } },
+          { title: "SMS Management", path: :admin_sms_management_path, root: true,
+            description: "Read Twilio's log of the Clubhouse's texts, and check the account and the settings it texts with",
+            visible_if: { roles: [Role::TECH_NINJA] } }
         ]
       }
     ]

@@ -1711,6 +1711,18 @@ Rails.application.routes.draw do
       delete :expire, on: :collection
     end
 
+    # Twilio, which the Clubhouse sends and receives texts through: the texts
+    # Twilio sent and received, what it says about the account, and the
+    # settings the Clubhouse texts with. The account panel and the log are
+    # routes of their own, each loaded into a lazy frame, so a slow or
+    # unreachable Twilio holds up those frames and nothing else.
+    get "sms-management", to: "sms_management#index", as: :sms_management
+    get "sms-management/twilio", to: "sms_management#twilio", as: :sms_management_twilio
+    get "sms-management/messages", to: "sms_management#messages", as: :sms_management_messages
+    # Where Twilio posts the texts Rangers send: pointed here at the cutover
+    # from Clubhouse 2, or back again. Answers into the account panel's frame.
+    patch "sms-management/incoming", to: "sms_management#update_incoming", as: :sms_management_incoming
+
     # The start and end times that bound each event year. Read by Edit Slots as
     # well as Admin, so the index is wider than the writes it offers.
     resources :event_dates, path: "event-dates", except: [:show]

@@ -100,15 +100,7 @@
           <%= t.cell rbs_message_status_badge(message.status), class: "align-top whitespace-nowrap" %>
           <%= t.cell rbs_direction_cell(message), class: "align-top whitespace-nowrap" %>
           <%= t.cell rbs_message_address(message), class: "align-top whitespace-nowrap" %>
-          <%= t.cell class: "align-top" do %>
-            <% if message.broadcast_id %>
-              <%= link_to "##{message.broadcast_id}",
-                          communication_rbs_history_broadcast_path(message.broadcast_id),
-                          class: "underline" %>
-            <% else %>
-              <span class="text-stone-subtle">—</span>
-            <% end %>
-          <% end %>
+          <%= t.cell rbs_broadcast_link(message), class: "align-top" %>
           <%= t.cell class: "align-top" do %>
             <% if rbs_message_has_text?(message) %>
               <%= t.detail_row_toggle "Text", id: text_id, describing: "message text" %>
