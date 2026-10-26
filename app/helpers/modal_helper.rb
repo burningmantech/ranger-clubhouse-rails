@@ -32,7 +32,7 @@ module ModalHelper
     close_button = options.delete(:close_button)
     placement = options.delete(:placement) || "center"
     closable = options.delete(:closable) != false
-    size = options.delete(:size) || :md
+    size = options.delete(:size) || :lg
     size_class = SIZE_CLASSES[size] || SIZE_CLASSES[:md]
 
     modal_classes = ["modal size-auto max-h-none max-w-none overflow-y-auto", modal_placement_class(placement), options.delete(:class)].compact.join(" ").squish

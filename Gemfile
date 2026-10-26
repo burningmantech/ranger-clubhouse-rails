@@ -88,6 +88,8 @@ gem "aws-sdk-sesv2"
 # Active Storage's S3 service (the amazon entry in config/storage.yml) requires it itself.
 gem "aws-sdk-s3", require: false
 
+gem "ostruct"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   # gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
