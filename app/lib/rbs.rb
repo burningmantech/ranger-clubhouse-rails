@@ -4,10 +4,10 @@
 # The Ranger Broadcast System.
 #
 # Sends one message to a group of Rangers over three channels -- text, email,
-# and Clubhouse message -- and records who it reached. Texts are handed to the
-# text service while the sender waits; emails and Clubhouse messages are queued
-# so a broadcast to thousands of people does not hold up the page. Emails go
-# out through Amazon SES, many people to a call.
+# and Clubhouse message -- and records who it reached. Every channel is queued
+# so a broadcast to thousands of people does not hold up the page. Texts go out
+# through Twilio, one request a person; emails through Amazon SES, many people
+# to a call.
 #
 class Rbs
   #
@@ -25,7 +25,7 @@ class Rbs
   # What a send or a retry did: the people it touched, with per-channel
   # results, and the counts the results page reports.
   #
-  TransmitResult = Struct.new(:broadcast, :people, :sms_sent, :sms_failed, :emails_queued,
+  TransmitResult = Struct.new(:broadcast, :people, :texts_queued, :emails_queued,
                               :clubhouse_messages, :sent_sms, :sent_email, :sent_clubhouse,
                               keyword_init: true)
 
@@ -58,6 +58,12 @@ class Rbs
   SMS_PREFIX = ""
   SMS_SUFFIX = " TXT STOP to unsub"
   SMS_LIMIT = 160 - (SMS_PREFIX.size + SMS_SUFFIX.size)
+
+  # Texts a broadcast's job sends at once, each on a thread with a Twilio
+  # client of its own. A round is one text a thread, so it ends well inside the
+  # time a deploy waits for a job (config.solid_queue.shutdown_timeout, 30 s),
+  # even when a call runs to TwilioAccount's 5-second timeouts.
+  SMS_THREADS = 4
 
   # The most people SES takes in one SendBulkEmail call.
   SES_BATCH_LIMIT = 50
@@ -446,8 +452,8 @@ class Rbs
     #
     # Send a broadcast and record what happened.
     #
-    # Texts go out while the sender waits so the results page can report them.
-    # Emails and Clubhouse messages are queued.
+    # Texts, emails and Clubhouse messages are each queued for a job, and the
+    # results page reports how many of each.
     #
     # @param type [String] one of the Broadcast::TYPE_* values
     # @param sender [Person] who is sending
@@ -482,11 +488,7 @@ class Rbs
         expires_at:
       )
 
-      sms_sent = sms_failed = 0
-      if send_sms
-        sms_sent, sms_failed = broadcast_sms(alert, broadcast.id, sender.id, people,
-                                             sms_body(message[:sms_message]))
-      end
+      texts_queued = send_sms ? queue_sms(broadcast.id, people) : 0
 
       emails_queued = 0
       if send_email
@@ -504,7 +506,7 @@ class Rbs
                                                      expires_at&.to_s)
       end
 
-      TransmitResult.new(broadcast:, people:, sms_sent:, sms_failed:, emails_queued:,
+      TransmitResult.new(broadcast:, people:, texts_queued:, emails_queued:,
                          clubhouse_messages:, sent_sms: send_sms, sent_email: send_email,
                          sent_clubhouse: send_clubhouse)
     end
@@ -521,7 +523,7 @@ class Rbs
     def retry_broadcast(broadcast, retry_person_id)
       sms, emails = broadcast.failed_messages.includes(:person).partition { |message| message.address_type == "sms" }
 
-      retry_sms(broadcast, sms)
+      queue_retried_sms(broadcast.id, sms)
 
       # The emails go to a queue, as they do on a send: doing hundreds of them
       # while the page waits would time the request out part-way through, and
@@ -581,29 +583,62 @@ class Rbs
     end
 
     #
-    # Send a text to a list of people, and record the outcome against each one.
+    # Queue a broadcast's texts: a queued row for each person who may be
+    # texted, which RbsTransmitSmsJob sends.
     #
-    # @return [Array<Integer>] how many went out, how many failed
+    # @return [Integer] how many texts were queued
     #
-    def broadcast_sms(_alert, broadcast_id, _sender_id, people, message)
+    def queue_sms(broadcast_id, people)
       recipients = people.select(&:use_sms)
-      return [0, 0] if recipients.empty?
+      return 0 if recipients.empty?
 
-      # The whole batch goes to the text service in one call and comes back with
-      # one answer, so whatever happened, happened to every recipient in it.
-      status = deliver_sms(recipients.map(&:sms_number), message, broadcast_id)
-      delivered = status == Broadcast::STATUS_SENT
+      BroadcastMessage.record_outbound(broadcast_id, "sms", recipients.map do |person|
+        { person_id: person.id, address: person.sms_number, status: Broadcast::STATUS_QUEUED, message_id: nil }
+      end)
+      RbsTransmitSmsJob.perform_later(broadcast_id, sms_held?)
+      recipients.size
+    end
 
-      recipients.each do |person|
-        person.sms_status = status
-        BroadcastMessage.record(broadcast_id, status, person.id, "sms", person.sms_number, "outbound")
+    #
+    # Send a broadcast's queued texts through Twilio, SMS_THREADS at a time,
+    # each on a thread with a client of its own. A round's rows are marked
+    # send-unconfirmed before its texts go and settled from Twilio's answers
+    # after, so a run stopped part-way never sends anyone twice. A deploy stops
+    # it between rounds, leaving the rest queued for the job to pick up again;
+    # an error leaves them failed, for a Retry.
+    #
+    # Held -- recorded as sent and sent to no one, as the sandbox has always
+    # held texts -- while the sandbox was on when Send or Retry was pressed, or
+    # is on now: it is asked before every round, so turning it on holds what is
+    # left of a broadcast already under way.
+    #
+    # Yields after each round is written down: the one place a job may stop.
+    #
+    def deliver_queued_sms(broadcast_id, held)
+      broadcast = Broadcast.find_by(id: broadcast_id)
+      return if broadcast.nil?
+
+      queued = BroadcastMessage.where(broadcast_id:, address_type: "sms", status: Broadcast::STATUS_QUEUED)
+      body = sms_body(broadcast.sms_message)
+      senders = nil
+      while (round = queued.order(:id).limit(SMS_THREADS).to_a).any?
+        if held || sms_held?
+          queued.update_all(status: Broadcast::STATUS_SENT)
+          break
+        end
+
+        senders ||= sms_senders(broadcast_id, queued)
+        break if senders.nil?
+
+        send_sms_round(broadcast_id, senders, round, body)
+        recount_sms_failed(broadcast_id)
+        yield if block_given?
       end
-
-      sent = delivered ? recipients.size : 0
-      failed = recipients.size - sent
-      Broadcast.where(id: broadcast_id).update_all(sms_failed: failed)
-
-      [sent, failed]
+    rescue StandardError
+      fail_queued_sms(broadcast_id)
+      raise
+    ensure
+      wind_up_sms(broadcast_id, stopped_by: $!)
     end
 
     #
@@ -1112,19 +1147,70 @@ class Rbs
       "#{SMS_PREFIX}#{message}#{SMS_SUFFIX}"
     end
 
-    # Hand the texts to the text service. A service that cannot be reached is
-    # recorded and reported, never raised at the sender.
-    def deliver_sms(phone_numbers, message, broadcast_id)
-      return Broadcast::STATUS_SENT if Setting.get_value(Setting::BROADCAST_SMS_SANDBOX)
+    # Whether the text sandbox holds broadcast texts. Read past the cache, like
+    # the email sandbox: a send must see the latest save.
+    def sms_held? = Setting.fresh_value(Setting::BROADCAST_SMS_SANDBOX)
 
-      SmsService.broadcast(phone_numbers, message)
-    rescue => e
-      ErrorLog.record_exception(e, "sms-exception", extra: {
-                                 type: "broadcast",
-                                 broadcast_id:,
-                                 phone_number_count: phone_numbers.size
-                               })
-      Broadcast::STATUS_SERVICE_FAIL
+    # The Messaging Service, and a client for each thread, asked for once a
+    # run. Settings no text can be sent with would fail every text the same
+    # way, so the queued texts all fail, logged once, and Twilio is not asked.
+    def sms_senders(broadcast_id, queued)
+      service_id, account_sid, auth_token = SmsService.text_settings
+      [service_id, Array.new(SMS_THREADS) { TwilioAccount.build_client(account_sid, auth_token) }]
+    rescue StandardError => e
+      note("sms-exception", { type: "broadcast", broadcast_id:, texts: queued.count }, exception: e)
+      queued.update_all(status: Broadcast::STATUS_SERVICE_FAIL)
+      nil
+    end
+
+    # One round: its rows marked send-unconfirmed, a thread and a client for
+    # each text, then each row settled from what Twilio said -- its SID, or why
+    # it did not go. The threads only ask Twilio; the rows are written here.
+    def send_sms_round(broadcast_id, senders, round, body)
+      service_id, clients = senders
+      BroadcastMessage.where(id: round.map(&:id)).update_all(status: Broadcast::STATUS_SEND_UNCONFIRMED)
+      outcomes = round.zip(clients).map do |row, client|
+        Thread.new { text_outcome(client, service_id, row.address, body) }
+      end.map(&:value)
+
+      BroadcastMessage.transaction do
+        round.zip(outcomes).each { |row, (status, sid)| row.update_columns(status:, message_id: sid) }
+      end
+      round.zip(outcomes).each do |row, (_status, _sid, error)|
+        note("sms-exception", { type: "broadcast", broadcast_id:, phone: row.address }, exception: error) if error
+      end
+    end
+
+    # What became of one text: sent, with its SID; maybe sent, when Twilio may
+    # have taken it without answering; or not sent, and why.
+    def text_outcome(client, service_id, number, body)
+      [Broadcast::STATUS_SENT, SmsService.text_through(client, service_id, number, body), nil]
+    rescue SmsException::Unconfirmed => e
+      [Broadcast::STATUS_SEND_UNCONFIRMED, nil, e]
+    rescue StandardError => e
+      [Broadcast::STATUS_SERVICE_FAIL, nil, e]
+    end
+
+    # A run stopped by an error part-way: the texts not yet tried become
+    # failures a Retry can send. The round in flight stays send-unconfirmed.
+    def fail_queued_sms(broadcast_id)
+      BroadcastMessage.where(broadcast_id:, address_type: "sms", status: Broadcast::STATUS_QUEUED)
+                      .update_all(status: Broadcast::STATUS_SERVICE_FAIL)
+    rescue StandardError
+      nil # what stopped the run is the error that goes on
+    end
+
+    def recount_sms_failed(broadcast_id)
+      Broadcast.where(id: broadcast_id).update_all(sms_failed: BroadcastMessage.count_fail(broadcast_id, "sms"))
+    end
+
+    # Recounted however a run ends. Should that fail too, whatever stopped the
+    # run -- an error, or a deploy's stop the job must resume from -- is what
+    # goes on, never this.
+    def wind_up_sms(broadcast_id, stopped_by:)
+      recount_sms_failed(broadcast_id)
+    rescue StandardError
+      raise unless stopped_by
     end
 
     # The name a Ranger sees on the "to" line. Works for a recipient worked out
@@ -1620,16 +1706,14 @@ class Rbs
     # Retrying
     # -----------------------------------------------------------------------
 
-    def retry_sms(broadcast, messages)
+    # A broadcast's failed texts, queued again for the job that sends its first
+    # ones. The stored message is what the sender typed; the job adds the words
+    # every text carries -- including how to stop them -- again.
+    def queue_retried_sms(broadcast_id, messages)
       return if messages.empty?
 
-      numbers = messages.map(&:address)
-      # The stored message is what the sender typed; the words added to every
-      # text -- including how to stop them -- are added again here.
-      status = deliver_sms(numbers, sms_body(broadcast.sms_message), broadcast.id)
-      return unless status == Broadcast::STATUS_SENT
-
-      messages.each { |message| message.update!(status: Broadcast::STATUS_SENT) }
+      BroadcastMessage.where(id: messages.map(&:id)).update_all(status: Broadcast::STATUS_QUEUED)
+      RbsTransmitSmsJob.perform_later(broadcast_id, sms_held?)
     end
 
     # A retry reports itself the same way a send does, so the results page can
@@ -1638,9 +1722,7 @@ class Rbs
       people = {}
 
       sms.each do |message|
-        person = retry_person(people, message)
-        person.sms_status = message.status
-        person.use_sms = true
+        retry_person(people, message).use_sms = true
       end
 
       emails.each do |message|
@@ -1651,8 +1733,7 @@ class Rbs
       TransmitResult.new(
         broadcast:,
         people: people.values.sort_by { |person| person.callsign.to_s.downcase },
-        sms_sent: sms.count { |message| message.status == Broadcast::STATUS_SENT },
-        sms_failed: sms.count { |message| message.status != Broadcast::STATUS_SENT },
+        texts_queued: sms.size,
         emails_queued: emails.size,
         clubhouse_messages: 0,
         sent_sms: sms.any?,

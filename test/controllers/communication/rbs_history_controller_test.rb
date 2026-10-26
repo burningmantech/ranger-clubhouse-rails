@@ -390,7 +390,7 @@ class Communication::RbsHistoryControllerTest < ActionDispatch::IntegrationTest
     get communication_rbs_history_broadcast_path(stuck)
 
     assert_select ".box-error",
-                  text: /2 emails\s+could not be sent\.\s+They can.t be sent again\. SES may already have sent them,/
+                  text: /2 emails\s+could not be sent\.\s+They can.t be sent again\. Twilio or SES may already have sent them,/
     assert_select "[class~=?]", "bg-error/10", text: /2\s*Failed/
     assert_select "a[href=?]", communication_rbs_retry_history_broadcast_path(stuck), false
   end

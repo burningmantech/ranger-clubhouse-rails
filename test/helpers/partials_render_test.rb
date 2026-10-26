@@ -95,25 +95,25 @@ class PartialsRenderTest < ActionView::TestCase
     end
   end
 
-  # No controller test makes a text fail. The names come after the sentence
-  # whose "They" means the failed texts, never between it and the headline.
-  test "the failed-text callout ends by naming the people no channel reaches" do
+  # Texts are queued like everything else, so what became of each is on the
+  # broadcast's own page. The names come last, after that sentence.
+  test "the sent callout points at the broadcast's page, then names the people no channel reaches" do
     people = [Rbs::Recipient.new(callsign: "Alone", use_sms: false, use_email: false),
               Rbs::Recipient.new(callsign: "Apart", use_sms: false, use_email: false),
-              Rbs::Recipient.new(callsign: "Texted", use_sms: true, use_email: false,
-                                 sms_status: Broadcast::STATUS_SERVICE_FAIL)]
-    result = Rbs::TransmitResult.new(people:, sms_sent: 0, sms_failed: 1, emails_queued: 0, clubhouse_messages: 0,
+              Rbs::Recipient.new(callsign: "Texted", use_sms: true, use_email: false)]
+    result = Rbs::TransmitResult.new(people:, texts_queued: 1, emails_queued: 0, clubhouse_messages: 0,
                                      sent_sms: true, sent_email: true, sent_clubhouse: false)
 
     render partial: "common/rbs/delivery_summary",
            locals: { result:, sandboxes: [], test_address: nil, history_path: "/broadcast" }
 
-    assert_select ".box-error", text: /this broadcast.s page\.\s+2 people on the list can.t be reached by text or email: Alone and Apart\.\s*\z/
+    assert_select ".box-success a[href=?]", "/broadcast", text: "this broadcast's page"
+    assert_select ".box-success", text: /this broadcast.s page\.\s+2 people on the list can.t be reached by text or email: Alone and Apart\.\s*\z/
   end
 
   test "a Clubhouse message reaches everyone listed, so the sent callout counts them all" do
     people = %w[Alone Apart].map { |callsign| Rbs::Recipient.new(callsign:, use_sms: false, use_email: false) }
-    result = Rbs::TransmitResult.new(people:, sms_sent: 0, sms_failed: 0, emails_queued: 0, clubhouse_messages: 2,
+    result = Rbs::TransmitResult.new(people:, texts_queued: 0, emails_queued: 0, clubhouse_messages: 2,
                                      sent_sms: true, sent_email: true, sent_clubhouse: true)
 
     render partial: "common/rbs/delivery_summary", locals: { result:, sandboxes: [], test_address: nil }
@@ -127,7 +127,7 @@ class PartialsRenderTest < ActionView::TestCase
   # escapes them.
   test "the sent callout counts 0 when no one on the list is reached, and escapes the names" do
     people = [Rbs::Recipient.new(callsign: "<b>Bold</b>", use_sms: false, use_email: false)]
-    result = Rbs::TransmitResult.new(people:, sms_sent: 0, sms_failed: 0, emails_queued: 0, clubhouse_messages: 0,
+    result = Rbs::TransmitResult.new(people:, texts_queued: 0, emails_queued: 0, clubhouse_messages: 0,
                                      sent_sms: true, sent_email: true, sent_clubhouse: false)
 
     render partial: "common/rbs/delivery_summary", locals: { result:, sandboxes: [], test_address: nil }

@@ -15,6 +15,7 @@ class Broadcast < ApplicationRecord
 
   # Status Constants
   STATUS_SENT = "sent"                    # Accepted by SES or the SMS vendor (or held, as if sent)
+  STATUS_QUEUED = "queued"                # A broadcast's text waiting for RbsTransmitSmsJob. Not a failure
   STATUS_SERVICE_FAIL = "service-fail"    # Email never reached SES, or was held back; a text whose vendor call failed
   STATUS_VERIFY = "verify"                # Verify code sent to target phone
   STATUS_STOP = "stop"                    # Stop request received
@@ -109,7 +110,7 @@ class Broadcast < ApplicationRecord
   # What a message log row can say happened, whichever way the message went.
   # Anything outside this list is a value the log cannot be filtered by.
   MESSAGE_STATUSES = [
-    STATUS_SENT, STATUS_SERVICE_FAIL, STATUS_VERIFY, STATUS_REPLY,
+    STATUS_SENT, STATUS_QUEUED, STATUS_SERVICE_FAIL, STATUS_VERIFY, STATUS_REPLY,
     STATUS_START, STATUS_STOP, STATUS_HELP, STATUS_STATS, STATUS_NEXT,
     STATUS_UNKNOWN_COMMAND, STATUS_UNKNOWN_PHONE, STATUS_BOUNCED, STATUS_BLOCKED,
     STATUS_SUPPRESSED, STATUS_NO_CONTACT, *EMAIL_FAIL_STATUSES

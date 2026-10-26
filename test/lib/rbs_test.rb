@@ -81,26 +81,28 @@ class RbsTest < ActiveSupport::TestCase
     people.map(&:callsign).sort
   end
 
-  # Stands in for the text service so no test can reach it, and records what it
-  # was asked to send.
-  #
-  # The real method is put back afterwards, not merely removed: the stub is
-  # defined on the same singleton class the real one lives on, so removing it
-  # would take the real one with it and leave every later test in the process
-  # calling a method that no longer exists.
-  def with_sms_service(status: Broadcast::STATUS_SENT, fails_with: nil)
-    calls = []
-    original = SmsService.method(:broadcast)
-    SmsService.define_singleton_method(:broadcast) do |numbers, message|
-      calls << { numbers:, message: }
-      raise SmsException, fails_with if fails_with
+  # Runs the block with Twilio set up and faked and the jobs it queues
+  # performed, so a broadcast's texts go out through the fake. Returns the
+  # fake: created_texts holds every text Twilio was asked for.
+  def through_twilio(fake = FakeTwilioClient.new, &)
+    configure_twilio
+    with_fake_twilio(fake) { perform_enqueued_jobs(&) }
+    fake
+  end
 
-      status
-    end
-    yield calls
-  ensure
-    SmsService.singleton_class.remove_method(:broadcast)
-    SmsService.define_singleton_method(:broadcast, original)
+  # Everything a broadcast's texts came to, one status per row.
+  def text_statuses(broadcast)
+    BroadcastMessage.where(broadcast_id: broadcast.id, address_type: "sms").pluck(:status)
+  end
+
+  def general_texts_criteria
+    { alert_id: Alert::SHIFT_CHANGE, statuses: [Person::ACTIVE], on_site: false, attending: false,
+      training: Rbs::TRAINING_ANY, send_sms: true, send_email: false, send_clubhouse: false }
+  end
+
+  def send_general_text
+    Rbs.transmit(type: Broadcast::TYPE_GENERAL, sender: @sender, criteria: general_texts_criteria,
+                 message: { sms_message: "Hello", subject: nil, message: nil, expires_at: nil })
   end
 
   # A broadcast aimed at a position that exactly one new Ranger holds, so a
@@ -124,9 +126,8 @@ class RbsTest < ActiveSupport::TestCase
       send_sms:, send_email:, send_clubhouse: }
   end
 
-  # Stands in for one of Rbs's own private methods for a block, the way
-  # with_sms_service stands in for the text service, then puts the real one
-  # back -- private, as it was.
+  # Stands in for one of Rbs's own private methods for a block, then puts the
+  # real one back -- private, as it was.
   def standing_in_for(name, stand_in)
     original = Rbs.method(name)
     Rbs.define_singleton_method(name, &stand_in)
@@ -515,7 +516,7 @@ class RbsTest < ActiveSupport::TestCase
                  send_sms: true, send_email: true, send_clubhouse: true }
 
     result = nil
-    assert_enqueued_jobs 2 do
+    assert_enqueued_jobs 3 do
       result = Rbs.transmit(type: Broadcast::TYPE_POSITION, sender: @sender, criteria:,
                             message: { sms_message: "Muster now", subject: "Muster",
                                        message: "Please come in.", expires_at: nil })
@@ -529,9 +530,9 @@ class RbsTest < ActiveSupport::TestCase
     assert broadcast.sent_sms
     assert broadcast.sent_email
     assert broadcast.sent_clubhouse
-    assert_equal 1, result.sms_sent
-    assert_equal 0, result.sms_failed
-    assert_equal 1, BroadcastMessage.where(broadcast_id: broadcast.id, address_type: "sms").count
+    assert_equal 1, result.texts_queued
+    assert_equal [Broadcast::STATUS_QUEUED], text_statuses(broadcast), "the job sends it"
+    assert_enqueued_with(job: RbsTransmitSmsJob, args: [broadcast.id, true])
   end
 
   test "a short broadcast sends its one message as the email subject" do
@@ -559,71 +560,95 @@ class RbsTest < ActiveSupport::TestCase
     assert_not result.broadcast.sent_email
   end
 
-  test "the sandbox records a text without handing it to the text service" do
+  test "the sandbox records a text as sent without handing it to Twilio" do
     reachable(callsign: "Listener")
+    result = nil
 
-    with_sms_service do |calls|
-      Rbs.transmit(type: Broadcast::TYPE_GENERAL, sender: @sender,
-                   criteria: { alert_id: Alert::SHIFT_CHANGE, statuses: [Person::ACTIVE],
-                               on_site: false, attending: false, training: Rbs::TRAINING_ANY,
-                               send_sms: true, send_email: false, send_clubhouse: false },
-                   message: { sms_message: "Hello", subject: nil, message: nil, expires_at: nil })
+    fake = through_twilio { result = send_general_text }
 
-      assert_empty calls, "the sandbox must not reach the text service"
-    end
+    assert_empty fake.asked, "the sandbox must not reach Twilio"
+    assert_equal [Broadcast::STATUS_SENT], text_statuses(result.broadcast).uniq
   end
 
-  test "a text service that cannot be reached is recorded as a failure, not raised" do
-    reachable(callsign: "Listener")
+  test "every text Twilio takes is sent, keeping the SID Twilio gave it" do
+    3.times { |n| reachable(callsign: "Heard#{n}") }
     sandbox_off(Setting::BROADCAST_SMS_SANDBOX)
+    result = nil
 
-    with_sms_service(fails_with: "no route to host") do
-      result = Rbs.transmit(type: Broadcast::TYPE_GENERAL, sender: @sender,
-                            criteria: { alert_id: Alert::SHIFT_CHANGE, statuses: [Person::ACTIVE],
-                                        on_site: false, attending: false, training: Rbs::TRAINING_ANY,
-                                        send_sms: true, send_email: false, send_clubhouse: false },
-                            message: { sms_message: "Hello", subject: nil, message: nil, expires_at: nil })
+    fake = through_twilio { result = send_general_text }
 
-      assert_equal 1, result.sms_failed
-      assert_equal 1, result.broadcast.reload.sms_failed
-      assert_equal Broadcast::STATUS_SERVICE_FAIL,
-                   BroadcastMessage.find_by(broadcast_id: result.broadcast.id, address_type: "sms").status
-    end
+    rows = BroadcastMessage.where(broadcast_id: result.broadcast.id, address_type: "sms")
+
+    assert_operator result.texts_queued, :>=, 3
+    assert_equal result.texts_queued, fake.created_texts.size, "one request a person"
+    assert_equal [Broadcast::STATUS_SENT], rows.distinct.pluck(:status)
+    assert_equal rows.count, rows.distinct.count(:message_id)
+    assert_equal [Rbs.send(:sms_body, "Hello")], fake.created_texts.pluck(:body).uniq
+    assert_equal 0, result.broadcast.reload.sms_failed
   end
 
-  # The whole batch goes to the text service in one call, so a service that is
-  # down failed for everyone in it -- not for "one message".
-  test "a batch the text service refuses counts as failed for every recipient" do
+  test "every text Twilio refuses is a counted failure, never raised at the sender" do
     3.times { |n| reachable(callsign: "Listener#{n}") }
     sandbox_off(Setting::BROADCAST_SMS_SANDBOX)
+    refusing = FakeTwilioClient.new(errors: { message_create: FakeTwilioClient.refusal(21408, "Permission to send an SMS has not been enabled for the region") })
+    result = nil
 
-    with_sms_service(fails_with: "no route to host") do
-      result = Rbs.transmit(type: Broadcast::TYPE_GENERAL, sender: @sender,
-                            criteria: { alert_id: Alert::SHIFT_CHANGE, statuses: [Person::ACTIVE],
-                                        on_site: false, attending: false, training: Rbs::TRAINING_ANY,
-                                        send_sms: true, send_email: false, send_clubhouse: false },
-                            message: { sms_message: "Hello", subject: nil, message: nil, expires_at: nil })
+    through_twilio(refusing) { result = send_general_text }
 
-      texted = result.people.count(&:use_sms)
-
-      assert_operator texted, :>=, 3
-      assert_equal texted, result.sms_failed
-      assert_equal texted, result.broadcast.reload.sms_failed
-      assert_equal 0, result.sms_sent
-    end
+    assert_equal [Broadcast::STATUS_SERVICE_FAIL], text_statuses(result.broadcast).uniq
+    assert_equal result.texts_queued, result.broadcast.reload.sms_failed
+    assert_predicate result.broadcast, :retryable?
   end
 
-  test "a batch the text service accepts counts as sent for every recipient" do
-    3.times { |n| reachable(callsign: "Heard#{n}") }
+  # It may have gone out, so it is never sent again, and a Retry leaves it be.
+  test "a text Twilio may have taken without answering is send-unconfirmed" do
+    listener = reachable(callsign: "Listener")
+    sandbox_off(Setting::BROADCAST_SMS_SANDBOX)
+    result = nil
 
-    result = Rbs.transmit(type: Broadcast::TYPE_GENERAL, sender: @sender,
-                          criteria: { alert_id: Alert::SHIFT_CHANGE, statuses: [Person::ACTIVE],
-                                      on_site: false, attending: false, training: Rbs::TRAINING_ANY,
-                                      send_sms: true, send_email: false, send_clubhouse: false },
-                          message: { sms_message: "Hello", subject: nil, message: nil, expires_at: nil })
+    through_twilio(FakeTwilioClient.new(errors: { message_create: FakeTwilioClient.read_timeout })) do
+      result = send_general_text
+    end
 
-    assert_equal result.people.count(&:use_sms), result.sms_sent
-    assert_equal 0, result.sms_failed
+    row = BroadcastMessage.find_by!(broadcast_id: result.broadcast.id, person_id: listener.id, address_type: "sms")
+
+    assert_equal [Broadcast::STATUS_SEND_UNCONFIRMED, nil], [row.status, row.message_id]
+    assert_not_includes result.broadcast.failed_messages, row
+  end
+
+  test "a text Twilio turns away for being asked too fast is asked again, and goes" do
+    criteria = only_listener(send_sms: true)
+    sandbox_off(Setting::BROADCAST_SMS_SANDBOX)
+    too_fast = FakeTwilioClient.refusal(20429, "Too Many Requests", status: 429)
+    result = nil
+
+    fake = through_twilio(FakeTwilioClient.new(errors: { message_create: [too_fast] })) do
+      result = Rbs.transmit(type: Broadcast::TYPE_POSITION, sender: @sender, criteria:,
+                            message: { sms_message: "Muster now", subject: nil, message: nil, expires_at: nil })
+    end
+
+    assert_equal 2, fake.asked.count(:message_create)
+    assert_equal [[Broadcast::STATUS_SENT, format("SM%032d", 1)]],
+                 BroadcastMessage.where(broadcast_id: result.broadcast.id, address_type: "sms").pluck(:status, :message_id)
+  end
+
+  test "each thread of a broadcast's job sends with a Twilio client of its own" do
+    (Rbs::SMS_THREADS + 2).times { |n| reachable(callsign: "Heard#{n}") }
+    sandbox_off(Setting::BROADCAST_SMS_SANDBOX)
+    configure_twilio
+    clients = []
+    result = nil
+    original = TwilioAccount.method(:build_client)
+    TwilioAccount.define_singleton_method(:build_client) { |*| FakeTwilioClient.new.tap { |client| clients << client } }
+    begin
+      perform_enqueued_jobs { result = send_general_text }
+    ensure
+      TwilioAccount.define_singleton_method(:build_client, original)
+    end
+
+    assert_equal Rbs::SMS_THREADS, clients.size, "one client a thread, kept for the run"
+    assert_equal result.texts_queued, clients.sum { |client| client.created_texts.size }
+    assert clients.all? { |client| client.created_texts.any? }
   end
 
   # Two people asking at the same time must not see each other's shifts.
@@ -640,19 +665,45 @@ class RbsTest < ActiveSupport::TestCase
     assert_includes second, second_slot.id, "a list held between calls would miss the new shift"
   end
 
-  test "text credentials that are not configured fail the send rather than the page" do
+  test "text credentials that are not configured fail every text once, not the page" do
     reachable(callsign: "Listener")
     sandbox_off(Setting::BROADCAST_SMS_SANDBOX)
 
-    # No stand-in: the real service is asked for credentials the tests do not
+    # No fake: the real service is asked for credentials the tests do not
     # have, which raises something other than a texting error.
-    result = Rbs.transmit(type: Broadcast::TYPE_GENERAL, sender: @sender,
-                          criteria: { alert_id: Alert::SHIFT_CHANGE, statuses: [Person::ACTIVE],
-                                      on_site: false, attending: false, training: Rbs::TRAINING_ANY,
-                                      send_sms: true, send_email: false, send_clubhouse: false },
-                          message: { sms_message: "Hello", subject: nil, message: nil, expires_at: nil })
+    result = nil
+    perform_enqueued_jobs { result = send_general_text }
 
-    assert_operator result.sms_failed, :>=, 1
+    assert_equal [Broadcast::STATUS_SERVICE_FAIL], text_statuses(result.broadcast).uniq
+    assert_equal result.texts_queued, result.broadcast.reload.sms_failed
+    assert_equal 1, ErrorLog.where(error_type: "sms-exception").count, "logged once, not once a text"
+  end
+
+  # A deploy stops the job at its checkpoint with an Exception, not a
+  # StandardError: the texts not yet sent stay queued for it to pick up again.
+  # An error leaves them failed, for a Retry, and the round it stopped after
+  # stays as it was written.
+  test "a run stopped part-way never leaves a text to go twice, nor one stuck queued" do
+    # Two whole rounds and some over, so the second stop leaves texts unsent.
+    ((2 * Rbs::SMS_THREADS) + 1).times { |n| reachable(callsign: "Heard#{n}") }
+    sandbox_off(Setting::BROADCAST_SMS_SANDBOX)
+    configure_twilio
+    deploy = Class.new(Exception)
+    broadcast = nil
+
+    with_fake_twilio(FakeTwilioClient.new) do
+      broadcast = send_general_text.broadcast
+      assert_raises(deploy) { Rbs.deliver_queued_sms(broadcast.id, false) { raise deploy } }
+
+      assert_equal Rbs::SMS_THREADS, text_statuses(broadcast).count(Broadcast::STATUS_SENT)
+      assert_includes text_statuses(broadcast), Broadcast::STATUS_QUEUED
+
+      assert_raises(RuntimeError) { Rbs.deliver_queued_sms(broadcast.id, false) { raise "stopped" } }
+    end
+
+    assert_not_includes text_statuses(broadcast), Broadcast::STATUS_QUEUED
+    assert_includes text_statuses(broadcast), Broadcast::STATUS_SERVICE_FAIL
+    assert_equal BroadcastMessage.count_fail(broadcast.id, "sms"), broadcast.reload.sms_failed
   end
 
   # Held email needs no SES account, so none is built: a dev machine has none.
@@ -1479,13 +1530,11 @@ class RbsTest < ActiveSupport::TestCase
                              address_type: "sms", address: listener.sms_number,
                              direction: "outbound", status: Broadcast::STATUS_SERVICE_FAIL)
 
-    with_sms_service do |calls|
-      Rbs.retry_broadcast(broadcast, @sender.id)
+    fake = through_twilio { Rbs.retry_broadcast(broadcast, @sender.id) }
 
-      assert_equal 1, calls.size
-      assert_includes calls.first[:message], Rbs::SMS_SUFFIX.strip,
-                      "a retried text must still say how to stop them"
-    end
+    assert_equal 1, fake.created_texts.size
+    assert_includes fake.created_texts.first[:body], Rbs::SMS_SUFFIX.strip,
+                    "a retried text must still say how to stop them"
   end
 
   test "a retry leaves the email count at the recount, and the Retry armed, until the job runs" do
@@ -1537,11 +1586,9 @@ class RbsTest < ActiveSupport::TestCase
     # empty call list would prove nothing.
     sandbox_off(Setting::BROADCAST_SMS_SANDBOX)
 
-    with_sms_service do |calls|
-      Rbs.retry_broadcast(broadcast, @sender.id)
+    fake = through_twilio { Rbs.retry_broadcast(broadcast, @sender.id) }
 
-      assert_empty calls, "a stopped number must not be handed to the text service again"
-    end
+    assert_empty fake.created_texts, "a stopped number must not be handed to Twilio again"
 
     assert_equal Broadcast::STATUS_SERVICE_FAIL, failed.reload.status
     assert_not broadcast.retryable?
@@ -1588,12 +1635,9 @@ class RbsTest < ActiveSupport::TestCase
 
     assert_not broadcast.retryable?
 
-    with_sms_service do |calls|
-      Rbs.retry_broadcast(broadcast, @sender.id)
+    fake = through_twilio { Rbs.retry_broadcast(broadcast, @sender.id) }
 
-      assert_empty calls
-    end
-
+    assert_empty fake.created_texts
     assert_equal Broadcast::STATUS_SERVICE_FAIL, failed.reload.status
     assert_equal [1, 1], [BroadcastMessage.count_fail(broadcast.id, "sms"), broadcast.reload.sms_failed]
   end
@@ -1608,11 +1652,9 @@ class RbsTest < ActiveSupport::TestCase
 
     assert_not broadcast.retryable?
 
-    with_sms_service do |calls|
-      Rbs.retry_broadcast(broadcast, @sender.id)
+    fake = through_twilio { Rbs.retry_broadcast(broadcast, @sender.id) }
 
-      assert_empty calls, "never the old number, and never the new one either"
-    end
+    assert_empty fake.created_texts, "never the old number, and never the new one either"
 
     assert_equal Broadcast::STATUS_SERVICE_FAIL, failed.reload.status
   end
@@ -1731,14 +1773,28 @@ class RbsTest < ActiveSupport::TestCase
                                             address_type: "sms", address: listener.sms_number,
                                             direction: "outbound", status: Broadcast::STATUS_SENT)
 
-    result = Rbs.retry_broadcast(broadcast, @sender.id)
+    result = nil
+    perform_enqueued_jobs { result = Rbs.retry_broadcast(broadcast, @sender.id) }
 
-    assert_equal Broadcast::STATUS_SENT, failed.reload.status
+    assert_equal Broadcast::STATUS_SENT, failed.reload.status, "held by the sandbox, as sent"
     assert_equal Broadcast::STATUS_SENT, already_sent.reload.status
     assert_equal 0, broadcast.reload.sms_failed
     assert_equal @sender.id, broadcast.retry_person_id
     assert_not_nil broadcast.retry_at
-    assert_equal 1, result.sms_sent
+    assert_equal 1, result.texts_queued
+  end
+
+  # The click queues the texts and the job sends them, as on a send: until it
+  # runs they are neither failures nor sent.
+  test "sending a text again queues it for the job that sends a broadcast's first texts" do
+    broadcast, failed = failed_text(reachable(callsign: "Listener"))
+
+    Rbs.retry_broadcast(broadcast, @sender.id)
+
+    assert_equal Broadcast::STATUS_QUEUED, failed.reload.status
+    assert_equal 0, broadcast.reload.sms_failed
+    assert_not_predicate broadcast, :retryable?
+    assert_enqueued_with(job: RbsTransmitSmsJob, args: [broadcast.id, true])
   end
 
   test "sending again leaves the failure counted when it fails once more" do
@@ -1751,7 +1807,7 @@ class RbsTest < ActiveSupport::TestCase
                              address_type: "sms", address: listener.sms_number,
                              direction: "outbound", status: Broadcast::STATUS_SERVICE_FAIL)
 
-    with_sms_service(fails_with: "still down") do
+    through_twilio(FakeTwilioClient.new(errors: { message_create: FakeTwilioClient.refusal(21211, "Invalid 'To' Phone Number") })) do
       Rbs.retry_broadcast(broadcast, @sender.id)
     end
 
@@ -2837,19 +2893,18 @@ class RbsTest < ActiveSupport::TestCase
     sandbox_off(Setting::BROADCAST_MAIL_SANDBOX, Setting::BROADCAST_SMS_SANDBOX)
 
     result = nil
-    with_sms_service do |texts|
-      with_ses do |calls|
-        perform_enqueued_jobs do
-          result = Rbs.transmit(type: Broadcast::TYPE_EMERGENCY, sender: @sender, criteria: {},
-                                message: { sms_message: "All hands", subject: nil, message: nil, expires_at: nil })
-        end
-
-        assert_not_includes calls.flat_map { |call| ses_addresses(call) }, quiet.email
+    fake = nil
+    with_ses do |calls|
+      fake = through_twilio do
+        result = Rbs.transmit(type: Broadcast::TYPE_EMERGENCY, sender: @sender, criteria: {},
+                              message: { sms_message: "All hands", subject: nil, message: nil, expires_at: nil })
       end
 
-      assert_includes texts.flat_map { |text| text[:numbers] }, quiet.sms_number,
-                      "an emergency overrides the choice not to be texted"
+      assert_not_includes calls.flat_map { |call| ses_addresses(call) }, quiet.email
     end
+
+    assert_includes fake.created_texts.pluck(:to), quiet.sms_number,
+                    "an emergency overrides the choice not to be texted"
 
     assert_equal Rbs::EMAIL_STATUS_SUPPRESSED, email_row(result.broadcast, quiet).status
   end
@@ -2937,7 +2992,7 @@ class RbsTest < ActiveSupport::TestCase
     sandbox_off(Setting::BROADCAST_MAIL_SANDBOX)
 
     result = send_text_and_email
-    args = ActiveJob::Arguments.deserialize(enqueued_jobs.sole[:args])
+    args = ActiveJob::Arguments.deserialize(enqueued_jobs.select { |job| job[:job] == RbsTransmitEmailJob }.sole[:args])
     clear_enqueued_jobs
 
     assert_equal [[able.id, true], [baker.id, false]], args[3]

@@ -269,6 +269,7 @@ module Communication
     # phone asked for.
     MESSAGE_STATUS_LABELS = {
       Broadcast::STATUS_SENT => "Sent",
+      Broadcast::STATUS_QUEUED => "Queued",
       Broadcast::STATUS_SERVICE_FAIL => "Delivery failed",
       Broadcast::STATUS_VERIFY => "Confirmation code sent",
       Broadcast::STATUS_REPLY => "Replied",
@@ -463,7 +464,7 @@ module Communication
       subject = if retryable.positive? then pluralize(stuck, "message")
                 else (stuck == 1) ? "It" : "They"
                 end
-      "#{subject} can't be sent again. SES may already have sent #{(stuck == 1) ? "it" : "them"}, " \
+      "#{subject} can't be sent again. Twilio or SES may already have sent #{(stuck == 1) ? "it" : "them"}, " \
         "the address is invalid, or the Ranger can no longer be reached that way."
     end
 

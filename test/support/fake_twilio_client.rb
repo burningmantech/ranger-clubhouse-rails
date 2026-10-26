@@ -108,9 +108,10 @@ class FakeTwilioClient
   end
 
   # The error twilio-ruby raises when Twilio refuses a call, with Twilio's own
-  # code and words: 21610 for a number that texted STOP, say.
-  def self.refusal(code, message)
-    Twilio::REST::RestError.new("Unable to create record", Twilio::Response.new(400, { code:, message: }.to_json))
+  # code and words: 21610 for a number that texted STOP, say, or 20429, with
+  # status 429, for being asked too fast.
+  def self.refusal(code, message, status: 400)
+    Twilio::REST::RestError.new("Unable to create record", Twilio::Response.new(status, { code:, message: }.to_json))
   end
 
   attr_reader :asked, :params, :texts, :next_page_url, :previous_page_url, :notifications, :created_texts
@@ -132,6 +133,7 @@ class FakeTwilioClient
     @params = {}
     @notifications = []
     @created_texts = []
+    @texting = Mutex.new
   end
 
   # The way to a call, not a call: client.api.v2010.accounts(sid) and
@@ -162,10 +164,10 @@ class FakeTwilioClient
   end
 
   # A text made with messages.create, kept as asked, and answered with a
-  # message SID of its own.
+  # message SID of its own -- one each, though a broadcast's threads ask at once.
   def create_text(params)
-    @created_texts << params
-    CreatedText.new(format("SM%032d", @created_texts.size))
+    count = @texting.synchronize { (@created_texts << params).size }
+    CreatedText.new(format("SM%032d", count))
   end
 
   def update_messaging_service(sid, params)
@@ -173,10 +175,14 @@ class FakeTwilioClient
                                                                           :fallback_url, :use_inbound_webhook_on_number))
   end
 
+  # A part's error is raised every time it is asked, or, given as a list, one
+  # call at a time: [too_many] refuses the first text and takes the next.
   def answer(part, params = {})
     @asked << part
     @params[part] = params
-    raise @errors[part] if @errors[part]
+    error = @errors[part]
+    error = error.shift if error.is_a?(Array)
+    raise error if error
 
     yield
   end

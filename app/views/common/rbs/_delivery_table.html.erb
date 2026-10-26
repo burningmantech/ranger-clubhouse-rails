@@ -19,7 +19,7 @@
     <% shown.each do |person| %>
       <%= t.row do %>
         <%= t.row_header person.callsign %>
-        <%= t.cell result.sent_sms ? rbs_delivery_cell(person.sms_status) : rbs_not_sent %>
+        <%= t.cell result.sent_sms ? rbs_queued_cell(person.use_sms, person.sms_status) : rbs_not_sent %>
         <%= t.cell result.sent_email ? rbs_queued_cell(person.use_email, person.email_status) : rbs_not_sent %>
         <%= t.cell result.sent_clubhouse ? rbs_queued_cell(true) : rbs_not_sent %>
       <% end %>

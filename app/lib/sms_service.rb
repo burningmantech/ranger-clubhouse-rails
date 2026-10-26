@@ -18,6 +18,10 @@ class SmsService
   # Twilio's own default is ten hours.
   VALIDITY_PERIOD = 2.hours.to_i
 
+  # How many times a text Twilio turns away for being asked too fast (HTTP
+  # 429) is asked again: each pause twice the last, from a tenth of a second.
+  RATE_LIMIT_RETRIES = 5
+
   #
   # Structured result for incoming SMS messages.
   # Replaces the PHP associative array return from processIncoming().
@@ -117,14 +121,47 @@ class SmsService
     # @raise [SmsException] if Twilio refused it, or the Messaging Service setting cannot be used
     #
     def send_text(phone_number, message)
+      service_id, account_sid, auth_token = text_settings
+      text_through(TwilioAccount.build_client(account_sid, auth_token), service_id, phone_number, message)
+    end
+
+    #
+    # What sending texts needs: the Messaging Service, and the account's tokens.
+    #
+    # @return [Array<String>] [messaging_service_id, account_sid, auth_token]
+    # @raise [SmsException] if the Messaging Service setting cannot be used
+    # @raise [RuntimeError] if TwilioAccountSID or TwilioAuthToken is not configured
+    #
+    def text_settings
       account_sid, auth_token = get_tokens
       service_id = TwilioAccount.settings[:messaging_service_id]
       problem = TwilioAccount.messaging_service_problem(service_id)
       raise SmsException, problem if problem
 
-      twilio = TwilioAccount.build_client(account_sid, auth_token)
-      twilio.messages.create(messaging_service_sid: service_id, to: normalize_phone(phone_number), body: message,
-                             validity_period: VALIDITY_PERIOD).sid
+      [service_id, account_sid, auth_token]
+    end
+
+    #
+    # Send one text through a client the caller made: a job sending many on a
+    # few threads gives each thread a client of its own, as one client is not
+    # safe to share. Asked again after a pause while Twilio answers that it is
+    # being asked too fast.
+    #
+    # @return [String] the SID Twilio gave the text
+    # @raise [SmsException::Unconfirmed] if Twilio may have taken it without answering
+    # @raise [SmsException] if Twilio refused it
+    #
+    def text_through(twilio, service_id, phone_number, message)
+      attempts = 0
+      begin
+        twilio.messages.create(messaging_service_sid: service_id, to: normalize_phone(phone_number), body: message,
+                               validity_period: VALIDITY_PERIOD).sid
+      rescue Twilio::REST::RestError => e
+        raise unless e.status_code == 429 && (attempts += 1) <= RATE_LIMIT_RETRIES
+
+        sleep(0.1 * (2**(attempts - 1)) * rand(0.9..1.1))
+        retry
+      end
     rescue *TwilioAccount::ERRORS => e
       error_class = TwilioAccount.unanswered?(e) ? SmsException::Unconfirmed : SmsException
       raise error_class, e.message
