@@ -24,10 +24,6 @@ module Admin::ErrorLogsHelper
     field_chips + error_log_last_day_chip(values)
   end
 
-  def error_log_timestamp(row)
-    row.created_at&.in_time_zone(Time.zone)&.strftime(DateTimeHelper::LOG_TIME).to_s
-  end
-
   def error_log_person_label(person, person_id)
     person_display_link(person, person_id, blank: "-")
   end

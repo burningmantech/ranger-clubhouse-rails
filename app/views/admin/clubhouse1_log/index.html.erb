@@ -104,7 +104,7 @@
       <%= t.body do %>
         <% @logs.each do |row| %>
           <%= t.row class: "align-top" do %>
-            <%= t.cell clubhouse1_log_timestamp(row),
+            <%= t.cell log_time_format(row.occurred),
                        class: log_text_class("align-top", "whitespace-nowrap") %>
             <%= t.cell class: log_text_class("align-top") do %>
               <%= clubhouse1_log_person_label(row.user_person, row.user_person_id) %>

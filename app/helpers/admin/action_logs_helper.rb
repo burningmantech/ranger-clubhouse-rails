@@ -38,10 +38,6 @@ module Admin::ActionLogsHelper
     field_chips + category_chips
   end
 
-  def action_log_timestamp(row)
-    row.created_at&.in_time_zone(Time.zone)&.strftime(DateTimeHelper::LOG_TIME).to_s
-  end
-
   def action_log_person_label(person, person_id)
     return "Deleted ##{person_id}" if person_id.present? && person.blank?
     return "-" if person.blank?

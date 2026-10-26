@@ -26,7 +26,7 @@
       <%= t.body do %>
         <% @bug_reports.each do |row| %>
           <% detail_dom_id = "bug-report-detail-#{row.id}" %>
-          <% timestamp = bug_report_timestamp(row) %>
+          <% timestamp = log_time_format(row.created_at) %>
           <%= t.row class: "align-middle" do %>
             <%= t.cell class: "align-top whitespace-nowrap" do %>
               <%= t.detail_row_toggle timestamp, id: detail_dom_id, describing: "the whole report",

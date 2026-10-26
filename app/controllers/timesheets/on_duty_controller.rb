@@ -48,12 +48,9 @@ class Timesheets::OnDutyController < ApplicationController
     # Time.zone.parse fills in whatever the string leaves out, so it reads
     # "the 3rd shift" as the 3rd of this month and "next tuesday at 3" as today
     # at midnight -- then the page states that instant as fact. Demand a whole
-    # calendar date instead; a digit test let every one of those through.
-    return bad_duty_date(raw) unless Date._parse(raw).values_at(:year, :mon, :mday).all?
-
-    Time.zone.parse(raw) || bad_duty_date(raw)
-  rescue ArgumentError
-    bad_duty_date(raw)
+    # calendar date instead (filter_time); a digit test let every one of
+    # those through.
+    UiComponents::FilterBarHelper.filter_time(raw) || bad_duty_date(raw)
   end
 
   # :warning, not :alert -- ToastHelper::TOAST_TYPES has no :alert key, so that

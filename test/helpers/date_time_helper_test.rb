@@ -3,6 +3,13 @@
 require "test_helper"
 
 class DateTimeHelperTest < ActionView::TestCase
+  test "an admin log's time reads to the second, in the app zone" do
+    assert_equal "2026-04-09 08:30:15", log_time_format(Time.zone.local(2026, 4, 9, 8, 30, 15))
+    # Phoenix keeps no daylight time: 15:30 UTC is 08:30 there all year.
+    assert_equal "2026-04-09 08:30:15", log_time_format(Time.utc(2026, 4, 9, 15, 30, 15))
+    assert_equal "", log_time_format(nil)
+  end
+
   test "tz labels the time without converting the wall clock" do
     time = Time.zone.local(2026, 1, 15, 6, 15) # app zone: America/Phoenix
 

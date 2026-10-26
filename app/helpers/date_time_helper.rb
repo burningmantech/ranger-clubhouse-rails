@@ -13,7 +13,7 @@
 #   Long form                       Thursday, January 8, 2026 mdy_format(full: true)
 #   Long form with the time         ... 2026 @ 14:30          full_datetime_format
 #   A chip with no room             Thu 1/8 14:30             short_datetime_format
-#   Admin logs                      2026-01-08 14:30:00       LOG_TIME
+#   Admin logs                      2026-01-08 14:30:00       log_time_format, LOG_TIME
 #   CSV, printed forms              2026-01-08 14:30          CSV_TIME, ymd_format
 #
 # Code with no helpers to hand (lib, presenters, controllers) uses the
@@ -82,6 +82,11 @@ module DateTimeHelper
   # spelling the same call.
   def slot_shift_time(slot)
     datetime_format(slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr)
+  end
+
+  # A timestamp on an admin log page, to the second.
+  def log_time_format(time)
+    time&.in_time_zone(Time.zone)&.strftime(LOG_TIME).to_s
   end
 
   def full_datetime_format(date)

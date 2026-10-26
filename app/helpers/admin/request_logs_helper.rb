@@ -55,10 +55,6 @@ module Admin::RequestLogsHelper
                 { icon:, icon_type: :solid, data: { active_ignore: true } }
   end
 
-  def request_log_timestamp(row)
-    row.created_at&.in_time_zone(Time.zone)&.strftime(DateTimeHelper::LOG_TIME).to_s
-  end
-
   def request_log_person_label(row)
     person_display_link(row.person, row.person_id, blank: "-")
   end

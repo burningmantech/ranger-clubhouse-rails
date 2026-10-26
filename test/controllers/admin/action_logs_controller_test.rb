@@ -168,6 +168,21 @@ class Admin::ActionLogsControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /custom event/
   end
 
+  # Time.zone.parse reads "26" as the 26th of this month. A time that names no
+  # whole date must narrow nothing, and draw no chip claiming it did.
+  test "a partial date narrows nothing and draws no chip" do
+    ActionLog.create!(event: "auth-login", person: @actor, target_person: @target, message: "an old login",
+                      data: {}, created_at: Time.zone.local(2020, 1, 1, 8, 0, 0))
+
+    sign_in_as(@admin)
+
+    get admin_action_logs_path, params: { filter: { start_time: "26" } }
+
+    assert_response :success
+    assert_select "body", text: /an old login/
+    assert_select "a[aria-label^='Remove filter: From']", 0
+  end
+
   test "a non-hash filter param is ignored rather than raising" do
     sign_in_as(@admin)
 

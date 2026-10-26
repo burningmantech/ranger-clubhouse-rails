@@ -108,7 +108,7 @@
       <%= t.body do %>
         <% @logs.each do |row| %>
           <% detail_dom_id = "request-log-detail-#{row.id}" %>
-          <% timestamp = request_log_timestamp(row) %>
+          <% timestamp = log_time_format(row.created_at) %>
           <%= t.row class: "align-middle" do %>
             <%= t.cell class: "align-top whitespace-nowrap" do %>
               <%= t.detail_row_toggle timestamp, id: detail_dom_id, describing: "request details",

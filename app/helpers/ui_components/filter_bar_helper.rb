@@ -105,6 +105,28 @@ module UiComponents
 
     module_function :known_filter
 
+    # A filter's typed date and time, or nil when it cannot be read. A whole
+    # date is required: Time.zone.parse fills in whatever the text leaves out --
+    # "26" becomes the 26th of this month -- so a partial entry would silently
+    # filter by a date no one asked for. So is a four-digit year, and a day the
+    # month has: Time.zone.parse reads "Oct 25 26" as the year 26, and rolls
+    # February 30 over into March.
+    #
+    # module_function, as known_filter is: filter forms, and the on-duty page's
+    # date, call it while they read their params.
+    def filter_time(value)
+      return nil if value.blank?
+
+      year, month, day = Date._parse(value, false).values_at(:year, :mon, :mday)
+      return nil unless year.to_i.between?(1000, 9999) && month && day && Date.valid_date?(year, month, day)
+
+      Time.zone.parse(value)
+    rescue ArgumentError
+      nil
+    end
+
+    module_function :filter_time
+
     # Options for a status select, built from a {status => count} hash: only the
     # statuses the list actually holds, commonest first, each carrying its count.
     # Offering the rest would be choices that can only return nothing.

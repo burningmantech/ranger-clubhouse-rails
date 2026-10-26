@@ -28,11 +28,11 @@ class ErrorLogFilterForm
   end
 
   def parsed_start_time
-    parse_time(start_time)
+    UiComponents::FilterBarHelper.filter_time(start_time)
   end
 
   def parsed_end_time
-    parse_time(end_time)
+    UiComponents::FilterBarHelper.filter_time(end_time)
   end
 
   # Only the filters actually being applied. A date that could not be read
@@ -50,19 +50,5 @@ class ErrorLogFilterForm
     return {} if values.empty?
 
     { PARAM_SCOPE => values }
-  end
-
-  private
-
-  # A whole date is required. Time.zone.parse fills in whatever the text
-  # leaves out -- "26" becomes the 26th of this month, "August" the 1st -- so
-  # a partial entry would silently filter by a date no one asked for.
-  def parse_time(value)
-    return nil if value.blank?
-    return nil unless Date._parse(value).values_at(:year, :mon, :mday).all?
-
-    Time.zone.parse(value)
-  rescue ArgumentError
-    nil
   end
 end

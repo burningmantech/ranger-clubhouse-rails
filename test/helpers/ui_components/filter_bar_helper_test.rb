@@ -126,6 +126,15 @@ class FilterBarHelperTest < ActionView::TestCase
   # The contract two Quartermaster pages depend on: All first, then commonest
   # status first with ties broken by name, each labelled "status (count)". The
   # status reads as it is stored -- nothing re-cases it.
+  test "filter_time reads a whole date with a four-digit year, and refuses what it would have to guess" do
+    assert_equal Time.zone.local(2026, 10, 25), UiComponents::FilterBarHelper.filter_time("2026-10-25")
+    assert_equal Time.zone.local(2026, 10, 25, 14, 30), UiComponents::FilterBarHelper.filter_time("2026-10-25T14:30")
+    # A partial date, a two-digit year, a day the month lacks, a five-digit year.
+    ["26", "Oct 25 26", "26-10-25", "2026-02-30", "2026-02-29", "99999-01-01", "not a date", "", nil].each do |value|
+      assert_nil UiComponents::FilterBarHelper.filter_time(value), value.inspect
+    end
+  end
+
   test "filter_status_options offers All, then the statuses held, commonest first" do
     options = filter_status_options({ "active" => 2, "retired" => 9, "inactive" => 2 })
 

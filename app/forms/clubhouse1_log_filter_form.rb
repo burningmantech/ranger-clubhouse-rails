@@ -110,18 +110,9 @@ class Clubhouse1LogFilterForm
 
   private
 
-  # A whole date is required. Time.zone.parse fills in whatever the text
-  # leaves out -- "26" becomes the 26th of this month, "August" the 1st -- so
-  # a partial entry would silently filter by a date no one asked for.
+  # A time read by the shared whole-date rule, and inside VALID_YEARS.
   def parse_time(value)
-    return nil if value.blank?
-
-    parts = Date._parse(value)
-    return nil unless parts.values_at(:year, :mon, :mday).all?
-    return nil unless VALID_YEARS.cover?(parts[:year])
-
-    Time.zone.parse(value)
-  rescue ArgumentError
-    nil
+    time = UiComponents::FilterBarHelper.filter_time(value)
+    time if time && VALID_YEARS.cover?(time.year)
   end
 end

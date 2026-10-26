@@ -69,19 +69,19 @@ class ActionLogFilterForm
   end
 
   def parsed_start_time
-    parse_time(start_time)
+    UiComponents::FilterBarHelper.filter_time(start_time)
   end
 
   def parsed_end_time
-    parse_time(end_time)
+    UiComponents::FilterBarHelper.filter_time(end_time)
   end
 
   def query_params(page: nil)
     values = {
       person_callsign: person_callsign.presence,
       target_person_callsign: target_person_callsign.presence,
-      start_time: start_time.presence,
-      end_time: end_time.presence,
+      start_time: (start_time.presence if parsed_start_time),
+      end_time: (end_time.presence if parsed_end_time),
       event_name: event_name.presence,
       message: message.presence
     }.compact
@@ -90,15 +90,5 @@ class ActionLogFilterForm
     return {} if values.empty?
 
     { PARAM_SCOPE => values }
-  end
-
-  private
-
-  def parse_time(value)
-    return nil if value.blank?
-
-    Time.zone.parse(value)
-  rescue ArgumentError
-    nil
   end
 end

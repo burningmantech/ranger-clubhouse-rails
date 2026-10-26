@@ -58,7 +58,7 @@
           <% detail_dom_id = "error-log-detail-#{row.id}" %>
           <%= t.row class: "align-middle" do %>
             <%= t.cell class: "align-top" do %>
-              <%= t.detail_row_toggle error_log_timestamp(row), id: detail_dom_id, describing: row.error_type %>
+              <%= t.detail_row_toggle log_time_format(row.created_at), id: detail_dom_id, describing: row.error_type %>
             <% end %>
             <%= t.cell class: log_text_class("align-middle") do %>
               <%= error_log_person_label(row.person, row.person_id) %>

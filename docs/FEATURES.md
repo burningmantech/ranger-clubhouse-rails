@@ -3340,6 +3340,7 @@ Touches: `action_logs`, `person`, `slot`, `position`, `role`, `team`
 Verify: `test/controllers/admin/action_logs_controller_test.rb`, `test/models/action_log_test.rb`, `test/helpers/admin/action_logs_helper_test.rb`
 Trap: Unfiltered, `ActionLog.find_for_query` skips `count`: the total is last id minus first id plus one, with `meta[:approximate_total]` set; only a filtered query counts.
 Trap: `user_agent` is the raw `User-Agent` header (`ActionLog.record` via `Current.user_agent`) — `Admin::ActionLogsHelper` must return plain strings for the view to escape, never `html_safe`.
+Trap: a typed From or Until counts only when it names a whole date (`UiComponents::FilterBarHelper.filter_time`, which every admin log filter and the on-duty page read their times through); `Time.zone.parse` alone reads "26" as the 26th of this month, which this page did until 2026-10-25. A time it cannot read narrows nothing and draws no chip (`ActionLogFilterForm#query_params`).
 
 ### Background Jobs
 Reach it: `GET /admin/jobs` → Administration › System Logs › Background Jobs; retry `POST /admin/jobs/:id/retry`, delete `DELETE /admin/jobs/:id`, retry all `POST /admin/jobs/retry-all`, delete all failed `DELETE /admin/jobs/failed`

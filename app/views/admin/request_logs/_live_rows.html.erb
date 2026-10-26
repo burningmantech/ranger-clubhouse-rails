@@ -5,7 +5,7 @@
 <%= ui_table_rows headings: request_log_live_headings, striped: false do |t| %>
   <% rows.each do |row| %>
     <%= t.row id: "request-log-live-#{row.id}", align: :middle do %>
-      <%= t.cell request_log_timestamp(row), class: log_text_class("whitespace-nowrap") %>
+      <%= t.cell log_time_format(row.created_at), class: log_text_class("whitespace-nowrap") %>
       <%= t.cell class: log_text_class do %>
         <%= request_log_person_label(row) %>
       <% end %>

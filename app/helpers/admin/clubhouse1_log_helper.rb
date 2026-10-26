@@ -43,10 +43,6 @@ module Admin::Clubhouse1LogHelper
     "The Clubhouse 1 Log holds no entries."
   end
 
-  def clubhouse1_log_timestamp(row)
-    row.occurred&.in_time_zone(Time.zone)&.strftime(DateTimeHelper::LOG_TIME).to_s
-  end
-
   # The log names people by id. Tech Ninjas can read this page but not the
   # person pages, so person_display_link gives them the callsign without a link
   # that would only bounce them back to their own page.

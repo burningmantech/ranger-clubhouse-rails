@@ -85,7 +85,7 @@
       <%= t.body do %>
         <% @action_logs.each do |row| %>
           <% detail_dom_id = "action-log-detail-#{row.id}" %>
-          <% timestamp = action_log_timestamp(row) %>
+          <% timestamp = log_time_format(row.created_at) %>
           <% collapsed_toggle_label = action_log_toggle_label(timestamp) %>
           <% expanded_toggle_label = action_log_toggle_label(timestamp, expanded: true) %>
           <% inline_metadata_lines = action_log_inline_metadata_lines(row) %>

@@ -7,12 +7,6 @@ class Admin::ActionLogsHelperTest < ActionView::TestCase
   include UiComponents::UiDataBlockHelper
   include ButtonHelper
 
-  test "action_log_timestamp formats in phoenix time" do
-    row = ActionLog.new(created_at: Time.zone.local(2026, 4, 9, 8, 30, 15))
-
-    assert_equal "2026-04-09 08:30:15", action_log_timestamp(row)
-  end
-
   test "action_log_pretty_data_block renders pretty printed json" do
     row = ActionLog.new(data: '{"alpha":1,"nested":{"beta":2}}')
 
