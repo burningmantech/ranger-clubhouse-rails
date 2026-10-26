@@ -16,7 +16,6 @@
       The Clubhouse cannot ask Twilio about the account until the Account SID and Auth Token are set.
     <% end %>
   <% else %>
-    <% messaging = twilio_messaging_services(@status) %>
     <%= ui_label_value label_width: "9rem" do |list| %>
       <%= list.row "Account" do %>
         <%= twilio_answer(@status[:account]) do |account| %>
@@ -46,17 +45,12 @@
         <% end %>
       <% end %>
       <%= list.row "Incoming Texts" do %>
-        <% if messaging.empty? %>
-          —
-        <% end %>
-        <% messaging.each do |service| %>
-          <div>
-            <%= twilio_incoming_badge(service, sms_incoming_address) %>
-            <code class="break-all"><%= sms_url_shown(service[:incoming_url]) %></code>
-            <% if service[:fallback_url] %>
-              <div>When that address fails, Twilio sends the text to <code class="break-all"><%= sms_url_shown(service[:fallback_url]) %></code>.</div>
-            <% end %>
-          </div>
+        <%= twilio_answer(@status[:messaging_service]) do |service| %>
+          <%= twilio_incoming_badge(service, sms_incoming_address) %>
+          <code class="break-all"><%= sms_url_shown(service[:incoming_url]) %></code>
+          <% if service[:fallback_url] %>
+            <div>When that address fails, Twilio sends the text to <code class="break-all"><%= sms_url_shown(service[:fallback_url]) %></code>.</div>
+          <% end %>
         <% end %>
       <% end %>
       <%= list.row "Texts, Last 24 Hours" do %>
@@ -95,10 +89,10 @@
       <% end %>
     <% end %>
 
-    <%# Offered once every Notify service was read; the Groundhog Day Server
-        never gets this far. %>
+    <%# Offered once Twilio read the Messaging Service; the Groundhog Day
+        Server never gets this far. %>
     <% lock = twilio_incoming_lock(@status) %>
-    <% if messaging.any? && lock.nil? %>
+    <% if lock.nil? %>
       <%= ui_form(nil, admin_sms_management_incoming_path, scope: :twilio_incoming, method: :patch,
                   class: "mt-4", no_error_summary: true) do |f| %>
         <%= f.url_field :url, label: "Send Incoming Texts To", value: sms_incoming_address, required: true,
@@ -115,7 +109,7 @@
                        ) } %>
         <% end %>
       <% end %>
-    <% elsif lock %>
+    <% else %>
       <p class="mt-4"><%= lock %></p>
     <% end %>
 

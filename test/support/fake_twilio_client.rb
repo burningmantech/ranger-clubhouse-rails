@@ -3,23 +3,21 @@
 require "faraday"
 
 # A stand-in for Twilio::REST::Client answering what SMS Management asks:
-# the account, its balance, the Notify services and the Messaging Service each
-# sends through (which an update changes), the message list (a page at a time,
-# or all at once) and the alerts, from plain values; and what the send path
-# sends: a Notify service's notifications, and texts made with
-# messages.create, each answered with a SID of its own. A part named in
-# errors: raises the error given instead. asked records every part asked for,
-# in order, and params the keywords each part was last asked with;
-# notifications and created_texts keep every send, in order. A Notify
-# service is a name, sending through MESSAGING_SERVICE_SID, or a Service
-# naming its own Messaging Service.
+# the account, its balance, the Notify services, the Messaging Services (which
+# an update changes), the message list (a page at a time, or all at once) and
+# the alerts, from plain values; and what the send path sends: a Notify
+# service's notifications, and texts made with messages.create, each answered
+# with a SID of its own. A part named in errors: raises the error given
+# instead. asked records every part asked for, in order, and params the
+# keywords each part was last asked with; notifications and created_texts keep
+# every send, in order. A Notify service is its name.
 class FakeTwilioClient
   Account = Data.define(:friendly_name, :status, :type, :sid, :owner_account_sid)
   # Never a real Account SID's shape (AC and 32 hex digits): GitHub's secret
   # scanning takes any such string for a live credential and refuses the push.
   MAIN_ACCOUNT = Account.new("Black Rock Rangers", "active", "Full", "deadbeef", "deadbeef")
   Balance = Data.define(:balance, :currency)
-  Service = Data.define(:friendly_name, :messaging_service_sid)
+  Service = Data.define(:friendly_name)
   MessagingService = Data.define(:inbound_request_url, :inbound_method, :use_inbound_webhook_on_number,
                                  :fallback_url) do
     def initialize(inbound_request_url:, inbound_method:, use_inbound_webhook_on_number:, fallback_url: nil) = super
@@ -112,13 +110,12 @@ class FakeTwilioClient
   attr_reader :asked, :params, :texts, :next_page_url, :previous_page_url, :notifications, :created_texts
 
   def initialize(account: MAIN_ACCOUNT, balance: Balance.new("412.37", "USD"),
-                 services: { "ISservice0001" => "Ranger Alerts" }, messaging_service_sid: MESSAGING_SERVICE_SID,
+                 services: { "ISservice0001" => "Ranger Alerts" },
                  messaging_services: { MESSAGING_SERVICE_SID => MessagingService.new(CLUBHOUSE2_INCOMING, "POST", false) },
                  texts: [], alerts: [], next_page_url: nil, previous_page_url: nil, errors: {})
     @account = account
     @balance = balance
     @services = services
-    @messaging_service_sid = messaging_service_sid
     @messaging_services = messaging_services
     @texts = texts
     @alerts = alerts
@@ -147,10 +144,7 @@ class FakeTwilioClient
   def alerts = AlertList.new(self)
   def alert_rows = @alerts
 
-  def notify_service(id)
-    found = @services.fetch(id) { raise not_found(id) }
-    found.is_a?(Service) ? found : Service.new(found, @messaging_service_sid)
-  end
+  def notify_service(id) = Service.new(@services.fetch(id) { raise not_found(id) })
 
   def messaging_service(sid) = @messaging_services.fetch(sid) { raise not_found(sid) }
 
@@ -200,9 +194,10 @@ module FakeTwilioTestHelper
   end
 
   def configure_twilio(sid: "deadbeef", token: "token-never-shown",
-                       service_ids: "ISservice0001")
+                       service_ids: "ISservice0001", messaging_service_id: FakeTwilioClient::MESSAGING_SERVICE_SID)
     { Setting::TWILIO_ACCOUNT_SID => sid, Setting::TWILIO_AUTH_TOKEN => token,
-      Setting::TWILIO_SERVICE_ID => service_ids }.each do |name, value|
+      Setting::TWILIO_SERVICE_ID => service_ids,
+      Setting::TWILIO_MESSAGING_SERVICE_ID => messaging_service_id }.each do |name, value|
       Setting.find_or_initialize_by(name:).update!(value:)
     end
   end

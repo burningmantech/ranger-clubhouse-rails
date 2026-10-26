@@ -31,13 +31,14 @@ class TwilioStatusTest < ActiveSupport::TestCase
       assert_equal({ value: { name: "Black Rock Rangers", status: "active", type: "Full", subaccount: false } },
                    status[:account])
       assert_equal({ value: { amount: "412.37", currency: "USD" } }, status[:balance])
-      assert_equal({ value: { name: "Ranger Alerts", messaging_service: FakeTwilioClient::MESSAGING_SERVICE_SID,
-                              incoming_url: FakeTwilioClient::CLUBHOUSE2_INCOMING, fallback_url: nil,
-                              defers_to_number: false },
-                     id: "ISservice0001" }, status[:services].first)
+      assert_equal({ value: { name: "Ranger Alerts" }, id: "ISservice0001" }, status[:services].first)
       # A service Twilio does not know is an answer of its own; the rest still came.
       assert_equal "The requested resource /Services/ISmissing0002 was not found (Twilio error 20404)",
                    status[:services].last[:error]
+      # The Messaging Service TwilioMessagingServiceId names: no Notify
+      # service leads to it.
+      assert_equal({ value: { incoming_url: FakeTwilioClient::CLUBHOUSE2_INCOMING, fallback_url: nil,
+                              defers_to_number: false } }, status[:messaging_service])
       assert_equal({ value: { counts: { "delivered" => 2, "undelivered" => 1, "received" => 1 }, sampled: false } },
                    status[:texts])
       # Twilio is asked for the UTC date the window opens.
@@ -93,6 +94,19 @@ class TwilioStatusTest < ActiveSupport::TestCase
     assert_equal 2, fake.asked.count(:services)
   end
 
+  test "a Messaging Service setting that is empty or holds a space is answered for without asking" do
+    fake = FakeTwilioClient.new
+    problems = { nil => "TwilioMessagingServiceId is not set",
+                 "MG0123 4567" => "TwilioMessagingServiceId holds a space or punctuation, so Twilio cannot be asked about it" }
+
+    problems.each do |id, error|
+      configure_twilio(messaging_service_id: id)
+
+      assert_equal({ error: }, with_fake_twilio(fake) { TwilioStatus.fetch }[:messaging_service])
+    end
+    assert_not_includes fake.asked, :messaging_service
+  end
+
   test "once Twilio cannot be reached, nothing more is asked" do
     configure_twilio
     fake = FakeTwilioClient.new(errors: { account: Twilio::REST::TwilioError.new("Failed to open TCP connection") })
@@ -100,7 +114,8 @@ class TwilioStatusTest < ActiveSupport::TestCase
     status = with_fake_twilio(fake) { TwilioStatus.fetch }
 
     assert_equal [:account], fake.asked
-    [status[:account], status[:balance], status[:texts], status[:alerts], *status[:services]].each do |answer|
+    [status[:account], status[:balance], status[:messaging_service], status[:texts], status[:alerts],
+     *status[:services]].each do |answer|
       assert_equal "Could not reach Twilio: Failed to open TCP connection", answer[:error]
     end
   end
@@ -150,6 +165,10 @@ class TwilioStatusTest < ActiveSupport::TestCase
         Setting.find(Setting::TWILIO_AUTH_TOKEN).update!(value: "a-corrected-token")
         TwilioStatus.fetch
         assert_equal 3, fake.asked.count(:account)
+
+        Setting.find(Setting::TWILIO_MESSAGING_SERVICE_ID).update!(value: "MGfedcba9876543210fedcba9876543210")
+        TwilioStatus.fetch
+        assert_equal 4, fake.asked.count(:account)
       end
     end
   end

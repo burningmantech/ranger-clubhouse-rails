@@ -48,4 +48,20 @@ class Admin::SettingsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_settings_path
     assert_equal "You are not authorized to access that setting.", flash[:error]
   end
+
+  test "TwilioMessagingServiceId is a credential, hidden and refused without Tech Ninja as the other Twilio settings are" do
+    name = Setting::TWILIO_MESSAGING_SERVICE_ID
+    Setting.find_or_initialize_by(name:).update!(value: "MG0123456789abcdef0123456789abcdef")
+
+    get admin_settings_path(filter: "twilio")
+
+    assert_select "tbody tr", 4
+    assert_select "tbody tr", text: /#{name}.*Hidden.*No access/m
+    assert_not_includes response.body, "MG0123456789abcdef0123456789abcdef"
+
+    get edit_admin_setting_path(name)
+
+    assert_response :redirect
+    assert_equal admin_settings_path, URI(response.location).path
+  end
 end

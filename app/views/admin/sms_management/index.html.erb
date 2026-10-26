@@ -45,6 +45,12 @@
           <% end %>
         <% end %>
       <% end %>
+      <%= list.row "Messaging Service" do %>
+        <%= sms_setting_badge(@settings[:messaging_service_id]) %>
+        <% if @settings[:messaging_service_id] %>
+          <span class="font-mono"><%= sms_masked_id(@settings[:messaging_service_id]) %></span>
+        <% end %>
+      <% end %>
       <%= list.row "Text Sandbox" do %>
         <% if @settings[:sandbox] %>
           <%= ui_badge "On", :warning, icon: "triangle-exclamation", icon_type: :solid %>

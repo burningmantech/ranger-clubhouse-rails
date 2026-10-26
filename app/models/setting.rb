@@ -114,6 +114,7 @@ class Setting < ApplicationRecord
   TROUBLESHOOTER_MENTOR_SURVEY_URL = "TroubleshooterMentorSurveyURL"
   TWILIO_ACCOUNT_SID = "TwilioAccountSID"
   TWILIO_AUTH_TOKEN = "TwilioAuthToken"
+  TWILIO_MESSAGING_SERVICE_ID = "TwilioMessagingServiceId"
   TWILIO_SERVICE_ID = "TwilioServiceId"
   VEHICLE_PENDING_EMAIL = "VehiclePendingEmail"
   EVENT_MANAGEMENT_ON_PLAYA_ENABLED = "EventManagementOnPlayaEnabled"
@@ -551,6 +552,11 @@ class Setting < ApplicationRecord
     },
     TWILIO_AUTH_TOKEN => {
       description: "Twilio Authentication Token",
+      type: TYPE_STRING,
+      is_credential: true
+    },
+    TWILIO_MESSAGING_SERVICE_ID => {
+      description: "Twilio Messaging Service SID (MG…) the Clubhouse texts through",
       type: TYPE_STRING,
       is_credential: true
     },
