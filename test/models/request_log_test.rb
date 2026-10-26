@@ -26,19 +26,19 @@ class RequestLogTest < ActiveSupport::TestCase
   end
 
   def found(**query)
-    RequestLog.find_for_query(**query)[:request_log]
+    RequestLog.find_for_query(**query).last
   end
 
   test "finds every record when nothing is asked for" do
     create_log
     create_log(person: @person)
 
-    result = RequestLog.find_for_query
+    pagy, logs = RequestLog.find_for_query
 
-    assert_equal 2, result[:request_log].size
-    assert_equal 2, result[:meta][:total]
-    assert_equal 1, result[:meta][:total_pages]
-    assert_equal 1, result[:meta][:page]
+    assert_equal 2, logs.size
+    assert_equal 2, pagy.count
+    assert_equal 1, pagy.last
+    assert_equal 1, pagy.page
   end
 
   test "narrows to one person" do
@@ -97,20 +97,21 @@ class RequestLogTest < ActiveSupport::TestCase
   end
 
   test "holds a page number past the end to the last real page" do
-    create_log
+    log = create_log
 
-    meta = RequestLog.find_for_query(page: 99)[:meta]
+    pagy, logs = RequestLog.find_for_query(page: 99)
 
-    assert_equal 1, meta[:page]
+    assert_equal 1, pagy.page
+    assert_equal [log.id], logs.map(&:id)
   end
 
   test "reports no pages and no rows when nothing matches" do
     create_log(status: 200)
 
-    result = RequestLog.find_for_query(status_class: "5xx")
+    pagy, logs = RequestLog.find_for_query(status_class: "5xx")
 
-    assert_empty result[:request_log]
-    assert_equal 0, result[:meta][:total]
+    assert_empty logs
+    assert_equal 0, pagy.count
   end
 
   test "client_ip reads the last address of a forwarded chain" do

@@ -78,7 +78,7 @@
 <% end %>
 
 <%= ui_section "Request Log Entries", icon: "table-list", icon_type: :solid do %>
-  <% pager = ui_pager(@meta, noun: "request") { |page| admin_request_logs_path(@form.query_params(page:)) } %>
+  <% pager = ui_pager(@pagy, noun: "request") { |page| admin_request_logs_path(@form.query_params(page:)) } %>
   <% if @logs.empty? %>
     <% if @form.query_params.any? %>
       <%= ui_empty_state "No requests matched the current filters. #{retention_note}",

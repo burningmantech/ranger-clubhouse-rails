@@ -7,26 +7,28 @@ module UiComponents
   # to go to stays on screen, disabled, so the pair never moves.
   #
   # Usage:
-  #   <% pager = ui_pager(@meta, noun: "message") { |page| admin_mail_log_path(@form.query_params(to_page: page)) } %>
+  #   <% pager = ui_pager(@pagy, noun: "request") { |page| admin_request_logs_path(@form.query_params(page:)) } %>
   #
   module UiPagerHelper
     PAGER_CLASSES = "flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
 
-    # @param meta [Hash] { page:, total_pages:, total: }, as the paged model
-    #   queries return it. A meta that also carries has_previous_page /
-    #   has_next_page is taken at its word: a log whose total is estimated
-    #   cannot tell from page arithmetic whether another page exists.
+    # @param meta [Pagy, Hash] The list's Pagy object, offset or countless, or
+    #   its numbers as { page:, total_pages:, total: }. A meta that also
+    #   carries has_previous_page / has_next_page is taken at its word: a log
+    #   whose total is estimated cannot tell from page arithmetic whether
+    #   another page exists.
     # @param noun [String] What the list holds, singular: "message" reads
-    #   "640 messages"
+    #   "640 messages". Only a counted list has a total to put it beside
     # @param summary [String] Replaces the whole "Page 2 of 7 · 640 messages"
     #   line, for a page that words it differently -- an estimated total, or
-    #   one never counted
+    #   one never counted, as a countless Pagy's is
     # @param options [Hash] Additional HTML options
     #   - :class - Additional CSS classes
     # @yieldparam page [Integer] The page a button leads to
     # @yieldreturn [String] That page's URL, its filters carried along
     def ui_pager(meta, noun: nil, summary: nil, **options)
-      raise ArgumentError, "ui_pager needs noun: or summary:" unless noun || summary
+      meta = ui_pager_meta(meta) if meta.is_a?(Pagy)
+      raise ArgumentError, "ui_pager needs summary:, or noun: for a counted list" unless summary || (noun && meta[:total])
 
       page = meta[:page]
       summary ||= "Page #{page} of #{[meta[:total_pages], 1].max} · #{pluralize(meta[:total], noun)}"
@@ -41,6 +43,13 @@ module UiComponents
     end
 
     private
+
+    # A Pagy object's numbers. Pagy knows whether a page lies either side: a
+    # countless one fetched a row past the page to find out, and has no total.
+    def ui_pager_meta(pagy)
+      { page: pagy.page, total_pages: pagy.last, total: pagy.count,
+        has_previous_page: pagy.previous.present?, has_next_page: pagy.next.present? }
+    end
 
     def ui_pager_button(label, url)
       return button_action(label, :secondary, disabled: true) unless url

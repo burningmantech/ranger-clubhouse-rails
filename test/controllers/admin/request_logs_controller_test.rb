@@ -178,13 +178,26 @@ class Admin::RequestLogsControllerTest < ActionDispatch::IntegrationTest
 
     sign_in_as(@admin)
 
-    get admin_request_logs_path(filter: { person_callsign: "NotARealCallsign" })
+    get admin_request_logs_path(filter: { person_callsign: "NotARealCallsign", page: 3 })
 
     assert_response :success
     # A search past the window finds nothing for that reason alone, so the
     # empty state says how far back the log goes.
     assert_match "No requests matched the current filters. " \
                  "Only the last #{RequestLog::EXPIRE_DAYS_DEFAULT} days are kept.", response.body
+    assert_select "p", text: "Page 1 of 1 · 0 requests"
+  end
+
+  test "a page past the last shows the last page" do
+    log = create_log
+
+    sign_in_as(@admin)
+
+    get admin_request_logs_path(filter: { page: 99 })
+
+    assert_response :success
+    assert_select "#request-log-detail-#{log.id}"
+    assert_select "p", text: "Page 1 of 1 · 1 request", count: 2
   end
 
   test "ignores a filter parameter that is not a hash" do

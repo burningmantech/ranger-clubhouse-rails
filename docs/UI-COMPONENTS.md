@@ -538,14 +538,14 @@ that page's URL with the filters carried along.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `meta` | Hash | required | `{ page:, total_pages:, total: }`, as the paged model queries return it. When it also carries `has_previous_page:` / `has_next_page:`, those decide the buttons instead of the page arithmetic |
-| `noun:` | String | `nil` | What the list holds, singular: `"message"` reads "640 messages". Required unless `summary:` is given |
-| `summary:` | String | `nil` | Replaces the whole line, for a page that words it differently: an estimated total, or one never counted |
+| `meta` | Pagy, Hash | required | The list's Pagy object, offset or countless, or its numbers as `{ page:, total_pages:, total: }`. A hash that also carries `has_previous_page:` / `has_next_page:` has those decide the buttons instead of the page arithmetic, as a Pagy object's own `previous` / `next` do |
+| `noun:` | String | `nil` | What the list holds, singular: `"message"` reads "640 messages". Only for a counted list: required unless `summary:` is given, and refused for a countless Pagy |
+| `summary:` | String | `nil` | Replaces the whole line, for a page that words it differently: an estimated total, or one never counted (a countless Pagy) |
 | `class:` | String | `nil` | Additional CSS classes on the wrapper |
 
 ```erb
 <%# Built once, shown above the table and again below it. %>
-<% pager = ui_pager(@meta, noun: "message") { |page| admin_mail_log_path(@form.query_params(to_page: page)) } %>
+<% pager = ui_pager(@pagy, noun: "request") { |page| admin_request_logs_path(@form.query_params(page:)) } %>
 
 <%# An estimated total: no "of N", and the meta's has_next_page decides Next. %>
 <% pager = ui_pager(@meta, summary: action_log_pager_summary(@meta)) { |page| admin_action_logs_path(@form.query_params(page:)) } %>
@@ -555,6 +555,10 @@ Where a filter or a stale page number can empty the table while the list still
 holds rows, render the lower pager outside the empty-state branch so the reader
 has a way back. A page whose line reads differently passes `summary:` rather
 than getting its own pager helper.
+
+Pagy answers a page past the last with an empty page. A list that shows its
+last page instead pages again at `pagy.last`, passing `count: pagy.count` so
+it does not count twice (`RequestLog.find_for_query`).
 
 ### ui_stat_box
 
