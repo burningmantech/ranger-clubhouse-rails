@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_23_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_000001) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.integer "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -516,6 +516,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_000001) do
     t.index ["callsign_soundex"], name: "person_callsign_soundex_index"
     t.index ["email"], name: "email", unique: true
     t.index ["lms_id"], name: "person_lms_id_index"
+    t.index ["sms_number"], name: "index_person_on_sms_number"
     t.index ["status"], name: "person_status_index"
     t.check_constraint "json_valid(`years_as_contributor`)", name: "years_as_contributor"
     t.check_constraint "json_valid(`years_as_ranger`)", name: "years_as_ranger"
