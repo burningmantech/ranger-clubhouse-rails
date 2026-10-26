@@ -2,10 +2,11 @@
 
 require "test_helper"
 
-# The send path as it stands: every text goes through Twilio Notify, one
+# The send path. A broadcast still goes through Twilio Notify, one
 # notification per service in TwilioServiceId with the numbers shared out
-# between them. Notify reaches its end of life on 2027-01-31; these describe
-# what moves off it.
+# between them, until it moves off before Notify's end of life on 2027-01-31.
+# A single text (a verification code, a new-message alert) already goes
+# through the Messaging Service with the Messages API.
 class SmsServiceTest < ActiveSupport::TestCase
   include FakeTwilioTestHelper
 
@@ -52,7 +53,51 @@ class SmsServiceTest < ActiveSupport::TestCase
     assert_equal ["ISservice0001"], fake.notifications.pluck(:service)
   end
 
-  # Every test above hands the broadcast its client through
+  test "a single text goes through the Messaging Service, in E.164, held two hours at most, and answers its SID" do
+    configure_twilio
+    fake = FakeTwilioClient.new
+
+    sid = with_fake_twilio(fake) { SmsService.send_text("(415) 555-0101", "Your Clubhouse verification code is: 1234") }
+
+    assert_equal format("SM%032d", 1), sid
+    assert_equal [{ messaging_service_sid: FakeTwilioClient::MESSAGING_SERVICE_SID, to: "+14155550101",
+                    body: "Your Clubhouse verification code is: 1234", validity_period: 7200 }],
+                 fake.created_texts
+    assert_empty fake.notifications, "never through Notify"
+  end
+
+  test "a single text Twilio refused raises an SmsException, the refusal kept as its cause" do
+    configure_twilio
+    fake = FakeTwilioClient.new(errors: { message_create: FakeTwilioClient.refusal(21610, "Attempt to send to unsubscribed recipient") })
+
+    error = assert_raises(SmsException) { with_fake_twilio(fake) { SmsService.send_text("+14155550101", "Muster at HQ") } }
+
+    assert_not_kind_of SmsException::Unconfirmed, error
+    assert_equal 21610, error.cause.code
+  end
+
+  test "a single text Twilio may have taken without answering raises SmsException::Unconfirmed" do
+    configure_twilio
+    fake = FakeTwilioClient.new(errors: { message_create: FakeTwilioClient.read_timeout })
+
+    error = assert_raises(SmsException::Unconfirmed) do
+      with_fake_twilio(fake) { SmsService.send_text("+14155550101", "Muster at HQ") }
+    end
+
+    assert_instance_of Faraday::TimeoutError, error.cause.cause
+  end
+
+  test "a single text asks Twilio nothing while the Messaging Service is not set" do
+    configure_twilio(messaging_service_id: nil)
+    fake = FakeTwilioClient.new
+
+    error = assert_raises(SmsException) { with_fake_twilio(fake) { SmsService.send_text("+14155550101", "Muster at HQ") } }
+
+    assert_equal "TwilioMessagingServiceId is not set", error.message
+    assert_empty fake.asked
+  end
+
+  # Every test above hands the send its client through
   # TwilioAccount.build_client; this is the client it builds outside a test.
   test "a broadcast's client gives up on Twilio after five seconds" do
     client = TwilioAccount.build_client("deadbeef", "token-never-shown")

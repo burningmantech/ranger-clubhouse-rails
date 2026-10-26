@@ -811,10 +811,10 @@ class Rbs
 
       if send_sms
         sms_message = notify_text(from, subject, group:)
-        status = notify_by_text(phone_number, sms_message)
+        status, sid = notify_by_text(phone_number, sms_message)
         sms_failed = 1 if status != Broadcast::STATUS_SENT
         log_ids << BroadcastMessage.record(nil, status, person.id, "sms", phone_number, "outbound",
-                                           sms_message)
+                                           sms_message, message_id: sid)
       end
 
       if send_email
@@ -1682,16 +1682,20 @@ class Rbs
       "#{opening}#{subject.to_s[0, [room, 0].max]}  #{SMS_SUFFIX}"
     end
 
+    # Text one new-message alert: the status its row records, and the SID
+    # Twilio gave the text, which a held or failed one has none of. A text
+    # Twilio may have taken without answering is send-unconfirmed, so it is
+    # never sent again.
     def notify_by_text(phone_number, sms_message)
-      return Broadcast::STATUS_SENT if Setting.get_value(Setting::BROADCAST_SMS_SANDBOX)
+      return [Broadcast::STATUS_SENT, nil] if Setting.get_value(Setting::BROADCAST_SMS_SANDBOX)
 
-      SmsService.broadcast([phone_number], sms_message)
+      [Broadcast::STATUS_SENT, SmsService.send_text(phone_number, sms_message)]
     rescue => e
       ErrorLog.record_exception(e, "sms-exception", extra: {
                                  type: "clubhouse-notify",
                                  phone: phone_number
                                })
-      Broadcast::STATUS_SERVICE_FAIL
+      [e.is_a?(SmsException::Unconfirmed) ? Broadcast::STATUS_SEND_UNCONFIRMED : Broadcast::STATUS_SERVICE_FAIL, nil]
     end
   end
 end

@@ -107,6 +107,12 @@ class FakeTwilioClient
     end
   end
 
+  # The error twilio-ruby raises when Twilio refuses a call, with Twilio's own
+  # code and words: 21610 for a number that texted STOP, say.
+  def self.refusal(code, message)
+    Twilio::REST::RestError.new("Unable to create record", Twilio::Response.new(400, { code:, message: }.to_json))
+  end
+
   attr_reader :asked, :params, :texts, :next_page_url, :previous_page_url, :notifications, :created_texts
 
   def initialize(account: MAIN_ACCOUNT, balance: Balance.new("412.37", "USD"),

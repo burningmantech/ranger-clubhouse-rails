@@ -39,7 +39,8 @@ class Broadcast < ApplicationRecord
   # reason SES gives that is not on this list. Two are the Clubhouse's own:
   # an address SES would refuse never goes to it, and an email SES may have
   # sent without saying so -- a timeout, a fault on its side, a short answer --
-  # is never assumed unsent.
+  # is never assumed unsent. Neither is a text Twilio may have taken without
+  # answering, which is send-unconfirmed too.
   STATUS_INVALID_PARAMETER = "invalid-parameter"
   STATUS_SEND_UNCONFIRMED = "send-unconfirmed"
   STATUS_FAILED = "failed"
@@ -62,8 +63,8 @@ class Broadcast < ApplicationRecord
   ATTEMPTED_STATUSES = [STATUS_SENT, STATUS_BOUNCED, STATUS_BLOCKED, *FAILURE_STATUSES].freeze
 
   # The failures a Retry never sends: an address SES would refuse never gets
-  # better, and an email SES may already have sent is never sent twice. Every
-  # other failure was certainly not sent, and is worth another try.
+  # better, and an email or text that may already have gone is never sent
+  # twice. Every other failure was certainly not sent, and is worth another try.
   UNRETRYABLE_STATUSES = [STATUS_INVALID_PARAMETER, STATUS_SEND_UNCONFIRMED].freeze
   RETRYABLE_STATUSES = (FAILURE_STATUSES - UNRETRYABLE_STATUSES).freeze
 

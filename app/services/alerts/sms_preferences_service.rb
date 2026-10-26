@@ -132,15 +132,19 @@ module Alerts
 
       private
 
-      # Send a verification code via SMS and log it.
+      # Send a verification code via SMS and log it, with the SID Twilio gave
+      # the text. A code Twilio may have taken without answering is recorded
+      # send-unconfirmed, and the person is still told it could not be sent:
+      # sending again makes a new code.
       #
       # @return [String] "sent" or "sent-fail"
       def deliver_verification_code(person, phone, code)
         message = "Your Clubhouse verification code is: #{code}"
 
         begin
-          SmsService.broadcast([phone], message)
-          BroadcastMessage.record(nil, Broadcast::STATUS_VERIFY, person.id, "sms", phone, "outbound", message)
+          sid = SmsService.send_text(phone, message)
+          BroadcastMessage.record(nil, Broadcast::STATUS_VERIFY, person.id, "sms", phone, "outbound", message,
+                                  message_id: sid)
           "sent"
         rescue StandardError => e
           ErrorLog.record_exception(e, "sms-exception", extra: {
@@ -148,6 +152,10 @@ module Alerts
             person_id: person.id,
             phone: phone
           })
+          if e.is_a?(SmsException::Unconfirmed)
+            BroadcastMessage.record(nil, Broadcast::STATUS_SEND_UNCONFIRMED, person.id, "sms", phone, "outbound",
+                                    message)
+          end
           "sent-fail"
         end
       end

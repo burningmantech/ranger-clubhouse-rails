@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_26_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_000002) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.integer "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -194,7 +194,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_000001) do
     t.string "address", null: false
     t.text "message", size: :medium
     t.timestamp "created_at", default: -> { "current_timestamp()" }, null: false
-    t.string "message_id", comment: "the id SES gave this email; mail_log.message_id holds the same"
+    t.string "message_id", comment: "the id SES gave this email (mail_log.message_id holds the same), or the SID Twilio gave this text"
     t.index ["broadcast_id"], name: "broadcast_id"
     t.index ["person_id"], name: "person_id"
   end

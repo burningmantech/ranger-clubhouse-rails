@@ -101,9 +101,10 @@ class BroadcastMessage < ApplicationRecord
     # @param address [String] email or sms address
     # @param direction [String] outbound (sent by Clubhouse) or inbound (received by Clubhouse)
     # @param message [String, nil] incoming message from phone (optional)
+    # @param message_id [String, nil] the SID Twilio gave a text it took
     # @return [Integer] the id of the newly created broadcast_message row
-    def record(broadcast_id, status, person_id, type, address, direction, message = nil)
-      columns = { direction:, status:, address_type: type, address: }
+    def record(broadcast_id, status, person_id, type, address, direction, message = nil, message_id: nil)
+      columns = { direction:, status:, address_type: type, address:, message_id: }
 
       columns[:broadcast_id] = broadcast_id if broadcast_id.present?
       columns[:person_id] = person_id if person_id.present?

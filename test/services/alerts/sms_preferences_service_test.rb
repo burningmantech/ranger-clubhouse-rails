@@ -3,6 +3,8 @@
 require "test_helper"
 
 class Alerts::SmsPreferencesServiceTest < ActiveSupport::TestCase
+  include FakeTwilioTestHelper
+
   setup do
     @person = person(:active_ranger)
     @person.update_columns(sms_number: nil, sms_code: nil, sms_verified: false, sms_stopped: false)
@@ -77,6 +79,39 @@ class Alerts::SmsPreferencesServiceTest < ActiveSupport::TestCase
 
     assert_not result.success?
     assert_equal "already-verified", result.status
+  end
+
+  test "send_code texts the code through the Messaging Service, and its row keeps Twilio's SID" do
+    @person.update_columns(sms_number: "+14155550101")
+    configure_twilio
+    fake = FakeTwilioClient.new
+
+    result = with_fake_twilio(fake) { Alerts::SmsPreferencesService.send_code(person: @person) }
+
+    row = BroadcastMessage.where(person_id: @person.id, address_type: "sms").sole
+
+    assert_equal "sent", result.status
+    assert_equal [["+14155550101", "Your Clubhouse verification code is: #{@person.reload.sms_code}"]],
+                 fake.created_texts.map { |text| text.values_at(:to, :body) }
+    assert_equal [Broadcast::STATUS_VERIFY, format("SM%032d", 1)], [row.status, row.message_id]
+  end
+
+  # Either way the person is told the code could not be sent: sending again
+  # makes a new one.
+  test "a code Twilio may have taken is recorded send-unconfirmed, and a refused one only in the error log" do
+    @person.update_columns(sms_number: "+14155550101")
+    configure_twilio
+
+    taken = with_fake_twilio(FakeTwilioClient.new(errors: { message_create: FakeTwilioClient.read_timeout })) do
+      Alerts::SmsPreferencesService.send_code(person: @person)
+    end
+    refused = with_fake_twilio(FakeTwilioClient.new(errors: { message_create: FakeTwilioClient.refusal(21211, "Invalid 'To' Phone Number") })) do
+      Alerts::SmsPreferencesService.send_code(person: @person)
+    end
+
+    assert_equal %w[sent-fail sent-fail], [taken.status, refused.status]
+    assert_equal [Broadcast::STATUS_SEND_UNCONFIRMED], BroadcastMessage.where(person_id: @person.id).pluck(:status)
+    assert_equal 2, ErrorLog.where(error_type: "sms-exception").count
   end
 
   # =========================================================================

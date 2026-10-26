@@ -300,7 +300,8 @@ module Communication
       "template-not-found" => "SES template missing",
       "invalid-sending-pool-name" => "SES sending pool missing",
       Broadcast::STATUS_FAILED => "SES failure",
-      Broadcast::STATUS_SEND_UNCONFIRMED => "SES may have sent this"
+      # SES's or Twilio's: the call may have gone through, and no answer came.
+      Broadcast::STATUS_SEND_UNCONFIRMED => "May have been sent"
     }.freeze
 
     MESSAGE_STATUS_VARIANTS = {
@@ -325,9 +326,10 @@ module Communication
 
     # The outcomes the message log can be filtered by, in two groups: what
     # happened to any message, and the reasons a broadcast email did not go --
-    # fourteen of those would bury the rest in one list.
+    # thirteen of those would bury the rest in one list. A text can be
+    # send-unconfirmed too, so that one sits with the first group.
     def rbs_message_status_options(email_failures: false)
-      statuses = Broadcast::EMAIL_FAIL_STATUSES
+      statuses = Broadcast::EMAIL_FAIL_STATUSES - [Broadcast::STATUS_SEND_UNCONFIRMED]
       statuses = Broadcast::MESSAGE_STATUSES - statuses unless email_failures
 
       statuses.map { |status| [status, rbs_message_status_label(status)] }

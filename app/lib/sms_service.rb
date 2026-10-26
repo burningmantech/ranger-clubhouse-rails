@@ -13,6 +13,11 @@ class SmsService
   # Do not reply to stop replies
   NO_STOP_REPLIES = 1
 
+  # How long Twilio may hold a text it has not yet managed to send before
+  # failing it, in seconds. An alert or a code hours late is no use, and
+  # Twilio's own default is ten hours.
+  VALIDITY_PERIOD = 2.hours.to_i
+
   #
   # Structured result for incoming SMS messages.
   # Replaces the PHP associative array return from processIncoming().
@@ -99,6 +104,30 @@ class SmsService
       end
 
       "sent"
+    end
+
+    #
+    # Send one text through the Messaging Service in TwilioMessagingServiceId,
+    # with the Messages API, which outlives Notify (gone 2027-01-31).
+    #
+    # @param phone_number [String] number to text
+    # @param message [String] text to send
+    # @return [String] the SID Twilio gave the text
+    # @raise [SmsException::Unconfirmed] if Twilio may have taken it without answering
+    # @raise [SmsException] if Twilio refused it, or the Messaging Service setting cannot be used
+    #
+    def send_text(phone_number, message)
+      account_sid, auth_token = get_tokens
+      service_id = TwilioAccount.settings[:messaging_service_id]
+      problem = TwilioAccount.messaging_service_problem(service_id)
+      raise SmsException, problem if problem
+
+      twilio = TwilioAccount.build_client(account_sid, auth_token)
+      twilio.messages.create(messaging_service_sid: service_id, to: normalize_phone(phone_number), body: message,
+                             validity_period: VALIDITY_PERIOD).sid
+    rescue *TwilioAccount::ERRORS => e
+      error_class = TwilioAccount.unanswered?(e) ? SmsException::Unconfirmed : SmsException
+      raise error_class, e.message
     end
 
     #

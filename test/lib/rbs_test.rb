@@ -17,6 +17,7 @@ class RbsTest < ActiveSupport::TestCase
   include CacheTestHelper
   include EnvTestHelper
   include EmailSuppressionTestHelper
+  include FakeTwilioTestHelper
 
   setup do
     Rails.cache.clear
@@ -2493,6 +2494,58 @@ class RbsTest < ActiveSupport::TestCase
     assert_match(/\AYou have a new Ranger Clubhouse msg from HQ\. Subject: Hello/, Rbs.send(:notify_text, "HQ", "Hello"))
     assert_match(/\AYou have a new Ranger Clubhouse group msg from Green Dot Cadre\. Subject: Hello/,
                  Rbs.send(:notify_text, "Green Dot Cadre", "Hello", group: true))
+  end
+
+  # A new-message text goes through the Messaging Service, never Notify, and
+  # its row keeps the SID Twilio gave it.
+  test "a new-message text goes through the Messaging Service, its row keeping Twilio's SID" do
+    person = reachable(callsign: "Listener")
+    sandbox_off(Setting::BROADCAST_SMS_SANDBOX)
+    Setting.find_or_initialize_by(name: Setting::BROADCAST_CLUBHOUSE_NOTIFY).update!(value: "true")
+    configure_twilio
+    fake = FakeTwilioClient.new
+
+    with_fake_twilio(fake) { Rbs.message_notify(person, @sender.id, "HQ", "Hello", "Body") }
+
+    row = alert_row(person, "sms")
+
+    assert_equal [person.sms_number], fake.created_texts.pluck(:to)
+    assert_empty fake.notifications
+    assert_equal [Broadcast::STATUS_SENT, format("SM%032d", 1)], [row.status, row.message_id]
+    assert_equal 0, row.broadcast.sms_failed
+  end
+
+  test "a new-message text Twilio may have taken is send-unconfirmed, and one it refused failed" do
+    taken = reachable(callsign: "Taken")
+    refused = reachable(callsign: "Refused")
+    sandbox_off(Setting::BROADCAST_SMS_SANDBOX)
+    Setting.find_or_initialize_by(name: Setting::BROADCAST_CLUBHOUSE_NOTIFY).update!(value: "true")
+    configure_twilio
+
+    with_fake_twilio(FakeTwilioClient.new(errors: { message_create: FakeTwilioClient.read_timeout })) do
+      Rbs.message_notify(taken, @sender.id, "HQ", "Hello", "Body")
+    end
+    with_fake_twilio(FakeTwilioClient.new(errors: { message_create: FakeTwilioClient.refusal(21610, "Attempt to send to unsubscribed recipient") })) do
+      Rbs.message_notify(refused, @sender.id, "HQ", "Hello", "Body")
+    end
+
+    assert_equal [Broadcast::STATUS_SEND_UNCONFIRMED, nil, 1],
+                 alert_row(taken, "sms").then { |row| [row.status, row.message_id, row.broadcast.sms_failed] }
+    assert_equal [Broadcast::STATUS_SERVICE_FAIL, nil, 1],
+                 alert_row(refused, "sms").then { |row| [row.status, row.message_id, row.broadcast.sms_failed] }
+    assert_equal 2, ErrorLog.where(error_type: "sms-exception").count
+  end
+
+  test "the text sandbox holds a new-message text: recorded as sent, and Twilio never asked" do
+    person = reachable(callsign: "Listener")
+    Setting.find_or_initialize_by(name: Setting::BROADCAST_CLUBHOUSE_NOTIFY).update!(value: "true")
+    configure_twilio
+    fake = FakeTwilioClient.new
+
+    with_fake_twilio(fake) { Rbs.message_notify(person, @sender.id, "HQ", "Hello", "Body") }
+
+    assert_empty fake.asked
+    assert_equal [Broadcast::STATUS_SENT, nil], alert_row(person, "sms").then { |row| [row.status, row.message_id] }
   end
 
   test "a new-message alert goes to the test address while one is set" do
