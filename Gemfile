@@ -69,7 +69,7 @@ gem "securerandom", "~> 0.4.1"
 
 gem "validates_timeliness", "~> 8.0.0"
 
-gem "image_processing", "~> 2.1"
+gem "image_processing", "~> 2.2"
 
 gem "rails_autolink"
 
