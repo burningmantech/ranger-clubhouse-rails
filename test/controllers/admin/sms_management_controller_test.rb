@@ -84,6 +84,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[aria-label=?][href=?]", "Remove filter: To: TestRanger", admin_sms_management_path
     # Nothing to export from until Twilio can be asked.
     assert_select "a[href*='.csv']", 0
+    assert_select "dt:contains('Messaging Service') + dd", text: /Missing/
     assert_unique_dom_ids
   end
 
@@ -97,6 +98,8 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "de…beef"
     assert_not_includes response.body, "deadbeef"
     assert_not_includes response.body, "token-never-shown"
+    assert_select "dt:contains('Messaging Service') + dd", text: /Set.*MG…cdef/m
+    assert_not_includes response.body, FakeTwilioClient::MESSAGING_SERVICE_SID
     assert_includes response.body, "A broadcast is split evenly across them."
     assert_includes response.body, TwilioSignatureConcern.address(infrastructure_sms_inbound_path)
     # The fixtures hold broadcast texts back.
@@ -314,18 +317,19 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
 
   # ---------------------------------------------------------------- incoming texts
 
-  test "the panel says where Twilio sends incoming texts, and offers this server's address" do
-    configure_twilio(service_ids: "ISservice0001,ISservice0002")
-    fake = FakeTwilioClient.new(services: { "ISservice0001" => "Ranger Alerts", "ISservice0002" => "Ranger News" })
+  test "the panel says where the Messaging Service sends incoming texts, and offers this server's address" do
+    configure_twilio
+    fake = FakeTwilioClient.new
 
     sign_in_as(@tech_ninja)
 
     with_fake_twilio(fake) { get admin_sms_management_twilio_path }
 
+    # The one TwilioMessagingServiceId names: no Notify service leads to it.
+    assert_equal 1, fake.asked.count(:messaging_service)
     assert_select "turbo-frame#sms-twilio" do
-      assert_select "dd", text: /Another server.*#{Regexp.escape(FakeTwilioClient::CLUBHOUSE2_INCOMING)}/m
-      # Both send through one Messaging Service, so it is listed once.
-      assert_select ".badge", text: "Another server", count: 1
+      assert_select "dt:contains('Incoming Texts') + dd",
+                    text: /Another server.*#{Regexp.escape(FakeTwilioClient::CLUBHOUSE2_INCOMING)}/m
       assert_select "form[action=?]", admin_sms_management_incoming_path do
         assert_select "input[name=_method][value=patch]"
         assert_select "input[type=url][name=?][value=?]", "twilio_incoming[url]",
@@ -336,8 +340,8 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "pointing Twilio at this server changes the Messaging Service, records it, and says so" do
-    configure_twilio(service_ids: "ISservice0001,ISservice0002")
-    fake = FakeTwilioClient.new(services: { "ISservice0001" => "Ranger Alerts", "ISservice0002" => "Ranger News" })
+    configure_twilio
+    fake = FakeTwilioClient.new
     # The address its signatures are checked against, not the one this page
     # is reached at (http://www.example.com).
     here = TwilioSignatureConcern.address(infrastructure_sms_inbound_path)
@@ -348,13 +352,14 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
       patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: here } }
 
       assert_redirected_to admin_sms_management_twilio_path(refresh: 1)
+      # The service in TwilioMessagingServiceId, read and changed; no Notify
+      # service is asked.
+      assert_equal [:messaging_service, :messaging_update], fake.asked
       follow_redirect!
     end
 
     assert_equal({ inbound_request_url: here, inbound_method: "POST", fallback_url: "", use_inbound_webhook_on_number: false },
                  fake.params[:messaging_update])
-    # The two Notify services send through one Messaging Service.
-    assert_equal 1, fake.asked.count(:messaging_update)
     assert_select "turbo-frame#sms-twilio" do
       assert_select "[role=alert]", text: "Twilio now sends incoming texts to #{here}. " \
                                           "It sent them to #{FakeTwilioClient::CLUBHOUSE2_INCOMING} until now."
@@ -506,28 +511,9 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     assert_equal FakeTwilioClient::CLUBHOUSE2_INCOMING, logged["before"]["url"]
   end
 
-  test "a change that stops partway keeps what it changed, and says the rest was not" do
-    configure_twilio(service_ids: "ISservice0001,ISservice0002")
+  test "a Messaging Service Twilio cannot find is reported, and the change is refused" do
     unknown = "MGfedcba9876543210fedcba9876543210"
-    fake = FakeTwilioClient.new(services: { "ISservice0001" => "Ranger Alerts",
-                                            "ISservice0002" => FakeTwilioClient::Service.new("Ranger News", unknown) })
-
-    sign_in_as(@tech_ninja)
-
-    with_fake_twilio(fake) do
-      patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
-    end
-
-    assert_match(/\ATwilio now sends incoming texts to https:\/\/clubhouse.example.org\/in\./, flash[:success])
-    assert_equal "Twilio stopped partway, and the rest was not changed: " \
-                 "The requested resource /Services/MG…3210 was not found (Twilio error 20404).", flash[:error]
-    assert_equal "https://clubhouse.example.org/in",
-                 fake.messaging_service(FakeTwilioClient::MESSAGING_SERVICE_SID).inbound_request_url
-    assert_equal ["MG…cdef"], ActionLog.find_by!(event: "twilio-incoming-update").data["services"].pluck("service")
-  end
-
-  test "an id with a space in it is reported, not asked about, and blocks the change" do
-    configure_twilio(service_ids: "ISservice0001, ISservice0002")
+    configure_twilio(messaging_service_id: unknown)
     fake = FakeTwilioClient.new
 
     sign_in_as(@tech_ninja)
@@ -535,18 +521,47 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     with_fake_twilio(fake) do
       get admin_sms_management_twilio_path
 
-      assert_response :success
-      assert_select "dd", text: /Could not be read.*the id is empty or holds a space or punctuation/m
+      assert_select "dt:contains('Incoming Texts') + dd",
+                    text: %r{Could not be read.*/Services/MG…3210 was not found \(Twilio error 20404\)}m
       assert_select "form[action=?]", admin_sms_management_incoming_path, 0
-      assert_select "turbo-frame#sms-twilio p", text: /Twilio could not read every Notify service above/
+      assert_select "turbo-frame#sms-twilio p", text: /once TwilioMessagingServiceId names a Messaging Service Twilio can read/
+      assert_not_includes response.body, unknown
 
       patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
     end
 
-    assert_equal 1, fake.asked.count(:services)
-    assert_equal "Twilio was not changed: TwilioServiceId holds an id that is empty or has a space or punctuation in it.",
+    assert_equal "Twilio was not changed: The requested resource /Services/MG…3210 was not found (Twilio error 20404).",
                  flash[:error]
     assert_not_includes fake.asked, :messaging_update
+    assert_not ActionLog.exists?(event: "twilio-incoming-update")
+  end
+
+  test "a Messaging Service setting that is empty or holds a space is reported, not asked about, and blocks the change" do
+    problems = { nil => "TwilioMessagingServiceId is not set",
+                 "MG0123 4567" => "TwilioMessagingServiceId holds a space or punctuation, so Twilio cannot be asked about it" }
+
+    sign_in_as(@tech_ninja)
+
+    problems.each do |id, problem|
+      configure_twilio(messaging_service_id: id)
+      fake = FakeTwilioClient.new
+
+      with_fake_twilio(fake) do
+        get admin_sms_management_twilio_path
+
+        assert_response :success
+        assert_select "dt:contains('Incoming Texts') + dd", text: /Could not be read.*#{Regexp.escape(problem)}/m
+        assert_select "form[action=?]", admin_sms_management_incoming_path, 0
+        assert_select "turbo-frame#sms-twilio p", text: /once TwilioMessagingServiceId names a Messaging Service Twilio can read/
+
+        patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
+      end
+
+      assert_equal "Twilio was not changed: #{problem}.", flash[:error]
+      assert_not_includes fake.asked, :messaging_service
+      assert_not_includes fake.asked, :messaging_update
+    end
+    assert_not ActionLog.exists?(event: "twilio-incoming-update")
   end
 
   # ---------------------------------------------------------------- Twilio panel
@@ -580,9 +595,9 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
       assert_select "td", text: "Message filtered"
       assert_select "a[href=?][target=_blank]", "https://www.twilio.com/docs/api/errors/30007", text: "30007"
       assert_select "a[href=?]", admin_sms_management_twilio_path(refresh: 1), text: /Refresh/
-      # The change would stop at the service Twilio cannot find, so it is not offered.
-      assert_select "form[action=?]", admin_sms_management_incoming_path, 0
-      assert_select "p", text: /Twilio could not read every Notify service above/
+      # The change is made on the Messaging Service alone, so a Notify
+      # service Twilio cannot find does not hold it back.
+      assert_select "form[action=?]", admin_sms_management_incoming_path
     end
     assert_not_includes response.body, "ISfedcba9876543210fedcba9876543210"
   end

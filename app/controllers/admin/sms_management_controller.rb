@@ -101,8 +101,6 @@ class Admin::SmsManagementController < ApplicationController
     if result[:unsure]
       "Twilio did not confirm the change, so it may or may not have been made (#{error}). " \
         "The address below shows where Twilio sends incoming texts now."
-    elsif result[:changed].any?
-      "Twilio stopped partway, and the rest was not changed: #{error}."
     else
       "Twilio was not changed: #{error}."
     end

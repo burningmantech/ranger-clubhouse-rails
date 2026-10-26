@@ -2,8 +2,9 @@
 
 # What Twilio says about the account the Clubhouse texts through, for the
 # Twilio Account panel on Administration › SMS Management: the account and
-# its balance, each Notify service in TwilioServiceId, the last day's texts by
-# what became of them, and the alerts Twilio raised. It only reads.
+# its balance, each Notify service in TwilioServiceId, the Messaging Service
+# in TwilioMessagingServiceId, the last day's texts by what became of them,
+# and the alerts Twilio raised. It only reads.
 #
 # Each answer is its own call and its own rescue, so one Twilio cannot give
 # leaves the rest standing. Once Twilio cannot be connected to at all, nothing
@@ -17,7 +18,7 @@ class TwilioStatus
   CACHE_FOR = 5.minutes
   # Part of the cache key. Bump it whenever what read returns changes shape,
   # so a deploy never hands the new panel an answer the old code cached.
-  CACHE_VERSION = 1
+  CACHE_VERSION = 2
   WINDOW = 24.hours
   # One page of Twilio's message list. Past it the counts are a sample.
   MESSAGE_LIMIT = 1_000
@@ -25,18 +26,20 @@ class TwilioStatus
 
   # nil while the settings to ask with are missing. Otherwise a Hash of plain
   # values, safe to cache: checked_at, and an answer each for the account, its
-  # balance, the texts and the alerts, plus one per service carrying its id.
-  # An answer is { value: } or { error: }.
+  # balance, the Messaging Service, the texts and the alerts, plus one per
+  # Notify service carrying its id. An answer is { value: } or { error: }.
   def self.fetch(refresh: false)
-    sid, token, service_ids = TwilioAccount.settings.values_at(:account_sid, :auth_token, :service_ids)
+    sid, token, service_ids, messaging_sid =
+      TwilioAccount.settings.values_at(:account_sid, :auth_token, :service_ids, :messaging_service_id)
     return if sid.nil? || token.nil?
 
-    key = ["twilio-status", CACHE_VERSION, Digest::SHA256.hexdigest([sid, token, *service_ids].join("|"))]
+    digest = Digest::SHA256.hexdigest([sid, token, messaging_sid, *service_ids].join("|"))
+    key = ["twilio-status", CACHE_VERSION, digest]
     cached = Rails.cache.read(key) unless refresh
     return cached if cached
 
     reader = new(TwilioAccount.build_client(sid, token))
-    status = reader.read(sid, service_ids)
+    status = reader.read(sid, service_ids, messaging_sid)
     Rails.cache.write(key, status, expires_in: CACHE_FOR) unless reader.missed?
     status
   end
@@ -48,7 +51,7 @@ class TwilioStatus
   # Whether a call went out and no answer came back.
   def missed? = @missed == true
 
-  def read(sid, service_ids)
+  def read(sid, service_ids, messaging_sid)
     since = WINDOW.ago
     account = @client.api.v2010.accounts(sid)
     summary = ask do
@@ -72,6 +75,7 @@ class TwilioStatus
       account: summary,
       balance:,
       services: service_ids.map { |id| service_answer(id) },
+      messaging_service: messaging_service_answer(messaging_sid),
       texts: ask { text_counts(since) },
       alerts: ask do
         @client.monitor.v1.alerts.list(start_date: since, limit: ALERT_LIMIT).map { |alert| alert_row(alert) }
@@ -100,16 +104,22 @@ class TwilioStatus
     answer.merge(id:)
   end
 
-  # A Notify service, and where the Messaging Service it sends through posts
-  # the texts Rangers send back, and where it posts them when that address
-  # fails. While that service defers to each number's own webhook, its own
-  # addresses are not the ones Twilio uses.
-  def service(id)
-    notify = @client.notify.v1.services(id).fetch
-    messaging_sid = notify.messaging_service_sid.presence
-    messaging = @client.messaging.v1.services(messaging_sid).fetch if messaging_sid
-    { name: notify.friendly_name, messaging_service: messaging_sid, incoming_url: messaging&.inbound_request_url,
-      fallback_url: messaging&.fallback_url.presence, defers_to_number: messaging&.use_inbound_webhook_on_number == true }
+  def service(id) = { name: @client.notify.v1.services(id).fetch.friendly_name }
+
+  # Where the Messaging Service the Clubhouse texts through posts the texts
+  # Rangers send back, and where it posts them when that address fails. While
+  # it defers to each number's own webhook, its own addresses are not the ones
+  # Twilio uses. A setting Twilio cannot be asked about is answered for
+  # without asking.
+  def messaging_service_answer(sid)
+    problem = TwilioAccount.messaging_service_problem(sid)
+    return { error: problem } if problem
+
+    ask do
+      found = @client.messaging.v1.services(sid).fetch
+      { incoming_url: found.inbound_request_url, fallback_url: found.fallback_url.presence,
+        defers_to_number: found.use_inbound_webhook_on_number == true }
+    end
   end
 
   # Twilio filters by the UTC date a text was sent, not the time, so it is

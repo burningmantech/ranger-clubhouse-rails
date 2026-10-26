@@ -39,43 +39,33 @@ module SmsManagement
       name.end_with?(".localhost", ".test", ".local", ".internal")
   end
 
-  # Points every Messaging Service behind the Notify services at url, so
-  # Twilio posts each incoming text there, starting with the next one. Each
-  # also drops its fallback address and stops deferring to its numbers' own
-  # webhooks, or a text could still go somewhere else.
+  # Points the Messaging Service in TwilioMessagingServiceId at url, so Twilio
+  # posts each incoming text there, starting with the next one. It also drops
+  # its fallback address and stops deferring to its numbers' own webhooks, or
+  # a text could still go somewhere else.
   #
-  # { changed: [{ service:, before: }] }, each before being how the service
-  # handled incoming texts until now. With error: too when Twilio stopped
-  # partway, and unsure: the service whose change went out with no answer
-  # back, which Twilio may have made. nil while the settings to ask with are
-  # missing.
+  # { changed: [{ service:, before: }] }, before being how the service handled
+  # incoming texts until now. { changed: [], error: } when it was not changed,
+  # with unsure: the change that went out with no answer back, which Twilio
+  # may have made. nil while the settings to ask with are missing.
   def point_incoming_texts(url)
     unless incoming_changes_allowed?
       return { changed: [], error: "the training server cannot change where Twilio sends incoming texts" }
     end
 
     client = TwilioAccount.client or return
-    changed = []
+    sid = TwilioAccount.settings[:messaging_service_id]
+    problem = TwilioAccount.messaging_service_problem(sid)
+    return { changed: [], error: problem } if problem
+
     pending = nil
-    service_ids = TwilioAccount.settings[:service_ids]
-    unless service_ids.all? { |id| TwilioAccount.usable_id?(id) }
-      return { changed:, error: "TwilioServiceId holds an id that is empty or has a space or punctuation in it" }
-    end
-
-    messaging_sids = service_ids.filter_map { |id| client.notify.v1.services(id).fetch.messaging_service_sid.presence }
-    return { changed:, error: "no Notify service sends through a Messaging Service" } if messaging_sids.empty?
-
-    messaging_sids.uniq.each do |sid|
-      service = client.messaging.v1.services(sid)
-      pending = { service: sid, before: incoming_setup(service.fetch) }
-      service.update(inbound_request_url: url, inbound_method: "POST", fallback_url: "",
-                     use_inbound_webhook_on_number: false)
-      changed << pending
-      pending = nil
-    end
-    { changed: }
+    service = client.messaging.v1.services(sid)
+    pending = { service: sid, before: incoming_setup(service.fetch) }
+    service.update(inbound_request_url: url, inbound_method: "POST", fallback_url: "",
+                   use_inbound_webhook_on_number: false)
+    { changed: [pending] }
   rescue *TwilioAccount::ERRORS => e
-    { changed:, unsure: (pending if TwilioAccount.unanswered?(e)), error: TwilioAccount.describe(e) }.compact
+    { changed: [], unsure: (pending if TwilioAccount.unanswered?(e)), error: TwilioAccount.describe(e) }.compact
   end
 
   # How a Messaging Service handles incoming texts: everything the update

@@ -29,18 +29,30 @@ module TwilioAccount
   # The settings the Clubhouse texts with, broadcasts included: the service
   # ids split on commas and nothing more, so a stray space shows up as an id
   # Twilio cannot be asked about (UNUSABLE_ID) rather than being tidied away
-  # while broadcasts fail on it.
+  # while broadcasts fail on it. The Messaging Service is a setting of its
+  # own: Notify names it too, but Notify ends on 2027-01-31.
   def settings
-    values = Setting.get_value([Setting::TWILIO_ACCOUNT_SID, Setting::TWILIO_AUTH_TOKEN,
-                                Setting::TWILIO_SERVICE_ID, Setting::BROADCAST_SMS_SANDBOX])
+    values = Setting.get_value([Setting::TWILIO_ACCOUNT_SID, Setting::TWILIO_AUTH_TOKEN, Setting::TWILIO_SERVICE_ID,
+                                Setting::TWILIO_MESSAGING_SERVICE_ID, Setting::BROADCAST_SMS_SANDBOX])
 
     { account_sid: values[Setting::TWILIO_ACCOUNT_SID].presence,
       auth_token: values[Setting::TWILIO_AUTH_TOKEN].presence,
       service_ids: values[Setting::TWILIO_SERVICE_ID].to_s.split(","),
+      messaging_service_id: values[Setting::TWILIO_MESSAGING_SERVICE_ID].presence,
       sandbox: values[Setting::BROADCAST_SMS_SANDBOX] }
   end
 
   def usable_id?(id) = TWILIO_ID.match?(id)
+
+  # Why the Messaging Service in TwilioMessagingServiceId cannot be asked
+  # about, or nil when it can. The setting holds one id, so it is named.
+  def messaging_service_problem(id)
+    if id.nil?
+      "TwilioMessagingServiceId is not set"
+    elsif !usable_id?(id)
+      "TwilioMessagingServiceId holds a space or punctuation, so Twilio cannot be asked about it"
+    end
+  end
 
   # A client for the configured account, or nil while the settings to ask
   # with are missing.

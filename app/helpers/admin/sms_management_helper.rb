@@ -69,14 +69,6 @@ module Admin::SmsManagementHelper
     "(unreadable)"
   end
 
-  # The Messaging Services the Notify services send through, once each, as
-  # TwilioStatus read them; a service that could not be read is left out.
-  def twilio_messaging_services(status)
-    status[:services].filter_map { |service| service[:value] }
-                     .select { |service| service[:messaging_service] }
-                     .uniq { |service| service[:messaging_service] }
-  end
-
   # This server's address for the texts Rangers send: the one their signatures
   # are checked against, never the address this page was reached at, so it is
   # the one Twilio must be given.
@@ -97,14 +89,13 @@ module Admin::SmsManagementHelper
   end
 
   # Why the panel does not offer to change where Twilio sends incoming texts,
-  # or nil when it does. It is offered only where every Notify service was
-  # read, since the change reads each one again and stops at the first it
-  # cannot. (The Groundhog Day Server never draws the panel at all.)
+  # or nil when it does. It is offered only once Twilio read the Messaging
+  # Service in TwilioMessagingServiceId, the one service the change reads
+  # again and makes. (The Groundhog Day Server never draws the panel at all.)
   def twilio_incoming_lock(status)
-    return unless status[:services].any? { |service| service.key?(:error) }
+    return unless status[:messaging_service].key?(:error)
 
-    "Twilio could not read every Notify service above, so the address can be changed here " \
-      "once TwilioServiceId lists only services Twilio knows."
+    "The address can be changed here once TwilioMessagingServiceId names a Messaging Service Twilio can read."
   end
 
   # One of TwilioStatus's answers: the block's rendering of what Twilio said,
