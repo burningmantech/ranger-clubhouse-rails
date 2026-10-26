@@ -45,7 +45,7 @@ gem "ruby-vips"
 gem "argon2"
 
 # Passkey sign-in: checks what a phone, laptop or security key presents (WebAuthn)
-gem "webauthn", "~> 3.4"
+gem "webauthn", "~> 3.5"
 
 gem "activerecord-session_store"
 
