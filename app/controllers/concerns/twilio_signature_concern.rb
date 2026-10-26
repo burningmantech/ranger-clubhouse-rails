@@ -30,7 +30,7 @@ module TwilioSignatureConcern
   # error log keeps the address checked, never the parameters, which hold the
   # text.
   def refuse_unsigned_twilio_request
-    token = Setting.get_value(Setting::TWILIO_AUTH_TOKEN).presence
+    token = TwilioAccount.settings[:auth_token]
     signature = request.headers["X-Twilio-Signature"].to_s
     return if token && signed_by_twilio?(token, signature)
 
