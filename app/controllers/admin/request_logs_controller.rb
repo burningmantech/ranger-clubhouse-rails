@@ -13,23 +13,19 @@ class Admin::RequestLogsController < ApplicationController
     @form = RequestLogFilterForm.new(filter_params)
 
     person_id = resolve_person_id(@form.person_callsign)
+    # A callsign no one holds finds nothing rather than everything: the same
+    # query, run over no rows.
+    logs = unknown_callsign?(@form.person_callsign, person_id) ? RequestLog.none : RequestLog
 
-    @result = if unknown_callsign?(@form.person_callsign, person_id)
-                empty_result(@form.page)
-              else
-                RequestLog.find_for_query(
-                  person_id: person_id,
-                  status_class: @form.selected_status_class,
-                  http_method: @form.selected_http_method,
-                  start_time: @form.parsed_start_time,
-                  end_time: @form.parsed_end_time,
-                  ip: @form.ip.presence,
-                  page: @form.page
-                )
-              end
-
-    @logs = @result[:request_log]
-    @meta = @result[:meta]
+    @pagy, @logs = logs.find_for_query(
+      person_id:,
+      status_class: @form.selected_status_class,
+      http_method: @form.selected_http_method,
+      start_time: @form.parsed_start_time,
+      end_time: @form.parsed_end_time,
+      ip: @form.ip.presence,
+      page: @form.page
+    )
   end
 
   def expire
@@ -65,12 +61,5 @@ class Admin::RequestLogsController < ApplicationController
 
   def unknown_callsign?(callsign, person_id)
     callsign.present? && person_id.blank?
-  end
-
-  def empty_result(page)
-    {
-      request_log: [],
-      meta: { total: 0, total_pages: 0, page_size: RequestLog::PAGE_SIZE_DEFAULT, page: page }
-    }
   end
 end

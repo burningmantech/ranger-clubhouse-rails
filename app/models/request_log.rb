@@ -53,6 +53,8 @@ class RequestLog < ApplicationRecord
   end
 
   class << self
+    include Pagy::Method
+
     # Find request log records matching the given criteria, newest first.
     #
     # @param person_id [Integer, nil] only this person's requests
@@ -61,8 +63,8 @@ class RequestLog < ApplicationRecord
     # @param start_time [Time, nil] recorded on or after
     # @param end_time [Time, nil] recorded on or before
     # @param ip [String, nil] any part of the address
-    # @param page [Integer] page number, held to a page that exists
-    # @return [Hash] { request_log:, meta: { total:, total_pages:, page_size:, page: } }
+    # @param page [Integer] page number, 1 or higher, held to a page that exists
+    # @return [Array(Pagy::Offset, Array<RequestLog>)] the page, and its rows
     def find_for_query(person_id: nil, status_class: nil, http_method: nil,
                        start_time: nil, end_time: nil, ip: nil, page: 1)
       scope = all
@@ -77,24 +79,16 @@ class RequestLog < ApplicationRecord
       # so the id breaks ties. Without it the order within a second is
       # undefined, and one row could sit on two pages while another appears on
       # none.
-      scope = scope.order(created_at: :desc, id: :desc)
+      scope = scope.order(created_at: :desc, id: :desc).includes(:person)
 
-      total = scope.count
-      total_pages = [(total.to_f / PAGE_SIZE_DEFAULT).ceil, 1].max
+      paging = { limit: PAGE_SIZE_DEFAULT, request: { params: {} } }
+      pagy, records = pagy(:offset, scope, page:, **paging)
       # Held to a page that exists. A bookmarked or hand-typed number would
       # otherwise ask for rows far past the end and leave the reader on an
       # empty table labelled as though it were full.
-      page = page.to_i.clamp(1, total_pages)
+      pagy, records = pagy(:offset, scope, page: pagy.last, count: pagy.count, **paging) if pagy.page > pagy.last
 
-      records = scope.includes(:person)
-                     .offset((page - 1) * PAGE_SIZE_DEFAULT)
-                     .limit(PAGE_SIZE_DEFAULT)
-                     .to_a
-
-      {
-        request_log: records,
-        meta: { total:, total_pages:, page_size: PAGE_SIZE_DEFAULT, page: }
-      }
+      [pagy, records.to_a]
     end
 
     # Record one answered request.
