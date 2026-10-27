@@ -1,3 +1,4 @@
 <%# Training flavor of the shared resource document editor — Training::ResourcesController
     supplies the position, the paths, and who may write. %>
-<%= render template: "common/resource_documents/edit" %>
+<%= render template: "common/resource_documents/edit",
+           locals: { readers: "Everyone who can open Trainer Resources reads what you write here." } %>

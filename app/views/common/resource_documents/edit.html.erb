@@ -14,4 +14,5 @@
   <% end %>
 <% end %>
 
-<%= render "common/resource_documents/form", document: @document %>
+<%# readers: who can read the document, said under the editor -- each host's stub knows. %>
+<%= render "common/resource_documents/form", document: @document, readers: %>

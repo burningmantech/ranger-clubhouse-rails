@@ -10,34 +10,6 @@
   <% end %>
 <% end %>
 
-<% if @document %>
-  <%= ui_section @document.description, icon: "file-lines", icon_type: :solid,
-                 edit_link: (can_manage_resource? ? training_edit_resources_path(training_slug) : nil) do %>
-    <div class="lexxy-content">
-      <%# Written through this app's editor by the position's own trainers, and
-          rendered as authored — the same way signed agreements are. %>
-      <%= @document.body.html_safe %>
-    </div>
-  <% end %>
-<% else %>
-  <% if @training.resource_tag.present? %>
-    <%# The position still points at a document that is no longer there.
-        Writing a new one files it under the same tag and repairs the link. %>
-    <%= ui_callout_box :warning, title: "The Document Is Missing" do %>
-      <%= @training.title %> points at a document filed under
-      <span class="font-mono"><%= @training.resource_tag %></span>, and no such
-      document exists. It was most likely deleted.
-    <% end %>
-  <% else %>
-    <%= ui_empty_state "No trainer resource document has been written for #{@training.title} yet.",
-                       icon: "file-circle-question", icon_type: :solid %>
-  <% end %>
-
-  <% if can_manage_resource? %>
-    <%= button_row do %>
-      <%= button_link "Write the Document", :primary,
-                      training_edit_resources_path(training_slug),
-                      icon: "pen-to-square", icon_type: :solid %>
-    <% end %>
-  <% end %>
-<% end %>
+<%= render "common/resource_documents/document", document: @document, entity: @training,
+           edit_path: training_edit_resources_path(training_slug),
+           empty_message: "No trainer resource document has been written for #{@training.title} yet." %>

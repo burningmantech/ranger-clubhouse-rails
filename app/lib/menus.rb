@@ -979,7 +979,14 @@ module Menus
           # Management could open.
           { title: "Special Teams Hours", path: :teams_positions_special_teams_hours_path, active_prefix: true,
             description: "Hours per year for the positions you choose, with sign-up counts if you ask. This is the old People By Special Teams report.",
-            visible_if: { roles: [Role::ADMIN, Role::EVENT_MANAGEMENT] } }
+            visible_if: { roles: [Role::ADMIN, Role::EVENT_MANAGEMENT] } },
+          # Its own computed key: Team.resource_manageable_by? asks for Event
+          # Management or Vehicle Info Update (upstream's Ember ops area wanted
+          # one of them of everyone), then Admin, or Team Resource Doc Mgmt AND
+          # a team_manager row -- one question, since menu conditions are ANDed.
+          { title: "Team Resources", path: :teams_positions_team_resources_path, active_prefix: true,
+            description: "Write and update the resource document of each team you manage",
+            visible_if: { computed: :manages_team_resources } }
         ]
       },
       {

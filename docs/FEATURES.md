@@ -39,7 +39,7 @@ Paths are relative to the repository root. To find a feature, grep this file for
 - [Shift Operations](#shift-operations) (7)
 - [Timesheets](#timesheets) (13)
 - [People, Certificates & Agreements](#people-certificates--agreements) (13)
-- [Teams & Positions](#teams--positions) (11)
+- [Teams & Positions](#teams--positions) (12)
 - [Volunteer Coordinators](#volunteer-coordinators) (14)
 - [Ticketing](#ticketing) (14)
 - [BMID](#bmid) (7)
@@ -1586,10 +1586,11 @@ Trap: The report's bands (`band_label_for`, auditor status first) differ from `T
 Reach it: `GET /training/:slug/resources` → In-Person Training › In-Person Training › Trainer Resources (ARTs: ART <name> › ART <name> › Trainer Resources); editor `GET /training/:slug/resources/edit`; save `POST`/`PATCH /training/:slug/resources`; delete `DELETE /training/:slug/resources`
 Gate: read: `authorize_training_view`; write (`edit`, `create`, `update`, `destroy`): plus `can_manage_resource?` — `ADMIN`, or a view role + `TRAINER_RESOURCE_MANAGEMENT_BASE | position.id`; an ART with no `team_id` refuses everyone, admins included
 Controller: `app/controllers/training/resources_controller.rb` (`show`, concern hooks), `app/controllers/concerns/resource_document_crud_concern.rb` (`edit`, `create`, `update`, `destroy`)
-Owner: `ResourceDocumentCrudConcern` (`app/controllers/concerns/resource_document_crud_concern.rb`), `Document` (`app/models/document.rb`), `Position#build_resource_tag` (`app/models/position.rb`)
+Owner: `ResourceDocumentCrudConcern` (`app/controllers/concerns/resource_document_crud_concern.rb`), `Document` (`app/models/document.rb`), `Position#build_resource_tag` (`app/models/position.rb`); the concern and `app/views/common/resource_documents/` are shared with Teams & Positions › Team Resources
 Touches: `document` (w), `position` (w), `action_logs` (w)
 Verify: `test/controllers/training/resources_controller_test.rb`, `test/models/position_test.rb`
-Trap: `show` prints `@document.body.html_safe` and the body is sanitized only on the way in (`submitted_body` → `helpers.rich_text`) — route any new write path through `submitted_body`.
+Trap: The body is cleaned twice: on the way in (`submitted_body` → `helpers.rich_text`) and again on the way out (`common/resource_documents/_document` renders `rich_text(document.body)`), because documents written through Clubhouse 2 or Admin › Documents never passed the editor. Never print it `html_safe`.
+Trap: A position's `resource_tag` is typed in Position Records and followed only through `Document.resource_tag` (see Team Resources), and every pointer change writes a `position-update` action log by hand (`sync_resource_tag`): Position is not an audited model.
 Trap: The tag is derived once, at first save (`scaffold_resource_document` + `sync_resource_tag`), so renaming a position never re-files its document — don't re-derive it on save (it collides with the unique tag index).
 
 ## Training: reports & follow-up
@@ -2437,10 +2438,10 @@ Trap: Never set `person_event.sandman_affidavit` directly — `Agreements.admin_
 
 ## Teams & Positions
 
-All eleven controllers inherit `ApplicationController` directly with `layout "teams_positions"`; none uses the viewed year (Special Teams Hours takes its own start and end years, the Shiny Pennies check reads `Current.year`). Bulk preview/apply, Roster Management preview and Position Sanity Checker repair render at 422, not redirect (Turbo drops a 200 form answer). Each apply rebuilds its change from its own params, never trusting the preview.
+All twelve controllers inherit `ApplicationController` directly with `layout "teams_positions"`; none uses the viewed year (Special Teams Hours takes its own start and end years, the Shiny Pennies check reads `Current.year`). Bulk preview/apply, Roster Management preview and Position Sanity Checker repair render at 422, not redirect (Turbo drops a 200 form answer). Each apply rebuilds its change from its own params, never trusting the preview.
 
 ### Team Records
-Reach it: `GET /teams-positions/team-records` → Teams & Positions › Teams & Positions Menu › Team Records; `GET /teams-positions/team-records/new`; `GET /teams-positions/team-records/:id/edit`; `POST /teams-positions/team-records`; `PATCH /teams-positions/team-records/:id`; `DELETE /teams-positions/team-records/:id`
+Reach it: `GET /teams-positions/team-records` → Teams & Positions › Administration › Team Records; `GET /teams-positions/team-records/new`; `GET /teams-positions/team-records/:id/edit`; `POST /teams-positions/team-records`; `PATCH /teams-positions/team-records/:id`; `DELETE /teams-positions/team-records/:id`
 Gate: `ADMIN`, `TECH_NINJA`
 Controller: `app/controllers/teams_positions/team_records_controller.rb` (`index`, `new`, `create`, `edit`, `update`, `destroy`)
 Owner: `TeamManagement` (`app/lib/team_management.rb`), `Membership.update_team_roles` (`app/lib/membership.rb`)
@@ -2450,7 +2451,7 @@ Trap: `team.destroy` deletes positions (`has_many :position, dependent: :destroy
 Trap: `TeamManagement.save(..., is_tech_ninja:)` silently ignores posted `team[role_ids]` unless the actor holds `TECH_NINJA`, and Admin does not imply it (`RoleManager#has_role?` is a plain set intersection).
 
 ### Position Records
-Reach it: `GET /teams-positions/position-records` → Teams & Positions › Teams & Positions Menu › Position Records; `GET /teams-positions/position-records/new`; `GET /teams-positions/position-records/:id/edit`; `POST /teams-positions/position-records`; `PATCH /teams-positions/position-records/:id`; `DELETE /teams-positions/position-records/:id`
+Reach it: `GET /teams-positions/position-records` → Teams & Positions › Administration › Position Records; `GET /teams-positions/position-records/new`; `GET /teams-positions/position-records/:id/edit`; `POST /teams-positions/position-records`; `PATCH /teams-positions/position-records/:id`; `DELETE /teams-positions/position-records/:id`
 Gate: `ADMIN`, `TECH_NINJA`
 Controller: `app/controllers/teams_positions/position_records_controller.rb` (`index`, `new`, `create`, `edit`, `update`, `destroy`)
 Owner: `PositionManagement` (`app/lib/position_management.rb`), `Membership.update_position_roles` (`app/lib/membership.rb`)
@@ -2463,7 +2464,7 @@ Trap: `PositionManagement.destroy` refuses positions named by `timesheet`/`times
 Trap: `PositionManagement.destroy` also strips the id from `shift_coverage_group.base_position_ids` and `shift_coverage_position.position_ids` (JSON lists, so no foreign key does it) with `validate: false` (`ShiftCoverageGroup.remove_position`, `ShiftCoveragePosition.remove_position`), logged as "Position deletion"; a list it empties stays and reads nothing. The delete confirmation names them through `child_counts` (`shift_coverage_type_count`, `shift_coverage_post_count`, found by `listing_position` on each model).
 
 ### Position Lineups
-Reach it: `GET /teams-positions/position-lineups` → Teams & Positions › Teams & Positions Menu › Position Lineups; `GET /teams-positions/position-lineups/new`; `GET /teams-positions/position-lineups/:id/edit`; `POST /teams-positions/position-lineups`; `PATCH /teams-positions/position-lineups/:id`; `DELETE /teams-positions/position-lineups/:id`
+Reach it: `GET /teams-positions/position-lineups` → Teams & Positions › Administration › Position Lineups; `GET /teams-positions/position-lineups/new`; `GET /teams-positions/position-lineups/:id/edit`; `POST /teams-positions/position-lineups`; `PATCH /teams-positions/position-lineups/:id`; `DELETE /teams-positions/position-lineups/:id`
 Gate: `ADMIN`, `TECH_NINJA`
 Controller: `app/controllers/teams_positions/position_lineups_controller.rb` (`index`, `new`, `create`, `edit`, `update`, `destroy`)
 Owner: `PositionLineupManagement` (`app/lib/position_lineup_management.rb`)
@@ -2512,6 +2513,18 @@ Verify: `test/controllers/teams_positions/roster_management_controller_test.rb`,
 Trap: No `authorize_role`: the unconditional `require_roster_manager` and the `Team.manageable_by` scope in `set_team` are the whole gate, so Event Management alone opens nothing without a `team_manager` row.
 Trap: `PersonTeam.remove_person` and `PersonPosition.remove_ids_from_person` lack the Admin/Tech Ninja guard that `add_person` and `add_ids_to_person` carry — a new remover must reapply `RosterManagementController#guarded_roles_lacked`.
 
+### Team Resources
+Reach it: `GET /teams-positions/team-resources` → Teams & Positions › Teams & Positions Menu › Team Resources; read `GET /teams-positions/team-resources/:team_id`; editor `GET /teams-positions/team-resources/:team_id/edit`; save `POST`/`PATCH /teams-positions/team-resources/:team_id`; delete `DELETE /teams-positions/team-resources/:team_id`
+Gate: `Team.resource_manageable_by?` — first `EVENT_MANAGEMENT` or `VEHICLE_INFO_UPDATE` (`Team::RESOURCE_ACCESS_ROLES`, of everyone, Admins included: upstream's Ember `ops` route), then `ADMIN` (every team) or `TEAM_RESOURCE_MANAGEMENT` (132, granted through `team_role`) plus a `team_manager` row for that team; Tech Ninja adds nothing. Reading and writing are one permission here
+Controller: `app/controllers/teams_positions/team_resources_controller.rb` (`index`, `show`, concern hooks), `app/controllers/concerns/resource_document_crud_concern.rb` (`edit`, `create`, `update`, `destroy`)
+Owner: `ResourceDocumentCrudConcern`, `Document.resource_tag` / `Document.listed_by_pointer` (`app/models/document.rb`), `Team.resource_manageable_by` and `Team#build_resource_tag` (`app/models/team.rb`); the editor and the read page's `_document` partial are shared with Trainer Resources in `app/views/common/resource_documents/`
+Touches: `document` (w), `team` (w), `team_manager`, `action_logs` (w)
+Verify: `test/controllers/teams_positions/team_resources_controller_test.rb`, `test/models/team_test.rb`, `test/models/document_test.rb`
+Trap: A team's `resource_tag` is typed in Team Records, so it is followed only through `Document.resource_tag`: stripped, never a `Document::*_TAG` document or a `bookmark-` page, never a tag no document could have. A pointer that fails gives way to `build_resource_tag` on the first save (which repoints the team), and the read page says so. Look tags up through it, or `Document.listed_by_pointer` for a list: the column compares without case and trailing spaces, a Ruby hash does not.
+Trap: `include ResourceDocumentCrudConcern` sits below the controller's gates only so their messages answer first; `resource_entity` is a memoized lookup, so the concern's own gate works wherever it runs. An Admin who asks for a missing team is sent to the index ("That team no longer exists."); anyone else is not told whether it exists.
+Trap: The index looks documents up with `Document::LIST_COLUMNS` — never select `document.body` on a list: the Mentor Team document runs to megabytes (dev, 2026-10-26).
+Trap: `Team.resource_manageable_by` is not the roster rule (`Team.manageable_by` admits Tech Ninja to every team); members read their team's document nowhere on `main` yet — upstream showed it on Teams & Positions and me/agreements — so the editor says only managers and Admins can read it.
+
 ### Bulk Position Grant / Revoke
 Reach it: `GET /teams-positions/bulk-positions` → Teams & Positions › Teams & Positions Menu › Bulk Position Grant / Revoke; preview `POST /teams-positions/bulk-positions/preview`; apply `POST /teams-positions/bulk-positions`; back to edit `POST /teams-positions/bulk-positions/edit`
 Gate: `Team.manageable_by?` — `ADMIN`, `EVENT_MANAGEMENT` or `TECH_NINJA`, plus a `team_manager` row unless `ADMIN`/`TECH_NINJA`
@@ -2543,7 +2556,7 @@ Trap: It writes only `person_team_log`, never `person_team`, so today's roster i
 Trap: The gate is wider than the sibling bulk pages' on purpose (no Event Management), and `team_scope` gives every team only to an Admin — not `Team.manages_every_team?`, which also admits Tech Ninja and splits gate from scope.
 
 ### Position Sanity Checker
-Reach it: `GET /teams-positions/position-sanity-checker` → Teams & Positions › Teams & Positions Menu › Position Sanity Checker; one check `GET /teams-positions/position-sanity-checker/:check`; repair `POST /teams-positions/position-sanity-checker/:check/repair`
+Reach it: `GET /teams-positions/position-sanity-checker` → Teams & Positions › Administration › Position Sanity Checker; one check `GET /teams-positions/position-sanity-checker/:check`; repair `POST /teams-positions/position-sanity-checker/:check/repair`
 Gate: `ADMIN`, `TECH_NINJA`
 Controller: `app/controllers/teams_positions/position_sanity_checker_controller.rb` (`index`, `check`, `repair`)
 Owner: `PositionSanityCheck` (`app/lib/position_sanity_check.rb`), `PositionSanityCheck::Base` (`app/lib/position_sanity_check/base.rb`), one class per check in `app/lib/position_sanity_check/`

@@ -1,0 +1,5 @@
+<%# Team flavor of the shared resource document editor -- TeamsPositions::TeamResourcesController
+    supplies the team, the paths, and who may write. Members have no page that
+    shows a team's document yet, so the editor says who can read it today. %>
+<%= render template: "common/resource_documents/edit",
+           locals: { readers: "Only this team's managers and Admins can read it in the Clubhouse for now." } %>

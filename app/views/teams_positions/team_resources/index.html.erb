@@ -1,0 +1,28 @@
+<%#
+  The teams whose document the reader may write. Only the rows: a document's
+  body is loaded on its own team's page, never here.
+%>
+<% content_for :title, "Team Resources" %>
+
+<%= hero_panel icon: "book-open", heading_level: :h1, id: "team-resources-header",
+               title: "Team Resources",
+               description: "The one document each team writes for its members." %>
+
+<% if @teams.any? %>
+  <div class="text-lg my-4">
+    <%# An Admin reaches every team without managing any, so the sentence says
+        which of the two it means. %>
+    <% if @manages_all %>
+      You can open the document of any of the <%= pluralize @teams.size, "team" %>.
+    <% else %>
+      You manage <%= pluralize @teams.size, "team" %>.
+    <% end %>
+  </div>
+  <div class="lg:w-3/4">
+    <% @teams.each do |team| %>
+      <%= team_resource_row(team, @documents[team.resource_tag]) %>
+    <% end %>
+  </div>
+<% else %>
+  <%= ui_empty_state "There are no teams to write a document for yet.", icon: "book-open", icon_type: :solid %>
+<% end %>
