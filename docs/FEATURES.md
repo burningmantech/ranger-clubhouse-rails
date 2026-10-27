@@ -806,13 +806,13 @@ Trap: `PersonEventInfo.find_for_person_year` assumes `Position::TRAINING` is amo
 
 ### Me › Team Document
 Reach it: `GET /me/teams/:id/document` ← "View Team Document" under a team in Operational Summary › Teams & Positions (`:id` = team id); no menu entry
-Gate: membership only — the team is found through the person's own `person_team` rows, so a team they are not on is a 404; no role and no team-manager check (writing the document is the manager-side port planned in `.scratch/teams-positions-team-resources/PRD.md`, `/teams-positions/team-resources`)
+Gate: membership only — the team is found through the person's own `person_team` rows, so a team they are not on is a 404; no role and no team-manager check (writing it is Teams & Positions › Team Resources)
 Controller: `app/controllers/me/team_documents_controller.rb` (`show`)
-Owner: `Document` (`app/models/document.rb`, `find_by(tag:)`), `Team#resource_tag`
+Owner: `Document.resource_tag` / `Document.listed_by_pointer` (`app/models/document.rb`), `Team#resource_tag`
 Touches: `team`, `person_team`, `document`
 Verify: `test/controllers/me/team_documents_controller_test.rb`
-Trap: The body is read only here — Operational Summary lists which teams have one by tag (`Document.where(tag:).pluck(:tag)`, `@team_document_tags`) and never selects `document.body`, which runs to megabytes for the Mentor team; keep any list that way.
-Trap: `show` prints `@document.body.html_safe`; the body is sanitized only on the way in (`ResourceDocumentCrudConcern#submitted_body`), so any new write path must go through it.
+Trap: The body is read only here — Operational Summary lists which teams have one through `Document.listed_by_pointer` (`@team_documents`, keyed by the team's pointer, `LIST_COLUMNS` only) and never selects `document.body`, which runs to megabytes for the Mentor team; keep any list that way.
+Trap: `show` renders `rich_text(@document.body)`, cleaned on the way out as well as in (`ResourceDocumentCrudConcern#submitted_body`): the team documents written through Clubhouse 2 never passed this app's editor. Never print it `html_safe`. The tag is followed only through `Document.resource_tag` (see Team Resources), so a `bookmark-` or `Document::*_TAG` pointer reads as no document.
 
 ### Me › Event Summary
 Reach it: `GET /me/timesheet/event-summary` ← "Hours & Credits" links on `GET /me/timesheet` (My Clubhouse › Essentials › Timesheet)
@@ -2523,7 +2523,7 @@ Verify: `test/controllers/teams_positions/team_resources_controller_test.rb`, `t
 Trap: A team's `resource_tag` is typed in Team Records, so it is followed only through `Document.resource_tag`: stripped, never a `Document::*_TAG` document or a `bookmark-` page, never a tag no document could have. A pointer that fails gives way to `build_resource_tag` on the first save (which repoints the team), and the read page says so. Look tags up through it, or `Document.listed_by_pointer` for a list: the column compares without case and trailing spaces, a Ruby hash does not.
 Trap: `include ResourceDocumentCrudConcern` sits below the controller's gates only so their messages answer first; `resource_entity` is a memoized lookup, so the concern's own gate works wherever it runs. An Admin who asks for a missing team is sent to the index ("That team no longer exists."); anyone else is not told whether it exists.
 Trap: The index looks documents up with `Document::LIST_COLUMNS` — never select `document.body` on a list: the Mentor Team document runs to megabytes (dev, 2026-10-26).
-Trap: `Team.resource_manageable_by` is not the roster rule (`Team.manageable_by` admits Tech Ninja to every team); members read their team's document nowhere on `main` yet — upstream showed it on Teams & Positions and me/agreements — so the editor says only managers and Admins can read it.
+Trap: `Team.resource_manageable_by` is not the roster rule (`Team.manageable_by` admits Tech Ninja to every team); members read their team's document on Me › Team Document, reached from Operational Summary › Teams & Positions (`Me::TeamDocumentsController`, membership only), and the editor says so.
 
 ### Bulk Position Grant / Revoke
 Reach it: `GET /teams-positions/bulk-positions` → Teams & Positions › Teams & Positions Menu › Bulk Position Grant / Revoke; preview `POST /teams-positions/bulk-positions/preview`; apply `POST /teams-positions/bulk-positions`; back to edit `POST /teams-positions/bulk-positions/edit`

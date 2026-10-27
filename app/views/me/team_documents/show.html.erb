@@ -9,10 +9,9 @@
 <% if @document %>
   <%= ui_section @document.description, icon: "file-lines", icon_type: :solid do %>
     <div class="lexxy-content">
-      <%# Written through this app's editor and sanitized on the way in
-          (ResourceDocumentCrudConcern#submitted_body), so rendered as stored --
-          the same way Trainer Resources and signed agreements are. %>
-      <%= @document.body.html_safe %>
+      <%# Cleaned on the way out as well as in (ResourceDocumentCrudConcern#submitted_body):
+          the team documents written through Clubhouse 2 never passed this app's editor. %>
+      <%= rich_text(@document.body) %>
     </div>
   <% end %>
 <% else %>

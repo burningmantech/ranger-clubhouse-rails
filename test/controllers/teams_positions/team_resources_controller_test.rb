@@ -128,8 +128,8 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
 
     assert_response :success
     assert_select "lexxy-editor[name=?]", "document[body]"
-    # Members have no page that shows a team's document yet.
-    assert_match "managers and Admins can read it in the Clubhouse for now.", response.body
+    # Members read it from their Operational Summary (Me::TeamDocumentsController).
+    assert_match "members read what you write here, from their Operational Summary.", response.body
     assert_match "renaming the team does not change them", response.body
   end
 

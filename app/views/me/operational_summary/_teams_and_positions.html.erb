@@ -22,7 +22,7 @@
             <% if team.is_manager %>
               <%= ui_badge "manager", :success, size: "xs" %>
             <% end %>
-            <% if @team_document_tags.include?(team.resource_tag) %>
+            <% if @team_documents.key?(team.resource_tag) %>
               <div class="mt-1">
                 <%= button_link "View Team Document", :secondary, me_team_document_path(team),
                                 icon: "file-lines", icon_type: :solid %>

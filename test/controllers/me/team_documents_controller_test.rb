@@ -19,11 +19,12 @@ class Me::TeamDocumentsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a member reads their team's document" do
-    publish_document(@team)
+    publish_document(@team, body: "<p>Khaki hands out the radios.</p><script>alert(1)</script>")
 
     get me_team_document_path(@team)
 
     assert_response :success
+    assert_select ".lexxy-content script", count: 0
     assert_select ".lexxy-content", text: /Khaki hands out the radios\./
     assert_select "h1", text: /Khaki Delegation Document/
   end
@@ -51,6 +52,21 @@ class Me::TeamDocumentsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "has not published a team document yet", response.body
+  end
+
+  # Team Records takes the pointer as typed, so a tag no team document may have --
+  # a bookmark- page anyone can read without signing in -- is never served as one
+  # (Document.resource_tag, as Team Resources follows it).
+  test "a tag no team document may have reads as no document" do
+    @team.update_column(:resource_tag, "#{Document::BOOKMARK_TAG_PREFIX}khaki")
+    Document.create!(tag: @team.resource_tag, description: "Khaki Bookmark", body: "<p>Not for members.</p>",
+                     person_create_id: @person.id, person_update_id: @person.id)
+
+    get me_team_document_path(@team)
+
+    assert_response :success
+    assert_match "has not published a team document yet", response.body
+    assert_no_match "Not for members.", response.body
   end
 
   test "the operational summary links only the teams that have a document" do
