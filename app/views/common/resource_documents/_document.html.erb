@@ -1,0 +1,56 @@
+<%# locals: (document:, entity:, edit_path:, empty_message:) %>
+<%#
+  A read page's document, shared by Trainer Resources and Team Resources: the
+  document itself, or what stands in its place, and the way to write one for
+  whoever may (can_manage_resource?). ResourceDocumentCrudConcern#resource_document_state
+  names the states.
+
+  Callout titles are h2: they sit directly under the page's h1.
+%>
+<% state = resource_document_state(document) %>
+<% if state == :found %>
+  <%= ui_section document.description, icon: "file-lines", icon_type: :solid,
+                 edit_link: (edit_path if can_manage_resource?) do %>
+    <div class="lexxy-content">
+      <%# Cleaned here as well as on the way in: documents written through
+          Clubhouse 2 or Admin › Documents never passed this app's editor. %>
+      <%= rich_text(document.body) %>
+    </div>
+    <% if document.updated_at %>
+      <p class="mt-3 me-muted">
+        Last updated <%= datetime_format(document.updated_at, year: true) %>
+        by <%= person_display_link(document.person_update, document.person_update_id) %>.
+      </p>
+    <% end %>
+  <% end %>
+<% else %>
+  <% if state == :missing %>
+    <%= ui_callout_box :warning, title: "The Document Is Missing", heading_level: :h2 do %>
+      <%= entity.title %> points at a document filed under
+      <span class="font-mono"><%= entity.resource_tag %></span>, and no such
+      document exists. It was most likely deleted.
+    <% end %>
+  <% elsif state == :unusable %>
+    <%= ui_callout_box :warning, title: "The Document Tag Cannot Be Used", heading_level: :h2 do %>
+      <%= entity.title %> points at <span class="font-mono"><%= entity.resource_tag %></span>,
+      which cannot hold its document: the tag belongs to a Clubhouse page, or has a space, or is too long.
+      Writing the document files it under
+      <span class="font-mono"><%= entity.build_resource_tag %></span> instead.
+    <% end %>
+  <% elsif state == :taken %>
+    <%= ui_callout_box :warning, title: "The Document Tag Is Taken", heading_level: :h2 do %>
+      A document is already filed under <span class="font-mono"><%= entity.build_resource_tag %></span>,
+      the tag <%= entity.title %>'s document would use, and <%= entity.title %> does not point at it.
+      An Admin can point <%= entity.title %> at that document, or give it a different document tag.
+    <% end %>
+  <% else %>
+    <%= ui_empty_state empty_message, icon: "file-circle-question", icon_type: :solid %>
+  <% end %>
+
+  <%# A taken tag would only fail on save, so there is nothing to offer. %>
+  <% if can_manage_resource? && state != :taken %>
+    <%= button_row do %>
+      <%= button_link "Write the Document", :primary, edit_path, icon: "pen-to-square", icon_type: :solid %>
+    <% end %>
+  <% end %>
+<% end %>

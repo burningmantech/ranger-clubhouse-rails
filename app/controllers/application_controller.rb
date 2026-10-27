@@ -199,6 +199,10 @@ class ApplicationController < ActionController::Base
         # Event Management. Asked as one predicate because menu conditions are
         # ANDed together and "an Admin or a team manager" is a single question.
         records_team_history: is_admin? || is_team_manager?,
+        # Team Resources: Event Management or Vehicle Info Update, then Admin, or
+        # Team Resource Doc Mgmt and a team to manage. Answered from the cached
+        # role set, plus one probe for a holder of both roles.
+        manages_team_resources: Team.resource_manageable_by?(current_user),
         # Whether this Clubhouse offers passkeys at all. The pages behind the
         # menu item answer 404 where it does not.
         passkeys_enabled: Passkeys.enabled?(request)

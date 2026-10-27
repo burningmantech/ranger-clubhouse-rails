@@ -120,4 +120,33 @@ class DocumentTest < ActiveSupport::TestCase
     assert_nil Document.new(tag: "#{Document::BOOKMARK_TAG_PREFIX}has.a.dot").bookmark_slug
     assert_nil Document.new(tag: Document::BOOKMARK_TAG_PREFIX).bookmark_slug
   end
+
+  # ------------------------------------------------- resource document pointers
+
+  # Team and Position Records store a pointer as typed. Only a tag a resource
+  # document may have is followed: stripped, and never a document the code
+  # reads by name or a bookmark page anyone can read without signing in.
+  test "a resource pointer is followed only where a resource document may live" do
+    assert_equal "dirt-team-info", Document.resource_tag("dirt-team-info")
+    assert_equal "dirt-team-info", Document.resource_tag("  dirt-team-info ")
+
+    [nil, "", "   ", "dirt team info", "a" * (Document::TEXT_COLUMN_LIMIT + 1),
+     Document::DEPT_NDA_TAG, Document::MOTORPOOL_POLICY_TAG, "DEPT-NDA", "bookmark-gate", "Bookmark-Gate"].each do |pointer|
+      assert_nil Document.resource_tag(pointer), "#{pointer.inspect} must not be followed"
+    end
+  end
+
+  # The column compares without regard to case or trailing spaces; a list keyed
+  # by the stored tag would disagree with find_by on the same pointer.
+  test "a list of pointers finds each document as find_by would" do
+    by = person(:auditor_ranger)
+    Document.create!(tag: "dirt-team-info", description: "DIRT Team Document", body: "<p>Text</p>",
+                     person_create_id: by.id, person_update_id: by.id)
+
+    found = Document.listed_by_pointer(["DIRT-Team-Info", "dirt-team-info ", "no-such-info", nil, "dept-nda"])
+
+    assert_equal %w[DIRT-Team-Info dirt-team-info\ ].sort, found.keys.sort
+    assert(found.values.all? { |document| document.tag == "dirt-team-info" })
+    assert_raises(ActiveModel::MissingAttributeError) { found.values.first.body }
+  end
 end

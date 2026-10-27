@@ -688,6 +688,19 @@ Rails.application.routes.draw do
       post ":team_id/apply", action: :apply, as: :roster_management_apply
     end
 
+    # The one document a team publishes for its members (Ember
+    # ops/team-resources port). Upstream went straight from the team list into
+    # the editor; here a team gets a read page between them, as Trainer
+    # Resources does, whose concern and editor these routes reuse.
+    scope path: "team-resources", controller: :team_resources do
+      get "/", action: :index, as: :team_resources
+      get ":team_id", action: :show, as: :team_resource
+      get ":team_id/edit", action: :edit, as: :edit_team_resource
+      post ":team_id", action: :create
+      patch ":team_id", action: :update
+      delete ":team_id", action: :destroy
+    end
+
     # Bulk grant/revoke of one position across a pasted callsign list (Ember
     # ops/bulk-positions port). Open to the same people as Roster Management:
     # a team manager reaches their teams' positions, and nothing else.

@@ -78,6 +78,68 @@ class Team < ApplicationRecord
 
   def self.manages_every_team?(person) = person.has_role?(ROSTER_ALL_TEAMS_ROLES)
 
+  # Team resource documents (Teams & Positions › Team Resources) also take two
+  # things, and a different pair from rosters.
+  #
+  # RESOURCE_ACCESS_ROLES opens the page at all, of everyone, Admins included:
+  # upstream's page sat in the Ember ops area, whose route wanted one of these
+  # (web/app/routes/ops.js). Event Management On Playa counts while its setting
+  # is on, when RoleManager promotes it to Event Management.
+  RESOURCE_ACCESS_ROLES = [Role::EVENT_MANAGEMENT, Role::VEHICLE_INFO_UPDATE].freeze
+
+  # Then, as upstream's DocumentController decides it: an Admin writes every
+  # team's document (a Tech Ninja does not, unlike rosters), and anyone else
+  # needs Team Resource Doc Mgmt and a team_manager row for the team.
+  # Unordered, as manageable_by is.
+  #
+  # @param person [Person, nil]
+  # @return [ActiveRecord::Relation]
+  def self.resource_manageable_by(person)
+    return none unless person&.has_role?(RESOURCE_ACCESS_ROLES)
+    return all if resource_manages_every_team?(person)
+    return none unless person.has_role?(Role::TEAM_RESOURCE_MANAGEMENT)
+
+    where(id: TeamManager.where(person_id: person.id).select(:team_id))
+  end
+
+  # Does the person reach any team's document? The menu asks this on every
+  # request: the roles come from the cached set, and only a role holder pays
+  # the single-table probe.
+  #
+  # @param person [Person, nil]
+  # @return [Boolean]
+  def self.resource_manageable_by?(person)
+    return false unless person&.has_role?(RESOURCE_ACCESS_ROLES)
+    return true if resource_manages_every_team?(person)
+
+    person.has_role?(Role::TEAM_RESOURCE_MANAGEMENT) && TeamManager.manager_of_any?(person.id)
+  end
+
+  def self.resource_manages_every_team?(person) = person.has_role?(Role::ADMIN)
+
   # The members a group message to the team reaches: those a send accepts.
   def messageable_members = members.messageable
+
+  # The tag a team's first resource document is filed under (Laravel's
+  # Team::buildResourceTag): the type is added unless the title already names
+  # one, so "Green Dot Team" files as green-dot-team-info and "Council" as
+  # council-cadre-info. Reads always go through the stored resource_tag, so this
+  # only names documents this app mints -- which is why parameterize stands in
+  # for Str::kebab. The two can disagree: parameterize turns punctuation into
+  # hyphens or drops it ("Volunteer Coords. Cadre" -> volunteer-coords-cadre-info,
+  # volunteer-coords.-cadre-info upstream), transliterates or drops letters
+  # outside ASCII, and keeps a word that starts with a digit apart ("Team 2" ->
+  # team-2-info, team2-info upstream).
+  def build_resource_tag = "#{resource_name.parameterize}-info"
+
+  # The description a newly created resource document carries.
+  def build_resource_title = "#{resource_name} Document"
+
+  private
+
+  # The title, with the type added unless the title already names one --
+  # upstream's hasTeamSuffix, a substring test rather than a word test, as there.
+  def resource_name
+    title.downcase.match?(/team|cadre|delegation/) ? title : "#{title} #{type.capitalize}"
+  end
 end

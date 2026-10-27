@@ -82,6 +82,40 @@ class Document < ApplicationRecord
         .select(LIST_COLUMNS)
     end
 
+    # The tag a team's or a position's resource_tag points at, as a document
+    # could be filed under it -- or nil when it names nothing a resource document
+    # may be: blank, malformed (a space, too long), a document the code reads by
+    # name, or a bookmark- page anyone can read without signing in. Team and
+    # Position Records store the pointer as typed, so it is stripped here, and
+    # checked without regard to case, as MariaDB compares tags.
+    #
+    # @param pointer [String, nil]
+    # @return [String, nil]
+    def resource_tag(pointer)
+      tag = pointer.to_s.strip
+      return nil if tag.empty? || tag.include?(" ") || tag.length > TEXT_COLUMN_LIMIT
+
+      key = tag.downcase
+      return nil if key.start_with?(BOOKMARK_TAG_PREFIX) || named_tags.include?(key)
+
+      tag
+    end
+
+    # Each pointer's document, keyed by the pointer exactly as stored, with who
+    # last saved it -- and, like find_all, without the body, for a list that
+    # names documents without showing them. Matched as find_by matches (case and
+    # trailing spaces do not count under the column's collation), so a list and
+    # the document's own page always agree.
+    #
+    # @param pointers [Array<String, nil>]
+    # @return [Hash{String => Document}]
+    def listed_by_pointer(pointers)
+      tags = pointers.uniq.to_h { |pointer| [pointer, resource_tag(pointer)] }.compact
+      found = where(tag: tags.values.uniq).includes(:person_update).select(LIST_COLUMNS)
+                                          .index_by { |document| document.tag.downcase }
+      tags.transform_values { |tag| found[tag.downcase] }.compact
+    end
+
     # Does a document tag exist?
     def have_tag?(tag)
       exists?(tag: tag)
@@ -92,11 +126,14 @@ class Document < ApplicationRecord
       find_by(tag: tag)&.body || ""
     end
 
+    # The tags the code reads by name: the *_TAG constants above.
+    def named_tags = constants.grep(/_TAG\z/).map { |name| const_get(name) }
+
     # The tags the Clubhouse looks for by name: the ones named in the code, plus
     # the ones a team or a position points at. Renaming one of these breaks
     # whatever reads it.
     def referenced_tags
-      tags = constants.grep(/_TAG\z/).map { |name| const_get(name) }
+      tags = named_tags
       tags |= Position.where.not(resource_tag: nil).distinct.pluck(:resource_tag)
       tags |= Team.where.not(resource_tag: nil).distinct.pluck(:resource_tag)
       tags.to_set
