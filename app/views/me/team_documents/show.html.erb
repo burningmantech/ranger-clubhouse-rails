@@ -1,0 +1,21 @@
+<%= hero_panel icon: "file-lines", heading_level: :h1, id: "team-document-header",
+               back_to: ["Operational Summary", me_operational_summary_path] do |panel| %>
+  <% panel.title do %><%= @team.title %> Document<% end %>
+  <% panel.description do %>
+    The document <%= @team.title %> publishes for its members.
+  <% end %>
+<% end %>
+
+<% if @document %>
+  <%= ui_section @document.description, icon: "file-lines", icon_type: :solid do %>
+    <div class="lexxy-content">
+      <%# Written through this app's editor and sanitized on the way in
+          (ResourceDocumentCrudConcern#submitted_body), so rendered as stored --
+          the same way Trainer Resources and signed agreements are. %>
+      <%= @document.body.html_safe %>
+    </div>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "#{@team.title} has not published a team document yet.",
+                     icon: "file-circle-question", icon_type: :solid %>
+<% end %>

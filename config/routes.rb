@@ -104,6 +104,10 @@ Rails.application.routes.draw do
 
     get "operational-summary", to: "operational_summary#index"
 
+    # The one document a team publishes for its members, linked from the
+    # Operational Summary's Teams & Positions section. Membership is the gate.
+    get "teams/:id/document", to: "team_documents#show", as: :team_document
+
     scope path: "surveys", as: "surveys", controller: :surveys do
       get "/", to: "surveys#show"
       post "/", to: "surveys#create"

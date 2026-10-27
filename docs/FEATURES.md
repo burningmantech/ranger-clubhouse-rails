@@ -24,7 +24,7 @@ Paths are relative to the repository root. To find a feature, grep this file for
 - [Shared engines](#shared-engines) (44)
 - [Sign-in, accounts & site chrome](#sign-in-accounts--site-chrome) (16)
 - [My Clubhouse: dashboard & profile](#my-clubhouse-dashboard--profile) (11)
-- [My Clubhouse: messages, announcements & info](#my-clubhouse-messages-announcements--info) (8)
+- [My Clubhouse: messages, announcements & info](#my-clubhouse-messages-announcements--info) (9)
 - [My Clubhouse: schedule, tickets, timesheet & vehicles](#my-clubhouse-schedule-tickets-timesheet--vehicles) (9)
 - [Person Manage: account & identity](#person-manage-account--identity) (15)
 - [Person Manage: communication, membership & training](#person-manage-communication-membership--training) (13)
@@ -800,9 +800,19 @@ Reach it: `GET /me/operational-summary` → My Clubhouse › Pre-Event › Opera
 Gate: every status except AUDITOR, BONKED and UBERBONKED (`authorize_status except:`) (menu: Pre-Event hidden only from `is_auditor?`)
 Controller: `app/controllers/me/operational_summary_controller.rb` (`index`)
 Owner: `PersonEventInfo` (`app/lib/person_event_info.rb`), `Membership` (`app/lib/membership.rb`), `MealInfo` (`app/lib/meal_info.rb`)
-Touches: `person_position`, `position`, `person_team`, `team`, `team_manager`, `person_certification`, `certification`, `trainee_status`, `trainer_status`, `slot`, `person_slot`, `provision`, `bmid`, `access_document`, `person_online_course`, `vehicle`, `person_event`, `event_dates`, `timesheet`, `setting`
-Verify: none — no test exercises this feature
+Touches: `person_position`, `position`, `person_team`, `team`, `team_manager`, `person_certification`, `certification`, `trainee_status`, `trainer_status`, `slot`, `person_slot`, `provision`, `bmid`, `access_document`, `person_online_course`, `vehicle`, `person_event`, `event_dates`, `timesheet`, `setting`, `document`
+Verify: `test/controllers/me/team_documents_controller_test.rb` (the Teams & Positions document links)
 Trap: `PersonEventInfo.find_for_person_year` assumes `Position::TRAINING` is among the person's training positions: with none it `Position.find`s that row (unfixtured; tests must create it), and with only an ART one `delete_at(nil)` raises TypeError.
+
+### Me › Team Document
+Reach it: `GET /me/teams/:id/document` ← "View Team Document" under a team in Operational Summary › Teams & Positions (`:id` = team id); no menu entry
+Gate: membership only — the team is found through the person's own `person_team` rows, so a team they are not on is a 404; no role and no team-manager check (writing the document is the manager-side port planned in `.scratch/teams-positions-team-resources/PRD.md`, `/teams-positions/team-resources`)
+Controller: `app/controllers/me/team_documents_controller.rb` (`show`)
+Owner: `Document` (`app/models/document.rb`, `find_by(tag:)`), `Team#resource_tag`
+Touches: `team`, `person_team`, `document`
+Verify: `test/controllers/me/team_documents_controller_test.rb`
+Trap: The body is read only here — Operational Summary lists which teams have one by tag (`Document.where(tag:).pluck(:tag)`, `@team_document_tags`) and never selects `document.body`, which runs to megabytes for the Mentor team; keep any list that way.
+Trap: `show` prints `@document.body.html_safe`; the body is sanitized only on the way in (`ResourceDocumentCrudConcern#submitted_body`), so any new write path must go through it.
 
 ### Me › Event Summary
 Reach it: `GET /me/timesheet/event-summary` ← "Hours & Credits" links on `GET /me/timesheet` (My Clubhouse › Essentials › Timesheet)
