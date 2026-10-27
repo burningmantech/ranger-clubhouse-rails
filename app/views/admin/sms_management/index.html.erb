@@ -65,8 +65,17 @@
         <div>This server's address for the texts Rangers send. The Twilio Account panel shows where Twilio sends them now, and changes it.</div>
       <% end %>
       <%= list.row "Delivery Reports" do %>
-        <%= ui_badge "Not received", :secondary, icon: "circle-minus", icon_type: :solid %>
-        Twilio does not report back to the Clubhouse whether each text arrived; the log below shows what Twilio knows.
+        <% if @receipt_address.nil? %>
+          <%= ui_badge "Off", :secondary, icon: "circle-minus", icon_type: :solid %>
+          Twilio is not asked to report on texts from this server: its address is not one Twilio can reach.
+        <% elsif @last_receipt_at %>
+          <%= ui_badge "Received", :success, icon: "circle-check", icon_type: :solid %>
+          The newest text Twilio has reported on was sent <%= log_time_format(@last_receipt_at) %>.
+          RBS › Message log shows what became of each.
+        <% else %>
+          <%= ui_badge "None yet", :secondary, icon: "circle-minus", icon_type: :solid %>
+          Twilio has reported on none of the latest <%= number_with_delimiter(BroadcastMessage::RECEIPT_LOOKBACK) %> texts.
+        <% end %>
       <% end %>
     <% end %>
 

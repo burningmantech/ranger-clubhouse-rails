@@ -7,7 +7,8 @@ class Infrastructure::SmsController < ApplicationController
 
   # Block known web crawlers from this unpublished endpoint
   before_action :reject_crawlers
-  # Then anything Twilio did not sign, which could STOP or START any number.
+  # Then anything Twilio did not sign, which could STOP or START any number,
+  # or forge what became of a text.
   include TwilioSignatureConcern
 
   # Process an inbound SMS message from Twilio
@@ -44,6 +45,16 @@ class Infrastructure::SmsController < ApplicationController
     end
 
     render_twiml(reply)
+  end
+
+  # Twilio's report of what became of a text the Clubhouse sent, posted to the
+  # address that text carried, its row's id in the query -- never read from
+  # the body, which is Twilio's. Signed like an incoming text, and answered
+  # with no body whatever it said.
+  def receipt
+    callback = SmsService.process_status_callback(params, request.query_parameters[:message])
+    BroadcastMessage.record_receipt(callback.row_id, callback.sid, callback.status)
+    head :no_content
   end
 
   private

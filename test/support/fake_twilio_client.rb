@@ -4,8 +4,9 @@ require "faraday"
 
 # A stand-in for Twilio::REST::Client answering what SMS Management asks:
 # the account, its balance, the Notify services, the Messaging Services (which
-# an update changes), the message list (a page at a time, or all at once) and
-# the alerts, from plain values; and what the send path sends: a Notify
+# an update changes), the message list (a page at a time, or all at once), one
+# text by its SID (sent_texts, which the recheck fetches) and the alerts, from
+# plain values; and what the send path sends: a Notify
 # service's notifications, and texts made with messages.create, each answered
 # with a SID of its own. A part named in errors: raises the error given
 # instead. asked records every part asked for, in order, and params the
@@ -119,8 +120,9 @@ class FakeTwilioClient
   def initialize(account: MAIN_ACCOUNT, balance: Balance.new("412.37", "USD"),
                  services: { "ISservice0001" => "Ranger Alerts" },
                  messaging_services: { MESSAGING_SERVICE_SID => MessagingService.new(CLUBHOUSE2_INCOMING, "POST", false) },
-                 texts: [], alerts: [], next_page_url: nil, previous_page_url: nil, errors: {})
+                 texts: [], alerts: [], next_page_url: nil, previous_page_url: nil, sent_texts: {}, errors: {})
     @account = account
+    @sent_texts = sent_texts
     @balance = balance
     @services = services
     @messaging_services = messaging_services
@@ -148,7 +150,14 @@ class FakeTwilioClient
   def balance = Call.new(-> { answer(:balance) { @balance } })
   def notify = NotifyV1.new(self)
   def messaging = MessagingV1.new(self)
-  def messages = MessageList.new(self)
+
+  # client.messages for the list, client.messages(sid) for one text, which
+  # the recheck fetches: from sent_texts, by its SID.
+  def messages(sid = nil)
+    return MessageList.new(self) if sid.nil?
+
+    Call.new(-> { answer(:message_fetch, { sid: }) { @sent_texts.fetch(sid) { raise not_found(sid) } } })
+  end
   def alerts = AlertList.new(self)
   def alert_rows = @alerts
 

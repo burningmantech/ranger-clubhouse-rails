@@ -15,6 +15,7 @@ class Broadcast < ApplicationRecord
 
   # Status Constants
   STATUS_SENT = "sent"                    # Accepted by SES or the SMS vendor (or held, as if sent)
+  STATUS_DELIVERED = "delivered"          # A text Twilio's receipt says reached the phone
   STATUS_QUEUED = "queued"                # A broadcast's text waiting for RbsTransmitSmsJob. Not a failure
   STATUS_SERVICE_FAIL = "service-fail"    # Email never reached SES, or was held back; a text whose vendor call failed
   STATUS_VERIFY = "verify"                # Verify code sent to target phone
@@ -37,11 +38,12 @@ class Broadcast < ApplicationRecord
 
   # Why a broadcast email did not go. SES's own reasons, lowercased with dashes
   # (ACCOUNT_THROTTLED is "account-throttled"); "failed" stands in for any
-  # reason SES gives that is not on this list. Two are the Clubhouse's own:
-  # an address SES would refuse never goes to it, and an email SES may have
-  # sent without saying so -- a timeout, a fault on its side, a short answer --
-  # is never assumed unsent. Neither is a text Twilio may have taken without
-  # answering, which is send-unconfirmed too.
+  # reason SES gives that is not on this list, and is also a text Twilio's
+  # receipt says it could not deliver (blocked and bounced aside). Two are the
+  # Clubhouse's own: an address SES would refuse never goes to it, and an
+  # email SES may have sent without saying so -- a timeout, a fault on its
+  # side, a short answer -- is never assumed unsent. Neither is a text Twilio
+  # may have taken without answering, which is send-unconfirmed too.
   STATUS_INVALID_PARAMETER = "invalid-parameter"
   STATUS_SEND_UNCONFIRMED = "send-unconfirmed"
   STATUS_FAILED = "failed"
@@ -56,16 +58,22 @@ class Broadcast < ApplicationRecord
   FAILURE_STATUSES = [STATUS_SERVICE_FAIL, *EMAIL_FAIL_STATUSES].freeze
 
   # Every status a text or email the send tried can end in: sent or held,
-  # bounced or blocked after it went, or a failure. The reasons a send skipped
+  # delivered, bounced or blocked after it went, or a failure. The reasons a send skipped
   # someone (no-contact, suppressed) stay out by design, and so does any skip
   # reason added later, since the list names what counts. A new outcome status
   # is the opposite: whoever starts writing one adds it here, or it drops out
   # of the stats.
-  ATTEMPTED_STATUSES = [STATUS_SENT, STATUS_BOUNCED, STATUS_BLOCKED, *FAILURE_STATUSES].freeze
+  ATTEMPTED_STATUSES = [STATUS_SENT, STATUS_DELIVERED, STATUS_BOUNCED, STATUS_BLOCKED, *FAILURE_STATUSES].freeze
+
+  # What Twilio's delivery receipt can make of a text that went: delivered;
+  # or, where it did not arrive, blocked (30004), bounced (30005-30007) or
+  # failed (SmsService.process_status_callback).
+  RECEIPT_STATUSES = [STATUS_DELIVERED, STATUS_BLOCKED, STATUS_BOUNCED, STATUS_FAILED].freeze
 
   # The failures a Retry never sends: an address SES would refuse never gets
   # better, and an email or text that may already have gone is never sent
-  # twice. Every other failure was certainly not sent, and is worth another try.
+  # twice. Every other failure was certainly not sent, or not delivered, and is
+  # worth another try.
   UNRETRYABLE_STATUSES = [STATUS_INVALID_PARAMETER, STATUS_SEND_UNCONFIRMED].freeze
   RETRYABLE_STATUSES = (FAILURE_STATUSES - UNRETRYABLE_STATUSES).freeze
 
@@ -110,7 +118,7 @@ class Broadcast < ApplicationRecord
   # What a message log row can say happened, whichever way the message went.
   # Anything outside this list is a value the log cannot be filtered by.
   MESSAGE_STATUSES = [
-    STATUS_SENT, STATUS_QUEUED, STATUS_SERVICE_FAIL, STATUS_VERIFY, STATUS_REPLY,
+    STATUS_SENT, STATUS_DELIVERED, STATUS_QUEUED, STATUS_SERVICE_FAIL, STATUS_VERIFY, STATUS_REPLY,
     STATUS_START, STATUS_STOP, STATUS_HELP, STATUS_STATS, STATUS_NEXT,
     STATUS_UNKNOWN_COMMAND, STATUS_UNKNOWN_PHONE, STATUS_BOUNCED, STATUS_BLOCKED,
     STATUS_SUPPRESSED, STATUS_NO_CONTACT, *EMAIL_FAIL_STATUSES
@@ -190,6 +198,12 @@ class Broadcast < ApplicationRecord
   end
 
   class << self
+    # sms_failed counted again from the rows: after each round of a broadcast's
+    # texts, and after a receipt says one did not arrive.
+    def recount_failed_texts(broadcast_id)
+      where(id: broadcast_id).update_all(sms_failed: BroadcastMessage.count_fail(broadcast_id, "sms"))
+    end
+
     #
     # The broadcasts to list, newest first.
     #

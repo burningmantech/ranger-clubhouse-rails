@@ -846,10 +846,14 @@ class Rbs
 
       if send_sms
         sms_message = notify_text(from, subject, group:)
-        status, sid = notify_by_text(phone_number, sms_message)
+        # Written before the text goes, so Twilio's receipt can find it, and
+        # send-unconfirmed until Twilio answers.
+        row_id = BroadcastMessage.record(nil, Broadcast::STATUS_SEND_UNCONFIRMED, person.id, "sms", phone_number,
+                                         "outbound", sms_message)
+        status, sid = notify_by_text(phone_number, sms_message, row_id)
+        BroadcastMessage.where(id: row_id).update_all(status:, message_id: sid)
         sms_failed = 1 if status != Broadcast::STATUS_SENT
-        log_ids << BroadcastMessage.record(nil, status, person.id, "sms", phone_number, "outbound",
-                                           sms_message, message_id: sid)
+        log_ids << row_id
       end
 
       if send_email
@@ -1170,7 +1174,7 @@ class Rbs
       service_id, clients = senders
       BroadcastMessage.where(id: round.map(&:id)).update_all(status: Broadcast::STATUS_SEND_UNCONFIRMED)
       outcomes = round.zip(clients).map do |row, client|
-        Thread.new { text_outcome(client, service_id, row.address, body) }
+        Thread.new { text_outcome(client, service_id, row, body) }
       end.map(&:value)
 
       BroadcastMessage.transaction do
@@ -1181,10 +1185,11 @@ class Rbs
       end
     end
 
-    # What became of one text: sent, with its SID; maybe sent, when Twilio may
-    # have taken it without answering; or not sent, and why.
-    def text_outcome(client, service_id, number, body)
-      [Broadcast::STATUS_SENT, SmsService.text_through(client, service_id, number, body), nil]
+    # What became of one row's text: sent, with its SID, Twilio's receipt to
+    # follow; maybe sent, when Twilio may have taken it without answering; or
+    # not sent, and why.
+    def text_outcome(client, service_id, row, body)
+      [Broadcast::STATUS_SENT, SmsService.text_through(client, service_id, row.address, body, receipt_for: row.id), nil]
     rescue SmsException::Unconfirmed => e
       [Broadcast::STATUS_SEND_UNCONFIRMED, nil, e]
     rescue StandardError => e
@@ -1200,9 +1205,7 @@ class Rbs
       nil # what stopped the run is the error that goes on
     end
 
-    def recount_sms_failed(broadcast_id)
-      Broadcast.where(id: broadcast_id).update_all(sms_failed: BroadcastMessage.count_fail(broadcast_id, "sms"))
-    end
+    def recount_sms_failed(broadcast_id) = Broadcast.recount_failed_texts(broadcast_id)
 
     # Recounted however a run ends. Should that fail too, whatever stopped the
     # run -- an error, or a deploy's stop the job must resume from -- is what
@@ -1763,14 +1766,14 @@ class Rbs
       "#{opening}#{subject.to_s[0, [room, 0].max]}  #{SMS_SUFFIX}"
     end
 
-    # Text one new-message alert: the status its row records, and the SID
-    # Twilio gave the text, which a held or failed one has none of. A text
-    # Twilio may have taken without answering is send-unconfirmed, so it is
-    # never sent again.
-    def notify_by_text(phone_number, sms_message)
+    # Text one new-message alert, recorded in row_id: the status that row
+    # records, and the SID Twilio gave the text, which a held or failed one has
+    # none of. A text Twilio may have taken without answering is
+    # send-unconfirmed, so it is never sent again.
+    def notify_by_text(phone_number, sms_message, row_id)
       return [Broadcast::STATUS_SENT, nil] if Setting.get_value(Setting::BROADCAST_SMS_SANDBOX)
 
-      [Broadcast::STATUS_SENT, SmsService.send_text(phone_number, sms_message)]
+      [Broadcast::STATUS_SENT, SmsService.send_text(phone_number, sms_message, receipt_for: row_id)]
     rescue => e
       ErrorLog.record_exception(e, "sms-exception", extra: {
                                  type: "clubhouse-notify",

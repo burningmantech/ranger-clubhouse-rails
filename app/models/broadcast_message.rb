@@ -5,6 +5,10 @@ class BroadcastMessage < ApplicationRecord
 
   PAGE_SIZE_DEFAULT = 50
 
+  # How many of the latest texts SMS Management's Delivery Reports row looks
+  # over for one Twilio has reported on: more than a broadcast to everyone.
+  RECEIPT_LOOKBACK = 2_000
+
   belongs_to :person, optional: true
   belongs_to :broadcast, optional: true
 
@@ -23,6 +27,13 @@ class BroadcastMessage < ApplicationRecord
     reachable.where(address_type: "email")
              .or(reachable.where(address_type: "sms", person: { sms_verified: true, sms_stopped: false })
                           .where(arel_table[:address].eq(Person.arel_table[:sms_number])))
+  }
+
+  # Texts Twilio took that no receipt has moved on yet: the rows record_receipt
+  # would change.
+  scope :awaiting_receipt, lambda {
+    where(address_type: "sms", direction: "outbound", status: [Broadcast::STATUS_SENT, Broadcast::STATUS_VERIFY])
+      .where.not(message_id: nil)
   }
 
   class << self
@@ -155,6 +166,37 @@ class BroadcastMessage < ApplicationRecord
       where(broadcast_id: mail_log.broadcast_id, person_id: mail_log.person_id, message_id: mail_log.message_id,
             address_type: "email", status: Broadcast::STATUS_SENT)
         .update_all(status: Broadcast::STATUS_BOUNCED)
+    end
+
+    # Twilio's delivery receipt for one text the Clubhouse sent: the row whose
+    # id and SID both match moves on from sent -- or from a confirmation
+    # code's verify -- to what Twilio said, once. Anything else changes
+    # nothing: a receipt for an earlier status (they come out of order, and
+    # none comes for accepted), a repeat, a row not yet settled, an id that
+    # is not that text's. One indexed update; a text that did not arrive is
+    # also counted on its broadcast's sms_failed.
+    #
+    # @param id [String] the row's id, from the receipt address
+    # @param sid [String] the SID Twilio gave the text
+    # @param status [String] Broadcast::STATUS_*, from SmsService.process_status_callback
+    # @return [Integer] how many rows moved, 0 or 1
+    def record_receipt(id, sid, status)
+      return 0 unless Broadcast::RECEIPT_STATUSES.include?(status) && sid.present?
+
+      moved = awaiting_receipt.where(id:, message_id: sid).update_all(status:)
+      if moved.positive? && Broadcast::FAILURE_STATUSES.include?(status)
+        broadcast_id = where(id:).pick(:broadcast_id)
+        Broadcast.recount_failed_texts(broadcast_id) if broadcast_id
+      end
+      moved
+    end
+
+    # When the newest text Twilio has reported on was sent, among the latest
+    # RECEIPT_LOOKBACK texts the Clubhouse sent; nil when none of them has a
+    # receipt. One query, newest rows first.
+    def last_text_receipt_at
+      latest = where(address_type: "sms", direction: "outbound").order(id: :desc).limit(RECEIPT_LOOKBACK)
+      from(latest, table_name).where(status: Broadcast::RECEIPT_STATUSES).maximum(:created_at)
     end
 
     # Who already has a row of this type for a broadcast: the people a send

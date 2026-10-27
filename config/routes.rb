@@ -277,6 +277,9 @@ Rails.application.routes.draw do
 
   namespace :infrastructure do
     post "sms/inbound", to: "sms#inbound"
+    # Where Twilio reports what became of each text the Clubhouse sent, the
+    # text's row id in the query (SmsService.text_through).
+    post "sms/status", to: "sms#receipt"
 
     # Where SES reports what became of the mail the Clubhouse sent, by way of
     # an SNS topic. Open to the internet; SnsMessage checks the signature.

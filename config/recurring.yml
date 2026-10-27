@@ -55,6 +55,10 @@ production:
   pending_applications:
     class: PendingApplicationsJob
     schedule: at 5pm every day
+  # Twilio advises asking about any text with no final receipt after 12 hours.
+  recheck_unfinished_texts:
+    class: RecheckUnfinishedTextsJob
+    schedule: at 6am every day
   # April through August, then the first ten days of September: every ten
   # minutes, so a finished course shows up while somebody is still signing up.
   moodle_completion_season:

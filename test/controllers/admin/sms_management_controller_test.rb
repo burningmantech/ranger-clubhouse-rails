@@ -109,6 +109,36 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", admin_settings_path(filter: "twilio"), 0
   end
 
+  test "Delivery Reports says when the newest text Twilio has reported on was sent" do
+    sent_at = 2.hours.ago.change(usec: 0)
+    BroadcastMessage.create!(person_id: @ranger.id, address_type: "sms", address: "+14155550142", direction: "outbound",
+                             status: Broadcast::STATUS_DELIVERED, message_id: "SM#{'1' * 32}", created_at: sent_at)
+    sign_in_as(@tech_ninja)
+
+    get admin_sms_management_path
+
+    assert_select "dt:contains('Delivery Reports') + dd",
+                  text: /Received.*#{Regexp.escape(ApplicationController.helpers.log_time_format(sent_at))}/m
+  end
+
+  test "Delivery Reports says none yet with no receipt, and off where Twilio cannot reach this server" do
+    sign_in_as(@tech_ninja)
+
+    get admin_sms_management_path
+
+    assert_select "dt:contains('Delivery Reports') + dd", text: /None yet/
+
+    original = Rails.application.config.action_mailer.default_url_options
+    Rails.application.config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+    begin
+      get admin_sms_management_path
+    ensure
+      Rails.application.config.action_mailer.default_url_options = original
+    end
+
+    assert_select "dt:contains('Delivery Reports') + dd", text: /Off.*not one Twilio can reach/m
+  end
+
   test "an admin who is also a tech ninja is offered the settings" do
     grant_role(@tech_ninja, Role::ADMIN)
     sign_in_as(@tech_ninja)

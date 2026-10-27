@@ -94,11 +94,13 @@ class Alerts::SmsPreferencesServiceTest < ActiveSupport::TestCase
     assert_equal [["+14155550101", "Your Clubhouse verification code is: #{@person.reload.sms_code}"]],
                  fake.created_texts.map { |text| text.values_at(:to, :body) }
     assert_equal [Broadcast::STATUS_VERIFY, format("SM%032d", 1)], [row.status, row.message_id]
+    assert_equal ["https://example.com/infrastructure/sms/status?message=#{row.id}"],
+                 fake.created_texts.pluck(:status_callback)
   end
 
   # Either way the person is told the code could not be sent: sending again
   # makes a new one.
-  test "a code Twilio may have taken is recorded send-unconfirmed, and a refused one only in the error log" do
+  test "a code Twilio may have taken is recorded send-unconfirmed, and a refused one failed" do
     @person.update_columns(sms_number: "+14155550101")
     configure_twilio
 
@@ -110,7 +112,8 @@ class Alerts::SmsPreferencesServiceTest < ActiveSupport::TestCase
     end
 
     assert_equal %w[sent-fail sent-fail], [taken.status, refused.status]
-    assert_equal [Broadcast::STATUS_SEND_UNCONFIRMED], BroadcastMessage.where(person_id: @person.id).pluck(:status)
+    assert_equal [Broadcast::STATUS_SEND_UNCONFIRMED, Broadcast::STATUS_SERVICE_FAIL],
+                 BroadcastMessage.where(person_id: @person.id).order(:id).pluck(:status)
     assert_equal 2, ErrorLog.where(error_type: "sms-exception").count
   end
 

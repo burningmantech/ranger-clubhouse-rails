@@ -585,6 +585,8 @@ class RbsTest < ActiveSupport::TestCase
     assert_equal rows.count, rows.distinct.count(:message_id)
     assert_equal [Rbs.send(:sms_body, "Hello")], fake.created_texts.pluck(:body).uniq
     assert_equal 0, result.broadcast.reload.sms_failed
+    assert_equal rows.ids.map { |id| "https://example.com/infrastructure/sms/status?message=#{id}" }.sort,
+                 fake.created_texts.pluck(:status_callback).sort, "each asks for a receipt for its own row"
   end
 
   test "every text Twilio refuses is a counted failure, never raised at the sender" do
@@ -2569,6 +2571,8 @@ class RbsTest < ActiveSupport::TestCase
     assert_empty fake.notifications
     assert_equal [Broadcast::STATUS_SENT, format("SM%032d", 1)], [row.status, row.message_id]
     assert_equal 0, row.broadcast.sms_failed
+    assert_equal ["https://example.com/infrastructure/sms/status?message=#{row.id}"],
+                 fake.created_texts.pluck(:status_callback), "written before the text, so its receipt can find it"
   end
 
   test "a new-message text Twilio may have taken is send-unconfirmed, and one it refused failed" do
@@ -2946,6 +2950,13 @@ class RbsTest < ActiveSupport::TestCase
 
     assert_empty Rbs.unreachable(kept, send_clubhouse: true)
     assert_equal [listener.callsign], callsigns(Rbs.unreachable(kept, send_clubhouse: false))
+  end
+
+  # A receipt moves a sent text on, and the broadcast's stats must keep counting it.
+  test "a delivered text is an attempt that went, never a failure" do
+    assert_includes Broadcast::ATTEMPTED_STATUSES, Broadcast::STATUS_DELIVERED
+    assert_includes Broadcast::MESSAGE_STATUSES, Broadcast::STATUS_DELIVERED, "the message log filters by it"
+    assert_not_includes Broadcast::FAILURE_STATUSES, Broadcast::STATUS_DELIVERED
   end
 
   test "a suppressed address is a reason, not a failure" do

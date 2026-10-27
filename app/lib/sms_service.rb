@@ -22,6 +22,13 @@ class SmsService
   # 429) is asked again: each pause twice the last, from a tenth of a second.
   RATE_LIMIT_RETRIES = 5
 
+  # Twilio is asked about a text with no final receipt once it is this old
+  # (Twilio's advice), and no longer once it is older than RECHECK_WITHIN; the
+  # daily recheck asks about RECHECK_BATCH rows' worth at a time.
+  RECHECK_AFTER = 12.hours
+  RECHECK_WITHIN = 3.days
+  RECHECK_BATCH = 100
+
   #
   # Structured result for incoming SMS messages.
   # Replaces the PHP associative array return from processIncoming().
@@ -37,19 +44,11 @@ class SmsService
   end
 
   #
-  # Structured result for status callbacks.
-  # Replaces the PHP associative array return from processStatusCallback().
+  # What one of Twilio's delivery receipts says: the row the text was recorded
+  # in (its id rides in the receipt address), the SID Twilio gave the text, and
+  # the Clubhouse's word for what became of it.
   #
-  class StatusCallback
-    attr_reader :status, :message, :broadcast_id, :phone
-
-    def initialize(status:, message:, broadcast_id:, phone:)
-      @status = status
-      @message = message
-      @broadcast_id = broadcast_id
-      @phone = phone
-    end
-  end
+  StatusCallback = Data.define(:row_id, :sid, :status)
 
   class << self
     #
@@ -116,13 +115,15 @@ class SmsService
     #
     # @param phone_number [String] number to text
     # @param message [String] text to send
+    # @param receipt_for [Integer, nil] the id of the row the text is recorded in, for Twilio's receipt
     # @return [String] the SID Twilio gave the text
     # @raise [SmsException::Unconfirmed] if Twilio may have taken it without answering
     # @raise [SmsException] if Twilio refused it, or the Messaging Service setting cannot be used
     #
-    def send_text(phone_number, message)
+    def send_text(phone_number, message, receipt_for: nil)
       service_id, account_sid, auth_token = text_settings
-      text_through(TwilioAccount.build_client(account_sid, auth_token), service_id, phone_number, message)
+      text_through(TwilioAccount.build_client(account_sid, auth_token), service_id, phone_number, message,
+                   receipt_for:)
     end
 
     #
@@ -145,17 +146,20 @@ class SmsService
     # Send one text through a client the caller made: a job sending many on a
     # few threads gives each thread a client of its own, as one client is not
     # safe to share. Asked again after a pause while Twilio answers that it is
-    # being asked too fast.
+    # being asked too fast. With receipt_for, Twilio reports what became of it
+    # to receipt_address, the row's id in the query.
     #
     # @return [String] the SID Twilio gave the text
     # @raise [SmsException::Unconfirmed] if Twilio may have taken it without answering
     # @raise [SmsException] if Twilio refused it
     #
-    def text_through(twilio, service_id, phone_number, message)
+    def text_through(twilio, service_id, phone_number, message, receipt_for: nil)
+      address = receipt_for && receipt_address
+      request = { messaging_service_sid: service_id, to: normalize_phone(phone_number), body: message,
+                  validity_period: VALIDITY_PERIOD, status_callback: (address && "#{address}?message=#{receipt_for}") }
       attempts = 0
       begin
-        twilio.messages.create(messaging_service_sid: service_id, to: normalize_phone(phone_number), body: message,
-                               validity_period: VALIDITY_PERIOD).sid
+        twilio.messages.create(**request.compact).sid
       rescue Twilio::REST::RestError => e
         raise unless e.status_code == 429 && (attempts += 1) <= RATE_LIMIT_RETRIES
 
@@ -165,6 +169,18 @@ class SmsService
     rescue *TwilioAccount::ERRORS => e
       error_class = TwilioAccount.unanswered?(e) ? SmsException::Unconfirmed : SmsException
       raise error_class, e.message
+    end
+
+    #
+    # Where Twilio sends this server its delivery receipts, or nil when Twilio
+    # cannot reach it -- dev's localhost, say -- where asking would raise an
+    # 11200 alert on the live account for every text.
+    #
+    # @return [String, nil]
+    #
+    def receipt_address
+      address = TwilioSignatureConcern.address(Rails.application.routes.url_helpers.infrastructure_sms_status_path)
+      address unless SmsManagement.incoming_url_problem(address)
     end
 
     #
@@ -212,41 +228,76 @@ class SmsService
     end
 
     #
-    # Process a status callback.
+    # Read one of Twilio's delivery receipts.
     #
-    # @param params [Hash, ActionController::Parameters] the request parameters
-    # @return [SmsService::StatusCallback] structured status callback result
+    # @param params [Hash, ActionController::Parameters] the receipt Twilio posted
+    # @param row_id [String] the row's id, from the receipt address's query
+    # @return [SmsService::StatusCallback]
     #
-    def process_status_callback(params)
-      status_code = params[:MessageStatus]
+    def process_status_callback(params, row_id)
+      StatusCallback.new(row_id: row_id.to_s, sid: params[:MessageSid].to_s,
+                         status: receipt_status(params[:MessageStatus], params[:ErrorCode]))
+    end
 
-      status = case status_code
-               when "delivered"
-                 "delivered"
-               when "undelivered", "failed"
-                 "failed"
-               else
-                 "sent"
-               end
-
-      if status == "failed"
-        error_code = params[:ErrorCode].to_i
-        status = case error_code
-                 when 30004 # phone maybe black listed
-                   "blocked"
-                 when 30005, 30006, 30007 # unreachable phone, landline
-                   "bounced"
-                 else
-                   status
-                 end
+    #
+    # The Clubhouse's word for a text's status at Twilio: sent, while it is
+    # still on its way (Twilio sends no receipt for accepted); delivered; or,
+    # where it did not arrive, blocked, bounced or failed, by Twilio's error code.
+    #
+    # @param message_status [String] Twilio's MessageStatus
+    # @param error_code [String, Integer, nil] Twilio's ErrorCode
+    # @return [String] Broadcast::STATUS_*
+    #
+    def receipt_status(message_status, error_code)
+      case message_status
+      when "delivered"
+        Broadcast::STATUS_DELIVERED
+      when "undelivered", "failed"
+        case error_code.to_i
+        when 30004 # phone maybe black listed
+          Broadcast::STATUS_BLOCKED
+        when 30005, 30006, 30007 # unreachable phone, landline
+          Broadcast::STATUS_BOUNCED
+        else
+          Broadcast::STATUS_FAILED
+        end
+      else
+        Broadcast::STATUS_SENT
       end
+    end
 
-      StatusCallback.new(
-        status: status,
-        message: params.to_json,
-        broadcast_id: params[:broadcast_id].to_s,
-        phone: params[:To].to_s
-      )
+    #
+    # Ask Twilio what became of each text still waiting for a receipt between
+    # RECHECK_AFTER and RECHECK_WITHIN after it went, as Twilio advises: a
+    # receipt is best-effort, none comes for accepted, and one that beats the
+    # Clubhouse's own write of the SID is lost. What Twilio says is recorded
+    # as a receipt would be (BroadcastMessage.record_receipt), so a late
+    # receipt and the recheck never disagree. A text Twilio no longer has is
+    # skipped; any other refusal, or no answer, stops the run, logged once,
+    # and the next run asks again. Never on the training server.
+    #
+    # @return [Integer] how many texts moved
+    #
+    def recheck_unfinished_texts
+      return 0 if Current.is_ghd_server?
+
+      twilio = TwilioAccount.client
+      return 0 if twilio.nil?
+
+      moved = 0
+      BroadcastMessage.awaiting_receipt.where(created_at: RECHECK_WITHIN.ago..RECHECK_AFTER.ago)
+                      .in_batches(of: RECHECK_BATCH) do |batch|
+        batch.pluck(:id, :message_id).each do |id, sid|
+          text = twilio.messages(sid).fetch
+          moved += BroadcastMessage.record_receipt(id, sid, receipt_status(text.status, text.error_code))
+        rescue Twilio::REST::RestError => e
+          raise unless e.status_code == 404
+        end
+      end
+      moved
+    rescue *TwilioAccount::ERRORS => e
+      ErrorLog.record_exception(e, "sms-recheck-exception", extra: { moved: })
+      moved
     end
 
     #

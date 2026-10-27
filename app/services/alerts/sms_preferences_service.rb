@@ -133,18 +133,21 @@ module Alerts
       private
 
       # Send a verification code via SMS and log it, with the SID Twilio gave
-      # the text. A code Twilio may have taken without answering is recorded
-      # send-unconfirmed, and the person is still told it could not be sent:
-      # sending again makes a new code.
+      # the text. The row is written first, so Twilio's receipt can find it,
+      # and stays send-unconfirmed when Twilio may have taken the code without
+      # answering; a code Twilio refused is recorded as a failure. Either way
+      # the person is told it could not be sent: sending again makes a new code.
       #
       # @return [String] "sent" or "sent-fail"
       def deliver_verification_code(person, phone, code)
         message = "Your Clubhouse verification code is: #{code}"
+        row_id = BroadcastMessage.record(nil, Broadcast::STATUS_SEND_UNCONFIRMED, person.id, "sms", phone, "outbound",
+                                         message)
+        row = BroadcastMessage.where(id: row_id)
 
         begin
-          sid = SmsService.send_text(phone, message)
-          BroadcastMessage.record(nil, Broadcast::STATUS_VERIFY, person.id, "sms", phone, "outbound", message,
-                                  message_id: sid)
+          sid = SmsService.send_text(phone, message, receipt_for: row_id)
+          row.update_all(status: Broadcast::STATUS_VERIFY, message_id: sid)
           "sent"
         rescue StandardError => e
           ErrorLog.record_exception(e, "sms-exception", extra: {
@@ -152,10 +155,7 @@ module Alerts
             person_id: person.id,
             phone: phone
           })
-          if e.is_a?(SmsException::Unconfirmed)
-            BroadcastMessage.record(nil, Broadcast::STATUS_SEND_UNCONFIRMED, person.id, "sms", phone, "outbound",
-                                    message)
-          end
+          row.update_all(status: Broadcast::STATUS_SERVICE_FAIL) unless e.is_a?(SmsException::Unconfirmed)
           "sent-fail"
         end
       end

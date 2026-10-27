@@ -243,6 +243,84 @@ class Infrastructure::SmsControllerTest < ActionDispatch::IntegrationTest
     assert_not @person.reload.sms_stopped?
   end
 
+  # =========================================================================
+  # Delivery receipts
+  # =========================================================================
+
+  test "a receipt moves a sent text to delivered, with one update and no other query of the messages" do
+    row = sent_text
+
+    assert_queries_match(/broadcast_message/i, count: 1) do
+      post_receipt(row, receipt(row.message_id, "delivered"))
+    end
+
+    assert_response :no_content
+    assert_equal Broadcast::STATUS_DELIVERED, row.reload.status
+  end
+
+  # A bounce or a block is no failure, as an email's bounce is not: sending
+  # it again would not make it arrive.
+  test "a receipt for a text that did not arrive says why, and counts only a failure" do
+    broadcast = Broadcast.create!(sender_id: @person.id, alert_id: Alert::SHIFT_CHANGE, sms_message: "Muster",
+                                  subject: "Muster", recipient_count: 3, sent_sms: true)
+    blocked, bounced, failed = %w[1 2 3].map { |digit| sent_text(sid: "SM#{digit * 32}", broadcast:) }
+
+    post_receipt(blocked, receipt(blocked.message_id, "undelivered", "30004"))
+    post_receipt(bounced, receipt(bounced.message_id, "undelivered", "30006"))
+    post_receipt(failed, receipt(failed.message_id, "failed", "30008"))
+
+    assert_equal [Broadcast::STATUS_BLOCKED, Broadcast::STATUS_BOUNCED, Broadcast::STATUS_FAILED],
+                 [blocked, bounced, failed].map { |row| row.reload.status }
+    assert_equal 1, broadcast.reload.sms_failed
+    assert_predicate broadcast, :retryable?
+  end
+
+  test "a receipt never moves a text back, and a repeat changes nothing" do
+    row = sent_text
+
+    post_receipt(row, receipt(row.message_id, "delivered"))
+    post_receipt(row, receipt(row.message_id, "sent"))
+    post_receipt(row, receipt(row.message_id, "failed", "30008"))
+    post_receipt(row, receipt(row.message_id, "delivered"))
+
+    assert_response :no_content
+    assert_equal Broadcast::STATUS_DELIVERED, row.reload.status
+  end
+
+  test "a receipt moves a confirmation code on, and leaves a text not yet settled alone" do
+    code = sent_text(status: Broadcast::STATUS_VERIFY)
+    queued = sent_text(status: Broadcast::STATUS_QUEUED, sid: nil)
+
+    post_receipt(code, receipt(code.message_id, "delivered"))
+    post_receipt(queued, receipt("SM#{'1' * 32}", "delivered"))
+
+    assert_equal [Broadcast::STATUS_DELIVERED, Broadcast::STATUS_QUEUED], [code.reload.status, queued.reload.status]
+  end
+
+  # The id rides in the signed address, so a receipt for one text cannot be
+  # moved to another; the SID must be that row's too.
+  test "a receipt whose SID is not the text's, or for no text at all, changes nothing" do
+    row = sent_text
+
+    post_receipt(row, receipt("SM#{'9' * 32}", "delivered"))
+    assert_response :no_content
+
+    missing = BroadcastMessage.new(id: BroadcastMessage.maximum(:id) + 1)
+    post_receipt(missing, receipt(row.message_id, "delivered"))
+    assert_response :no_content
+
+    assert_equal Broadcast::STATUS_SENT, row.reload.status
+  end
+
+  test "a receipt Twilio did not sign is refused, and changes nothing" do
+    row = sent_text
+
+    post_receipt(row, receipt(row.message_id, "delivered"), token: "not-the-token")
+
+    assert_response :forbidden
+    assert_equal Broadcast::STATUS_SENT, row.reload.status
+  end
+
   private
 
   # What Twilio sends as X-Twilio-Signature, by twilio-ruby's own validator:
@@ -254,5 +332,22 @@ class Infrastructure::SmsControllerTest < ActionDispatch::IntegrationTest
 
   def post_signed(params, headers: {}, **signing)
     post infrastructure_sms_inbound_path, params:, headers: { "X-Twilio-Signature" => signature(params, **signing), **headers }
+  end
+
+  # A text the Clubhouse sent, settled as Twilio answered it.
+  def sent_text(status: Broadcast::STATUS_SENT, sid: "SM#{'1' * 32}", broadcast: nil)
+    BroadcastMessage.create!(broadcast_id: broadcast&.id, person_id: @person.id, address_type: "sms",
+                             address: @person.sms_number, direction: "outbound", status:, message_id: sid)
+  end
+
+  # A receipt as Twilio posts one, to the address the text carried.
+  def receipt(sid, status, error_code = nil)
+    { MessageSid: sid, MessageStatus: status, ErrorCode: error_code, AccountSid: "deadbeef", To: @person.sms_number }
+      .compact
+  end
+
+  def post_receipt(row, params, token: AUTH_TOKEN)
+    path = infrastructure_sms_status_path(message: row.id)
+    post path, params:, headers: { "X-Twilio-Signature" => signature(params, address: TwilioSignatureConcern.address(path), token:) }
   end
 end

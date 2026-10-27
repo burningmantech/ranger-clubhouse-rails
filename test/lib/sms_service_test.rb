@@ -2,18 +2,25 @@
 
 require "test_helper"
 
-# The send path. A broadcast still goes through Twilio Notify, one
+# The send path, the receipts and the recheck. Every text goes through the
+# Messaging Service with the Messages API. SmsService.broadcast, one Notify
 # notification per service in TwilioServiceId with the numbers shared out
-# between them, until it moves off before Notify's end of life on 2027-01-31.
-# A single text (a verification code, a new-message alert) already goes
-# through the Messaging Service with the Messages API.
+# between them, has had no caller since broadcasts moved off it, and goes
+# before Notify's end of life on 2027-01-31.
 class SmsServiceTest < ActiveSupport::TestCase
   include FakeTwilioTestHelper
+  include EnvTestHelper
 
   TWO_SERVICES = { "ISservice0001" => "Ranger Alerts", "ISservice0002" => "Ranger News" }.freeze
 
   # A number as Notify takes it.
   def sms_binding(number) = { binding_type: "sms", address: number }.to_json
+
+  # A text the Clubhouse recorded sending this long ago.
+  def text_row(status, sid, sent_ago)
+    BroadcastMessage.create!(person_id: person(:active_ranger).id, address_type: "sms", address: "+14155550101",
+                             direction: "outbound", status:, message_id: sid, created_at: sent_ago.ago)
+  end
 
   test "shares the numbers out across the Notify services, each in E.164" do
     configure_twilio(service_ids: "ISservice0001,ISservice0002")
@@ -95,6 +102,96 @@ class SmsServiceTest < ActiveSupport::TestCase
 
     assert_equal "TwilioMessagingServiceId is not set", error.message
     assert_empty fake.asked
+  end
+
+  test "a text recorded in a row asks Twilio for a receipt at this server's address, the row's id in the query" do
+    configure_twilio
+    fake = FakeTwilioClient.new
+
+    with_fake_twilio(fake) { SmsService.send_text("+14155550101", "Muster at HQ", receipt_for: 42) }
+
+    assert_equal ["https://example.com/infrastructure/sms/status?message=42"], fake.created_texts.pluck(:status_callback)
+  end
+
+  # Asking from an address Twilio cannot reach would raise an 11200 alert on
+  # the live account for every text.
+  test "a server Twilio cannot reach asks for no receipt" do
+    configure_twilio
+    fake = FakeTwilioClient.new
+    original = Rails.application.config.action_mailer.default_url_options
+    Rails.application.config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+
+    with_fake_twilio(fake) { SmsService.send_text("+14155550101", "Muster at HQ", receipt_for: 42) }
+
+    assert_nil SmsService.receipt_address
+    assert_not fake.created_texts.sole.key?(:status_callback)
+  ensure
+    Rails.application.config.action_mailer.default_url_options = original
+  end
+
+  test "a receipt reads as delivered, or why not, and anything earlier as sent" do
+    read = ->(status, error_code = nil) do
+      SmsService.process_status_callback({ MessageSid: "SMabc", MessageStatus: status, ErrorCode: error_code }, "7")
+    end
+
+    assert_equal SmsService::StatusCallback.new(row_id: "7", sid: "SMabc", status: Broadcast::STATUS_DELIVERED),
+                 read.call("delivered")
+    assert_equal [Broadcast::STATUS_BLOCKED, Broadcast::STATUS_BOUNCED, Broadcast::STATUS_BOUNCED, Broadcast::STATUS_FAILED],
+                 [read.call("undelivered", "30004"), read.call("undelivered", "30005"), read.call("failed", "30007"),
+                  read.call("failed", "30008")].map(&:status)
+    assert_equal [Broadcast::STATUS_SENT] * 3, %w[queued sending sent].map { |status| read.call(status).status }
+  end
+
+  test "the recheck asks Twilio about texts waiting 12 hours to 3 days, and moves them as a receipt would" do
+    configure_twilio
+    waiting = text_row(Broadcast::STATUS_SENT, "SMwaiting", 13.hours)
+    code = text_row(Broadcast::STATUS_VERIFY, "SMcode", 1.day)
+    going = text_row(Broadcast::STATUS_SENT, "SMgoing", 20.hours)
+    untouched = [text_row(Broadcast::STATUS_SENT, "SMrecent", 1.hour), text_row(Broadcast::STATUS_SENT, "SMold", 4.days),
+                 text_row(Broadcast::STATUS_DELIVERED, "SMdone", 13.hours), text_row(Broadcast::STATUS_SENT, nil, 13.hours)]
+    fake = FakeTwilioClient.new(sent_texts: { "SMwaiting" => FakeTwilioClient.text(status: "delivered"),
+                                              "SMcode" => FakeTwilioClient.text(status: "undelivered", error_code: 30006),
+                                              "SMgoing" => FakeTwilioClient.text(status: "sent") })
+
+    moved = with_fake_twilio(fake) { SmsService.recheck_unfinished_texts }
+
+    assert_equal 2, moved
+    assert_equal 3, fake.asked.count(:message_fetch), "only the texts in the window still waiting"
+    assert_equal [Broadcast::STATUS_DELIVERED, Broadcast::STATUS_BOUNCED, Broadcast::STATUS_SENT],
+                 [waiting, code, going].map { |row| row.reload.status }
+    assert_equal untouched.map(&:status), untouched.map { |row| row.reload.status }
+  end
+
+  test "the recheck skips a text Twilio no longer has, and stops at a call Twilio does not answer" do
+    configure_twilio
+    gone = text_row(Broadcast::STATUS_SENT, "SMgone", 14.hours)
+    kept = text_row(Broadcast::STATUS_SENT, "SMkept", 13.hours)
+    answers = { "SMkept" => FakeTwilioClient.text(status: "delivered") }
+
+    with_fake_twilio(FakeTwilioClient.new(sent_texts: answers)) { SmsService.recheck_unfinished_texts }
+
+    assert_equal [Broadcast::STATUS_SENT, Broadcast::STATUS_DELIVERED], [gone.reload.status, kept.reload.status]
+
+    kept.update_columns(status: Broadcast::STATUS_SENT)
+    silent = FakeTwilioClient.new(sent_texts: answers, errors: { message_fetch: FakeTwilioClient.read_timeout })
+
+    assert_equal 0, with_fake_twilio(silent) { SmsService.recheck_unfinished_texts }
+    assert_equal 1, silent.asked.count(:message_fetch), "the next run asks again"
+    assert_equal [Broadcast::STATUS_SENT] * 2, [gone.reload.status, kept.reload.status]
+    assert_equal 1, ErrorLog.where(error_type: "sms-recheck-exception").count
+  end
+
+  test "the recheck asks Twilio nothing on the training server" do
+    configure_twilio
+    row = text_row(Broadcast::STATUS_SENT, "SMwaiting", 13.hours)
+    fake = FakeTwilioClient.new(sent_texts: { "SMwaiting" => FakeTwilioClient.text(status: "delivered") })
+
+    with_env("RANGER_CLUBHOUSE_GROUNDHOG_DAY_TIME" => "2025-08-30 12:00") do
+      with_fake_twilio(fake) { SmsService.recheck_unfinished_texts }
+    end
+
+    assert_empty fake.asked
+    assert_equal Broadcast::STATUS_SENT, row.reload.status
   end
 
   # Every test above hands the send its client through

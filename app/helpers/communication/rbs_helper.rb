@@ -269,6 +269,7 @@ module Communication
     # phone asked for.
     MESSAGE_STATUS_LABELS = {
       Broadcast::STATUS_SENT => "Sent",
+      Broadcast::STATUS_DELIVERED => "Delivered",
       Broadcast::STATUS_QUEUED => "Queued",
       Broadcast::STATUS_SERVICE_FAIL => "Delivery failed",
       Broadcast::STATUS_VERIFY => "Confirmation code sent",
@@ -300,13 +301,15 @@ module Communication
       "configuration-set-not-found" => "SES configuration set missing",
       "template-not-found" => "SES template missing",
       "invalid-sending-pool-name" => "SES sending pool missing",
-      Broadcast::STATUS_FAILED => "SES failure",
+      # Any other reason SES gives, or a text Twilio says it could not deliver.
+      Broadcast::STATUS_FAILED => "Not delivered",
       # SES's or Twilio's: the call may have gone through, and no answer came.
       Broadcast::STATUS_SEND_UNCONFIRMED => "May have been sent"
     }.freeze
 
     MESSAGE_STATUS_VARIANTS = {
       Broadcast::STATUS_SENT => :success,
+      Broadcast::STATUS_DELIVERED => :success,
       Broadcast::STATUS_REPLY => :success,
       Broadcast::STATUS_START => :success,
       Broadcast::STATUS_BOUNCED => :error,
@@ -327,10 +330,10 @@ module Communication
 
     # The outcomes the message log can be filtered by, in two groups: what
     # happened to any message, and the reasons a broadcast email did not go --
-    # thirteen of those would bury the rest in one list. A text can be
-    # send-unconfirmed too, so that one sits with the first group.
+    # twelve of those would bury the rest in one list. A text can be
+    # send-unconfirmed or failed too, so those two sit with the first group.
     def rbs_message_status_options(email_failures: false)
-      statuses = Broadcast::EMAIL_FAIL_STATUSES - [Broadcast::STATUS_SEND_UNCONFIRMED]
+      statuses = Broadcast::EMAIL_FAIL_STATUSES - [Broadcast::STATUS_SEND_UNCONFIRMED, Broadcast::STATUS_FAILED]
       statuses = Broadcast::MESSAGE_STATUSES - statuses unless email_failures
 
       statuses.map { |status| [status, rbs_message_status_label(status)] }
@@ -479,8 +482,9 @@ module Communication
     end
 
     # What was recorded for one person on one channel, from a broadcast that has
-    # already been sent. A bounced email looks like a failure here -- it did
-    # not arrive -- though it is not counted as one.
+    # already been sent. A bounced email, or a text Twilio reported bounced or
+    # blocked, looks like a failure here -- it did not arrive -- though it is not
+    # counted as one.
     #
     # A no-contact row with a blank address reads "no address", as the review
     # and sent pages called that person; with an address, "opted out". The rule
@@ -491,9 +495,9 @@ module Communication
       return tag.span("—", class: "text-stone-subtle") if entry.nil?
 
       case entry[:status]
-      when Broadcast::STATUS_SENT
-        safe_join([fa_icon("check", :solid, class: "icon-success"), " sent"])
-      when *Broadcast::FAILURE_STATUSES, Broadcast::STATUS_BOUNCED
+      when Broadcast::STATUS_SENT, Broadcast::STATUS_DELIVERED
+        safe_join([fa_icon("check", :solid, class: "icon-success"), " #{entry[:status]}"])
+      when *Broadcast::FAILURE_STATUSES, Broadcast::STATUS_BOUNCED, Broadcast::STATUS_BLOCKED
         word = (entry[:status] == Broadcast::STATUS_SERVICE_FAIL) ? "failed" : rbs_message_status_label(entry[:status])
         tag.span(safe_join([fa_icon("triangle-exclamation", :solid), " ", word]), class: "text-error")
       else

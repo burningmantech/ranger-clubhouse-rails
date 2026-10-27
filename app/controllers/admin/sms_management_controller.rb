@@ -22,7 +22,11 @@ class Admin::SmsManagementController < ApplicationController
 
   def index
     respond_to do |format|
-      format.html { @settings = TwilioAccount.settings }
+      format.html do
+        @settings = TwilioAccount.settings
+        @receipt_address = SmsService.receipt_address
+        @last_receipt_at = BroadcastMessage.last_text_receipt_at if @receipt_address
+      end
       format.csv { export }
     end
   end
