@@ -128,8 +128,8 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
 
     assert_response :success
     assert_select "lexxy-editor[name=?]", "document[body]"
-    # Members read it from their Operational Summary (Me::TeamDocumentsController).
-    assert_match "members read what you write here, from their Operational Summary.", response.body
+    # Members read it from their Operational Summary and Agreements pages (Me::TeamDocumentsController).
+    assert_match "members read what you write here, from their Operational Summary and Agreements pages.", response.body
     assert_match "renaming the team does not change them", response.body
   end
 

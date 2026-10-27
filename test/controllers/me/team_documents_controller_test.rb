@@ -4,6 +4,7 @@ require "test_helper"
 
 class Me::TeamDocumentsControllerTest < ActionDispatch::IntegrationTest
   include AuthenticationTestHelper
+  include TeamDocumentTestHelper
 
   setup do
     @person = person(:active_ranger)
@@ -12,14 +13,8 @@ class Me::TeamDocumentsControllerTest < ActionDispatch::IntegrationTest
     @team = teams(:khaki_team)
   end
 
-  def publish_document(team, body: "<p>Khaki hands out the radios.</p>")
-    team.update_column(:resource_tag, "#{team.title.parameterize}-resources")
-    Document.create!(tag: team.resource_tag, description: "#{team.title} Resources", body:,
-                     person_create_id: @person.id, person_update_id: @person.id)
-  end
-
   test "a member reads their team's document" do
-    publish_document(@team, body: "<p>Khaki hands out the radios.</p><script>alert(1)</script>")
+    publish_team_document(@team, body: "<p>Khaki hands out the radios.</p><script>alert(1)</script>")
 
     get me_team_document_path(@team)
 
@@ -30,7 +25,7 @@ class Me::TeamDocumentsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a team the person is not on is not found" do
-    publish_document(teams(:dirt_team))
+    publish_team_document(teams(:dirt_team))
 
     get me_team_document_path(teams(:dirt_team))
 
@@ -58,9 +53,8 @@ class Me::TeamDocumentsControllerTest < ActionDispatch::IntegrationTest
   # a bookmark- page anyone can read without signing in -- is never served as one
   # (Document.resource_tag, as Team Resources follows it).
   test "a tag no team document may have reads as no document" do
-    @team.update_column(:resource_tag, "#{Document::BOOKMARK_TAG_PREFIX}khaki")
-    Document.create!(tag: @team.resource_tag, description: "Khaki Bookmark", body: "<p>Not for members.</p>",
-                     person_create_id: @person.id, person_update_id: @person.id)
+    publish_team_document(@team, tag: "#{Document::BOOKMARK_TAG_PREFIX}khaki", description: "Khaki Bookmark",
+                                 body: "<p>Not for members.</p>")
 
     get me_team_document_path(@team)
 
@@ -72,12 +66,28 @@ class Me::TeamDocumentsControllerTest < ActionDispatch::IntegrationTest
   test "the operational summary links only the teams that have a document" do
     # PersonEventInfo looks the In-Person Training position up by id.
     Position.create!(id: Position::TRAINING, title: "Training", type: Position::TYPE_TRAINING, active: true)
-    publish_document(@team)
+    publish_team_document(@team)
 
     get me_operational_summary_path
 
     assert_response :success
     assert_select "a[href=?]", me_team_document_path(@team), text: /View Team Document/
     assert_select "a[href=?]", me_team_document_path(teams(:council_cadre)), count: 0
+  end
+
+  # The sidebar links both pages, so look inside the hero section.
+  test "reached from Agreements, the page goes back there" do
+    get me_team_document_path(@team, from: "agreements")
+
+    assert_response :success
+    assert_select "section[aria-labelledby=team-document-header] a[href=?]", me_agreements_path, text: /Agreements/
+    assert_select "section[aria-labelledby=team-document-header] a[href=?]", me_operational_summary_path, count: 0
+  end
+
+  test "the page goes back to Operational Summary unless Agreements sent the reader" do
+    get me_team_document_path(@team, from: "elsewhere")
+
+    assert_response :success
+    assert_select "section[aria-labelledby=team-document-header] a[href=?]", me_operational_summary_path, text: /Operational Summary/
   end
 end

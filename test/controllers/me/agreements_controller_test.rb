@@ -4,6 +4,7 @@ require "test_helper"
 
 class Me::AgreementsControllerTest < ActionDispatch::IntegrationTest
   include AuthenticationTestHelper
+  include TeamDocumentTestHelper
 
   TAG = Document::BEHAVIORAL_STANDARDS_AGREEMENT_TAG
 
@@ -80,5 +81,29 @@ class Me::AgreementsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to me_agreements_path
     assert_equal "Agreement is not available at this time.", flash[:error]
+  end
+
+  # Ranger Team Info Documents: the one document each of the person's teams publishes,
+  # read on Me › Team Document. person_team.yml puts active_ranger on khaki_team,
+  # council_cadre and mentor_cadre.
+  test "index links the documents the person's teams publish, without their bodies" do
+    publish_team_document(teams(:khaki_team), body: "<p>Only on the reader.</p>")
+
+    get me_agreements_path
+
+    assert_response :success
+    assert_match "Ranger Team Info Documents", response.body
+    assert_select "a[href=?][aria-label=?]", me_team_document_path(teams(:khaki_team), from: "agreements"),
+                  "View Document: Khaki Delegation", text: /Khaki Delegation/
+    assert_select "a[href=?]", me_team_document_path(teams(:council_cadre), from: "agreements"), count: 0
+    # The Mentor team's document runs to megabytes: the list names it and never selects its body.
+    assert_no_match "Only on the reader.", response.body
+  end
+
+  test "index shows no team block when no team has published a document" do
+    get me_agreements_path
+
+    assert_response :success
+    assert_no_match "Ranger Team Info Documents", response.body
   end
 end

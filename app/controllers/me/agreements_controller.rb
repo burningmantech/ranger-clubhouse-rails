@@ -10,6 +10,11 @@ class Me::AgreementsController < ApplicationController
     @signed_count = @agreements.count(&:signed)
     @total_count = @agreements.size
     @pending_count = @agreements.count { |a| a.available && !a.signed }
+    # The teams that publish a document, read on Me › Team Document. Never a body
+    # (Document.listed_by_pointer).
+    teams = current_user.team.order(:title)
+    published = Document.listed_by_pointer(teams.map(&:resource_tag))
+    @publishing_teams = teams.select { |team| published.key?(team.resource_tag) }
   end
 
   def show

@@ -18,5 +18,9 @@ class Me::TeamDocumentsController < ApplicationController
     @team = current_user.team.find(params.expect(:id))
     tag = Document.resource_tag(@team.resource_tag)
     @document = Document.find_by(tag:) if tag
+    # Reached from Operational Summary or from Me › Agreements, and returned only to
+    # one of those two: `from` is a whitelist, never the referer.
+    @back_to = params[:from] == "agreements" ? ["Agreements", me_agreements_path]
+                                             : ["Operational Summary", me_operational_summary_path]
   end
 end

@@ -111,6 +111,8 @@ class Document < ApplicationRecord
     # @return [Hash{String => Document}]
     def listed_by_pointer(pointers)
       tags = pointers.uniq.to_h { |pointer| [pointer, resource_tag(pointer)] }.compact
+      return {} if tags.empty?
+
       found = where(tag: tags.values.uniq).includes(:person_update).select(LIST_COLUMNS)
                                           .index_by { |document| document.tag.downcase }
       tags.transform_values { |tag| found[tag.downcase] }.compact

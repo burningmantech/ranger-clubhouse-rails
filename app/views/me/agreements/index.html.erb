@@ -62,3 +62,18 @@
     </p>
   </div>
 <% end %>
+
+<% if @publishing_teams.any? %>
+  <%# Ember me/agreements "Ranger Team Info Documents"; each team's document is read on Me › Team Document. %>
+  <%= ui_section "Ranger Team Info Documents", icon: "people-group", icon_type: :solid do %>
+    <p class="mb-3">
+      Each Ranger team you belong to may publish a general info document about its volunteering.
+      Your team may also keep extra documents on its Google Drive (or similar).
+    </p>
+    <% @publishing_teams.each do |team| %>
+      <%= ui_drill_down_row me_team_document_path(team, from: "agreements"),
+                            safe_join([fa_icon("file-lines", :solid, { end: 2, class: "text-stone-subtle" }), team.title]),
+                            aria: { label: "View Document: #{team.title}" } %>
+    <% end %>
+  <% end %>
+<% end %>

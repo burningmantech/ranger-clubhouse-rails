@@ -719,13 +719,14 @@ Trap: `Me::PasswordResetController` (`GET`/`POST /me/profile/password-reset`) ha
 Trap: `update`'s `current_user.save!` runs every `Person` validation, so a record failing an unrelated one (blank `home_phone`, missing address) raises an unrescued `ActiveRecord::RecordInvalid`, not a form error.
 
 ### Me › Agreements
-Reach it: `GET /me/agreements` → My Clubhouse › Pre-Event › Agreements; read `GET /me/agreements/:id` (`:id` = document tag); sign `PATCH /me/agreements/:id/sign`
+Reach it: `GET /me/agreements` → My Clubhouse › Pre-Event › Agreements; read `GET /me/agreements/:id` (`:id` = document tag); sign `PATCH /me/agreements/:id/sign`; a team's row under Ranger Team Info Documents → `GET /me/teams/:id/document?from=agreements` (Me › Team Document)
 Gate: any signed-in person; `find_agreement` refuses a tag that is unknown, not `available`, or has no `Document` (menu: Pre-Event hidden for `is_auditor?`)
 Controller: `app/controllers/me/agreements_controller.rb` (`index`, `show`, `sign`)
-Owner: `Agreements` (`app/lib/agreements.rb`), `Document` (`app/models/document.rb`), `PersonEvent` (`app/models/person_event.rb`)
-Touches: `person_event` (w), `person` (w), `action_logs` (w), `document`, `setting`, `slot`
+Owner: `Agreements` (`app/lib/agreements.rb`), `Document` (`app/models/document.rb`; `listed_by_pointer` for the team documents block), `PersonEvent` (`app/models/person_event.rb`), `Team#resource_tag`
+Touches: `person_event` (w), `person` (w), `action_logs` (w), `document`, `setting`, `slot`, `team`, `person_team`
 Verify: `test/controllers/me/agreements_controller_test.rb`, `test/lib/agreements_test.rb`, `test/lib/role_manager_test.rb`
 Trap: `RoleManager` strips every role from an Event Management holder until the dept NDA is signed (then `sign_agreement` calls `PersonRole.clear_cache`) — the NDA is listed and signable only for a raw holder (`Agreements::DOCUMENTS[:role]`, checked in `is_document_visible?` and `can_sign_document?`), so test it with `has_raw_role?(Role::EVENT_MANAGEMENT)`, never `has_role?`.
+Trap: Ranger Team Info Documents (`@publishing_teams`, shown only when one of the person's teams publishes) lists through `Document.listed_by_pointer` — `LIST_COLUMNS` only, never `document.body` (see Me › Team Document).
 
 ### Me › Service Recognition (awards)
 Reach it: `GET /me/awards` → My Clubhouse › Profile & Recognition › Service Recognition
@@ -805,13 +806,14 @@ Verify: `test/controllers/me/team_documents_controller_test.rb` (the Teams & Pos
 Trap: `PersonEventInfo.find_for_person_year` assumes `Position::TRAINING` is among the person's training positions: with none it `Position.find`s that row (unfixtured; tests must create it), and with only an ART one `delete_at(nil)` raises TypeError.
 
 ### Me › Team Document
-Reach it: `GET /me/teams/:id/document` ← "View Team Document" under a team in Operational Summary › Teams & Positions (`:id` = team id); no menu entry
+Reach it: `GET /me/teams/:id/document` ← "View Team Document" under a team in Operational Summary › Teams & Positions, or a team's row (`ui_drill_down_row`) under Ranger Team Info Documents on Me › Agreements (`?from=agreements`) (`:id` = team id); no menu entry
 Gate: membership only — the team is found through the person's own `person_team` rows, so a team they are not on is a 404; no role and no team-manager check (writing it is Teams & Positions › Team Resources)
 Controller: `app/controllers/me/team_documents_controller.rb` (`show`)
 Owner: `Document.resource_tag` / `Document.listed_by_pointer` (`app/models/document.rb`), `Team#resource_tag`
 Touches: `team`, `person_team`, `document`
-Verify: `test/controllers/me/team_documents_controller_test.rb`
-Trap: The body is read only here — Operational Summary lists which teams have one through `Document.listed_by_pointer` (`@team_documents`, keyed by the team's pointer, `LIST_COLUMNS` only) and never selects `document.body`, which runs to megabytes for the Mentor team; keep any list that way.
+Verify: `test/controllers/me/team_documents_controller_test.rb`, `test/controllers/me/agreements_controller_test.rb` (the Ranger Team Info Documents block)
+Trap: `from` is a whitelist: `agreements` backs the hero to Me › Agreements, anything else to Operational Summary — never the referer.
+Trap: The body is read only here — Operational Summary and Me › Agreements list which teams have one through `Document.listed_by_pointer` (`@team_documents`, keyed by the team's pointer, `LIST_COLUMNS` only) and never selects `document.body`, which runs to megabytes for the Mentor team; keep any list that way.
 Trap: `show` renders `rich_text(@document.body)`, cleaned on the way out as well as in (`ResourceDocumentCrudConcern#submitted_body`): the team documents written through Clubhouse 2 never passed this app's editor. Never print it `html_safe`. The tag is followed only through `Document.resource_tag` (see Team Resources), so a `bookmark-` or `Document::*_TAG` pointer reads as no document.
 
 ### Me › Event Summary
@@ -2523,7 +2525,7 @@ Verify: `test/controllers/teams_positions/team_resources_controller_test.rb`, `t
 Trap: A team's `resource_tag` is typed in Team Records, so it is followed only through `Document.resource_tag`: stripped, never a `Document::*_TAG` document or a `bookmark-` page, never a tag no document could have. A pointer that fails gives way to `build_resource_tag` on the first save (which repoints the team), and the read page says so. Look tags up through it, or `Document.listed_by_pointer` for a list: the column compares without case and trailing spaces, a Ruby hash does not.
 Trap: `include ResourceDocumentCrudConcern` sits below the controller's gates only so their messages answer first; `resource_entity` is a memoized lookup, so the concern's own gate works wherever it runs. An Admin who asks for a missing team is sent to the index ("That team no longer exists."); anyone else is not told whether it exists.
 Trap: The index looks documents up with `Document::LIST_COLUMNS` — never select `document.body` on a list: the Mentor Team document runs to megabytes (dev, 2026-10-26).
-Trap: `Team.resource_manageable_by` is not the roster rule (`Team.manageable_by` admits Tech Ninja to every team); members read their team's document on Me › Team Document, reached from Operational Summary › Teams & Positions (`Me::TeamDocumentsController`, membership only), and the editor says so.
+Trap: `Team.resource_manageable_by` is not the roster rule (`Team.manageable_by` admits Tech Ninja to every team); members read their team's document on Me › Team Document, reached from Operational Summary › Teams & Positions or Me › Agreements (`Me::TeamDocumentsController`, membership only), and the editor says so.
 
 ### Bulk Position Grant / Revoke
 Reach it: `GET /teams-positions/bulk-positions` → Teams & Positions › Teams & Positions Menu › Bulk Position Grant / Revoke; preview `POST /teams-positions/bulk-positions/preview`; apply `POST /teams-positions/bulk-positions`; back to edit `POST /teams-positions/bulk-positions/edit`
