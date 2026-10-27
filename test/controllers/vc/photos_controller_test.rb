@@ -79,6 +79,12 @@ class Vc::PhotosControllerTest < ActionDispatch::IntegrationTest
     get vc_photos_path(page: "banana")
     assert_response :success
 
+    get "/vc/photos?page[]=2"
+    assert_response :success
+
+    get "/vc/photos?page[x]=1"
+    assert_response :success
+
     get vc_photos_path(page: 99)
     assert_response :success
     assert_match "Page 99 of 1", response.body

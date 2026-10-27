@@ -594,6 +594,16 @@ class People::SearchControllerTest < ActionDispatch::IntegrationTest
     assert_no_card_question DATES_QUESTION
   end
 
+  test "paged results keep their pager a navigation landmark" do
+    2.times { |n| create_person("Landmark#{n}", status: Person::ACTIVE) }
+
+    stub_const(People::SearchController, :PAGE_SIZE, 1) do
+      get people_search_path, params: { filter: { statuses: [Person::ACTIVE] } }
+    end
+
+    assert_select "[role=navigation][aria-label='Result pages']", text: /Page 1 of 2 · 2 people/
+  end
+
   # ---------------------------------------------------------------- status vocabulary
 
   test "a non-norm status renders as a badge while active stays plain text" do

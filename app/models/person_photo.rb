@@ -121,7 +121,8 @@ class PersonPhoto < ApplicationRecord
       include_rejects = params[:include_rejects]
       sort = params[:sort] || ""
 
-      page = [(params[:page] || 1).to_i, 1].max
+      # to_s first: a page[] param arrives as an Array, which has no to_i.
+      page = [params[:page].to_s.to_i, 1].max
       page_size = (params[:page_size] || 100).to_i
 
       query = joins(:person)

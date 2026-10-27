@@ -50,8 +50,10 @@ class Admin::SmsManagementController < ApplicationController
   # Looks a phone number up with Twilio's Lookup v2, or a callsign's number on
   # file, into the page's Look Up a Number frame. The line type is billed, so
   # it is asked for only when its box is ticked. Never on the Groundhog Day
-  # Server, which asks Twilio nothing. The answer renders from the POST at
-  # 422, as a transient POST result does: Turbo drops a 200 answer to a form.
+  # Server, which asks Twilio nothing. The answer is a 200, never the house
+  # 422: the form posts inside its frame, which takes a 200, and RequestLogger
+  # keeps a 422's parameters and page in request_log, which Admins without
+  # Tech Ninja can read (as on Salesforce Query).
   def lookup
     query = params.expect(sms_lookup: [:number, :line_type])
     @typed = query[:number].to_s
@@ -62,7 +64,7 @@ class Admin::SmsManagementController < ApplicationController
       @answer = result[:answer]
       @problem ||= result[:problem]
     end
-    render layout: false, status: :unprocessable_entity
+    render layout: false
   end
 
   # Points every incoming text at another address, starting with the next

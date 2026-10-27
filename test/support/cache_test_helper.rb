@@ -10,9 +10,9 @@
 # no-op, and removing the method again leaves no reader at all. That made test
 # results depend on which file ran first.
 module CacheTestHelper
-  def with_cache_store
+  def with_cache_store(store = ActiveSupport::Cache::MemoryStore.new)
     original = Rails.cache
-    Rails.cache = ActiveSupport::Cache::MemoryStore.new
+    Rails.cache = store
     yield Rails.cache
   ensure
     Rails.cache = original

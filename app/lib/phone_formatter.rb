@@ -47,7 +47,8 @@ module PhoneFormatter
   # full-width digits from a CJK keyboard are plain ones, every dash (a Japanese
   # keyboard's "ー" too) is "-", invisible characters from a paste are gone, and
   # any extension is off. Nil when that stretch holds anything but digits and
-  # their punctuation.
+  # their punctuation. Public for TwilioLookup, which asks Twilio about numbers
+  # e164 would refuse.
   def self.digits_typed(number)
     number = number.to_s.unicode_normalize(:nfkc)
                    .gsub(/[\p{Cf}\p{Mn}]/, "")
@@ -75,5 +76,5 @@ module PhoneFormatter
 
     whole.e164 if typed.explicit_international_prefix? || whole.e164.start_with?("+#{data[:country_code]}")
   end
-  private_class_method :digits_typed, :reading
+  private_class_method :reading
 end

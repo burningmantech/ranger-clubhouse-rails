@@ -184,7 +184,8 @@
       <% end %>
 
       <% if paged %>
-        <%= ui_pager(@pagy, noun: "person", class: "my-4") { |page| people_search_path(filter: @filter, confirmed: @confirmed, page:) } %>
+        <%# A landmark, as the pager has always been here: screen readers jump to it. %>
+        <%= ui_pager(@pagy, noun: "person", class: "my-4", role: "navigation", aria: { label: "Result pages" }) { |page| people_search_path(filter: @filter, confirmed: @confirmed, page:) } %>
       <% end %>
     <% end %>
   <% end %>

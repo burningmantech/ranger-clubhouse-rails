@@ -170,9 +170,26 @@ module Admin::SmsManagementHelper
   def sms_lookup_validity(answer)
     return ui_badge("Valid", :success, icon: "circle-check", icon_type: :solid) if answer.valid
 
-    reasons = answer.validation_errors.map { |code| LOOKUP_VALIDATION_ERRORS.fetch(code, code) }
+    reasons = sms_lookup_reasons(answer)
     safe_join([ui_badge("Not valid", :error, icon: "triangle-exclamation", icon_type: :solid),
-               (" #{reasons.to_sentence.upcase_first}." if reasons.any?)])
+               (" #{reasons.upcase_first}." if reasons.present?)])
+  end
+
+  # What a lookup found, in one sentence for the layout's #live-region, so a
+  # screen reader hears it while focus is back on the field: the problem, or
+  # the number and whether it is valid. Nil before any lookup.
+  def sms_lookup_announcement(problem, answer)
+    return sms_mask_sids(problem) if problem
+    return unless answer
+    return "#{answer.number} is valid." if answer.valid
+
+    reasons = sms_lookup_reasons(answer)
+    reasons.present? ? "#{answer.number} is not valid: #{reasons}." : "#{answer.number} is not valid."
+  end
+
+  # Why Lookup found a number not valid, in words: "it is too short".
+  def sms_lookup_reasons(answer)
+    answer.validation_errors.map { |code| LOOKUP_VALIDATION_ERRORS.fetch(code, code) }.to_sentence
   end
 
   # A number's line type and carrier, as Lookup gave them -- or why it gave

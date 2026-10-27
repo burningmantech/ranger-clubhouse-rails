@@ -1,12 +1,17 @@
 <%# locals: (typed: "", line_type: false, problem: nil, answer: nil) %>
 <%# The Look Up a Number frame: the form, and once it is sent what Twilio said.
-    The Groundhog Day Server asks Twilio nothing, so it offers no form. %>
+    The Groundhog Day Server asks Twilio nothing, so it offers no form. After a
+    lookup the field has focus again and what was found is read out through
+    the layout's #live-region (a stream the frame runs as it lands). The
+    billed box always comes back unticked: each lookup opts in on its own. %>
 <%= turbo_frame_tag "sms-lookup" do %>
   <% if Current.is_ghd_server? %>
     <%= ui_callout_box :info do %>
       Live Twilio lookups are not available on the Groundhog Day Server.
     <% end %>
   <% else %>
+    <% announcement = sms_lookup_announcement(problem, answer) %>
+    <%= turbo_stream.update("live-region", announcement) if announcement %>
     <% if problem %>
       <%= ui_callout_box :error do %><%= sms_mask_sids(problem) %><% end %>
     <% end %>
@@ -25,9 +30,8 @@
     <%= ui_form(nil, admin_sms_management_lookup_path, scope: :sms_lookup, method: :post, class: "mt-4",
                 no_error_summary: true) do |f| %>
       <%= f.text_field :number, label: "Phone Number or Callsign", value: typed, required: true, maxlength: 64,
-                                width: "w-full sm:w-64" %>
-      <%= f.check_box :line_type, label: "Also look up the line type and carrier, which Twilio bills for each lookup",
-                                  checked: line_type %>
+                                width: "w-full sm:w-64", autofocus: announcement.present? %>
+      <%= f.check_box :line_type, label: "Also look up the line type and carrier, which Twilio bills for each lookup" %>
       <%= button_row class: "mt-3" do %>
         <%= f.submit "Look Up Number" %>
       <% end %>

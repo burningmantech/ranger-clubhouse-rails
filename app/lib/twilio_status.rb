@@ -14,8 +14,8 @@
 # The answers are cached for CACHE_FOR, keyed by the settings they were asked
 # with, so a corrected setting is asked about at once. A read missing an answer
 # Twilio never gave is not cached, so the next look asks again. A request that
-# finds the cache empty while another is already reading waits for that answer
-# rather than asking Twilio a second time.
+# finds the cache empty while another is already reading waits for that answer,
+# as long as the other's lock lasts, rather than asking Twilio a second time.
 class TwilioStatus
   CACHE_FOR = 5.minutes
   # Part of the cache key. Bump it whenever what read returns changes shape,
@@ -25,8 +25,8 @@ class TwilioStatus
   # One page of Twilio's message list. Past it the counts are a sample.
   MESSAGE_LIMIT = 1_000
   ALERT_LIMIT = 20
-  # The lock a cold read takes, an add-only write that Solid Cache and the
-  # memory store both honour, held at most this long should its reader die.
+  # The lock a cold read takes, held at most this long should its reader die;
+  # the longest another request waits on it.
   LOCK_FOR = 30.seconds
   # How often a request waiting for another's answer looks for it.
   WAIT_STEP = 0.2
@@ -49,8 +49,10 @@ class TwilioStatus
       cached = Rails.cache.read(key)
       return cached if cached
 
-      locked = Rails.cache.write(lock, true, unless_exist: true, expires_in: LOCK_FOR)
-      cached = awaited(key, lock) unless locked
+      owner = take_lock(lock)
+      # The lock's last holder may have cached its answer and let go since
+      # the read above, so a request that took the lock looks once more.
+      cached = owner ? shared_read(key) : awaited(key, lock)
       return cached if cached
     end
 
@@ -59,25 +61,47 @@ class TwilioStatus
     Rails.cache.write(key, status, expires_in: CACHE_FOR) unless reader.missed?
     status
   ensure
-    Rails.cache.delete(lock) if locked
+    # Only while the lock is still this request's: one that outlived LOCK_FOR
+    # may find another request's there.
+    Rails.cache.delete(lock) if owner && shared_read(lock) == owner
+  end
+
+  # The lock for a cold read: a token only this request knows, written only
+  # where no lock is, then read back. Solid Cache's add-only write can answer
+  # true to two requests at once, swallowing the deadlock between them, and
+  # only one token stays. The token, or nil when another request holds it.
+  def self.take_lock(lock)
+    owner = SecureRandom.hex(8)
+    owner if Rails.cache.write(lock, owner, unless_exist: true, expires_in: LOCK_FOR) && shared_read(lock) == owner
   end
 
   # The answer the request holding the lock is reading, once it is cached; nil
   # when that request let the lock go with no answer cached, or wait_limit
-  # passed first, and the waiting request then asks Twilio itself.
+  # passed first, and the waiting request then asks Twilio itself. The lock
+  # is looked at before the answer: its holder caches the answer and then
+  # lets go, so once the lock is gone the answer is there, if it ever will be.
   def self.awaited(key, lock)
     give_up_at = Process.clock_gettime(Process::CLOCK_MONOTONIC) + wait_limit
-    while Process.clock_gettime(Process::CLOCK_MONOTONIC) < give_up_at
-      sleep WAIT_STEP
-      cached = Rails.cache.read(key)
+    loop do
+      return shared_read(key) if shared_read(lock).nil?
+
+      cached = shared_read(key)
       return cached if cached
-      return unless Rails.cache.exist?(lock)
+      return if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= give_up_at
+
+      sleep WAIT_STEP
     end
   end
 
-  # How long a request waits for another's answer: as long as one call to
-  # Twilio may take to answer.
-  def self.wait_limit = TwilioAccount::TIMEOUT
+  # How long a request waits for another's answer: as long as the lock lasts,
+  # since that read is several calls to Twilio, one after another.
+  def self.wait_limit = LOCK_FOR.to_i
+
+  # A read of the cache store itself. The request's local cache -- Solid
+  # Cache's, in production -- keeps what a request first read for the rest of
+  # it, a miss included, so a request waiting on its own copy would never see
+  # another's answer, nor its lock let go.
+  def self.shared_read(key) = Rails.cache.with_local_cache { Rails.cache.read(key) }
 
   def initialize(client)
     @client = client

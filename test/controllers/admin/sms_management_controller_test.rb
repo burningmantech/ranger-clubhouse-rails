@@ -163,7 +163,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
 
     with_fake_twilio(fake) { look_up("(415) 555-0142") }
 
-    assert_response :unprocessable_entity
+    assert_response :success
     assert_equal({ number: "+14155550142" }, fake.params[:lookup], "no fields: the line type is billed")
     assert_select "turbo-frame#sms-lookup dt:contains('Valid') + dd", text: /Valid/
     assert_select "dt:contains('National Format') + dd", text: "(415) 555-0142"
@@ -182,7 +182,38 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     assert_equal "line_type_intelligence", fake.params[:lookup][:fields]
     assert_select "dt:contains('Line Type') + dd",
                   text: /Landline, Pacific Bell\. A landline cannot get texts, so a text to it fails with Twilio error 30006\./
-    assert_select "input[type=checkbox][name='sms_lookup[line_type]'][checked]"
+    # Each lookup opts in on its own: the next one is not billed unasked.
+    assert_select "input[type=checkbox][name='sms_lookup[line_type]']:not([checked])"
+  end
+
+  test "after a lookup the field has focus again, and what was found is read out" do
+    configure_twilio
+    fake = FakeTwilioClient.new(lookups: known("+15551", valid: false, validation_errors: ["TOO_SHORT"]))
+    sign_in_as(@tech_ninja)
+
+    get admin_sms_management_path
+
+    assert_select "input[name='sms_lookup[number]'][autofocus]", 0
+    assert_no_match %r{<turbo-stream[^>]*target="live-region"}, response.body
+
+    with_fake_twilio(fake) { look_up("+15551") }
+
+    assert_select "turbo-frame#sms-lookup input[name='sms_lookup[number]'][autofocus]"
+    assert_match %r{<turbo-stream action="update" target="live-region"><template>\+15551 is not valid: it is too short\.</template>},
+                 response.body
+  end
+
+  test "a lookup is kept out of the request log, which Admins without Tech Ninja read" do
+    Setting.find_or_initialize_by(name: Setting::REQUEST_LOG_ENABLED).update!(value: "true")
+    configure_twilio
+    sign_in_as(@tech_ninja)
+
+    with_fake_twilio(FakeTwilioClient.new(lookups: known("+14155550142"))) { look_up("+14155550142", line_type: true) }
+
+    entry = RequestLog.order(:id).last
+    assert_equal "admin/sms-management/lookup", entry.url, "the lookup was recorded, so the nils below mean something"
+    assert_nil entry.request_payload
+    assert_nil entry.response_payload
   end
 
   test "a number Twilio finds not valid says why, and a Canadian line type explains its error" do

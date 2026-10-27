@@ -208,7 +208,7 @@ class TwilioStatusTest < ActiveSupport::TestCase
   # however the block ends, so no test is left waiting on it.
   def while_another_reads(started, release)
     reader = Thread.new { TwilioStatus.fetch }
-    started.pop
+    started.pop(timeout: 5) or flunk "the reader never began its read"
     yield reader
   ensure
     release << true
@@ -283,5 +283,180 @@ class TwilioStatusTest < ActiveSupport::TestCase
 
     assert_operator taken, :<, TwilioStatus::WAIT_STEP
     assert_equal 1, second.asked.count(:account)
+  end
+
+  test "a request waits on another's read as long as the lock lasts, not one call's timeout" do
+    # A read is several calls to Twilio, one after another.
+    assert_equal TwilioStatus::LOCK_FOR.to_i, TwilioStatus.wait_limit
+  end
+
+  # Solid Cache with its rows in a Hash: production's store, its local cache
+  # included, without the database.
+  class RowlessSolidCache < SolidCache::Store
+    def initialize(...)
+      super
+      @rows = {}
+      @rows_lock = Mutex.new
+    end
+
+    private
+
+    def entry_read(key) = @rows_lock.synchronize { @rows[key] }
+    def entry_delete(key) = @rows_lock.synchronize { !@rows.delete(key).nil? }
+
+    def entry_write(key, payload)
+      @rows_lock.synchronize { @rows[key] = payload }
+      true
+    end
+
+    def entry_lock_and_write(key)
+      @rows_lock.synchronize do
+        value = yield @rows[key]
+        @rows[key] = value if value
+        value
+      end
+    end
+  end
+
+  test "in production's local cache, a waiting request still takes the other's answer" do
+    configure_twilio
+    started = Queue.new
+    release = Queue.new
+    first = stuck_client(started, release)
+    second = FakeTwilioClient.new
+
+    with_cache_store(RowlessSolidCache.new) do |store|
+      with_clients(first, second) do
+        # Each runs as a request does, in a local cache of its own, which
+        # keeps the waiter's first miss for the rest of it.
+        as_request = -> { store.with_local_cache { TwilioStatus.fetch } }
+        reader = Thread.new(&as_request)
+        started.pop(timeout: 5)
+        waiter = Thread.new(&as_request)
+        Thread.pass until waiter.status == "sleep" || !waiter.alive?
+        release << true
+
+        assert_equal reader.value, waiter.value
+      ensure
+        release << true
+        reader&.join(5)
+      end
+    end
+
+    assert_empty second.asked, "the second request asked Twilio nothing"
+  end
+
+  # A memory store that runs a hook when a read misses the answer (never the
+  # lock), so a test can let the reader finish at the worst moment.
+  class MissHookStore < ActiveSupport::Cache::MemoryStore
+    attr_accessor :on_miss
+
+    def read(name, options = nil)
+      super.tap { |value| on_miss&.call if value.nil? && !name.include?("reading") }
+    end
+  end
+
+  test "a request that takes the lock as another lets go still takes that answer" do
+    configure_twilio
+    started = Queue.new
+    release = Queue.new
+    second = FakeTwilioClient.new
+
+    with_cache_store(MissHookStore.new) do |store|
+      with_clients(stuck_client(started, release), second) do
+        while_another_reads(started, release) do |reader|
+          # This request misses the answer; the reader caches it and lets go
+          # before this request tries the lock, which it then takes.
+          store.on_miss = lambda do
+            store.on_miss = nil
+            release << true
+            reader.join
+          end
+          answer = TwilioStatus.fetch
+
+          assert_equal reader.value, answer
+        end
+      end
+    end
+
+    assert_empty second.asked
+  end
+
+  test "a request waiting as the other lets go still takes that answer" do
+    configure_twilio
+    started = Queue.new
+    release = Queue.new
+    second = FakeTwilioClient.new
+
+    with_cache_store(MissHookStore.new) do |store|
+      with_clients(stuck_client(started, release), second) do
+        while_another_reads(started, release) do |reader|
+          # The second miss is the wait's: the reader caches its answer and
+          # lets go just after it, before the wait looks at the lock again.
+          misses = 0
+          store.on_miss = lambda do
+            next unless (misses += 1) == 2
+
+            release << true
+            reader.join
+          end
+          answer = TwilioStatus.fetch
+
+          assert_equal reader.value, answer
+        end
+      end
+    end
+
+    assert_empty second.asked
+  end
+
+  test "a reader whose lock ran out leaves the next request's lock alone" do
+    configure_twilio
+    started = Queue.new
+    release = Queue.new
+
+    with_cache_store do |store|
+      with_clients(stuck_client(started, release)) do
+        while_another_reads(started, release) do |reader|
+          # As if the reader's lock had run out and another request taken one.
+          lock = store.instance_variable_get(:@data).keys.grep(/reading\z/).sole
+          store.write(lock, "another request's")
+          release << true
+          reader.join
+
+          assert_equal "another request's", store.read(lock)
+        end
+      end
+    end
+  end
+
+  # A memory store whose add-only write answers true though the key is there,
+  # as Solid Cache does when it swallows a deadlock between two such writes.
+  class SwallowingStore < ActiveSupport::Cache::MemoryStore
+    def write(name, value, options = nil)
+      options&.dig(:unless_exist) && exist?(name) ? true : super
+    end
+  end
+
+  test "when the store lets two requests take the lock, only the one whose token stayed reads Twilio" do
+    configure_twilio
+    started = Queue.new
+    release = Queue.new
+    first = stuck_client(started, release)
+    second = FakeTwilioClient.new
+
+    with_cache_store(SwallowingStore.new) do
+      with_clients(first, second) do
+        while_another_reads(started, release) do |reader|
+          waiter = Thread.new { TwilioStatus.fetch }
+          Thread.pass until waiter.status == "sleep" || !waiter.alive?
+          release << true
+
+          assert_equal reader.value, waiter.value
+        end
+      end
+    end
+
+    assert_empty second.asked
   end
 end
