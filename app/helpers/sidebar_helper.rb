@@ -56,7 +56,7 @@ module SidebarHelper
   #   :width - drawer width class (default: 'w-65 lg:w-55')
   #
   # Theme options: 'me' (person theme), 'admin' (hq theme), 'default'
-  def sidebar_menu(theme = "me", id: "sidebar-drawer", width: "w-65 lg:w-45", **_options, &block)
+  def sidebar_menu(theme = "me", id: "sidebar-drawer", width: "w-65 lg:w-50", **_options, &block)
     content_for(:sidebar) do
       # z-50 matches the navbar: the mobile drawer is fixed at top:0 and is the
       # later sibling, so it paints over the navbar. At z-40 the navbar covered

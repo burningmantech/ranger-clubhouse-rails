@@ -70,8 +70,8 @@ module Menus
     submenu: true,
     visible_if: { not_status: [:is_auditor?, :past_prospective?] },
     items: [
-      { title: "Agreements", path: :me_agreements_path,
-        description: "Review and sign required agreements" },
+      { title: "Agreements / Documents", path: :me_agreements_path,
+        description: "Review and sign required agreements. View available team resource documents." },
       { title: "Operational Summary", path: :me_operational_summary_path,
         description: "Review your event readiness in one place" },
       { title: "Tickets & Stuff", path: :me_tickets_path,
