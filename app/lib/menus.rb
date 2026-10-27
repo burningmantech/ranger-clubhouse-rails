@@ -954,10 +954,6 @@ module Menus
           { title: "Bulk Team Grant / Revoke", path: :teams_positions_bulk_teams_path, active_prefix: true,
             description: "Grant or revoke team membership — and its member positions — for a pasted list of callsigns",
             visible_if: { computed: :manages_team_roster } },
-          # None of these are year_scoped: the records are not per-event-year.
-          { title: "Team Records", path: :teams_positions_team_records_path, root: true, active_prefix: true,
-            description: "Create and edit teams, cadres, and delegations — flags, role grants, and contacts",
-            visible_if: { roles: [Role::ADMIN, Role::TECH_NINJA] } },
           # Read-only, and like the two reports after it, reached by Event
           # Management on the role alone -- upstream gates the report on that
           # role by itself.
@@ -1002,6 +998,10 @@ module Menus
           { title: "Position Sanity Checker", path: :teams_positions_position_sanity_checker_path,
             active_prefix: true,
             description: "Position, team, and permission grants that contradict each other — and one-click repairs",
+            visible_if: { roles: [Role::ADMIN, Role::TECH_NINJA] } },
+          # None of these are year_scoped: the records are not per-event-year.
+          { title: "Team Records", path: :teams_positions_team_records_path, root: true, active_prefix: true,
+            description: "Create and edit teams, cadres, and delegations — flags, role grants, and contacts",
             visible_if: { roles: [Role::ADMIN, Role::TECH_NINJA] } }
         ]
       }
