@@ -26,7 +26,7 @@ class Communication::RbsMessagesController < ApplicationController
     )
 
     @messages = result[:messages].to_a
-    @meta = result[:meta]
+    @pagy = result[:pagy]
     @inbound_count = BroadcastMessage.for_year(@year).where(direction: "inbound").count
     @unknown_count = BroadcastMessage.for_year(@year).where(status: Broadcast::STATUS_UNKNOWN_PHONE).count
   end

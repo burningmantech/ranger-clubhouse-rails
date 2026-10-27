@@ -148,6 +148,129 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", admin_settings_path(filter: "twilio"), text: /Edit Twilio Settings/
   end
 
+  # ---------------------------------------------------------------- look up a number
+
+  def look_up(number, line_type: false)
+    post admin_sms_management_lookup_path, params: { sms_lookup: { number:, line_type: line_type ? "1" : "0" } }
+  end
+
+  def known(number, **answer) = { number => FakeTwilioClient::Lookup.new(phone_number: number, **answer) }
+
+  test "looking up a number shows what Twilio knows, and asks for no billed line type" do
+    configure_twilio
+    fake = FakeTwilioClient.new(lookups: known("+14155550142", national_format: "(415) 555-0142"))
+    sign_in_as(@tech_ninja)
+
+    with_fake_twilio(fake) { look_up("(415) 555-0142") }
+
+    assert_response :unprocessable_entity
+    assert_equal({ number: "+14155550142" }, fake.params[:lookup], "no fields: the line type is billed")
+    assert_select "turbo-frame#sms-lookup dt:contains('Valid') + dd", text: /Valid/
+    assert_select "dt:contains('National Format') + dd", text: "(415) 555-0142"
+    assert_select "dt:contains('Country') + dd", text: "US"
+    assert_select "dt:contains('Line Type')", 0
+  end
+
+  test "the line type is asked for only with its box ticked, and a landline is explained" do
+    configure_twilio
+    landline = { "type" => "landline", "carrier_name" => "Pacific Bell", "error_code" => nil }
+    fake = FakeTwilioClient.new(lookups: known("+14155550142", line_type_intelligence: landline))
+    sign_in_as(@tech_ninja)
+
+    with_fake_twilio(fake) { look_up("+14155550142", line_type: true) }
+
+    assert_equal "line_type_intelligence", fake.params[:lookup][:fields]
+    assert_select "dt:contains('Line Type') + dd",
+                  text: /Landline, Pacific Bell\. A landline cannot get texts, so a text to it fails with Twilio error 30006\./
+    assert_select "input[type=checkbox][name='sms_lookup[line_type]'][checked]"
+  end
+
+  test "a number Twilio finds not valid says why, and a Canadian line type explains its error" do
+    configure_twilio
+    canadian = { "type" => nil, "carrier_name" => nil, "error_code" => 60601 }
+    fake = FakeTwilioClient.new(lookups: known("+15551", valid: false, validation_errors: ["TOO_SHORT"])
+                                          .merge(known("+16135550142", country_code: "CA", line_type_intelligence: canadian)))
+    sign_in_as(@tech_ninja)
+
+    with_fake_twilio(fake) { look_up("+15551") }
+
+    assert_select "dt:contains('Valid') + dd", text: /Not valid\s+It is too short\./
+
+    with_fake_twilio(fake) { look_up("+16135550142", line_type: true) }
+
+    assert_select "dt:contains('Line Type') + dd", text: /needs NPAC approval \(Twilio error 60601\)/
+  end
+
+  test "a callsign is looked up by its number on file, and refused when it is no one's, two people's, or has none" do
+    configure_twilio
+    @ranger.update_columns(sms_number: "+14155550142")
+    fake = FakeTwilioClient.new(lookups: known("+14155550142"))
+    sign_in_as(@tech_ninja)
+
+    with_fake_twilio(fake) { look_up(@ranger.callsign) }
+
+    assert_equal "+14155550142", fake.params[:lookup][:number]
+
+    [@ranger, @admin].each { |person| person.update_columns(callsign_normalized: "twinpeak") }
+    @outsider.update_columns(sms_number: nil)
+    {
+      "Nobody Here At All" => "No Ranger has the callsign Nobody Here At All.",
+      "TwinPeak" => "TwinPeak could be more than one Ranger: enter the whole callsign, or the number.",
+      @outsider.callsign => "#{@outsider.callsign} has no text number on file.",
+      " " => "Enter a phone number or a callsign."
+    }.each do |typed, refusal|
+      with_fake_twilio(fake) { look_up(typed) }
+
+      assert_select "turbo-frame#sms-lookup .box-error", text: refusal
+    end
+    assert_equal 1, fake.asked.count(:lookup), "a refused callsign asks Twilio nothing"
+  end
+
+  test "a lookup Twilio refuses is explained, with its ids masked" do
+    configure_twilio
+    body = { code: 20404, message: "The requested resource MG0123456789abcdef0123456789abcdef was not found" }.to_json
+    refusal = Twilio::REST::RestError.new("Unable to fetch record", Twilio::Response.new(404, body))
+    sign_in_as(@tech_ninja)
+
+    with_fake_twilio(FakeTwilioClient.new(errors: { lookup: refusal })) { look_up("+14155550142") }
+
+    assert_select ".box-error", text: /Twilio could not look it up: The requested resource MG…cdef was not found \(Twilio error 20404\)\./
+    assert_not_includes response.body, "MG0123456789abcdef0123456789abcdef"
+  end
+
+  test "the training server, or one with no Twilio settings, asks Twilio nothing" do
+    sign_in_as(@tech_ninja)
+    fake = FakeTwilioClient.new(lookups: known("+14155550142"))
+
+    with_fake_twilio(fake) { look_up("+14155550142") }
+
+    assert_select ".box-error", text: "The Clubhouse cannot ask Twilio until the Account SID and Auth Token are set."
+
+    configure_twilio
+    with_env("RANGER_CLUBHOUSE_GROUNDHOG_DAY_TIME" => "2025-08-30 12:00") do
+      with_fake_twilio(fake) { look_up("+14155550142") }
+
+      assert_select "turbo-frame#sms-lookup", text: /Live Twilio lookups are not available on the Groundhog Day Server\./
+      assert_select "turbo-frame#sms-lookup form", 0
+
+      get admin_sms_management_path
+    end
+
+    assert_select "turbo-frame#sms-lookup form", 0
+    assert_empty fake.asked
+  end
+
+  test "an admin without the tech ninja role cannot look a number up" do
+    configure_twilio
+    fake = FakeTwilioClient.new(lookups: known("+14155550142"))
+    sign_in_as(@admin)
+
+    with_fake_twilio(fake) { look_up("+14155550142") }
+
+    assert_redirected_to me_root_path
+    assert_empty fake.asked
+  end
+
   # ---------------------------------------------------------------- the log
 
   test "the log lists Twilio's texts with the person at the Ranger's end" do

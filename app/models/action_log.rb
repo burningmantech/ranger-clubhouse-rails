@@ -13,7 +13,14 @@ class ActionLog < ApplicationRecord
   attr_accessor :browser, :slot, :enrolled_slots, :positions, :position, :roles, :role, :team, :teams
 
   class << self
-    # Retrieve action log records based on the given query criteria.
+    include Pagy::Method
+
+    # Retrieve action log records based on the given query criteria: a page
+    # of them, paged by Pagy's countless mode (a row past the page says whether
+    # another follows), and the total the pager names beside it -- counted, or
+    # estimated from the ids when nothing filters a table of millions of rows.
+    #
+    # @return [Hash] { action_logs:, pagy:, total:, approximate_total: }
     def find_for_query(query = {}, redact_data: false, **query_kwargs)
       query = query.to_h.symbolize_keys.merge(query_kwargs)
 
@@ -83,40 +90,20 @@ class ActionLog < ApplicationRecord
       end
 
       total = calculate_total(scope, all_records)
-
-      return empty_result(page:, page_size:) if total.zero?
+      # Nothing to fetch: the same page, with no query for its rows.
+      scope = scope.none if total.zero?
 
       # Results sort 'asc' or 'desc'
       sort_order = (sort == "asc") ? :asc : :desc
-      scope = scope.order(created_at: sort_order, id: sort_order)
-
-      # Figure out pagination
-      page = [page - 1, 0].max
-
-      has_previous_page = page.positive?
-      scope = scope.offset(page * page_size).limit(page_size + 1)
-
-      # Fetch with associations
-      rows = scope.includes(:person, :target_person).to_a
-      has_next_page = rows.size > page_size
-      rows = rows.first(page_size)
+      scope = scope.order(created_at: sort_order, id: sort_order).includes(:person, :target_person)
+      pagy, rows = pagy(:countless, scope, page: [page, 1].max, limit: page_size, request: { params: {} })
 
       # Batch-load related records, then enrich each row
       lookups = batch_load_lookups(rows)
       rows.each { |row| enrich_row(row, redact_data, lookups) }
 
-      {
-        action_logs: rows,
-        meta: {
-          total: total,
-          total_pages: ((total + page_size - 1) / page_size).to_i,
-          page_size: page_size,
-          page: page + 1,
-          has_previous_page: has_previous_page,
-          has_next_page: has_next_page,
-          approximate_total: all_records
-        }
-      }
+      # An estimate only where the ids gave one: a search for no one has none.
+      { action_logs: rows, pagy:, total:, approximate_total: all_records && total.positive? }
     end
 
     # Record a Clubhouse event
@@ -184,28 +171,14 @@ class ActionLog < ApplicationRecord
     def calculate_total(scope, all_records)
       if all_records
         # select count(*) can be extremely slow for millions of rows,
-        # fudge the total by looking at the first and last ids.
-        first_id = unscoped.order(:id).pick(:id)
-        last_id = unscoped.order(id: :desc).pick(:id)
+        # fudge the total by looking at the first and last ids. Asked of the
+        # scope, not the table, so a search for no one (ActionLog.none) finds none.
+        first_id = scope.reorder(:id).pick(:id)
+        last_id = scope.reorder(id: :desc).pick(:id)
         first_id ? (last_id - first_id) + 1 : 0
       else
         scope.count
       end
-    end
-
-    def empty_result(page: 1, page_size: PAGE_SIZE_DEFAULT)
-      {
-        action_logs: [],
-        meta: {
-          total: 0,
-          total_pages: 0,
-          page_size: page_size,
-          page: [page.to_i, 1].max,
-          has_previous_page: false,
-          has_next_page: false,
-          approximate_total: false
-        }
-      }
     end
 
     # Collect all referenced IDs from rows' data and batch-query them.

@@ -35,7 +35,7 @@
 <%= filter_bar id: "job-filters",
                chips: job_filter_chips(@form),
                clear_url: admin_jobs_path,
-               count: "Showing #{@jobs.size} of #{pluralize(@meta[:total], "job")}",
+               count: "Showing #{@jobs.size} of #{pluralize(@pagy.count, "job")}",
                actions: job_bulk_actions(@counts["failed"]),
                url: admin_jobs_path, model: @form, scope: JobFilterForm::PARAM_SCOPE do |f| %>
   <%= form_row do %>
@@ -65,7 +65,7 @@
                          icon: "list-check", icon_type: :solid %>
     <% end %>
   <% else %>
-    <% pager = ui_pager(@meta, noun: "job") { |page| admin_jobs_path(@form.query_params(page:)) } %>
+    <% pager = ui_pager(@pagy, noun: "job") { |page| admin_jobs_path(@form.query_params(page:)) } %>
     <div class="mb-3">
       <%= pager %>
     </div>

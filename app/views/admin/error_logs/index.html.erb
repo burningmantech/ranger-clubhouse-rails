@@ -37,7 +37,7 @@
 <% end %>
 
 <%= ui_section "Error Log Entries", icon: "table-list", icon_type: :solid do %>
-  <% pager = ui_pager(@meta, summary: error_log_pager_summary(@meta)) { |page| admin_error_logs_path(@form.query_params(page:)) } %>
+  <% pager = ui_pager(@pagy, summary: error_log_pager_summary(@pagy)) { |page| admin_error_logs_path(@form.query_params(page:)) } %>
   <% if @error_logs.empty? %>
     <%= ui_empty_state "No error log entries matched the current filters.", icon: "magnifying-glass", icon_type: :solid %>
   <% else %>

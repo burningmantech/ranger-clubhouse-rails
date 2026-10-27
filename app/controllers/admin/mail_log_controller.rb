@@ -20,7 +20,7 @@ class Admin::MailLogController < ApplicationController
     # Pagy returns a lazy relation; load it so the view's .any? doesn't issue
     # an extra query.
     @logs = result[:mail_log].to_a
-    @meta = result[:meta]
+    @pagy = result[:pagy]
     @stats = MailLog.retrieve_stats(nil)
   end
 

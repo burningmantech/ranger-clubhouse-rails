@@ -36,8 +36,8 @@ module Admin::Clubhouse1LogHelper
   # matched nothing, a page past the last entry, or simply a log with no
   # entries at all. Saying "no entries matched the filters" when none were set
   # sends the reader looking for a filter to clear.
-  def clubhouse1_log_empty_message(form, meta)
-    return "There is nothing on page #{meta[:page]}. The entries run out before it." if meta[:page] > 1
+  def clubhouse1_log_empty_message(form, pagy)
+    return "There is nothing on page #{pagy.page}. The entries run out before it." if pagy.page > 1
     return "No entries matched the current filters." if form.query_params.any?
 
     "The Clubhouse 1 Log holds no entries."

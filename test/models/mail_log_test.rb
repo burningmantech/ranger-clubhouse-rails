@@ -30,7 +30,7 @@ class MailLogTest < ActiveSupport::TestCase
     combinations.each do |query|
       result = MailLog.find_for_query(query.merge(page: 1))
 
-      assert_equal 1, result[:meta][:total], "expected a match for #{query.keys.join(' + ')}"
+      assert_equal 1, result[:pagy].count, "expected a match for #{query.keys.join(' + ')}"
     end
   end
 
@@ -42,7 +42,7 @@ class MailLogTest < ActiveSupport::TestCase
 
     result = MailLog.find_for_query(subject: "muster", page: 1)
 
-    assert_equal 1, result[:meta][:total]
+    assert_equal 1, result[:pagy].count
     assert_equal "Burn night muster", result[:mail_log].first.subject
   end
 
@@ -52,7 +52,7 @@ class MailLogTest < ActiveSupport::TestCase
 
     result = MailLog.find_for_query(subject: "100%", page: 1)
 
-    assert_equal 1, result[:meta][:total]
+    assert_equal 1, result[:pagy].count
     assert_equal "100% cotton shirts", result[:mail_log].first.subject
   end
 
@@ -64,7 +64,7 @@ class MailLogTest < ActiveSupport::TestCase
     ["99999999999999999999", ["2"], "abc", "-5", "", nil, 0].each do |value|
       result = MailLog.find_for_query(page: value)
 
-      assert_equal 1, result[:meta][:page], "expected page 1 for #{value.inspect}"
+      assert_equal 1, result[:pagy].page, "expected page 1 for #{value.inspect}"
       assert_equal 1, result[:mail_log].to_a.size, "expected the message for #{value.inspect}"
     end
   end

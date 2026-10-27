@@ -30,6 +30,8 @@ class Clubhouse1Log < ApplicationRecord
   belongs_to :current_person, class_name: "Person", optional: true
 
   class << self
+    include Pagy::Method
+
     # Find log entries matching the given criteria.
     #
     # @param user_person_id [Integer, nil] the person who acted
@@ -41,7 +43,7 @@ class Clubhouse1Log < ApplicationRecord
     # @param sort ["asc", "desc"] oldest or newest first
     # @param page [Integer] page number, 1 or higher
     # @param page_size [Integer] rows per page
-    # @return [Hash] { logs:, meta: { page:, page_size:, has_previous_page:, has_next_page: } }
+    # @return [Array] the page's Pagy (countless) and its rows
     def find_for_query(user_person_id: nil, current_person_id: nil, start_time: nil, end_time: nil,
                        event_prefixes: [], event_text: nil, sort: "desc", page: 1,
                        page_size: PAGE_SIZE_DEFAULT)
@@ -56,9 +58,11 @@ class Clubhouse1Log < ApplicationRecord
       scope = scope.where("occurred <= ?", end_time) if end_time.present?
       scope = scope.where(event_prefix_condition(event_prefixes)) if event_prefixes.present?
       if event_text.present?
-        return empty_result(page:, page_size:) if event_text.match?(FOUR_BYTE_CHARACTER)
-
-        scope = scope.where_like("event", "%#{sanitize_sql_like(event_text)}%")
+        scope = if event_text.match?(FOUR_BYTE_CHARACTER)
+                  scope.none
+                else
+                  scope.where_like("event", "%#{sanitize_sql_like(event_text)}%")
+                end
       end
 
       # The timestamp keeps whole seconds only and the first Clubhouse wrote in
@@ -66,37 +70,16 @@ class Clubhouse1Log < ApplicationRecord
       # undefined, and one row could sit on two pages while another appears on
       # none.
       direction = (sort.to_s == "asc") ? :asc : :desc
-      scope = scope.order(occurred: direction, id: direction)
+      scope = scope.order(occurred: direction, id: direction).includes(:user_person, :current_person)
 
-      # One row past the page is what tells the reader a next page exists. The
-      # `event` column carries no index, so counting the matches would mean a
-      # second scan of all 2.4 million rows for a number the page never shows.
-      rows = scope.offset((page - 1) * page_size)
-                  .limit(page_size + 1)
-                  .includes(:user_person, :current_person)
-                  .to_a
-
-      has_next_page = rows.size > page_size
-
-      {
-        logs: rows.first(page_size),
-        meta: {
-          page:,
-          page_size:,
-          has_previous_page: page > 1,
-          has_next_page:
-        }
-      }
+      # Pagy's countless mode: one row past the page is what tells the reader a
+      # next page exists. The `event` column carries no index, so counting the
+      # matches would mean a second scan of all 2.4 million rows for a number
+      # the page never shows.
+      pagy(:countless, scope, page:, limit: page_size, request: { params: {} })
     end
 
     private
-
-    def empty_result(page:, page_size:)
-      {
-        logs: [],
-        meta: { page:, page_size:, has_previous_page: page > 1, has_next_page: false }
-      }
-    end
 
     # Matches an event beginning with any of the given prefixes.
     #

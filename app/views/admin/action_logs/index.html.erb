@@ -61,10 +61,10 @@
 <% end %>
 
 <%= ui_section "Action Log Entries", icon: "table-list", icon_type: :solid do %>
-  <% pager = ui_pager(@meta, summary: action_log_pager_summary(@meta)) { |page| admin_action_logs_path(@form.query_params(page:)) } %>
+  <% pager = ui_pager(@pagy, summary: action_log_pager_summary(@result)) { |page| admin_action_logs_path(@form.query_params(page:)) } %>
   <% if @action_logs.empty? %>
     <%= ui_empty_state "No Action Log entries matched the current filters.", icon: "magnifying-glass", icon_type: :solid %>
-    <% if @meta[:has_previous_page] %>
+    <% if @pagy.previous %>
       <div class="mt-4">
         <%= pager %>
       </div>

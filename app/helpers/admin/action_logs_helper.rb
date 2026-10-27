@@ -159,11 +159,12 @@ module Admin::ActionLogsHelper
     end
   end
 
-  # The ui_pager line. Unfiltered, the total is estimated from the id range, so
-  # there is no "of N" to promise.
-  def action_log_pager_summary(meta)
-    total_label = meta[:approximate_total] ? "Approximately #{meta[:total]} total records" : "#{meta[:total]} total records"
-    "Page #{meta[:page]} · #{total_label}"
+  # The ui_pager line, from ActionLog.find_for_query's result. Unfiltered, the
+  # total is estimated from the id range, so there is no "of N" to promise.
+  def action_log_pager_summary(result)
+    total = result[:total]
+    total_label = result[:approximate_total] ? "Approximately #{total} total records" : "#{total} total records"
+    "Page #{result[:pagy].page} · #{total_label}"
   end
 
   private

@@ -17,7 +17,7 @@ class Vc::PhotosReviewController < ApplicationController
   def index
     result = PersonPhoto.find_for_query(status: PersonPhoto::SUBMITTED, include_rejects: true)
     @photos = result[:person_photo]
-    @total = result[:meta][:total]
+    @total = result[:pagy].count
   end
 
   def approve

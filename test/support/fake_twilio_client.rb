@@ -5,7 +5,8 @@ require "faraday"
 # A stand-in for Twilio::REST::Client answering what SMS Management asks:
 # the account, its balance, the Notify services, the Messaging Services (which
 # an update changes), the message list (a page at a time, or all at once), one
-# text by its SID (sent_texts, which the recheck fetches) and the alerts, from
+# text by its SID (sent_texts, which the recheck fetches), a number Lookup
+# knows (lookups) and the alerts, from
 # plain values; and what the send path sends: a Notify
 # service's notifications, and texts made with messages.create, each answered
 # with a SID of its own. A part named in errors: raises the error given
@@ -29,6 +30,12 @@ class FakeTwilioClient
   # A text messages.create took: the SID Twilio answers with.
   CreatedText = Data.define(:sid)
   Alert = Data.define(:date_generated, :error_code, :log_level, :alert_text)
+  # A number as Lookup v2 answers it; line_type_intelligence only when asked.
+  Lookup = Data.define(:phone_number, :valid, :national_format, :country_code, :validation_errors,
+                       :line_type_intelligence) do
+    def initialize(phone_number:, valid: true, national_format: nil, country_code: "US", validation_errors: [],
+                   line_type_intelligence: nil) = super
+  end
 
   # One call Twilio would answer: fetch for a record.
   Call = Struct.new(:answer) do
@@ -76,6 +83,19 @@ class FakeTwilioClient
     def update(**params) = client.answer(:messaging_update, params) { client.update_messaging_service(sid, params) }
   end
 
+  # client.lookups.v2: one number at a time, taking only the keyword the
+  # Clubhouse asks with, so a misspelled one fails here as it would there.
+  LookupsV2 = Struct.new(:client) do
+    def v2 = self
+    def phone_numbers(number) = LookupCall.new(client, number)
+  end
+
+  LookupCall = Struct.new(:client, :number) do
+    def fetch(fields: :unset)
+      client.answer(:lookup, { number:, fields: }.reject { |_, value| value == :unset }) { client.lookup_answer(number) }
+    end
+  end
+
   # client.messages: the list the panel counts and the export reads, the
   # pages the log reads, and a text to send.
   MessageList = Struct.new(:client) do
@@ -120,8 +140,10 @@ class FakeTwilioClient
   def initialize(account: MAIN_ACCOUNT, balance: Balance.new("412.37", "USD"),
                  services: { "ISservice0001" => "Ranger Alerts" },
                  messaging_services: { MESSAGING_SERVICE_SID => MessagingService.new(CLUBHOUSE2_INCOMING, "POST", false) },
-                 texts: [], alerts: [], next_page_url: nil, previous_page_url: nil, sent_texts: {}, errors: {})
+                 texts: [], alerts: [], next_page_url: nil, previous_page_url: nil, sent_texts: {}, lookups: {},
+                 errors: {})
     @account = account
+    @lookups = lookups
     @sent_texts = sent_texts
     @balance = balance
     @services = services
@@ -159,6 +181,8 @@ class FakeTwilioClient
     Call.new(-> { answer(:message_fetch, { sid: }) { @sent_texts.fetch(sid) { raise not_found(sid) } } })
   end
   def alerts = AlertList.new(self)
+  def lookups = LookupsV2.new(self)
+  def lookup_answer(number) = @lookups.fetch(number) { raise not_found(number) }
   def alert_rows = @alerts
 
   def notify_service(id) = Service.new(@services.fetch(id) { raise not_found(id) })

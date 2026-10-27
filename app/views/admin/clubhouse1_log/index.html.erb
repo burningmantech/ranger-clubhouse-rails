@@ -75,12 +75,12 @@
 <% end %>
 
 <%= ui_section "Log Entries", icon: "table-list", icon_type: :solid do %>
-  <% pager = ui_pager(@meta, summary: "Page #{@meta[:page]}") { |page| admin_clubhouse1_log_path(@form.query_params(page:)) } %>
+  <% pager = ui_pager(@pagy, summary: "Page #{@pagy.page}") { |page| admin_clubhouse1_log_path(@form.query_params(page:)) } %>
   <% if @logs.empty? %>
-    <%= ui_empty_state clubhouse1_log_empty_message(@form, @meta), icon: "magnifying-glass", icon_type: :solid %>
+    <%= ui_empty_state clubhouse1_log_empty_message(@form, @pagy), icon: "magnifying-glass", icon_type: :solid %>
     <%# A reader who paged past the last entry needs one step back to the start,
         not one Previous click per page they went past. %>
-    <% if @meta[:has_previous_page] %>
+    <% if @pagy.previous %>
       <div class="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <%= pager %>
         <%= button_link "Back to the First Page", :primary, admin_clubhouse1_log_path(@form.query_params) %>

@@ -81,7 +81,7 @@ class PersonPasskey < ApplicationRecord
     #
     # @param added_by_admin [Boolean] only the passkeys an Admin enrolled
     # @param page [Integer]
-    # @return [Hash] { passkeys:, meta: { total:, total_pages:, page: } }
+    # @return [Hash] { passkeys:, pagy: }, the page's Pagy for the pager
     def find_for_list(added_by_admin: false, page: 1)
       scope = includes(:person, :added_by).order(created_at: :desc, id: :desc)
       scope = scope.added_by_an_admin if added_by_admin
@@ -91,7 +91,7 @@ class PersonPasskey < ApplicationRecord
       pagy_instance, records = pagy(:offset, scope, page: page.to_i.clamp(1, last_page), limit: LIST_PAGE_SIZE,
                                                     count: total, request: { params: {} })
 
-      { passkeys: records, meta: { total: pagy_instance.count, total_pages: pagy_instance.pages, page: pagy_instance.page } }
+      { passkeys: records, pagy: pagy_instance }
     end
 
     # The four numbers above that list.

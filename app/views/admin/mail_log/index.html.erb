@@ -54,7 +54,7 @@
 <% end %>
 
 <%= ui_section "Mail Log", icon: "envelope", icon_type: :solid do %>
-  <% pager = ui_pager(@meta, noun: "message") { |page| admin_mail_log_path(@form.query_params(to_page: page)) } %>
+  <% pager = ui_pager(@pagy, noun: "message") { |page| admin_mail_log_path(@form.query_params(to_page: page)) } %>
   <% if @logs.empty? %>
     <% if @form.query_params.any? %>
       <%# The card that says how far back the log goes is closed, and a search past

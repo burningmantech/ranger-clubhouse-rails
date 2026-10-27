@@ -6,6 +6,7 @@
 class AssetManagement::RadioAssetsController < ApplicationController
   include AssetYearScopeConcern
   include CsvExportConcern
+  include Pagy::Method
 
   layout "asset_management"
 
@@ -218,15 +219,16 @@ class AssetManagement::RadioAssetsController < ApplicationController
   # barcodes never run consecutively collapses to nothing at all, so it gets the
   # same treatment rather than a promise about the data.
   #
-  # Pagy has no array backend in v43 and the barcode order comes from
-  # Asset.natural_sort in Ruby, so the page is sliced here rather than in SQL.
+  # The barcode order comes from Asset.natural_sort in Ruby, so Pagy pages the
+  # list in memory. A page past the last is the last: Pagy answers it empty.
+  # to_s first: params[:page] can arrive as an Array or a Hash.
   def paginate_rows
     rows = @summary_view ? @ranges : @filtered_radios
-    @total_pages = [(rows.size / PAGE_SIZE.to_f).ceil, 1].max
-    # clamp, not a bare to_i: params[:page] can arrive as an Array or a Hash,
-    # which to_s renders into something to_i reads as 0.
-    @page = (params[:page].to_s.presence&.to_i || 1).clamp(1, @total_pages)
-    @page_rows = rows[(@page - 1) * PAGE_SIZE, PAGE_SIZE] || []
+    paging = { limit: PAGE_SIZE, request: { params: {} } }
+    @pagy, @page_rows = pagy(:offset, rows, page: [params[:page].to_s.to_i, 1].max, **paging)
+    return if @pagy.page <= @pagy.last
+
+    @pagy, @page_rows = pagy(:offset, rows, page: @pagy.last, count: @pagy.count, **paging)
   end
 
   # The filters and the view travel in the filename: exporting the roster and

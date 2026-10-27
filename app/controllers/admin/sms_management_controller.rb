@@ -12,8 +12,8 @@ class Admin::SmsManagementController < ApplicationController
 
   authorize_role [Role::TECH_NINJA], message: "Tech Ninja role required to manage SMS."
 
-  # The two panels are frames inside a page that has already built the menus.
-  skip_before_action :build_menu_items, only: [:twilio, :messages, :update_incoming]
+  # The panels are frames inside a page that has already built the menus.
+  skip_before_action :build_menu_items, only: [:twilio, :messages, :update_incoming, :lookup]
   before_action :set_form, only: [:index, :messages]
   # The training server holds the same live credentials as the real one.
   before_action -> { prevent_if_ghd_server("Changing where Twilio sends incoming texts") }, only: :update_incoming
@@ -45,6 +45,24 @@ class Admin::SmsManagementController < ApplicationController
   def messages
     @log = TwilioMessageLog.page(@form.criteria, page: @form.page, token: @form.page_token) unless Current.is_ghd_server?
     render layout: false
+  end
+
+  # Looks a phone number up with Twilio's Lookup v2, or a callsign's number on
+  # file, into the page's Look Up a Number frame. The line type is billed, so
+  # it is asked for only when its box is ticked. Never on the Groundhog Day
+  # Server, which asks Twilio nothing. The answer renders from the POST at
+  # 422, as a transient POST result does: Turbo drops a 200 answer to a form.
+  def lookup
+    query = params.expect(sms_lookup: [:number, :line_type])
+    @typed = query[:number].to_s
+    @line_type = query[:line_type] == "1"
+    unless Current.is_ghd_server?
+      number, @problem = TwilioLookup.number_for(@typed)
+      result = number ? TwilioLookup.look_up(number, line_type: @line_type) : {}
+      @answer = result[:answer]
+      @problem ||= result[:problem]
+    end
+    render layout: false, status: :unprocessable_entity
   end
 
   # Points every incoming text at another address, starting with the next

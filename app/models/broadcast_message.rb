@@ -63,7 +63,7 @@ class BroadcastMessage < ApplicationRecord
     #   - page: page number (1 to n)
     #   - page_size: size of page (default: PAGE_SIZE_DEFAULT)
     #
-    # @return [Hash] { messages:, meta: { total:, total_pages:, page_size:, page: } }
+    # @return [Hash] { messages:, pagy: }, the page's Pagy for the pager
     def find_for_query(query)
       scope = includes(:person)
 
@@ -86,20 +86,13 @@ class BroadcastMessage < ApplicationRecord
       # A page number past the end asks the database for an offset it cannot
       # reach and leaves the reader on an empty table under a heading claiming a
       # full one. Land them on the last page there actually is.
-      if page > pagy_instance.pages
-        pagy_instance, records = pagy(:offset, scope, page: pagy_instance.pages, limit: page_size,
-                                      request: { params: {} })
+      # The count it already has goes along, so that costs no second COUNT.
+      if page > pagy_instance.last
+        pagy_instance, records = pagy(:offset, scope, page: pagy_instance.last, limit: page_size,
+                                      count: pagy_instance.count, request: { params: {} })
       end
 
-      {
-        messages: records,
-        meta: {
-          total: pagy_instance.count,
-          total_pages: pagy_instance.pages,
-          page_size: pagy_instance.limit,
-          page: pagy_instance.page
-        }
-      }
+      { messages: records, pagy: pagy_instance }
     end
 
     # Record an inbound or outbound message which might be associated

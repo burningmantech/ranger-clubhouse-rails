@@ -6,10 +6,10 @@
 <% end %>
 
 <%= ui_stat_row do %>
-  <%= ui_stat_box @meta[:total], "Photos" %>
+  <%= ui_stat_box @pagy.count, "Photos" %>
 <% end %>
 
-<% if @meta[:total].zero? %>
+<% if @pagy.count.zero? %>
   <%= ui_empty_state "No photos have been uploaded.", icon: "images", icon_type: :regular %>
 <% else %>
   <%# The thumbnail is a link, which nothing about a thumbnail says. Out of the hero. %>
@@ -20,9 +20,10 @@
     </dl>
   <% end %>
 
-  <p class="mb-3 me-muted">
-    Page <%= @meta[:page] %> of <%= @meta[:total_pages] %> &mdash; <%= pluralize(@meta[:total], "photo") %>.
-  </p>
+  <% pager = ui_pager(@pagy, noun: "photo") { |page| vc_photos_path(page:) } %>
+  <div class="mb-3">
+    <%= pager %>
+  </div>
   <%= ui_table do |t| %>
     <%= t.header do %>
       <%= t.heading "ID" %>
@@ -67,15 +68,7 @@
       <% end %>
     <% end %>
   <% end %>
-  <% if @meta[:total_pages] > 1 %>
-    <%= button_row class: "mt-4" do %>
-      <% if @meta[:page] > 1 %>
-        <%= button_link "Previous Page", :secondary, vc_photos_path(page: @meta[:page] - 1),
-                        icon: "arrow-left", icon_type: :solid %>
-      <% end %>
-      <% if @meta[:page] < @meta[:total_pages] %>
-        <%= button_link "Next Page", :secondary, vc_photos_path(page: @meta[:page] + 1) %>
-      <% end %>
-    <% end %>
-  <% end %>
+  <div class="mt-4">
+    <%= pager %>
+  </div>
 <% end %>

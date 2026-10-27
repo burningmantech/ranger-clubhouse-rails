@@ -23,7 +23,7 @@
   <%= filter_bar id: "passkey-filters",
                  chips: passkey_filter_chips(@form),
                  clear_url: admin_passkeys_path,
-                 count: "Showing #{@passkeys.size} of #{pluralize(@meta[:total], "passkey")}",
+                 count: "Showing #{@passkeys.size} of #{pluralize(@pagy.count, "passkey")}",
                  url: admin_passkeys_path, model: @form, scope: PasskeyFilterForm::PARAM_SCOPE do |f| %>
     <%= f.select :added_by, PasskeyFilterForm::ADDED_BY_OPTIONS, { label: "Added By" }, { class: "w-full sm:w-48" } %>
     <%= button_row class: "mt-4" do %>
@@ -74,7 +74,7 @@
     <% end %>
 
     <div class="mt-4">
-      <%= ui_pager(@meta, noun: "passkey") { |page| admin_passkeys_path(@form.query_params(to_page: page)) } %>
+      <%= ui_pager(@pagy, noun: "passkey") { |page| admin_passkeys_path(@form.query_params(to_page: page)) } %>
     </div>
   <% elsif @stats[:passkeys].positive? %>
     <%= ui_empty_state "No passkeys match the current filter.", icon: "filter", icon_type: :solid %>

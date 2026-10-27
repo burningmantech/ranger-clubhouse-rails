@@ -11,6 +11,6 @@ class Vc::PhotosController < ApplicationController
   def index
     result = PersonPhoto.find_for_query(page: params[:page])
     @photos = result[:person_photo]
-    @meta = result[:meta]
+    @pagy = result[:pagy]
   end
 end

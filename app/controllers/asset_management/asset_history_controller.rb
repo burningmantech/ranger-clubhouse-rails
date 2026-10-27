@@ -7,6 +7,7 @@
 class AssetManagement::AssetHistoryController < ApplicationController
   include AssetYearScopeConcern
   include CsvExportConcern
+  include Pagy::Method
 
   layout "asset_management"
 
@@ -160,15 +161,16 @@ class AssetManagement::AssetHistoryController < ApplicationController
     @unreturned_count = @filtered_rows.count { |_asset, history| history.checked_in.nil? }
   end
 
-  # Pagy has no array backend in v43 and the barcode order comes from
-  # Asset.natural_sort in Ruby (G-0104 and G-104 sort differently lexically),
-  # so the page is sliced here rather than in SQL.
+  # The barcode order comes from Asset.natural_sort in Ruby (G-0104 and G-104
+  # sort differently lexically), so Pagy pages the list in memory. A page past
+  # the last is the last: Pagy answers it empty. to_s first: params[:page] can
+  # arrive as an Array or a Hash.
   def paginate_rows
-    @total_pages = [(@filtered_rows.size / PAGE_SIZE.to_f).ceil, 1].max
-    @page = params[:page].to_s.presence&.to_i || 1
-    @page = 1 if @page < 1
-    @page = @total_pages if @page > @total_pages
-    @page_rows = @filtered_rows[(@page - 1) * PAGE_SIZE, PAGE_SIZE] || []
+    paging = { limit: PAGE_SIZE, request: { params: {} } }
+    @pagy, @page_rows = pagy(:offset, @filtered_rows, page: [params[:page].to_s.to_i, 1].max, **paging)
+    return if @pagy.page <= @pagy.last
+
+    @pagy, @page_rows = pagy(:offset, @filtered_rows, page: @pagy.last, count: @pagy.count, **paging)
   end
 
   # The filters travel in the filename: exporting Radio and then Gear otherwise

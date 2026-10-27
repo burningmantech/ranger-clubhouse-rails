@@ -51,13 +51,15 @@ class Vc::PhotosControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@vc)
     get vc_photos_path
     assert_response :success
-    assert_match "Page 1 of 2", response.body
-    assert_match "Next Page", response.body
+    assert_match "Page 1 of 2 · 101 photos", response.body
+    # Above the table and below it. A button with no page to go to is drawn
+    # disabled, so only a link says the page is there.
+    assert_select "a[href=?]", vc_photos_path(page: 2), text: "Next Page", count: 2
 
     get vc_photos_path(page: 2)
     assert_response :success
-    assert_match "Page 2 of 2", response.body
-    assert_match "Previous Page", response.body
+    assert_match "Page 2 of 2 · 101 photos", response.body
+    assert_select "a[href=?]", vc_photos_path(page: 1), text: "Previous Page", count: 2
   end
 
   # The thumbnail links open Vc::PhotosReviewController#info. That endpoint must

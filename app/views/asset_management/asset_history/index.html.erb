@@ -110,7 +110,7 @@
               <%= t.row_header link_to(asset.barcode,
                                        asset_management_record_path(asset,
                                                                     **active_filters(@filter_params),
-                                                                    year: @year, page: @page,
+                                                                    year: @year, page: @pagy.page,
                                                                     origin: "history"),
                                        class: LinkHelper::TABLE_LINK_CLASSES) %>
               <%= t.cell asset_type_label(asset.type) %>
@@ -148,23 +148,8 @@
       <% end %>
     <% end %>
 
-    <% if @total_pages > 1 %>
-      <div class="my-4 flex flex-wrap items-center gap-4">
-        <%= button_row do %>
-          <% if @page > 1 %>
-            <%= button_link "Previous Page", :secondary,
-                            asset_management_asset_history_path(**active_filters(@filter_params),
-                                                                year: @year, page: @page - 1),
-                            icon: "arrow-left", icon_type: :solid %>
-          <% end %>
-          <% if @page < @total_pages %>
-            <%= button_link "Next Page", :secondary,
-                            asset_management_asset_history_path(**active_filters(@filter_params),
-                                                                year: @year, page: @page + 1) %>
-          <% end %>
-        <% end %>
-        <span class="text-body">Page <%= @page %> of <%= @total_pages %></span>
-      </div>
+    <% if @pagy.last > 1 %>
+      <%= ui_pager(@pagy, noun: "checkout", class: "my-4") { |page| asset_management_asset_history_path(**active_filters(@filter_params), year: @year, page:) } %>
     <% end %>
   <% end %>
 <% end %>

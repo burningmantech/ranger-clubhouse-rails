@@ -15,24 +15,23 @@ class Admin::Clubhouse1LogController < ApplicationController
     user_person_id = resolve_person_id(@form.user_callsign)
     target_person_id = resolve_person_id(@form.target_callsign)
 
-    @result = if unknown_person?(@form.user_callsign, user_person_id) ||
-                 unknown_person?(@form.target_callsign, target_person_id)
-                empty_result
-              else
-                Clubhouse1Log.find_for_query(
-                  user_person_id:,
-                  current_person_id: target_person_id,
-                  start_time: @form.parsed_start_time,
-                  end_time: @form.parsed_end_time,
-                  event_prefixes: @form.event_prefixes,
-                  event_text: @form.event_text.presence,
-                  sort: @form.sort,
-                  page: @form.page
-                )
-              end
-
-    @logs = @result[:logs]
-    @meta = @result[:meta]
+    # A person no one is matches no entry: the same query, with nothing to find.
+    logs = if unknown_person?(@form.user_callsign, user_person_id) ||
+              unknown_person?(@form.target_callsign, target_person_id)
+             Clubhouse1Log.none
+           else
+             Clubhouse1Log
+           end
+    @pagy, @logs = logs.find_for_query(
+      user_person_id:,
+      current_person_id: target_person_id,
+      start_time: @form.parsed_start_time,
+      end_time: @form.parsed_end_time,
+      event_prefixes: @form.event_prefixes,
+      event_text: @form.event_text.presence,
+      sort: @form.sort,
+      page: @form.page
+    )
   end
 
   private
@@ -58,17 +57,5 @@ class Admin::Clubhouse1LogController < ApplicationController
 
   def unknown_person?(callsign, person_id)
     callsign.present? && person_id.blank?
-  end
-
-  def empty_result
-    {
-      logs: [],
-      meta: {
-        page: @form.page,
-        page_size: Clubhouse1Log::PAGE_SIZE_DEFAULT,
-        has_previous_page: @form.page > 1,
-        has_next_page: false
-      }
-    }
   end
 end

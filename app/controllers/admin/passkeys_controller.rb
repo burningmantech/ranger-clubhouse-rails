@@ -18,7 +18,7 @@ class Admin::PasskeysController < ApplicationController
     # Pagy returns a lazy relation; load it so the view's .any? doesn't issue
     # an extra query.
     @passkeys = result[:passkeys].to_a
-    @meta = result[:meta]
+    @pagy = result[:pagy]
     @stats = PersonPasskey.list_stats
   end
 

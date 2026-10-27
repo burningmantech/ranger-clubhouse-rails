@@ -237,15 +237,7 @@ class MailLog < ApplicationRecord
       pagy_instance, records = pagy(:offset, scope, page: page, limit: page_size,
                                                     count: total, request: { params: {} })
 
-      {
-        mail_log: records,
-        meta: {
-          total: pagy_instance.count,
-          total_pages: pagy_instance.pages,
-          page_size: pagy_instance.limit,
-          page: pagy_instance.page
-        }
-      }
+      { mail_log: records, pagy: pagy_instance }
     end
 
     # Find the logs related to a prospective application

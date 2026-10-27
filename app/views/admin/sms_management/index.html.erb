@@ -16,6 +16,8 @@
     <dd>The newest <%= number_with_delimiter(TwilioMessageLog::EXPORT_LIMIT) %> texts the filters match, as Twilio lists them.</dd>
     <dt>How do I move incoming texts to this server?</dt>
     <dd>Use Update Incoming Address in the Twilio Account panel. Twilio sends the next text a Ranger sends to the address entered, and the server that had them stops getting replies. To move them back, enter the old address, which the message after the change names; an Admin can also find it in the action log.</dd>
+    <dt>What does Look Up a Number tell me?</dt>
+    <dd>Whether Twilio can text a number: whether it is valid, how it is written at home and its country, for free. Tick the box and Twilio also gives its line type and carrier, which it bills for each lookup. A landline cannot get texts, which explains Twilio error 30006. A callsign looks up the number on file.</dd>
     <dt>How current is this page?</dt>
     <dd>The log asks Twilio each time it is shown. The account panel asks at most once every five minutes, and Refresh asks it again.</dd>
   </dl>
@@ -94,6 +96,10 @@
     <% end %>
   <% end %>
 </div>
+
+<%= ui_section "Look Up a Number", icon: "magnifying-glass", icon_type: :solid do %>
+  <%= render "admin/sms_management/lookup" %>
+<% end %>
 
 <%= filter_bar id: "sms-filters",
                chips: sms_filter_chips(@form),

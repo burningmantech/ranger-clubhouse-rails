@@ -31,7 +31,8 @@ module UiComponents
       raise ArgumentError, "ui_pager needs summary:, or noun: for a counted list" unless summary || (noun && meta[:total])
 
       page = meta[:page]
-      summary ||= "Page #{page} of #{[meta[:total_pages], 1].max} · #{pluralize(meta[:total], noun)}"
+      summary ||= "Page #{number_with_delimiter(page)} of #{number_with_delimiter([meta[:total_pages], 1].max)} · " \
+                  "#{pluralize(number_with_delimiter(meta[:total]), noun)}"
       previous_url = yield(page - 1) if meta.fetch(:has_previous_page) { page > 1 }
       next_url = yield(page + 1) if meta.fetch(:has_next_page) { page < meta[:total_pages] }
       buttons = safe_join([ui_pager_button("Previous Page", previous_url), ui_pager_button("Next Page", next_url)])

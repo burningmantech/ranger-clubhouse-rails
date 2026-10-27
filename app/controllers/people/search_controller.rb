@@ -16,6 +16,7 @@
 # the reader was on.
 class People::SearchController < ApplicationController
   include CsvExportConcern
+  include Pagy::Method
 
   layout "people"
 
@@ -24,9 +25,8 @@ class People::SearchController < ApplicationController
 
   CSV_HEADER = ["Callsign", "First Name", "Last Name", "Email"].freeze
 
-  # Sliced in Ruby, as Asset History does: the report's year/course/training
-  # filters run after the person query, so the full match is in hand anyway
-  # and Pagy 43 has no array backend to hand it to.
+  # Paged in memory, as Asset History is: the report's year/course/training
+  # filters run after the person query, so the full match is in hand anyway.
   PAGE_SIZE = 100
 
   def index
@@ -41,8 +41,6 @@ class People::SearchController < ApplicationController
     @people = []
     @error = nil
     @needs_confirmation = false
-    @page = 1
-    @total_pages = 1
     @page_rows = []
 
     run_search if @searched
@@ -97,15 +95,14 @@ class People::SearchController < ApplicationController
     @filter["years_worked"].to_s.strip.present? && @form.years_worked.nil?
   end
 
+  # A page past the last is the last: Pagy answers it empty. to_s first: a
+  # page[] param arrives as an Array, which has no to_i.
   def paginate_people
-    @total_pages = [(@people.size / PAGE_SIZE.to_f).ceil, 1].max
-    @page = params[:page].to_i
-    @page = 1 if @page < 1
-    @page = @total_pages if @page > @total_pages
-    offset = (@page - 1) * PAGE_SIZE
-    @page_rows = @people[offset, PAGE_SIZE] || []
-    @showing_start = offset + 1
-    @showing_stop = offset + @page_rows.size
+    paging = { limit: PAGE_SIZE, request: { params: {} } }
+    @pagy, @page_rows = pagy(:offset, @people, page: [params[:page].to_s.to_i, 1].max, **paging)
+    return if @pagy.page <= @pagy.last
+
+    @pagy, @page_rows = pagy(:offset, @people, page: @pagy.last, count: @pagy.count, **paging)
   end
 
   def csv_rows

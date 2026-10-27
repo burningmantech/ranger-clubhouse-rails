@@ -23,7 +23,7 @@
 
 <%= ui_section "Mail Log", icon: "envelope", icon_type: :solid do %>
   <% if @logs.any? %>
-    <% pager = ui_pager(@meta, noun: "message") { |page| person_mail_log_path(@person, page:) } %>
+    <% pager = ui_pager(@pagy, noun: "message") { |page| person_mail_log_path(@person, page:) } %>
     <div class="mb-3">
       <%= pager %>
     </div>

@@ -1722,6 +1722,7 @@ Rails.application.routes.draw do
     get "sms-management", to: "sms_management#index", as: :sms_management
     get "sms-management/twilio", to: "sms_management#twilio", as: :sms_management_twilio
     get "sms-management/messages", to: "sms_management#messages", as: :sms_management_messages
+    post "sms-management/lookup", to: "sms_management#lookup", as: :sms_management_lookup
     # Where Twilio posts the texts Rangers send: pointed here at the cutover
     # from Clubhouse 2, or back again. Answers into the account panel's frame.
     patch "sms-management/incoming", to: "sms_management#update_incoming", as: :sms_management_incoming

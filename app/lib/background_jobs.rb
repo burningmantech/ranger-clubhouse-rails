@@ -5,6 +5,8 @@
 # serving the queue, and the three repairs. Every row is one of the gem's own
 # models; this only chooses, counts and asks them.
 module BackgroundJobs
+  extend Pagy::Method
+
   PAGE_SIZE = 50
 
   # The states a job can be in, in the order the page shows them. Five are an
@@ -24,21 +26,20 @@ module BackgroundJobs
     EXECUTIONS.transform_values(&:count).merge("finished" => SolidQueue::Job.finished.count)
   end
 
-  # One page of jobs, newest first, as { jobs:, meta: } with the meta ui_pager
-  # reads. A page past the end is the last page, so a delete on the last page
-  # lands on rows rather than on an empty table (pagy would answer an empty
-  # page, which is why the arithmetic is written out). Every execution is
-  # preloaded: Job#status asks for all five.
+  # One page of jobs, newest first, as { jobs:, pagy: }. A page past the end
+  # is the last page, so a delete on the last page lands on rows rather than
+  # on the empty page Pagy would answer. Every execution is preloaded:
+  # Job#status asks for all five. The count leaves them out: a status filter
+  # joins its execution, which turns the preloads into joins.
   def page(page:, status: nil, queue_name: nil, class_name: nil)
     scope = scoped(status, queue_name, class_name)
-    total = scope.count
-    total_pages = [total.fdiv(PAGE_SIZE).ceil, 1].max
-    page = page.clamp(1, total_pages)
     jobs = scope.includes(:ready_execution, :scheduled_execution, :blocked_execution, :failed_execution,
-                          claimed_execution: :process)
-                .order(id: :desc).offset((page - 1) * PAGE_SIZE).limit(PAGE_SIZE).to_a
+                          claimed_execution: :process).order(id: :desc)
+    paging = { limit: PAGE_SIZE, count: scope.count, request: { params: {} } }
+    pagy, records = pagy(:offset, jobs, page:, **paging)
+    pagy, records = pagy(:offset, jobs, page: pagy.last, **paging) if pagy.page > pagy.last
 
-    { jobs:, meta: { page:, total:, total_pages: } }
+    { jobs: records.to_a, pagy: }
   end
 
   def queue_names

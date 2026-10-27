@@ -110,6 +110,10 @@ class PersonPhoto < ApplicationRecord
 
   # Class Methods
   class << self
+    include Pagy::Method
+
+    # @return [Hash] { person_photo:, pagy: }. A page past the last is an
+    #   empty page, as it always was here.
     def find_for_query(params)
       photo_status = params[:status]
       person_status = params[:person_status]
@@ -117,7 +121,7 @@ class PersonPhoto < ApplicationRecord
       include_rejects = params[:include_rejects]
       sort = params[:sort] || ""
 
-      page = (params[:page] || 1).to_i
+      page = [(params[:page] || 1).to_i, 1].max
       page_size = (params[:page_size] || 100).to_i
 
       query = joins(:person)
@@ -129,25 +133,11 @@ class PersonPhoto < ApplicationRecord
       query = query.where(status: photo_status) if photo_status
       query = query.where(person: { status: person_status }) if person_status
 
-      total = query.count
-
-      if total.zero?
-        return {
-          person_photo: [],
-          meta: {
-            page: page,
-            total: 0,
-            total_pages: 0
-          }
-        }
-      end
-
-      page = [page - 1, 0].max
-
       query = query.order("person.callsign": :asc) if sort == "callsign" && person_id.nil?
       query = query.order("person_photo.created_at": :desc)
 
-      rows = query.offset(page * page_size).limit(page_size).to_a
+      pagy, rows = pagy(:offset, query, page:, limit: page_size, request: { params: {} })
+      rows = rows.to_a
 
       if person_id
         current_id = current_first.where(person_id: person_id).pick(:id)
@@ -170,15 +160,7 @@ class PersonPhoto < ApplicationRecord
         end
       end
 
-      {
-        person_photo: rows,
-        meta: {
-          total: total,
-          total_pages: ((total + page_size - 1) / page_size).to_i,
-          page_size: page_size,
-          page: page + 1
-        }
-      }
+      { person_photo: rows, pagy: }
     end
 
     def find_all_submitted

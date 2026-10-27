@@ -539,7 +539,7 @@ that page's URL with the filters carried along.
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `meta` | Pagy, Hash | required | The list's Pagy object, offset or countless, or its numbers as `{ page:, total_pages:, total: }`. A hash that also carries `has_previous_page:` / `has_next_page:` has those decide the buttons instead of the page arithmetic, as a Pagy object's own `previous` / `next` do |
-| `noun:` | String | `nil` | What the list holds, singular: `"message"` reads "640 messages". Only for a counted list: required unless `summary:` is given, and refused for a countless Pagy |
+| `noun:` | String | `nil` | What the list holds, singular: `"message"` reads "640 messages". The line writes thousands with commas ("Page 1 of 1,235 · 123,456 requests"). Only for a counted list: required unless `summary:` is given, and refused for a countless Pagy |
 | `summary:` | String | `nil` | Replaces the whole line, for a page that words it differently: an estimated total, or one never counted (a countless Pagy) |
 | `class:` | String | `nil` | Additional CSS classes on the wrapper |
 

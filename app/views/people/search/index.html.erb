@@ -8,7 +8,7 @@
     by the table itself. Paged and dated are the two states the card explains. %>
 <% listed = results_shown && @people.any? %>
 <% columns = listed ? people_search_columns(@form) : [] %>
-<% paged = listed && @total_pages > 1 %>
+<% paged = listed && @pagy.last > 1 %>
 <% dated = columns.any? { |column| People::SearchHelper::DATE_KEYS.include?(column[:key]) } %>
 <% content_for :title,
                results_shown ? "People Search (#{number_with_delimiter(@people.size)} found)" : "People Search" %>
@@ -157,7 +157,7 @@
     <% else %>
       <% if paged %>
         <p class="mb-3 text-body font-semibold">
-          Showing <%= number_with_delimiter(@showing_start) %>–<%= number_with_delimiter(@showing_stop) %> of <%= number_with_delimiter(@people.size) %>.
+          Showing <%= number_with_delimiter(@pagy.from) %>–<%= number_with_delimiter(@pagy.to) %> of <%= number_with_delimiter(@pagy.count) %>.
         </p>
       <% end %>
 
@@ -184,21 +184,7 @@
       <% end %>
 
       <% if paged %>
-        <nav class="my-4 flex flex-wrap items-center gap-4" aria-label="Result pages">
-          <%= button_row do %>
-            <% if @page > 1 %>
-              <%= button_link "Previous Page", :secondary,
-                              people_search_path(filter: @filter, confirmed: @confirmed, page: @page - 1),
-                              icon: "arrow-left", icon_type: :solid %>
-            <% end %>
-            <% if @page < @total_pages %>
-              <%= button_link "Next Page", :secondary,
-                              people_search_path(filter: @filter, confirmed: @confirmed, page: @page + 1),
-                              icon: "arrow-right", icon_type: :solid %>
-            <% end %>
-          <% end %>
-          <span class="text-body">Page <%= @page %> of <%= @total_pages %></span>
-        </nav>
+        <%= ui_pager(@pagy, noun: "person", class: "my-4") { |page| people_search_path(filter: @filter, confirmed: @confirmed, page:) } %>
       <% end %>
     <% end %>
   <% end %>

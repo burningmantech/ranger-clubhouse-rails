@@ -172,4 +172,116 @@ class TwilioStatusTest < ActiveSupport::TestCase
       end
     end
   end
+
+  # ------------------------------------------------- one cold read at a time
+
+  # A client whose account read says it has begun, then waits to be let go:
+  # the request holding the lock, part-way through its read.
+  def stuck_client(started, release)
+    Class.new(FakeTwilioClient) do
+      define_method(:fetch) do
+        started << true
+        release.pop
+        super()
+      end
+    end.new
+  end
+
+  # Hands out the clients given, one a build, then puts the real builder back.
+  def with_clients(*clients)
+    original = TwilioAccount.method(:build_client)
+    TwilioAccount.define_singleton_method(:build_client) { |*| clients.shift }
+    yield
+  ensure
+    TwilioAccount.define_singleton_method(:build_client, original)
+  end
+
+  def with_wait_limit(seconds)
+    original = TwilioStatus.method(:wait_limit)
+    TwilioStatus.define_singleton_method(:wait_limit) { seconds }
+    yield
+  ensure
+    TwilioStatus.define_singleton_method(:wait_limit, original)
+  end
+
+  # A cold read held part-way by its reader for the block, which is let go
+  # however the block ends, so no test is left waiting on it.
+  def while_another_reads(started, release)
+    reader = Thread.new { TwilioStatus.fetch }
+    started.pop
+    yield reader
+  ensure
+    release << true
+    reader&.join(5)
+  end
+
+  def seconds_taken
+    start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    yield
+    Process.clock_gettime(Process::CLOCK_MONOTONIC) - start
+  end
+
+  test "two cold reads at once ask Twilio once: the second takes the first's answer" do
+    configure_twilio
+    started = Queue.new
+    release = Queue.new
+    first = stuck_client(started, release)
+    second = FakeTwilioClient.new
+
+    with_cache_store do
+      with_clients(first, second) do
+        while_another_reads(started, release) do |reader|
+          waiter = Thread.new { TwilioStatus.fetch }
+          Thread.pass until waiter.status == "sleep" || !waiter.alive?
+          release << true
+
+          assert_equal reader.value, waiter.value
+        end
+      end
+    end
+
+    assert_equal 1, first.asked.count(:account)
+    assert_empty second.asked, "the second request asked Twilio nothing"
+  end
+
+  test "a request that waits past the limit asks Twilio itself, and never hangs" do
+    configure_twilio
+    started = Queue.new
+    release = Queue.new
+    second = FakeTwilioClient.new
+    taken = nil
+
+    with_cache_store do
+      with_clients(stuck_client(started, release), second) do
+        with_wait_limit(0.3) do
+          while_another_reads(started, release) do
+            taken = seconds_taken { assert TwilioStatus.fetch }
+          end
+        end
+      end
+    end
+
+    assert_operator taken, :>=, 0.3
+    assert_operator taken, :<, 3
+    assert_equal 1, second.asked.count(:account)
+  end
+
+  test "Refresh asks Twilio at once, though another request is reading" do
+    configure_twilio
+    started = Queue.new
+    release = Queue.new
+    second = FakeTwilioClient.new
+    taken = nil
+
+    with_cache_store do
+      with_clients(stuck_client(started, release), second) do
+        while_another_reads(started, release) do
+          taken = seconds_taken { TwilioStatus.fetch(refresh: true) }
+        end
+      end
+    end
+
+    assert_operator taken, :<, TwilioStatus::WAIT_STEP
+    assert_equal 1, second.asked.count(:account)
+  end
 end

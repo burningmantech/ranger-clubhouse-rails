@@ -16,7 +16,7 @@ class Admin::JobsController < ApplicationController
     @counts = BackgroundJobs.counts
     result = BackgroundJobs.page(**@form.active_filters, page: @form.page)
     @jobs = result[:jobs]
-    @meta = result[:meta]
+    @pagy = result[:pagy]
     @queue_names = BackgroundJobs.queue_names
     @workers = BackgroundJobs.workers
   end

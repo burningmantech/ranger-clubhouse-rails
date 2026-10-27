@@ -184,36 +184,6 @@ class SmsService
     end
 
     #
-    # Try to find out if a phone number can text, maybe.
-    #
-    # Note this may only work for US numbers.
-    #
-    # @see https://support.twilio.com/hc/en-us/articles/360004563433
-    #
-    # @param phone_number [String] number to look up in E.164 format
-    # @return [Boolean] true if the phone can text
-    #
-    def sms_capable?(phone_number)
-      account_sid, auth_token = get_tokens
-
-      twilio = TwilioAccount.build_client(account_sid, auth_token)
-
-      begin
-        info = twilio.lookups.v1.phone_numbers(phone_number)
-          .fetch(type: ["carrier"])
-      rescue Twilio::REST::RestError => e
-        return false if e.status_code == 404 # Not a valid phone number
-
-        raise # Not sure what's going on.
-      end
-
-      type = info.carrier["type"]
-      # In case there's no line type, allow it to pass. The verification
-      # stage will flush that out.
-      type == "mobile" || type == "voip" || type == ""
-    end
-
-    #
     # Process an incoming message into a common format.
     #
     # @param params [Hash, ActionController::Parameters] the request parameters

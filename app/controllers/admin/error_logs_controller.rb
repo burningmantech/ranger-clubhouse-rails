@@ -10,21 +10,19 @@ class Admin::ErrorLogsController < ApplicationController
 
     person_id = resolve_person_id(@form.person_callsign)
 
-    @result = if unknown_callsign?(@form.person_callsign, person_id)
-                empty_result(@form.page)
-              else
-                ErrorLog.find_for_query(
-                  person_id: person_id.presence,
-                  error_type: @form.error_type.presence,
-                  start_at: @form.parsed_start_time,
-                  ends_at: @form.parsed_end_time,
-                  last_day: @form.last_day,
-                  page: @form.page
-                )
-              end
+    # A callsign no one has matches no row: the same query, with nothing to find.
+    logs = unknown_callsign?(@form.person_callsign, person_id) ? ErrorLog.none : ErrorLog
+    result = logs.find_for_query(
+      person_id: person_id.presence,
+      error_type: @form.error_type.presence,
+      start_at: @form.parsed_start_time,
+      ends_at: @form.parsed_end_time,
+      last_day: @form.last_day,
+      page: @form.page
+    )
 
-    @error_logs = @result[:error_logs]
-    @meta = @result[:meta]
+    @error_logs = result[:error_logs]
+    @pagy = result[:pagy]
   end
 
   def purge
@@ -48,17 +46,5 @@ class Admin::ErrorLogsController < ApplicationController
 
   def unknown_callsign?(callsign, person_id)
     callsign.present? && person_id.blank?
-  end
-
-  def empty_result(page)
-    {
-      error_logs: [],
-      meta: {
-        total: 0,
-        total_pages: 0,
-        page_size: ErrorLog::PAGE_SIZE_DEFAULT,
-        page: page
-      }
-    }
   end
 end

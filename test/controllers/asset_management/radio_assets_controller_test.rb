@@ -411,7 +411,7 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
     get asset_management_radio_assets_path
 
     assert_response :success
-    assert_select "span", text: "Page 1 of 2"
+    assert_select "p", text: "Page 1 of 2 · 101 radios"
     assert_select "th", text: "0001"
     assert_select "th", text: "0101", count: 0
 
@@ -422,11 +422,11 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
     # Past the end clamps to the last page rather than showing nothing.
     get asset_management_radio_assets_path(page: 99)
     assert_response :success
-    assert_select "span", text: "Page 2 of 2"
+    assert_select "p", text: "Page 2 of 2 · 101 radios"
 
     get asset_management_radio_assets_path(page: 0)
     assert_response :success
-    assert_select "span", text: "Page 1 of 2"
+    assert_select "p", text: "Page 1 of 2 · 101 radios"
   end
 
   test "a barcode links to the record page, which offers a way back here" do

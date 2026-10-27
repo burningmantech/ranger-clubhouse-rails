@@ -87,8 +87,8 @@ module Admin::ErrorLogsHelper
     error_log_scrollable_block(error_log_exception_stacktrace(exception), max_height: "max-h-56")
   end
 
-  def error_log_pager_summary(meta)
-    "Page #{meta[:page]} of #{[meta[:total_pages], 1].max} · #{meta[:total]} total records"
+  def error_log_pager_summary(pagy)
+    "Page #{pagy.page} of #{pagy.last} · #{pagy.count} total records"
   end
 
   private

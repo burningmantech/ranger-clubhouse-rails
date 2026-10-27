@@ -3,6 +3,8 @@
 # Find, correct or delete the pog records of one event year, chosen by the day
 # each pog was issued (person_pog.issued_at).
 class Pogs::AdministrationController < ApplicationController
+  include Pagy::Method
+
   layout "pogs"
 
   # Not Event Management: it keeps Person › Pogs and the HQ window.
@@ -34,12 +36,13 @@ class Pogs::AdministrationController < ApplicationController
     @form = PogFilterForm.new(filter_params, issuer_ids: @issuer_ids, days: @days,
                                              pogs: @pog_types, statuses: @statuses)
 
-    matching = @form.apply(year_pogs)
-    @meta = page_meta(matching.count, @form.page)
+    scope = @form.apply(year_pogs).includes(timesheet: :position).order(issued_at: :desc, id: :desc)
+    paging = { limit: PAGE_SIZE, request: { params: {} } }
+    @pagy, pogs = pagy(:offset, scope, page: @form.page, **paging)
+    # A page past the last reads as the last, as RequestLog's pager does.
+    @pagy, pogs = pagy(:offset, scope, page: @pagy.last, count: @pagy.count, **paging) if @pagy.page > @pagy.last
     # Loaded here, so the view's empty? reads the page rather than asking again.
-    @pogs = matching.includes(timesheet: :position)
-                    .order(issued_at: :desc, id: :desc)
-                    .limit(PAGE_SIZE).offset((@meta[:page] - 1) * PAGE_SIZE).to_a
+    @pogs = pogs.to_a
     # The rows show callsigns and nothing else, and person is the widest table
     # in the schema: basic_info for the recipients, and the issuers are loaded.
     @recipients = Person.basic_info.where(id: @pogs.map(&:person_id)).index_by(&:id)
@@ -81,11 +84,5 @@ class Pogs::AdministrationController < ApplicationController
 
   def filter_params
     scoped_params(PogFilterForm::PARAM_SCOPE, *PogFilterForm.attribute_names)
-  end
-
-  # A page past the last reads as the last, as RequestLog's pager does.
-  def page_meta(total, page)
-    total_pages = [(total.to_f / PAGE_SIZE).ceil, 1].max
-    { total:, total_pages:, page: page.clamp(1, total_pages) }
   end
 end

@@ -13,7 +13,9 @@
 #
 # The answers are cached for CACHE_FOR, keyed by the settings they were asked
 # with, so a corrected setting is asked about at once. A read missing an answer
-# Twilio never gave is not cached, so the next look asks again.
+# Twilio never gave is not cached, so the next look asks again. A request that
+# finds the cache empty while another is already reading waits for that answer
+# rather than asking Twilio a second time.
 class TwilioStatus
   CACHE_FOR = 5.minutes
   # Part of the cache key. Bump it whenever what read returns changes shape,
@@ -23,11 +25,18 @@ class TwilioStatus
   # One page of Twilio's message list. Past it the counts are a sample.
   MESSAGE_LIMIT = 1_000
   ALERT_LIMIT = 20
+  # The lock a cold read takes, an add-only write that Solid Cache and the
+  # memory store both honour, held at most this long should its reader die.
+  LOCK_FOR = 30.seconds
+  # How often a request waiting for another's answer looks for it.
+  WAIT_STEP = 0.2
 
   # nil while the settings to ask with are missing. Otherwise a Hash of plain
   # values, safe to cache: checked_at, and an answer each for the account, its
   # balance, the Messaging Service, the texts and the alerts, plus one per
   # Notify service carrying its id. An answer is { value: } or { error: }.
+  #
+  # Refresh reads Twilio at once, cache and lock aside.
   def self.fetch(refresh: false)
     sid, token, service_ids, messaging_sid =
       TwilioAccount.settings.values_at(:account_sid, :auth_token, :service_ids, :messaging_service_id)
@@ -35,14 +44,40 @@ class TwilioStatus
 
     digest = Digest::SHA256.hexdigest([sid, token, messaging_sid, *service_ids].join("|"))
     key = ["twilio-status", CACHE_VERSION, digest]
-    cached = Rails.cache.read(key) unless refresh
-    return cached if cached
+    lock = [*key, "reading"]
+    unless refresh
+      cached = Rails.cache.read(key)
+      return cached if cached
+
+      locked = Rails.cache.write(lock, true, unless_exist: true, expires_in: LOCK_FOR)
+      cached = awaited(key, lock) unless locked
+      return cached if cached
+    end
 
     reader = new(TwilioAccount.build_client(sid, token))
     status = reader.read(sid, service_ids, messaging_sid)
     Rails.cache.write(key, status, expires_in: CACHE_FOR) unless reader.missed?
     status
+  ensure
+    Rails.cache.delete(lock) if locked
   end
+
+  # The answer the request holding the lock is reading, once it is cached; nil
+  # when that request let the lock go with no answer cached, or wait_limit
+  # passed first, and the waiting request then asks Twilio itself.
+  def self.awaited(key, lock)
+    give_up_at = Process.clock_gettime(Process::CLOCK_MONOTONIC) + wait_limit
+    while Process.clock_gettime(Process::CLOCK_MONOTONIC) < give_up_at
+      sleep WAIT_STEP
+      cached = Rails.cache.read(key)
+      return cached if cached
+      return unless Rails.cache.exist?(lock)
+    end
+  end
+
+  # How long a request waits for another's answer: as long as one call to
+  # Twilio may take to answer.
+  def self.wait_limit = TwilioAccount::TIMEOUT
 
   def initialize(client)
     @client = client

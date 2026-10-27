@@ -78,15 +78,7 @@ class ErrorLog < ApplicationRecord
       # Provide minimal request hash since models don't have self.request
       pagy_instance, records = pagy(:offset, scope, page: page, limit: page_size, request: { params: {} })
 
-      {
-        error_logs: records,
-        meta: {
-          total: pagy_instance.count,
-          total_pages: pagy_instance.pages,
-          page_size: pagy_instance.limit,
-          page: pagy_instance.page
-        }
-      }
+      { error_logs: records, pagy: pagy_instance }
     end
 
     # Record an error

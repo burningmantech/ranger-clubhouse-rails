@@ -57,12 +57,12 @@ class ActionLogTest < ActiveSupport::TestCase
     first_page = ActionLog.find_for_query({})
     second_page = ActionLog.find_for_query(page: 2)
 
-    assert_equal false, first_page[:meta][:has_previous_page]
-    assert_equal true, first_page[:meta][:has_next_page]
+    assert_nil first_page[:pagy].previous
+    assert_equal 2, first_page[:pagy].next
     assert_equal 50, first_page[:action_logs].size
 
-    assert_equal true, second_page[:meta][:has_previous_page]
-    assert_equal false, second_page[:meta][:has_next_page]
+    assert_equal 1, second_page[:pagy].previous
+    assert_nil second_page[:pagy].next
     assert_equal 2, second_page[:action_logs].size
   end
 
@@ -79,8 +79,8 @@ class ActionLogTest < ActiveSupport::TestCase
     unfiltered = ActionLog.find_for_query({})
     filtered = ActionLog.find_for_query(person_id: actor.id)
 
-    assert_equal true, unfiltered[:meta][:approximate_total]
-    assert_equal false, filtered[:meta][:approximate_total]
+    assert_equal true, unfiltered[:approximate_total]
+    assert_equal false, filtered[:approximate_total]
   end
 
   test "find_for_query normalizes plural role and team enrichment data" do

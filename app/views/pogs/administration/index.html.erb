@@ -22,7 +22,7 @@
   <%= filter_bar id: "pog-administration-filters",
                  chips: pogs_administration_filter_chips(@form, @issuers, @year),
                  clear_url: pogs_administration_path(year: @year),
-                 count: ("Showing #{number_with_delimiter(@meta[:total])} of #{pluralize(number_with_delimiter(@total), "pog")}" if @form.active.any?),
+                 count: ("Showing #{number_with_delimiter(@pagy.count)} of #{pluralize(number_with_delimiter(@total), "pog")}" if @form.active.any?),
                  url: pogs_administration_path, model: @form, scope: PogFilterForm::PARAM_SCOPE do |f| %>
     <%= hidden_field_tag :year, @year, id: nil %>
     <%# A callsign, not the person search: that search answers only to Event
@@ -53,7 +53,7 @@
   <% else %>
     <%= ui_section "Pogs Issued in #{@year}", icon: "utensils", icon_type: :solid, border: false do %>
       <%# Shown on a single page too: it is where the list's total reads. %>
-      <% pager = ui_pager(@meta, noun: "pog") { |page| pogs_administration_path(year: @year, **@form.query_params(page:)) } %>
+      <% pager = ui_pager(@pagy, noun: "pog") { |page| pogs_administration_path(year: @year, **@form.query_params(page:)) } %>
       <%= pager %>
       <%= ui_table full_width: true, striped: true, caption: "Pogs issued in #{@year}, newest first" do |t| %>
         <%= t.header do %>

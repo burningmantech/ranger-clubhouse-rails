@@ -21,6 +21,16 @@ class UiPagerHelperTest < ActionView::TestCase
     assert_select "a[href='/log?page=3']", text: "Next Page"
   end
 
+  test "writes thousands with commas, and one row in the singular" do
+    render html: ui_pager({ total: 123_456, total_pages: 1235, page: 1000 }, noun: "request") { |page| "/log?page=#{page}" }
+
+    assert_select "p", text: "Page 1,000 of 1,235 · 123,456 requests"
+
+    render html: ui_pager({ total: 1, total_pages: 1, page: 1 }, noun: "request") { |page| "/log?page=#{page}" }
+
+    assert_select "p", text: "Page 1 of 1 · 1 request"
+  end
+
   test "an estimated total follows has_next_page, not the page arithmetic" do
     meta = { total: 1234, total_pages: 13, page: 12, has_previous_page: true, has_next_page: false }
 

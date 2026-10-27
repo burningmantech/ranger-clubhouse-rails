@@ -18,6 +18,23 @@ module Admin::SmsManagementHelper
   # service) and 32 hex digits.
   TWILIO_SID = /\b[A-Z]{2}\h{32}\b/
 
+  # Why Lookup says a number is not valid, in words.
+  LOOKUP_VALIDATION_ERRORS = {
+    "TOO_SHORT" => "it is too short",
+    "TOO_LONG" => "it is too long",
+    "INVALID_LENGTH" => "it is the wrong length",
+    "INVALID_COUNTRY_CODE" => "its country code is not one Twilio knows",
+    "INVALID_BUT_POSSIBLE" => "it has the right form, but no such number is in use",
+    "NOT_A_NUMBER" => "it is not a phone number"
+  }.freeze
+
+  # Lookup's line types, in words.
+  LINE_TYPES = {
+    "mobile" => "Mobile", "landline" => "Landline", "fixedVoip" => "Fixed VoIP", "nonFixedVoip" => "Non-fixed VoIP",
+    "tollFree" => "Toll-free", "personal" => "Personal", "premium" => "Premium rate", "sharedCost" => "Shared cost",
+    "uan" => "Universal access", "voicemail" => "Voicemail", "pager" => "Pager", "unknown" => "Unknown"
+  }.freeze
+
   # One chip per active filter; each URL drops that one filter, keeps the rest
   # and starts again at Twilio's first page.
   def sms_filter_chips(form)
@@ -147,5 +164,32 @@ module Admin::SmsManagementHelper
     return "—" unless code.to_i.positive?
 
     link_to code.to_s, "https://www.twilio.com/docs/api/errors/#{code.to_i}", target: "_blank", rel: "noopener"
+  end
+
+  # Whether Lookup found the number valid, and if not, why.
+  def sms_lookup_validity(answer)
+    return ui_badge("Valid", :success, icon: "circle-check", icon_type: :solid) if answer.valid
+
+    reasons = answer.validation_errors.map { |code| LOOKUP_VALIDATION_ERRORS.fetch(code, code) }
+    safe_join([ui_badge("Not valid", :error, icon: "triangle-exclamation", icon_type: :solid),
+               (" #{reasons.to_sentence.upcase_first}." if reasons.any?)])
+  end
+
+  # A number's line type and carrier, as Lookup gave them -- or why it gave
+  # none. A landline is why a text to it fails with error 30006.
+  def sms_line_type(info)
+    return "—" if info.blank?
+
+    code = info["error_code"]
+    if code.present?
+      return "Twilio gives no line type for this number: a Canadian number's needs NPAC approval (Twilio error 60601)." if code.to_i == 60601
+
+      return "Twilio could not give the line type (Twilio error #{code.to_i})."
+    end
+
+    words = LINE_TYPES.fetch(info["type"].to_s) { info["type"].presence || "Unknown" }
+    words += ", #{info['carrier_name']}" if info["carrier_name"].present?
+    words += ". A landline cannot get texts, so a text to it fails with Twilio error 30006." if info["type"] == "landline"
+    words
   end
 end

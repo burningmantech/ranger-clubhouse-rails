@@ -13,7 +13,7 @@
 <% end %>
 
 <%= ui_stat_row do %>
-  <%= ui_stat_box number_with_delimiter(@meta[:total]).to_s, "Messages",
+  <%= ui_stat_box number_with_delimiter(@pagy.count).to_s, "Messages",
                   icon: "comment-dots", icon_type: :solid %>
   <%= ui_stat_box @inbound_count.to_s, "Incoming from Phones",
                   icon: "mobile-screen", icon_type: :solid %>
@@ -25,7 +25,7 @@
 <%= filter_bar id: "rbs-message-filters",
                chips: rbs_message_filter_chips(@form, @year),
                clear_url: communication_rbs_messages_path(year: @year),
-               count: "Showing #{@messages.size} of #{number_with_delimiter(@meta[:total])}",
+               count: "Showing #{@messages.size} of #{number_with_delimiter(@pagy.count)}",
                url: communication_rbs_messages_path, model: @form,
                scope: RbsMessageLogFilterForm::PARAM_SCOPE do |f| %>
   <%= hidden_field_tag :year, @year %>
@@ -64,7 +64,7 @@
   <% end %>
 <% end %>
 
-<% pager = ui_pager(@meta, noun: "message", class: "my-3") do |page|
+<% pager = ui_pager(@pagy, noun: "message", class: "my-3") do |page|
      communication_rbs_messages_path({ year: @year }.merge(@form.query_params(to_page: page)))
    end %>
 

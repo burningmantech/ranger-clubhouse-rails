@@ -1,0 +1,36 @@
+<%# locals: (typed: "", line_type: false, problem: nil, answer: nil) %>
+<%# The Look Up a Number frame: the form, and once it is sent what Twilio said.
+    The Groundhog Day Server asks Twilio nothing, so it offers no form. %>
+<%= turbo_frame_tag "sms-lookup" do %>
+  <% if Current.is_ghd_server? %>
+    <%= ui_callout_box :info do %>
+      Live Twilio lookups are not available on the Groundhog Day Server.
+    <% end %>
+  <% else %>
+    <% if problem %>
+      <%= ui_callout_box :error do %><%= sms_mask_sids(problem) %><% end %>
+    <% end %>
+    <% if answer %>
+      <%= ui_label_value label_width: "9rem" do |list| %>
+        <%= list.row "Number" do %><span class="font-mono"><%= answer.number %></span><% end %>
+        <%= list.row "Valid" do %><%= sms_lookup_validity(answer) %><% end %>
+        <%= list.row "National Format" do %><%= answer.national_format.presence || "—" %><% end %>
+        <%= list.row "Country" do %><%= answer.country.presence || "—" %><% end %>
+        <% if line_type %>
+          <%= list.row "Line Type" do %><%= sms_line_type(answer.line_type) %><% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= ui_form(nil, admin_sms_management_lookup_path, scope: :sms_lookup, method: :post, class: "mt-4",
+                no_error_summary: true) do |f| %>
+      <%= f.text_field :number, label: "Phone Number or Callsign", value: typed, required: true, maxlength: 64,
+                                width: "w-full sm:w-64" %>
+      <%= f.check_box :line_type, label: "Also look up the line type and carrier, which Twilio bills for each lookup",
+                                  checked: line_type %>
+      <%= button_row class: "mt-3" do %>
+        <%= f.submit "Look Up Number" %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

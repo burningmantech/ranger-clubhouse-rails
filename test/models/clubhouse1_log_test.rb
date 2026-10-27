@@ -30,7 +30,7 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
     create_log(event: "#login rangers")
     create_log(event: "!DB 'SQL error'")
 
-    assert_equal 2, Clubhouse1Log.find_for_query[:logs].size
+    assert_equal 2, Clubhouse1Log.find_for_query.last.size
   end
 
   test "narrows to who acted" do
@@ -39,7 +39,7 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
 
     result = Clubhouse1Log.find_for_query(user_person_id: @actor.id)
 
-    assert_equal [mine.id], result[:logs].map(&:id)
+    assert_equal [mine.id], result.last.map(&:id)
   end
 
   test "narrows to who was acted upon" do
@@ -48,7 +48,7 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
 
     result = Clubhouse1Log.find_for_query(current_person_id: @subject.id)
 
-    assert_equal [mine.id], result[:logs].map(&:id)
+    assert_equal [mine.id], result.last.map(&:id)
   end
 
   test "the two person filters narrow together rather than either one matching" do
@@ -57,7 +57,7 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
 
     result = Clubhouse1Log.find_for_query(user_person_id: @actor.id, current_person_id: @subject.id)
 
-    assert_equal [both.id], result[:logs].map(&:id)
+    assert_equal [both.id], result.last.map(&:id)
   end
 
   test "narrows to a time range" do
@@ -68,7 +68,7 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
     result = Clubhouse1Log.find_for_query(start_time: Time.zone.parse("2015-01-01 00:00:00"),
                                           end_time: Time.zone.parse("2015-12-31 23:59:59"))
 
-    assert_equal [inside.id], result[:logs].map(&:id)
+    assert_equal [inside.id], result.last.map(&:id)
   end
 
   test "matches an entry beginning with any of the given openings" do
@@ -78,13 +78,13 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
 
     result = Clubhouse1Log.find_for_query(event_prefixes: ["#login", "#logout"])
 
-    assert_equal [login.id, logout.id].sort, result[:logs].map(&:id).sort
+    assert_equal [login.id, logout.id].sort, result.last.map(&:id).sort
   end
 
   test "an opening matches only at the start of an entry" do
     create_log(event: "#REQ GET dashboard about #login")
 
-    assert_empty Clubhouse1Log.find_for_query(event_prefixes: ["#login"])[:logs]
+    assert_empty Clubhouse1Log.find_for_query(event_prefixes: ["#login"]).last
   end
 
   test "an underscore in an opening matches only an underscore" do
@@ -93,7 +93,7 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
 
     result = Clubhouse1Log.find_for_query(event_prefixes: ["!EDBM_E_ERROR"])
 
-    assert_equal [real.id], result[:logs].map(&:id)
+    assert_equal [real.id], result.last.map(&:id)
   end
 
   test "matches text anywhere in an entry" do
@@ -102,7 +102,7 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
 
     result = Clubhouse1Log.find_for_query(event_text: "timesheet")
 
-    assert_equal [found.id], result[:logs].map(&:id)
+    assert_equal [found.id], result.last.map(&:id)
   end
 
   test "a percent sign in the search text is looked for, not treated as a wildcard" do
@@ -111,15 +111,15 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
 
     result = Clubhouse1Log.find_for_query(event_text: "100%")
 
-    assert_equal [literal.id], result[:logs].map(&:id)
+    assert_equal [literal.id], result.last.map(&:id)
   end
 
   test "sorts newest first by default and oldest first on request" do
     older = create_log(event: "#login rangers", occurred: Time.zone.parse("2010-01-01 12:00:00"))
     newer = create_log(event: "#login rangers", occurred: Time.zone.parse("2018-01-01 12:00:00"))
 
-    assert_equal [newer.id, older.id], Clubhouse1Log.find_for_query[:logs].map(&:id)
-    assert_equal [older.id, newer.id], Clubhouse1Log.find_for_query(sort: "asc")[:logs].map(&:id)
+    assert_equal [newer.id, older.id], Clubhouse1Log.find_for_query.last.map(&:id)
+    assert_equal [older.id, newer.id], Clubhouse1Log.find_for_query(sort: "asc").last.map(&:id)
   end
 
   test "entries stamped the same second still hold a settled order" do
@@ -127,7 +127,7 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
     first = create_log(event: "#login one", occurred: same_second)
     second = create_log(event: "#login two", occurred: same_second)
 
-    assert_equal [second.id, first.id], Clubhouse1Log.find_for_query[:logs].map(&:id)
+    assert_equal [second.id, first.id], Clubhouse1Log.find_for_query.last.map(&:id)
   end
 
   test "a full page reports that another page follows" do
@@ -135,9 +135,9 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
 
     result = Clubhouse1Log.find_for_query(page_size: 2)
 
-    assert_equal 2, result[:logs].size
-    assert result[:meta][:has_next_page]
-    assert_not result[:meta][:has_previous_page]
+    assert_equal 2, result.last.size
+    assert result.first.next
+    assert_not result.first.previous
   end
 
   test "the last page reports no page after it" do
@@ -145,9 +145,9 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
 
     result = Clubhouse1Log.find_for_query(page: 2, page_size: 2)
 
-    assert_equal 1, result[:logs].size
-    assert_not result[:meta][:has_next_page]
-    assert result[:meta][:has_previous_page]
+    assert_equal 1, result.last.size
+    assert_not result.first.next
+    assert result.first.previous
   end
 
   test "a page holding exactly the page size reports no page after it" do
@@ -155,8 +155,8 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
 
     result = Clubhouse1Log.find_for_query(page_size: 2)
 
-    assert_equal 2, result[:logs].size
-    assert_not result[:meta][:has_next_page]
+    assert_equal 2, result.last.size
+    assert_not result.first.next
   end
 
   test "a page number below one is read as the first page" do
@@ -164,7 +164,7 @@ class Clubhouse1LogTest < ActiveSupport::TestCase
 
     result = Clubhouse1Log.find_for_query(page: 0)
 
-    assert_equal 1, result[:meta][:page]
-    assert_equal 1, result[:logs].size
+    assert_equal 1, result.first.page
+    assert_equal 1, result.last.size
   end
 end
