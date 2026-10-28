@@ -112,7 +112,7 @@
             <% end %>
             <%= t.body do %>
               <%= t.row do %>
-                <%= t.cell datetime_format(@entry.slot.begins, @entry.slot.ends) %>
+                <%= t.cell datetime_format(@entry.slot.begins, @entry.slot.ends, tz: @entry.slot.timezone) %>
                 <%= t.cell hour_minute_words(timesheet_slot_duration(@entry.slot), full: true) %>
                 <%= t.cell @entry.slot.id, right: true %>
               <% end %>

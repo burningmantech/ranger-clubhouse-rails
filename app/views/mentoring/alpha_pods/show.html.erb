@@ -9,7 +9,7 @@
 <%= hero_panel icon: "people-group", heading_level: :h1, id: "alpha-pods-shift-header",
                title: "Pods — #{shift_title}" do |panel| %>
   <% panel.description do %>
-    Form the pods going out on <%= datetime_format(@slot.begins, @slot.ends) %>,
+    Form the pods going out on <%= datetime_format(@slot.begins, @slot.ends, tz: @slot.timezone) %>,
     <%= @slot.begins_year %>.
   <% end %>
   <% panel.back_to do %>

@@ -178,7 +178,7 @@ module Vehicles::PaperworkHelper
     return tag.div("- none -", class: "ms-4 italic") if signups.empty?
 
     safe_join(signups.map do |signup|
-      tag.div(safe_join([signup.position_title, " ", datetime_format(signup.begins)]),
+      tag.div(safe_join([signup.position_title, " ", datetime_format(signup.begins, tz: signup.timezone)]),
               class: "whitespace-nowrap")
     end)
   end

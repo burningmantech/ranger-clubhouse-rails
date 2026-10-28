@@ -120,6 +120,7 @@ class Milestones
           milestones.alpha_shift = {
             slot_id: alpha_shift.id,
             begins: alpha_shift.slot.begins,
+            timezone: alpha_shift.slot.timezone,
             status: (alpha_shift.slot.begins.advance(hours: 24) <= now) ? Training::NO_SHOW : Training::PENDING
           }
         end

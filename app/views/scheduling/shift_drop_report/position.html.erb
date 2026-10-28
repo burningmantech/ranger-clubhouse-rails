@@ -60,13 +60,13 @@
                   may read this page but not open person pages, and unguarded
                   links all bounce that reader to /me. %>
               <%= t.row_header person_display_link(drop.person, drop.person_id) %>
-              <%# year: and the shift's own tz, matching the heading above. A
-                  12-hour window on a January shift catches removals logged in
-                  December of the previous year, and undated they read as having
-                  happened after the shift they are filed under. %>
-              <%= t.cell datetime_format(drop.dropped_at, year: true,
-                                         tz: slot_drops.slot.timezone,
-                                         tz_abbr: slot_drops.slot.timezone_abbr) %>
+              <%# On the shift's own clock, as the heading above prints the
+                  shift, and dated: a 12-hour window on a January shift catches
+                  removals logged in December of the previous year, and undated
+                  they read as having happened after the shift they are filed
+                  under. %>
+              <%= t.cell zoned_datetime_format(drop.dropped_at, tz: slot_drops.slot.timezone,
+                                               tz_abbr: slot_drops.slot.timezone_abbr) %>
               <%= t.cell shift_drop_notice(drop, @hours) %>
             <% end %>
           <% end %>

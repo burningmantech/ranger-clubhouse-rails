@@ -34,7 +34,7 @@
             time carries a local-timezone tooltip), and a plain string would
             print the tags. %>
         <%= render "mentoring/alpha_pods/people/pool", candidates: @pools.near, prefix: "near",
-                   title: safe_join(["Checked in around ", datetime_format(@slot.begins)]),
+                   title: safe_join(["Checked in around ", datetime_format(@slot.begins, tz: @slot.timezone)]),
                    empty: "No one checked in within an hour of the shift start." %>
 
         <% if @pools.other.any? %>

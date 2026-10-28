@@ -34,7 +34,7 @@
   <% if verdict.is_a?(Scheduling::Verdict::MultipleEnrollment) && verdict.slots.present? %>
     <ul class="list-disc ms-5 mb-3">
       <% verdict.slots.each do |enrolled| %>
-        <li><%= enrolled.description %> &mdash; <%= datetime_format(enrolled.begins) %></li>
+        <li><%= enrolled.description %> &mdash; <%= datetime_format(enrolled.begins, tz: enrolled.timezone) %></li>
       <% end %>
     </ul>
   <% end %>

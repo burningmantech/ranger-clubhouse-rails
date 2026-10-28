@@ -18,7 +18,7 @@
           <%= position.title %>
           <% if slot_sign_ups.slot %>
             <span class="font-normal text-stone-muted">&mdash;
-              <span class="whitespace-nowrap tabular-nums"><%= datetime_format slot_sign_ups.slot.begins %></span><% if slot_sign_ups.slot.description.present? %>
+              <span class="whitespace-nowrap tabular-nums"><%= datetime_format slot_sign_ups.slot.begins, tz: slot_sign_ups.slot.timezone %></span><% if slot_sign_ups.slot.description.present? %>
               &middot; <%= slot_sign_ups.slot.description %><% end %></span>
           <% end %>
           <%= ui_badge slot_sign_ups.entries.size.to_s, :secondary %>

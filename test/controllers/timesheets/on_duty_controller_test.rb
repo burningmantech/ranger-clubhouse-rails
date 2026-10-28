@@ -97,6 +97,19 @@ class Timesheets::OnDutyControllerTest < ActionDispatch::IntegrationTest
     assert_no_escaped_markup
   end
 
+  # January, when Pacific runs an hour behind Phoenix: the shift's 07:00 is a
+  # Pacific wall clock, so its hover names 07:00 PST, not 07:00 here.
+  test "the second line's shift time names the instant on the shift's own clock" do
+    travel_to Time.zone.local(YEAR, 1, 15, 12, 0, 0)
+    slot = create_slot(@ood, begins: Time.zone.local(YEAR, 1, 15, 7, 0, 0),
+                             ends: Time.zone.local(YEAR, 1, 15, 13, 0, 0))
+    create_timesheet(@admin, @ood, on_duty: Time.zone.local(YEAR, 1, 15, 8, 0, 0), slot:)
+
+    get timesheets_on_duty_path
+
+    assert_select "span[data-utc=?]", "#{YEAR}-01-15T15:00:00Z", text: "Wed Jan 15 @ 07:00"
+  end
+
   test "a Ranger with no attached slot says so rather than showing a dash" do
     create_timesheet(@admin, @ood, on_duty: @now - 2.hours)
 

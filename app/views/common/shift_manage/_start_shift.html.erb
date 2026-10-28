@@ -37,7 +37,7 @@
                 <div class="text-stone-muted"><%= shift.slot_description %></div>
               <% end %>
             <% end %>
-            <%= t.cell datetime_format(shift.slot_begins, shift.slot_ends) %>
+            <%= t.cell datetime_format(shift.slot_begins, shift.slot_ends, tz: shift.slot_timezone) %>
             <%= t.cell do %>
               <%= button_link "Start Shift", :primary,
                               shift_start_path(position_id: shift.position_id, slot_id: shift.slot_id),

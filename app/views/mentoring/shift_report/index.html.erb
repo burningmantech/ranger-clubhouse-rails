@@ -58,7 +58,7 @@
   <% else %>
     <%= ui_callout_box :success, icon: "flag", icon_type: :solid, accent: true, class: "my-4" do %>
       <strong>Scheduled for the Alpha shift</strong> &mdash;
-      <%= datetime_format @report.slot.begins %><% if @report.slot.description.present? %> &middot;
+      <%= datetime_format @report.slot.begins, tz: @report.slot.timezone %><% if @report.slot.description.present? %> &middot;
       <%= @report.slot.description %><% end %>. Shifts beginning up to
       <%= MentorShiftReport::HOURS_PRIOR %> hour before and
       <%= MentorShiftReport::HOURS_AFTER %> hours after are included.

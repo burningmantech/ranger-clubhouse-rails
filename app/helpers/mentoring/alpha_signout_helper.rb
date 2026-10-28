@@ -24,7 +24,7 @@ module Mentoring::AlphaSignoutHelper
   # safe_join, not interpolation: datetime_format returns a tooltip-carrying
   # <span>, which a plain String would escape into view.
   def alpha_signout_window(slot)
-    safe_join([datetime_format(slot.begins - AlphaSignOut::HOURS_PRIOR),
-               datetime_format(slot.begins + AlphaSignOut::HOURS_AFTER)], " and ")
+    safe_join([datetime_format(slot.begins - AlphaSignOut::HOURS_PRIOR, tz: slot.timezone),
+               datetime_format(slot.begins + AlphaSignOut::HOURS_AFTER, tz: slot.timezone)], " and ")
   end
 end

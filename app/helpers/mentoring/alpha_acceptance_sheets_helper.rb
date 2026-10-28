@@ -51,7 +51,7 @@ module Mentoring::AlphaAcceptanceSheetsHelper
   # wraps the time in a span carrying the timezone), and joining it into a
   # plain String would strip that mark and print the tags as text.
   def alpha_acceptance_training_label(training)
-    parts = [datetime_format(training.slot_begins)]
+    parts = [datetime_format(training.slot_begins, tz: training.slot_tz)]
     parts << training.slot_description if training.slot_description.present?
     safe_join(parts, "<br>".html_safe)
   end

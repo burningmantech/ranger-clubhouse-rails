@@ -25,7 +25,7 @@
 <% end %>
 <% if training.slot %>
   <div class="my-2 p-2 bg-default dark:bg-default rounded">
-    <%= fa_icon "calendar", :solid %> <b><%= datetime_format(training.slot.begins) %></b><br>
+    <%= fa_icon "calendar", :solid %> <b><%= datetime_format(training.slot.begins, tz: training.slot.timezone) %></b><br>
     <%= fa_icon "location-dot", :solid %> <%= training.slot.description %>
   </div>
 <% end %>

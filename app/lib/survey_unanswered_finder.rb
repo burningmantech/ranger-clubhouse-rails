@@ -40,7 +40,8 @@ class SurveyUnansweredFinder
       Survey::SurveySession.new(
         id: s.slot_id,
         type: Survey::TRAINING,
-        begins: s.slot.begins.to_s,
+        begins: s.slot.begins,
+        timezone: s.slot.timezone,
         description: s.slot.description,
         position_id: s.slot.position_id,
         position_title: s.slot.position.title
@@ -77,7 +78,8 @@ class SurveyUnansweredFinder
         id: slot.id,
         type: Survey::TRAINER,
         description: slot.description,
-        begins: slot.begins.to_s,
+        begins: slot.begins,
+        timezone: slot.timezone,
         position_id: slot.position_id,
         position_title: slot.position.title,
         trainers: trainers.map do |t|
@@ -133,7 +135,8 @@ class SurveyUnansweredFinder
         sessions << Survey::SurveySession.new(
           id: slot.id,
           type: m.type,
-          begins: slot.begins.to_s,
+          begins: slot.begins,
+          timezone: slot.timezone,
           description: slot.description,
           position_id: m.position_id,
           position_title: m.position&.title,

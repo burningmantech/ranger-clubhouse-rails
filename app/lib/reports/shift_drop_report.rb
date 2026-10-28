@@ -29,7 +29,14 @@ class ShiftDropReport
   # The notice is kept as exact seconds and rounded only where it is shown.
   # Stored pre-rounded to upstream's one decimal, "47 minutes" came back out of
   # the page as "48 min", because 0.783 hours had already become 0.8.
-  Drop = Data.define(:slot, :person, :person_id, :callsign, :dropped_at, :seconds_before) do
+  #
+  # starts_at is the instant the shift starts. begins holds the wall clock of the
+  # shift's own zone, so that zone is stamped on, as the page's heading prints
+  # the shift; read on the app's clock, a New York shift had three hours more
+  # notice than it got.
+  Drop = Data.define(:slot, :person, :person_id, :callsign, :dropped_at, :starts_at) do
+    def seconds_before = starts_at - dropped_at
+
     # Only meaningful while the window is wider than the threshold: asked for
     # one hour, every drop is inside two, and the flag would say nothing.
     def urgent? = seconds_before <= URGENT_HOURS.hours
@@ -63,7 +70,7 @@ class ShiftDropReport
     # a position no one dropped has nothing to drill into.
     def summary(year:, hours: DEFAULT_HOURS)
       hours = normalize_hours(hours)
-      slots = year_slots(year).select(:id, :position_id, :begins).to_a
+      slots = year_slots(year).select(:id, :position_id, :begins, :timezone).to_a
       drops = scan(slots, hours)
       by_position = drops.group_by { |drop| drop.slot.position_id }
 
@@ -112,14 +119,16 @@ class ShiftDropReport
 
       window = hours.hours
       slots_by_id = slots.index_by(&:id)
-      logs = removal_logs(slots.map(&:begins).min - window, slots.map(&:begins).max)
+      starts = slots.to_h { |slot| [slot.id, slot.begins.change(zone: slot.timezone)] }
+      logs = removal_logs(starts.values.min - window, starts.values.max)
 
       logs.filter_map { |log|
         slot = slots_by_id[logged_slot_id(log)]
-        next unless slot && log.created_at >= slot.begins - window && log.created_at <= slot.begins
+        starts_at = starts[slot&.id]
+        next unless slot && log.created_at >= starts_at - window && log.created_at <= starts_at
 
         Drop.new(slot:, person: nil, person_id: log.target_person_id, callsign: nil,
-                 dropped_at: log.created_at, seconds_before: slot.begins - log.created_at)
+                 dropped_at: log.created_at, starts_at:)
       }
     end
 

@@ -11,13 +11,15 @@ class PersonSlot < ApplicationRecord
     attr_accessor :id,
                   :begins,
                   :position_id,
-                  :position_title
+                  :position_title,
+                  :timezone
 
-    def initialize(id:, begins:, position_id:, position_title:)
+    def initialize(id:, begins:, position_id:, position_title:, timezone:)
       @id = id
       @begins = begins
       @position_id = position_id
       @position_title = position_title
+      @timezone = timezone
     end
   end
 
@@ -70,7 +72,7 @@ class PersonSlot < ApplicationRecord
     # @param year [Integer]
     # @return [Array<MvrSignup>]
     def retrieve_mvr_signups(person_id, year)
-      rows = select("slot.id, slot.begins, slot.position_id, position.title as position_title")
+      rows = select("slot.id, slot.begins, slot.timezone, slot.position_id, position.title as position_title")
              .joins(slot: :position)
              .where(person_id: person_id)
              .where(slot: { begins_year: year, active: true })
@@ -82,7 +84,8 @@ class PersonSlot < ApplicationRecord
           id: row.id,
           begins: row.begins,
           position_id: row.position_id,
-          position_title: row.position_title
+          position_title: row.position_title,
+          timezone: row.timezone
         )
       end
     end

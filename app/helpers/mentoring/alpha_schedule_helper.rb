@@ -18,7 +18,7 @@ module Mentoring::AlphaScheduleHelper
   # Sunday Swing"), so any prefix-stripping rule would mangle the first one
   # that breaks the pattern. Undescribed slots fall back to their start time.
   def alpha_shift_title(slot)
-    slot.description.presence || datetime_format(slot.begins)
+    slot.description.presence || datetime_format(slot.begins, tz: slot.timezone)
   end
 
   # The same name as plain words, for the places that cannot show markup: a

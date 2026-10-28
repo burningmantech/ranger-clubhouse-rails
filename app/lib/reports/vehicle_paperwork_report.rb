@@ -40,7 +40,7 @@ class VehiclePaperworkReport
 
   FILTER_KEYS = (FLAG_FILTERS.keys + LIST_FILTERS.keys + [:callsign]).freeze
 
-  Signup = Struct.new(:position_title, :begins, keyword_init: true)
+  Signup = Struct.new(:position_title, :begins, :timezone, keyword_init: true)
 
   # One person's paperwork. The five flags come from person_event; the five
   # lists from teams, position grants and shift sign-ups.
@@ -207,11 +207,11 @@ class VehiclePaperworkReport
     def signups_by_person_id(year)
       eligible_signups(year, :mvr_signup_eligible)
         .select("person_slot.person_id AS person_id", "slot.begins AS begins",
-                "position.title AS position_title")
+                "slot.timezone AS timezone", "position.title AS position_title")
         .order("slot.begins")
         .group_by { |row| row.person_id.to_i }
         .transform_values do |rows|
-          rows.map { |row| Signup.new(position_title: row.position_title, begins: row.begins) }
+          rows.map { |row| Signup.new(position_title: row.position_title, begins: row.begins, timezone: row.timezone) }
         end
     end
 

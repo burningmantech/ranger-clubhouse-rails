@@ -25,7 +25,7 @@
           <% list.each do |signup| %>
             <%= t.row do %>
               <%= t.cell signup.position_title %>
-              <%= t.cell datetime_format(signup.begins) %>
+              <%= t.cell datetime_format(signup.begins, tz: signup.timezone) %>
             <% end %>
           <% end %>
         <% end %>

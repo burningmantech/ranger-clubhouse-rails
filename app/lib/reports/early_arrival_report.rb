@@ -30,7 +30,7 @@ class EarlyArrivalReport
   end
 
   # The first shift somebody stands inside the window.
-  Shift = Struct.new(:position_title, :begins, :description)
+  Shift = Struct.new(:position_title, :begins, :timezone, :description)
 
   # One person and everything a packet needs for them.
   #
@@ -149,11 +149,11 @@ class EarlyArrivalReport
                 .where(slot: { begins_year: year, begins: opens..cutoff })
                 .where.not(slot: { position_id: training })
                 .order("slot.begins")
-                .pluck(:person_id, "position.title", "slot.begins", "slot.description")
-                .each_with_object({}) { |(person_id, title, begins, description), first|
+                .pluck(:person_id, "position.title", "slot.begins", "slot.timezone", "slot.description")
+                .each_with_object({}) { |(person_id, title, begins, timezone, description), first|
                   # Ordered by start time, so the first one seen is the earliest
                   # and later ones for the same person are passed over.
-                  first[person_id] ||= Shift.new(title, begins.in_time_zone, description)
+                  first[person_id] ||= Shift.new(title, begins.in_time_zone, timezone, description)
                 }
     end
 

@@ -65,18 +65,17 @@ class Scheduling::ShiftDropReportController < ApplicationController
   # parallel shifts of one position indistinguishable in the file. Hours stay
   # decimal, as upstream's export has them.
   #
-  # getlocal before iso8601, as the sibling report libs do: a datetime read
-  # comes back cast into Time.zone, an hour ahead of the stored wall clock for
-  # the half of the year the machine is not on the same offset. Without it a
-  # January shift exports an hour later than the page and the schedule show it.
+  # Both times on the shift's own clock, with its offset, as the page shows
+  # them: the start is the instant the report measured the notice from, the
+  # removal converted into the same zone.
   def csv_rows
     drops = ShiftDropReport.all_drops(year: @year, hours: @hours)
     titles = Position.titles_by_id(drops.map { |drop| drop.slot.position_id }.uniq)
     rows = [["Position", "Shift Start", "Shift", "Callsign", "Dropped At", "Hours Before Start"]]
 
     sorted_for_export(drops, titles).each do |drop|
-      rows << [titles[drop.slot.position_id], drop.slot.begins.getlocal.iso8601, drop.slot.description,
-               drop.callsign, drop.dropped_at.getlocal.iso8601, drop.hours_before]
+      rows << [titles[drop.slot.position_id], drop.starts_at.iso8601, drop.slot.description,
+               drop.callsign, drop.dropped_at.in_time_zone(drop.slot.timezone).iso8601, drop.hours_before]
     end
 
     rows
@@ -86,7 +85,7 @@ class Scheduling::ShiftDropReportController < ApplicationController
   # left in.
   def sorted_for_export(drops, titles)
     drops.sort_by do |drop|
-      [titles[drop.slot.position_id].downcase, drop.slot.begins, drop.dropped_at]
+      [titles[drop.slot.position_id].downcase, drop.starts_at, drop.dropped_at]
     end
   end
 end

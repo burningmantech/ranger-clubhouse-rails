@@ -100,7 +100,7 @@
     <% end %>
   <% else %>
     <%= ui_callout_box :success, icon: "flag", icon_type: :solid, accent: true, class: "my-4" do %>
-      <strong><%= alpha_shift_title(@slot) %></strong> &mdash; <%= datetime_format(@slot.begins, @slot.ends) %>.
+      <strong><%= alpha_shift_title(@slot) %></strong> &mdash; <%= datetime_format(@slot.begins, @slot.ends, tz: @slot.timezone) %>.
       Alphas who started between <%= alpha_signout_window(@slot) %> are listed.
     <% end %>
   <% end %>

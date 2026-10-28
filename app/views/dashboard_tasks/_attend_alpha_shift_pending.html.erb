@@ -3,7 +3,7 @@
 
 <div class="my-2 p-3 bg-default dark:bg-default rounded">
   <p class="font-bold text-lg">
-    <%= fa_icon "calendar", :solid %> <%= datetime_format facts.alpha_shift[:begins] %>
+    <%= fa_icon "calendar", :solid %> <%= datetime_format facts.alpha_shift[:begins], tz: facts.alpha_shift[:timezone] %>
   </p>
   <p class="text-error font-bold">
     <%= fa_icon "clock", :solid, class: "icon-error" %> ARRIVE 20 MIN EARLY — late = turned away

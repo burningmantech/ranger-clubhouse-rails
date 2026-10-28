@@ -60,7 +60,7 @@
             <% end %>
             <%= t.cell do %>
               <% if art.slot %>
-                <%= datetime_format art.slot.begins %> (<%= art.slot.timezone_abbr %>)<br>
+                <%= datetime_format art.slot.begins, tz: art.slot.timezone %> (<%= art.slot.timezone_abbr %>)<br>
                 <%= art.slot.description %>
                 <% if art.is_trainer %>
                   <br><%= ui_badge "Teaching", :primary, size: "xs" %>

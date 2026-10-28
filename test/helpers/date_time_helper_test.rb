@@ -44,6 +44,18 @@ class DateTimeHelperTest < ActionView::TestCase
     assert_includes november, %(data-utc="2026-11-05T21:30:00Z")
   end
 
+  # A slot's begins is the wall clock of its own zone: stamped with that zone,
+  # the digits stay and the instant is the zone's, winter and summer alike.
+  test "a slot time keeps its digits and names its own zone's instant" do
+    january_pacific = datetime_format(Time.zone.local(2026, 1, 15, 7, 0), tz: "America/Los_Angeles")
+    august_new_york = datetime_format(Time.zone.local(2026, 8, 27, 9, 0), tz: "America/New_York")
+
+    assert_includes january_pacific, ">Thu Jan 15 @ 07:00<"
+    assert_includes january_pacific, %(data-utc="2026-01-15T15:00:00Z")
+    assert_includes august_new_york, ">Thu Aug 27 @ 09:00<"
+    assert_includes august_new_york, %(data-utc="2026-08-27T13:00:00Z")
+  end
+
   test "a Pacific timestamp moves to Pacific's clock and keeps its instant" do
     html = pacific_datetime_format(Time.zone.local(2026, 11, 5, 14, 30))
 

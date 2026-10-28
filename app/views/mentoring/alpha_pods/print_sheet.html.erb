@@ -43,7 +43,7 @@
     <div class="alpha-doc-label">Alpha pods</div>
     <div class="flex flex-row justify-between items-center w-full mt-2">
       <h1 class="alpha-shift"><%= shift_title %></h1>
-      <div class="alpha-when"><%= datetime_format(@slot.begins, @slot.ends) %>, <%= @slot.begins_year %></div>
+      <div class="alpha-when"><%= datetime_format(@slot.begins, @slot.ends, tz: @slot.timezone) %>, <%= @slot.begins_year %></div>
     </div>
   </div>
 

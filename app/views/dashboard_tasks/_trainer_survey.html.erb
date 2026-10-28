@@ -4,7 +4,7 @@
 <% facts.surveys.trainers.each do |slot| %>
   <li>
     <%= link_to me_surveys_path(slot_id: slot.id, type: Survey::TRAINER) do %>
-      <%= slot.position_title %> - <%= slot.description %> (<%= datetime_format slot.begins %>)
+      <%= slot.position_title %> - <%= slot.description %> (<%= datetime_format slot.begins, tz: slot.timezone %>)
     <% end %>
   </li>
 <% end %>

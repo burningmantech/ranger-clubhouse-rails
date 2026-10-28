@@ -119,7 +119,7 @@
           <% upcoming.each do |shift| %>
             <%= t.row do %>
               <%= t.row_header do %>
-                <%= link_to tag.span(datetime_format(shift.slot.begins, shift.slot.ends)),
+                <%= link_to tag.span(datetime_format(shift.slot.begins, shift.slot.ends, tz: shift.slot.timezone)),
                             training_mentoring_assignment_shift_path(training_slug, shift.slot.id, year: @year),
                             class: LinkHelper::TABLE_LINK_CLASSES %>
               <% end %>

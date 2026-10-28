@@ -31,7 +31,7 @@ class TimesheetSlotRepair
   # One shift, as a row needs to show it. position_title is the shift's own
   # position, which is the point of showing it: an entry can be linked to a
   # shift belonging to some other position entirely.
-  Shift = Data.define(:id, :position_title, :begins, :description)
+  Shift = Data.define(:id, :position_title, :begins, :timezone, :description)
 
   # One entry that should be relinked, with both ends of the change and enough
   # about the person to render a row.
@@ -217,9 +217,9 @@ class TimesheetSlotRepair
       # whose position row is gone would drop out of an inner join entirely --
       # and a change that lost its old end would read as an addition.
       Slot.where(id: ids).left_joins(:position)
-          .pluck("slot.id", "position.title", "slot.begins", "slot.description")
-          .to_h { |id, title, begins, description|
-            [id, Shift.new(id:, position_title: title, begins:, description:)]
+          .pluck("slot.id", "position.title", "slot.begins", "slot.timezone", "slot.description")
+          .to_h { |id, title, begins, timezone, description|
+            [id, Shift.new(id:, position_title: title, begins:, timezone:, description:)]
           }
     end
 

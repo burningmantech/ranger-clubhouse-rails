@@ -18,7 +18,7 @@
              (ui_badge("#{shift.signed_in} signed in", :success, icon: "user-check", icon_type: :solid) if shift.signed_in.positive?),
              local_assigns[:extra_badge]
            ],
-           subtitle: datetime_format(shift.slot.begins, shift.slot.ends),
+           subtitle: datetime_format(shift.slot.begins, shift.slot.ends, tz: shift.slot.timezone),
            meter: { label: "Sign-Ups",
                     value: shift.slot.max.to_i.positive? ? "#{shift.signed_up} of #{shift.slot.max}" : shift.signed_up.to_s,
                     percent: alpha_shift_fill_percentage(shift), variant: alpha_shift_fill_variant(shift),

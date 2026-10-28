@@ -43,10 +43,10 @@ module Scheduling::Summaries
   class ShiftInfo
     attr_accessor :slot_id, :slot_description,
                   :position_id, :position_title, :slot_begins,
-                  :slot_ends, :slot_info, :is_within_start_time, :can_start_in
+                  :slot_ends, :slot_timezone, :slot_info, :is_within_start_time, :can_start_in
 
     def initialize(slot_id:, slot_description:, position_id:, position_title:,
-                   slot_begins:, slot_ends:, slot_info: nil,
+                   slot_begins:, slot_ends:, slot_timezone:, slot_info: nil,
                    is_within_start_time: true, can_start_in: nil)
       @slot_id = slot_id
       @slot_description = slot_description
@@ -54,6 +54,7 @@ module Scheduling::Summaries
       @position_title = position_title
       @slot_begins = slot_begins
       @slot_ends = slot_ends
+      @slot_timezone = slot_timezone
       @slot_info = slot_info
       @is_within_start_time = is_within_start_time
       @can_start_in = can_start_in
@@ -185,6 +186,7 @@ module Scheduling::Summaries
       position_title: slot.position.title,
       slot_begins: slot.begins,
       slot_ends: slot.ends,
+      slot_timezone: slot.timezone,
       slot_info: slot.url,
       is_within_start_time: early_time.zero? || within_start
     )

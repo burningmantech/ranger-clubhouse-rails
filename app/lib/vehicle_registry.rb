@@ -250,11 +250,11 @@ class VehicleRegistry
                 .where(slot: { begins_year: Current.year, active: true })
                 .where(position: { active: true, mvr_signup_eligible: true })
                 .select("person_slot.person_id AS person_id", "slot.begins AS begins",
-                        "position.title AS position_title")
+                        "slot.timezone AS timezone", "position.title AS position_title")
                 .order("slot.begins")
                 .group_by { |row| row.person_id.to_i }
                 .transform_values do |signups|
-                  signups.map { |s| VehiclePaperworkReport::Signup.new(position_title: s.position_title, begins: s.begins) }
+                  signups.map { |s| VehiclePaperworkReport::Signup.new(position_title: s.position_title, begins: s.begins, timezone: s.timezone) }
                 end
     end
   end

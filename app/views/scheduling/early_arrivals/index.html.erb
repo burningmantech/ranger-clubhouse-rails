@@ -187,7 +187,7 @@
               <%= t.cell do %>
                 <% if row.first_shift %>
                   <div><%= row.first_shift.position_title %></div>
-                  <div class="text-sm"><%= datetime_format(row.first_shift.begins) %></div>
+                  <div class="text-sm"><%= datetime_format(row.first_shift.begins, tz: row.first_shift.timezone) %></div>
                   <% if row.first_shift.description.present? %>
                     <div class="text-sm text-stone-muted"><%= row.first_shift.description %></div>
                   <% end %>

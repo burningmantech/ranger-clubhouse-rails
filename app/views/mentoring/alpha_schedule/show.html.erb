@@ -10,7 +10,7 @@
 <%= hero_panel icon: "clipboard-user", heading_level: :h1, id: "alpha-shift-header",
                title: shift_title do |panel| %>
   <% panel.description do %>
-    Add or remove sign-ups for <%= datetime_format(slot.begins, slot.ends) %>,
+    Add or remove sign-ups for <%= datetime_format(slot.begins, slot.ends, tz: slot.timezone) %>,
     <%= slot.begins_year %>, then print the sheets you need for the shift.
   <% end %>
   <% panel.back_to do %>

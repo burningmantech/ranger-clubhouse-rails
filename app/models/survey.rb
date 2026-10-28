@@ -17,9 +17,9 @@ class Survey < ApplicationRecord
 
   # Represents a training or mentoring session
   class SurveySession
-    attr_reader :id, :type, :begins, :description, :position_id, :position_title, :mentoring
+    attr_reader :id, :type, :begins, :timezone, :description, :position_id, :position_title, :mentoring
 
-    def initialize(id:, type:, begins:, description:, position_id:, position_title:, mentoring: nil)
+    def initialize(id:, type:, begins:, description:, position_id:, position_title:, mentoring: nil, timezone: nil)
       @id = id
       @type = type
       @begins = begins
@@ -27,14 +27,15 @@ class Survey < ApplicationRecord
       @position_id = position_id
       @position_title = position_title
       @mentoring = mentoring
+      @timezone = timezone
     end
   end
 
   # Represents a trainer survey with trainers list
   class TrainerSurvey
-    attr_reader :id, :type, :description, :begins, :position_id, :position_title, :trainers
+    attr_reader :id, :type, :description, :begins, :timezone, :position_id, :position_title, :trainers
 
-    def initialize(id:, type:, description:, begins:, position_id:, position_title:, trainers:)
+    def initialize(id:, type:, description:, begins:, position_id:, position_title:, trainers:, timezone: nil)
       @id = id
       @type = type
       @description = description
@@ -42,6 +43,7 @@ class Survey < ApplicationRecord
       @position_id = position_id
       @position_title = position_title
       @trainers = trainers
+      @timezone = timezone
     end
   end
 

@@ -44,7 +44,7 @@ module Timesheets::OnDutyHelper
               # datetime_format returns a <span>, so it is joined rather than
               # interpolated -- interpolation would hand safe_join a plain
               # String and the markup would be escaped into the page.
-              [safe_join(["shift ", datetime_format(entry.slot.begins)]),
+              [safe_join(["shift ", datetime_format(entry.slot.begins, tz: entry.slot.timezone)]),
                "#{hour_minute_format(entry.normal_duration)} scheduled"]
             else
               # Upstream printed "- no shift associated -". It is real

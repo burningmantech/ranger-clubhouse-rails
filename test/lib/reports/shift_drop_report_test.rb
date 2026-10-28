@@ -70,6 +70,31 @@ class ShiftDropReportTest < ActiveSupport::TestCase
     assert_equal "Deleted #0", drop.callsign
   end
 
+  # A shift's begins is the wall clock of its own zone. New York's 09:00 is
+  # 06:00 here, so a removal logged at 05:00 here left an hour, not four.
+  test "a shift in another zone measures the notice on its own clock" do
+    new_york = create_slot(@position, begins: Time.zone.local(YEAR, 8, 27, 9, 0, 0), timezone: "America/New_York")
+    ActionLog.create!(event: "person-slot-remove", message: "removed", target_person_id: @person.id,
+                      data: { "slot_id" => new_york.id }, created_at: Time.zone.local(YEAR, 8, 27, 5, 0, 0))
+
+    drop = ShiftDropReport.position(year: YEAR, position: @position).slot_drops.sole.drops.sole
+
+    assert_equal 60 * 60, drop.seconds_before.to_i
+    assert drop.urgent?
+  end
+
+  # January, when Pacific runs an hour behind: 07:30 here is 06:30 in Los
+  # Angeles, half an hour before a 07:00 shift rather than half an hour after.
+  test "a Pacific shift in winter counts a removal from its own clock" do
+    january = create_slot(@position, begins: Time.zone.local(YEAR, 1, 15, 7, 0, 0))
+    ActionLog.create!(event: "person-slot-remove", message: "removed", target_person_id: @person.id,
+                      data: { "slot_id" => january.id }, created_at: Time.zone.local(YEAR, 1, 15, 7, 30, 0))
+
+    drop = ShiftDropReport.position(year: YEAR, position: @position).slot_drops.sole.drops.sole
+
+    assert_equal 30 * 60, drop.seconds_before.to_i
+  end
+
   # Upstream clamps created_at to the report year, which loses the December
   # removals of an early-January shift. The window is bounded by the shift.
   test "a window reaching into the previous year is not clipped" do

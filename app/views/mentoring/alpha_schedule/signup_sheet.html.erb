@@ -11,7 +11,7 @@
 <%# safe_join, not interpolation: a shift with no description is named by its
     time, which is markup, and a plain string would print the tags. %>
 <% shift_title = safe_join([slot.begins_year, " ", alpha_shift_title(slot)]) %>
-<% shift_when = datetime_format(slot.begins, slot.ends) %>
+<% shift_when = datetime_format(slot.begins, slot.ends, tz: slot.timezone) %>
 <% content_for :title, "Sign-In Sheet — #{alpha_shift_title_text(slot)}" %>
 
 <%= render "print_screen_nav" %>

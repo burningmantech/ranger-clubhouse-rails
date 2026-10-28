@@ -453,11 +453,11 @@ Trap: Audit rows (`<table-name-dasherized>-create|update|delete`, e.g. `person-s
 Trap: Rows are stored machine-local (`default_timezone = :local`) while `Time.zone` is Phoenix, so `Time.zone` bounds land an hour off and `YEAR(col)` cannot use an index — scope with `where_year(column, year)` (a `Time.local` range).
 
 ### Date and time display (DateTimeHelper)
-Used by: every page that prints a date or time; `datetime_format` for timestamps and slot times (`slot_shift_time` for a slot's window), `zoned_datetime_format` for a timestamp on another zone's clock (a training session's trainee cards and score dialog), `pacific_datetime_format` for the PT note lists (Person › Unified Flagging and Intake Notes, the Unified Flagging review pages under Training, VC, People and Mentoring); `message_list_time` (`MessagesHelper`) dates the mailbox list on the same clock; `local_time_controller.js` restates each hover in the reader's zone from `data-utc`
+Used by: every page that prints a date or time; `datetime_format` for timestamps and slot times (`slot_shift_time` for a slot's window), `zoned_datetime_format` for a timestamp on another zone's clock (a training session's trainee cards and score dialog, Scheduling › Shift Drop Report), `pacific_datetime_format` for the PT note lists (Person › Unified Flagging and Intake Notes, the Unified Flagging review pages under Training, VC, People and Mentoring); `message_list_time` (`MessagesHelper`) dates the mailbox list on the same clock; `local_time_controller.js` restates each hover in the reader's zone from `data-utc`
 Owner: `DateTimeHelper` (`app/helpers/date_time_helper.rb`), `local_time_controller.js` (`app/javascript/controllers/local_time_controller.js`)
 Touches: none
-Verify: `test/helpers/date_time_helper_test.rb`, `test/controllers/person/site_log_controller_test.rb`
-Trap: `datetime_format`'s `tz:` names the zone the digits were written in and stamps them with it; it never converts. A timestamp (`created_at`, `on_duty`) is written on the app's clock, the default, so it passes no `tz:`; a slot's `begins`/`ends` are written in the slot's own zone, so a slot time passes `tz: slot.timezone`. A timestamp shown on another clock goes through `zoned_datetime_format`, which converts. From November to March Pacific runs an hour behind Phoenix: a timestamp given a Pacific `tz:` hovers an hour late, and a Pacific slot time given none hovers an hour early. Scheduling › Shift Drop Report still stamps its drop times with the shift's zone on purpose: `ShiftDropReport` measures the notice on the stored digits, and converting only the time shown would contradict that column.
+Verify: `test/helpers/date_time_helper_test.rb`, `test/helpers/messages_helper_test.rb`, `test/controllers/person/site_log_controller_test.rb`, `test/controllers/timesheets/on_duty_controller_test.rb`
+Trap: `datetime_format`'s `tz:` names the zone the digits were written in and stamps them with it; it never converts. A timestamp (`created_at`, `on_duty`) is written on the app's clock, the default, so it passes no `tz:`; a slot's `begins`/`ends` are written in the slot's own zone, so a slot time passes `tz: slot.timezone`. A timestamp shown on another clock goes through `zoned_datetime_format`, which converts. From November to March Pacific runs an hour behind Phoenix: a timestamp given a Pacific `tz:` hovers an hour late, and a Pacific slot time given none hovers an hour early. Two pages leave a slot time on the app's clock on purpose, because the verdict beside it compares raw digits: Timesheets › Early / Late Check-Ins and the timesheet time warnings (`Slot.check_date_time_for_position`, `common/_time_warnings`).
 
 ## Sign-in, accounts & site chrome
 
@@ -2078,6 +2078,7 @@ Touches: `slot`, `action_logs`, `position`, `person`
 Verify: `test/controllers/scheduling/shift_drop_report_controller_test.rb`, `test/lib/reports/shift_drop_report_test.rb`
 Trap: A drop is a `person-slot-remove` `action_logs` row (the `person_slot` is gone), matched to its shift via `ActionLog.slot_id_from_data`, which coerces Laravel's String slot ids — never match `data["slot_id"]` raw.
 Trap: `year_slots` (`Slot.for_year(year).active`, no `begins <= now` bound) includes unstarted shifts, unlike Flake/No Shows; `@hours` must ride every link via `@index_params` or drill-downs fall back to 12 hours.
+Trap: The window and the notice run from `Drop#starts_at`, `slot.begins` stamped with `slot.timezone` (the instant the shift heading prints), never the raw `begins`, which on the app's clock puts a New York shift three hours late and a Pacific one an hour late from November to March. The drop time on the page and both CSV times are on that shift's clock.
 
 ### No Shows Report
 Reach it: `GET /scheduling/no-shows-report` → Scheduling › Shift Change Reports › No Shows Report; position `GET /scheduling/no-shows-report/position/:position_id` (also `.csv`)
@@ -2205,6 +2206,7 @@ Owner: `EarlyLateCheckInReport` (`app/lib/reports/early_late_check_in_report.rb`
 Touches: `setting`, `slot`, `position`, `timesheet`, `timesheet_log`, `person`
 Verify: `test/controllers/timesheets/early_late_checkins_controller_test.rb`, `test/lib/reports/early_late_check_in_report_test.rb`
 Trap: `slots_by_position` compares `slot.begins`/`ends` against `on_duty` — never the `begins_time`/`ends_time` epoch columns, which Laravel and Rails wrote on different clocks and drift an hour off-season.
+Trap: Those digits are compared raw, as if `begins` were on the app's clock, so the page prints the shift start with no `tz:` to match its verdict. Stamping only the time shown with the shift's zone would make its hover contradict the early/late call from November to March.
 Trap: `ShiftCheckInEarlyPeriod` or `ShiftCheckInLatePeriod` at 0 switches that side off rather than tightening it; with both at 0 `execute` returns an empty report without querying.
 
 ### Hours & Credits

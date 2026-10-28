@@ -336,7 +336,7 @@ class Training
           person_status: status,
           slot_id: row.id,
           slot_description: row.description,
-          slot_begins: row.begins.to_s,
+          slot_begins: row.begins,
           slot_year: row.begins_year,
           slot_tz: row.timezone,
           slot_tz_abbr: row.timezone_abbr,

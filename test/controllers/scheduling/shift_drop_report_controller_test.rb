@@ -470,6 +470,23 @@ class Scheduling::ShiftDropReportControllerTest < ActionDispatch::IntegrationTes
     assert_equal titles.sort_by(&:downcase), titles, "rows are ordered by position title"
   end
 
+  # New York's 09:00 is 06:00 here, so a removal logged at 05:00 here shows and
+  # exports at 08:00 New York time: an hour's notice, on the heading's clock.
+  test "a shift in another zone shows and exports its drop on its own clock" do
+    new_york = create_slot(@ood, begins: Time.zone.local(YEAR, 8, 27, 9, 0, 0),
+                                 ends: Time.zone.local(YEAR, 8, 27, 15, 0, 0),
+                                 description: "Brooklyn", timezone: "America/New_York")
+    log_drop(@outsider, new_york, at: Time.zone.local(YEAR, 8, 27, 5, 0, 0))
+
+    get position_path
+    assert_includes response.body, ">Wed Aug 27, #{YEAR} @ 08:00 (EDT)</span>"
+
+    get index_path(format: :csv)
+    row = response.body.lines.detect { |line| line.include?("Brooklyn") }
+    assert_includes row, "#{YEAR}-08-27T09:00:00-04:00,Brooklyn,"
+    assert_includes row, ",#{YEAR}-08-27T08:00:00-04:00,1.0"
+  end
+
   test "the export honors the window it was asked for" do
     log_drop(@admin, @slot, at: @slot.begins - 20.hours)
 
