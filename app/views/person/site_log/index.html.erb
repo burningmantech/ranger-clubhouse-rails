@@ -74,9 +74,7 @@
         <%= t.body do %>
           <% rows.each do |row| %>
             <%= t.row do %>
-              <%# A timestamp on the server's clock, not a shift's Pacific wall clock:
-                  without tz: the hover title reads an hour late all winter. %>
-              <%= t.cell datetime_format(row.created_at, year: true, tz: Time.zone.name) %>
+              <%= t.cell datetime_format(row.created_at, year: true) %>
               <%= t.cell do %>
                 <%# The same pair as the person overview's hero. %>
                 <% if row.on_site? %>

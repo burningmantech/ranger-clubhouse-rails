@@ -13,6 +13,7 @@
 #   Long form                       Thursday, January 8, 2026 mdy_format(full: true)
 #   Long form with the time         ... 2026 @ 14:30          full_datetime_format
 #   A chip with no room             Thu 1/8 14:30             short_datetime_format
+#   On another zone's clock         ... 2026 @ 13:30 (PT)     zoned_datetime_format
 #   Admin logs                      2026-01-08 14:30:00       log_time_format, LOG_TIME
 #   CSV, printed forms              2026-01-08 14:30          CSV_TIME, ymd_format
 #
@@ -38,10 +39,14 @@ module DateTimeHelper
   # cannot be read in order.
   LOG_TIME = "%Y-%m-%d %H:%M:%S"
 
+  # tz: names the zone the digits were written in, and the digits are stamped
+  # with it, never converted. A timestamp (created_at, on_duty) is written on
+  # the app's clock, the default. A slot's begins and ends are written in the
+  # slot's own zone, so a slot time passes it (slot_shift_time).
   def datetime_format(start, finish = nil, tz: nil, tz_abbr: nil, year: false)
     return "" unless start
 
-    timezone = tz || "America/Los_Angeles"
+    timezone = tz || Time.zone.name
     display_abbr = tz_abbr ? " (#{tz_abbr})" : ""
 
     start_parsed = parse_time_in_zone(start, timezone)
@@ -83,6 +88,19 @@ module DateTimeHelper
   def slot_shift_time(slot)
     datetime_format(slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr)
   end
+
+  # A timestamp on another zone's clock, named and dated: a training session's,
+  # or Pacific. Converted, where datetime_format's tz: would keep the app's
+  # digits and only relabel them -- an hour late from November to March, when
+  # Pacific falls behind Phoenix.
+  def zoned_datetime_format(time, tz:, tz_abbr:)
+    return "" unless time
+
+    format_date(time.in_time_zone(tz), MONTH_DAY_TIME_YEAR, " (#{tz_abbr})")
+  end
+
+  # The note lists' clock, labelled PT as they always have been.
+  def pacific_datetime_format(time) = zoned_datetime_format(time, tz: "America/Los_Angeles", tz_abbr: "PT")
 
   # A timestamp on an admin log page, to the second.
   def log_time_format(time)

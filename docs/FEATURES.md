@@ -21,7 +21,7 @@ Paths are relative to the repository root. To find a feature, grep this file for
 
 ## Contents
 
-- [Shared engines](#shared-engines) (44)
+- [Shared engines](#shared-engines) (45)
 - [Sign-in, accounts & site chrome](#sign-in-accounts--site-chrome) (16)
 - [My Clubhouse: dashboard & profile](#my-clubhouse-dashboard--profile) (11)
 - [My Clubhouse: messages, announcements & info](#my-clubhouse-messages-announcements--info) (9)
@@ -451,6 +451,13 @@ Touches: `action_logs` (w)
 Verify: `test/models/application_record_audit_test.rb`, `test/models/action_log_test.rb`, `test/lib/where_year_test.rb`
 Trap: Audit rows (`<table-name-dasherized>-create|update|delete`, e.g. `person-slot-delete`) come only from AR callbacks — `update_columns`, `update_all`, `insert_all` write none; `audit_reason` labels one; reports key on `person-slot-add` / `person-slot-remove`.
 Trap: Rows are stored machine-local (`default_timezone = :local`) while `Time.zone` is Phoenix, so `Time.zone` bounds land an hour off and `YEAR(col)` cannot use an index — scope with `where_year(column, year)` (a `Time.local` range).
+
+### Date and time display (DateTimeHelper)
+Used by: every page that prints a date or time; `datetime_format` for timestamps and slot times (`slot_shift_time` for a slot's window), `zoned_datetime_format` for a timestamp on another zone's clock (a training session's trainee cards and score dialog), `pacific_datetime_format` for the PT note lists (Person › Unified Flagging and Intake Notes, the Unified Flagging review pages under Training, VC, People and Mentoring); `message_list_time` (`MessagesHelper`) dates the mailbox list on the same clock; `local_time_controller.js` restates each hover in the reader's zone from `data-utc`
+Owner: `DateTimeHelper` (`app/helpers/date_time_helper.rb`), `local_time_controller.js` (`app/javascript/controllers/local_time_controller.js`)
+Touches: none
+Verify: `test/helpers/date_time_helper_test.rb`, `test/controllers/person/site_log_controller_test.rb`
+Trap: `datetime_format`'s `tz:` names the zone the digits were written in and stamps them with it; it never converts. A timestamp (`created_at`, `on_duty`) is written on the app's clock, the default, so it passes no `tz:`; a slot's `begins`/`ends` are written in the slot's own zone, so a slot time passes `tz: slot.timezone`. A timestamp shown on another clock goes through `zoned_datetime_format`, which converts. From November to March Pacific runs an hour behind Phoenix: a timestamp given a Pacific `tz:` hovers an hour late, and a Pacific slot time given none hovers an hour early. Scheduling › Shift Drop Report still stamps its drop times with the shift's zone on purpose: `ShiftDropReport` measures the notice on the stored digits, and converting only the time shown would contradict that column.
 
 ## Sign-in, accounts & site chrome
 

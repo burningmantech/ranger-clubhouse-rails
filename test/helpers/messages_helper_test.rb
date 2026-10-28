@@ -6,7 +6,7 @@ class MessagesHelperTest < ActionView::TestCase
   include MessagesHelper
 
   test "message_list_time shows the clock today, the date otherwise, and the year once it differs" do
-    today = Current.time.in_time_zone("America/Los_Angeles").change(hour: 14, min: 24)
+    today = Current.time.change(hour: 14, min: 24)
     assert_equal "14:24", message_list_time(today)
 
     # A fixed day of this year that cannot be today, so the date branch is
@@ -16,6 +16,15 @@ class MessagesHelperTest < ActionView::TestCase
 
     last_year = today - 1.year
     assert_equal last_year.strftime(DateTimeHelper::DATE), message_list_time(last_year)
+  end
+
+  # January, when Pacific runs an hour behind Phoenix: read as Pacific, a
+  # message sent at 00:30 was listed the day before its thread is dated.
+  test "message_list_time reads the app's clock, as the thread does" do
+    travel_to Time.zone.local(2026, 1, 20, 12, 0) do
+      assert_equal "Jan 16", message_list_time(Time.zone.local(2026, 1, 16, 0, 30))
+      assert_equal "00:30", message_list_time(Time.zone.local(2026, 1, 20, 0, 30))
+    end
   end
 
   test "message_search_marks marks each word from its start to its end and escapes the rest" do

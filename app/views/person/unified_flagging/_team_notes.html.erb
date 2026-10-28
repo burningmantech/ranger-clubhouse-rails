@@ -33,7 +33,7 @@
               <% log_notes.each do |note| %>
                 <li>
                   <i>
-                    <%= datetime_format(note.created_at, tz: "America/Los_Angeles", tz_abbr: "PT", year: true) %>
+                    <%= pacific_datetime_format(note.created_at) %>
                     by
                     <% if note.person_source %>
                       <%= note.person_source.callsign %>

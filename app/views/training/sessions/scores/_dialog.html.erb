@@ -25,8 +25,8 @@
       <%= t.body do %>
         <% trainee.notes.each do |note| %>
           <%= t.row do %>
-            <%= t.cell datetime_format(note.created_at, tz: session.slot.timezone,
-                                       tz_abbr: session.slot.timezone_abbr, year: true) %>
+            <%= t.cell zoned_datetime_format(note.created_at, tz: session.slot.timezone,
+                                             tz_abbr: session.slot.timezone_abbr) %>
             <%= t.cell note.person_source&.callsign || "* imported *" %>
             <%= t.cell do %>
               <% if note.is_log %>

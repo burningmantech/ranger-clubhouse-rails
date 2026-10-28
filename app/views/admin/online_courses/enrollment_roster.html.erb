@@ -37,9 +37,7 @@
               <% if student.is_teacher %>
                 <%= ui_badge "Not enrolled as student", :warning, size: "sm" %>
               <% elsif student.completed_at.present? %>
-                <%# The LMS reports completion in Phoenix time; naming the zone
-                    keeps the printed clock the same as the one it sent. %>
-                <%= datetime_format(student.completed_at, tz: "America/Phoenix") %>
+                <%= datetime_format(student.completed_at) %>
               <% else %>
                 <span class="text-stone-subtle">not yet</span>
               <% end %>

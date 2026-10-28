@@ -74,8 +74,7 @@
                 <%= person_display_link recipient, pog.person_id,
                                         path: (person_pogs_path(recipient, year: @year) if recipient) %>
               <% end %>
-              <%# The server's clock, not a shift's Pacific wall clock. %>
-              <%= t.cell datetime_format(pog.issued_at, tz: Time.zone.name) %>
+              <%= t.cell datetime_format(pog.issued_at) %>
               <%= t.cell pog.pog_label %>
               <%= t.cell do %>
                 <% if pog.status == PersonPog::STATUS_CANCELLED %>

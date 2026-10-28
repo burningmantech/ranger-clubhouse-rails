@@ -61,8 +61,8 @@
     </div>
 
     <div class="text-stone-muted text-sm mt-1">
-      Signed up <%= datetime_format trainee.signed_up_at, tz: session.slot.timezone,
-                                    tz_abbr: session.slot.timezone_abbr, year: true %>
+      Signed up <%= zoned_datetime_format trainee.signed_up_at, tz: session.slot.timezone,
+                                          tz_abbr: session.slot.timezone_abbr %>
     </div>
   </div>
 

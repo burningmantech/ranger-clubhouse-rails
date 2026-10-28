@@ -56,11 +56,12 @@ module MessagesHelper
   # The list stamp: the clock time for a thread that moved today, the date
   # otherwise, and the year once it is not this year. The full stamp stays on
   # the thread page; in the list it crowded the callsign off a phone-width row.
-  # Same zone datetime_format uses, so the two never disagree about the day.
+  # The app's clock, which datetime_format prints the thread on, so the two
+  # never disagree about the day.
   def message_list_time(time)
-    local = time.in_time_zone("America/Los_Angeles")
-    today = Current.time.in_time_zone("America/Los_Angeles")
-    return local.strftime(DateTimeHelper::HOUR_MINS) if local.to_date == today.to_date
+    local = time.in_time_zone
+    today = Current.today
+    return local.strftime(DateTimeHelper::HOUR_MINS) if local.to_date == today
 
     local.strftime(local.year == today.year ? "%b %-d" : DateTimeHelper::DATE)
   end

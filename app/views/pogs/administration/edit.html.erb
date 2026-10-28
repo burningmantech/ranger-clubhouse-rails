@@ -5,7 +5,7 @@
                title: "Edit Pog for #{recipient}",
                back_to: ["#{@year} Pog Administration", pogs_administration_path(return_params)] do |panel| %>
   <% panel.description do %>
-    Issued <%= datetime_format(@pog.issued_at, year: true, tz: Time.zone.name) %> by <%= person_display_name(@pog.issued_by, @pog.issued_by_id) %>.
+    Issued <%= datetime_format(@pog.issued_at, year: true) %> by <%= person_display_name(@pog.issued_by, @pog.issued_by_id) %>.
   <% end %>
 <% end %>
 

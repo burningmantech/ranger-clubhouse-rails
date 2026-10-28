@@ -9,7 +9,7 @@
   </p>
   <p>
     Note created on
-    <%= datetime_format(@person_intake_note.created_at, tz: "America/Los_Angeles", tz_abbr: "PT", year: true) %>.
+    <%= pacific_datetime_format(@person_intake_note.created_at) %>.
   </p>
 <% end %>
 

@@ -73,7 +73,7 @@
                       <% notes.each do |note| %>
                         <li>
                           <div class="text-sm text-stone-muted mb-1">
-                            <%= datetime_format(note.created_at, tz: "America/Los_Angeles", tz_abbr: "PT", year: true) %>
+                            <%= pacific_datetime_format(note.created_at) %>
                             by
                             <% if note.person_source %>
                               <%= note.person_source.callsign %>
