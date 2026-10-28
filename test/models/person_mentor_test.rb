@@ -114,6 +114,28 @@ class PersonMentorTest < ActiveSupport::TestCase
     assert again.valid?, again.errors.full_messages.to_sentence
   end
 
+  # Abstained and Not completed are ART verdicts (ruled 2026-10-27): an Alpha
+  # walk, read by every Alpha page and report, records only the four.
+  test "an ART walk may end Abstained or Not completed, and an Alpha walk may not" do
+    alpha = PersonMentor.new(person: @mentee, mentor: @mentors.first, mentor_year: YEAR,
+                             status: PersonMentor::STATUS_ABSTAIN)
+    assert_not alpha.valid?
+    assert_equal ["Status is not included in the list."], alpha.errors[:status]
+
+    art = PersonMentor.create!(person: @mentee, mentor: @mentors.first, mentor_year: YEAR, timesheet_id: 9_001,
+                               position_id: Position::GREEN_DOT_MENTEE, status: PersonMentor::STATUS_NOT_COMPLETED)
+    assert_equal PersonMentor::STATUS_NOT_COMPLETED, art.reload.status, "the column holds it"
+  end
+
+  test "either ART verdict outranks a pass and yields to a bonk" do
+    assert_equal PersonMentor::STATUS_ABSTAIN,
+                 PersonMentor.year_verdict([PersonMentor::STATUS_PASS, PersonMentor::STATUS_ABSTAIN])
+    assert_equal PersonMentor::STATUS_NOT_COMPLETED,
+                 PersonMentor.year_verdict([PersonMentor::STATUS_ABSTAIN, PersonMentor::STATUS_NOT_COMPLETED])
+    assert_equal PersonMentor::STATUS_SELF_BONK,
+                 PersonMentor.year_verdict([PersonMentor::STATUS_NOT_COMPLETED, PersonMentor::STATUS_SELF_BONK])
+  end
+
   private
 
   def record(*statuses)

@@ -13,6 +13,7 @@ class ArtMentoring::AssignmentTest < ActiveSupport::TestCase
 
   YEAR = 2026
   Row = ArtMentoring::Assignment::Row
+  Mentor = ArtMentoring::Shifts::WalkMentor
 
   setup do
     travel_to Time.zone.local(YEAR, 9, 2, 19, 0, 0)
@@ -33,19 +34,28 @@ class ArtMentoring::AssignmentTest < ActiveSupport::TestCase
     travel_back
   end
 
-  def save(*rows, grants: {}) = assignment(*rows).save!(grants:)
+  # Cinder writes the cadre notes.
+  def save(*rows, grants: {}, cadre_notes: {}) = assignment(*rows, cadre_notes:).save!(written_by: @cinder, grants:)
 
-  def assignment(*rows)
+  def assignment(*rows, cadre_notes: {})
     shifts = ArtMentoring::Shifts.new(@training, YEAR)
-    ArtMentoring::Assignment.new(shifts, shifts.group(@slot.id.to_s), rows.index_by(&:timesheet_id))
+    ArtMentoring::Assignment.new(shifts, shifts.group(@slot.id.to_s), rows.index_by(&:timesheet_id), cadre_notes:)
   end
 
-  def row(sheet, *mentors, status: PersonMentor::STATUS_PENDING, notes: "")
-    Row.new(timesheet_id: sheet.id, mentor_ids: mentors.compact.map(&:id), status:, notes:, mentor_malformed: false)
+  # A submitted row. Each mentor slot is a person, nil for "No mentor", or
+  # [person or nil, their notes, whom the slot showed when the page was drawn
+  # (the person themself when not given)]. `was` is the walk's fingerprint as
+  # drawn.
+  def row(sheet, *slots, status: PersonMentor::STATUS_PENDING, was: nil)
+    mentors = slots.map do |slot|
+      person, notes, loaded = slot.is_a?(Array) ? slot : [slot, ""]
+      Mentor.new(id: person&.id, notes:, loaded_id: (loaded || person)&.id)
+    end
+    Row.new(timesheet_id: sheet.id, mentors:, status:, mentor_malformed: false, was:)
   end
 
   test "a pairing is recorded against the mentee's timesheet entry" do
-    result = save(row(@first, @ferrous, status: PersonMentor::STATUS_PASS, notes: "Ready."))
+    result = save(row(@first, [@ferrous, "Ready."], status: PersonMentor::STATUS_PASS))
 
     assert result.ok?
     assert_equal 1, result.saved_count
@@ -64,19 +74,30 @@ class ArtMentoring::AssignmentTest < ActiveSupport::TestCase
     assert_equal [@cinder.id], PersonMentor.where(timesheet_id: @first.id).pluck(:mentor_id)
   end
 
-  test "two mentors are two rows sharing the result and notes, and dropping one keeps the other" do
-    result = save(row(@first, @ferrous, @cinder, status: PersonMentor::STATUS_PASS, notes: "Both agreed."))
+  test "two mentors are two rows sharing the result, each with its own notes, and dropping one keeps the other" do
+    result = save(row(@first, [@ferrous, "Ready."], [@cinder, "Calm on the radio."], status: PersonMentor::STATUS_PASS))
 
     assert result.ok?
     assert_equal 1, result.saved_count
-    rows = PersonMentor.where(timesheet_id: @first.id).order(:mentor_id)
-    assert_equal [[@ferrous.id, PersonMentor::STATUS_PASS, "Both agreed."], [@cinder.id, PersonMentor::STATUS_PASS, "Both agreed."]].sort,
+    rows = PersonMentor.where(timesheet_id: @first.id)
+    assert_equal [[@ferrous.id, PersonMentor::STATUS_PASS, "Ready."], [@cinder.id, PersonMentor::STATUS_PASS, "Calm on the radio."]].sort,
                  rows.map { |walk| [walk.mentor_id, walk.status, walk.notes] }.sort
     walk = ArtMentoring::Shifts.new(@training, YEAR).group(@slot.id.to_s).walk_for(@first)
-    assert_equal [PersonMentor::STATUS_PASS, "Both agreed."], [walk.status, walk.notes]
+    assert_equal PersonMentor::STATUS_PASS, walk.status
+    assert_equal [[@ferrous.id, "Ready."], [@cinder.id, "Calm on the radio."]].sort,
+                 walk.mentors.map { |mentor| [mentor.id, mentor.notes] }.sort
 
-    assert save(row(@first, @cinder, status: PersonMentor::STATUS_PASS, notes: "Both agreed.")).ok?
+    assert save(row(@first, [@cinder, "Calm on the radio."], status: PersonMentor::STATUS_PASS)).ok?
     assert_equal [@cinder.id], PersonMentor.where(timesheet_id: @first.id).pluck(:mentor_id)
+  end
+
+  test "a mentor's notes are refused by the number of their box" do
+    long = "a" * (ArtMentoring::Assignment::NOTES_MAX + 1)
+
+    assert_equal "Notes for mentor 2 can be at most 2000 characters.",
+                 save(row(@first, @ferrous, [@cinder, long])).row_errors[@first.id]
+    assert_equal "Notes for mentor 3 need a mentor. Pick one, or clear the notes.",
+                 save(row(@first, @ferrous, nil, [nil, "Seemed nervous."])).row_errors[@first.id]
   end
 
   test "one mentor picked twice, or more than the slots allow, is refused" do
@@ -114,8 +135,8 @@ class ArtMentoring::AssignmentTest < ActiveSupport::TestCase
     assert_equal({ @second.id => "Pick a mentor before recording a result." }, result.row_errors)
     assert_not PersonMentor.exists?(timesheet_id: @first.id), "the valid row waits for the refused one"
 
-    notes_only = save(row(@second, nil, notes: "Seemed nervous."))
-    assert_equal "Pick a mentor before writing notes.", notes_only.row_errors[@second.id]
+    notes_only = save(row(@second, [nil, "Seemed nervous."]))
+    assert_equal "Notes for mentor 1 need a mentor. Pick one, or clear the notes.", notes_only.row_errors[@second.id]
   end
 
   test "someone outside the mentor position is refused by name" do
@@ -183,11 +204,105 @@ class ArtMentoring::AssignmentTest < ActiveSupport::TestCase
     group = shifts.group(@slot.id.to_s)
     walk(@first, @ferrous) # recorded after this save read the shift
 
-    result = ArtMentoring::Assignment.new(shifts, group, { @first.id => row(@first, @ferrous) }).save!
+    result = ArtMentoring::Assignment.new(shifts, group, { @first.id => row(@first, @ferrous) }).save!(written_by: @cinder)
 
     assert result.conflict
     assert_not result.ok?
     assert_equal [@ferrous.id], PersonMentor.where(timesheet_id: @first.id).pluck(:mentor_id)
+  end
+
+  # A roster open while someone else saves the shift (chosen 2026-10-27).
+  test "a row left as drawn keeps what someone else saved since, and one changed both ways is refused" do
+    drawn = ArtMentoring::Assignment.stored_fingerprint(nil) # no walk yet when the page was drawn
+    walk(@first, @ferrous, notes: "Ready.") # saved by someone else after that
+
+    assert save(row(@first, nil, was: drawn)).ok?
+    assert_equal [[@ferrous.id, "Ready."]], PersonMentor.where(timesheet_id: @first.id).pluck(:mentor_id, :notes)
+
+    assert save(row(@first, [@ferrous, "Ready."], was: drawn)).ok?, "the same change made twice is no conflict"
+
+    stale = assignment(row(@first, [@cinder, "Calm on the radio."], was: drawn))
+    assert_equal "Someone else saved this mentee after you opened the page, so it shows what they saved. Make your " \
+                 "change again, then save.", stale.row_errors[@first.id]
+    assert_empty stale.typed_rows, "the row comes back as stored, not as typed"
+    assert_equal [@ferrous.id], PersonMentor.where(timesheet_id: @first.id).pluck(:mentor_id)
+  end
+
+  test "notes typed beside No mentor are a change, never read as a row left as drawn" do
+    drawn = ArtMentoring::Assignment.stored_fingerprint(nil)
+
+    assert_equal "Notes for mentor 1 need a mentor. Pick one, or clear the notes.",
+                 save(row(@first, [nil, "Seemed nervous."], was: drawn)).row_errors[@first.id]
+  end
+
+  test "a slot changed to another mentor asks once before the notes in its box go with them" do
+    walk(@first, @ferrous, notes: "Ready.")
+
+    asked = save(row(@first, [@cinder, "Ready.", @ferrous]))
+    assert_equal "Mentor 1 changed from Ferrous to Cinder, but its notes are Ferrous's. Save again to keep them as " \
+                 "Cinder's, or change them first.", asked.row_errors[@first.id]
+    assert_equal [@ferrous.id], PersonMentor.where(timesheet_id: @first.id).pluck(:mentor_id)
+
+    assert save(row(@first, [@cinder, "Ready.", @cinder])).ok?, "the refused page drew the box beside Cinder"
+    assert_equal [[@cinder.id, "Ready."]], PersonMentor.where(timesheet_id: @first.id).pluck(:mentor_id, :notes)
+  end
+
+  test "notes rewritten for a slot's new mentor go with them at once" do
+    walk(@first, @ferrous, notes: "Ready.")
+
+    assert save(row(@first, [@cinder, "Calm on the radio.", @ferrous])).ok?
+
+    assert_equal [[@cinder.id, "Calm on the radio."]], PersonMentor.where(timesheet_id: @first.id).pluck(:mentor_id, :notes)
+  end
+
+  # ---------------------------------------------------------- cadre notes
+
+  test "a cadre note is written with the shift, by its author" do
+    result = save(row(@first, @ferrous), cadre_notes: { @tinsel.id => "Ask about the radio." })
+
+    assert result.ok?
+    assert_equal 1, result.noted_count
+    note = PersonMentoringNote.find_by!(person_id: @tinsel.id)
+    assert_equal ["Ask about the radio.", @cinder.id], [note.notes, note.written_by_id]
+  end
+
+  test "a cadre note over the limit is refused under the mentee's first entry, and nothing is written" do
+    long = "a" * (PersonMentoringNote::NOTES_MAX + 1)
+
+    result = save(row(@first, @ferrous), cadre_notes: { @moonrake.id => long })
+
+    assert_equal({ @second.id => "A cadre note can be at most 2000 characters." }, result.row_errors)
+    assert_not PersonMentor.exists?(timesheet_id: @first.id)
+    assert_not PersonMentoringNote.exists?
+  end
+
+  test "a cadre note for someone who is not one of the year's mentees is ignored" do
+    result = save(row(@first, @ferrous), cadre_notes: { @ferrous.id => "Not a mentee here." })
+
+    assert result.ok?
+    assert_equal 0, result.noted_count
+    assert_not PersonMentoringNote.exists?
+  end
+
+  test "a cadre note typed for a mentee moved to another shift since is still added" do
+    later = mentee_shift(@slot.begins + 1.day)
+    moved = mentee_entry(create_person("Drifter"), later.begins, off_duty: later.ends, slot: later)
+
+    result = save(row(@first, @ferrous), cadre_notes: { moved.person_id => "Moved to the next shift." })
+
+    assert result.ok?
+    assert_equal ["Moved to the next shift."], PersonMentoringNote.where(person_id: moved.person_id).pluck(:notes)
+  end
+
+  test "a resubmitted cadre note is added once, and the same words on a later day are a new note" do
+    notes = { @tinsel.id => "Ask about the radio." }
+
+    assert_equal 1, save(row(@first, @ferrous), cadre_notes: notes).noted_count
+    assert_equal 0, save(row(@first, @ferrous), cadre_notes: notes).noted_count
+    assert_equal 1, PersonMentoringNote.where(person_id: @tinsel.id).count
+
+    travel PersonMentoringNote::RESUBMIT_WITHIN + 1.minute
+    assert_equal 1, save(row(@first, @ferrous), cadre_notes: notes).noted_count
   end
 
   # ---------------------------------------------------------- pass grants

@@ -1,11 +1,15 @@
-<%# locals: (group:, submitted:, result:, pass_offers:) %>
+<%# locals: (group:, submitted:, result:, pass_offers:, cadre_notes:, typed_notes:) %>
 <%#
   One mentoring shift: the window it lists, the mentors on it, and its mentees,
-  each with a mentor, a result and notes, saved together, in any year (ruled
+  each with mentors, a result, each mentor's notes, and the cadre's notes about
+  the mentee with a box for one more, saved together, in any year (ruled
   2026-10-22: a past year's walks are recorded and corrected here too). A
   reader without the trainer role gets the same table with nothing to change.
-  `submitted` holds what a refused or questioned save sent, so the reader keeps
-  their edits; `pass_offers` is the pass question that save is waiting on.
+  `submitted` holds the rows a refused or questioned save shows again as typed
+  (ArtMentoring::Assignment#typed_rows), so the reader keeps their edits, and
+  `typed_notes` the cadre notes typed into it, by person id;
+  `pass_offers` is the pass question that save is waiting on. `cadre_notes`
+  are the stored ones, every year's, by person id (PersonMentoringNote).
 %>
 <% editable = can_manage_session? %>
 <% mentee_title = @shifts.mentee_position.title %>
@@ -67,10 +71,22 @@
         Yes. Save with the result left at <%= mentor_result_label(PersonMentor::STATUS_PENDING) %>, and come back once
         the shift is over.
       </dd>
+      <% abstained = mentor_result_label(PersonMentor::STATUS_ABSTAIN) %>
+      <% not_completed = mentor_result_label(PersonMentor::STATUS_NOT_COMPLETED) %>
+      <dt>What do <%= abstained %> and <%= not_completed %> mean?</dt>
+      <dd>
+        <%= abstained %>: the mentor declined to give a verdict. <%= not_completed %>: the mentee did not complete
+        the shift. Neither counts as a pass or a bonk.
+      </dd>
       <dt>How do I undo a pairing?</dt>
       <dd>
         Set every mentor to <%= MentorHelper::NO_MENTOR %>, leave the result at
-        <%= mentor_result_label(PersonMentor::STATUS_PENDING) %> and the notes empty, and save.
+        <%= mentor_result_label(PersonMentor::STATUS_PENDING) %> and every mentor's notes empty, and save.
+      </dd>
+      <dt>What are cadre notes?</dt>
+      <dd>
+        Notes about a mentee for the whole cadre, tied to no mentor, shift or ART. Each one shows on every roster
+        the mentee is on, in any ART and any year, and cannot be changed or deleted once saved.
       </dd>
       <dt>What else happens when I record a pass?</dt>
       <dd>
@@ -123,10 +139,13 @@
         <%= t.heading "Result" %>
       <% end %>
       <%= t.body do %>
+        <% result_options = mentor_result_options(PersonMentor::STATUSES) %>
+        <% first_entries = group.first_entries %>
         <% group.mentee_entries.each do |entry| %>
           <% walk = group.walk_for(entry) %>
           <% typed = submitted&.dig(entry.id) %>
-          <% picked = typed ? typed.mentor_ids : walk&.mentor_ids || [] %>
+          <%# Each mentor slot as typed, or as stored: a mentor and their notes. %>
+          <% slots = typed ? typed.mentors : walk&.mentors || [] %>
           <% error = row_errors[entry.id] %>
           <% callsign = entry.person.callsign %>
           <%# The fields share one name scheme, so each carries an explicit
@@ -137,13 +156,18 @@
             <% end %>
             <%= t.cell datetime_format(entry.on_duty), class: "whitespace-nowrap" %>
             <%= t.cell art_mentoring_duration(entry), right: true, class: "whitespace-nowrap" %>
-            <%# One select per mentor slot, as the Alpha roster has them. %>
+            <%# One select per mentor slot, as the Alpha roster has them. The
+                hidden fields carry back what the row and each slot held when
+                the page was drawn (ArtMentoring::Assignment). %>
             <%= t.cell do %>
+              <%= hidden_field_tag "walks[#{entry.id}][was]",
+                                   typed&.was || ArtMentoring::Assignment.stored_fingerprint(walk) %>
               <div class="space-y-2">
                 <% ArtMentoring::Assignment::MENTOR_SLOTS.times do |i| %>
                   <div>
-                    <%= select_tag "walks[#{entry.id}][mentor_ids][]",
-                                   art_mentor_choices(group, @shifts.mentor_holders, entry, picked[i]),
+                    <%= hidden_field_tag "walks[#{entry.id}][mentors][#{i}][loaded_id]", slots[i]&.id %>
+                    <%= select_tag "walks[#{entry.id}][mentors][#{i}][id]",
+                                   art_mentor_choices(group, @shifts.mentor_holders, entry, slots[i]&.id),
                                    id: "walk-#{entry.id}-mentor-#{i + 1}", disabled: !editable,
                                    class: "#{AppFormBuilder::SELECT_CLASSES} min-w-36",
                                    aria: { label: "Mentor #{i + 1} for #{callsign}" } %>
@@ -153,7 +177,7 @@
             <% end %>
             <%= t.cell do %>
               <%= select_tag "walks[#{entry.id}][status]",
-                             options_for_select(mentor_result_options,
+                             options_for_select(result_options,
                                                 typed ? typed.status : walk&.status || PersonMentor::STATUS_PENDING),
                              id: "walk-#{entry.id}-status", disabled: !editable,
                              class: "#{AppFormBuilder::SELECT_CLASSES} min-w-32",
@@ -174,22 +198,43 @@
               <% end %>
             <% end %>
           <% end %>
-          <%# Notes on their own line under the mentee. basis-full: below the
-              fold the cell is a flex item, and colspan means nothing there. %>
+          <%# Each mentor's notes on their own line under the mentee, numbered as
+              the selects are (ruled 2026-10-27): stacked, side by side from lg.
+              basis-full: below the fold the cell is a flex item, and colspan
+              means nothing there. %>
           <%= t.row id: "walk-#{entry.id}-notes-row", state: (:error if error) do %>
             <%= t.cell colspan: 5, class: "basis-full" do %>
-              <%= label_tag "walk-#{entry.id}-notes", "Notes", class: AppFormBuilder::LABEL_CLASSES %>
-              <%= text_area_tag "walks[#{entry.id}][notes]", typed ? typed.notes : walk&.notes,
-                                id: "walk-#{entry.id}-notes", rows: 4, disabled: !editable,
-                                maxlength: ArtMentoring::Assignment::NOTES_MAX,
-                                class: AppFormBuilder::TEXTAREA_CLASSES,
-                                aria: { label: "Notes for #{callsign}" } %>
+              <div class="stack-to-row-lg">
+                <% ArtMentoring::Assignment::MENTOR_SLOTS.times do |i| %>
+                  <% notes_id = "walk-#{entry.id}-mentor-#{i + 1}-notes" %>
+                  <div class="lg:flex-1">
+                    <%= label_tag notes_id, "Mentor #{i + 1} Notes", class: AppFormBuilder::LABEL_CLASSES %>
+                    <%= text_area_tag "walks[#{entry.id}][mentors][#{i}][notes]", slots[i]&.notes,
+                                      id: notes_id, rows: 3, disabled: !editable,
+                                      maxlength: ArtMentoring::Assignment::NOTES_MAX,
+                                      class: AppFormBuilder::TEXTAREA_CLASSES,
+                                      aria: { label: "Mentor #{i + 1} notes for #{callsign}" } %>
+                  </div>
+                <% end %>
+              </div>
             <% end %>
           <% end %>
+          <%# Right under the fields it is about, before the cadre's notes. %>
           <% if error %>
             <%= t.row id: "walk-#{entry.id}-error", state: :error do %>
               <%= t.cell colspan: 5 do %>
                 <span class="text-error"><%= fa_icon "triangle-exclamation", :solid, end: 2 %><%= error %></span>
+              <% end %>
+            <% end %>
+          <% end %>
+          <%# The cadre's notes about the mentee and the box for one more, on
+              the mentee's first entry only (Shifts::Group#first_entries). %>
+          <% notes = cadre_notes.fetch(entry.person_id, []) %>
+          <% if first_entries.include?(entry) && (notes.any? || editable) %>
+            <%= t.row id: "walk-#{entry.id}-cadre-row" do %>
+              <%= t.cell colspan: 5, class: "basis-full" do %>
+                <%= render "cadre_notes", notes:, person_id: entry.person_id, callsign:,
+                                          typed: typed_notes[entry.person_id], editable: %>
               <% end %>
             <% end %>
           <% end %>

@@ -56,6 +56,27 @@ module Training::MentoringHelper
                                                   icon: "hourglass-half", icon_type: :solid
   end
 
+  # A picker card's mentees, each once by callsign, with their sign-ins when
+  # there are more than one ("Tinsel (2 sign-ins)"): the card's badge and meter
+  # count sign-ins.
+  def art_mentee_names(group)
+    group.mentee_entries.group_by(&:person_id).values.map do |entries|
+      name = person_display_name(entries.first.person, entries.first.person_id)
+      entries.one? ? name : "#{name} (#{pluralize(entries.size, "sign-in")})"
+    end.sort_by(&:downcase).to_sentence
+  end
+
+  # A walk's notes, one line for each mentor who wrote some ("Ferrous: Ready."),
+  # or a dash: each mentor keeps their own (ruled 2026-10-27).
+  def art_walk_notes(walk)
+    noted = (walk&.rows || []).select { |row| row.notes.present? }
+    return value_or_dash(nil) if noted.empty?
+
+    safe_join(noted.map do |row|
+      tag.div("#{person_display_name(row.mentor, row.mentor_id)}: #{row.notes}", class: "whitespace-pre-line")
+    end)
+  end
+
   # How long an entry has run: "1:36 so far" while it is open.
   def art_mentoring_duration(entry)
     length = hour_minute_format(entry.duration)

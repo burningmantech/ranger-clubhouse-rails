@@ -29,7 +29,7 @@
         <%= f.hidden_field :mentor_year %>
         <%= form_row do %>
           <%= f.select :status,
-                       PersonMentor::STATUSES.map { |s| [s.titleize, s] },
+                       mentor_result_options(PersonMentor::ALPHA_STATUSES),
                        {},
                        label: "Status (applies to all Alpha mentor records for #{@mentoring.year})" %>
         <% end %>

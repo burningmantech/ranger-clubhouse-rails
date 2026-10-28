@@ -8,7 +8,9 @@ class PersonMentorStatusForm
   attr_accessor :mentor_year, :status, :person
 
   validates :mentor_year, presence: true, numericality: { only_integer: true }
-  validates :status, presence: true, inclusion: { in: PersonMentor::STATUSES }
+  # The only guard on this path: save's update_all skips PersonMentor's own,
+  # which refuses an ART-only verdict on an Alpha row.
+  validates :status, presence: true, inclusion: { in: PersonMentor::ALPHA_STATUSES }
   validate :records_must_exist
 
   def persisted? = false

@@ -40,7 +40,7 @@
             <%= t.cell do %>
               <%= mentor_result_badge(walk&.status || PersonMentor::STATUS_PENDING) %>
             <% end %>
-            <%= t.cell value_or_dash(walk&.notes.presence) %>
+            <%= t.cell art_walk_notes(walk) %>
           <% end %>
         <% end %>
       <% end %>

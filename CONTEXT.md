@@ -125,16 +125,26 @@ _Avoid_: "shift" alone, which elsewhere means a slot or one timesheet entry.
 
 **Walk** (`PersonMentor` with a `timesheet_id`):
 One mentee's entry on a mentoring shift, paired with the mentors who walked with them: one row per mentor, up to
-three, keyed by the mentee's `timesheet_id` and the `mentor_id`, the rows sharing one verdict and notes. A walk
+three, keyed by the mentee's `timesheet_id` and the `mentor_id`, the rows sharing one verdict, each mentor keeping
+their own notes. A walk
 outlives its entry: deleting the entry leaves the rows, shown as "Shift deleted" and still counted for each
 mentor; an entry corrected onto another ART's mentee position takes its walk with it. Alpha mentor assignments are `person_mentor` rows too, with no `timesheet_id`.
 _Avoid_: "assignment" for the row, which names the Mentor Assignment page and `ArtMentoring::Assignment`, the
 object that writes walks.
 
+**Cadre note** (`PersonMentoringNote`):
+What an ART's mentoring cadre notes about a mentee, tied to no mentor, shift, year or ART: every roster the
+mentee is on lists all of them, newest first, with when and by whom. One is added with the roster's Save, and none
+is ever edited or deleted.
+_Avoid_: a walk's notes, which are one mentor's about one mentee shift.
+
 **Mentoring verdict** (`PersonMentor#status`):
 How a walk ended: `pass`, `bonk`, `self-bonk` or `pending`, shown as Passed, Bonked, Self-bonked and Pending
-(`MentorHelper::RESULT_LABELS`, the one set Alpha mentoring uses too). Pending is no verdict yet: a mentee paired with
-a mentor awaits a verdict, once signed out, until another is recorded. Bonked counts include self-bonks.
+(`MentorHelper::RESULT_LABELS`, the words Alpha mentoring uses too). An ART walk may also end `abstain` (Abstained:
+the mentor declined to give a verdict) or `not-completed` (Not completed: the mentee did not complete the shift);
+the Alpha pages never offer those two (`PersonMentor::ALPHA_STATUSES`). Pending is no verdict yet: a mentee paired
+with a mentor awaits a verdict, once signed out, until another is recorded. Bonked counts include self-bonks;
+Passed and Bonked counts include neither ART-only verdict.
 _Avoid_: the dashboard's Verdict (`DashboardTaskResult`), a Report verdict word and Trainee status, which are
 three other things.
 

@@ -9,6 +9,7 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
   include TimesheetAdminTestHelper # ensure_role / grant_role
   include ArtMentoringTestHelper
   include PersonTestFactory
+  include DomIdTestHelper
   include ActiveSupport::Testing::TimeHelpers
 
   YEAR = 2026
@@ -45,8 +46,23 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
 
   def shift_path(key = @slot.id, year: YEAR) = training_mentoring_assignment_shift_path(SLUG, key, year:)
 
-  def save_walk(mentor_id:, status: PersonMentor::STATUS_PENDING, notes: "", entry: @tinsel, path: shift_path)
-    post path, params: { walks: { entry.id => { mentor_ids: [mentor_id, ""], status:, notes: } } }
+  # One row as the roster posts it: every mentor slot, each [id, notes, the
+  # mentor the slot showed when drawn], the ones not given left blank; and,
+  # when given, the walk's fingerprint as drawn.
+  def walk_params(*slots, status: PersonMentor::STATUS_PENDING, was: nil)
+    mentors = Array.new(ArtMentoring::Assignment::MENTOR_SLOTS) do |i|
+      id, notes, loaded_id = slots[i]
+      [i.to_s, { id: id.to_s, notes: notes.to_s, loaded_id: loaded_id.to_s }]
+    end
+    { status:, mentors: mentors.to_h, was: }.compact
+  end
+
+  # The fingerprint the last page drew into an entry's row.
+  def drawn_was(entry = @tinsel) = css_select("input[name='walks[#{entry.id}][was]']").first["value"]
+
+  def save_walk(mentor_id:, status: PersonMentor::STATUS_PENDING, notes: "", entry: @tinsel, path: shift_path,
+                cadre_notes: {})
+    post path, params: { walks: { entry.id => walk_params([mentor_id, notes], status:) }, cadre_notes: }
   end
 
   test "the picker shows each mentoring shift as a card that opens its roster" do
@@ -58,6 +74,16 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     assert_not_includes response.body, "awaiting a verdict", "a verdict waits on a mentor"
   end
 
+  test "a picker card names each mentee once, by callsign, with their sign-ins when there are more" do
+    mentee_entry(@tinsel.person, @slot.begins + 30.minutes, off_duty: @slot.ends, slot: @slot)
+    mentee_entry(create_person("Aster"), @slot.begins + 5.minutes, off_duty: @slot.ends, slot: @slot)
+
+    get training_mentoring_assignment_path(SLUG)
+
+    assert_includes response.body, "Mentees: Aster and Tinsel (2 sign-ins)."
+    assert_includes response.body, "3 mentees", "the badge beside it counts sign-ins"
+  end
+
   test "a shift's roster offers the mentors on shift before everyone else holding the position" do
     get shift_path
 
@@ -65,8 +91,24 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     select = "select#walk-#{@tinsel.id}-mentor-1"
     assert_select "#{select} optgroup[label=?] option", "On shift", text: /\AFerrous · signed in/
     assert_select "#{select} optgroup[label=?] option", "Other mentors", text: "Cinder"
-    assert_select "select[name=?]", "walks[#{@tinsel.id}][mentor_ids][]", count: ArtMentoring::Assignment::MENTOR_SLOTS
+    ArtMentoring::Assignment::MENTOR_SLOTS.times do |i|
+      assert_select "select[name=?]", "walks[#{@tinsel.id}][mentors][#{i}][id]", count: 1
+      assert_select "textarea[name=?]", "walks[#{@tinsel.id}][mentors][#{i}][notes]", count: 1
+      assert_select "input[type=hidden][name=?]", "walks[#{@tinsel.id}][mentors][#{i}][loaded_id]", count: 1
+    end
+    assert_select "select[id^=?]", "walk-#{@tinsel.id}-mentor-", count: ArtMentoring::Assignment::MENTOR_SLOTS
+    assert_select "input[type=hidden][name=?]", "walks[#{@tinsel.id}][was]", count: 1
     assert_select "form[action=?]", shift_path
+  end
+
+  test "the roster renders no duplicate DOM ids with a mentee signed in twice" do
+    mentee_entry(@tinsel.person, @slot.begins + 30.minutes, off_duty: @slot.ends, slot: @slot)
+
+    get shift_path
+
+    assert_response :success
+    assert_unique_dom_ids
+    assert_select "textarea[name=?]", "cadre_notes[#{@tinsel.person_id}]", count: 1
   end
 
   test "a mentee holding the mentor position is not offered as their own mentor" do
@@ -107,17 +149,159 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     assert_equal [@ferrous.id, PersonMentor::STATUS_PASS, "Ready."], [walk.mentor_id, walk.status, walk.notes]
   end
 
-  test "two mentors are recorded, and the roster selects both" do
-    post shift_path, params: { walks: { @tinsel.id => { mentor_ids: [@ferrous.id, @cinder.id, ""],
-                                                        status: PersonMentor::STATUS_PENDING, notes: "" } } }
+  test "two mentors are recorded with their own notes, and the roster shows each in its slot" do
+    post shift_path, params: { walks: { @tinsel.id => walk_params([@ferrous.id, "Ready."],
+                                                                  [@cinder.id, "Calm on the radio."]) } }
 
     assert_redirected_to shift_path
-    assert_equal [@cinder.id, @ferrous.id].sort, PersonMentor.where(timesheet_id: @tinsel.id).pluck(:mentor_id).sort
+    assert_equal({ @ferrous.id => "Ready.", @cinder.id => "Calm on the radio." },
+                 PersonMentor.where(timesheet_id: @tinsel.id).pluck(:mentor_id, :notes).to_h)
 
     get shift_path
     assert_select "select#walk-#{@tinsel.id}-mentor-1 option[selected][value=?]", @ferrous.id.to_s
     assert_select "select#walk-#{@tinsel.id}-mentor-2 option[selected][value=?]", @cinder.id.to_s
     assert_select "select#walk-#{@tinsel.id}-mentor-3 option[selected]:not([value=''])", count: 0
+    assert_select "textarea#walk-#{@tinsel.id}-mentor-1-notes", text: /Ready\./
+    assert_select "textarea#walk-#{@tinsel.id}-mentor-2-notes", text: /Calm on the radio\./
+    assert_select "label[for=?]", "walk-#{@tinsel.id}-mentor-2-notes", text: "Mentor 2 Notes"
+  end
+
+  # The shape a roster drawn before per-mentor notes posts.
+  test "a row posted without its mentor slots is refused and shows what is saved, so a second Save clears nothing" do
+    walk(@tinsel, @ferrous, notes: "Ready.")
+
+    post shift_path, params: { walks: { @tinsel.id => { status: PersonMentor::STATUS_PENDING, mentor_ids: [""],
+                                                        notes: "An older page." } } }
+
+    assert_response :unprocessable_entity
+    assert_select "tr#walk-#{@tinsel.id}-error", text: /This row could not be read, so it shows what is saved now\./
+    assert_select "select#walk-#{@tinsel.id}-mentor-1 option[selected][value=?]", @ferrous.id.to_s
+    assert_select "textarea#walk-#{@tinsel.id}-mentor-1-notes", text: /Ready\./
+    assert PersonMentor.exists?(timesheet_id: @tinsel.id, mentor_id: @ferrous.id)
+  end
+
+  test "mentor slots in any shape but the form's are refused, never read as a clear" do
+    walk(@tinsel, @ferrous)
+    shapes = [{ "0" => @cinder.id.to_s },                                   # a slot that is a bare value
+              { "x" => { id: @cinder.id.to_s } },                          # a slot keyed by a word
+              { id: @cinder.id.to_s },                                     # a slot's fields with no slot
+              { "0" => { id: @ferrous.id.to_s }, "1" => @cinder.id.to_s }, # a slot beside a bare value
+              { "0" => { id: [@cinder.id.to_s] } }]                        # a list where an id goes
+
+    shapes.each do |mentors|
+      post shift_path, params: { walks: { @tinsel.id => { status: PersonMentor::STATUS_PENDING, mentors: } } }
+
+      assert_response :unprocessable_entity, mentors.inspect
+      assert_select "tr#walk-#{@tinsel.id}-error", text: /This row could not be read/
+    end
+    assert_equal [@ferrous.id], PersonMentor.where(timesheet_id: @tinsel.id).pluck(:mentor_id)
+  end
+
+  test "a row someone else saved after the page was drawn is refused and shows what they saved" do
+    get shift_path
+    was = drawn_was
+    walk(@tinsel, @ferrous, notes: "Ready.") # saved by someone else meanwhile
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params([@cinder.id, "Calm on the radio."], was:) } }
+
+    assert_response :unprocessable_entity
+    assert_select "tr#walk-#{@tinsel.id}-error", text: /Someone else saved this mentee after you opened the page/
+    assert_select "select#walk-#{@tinsel.id}-mentor-1 option[selected][value=?]", @ferrous.id.to_s
+    assert_select "textarea#walk-#{@tinsel.id}-mentor-1-notes", text: /Ready\./
+    assert_equal [@ferrous.id], PersonMentor.where(timesheet_id: @tinsel.id).pluck(:mentor_id)
+  end
+
+  test "a row left as drawn keeps what someone else saved since" do
+    get shift_path
+    was = drawn_was
+    walk(@tinsel, @ferrous, notes: "Ready.")
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params(was:) },
+                               cadre_notes: { @tinsel.person_id => "Ask about the radio." } }
+
+    assert_redirected_to shift_path
+    assert_equal "Cadre note added.", flash[:success]
+    assert_equal [[@ferrous.id, "Ready."]], PersonMentor.where(timesheet_id: @tinsel.id).pluck(:mentor_id, :notes)
+  end
+
+  test "a slot changed to another mentor asks once before the notes in its box go with them" do
+    walk(@tinsel, @ferrous, notes: "Ready.")
+    get shift_path
+    assert_select "input[name=?][value=?]", "walks[#{@tinsel.id}][mentors][0][loaded_id]", @ferrous.id.to_s
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params([@cinder.id, "Ready.", @ferrous.id], was: drawn_was) } }
+
+    assert_response :unprocessable_entity
+    assert_select "tr#walk-#{@tinsel.id}-error", text: /Mentor 1 changed from Ferrous to Cinder, but its notes are Ferrous's\./
+    assert_select "select#walk-#{@tinsel.id}-mentor-1 option[selected][value=?]", @cinder.id.to_s
+    assert_select "input[name=?][value=?]", "walks[#{@tinsel.id}][mentors][0][loaded_id]", @cinder.id.to_s
+    assert_equal [@ferrous.id], PersonMentor.where(timesheet_id: @tinsel.id).pluck(:mentor_id)
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params([@cinder.id, "Ready.", @cinder.id], was: drawn_was) } }
+
+    assert_redirected_to shift_path
+    assert_equal [[@cinder.id, "Ready."]], PersonMentor.where(timesheet_id: @tinsel.id).pluck(:mentor_id, :notes)
+  end
+
+  test "Mentees' Other Shifts prints each mentor's notes on a line of its own" do
+    later = mentee_shift(@slot.begins + 1.day)
+    again = mentee_entry(@tinsel.person, later.begins, off_duty: later.ends, slot: later)
+    walk(again, @ferrous, notes: "Ready.")
+    walk(again, @cinder, notes: "Calm on the radio.")
+
+    get shift_path
+
+    assert_select "div.whitespace-pre-line", text: "Ferrous: Ready."
+    assert_select "div.whitespace-pre-line", text: "Cinder: Calm on the radio."
+  end
+
+  # ------------------------------------------------------------ cadre notes
+
+  test "the roster lists the cadre's notes about a mentee from every year, newest first" do
+    PersonMentoringNote.create!(person: @tinsel.person, written_by: @cinder, notes: "Quiet on the radio.",
+                                created_at: Time.zone.local(YEAR - 2, 9, 1, 12, 0, 0))
+    PersonMentoringNote.create!(person: @tinsel.person, written_by: @ferrous, notes: "Much better this year.")
+
+    get shift_path
+
+    assert_select "tr#walk-#{@tinsel.id}-cadre-row" do
+      assert_select "li", count: 2
+      assert_select "li:first-child", text: /Sep 2, 2026 @ \d\d:\d\d · Ferrous.*Much better this year\./m
+      assert_select "li:last-child", text: /Sep 1, 2024 @ \d\d:\d\d · Cinder.*Quiet on the radio\./m
+      assert_select "textarea[name=?][aria-label=?]", "cadre_notes[#{@tinsel.person_id}]", "Add a cadre note about Tinsel"
+      assert_select "p#cadre-note-#{@tinsel.person_id}-help", text: /cannot be changed or deleted after\. Shown on every roster this mentee is on, in any ART and any year\./
+    end
+  end
+
+  test "a save adds a cadre note by its author, and says so" do
+    save_walk(mentor_id: @ferrous.id, cadre_notes: { @tinsel.person_id => "Ask about the radio.\r\nTwice." })
+
+    assert_redirected_to shift_path
+    assert_equal "Recorded 1 mentee. Cadre note added.", flash[:success]
+    note = PersonMentoringNote.find_by!(person_id: @tinsel.person_id)
+    assert_equal ["Ask about the radio.\nTwice.", @art_trainer.id], [note.notes, note.written_by_id]
+    assert ActionLog.exists?(event: "person-mentoring-note-create"), "the note is audited"
+  end
+
+  test "a refused save keeps the typed cadre note and writes nothing" do
+    save_walk(mentor_id: "", status: PersonMentor::STATUS_BONK,
+              cadre_notes: { @tinsel.person_id => "Ask about the radio." })
+
+    assert_response :unprocessable_entity
+    assert_select "textarea#cadre-note-#{@tinsel.person_id}", text: /Ask about the radio\./
+    assert_not PersonMentoringNote.exists?(person_id: @tinsel.person_id)
+  end
+
+  test "the result select offers the two ART-only verdicts, and a save records one" do
+    get shift_path
+
+    assert_select "select#walk-#{@tinsel.id}-status option", count: PersonMentor::STATUSES.size
+    assert_select "select#walk-#{@tinsel.id}-status option[value=?]", PersonMentor::STATUS_ABSTAIN, text: "Abstained"
+
+    save_walk(mentor_id: @ferrous.id, status: PersonMentor::STATUS_NOT_COMPLETED)
+
+    assert_redirected_to shift_path
+    assert_equal PersonMentor::STATUS_NOT_COMPLETED, PersonMentor.find_by!(timesheet_id: @tinsel.id).status
   end
 
   test "a refused row comes back at 422 with its reason and what was typed" do
@@ -126,6 +310,10 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     assert_response :unprocessable_entity
     assert_includes response.body, "Pick a mentor before recording a result."
     assert_select "select#walk-#{@tinsel.id}-status option[selected][value=?]", PersonMentor::STATUS_BONK
+    # The reason sits right under the fields it is about, and the cadre's notes
+    # below it are not shaded as though they had failed.
+    assert_select "tr#walk-#{@tinsel.id}-notes-row + tr#walk-#{@tinsel.id}-error + " \
+                  "tr#walk-#{@tinsel.id}-cadre-row:not([class*=bg-error])"
     assert_not PersonMentor.exists?(timesheet_id: @tinsel.id)
   end
 
@@ -187,7 +375,7 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
   end
 
   def answer_pass(join: "1", revoke: "1")
-    post shift_path, params: { walks: { @tinsel.id => { mentor_ids: [@ferrous.id], status: PersonMentor::STATUS_PASS, notes: "" } },
+    post shift_path, params: { walks: { @tinsel.id => walk_params([@ferrous.id], status: PersonMentor::STATUS_PASS) },
                                confirmed: "Record Pass",
                                grants: { @tinsel.id => { join:, revoke: } } }
   end
@@ -245,12 +433,30 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     get shift_path
     assert_select "button[type=submit][name=grant_for][value=?]", @tinsel.id.to_s, text: /Grant Team Positions/
 
-    post shift_path, params: { walks: { @tinsel.id => { mentor_ids: [@ferrous.id], status: PersonMentor::STATUS_PASS, notes: "" } },
+    post shift_path, params: { walks: { @tinsel.id => walk_params([@ferrous.id], status: PersonMentor::STATUS_PASS) },
                                grant_for: @tinsel.id }
     assert_response :unprocessable_entity
     assert_select "dialog#pass-dialog"
     assert_equal "confirmed", css_select(%(form[action="#{shift_path}"] [type=submit])).first["name"],
                  "Record Pass is the form's default button, so Enter in the dialog presses it"
+  end
+
+  test "a cadre note typed before the pass question rides Record Pass" do
+    become_graduate
+    hold_mentee_position(@tinsel.person)
+
+    save_walk(mentor_id: @ferrous.id, status: PersonMentor::STATUS_PASS,
+              cadre_notes: { @tinsel.person_id => "Ready for the team." })
+    assert_response :unprocessable_entity
+    assert_select "dialog#pass-dialog"
+    assert_select "textarea#cadre-note-#{@tinsel.person_id}", text: /Ready for the team\./
+    assert_not PersonMentoringNote.exists?(person_id: @tinsel.person_id)
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params([@ferrous.id], status: PersonMentor::STATUS_PASS) },
+                               confirmed: "Record Pass", grants: { @tinsel.id => { join: "0", revoke: "0" } },
+                               cadre_notes: { @tinsel.person_id => "Ready for the team." } }
+    assert_redirected_to shift_path
+    assert_equal ["Ready for the team."], PersonMentoringNote.where(person_id: @tinsel.person_id).pluck(:notes)
   end
 
   test "a pass with nothing left to grant is saved without the question" do

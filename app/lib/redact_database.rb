@@ -65,6 +65,7 @@ class RedactDatabase
     person_event
     person_intake
     person_intake_note
+    person_mentoring_note
     person_motd
     person_passkey
     person_pog
