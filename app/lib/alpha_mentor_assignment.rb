@@ -331,7 +331,7 @@ class AlphaMentorAssignment
 
     def row_error(row, pool_ids, stored)
       return "The mentors were not submitted correctly. Pick them from the lists again." if row.mentors_malformed
-      return "Pick a status from the list." unless PersonMentor::STATUSES.include?(row.status)
+      return "Pick a status from the list." unless PersonMentor::ALPHA_STATUSES.include?(row.status)
 
       if row.mentor_ids.size != row.mentor_ids.uniq.size
         return "The same mentor is listed twice. Pick a different mentor, or leave the extra slot blank."

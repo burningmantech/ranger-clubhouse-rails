@@ -256,7 +256,7 @@
 
                 <%= t.cell do %>
                   <%= select_tag "alphas[#{person.id}][status]",
-                                 options_for_select(mentor_result_options, status),
+                                 options_for_select(mentor_result_options(PersonMentor::ALPHA_STATUSES), status),
                                  id: "assignment-#{person.id}-result",
                                  class: "#{AppFormBuilder::SELECT_CLASSES} w-full min-w-32",
                                  data: { result_select: true },

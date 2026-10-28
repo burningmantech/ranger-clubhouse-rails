@@ -74,6 +74,17 @@ class Training::Mentoring::VerdictsControllerTest < ActionDispatch::IntegrationT
                  response.body.lines(chomp: true)
   end
 
+  test "an ART-only verdict is listed with its badge and can be filtered" do
+    rook = mentee_entry(create_person("Rook"), @slot.begins + 10.minutes, off_duty: @slot.ends, slot: @slot)
+    abstained = walk(rook, @ferrous, status: PersonMentor::STATUS_ABSTAIN)
+
+    get verdicts_path(status: PersonMentor::STATUS_ABSTAIN)
+
+    assert_select "tr#verdict-#{abstained.id}", text: /Rook.*Abstained.*Ferrous/m
+    assert_select "tr#verdict-#{@passed.id}", count: 0
+    assert_includes response.body, "Verdict: Abstained"
+  end
+
   test "a filter value the page does not offer reads as all" do
     get verdicts_path(status: "promoted", mentor_id: "999999")
 

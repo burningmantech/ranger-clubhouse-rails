@@ -26,9 +26,10 @@
 <% passed_label = mentor_result_label(PersonMentor::STATUS_PASS) %>
 <% bonked_label = mentor_result_label(PersonMentor::STATUS_BONK) %>
 <% verdicts_title, shifts_heading, mentees_heading, length_heading = "Verdicts", "Shifts", "Mentees", "Average Length" %>
+<% recorded_label = "Verdicts Recorded" %>
 <% any_deleted = @report.walks.any? { |walk| @report.entry_for(walk).nil? } %>
 <%= ui_stat_row do %>
-  <%= ui_stat_box @report.count(*ArtMentoring::VerdictsReport::VERDICTS).to_s, "Verdicts Recorded",
+  <%= ui_stat_box @report.count(*ArtMentoring::VerdictsReport::VERDICTS).to_s, recorded_label,
                   icon: "flag-checkered", icon_type: :solid %>
   <%= ui_stat_box @report.count(PersonMentor::STATUS_PASS).to_s, passed_label, variant: :success,
                   icon: "circle-check", icon_type: :solid %>
@@ -45,6 +46,9 @@
       <strong><%= passed_label %></strong>: the mentor recommends the mentee for the team.
       <strong><%= bonked_label %></strong>: the mentor asked the mentee to stop for now.
       <strong><%= mentor_result_label(PersonMentor::STATUS_SELF_BONK) %></strong>: the mentee chose to stop.
+      <strong><%= mentor_result_label(PersonMentor::STATUS_ABSTAIN) %></strong>: the mentor declined to give a verdict.
+      <strong><%= mentor_result_label(PersonMentor::STATUS_NOT_COMPLETED) %></strong>: the mentee did not complete the
+      shift. The last two count in <%= recorded_label %>, not in <%= passed_label %> or <%= bonked_label %>.
     </dd>
     <dt>Why is a mentee shift missing from <%= verdicts_title %>?</dt>
     <dd>

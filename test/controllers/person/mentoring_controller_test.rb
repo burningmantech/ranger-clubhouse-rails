@@ -28,6 +28,18 @@ class Person::MentoringControllerTest < ActionDispatch::IntegrationTest
     walk(entry, @mentor, status: PersonMentor::STATUS_BONK, notes: "Kept the dome cool")
   end
 
+  test "the Alpha status select offers only the four Alpha verdicts" do
+    PersonMentor.create!(person: @mentee, mentor: @mentor, mentor_year: YEAR, status: PersonMentor::STATUS_PASS)
+    admin = person(:echelon_ranger)
+    grant_role(admin, Role::ADMIN)
+    sign_in_as(admin)
+
+    get person_mentoring_path(@mentee)
+
+    assert_select "select[name=?] option", "person_mentor_status_form[status]",
+                  count: PersonMentor::ALPHA_STATUSES.size
+  end
+
   test "an Admin sees the walk, the Verdicts link, and neither notes nor Send Message" do
     admin = person(:echelon_ranger)
     grant_role(admin, Role::ADMIN)

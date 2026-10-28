@@ -21,4 +21,18 @@ class PersonMentorStatusFormTest < ActiveSupport::TestCase
     assert_equal PersonMentor::STATUS_BONK, alpha.reload.status
     assert_equal PersonMentor::STATUS_PASS, cub.reload.status
   end
+
+  # update_all skips PersonMentor's validations, so the form's own list is the
+  # only thing keeping an ART-only verdict off an Alpha walk.
+  test "an ART-only verdict is refused, and the Alpha walk keeps its status" do
+    mentee = person(:alpha_ranger)
+    mentor = person(:active_ranger)
+    alpha = PersonMentor.create!(person: mentee, mentor:, mentor_year: YEAR, status: PersonMentor::STATUS_PENDING)
+
+    form = PersonMentorStatusForm.new(person: mentee, mentor_year: YEAR, status: PersonMentor::STATUS_ABSTAIN)
+
+    assert_not form.save(actor: mentor)
+    assert_equal ["Status is not included in the list."], form.errors[:status]
+    assert_equal PersonMentor::STATUS_PENDING, alpha.reload.status
+  end
 end

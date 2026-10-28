@@ -23,6 +23,15 @@ class MentorHelperTest < ActionView::TestCase
     assert_equal "", me_mentoring_description(NEVER_AN_ALPHA, [])
   end
 
+  # An Alpha page offers four results and an ART roster all six (ruled
+  # 2026-10-27), in one order.
+  test "a result select offers the verdicts its page records" do
+    assert_equal %w[Pending Passed Bonked Self-bonked],
+                 mentor_result_options(PersonMentor::ALPHA_STATUSES).map(&:first)
+    assert_equal ["Pending", "Passed", "Bonked", "Self-bonked", "Abstained", "Not completed"],
+                 mentor_result_options(PersonMentor::STATUSES).map(&:first)
+  end
+
   test "mentors are only offered to someone who passed" do
     bonked = Mentoring.new(2019, PersonMentor::STATUS_BONK)
 

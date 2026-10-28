@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 # Training › Mentoring › Mentor Assignment. The index picks a mentoring shift;
-# show is one shift's roster, where each mentee is paired with one mentor and
-# the result and notes are recorded; save writes that roster. A shift still to
-# come shows its sign-ups and takes no save. See ArtMentoring::Shifts for how
+# show is one shift's roster, where each mentee is paired with mentors, the
+# result and each mentor's notes are recorded, and the cadre's notes about the
+# mentee are read and added to; save writes that roster. A shift still to come
+# shows its sign-ups and takes no save. See ArtMentoring::Shifts for how
 # timesheet entries become shifts.
 #
 # Writes need the ART's trainer role (can_manage_session?, ruled 2026-10-21)
@@ -30,12 +31,14 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
       return redirect_to(shift_path, error: "No one has signed in for that shift yet, so there is nothing to record.")
     end
 
-    @submitted = submitted_rows
-    assignment = ArtMentoring::Assignment.new(@shifts, @group, @submitted)
+    @typed_notes = submitted_cadre_notes
+    assignment = ArtMentoring::Assignment.new(@shifts, @group, submitted_rows, cadre_notes: @typed_notes)
+    # The rows the page shows again as typed, should it come back.
+    @submitted = assignment.typed_rows
     @pass_offers = assignment.row_errors.empty? ? pass_offers_to_ask(assignment) : {}
     return render(:show, status: :unprocessable_entity) if @pass_offers.any?
 
-    @result = assignment.save!(grants: submitted_grants)
+    @result = assignment.save!(written_by: current_user, grants: submitted_grants)
     return redirect_to(shift_path, success: saved_message(@result)) if @result.ok?
 
     # The save rolled back, but its edits stay on the walks Shifts loaded: read
@@ -61,26 +64,62 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
     training_mentoring_assignment_shift_path(training_slug, params[:key], year: @year)
   end
 
-  # The roster arrives as walks[<timesheet id>][mentor_ids[]|status|notes], the
-  # keyed-hash shape this app's other many-row forms use. The hash comes off the
-  # wire, so both levels are checked before anything is read.
+  # The cadre's notes about the roster's mentees, every year's, by person id.
+  # Read when the roster renders, so a refused save -- which reads the shift
+  # again -- shows them as stored, and a save that redirects reads none.
+  helper_method def cadre_notes
+    @cadre_notes ||= PersonMentoringNote.for_people(@group.first_entries.map(&:person_id)).group_by(&:person_id)
+  end
+
+  # The roster arrives as walks[<timesheet id>][status|was] and, per mentor
+  # slot, walks[<timesheet id>][mentors][<slot>][id|notes|loaded_id] -- the
+  # keyed-hash shape this app's other many-row forms use. `was` and
+  # `loaded_id` are what the row and the slot held when the page was drawn
+  # (ArtMentoring::Assignment). The hash comes off the wire, so every level is
+  # checked before anything is read.
   def submitted_rows
     rows = params[:walks]
     return {} unless rows.respond_to?(:each_pair)
 
     rows.each_pair.filter_map do |timesheet_id, attributes|
-      next unless attributes.respond_to?(:permit)
-
       id = IdList.id(timesheet_id)
-      next unless id
+      next unless id && attributes.respond_to?(:each_pair)
 
-      values = attributes.permit(:status, :notes, mentor_ids: [])
-      # A form sends each line break as CR LF; the textarea's maxlength counted
-      # it as one, and so does the length check.
-      [id, ArtMentoring::Assignment::Row.new(timesheet_id: id, status: values[:status].to_s,
-                                             mentor_ids: Array(values[:mentor_ids]).filter_map { |value| IdList.id(value) },
-                                             notes: values[:notes].to_s.gsub("\r\n", "\n").strip,
-                                             mentor_malformed: !IdList.clean?(values[:mentor_ids]))]
+      status, was = attributes.values_at(:status, :was).map { |value| value if value.is_a?(String) }
+      slots = mentor_slots(attributes[:mentors])
+      mentors = Array(slots).map do |slot|
+        ArtMentoring::Shifts::WalkMentor.new(id: IdList.id(slot[:id]), notes: ArtMentoring::Assignment.clean(slot[:notes]),
+                                             loaded_id: IdList.id(slot[:loaded_id]))
+      end
+      # A row without its slots, or with slots in any other shape, is
+      # malformed: never a request to clear them.
+      [id, ArtMentoring::Assignment::Row.new(timesheet_id: id, status: status.to_s, mentors:, was: was.presence,
+                                             mentor_malformed: !slots || !IdList.clean?(slots.map { |slot| slot[:id].to_s }))]
+    end.to_h
+  end
+
+  # A row's mentor slots in the form's order: nil unless each came keyed by its
+  # number with nothing but text in it, the one shape the form sends. A bare
+  # value, a word for a key or a list where an id goes would otherwise read as
+  # a slot left blank.
+  def mentor_slots(slots)
+    return unless slots.respond_to?(:each_pair)
+
+    pairs = slots.each_pair.sort_by { |slot, _mentor| slot.to_i }
+    pairs.map(&:last) if pairs.any? && pairs.all? { |slot, mentor| slot.match?(/\A\d+\z/) && text_only?(mentor) }
+  end
+
+  def text_only?(value) = value.respond_to?(:each_pair) && value.each_pair.all? { |_key, text| text.is_a?(String) }
+
+  # A new cadre note per mentee, cadre_notes[<person id>]; a blank box adds none.
+  def submitted_cadre_notes
+    notes = params[:cadre_notes]
+    return {} unless notes.respond_to?(:each_pair)
+
+    notes.each_pair.filter_map do |person_id, text|
+      id = IdList.id(person_id)
+      note = ArtMentoring::Assignment.clean(text) if text.is_a?(String)
+      [id, note] if id && note.present?
     end.to_h
   end
 
@@ -118,6 +157,9 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
     parts << "Recorded #{helpers.pluralize(result.saved_count, "mentee")}" if result.saved_count.positive?
     parts << "cleared #{helpers.pluralize(result.cleared_count, "mentee")}" if result.cleared_count.positive?
     sentences = parts.any? ? ["#{parts.to_sentence.upcase_first}."] : []
+    if result.noted_count.positive?
+      sentences << (result.noted_count == 1 ? "Cadre note added." : "#{result.noted_count} cadre notes added.")
+    end
     sentences += result.granted.map { |person, done| pass_sentence(person, done) }
     sentences.any? ? sentences.join(" ") : "Nothing had changed, so nothing was recorded."
   end

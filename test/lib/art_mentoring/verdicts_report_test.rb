@@ -50,6 +50,19 @@ class ArtMentoring::VerdictsReportTest < ActiveSupport::TestCase
     assert_equal [1, 2], [report.count(PersonMentor::STATUS_PASS), report.count(*ArtMentoring::VerdictsReport::BONKS)]
   end
 
+  test "Abstained and Not completed are verdicts, counted as neither a pass nor a bonk" do
+    sable = mentee_entry(create_person("Sable"), @slot.begins + 20.minutes, off_duty: @slot.ends, slot: @slot)
+    rook = mentee_entry(create_person("Rook"), @slot.begins + 25.minutes, off_duty: @slot.ends, slot: @slot)
+    abstained = walk(sable, @ferrous, status: PersonMentor::STATUS_ABSTAIN)
+    not_completed = walk(rook, @cinder, status: PersonMentor::STATUS_NOT_COMPLETED)
+    report = self.report
+
+    assert_includes report.verdicts, abstained
+    assert_includes report.verdicts, not_completed
+    assert_equal [5, 1, 2], [report.count(*ArtMentoring::VerdictsReport::VERDICTS),
+                             report.count(PersonMentor::STATUS_PASS), report.count(*ArtMentoring::VerdictsReport::BONKS)]
+  end
+
   test "each mentor's season counts their shifts, mentees and results, and averages only ended shifts" do
     cinder, ferrous = report.mentors
 

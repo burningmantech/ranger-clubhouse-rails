@@ -276,6 +276,15 @@ class AlphaMentorAssignmentTest < ActiveSupport::TestCase
     assert_match(/at least one mentor/, result.row_errors[@alpha.id])
   end
 
+  test "an ART-only verdict is refused on the Alpha sheet" do
+    result = AlphaMentorAssignment.assign!(
+      YEAR, [row(@alpha, status: PersonMentor::STATUS_ABSTAIN, mentor_ids: [@mentor.id])]
+    )
+
+    assert_not result.ok?
+    assert_equal "Pick a status from the list.", result.row_errors[@alpha.id]
+  end
+
   test "a mentor who does not hold the position is refused by callsign" do
     outsider = create_person("Sunburn")
 

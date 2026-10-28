@@ -29,19 +29,28 @@ class ArtMentoring::Shifts
   # never signed out, and its shift is over (Timesheet.open_within).
   ON_SHIFT_WITHIN = 1.day
 
+  # One mentor of a walk as the roster's slot holds it: the mentor's id (nil
+  # for "No mentor"), their notes, and the mentor the slot showed when the page
+  # was drawn, whose notes its box held -- the mentor itself, on a stored
+  # walk's rows. A submitted row (ArtMentoring::Assignment::Row) reads as these
+  # too.
+  WalkMentor = Data.define(:id, :notes, :loaded_id) do
+    def initialize(id:, notes:, loaded_id: id) = super
+  end
+
+  # One entry's walk: its person_mentor rows, one per mentor who walked it,
+  # which share a status (ArtMentoring::Assignment writes them together;
+  # year_verdict settles rows that disagree), each with its own notes.
+  Walk = Data.define(:rows) do
+    def mentor_ids = rows.map(&:mentor_id)
+    def status = PersonMentor.year_verdict(rows.map(&:status))
+    def mentors = rows.map { |row| WalkMentor.new(id: row.mentor_id, notes: row.notes.to_s) }
+  end
+
   # One mentoring shift. A group whose entries matched no shift has no slot: it
   # starts at the anchor's sign-in, and its key is "t" plus the anchor's
   # timesheet id, since there is no slot id to put in a URL.
   #
-  # One entry's walk: its person_mentor rows, one per mentor who walked it,
-  # which share a status and notes (ArtMentoring::Assignment writes them
-  # together; year_verdict settles rows that disagree).
-  Walk = Data.define(:rows) do
-    def mentor_ids = rows.map(&:mentor_id)
-    def status = PersonMentor.year_verdict(rows.map(&:status))
-    def notes = rows.first.notes
-  end
-
   # `walks` is each entry's Walk by timesheet id, for the entries that have one.
   # A row cannot exist without a mentor, so an entry with no walk is a mentee
   # no one has been paired with. `on_shift_entries` are the entries still
@@ -54,6 +63,9 @@ class ArtMentoring::Shifts
     def mentors = mentor_entries.map(&:person).uniq
     def mentee_count_for(mentor) = walks.values.count { |walk| walk.mentor_ids.include?(mentor.id) }
     def needing_mentor = mentee_entries.reject { |entry| walks.key?(entry.id) }
+    # Each mentee's first entry: someone signed in twice is one mentee, and the
+    # roster shows their cadre notes on that entry's rows.
+    def first_entries = mentee_entries.uniq(&:person_id)
 
     # The sign-ins it lists: the hour either side of a shift's start, or the
     # hour from an unmatched group's anchor (an earlier one would have been the

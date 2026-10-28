@@ -1,14 +1,16 @@
 <%# locals: (group:) %>
 <%#
   One mentoring shift on the picker: its time (or that its sign-ins matched no
-  shift), who is mentoring, what still needs doing, and how many of its mentees
-  have a mentor. The button opens the shift's roster.
+  shift), who is mentoring, who the mentees are or were, what still needs
+  doing, and how many of its mentees have a mentor. The button opens the
+  shift's roster.
 %>
 <% total = group.mentee_entries.size %>
 <% needing = group.needing_mentor.size %>
 <% awaiting = group.awaiting_verdict.size %>
 <% assigned = group.walks.size %>
 <% chips = capture do %>
+  <p class="mb-2">Mentees: <%= art_mentee_names(group) %>.</p>
   <div class="flex flex-wrap items-center gap-2 mb-2">
     <%= ui_badge pluralize(total, "mentee"), :secondary, icon: "user-group", icon_type: :solid %>
     <% if needing.positive? %>

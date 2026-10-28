@@ -114,6 +114,7 @@ class Mentoring::AlphaMentorAssignmentsControllerTest < ActionDispatch::Integrat
     assert_equal ["assignment-row-#{@second_alpha.id}", "assignment-row-#{@alpha.id}"], my_row_ids
     assert_select "select[name='alphas[#{@alpha.id}][mentor_ids][]']", AlphaMentorAssignment::MENTOR_SLOTS
     assert_select "select[name='alphas[#{@alpha.id}][status]']", 1
+    assert_select "select[name='alphas[#{@alpha.id}][status]'] option", PersonMentor::ALPHA_STATUSES.size
   end
 
   test "the worksheet renders no duplicate DOM ids" do

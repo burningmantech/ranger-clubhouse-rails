@@ -20,7 +20,8 @@
 <% end %>
 
 <% if @group %>
-  <%= render "roster", group: @group, submitted: @submitted, result: @result, pass_offers: @pass_offers || {} %>
+  <%= render "roster", group: @group, submitted: @submitted, result: @result, pass_offers: @pass_offers || {},
+                       cadre_notes:, typed_notes: @typed_notes || {} %>
 <% else %>
   <%= render "upcoming", shift: @upcoming %>
 <% end %>

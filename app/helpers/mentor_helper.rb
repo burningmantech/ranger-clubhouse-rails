@@ -5,17 +5,23 @@ module MentorHelper
     PersonMentor::STATUS_PASS => :success,
     PersonMentor::STATUS_BONK => :error,
     PersonMentor::STATUS_SELF_BONK => :error,
-    PersonMentor::STATUS_PENDING => :warning
+    PersonMentor::STATUS_PENDING => :warning,
+    # Neither for the mentee nor against: the word and the icon tell them apart.
+    PersonMentor::STATUS_ABSTAIN => :secondary,
+    PersonMentor::STATUS_NOT_COMPLETED => :secondary
   }.freeze
 
   # The words for how a walk ended, on every mentoring page (ruled
-  # 2026-10-21). Upstream printed the raw database values ("pending",
-  # "self-bonk"); one page printing both would make one result look like two.
+  # 2026-10-21; the two ART-only verdicts 2026-10-27). Upstream printed the raw
+  # database values ("pending", "self-bonk"); one page printing both would
+  # make one result look like two.
   RESULT_LABELS = {
     PersonMentor::STATUS_PENDING => "Pending",
     PersonMentor::STATUS_PASS => "Passed",
     PersonMentor::STATUS_BONK => "Bonked",
-    PersonMentor::STATUS_SELF_BONK => "Self-bonked"
+    PersonMentor::STATUS_SELF_BONK => "Self-bonked",
+    PersonMentor::STATUS_ABSTAIN => "Abstained",
+    PersonMentor::STATUS_NOT_COMPLETED => "Not completed"
   }.freeze
 
   # A badge names its result in words and an icon as well as a colour.
@@ -23,12 +29,19 @@ module MentorHelper
     PersonMentor::STATUS_PENDING => "hourglass-half",
     PersonMentor::STATUS_PASS => "circle-check",
     PersonMentor::STATUS_BONK => "circle-xmark",
-    PersonMentor::STATUS_SELF_BONK => "circle-minus"
+    PersonMentor::STATUS_SELF_BONK => "circle-minus",
+    PersonMentor::STATUS_ABSTAIN => "circle-pause",
+    PersonMentor::STATUS_NOT_COMPLETED => "circle-half-stroke"
   }.freeze
 
   def mentor_result_label(status) = RESULT_LABELS[status] || status.to_s
 
-  def mentor_result_options = RESULT_LABELS.map { |value, label| [label, value] }
+  # A result select's options, in RESULT_LABELS' order, for the verdicts its
+  # page records: PersonMentor::ALPHA_STATUSES on an Alpha page, STATUSES on an
+  # ART roster. No default, so a new page has to say which.
+  def mentor_result_options(statuses)
+    RESULT_LABELS.filter_map { |value, label| [label, value] if statuses.include?(value) }
+  end
 
   # A mentor select's blank choice: no mentor recorded.
   NO_MENTOR = "No mentor"
