@@ -38,7 +38,7 @@
   <% end %>
 <% else %>
   <%= ui_callout_box :success, icon: "flag", icon_type: :solid, accent: true, class: "my-4" do %>
-    <strong><%= mentee_title %> &mdash; <%= datetime_format(group.begins, group.ends) %>.</strong>
+    <strong><%= mentee_title %> &mdash; <%= datetime_format(group.begins, group.ends, tz: group.slot.timezone) %>.</strong>
     Mentees signed in to this shift, or between <%= art_mentoring_window(group) %>, are listed.
   <% end %>
 <% end %>

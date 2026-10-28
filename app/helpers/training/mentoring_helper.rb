@@ -33,15 +33,18 @@ module Training::MentoringHelper
   def art_mentoring_shift_label(group)
     return "No Matching Shift" if group.unmatched?
 
-    datetime_format(group.begins, group.ends)
+    datetime_format(group.begins, group.ends, tz: group.slot.timezone)
   end
 
   # The clock times a group's window covers (Shifts::Group#window), so the page
   # can state them rather than ask the reader to do the arithmetic. Dated, not
   # bare times: a late-night window crosses midnight. safe_join, because
   # datetime_format returns markup that interpolation would escape into view.
+  # The window is built from the shift's start, in the shift's own zone, or for
+  # an unmatched group from a sign-in, which is on the app's clock.
   def art_mentoring_window(group)
-    safe_join([datetime_format(group.window.begin), datetime_format(group.window.end)], " and ")
+    tz = group.slot&.timezone
+    safe_join([datetime_format(group.window.begin, tz:), datetime_format(group.window.end, tz:)], " and ")
   end
 
   # The two counts the mentoring pages share, as their stat tiles: mentees on
