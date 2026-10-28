@@ -1,0 +1,13 @@
+<%# locals: (note:) %>
+<%# Edit one of your own general notes. Saving redraws the mentee's notes on
+    the roster behind it. %>
+<%= modal_dialog id: "general-note-dialog", title: "Edit General Note", frame: false do %>
+  <p class="mb-2">
+    About <%= note.person.callsign %>, written <%= datetime_format(note.created_at, year: true) %>.
+  </p>
+
+  <%= ui_form(note, training_mentoring_general_note_path(training_slug, note)) do |f| %>
+    <%= f.text_area :notes, label: "Your Note", rows: 4, maxlength: PersonMentoringNote::NOTES_MAX %>
+    <%= modal_form_footer f, submit: "Save Note" %>
+  <% end %>
+<% end %>

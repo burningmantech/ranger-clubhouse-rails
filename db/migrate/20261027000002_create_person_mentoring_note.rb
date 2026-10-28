@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-# Cadre notes (ruled 2026-10-27): what an ART's mentoring cadre notes about a
+# General notes (ruled 2026-10-27): what an ART's mentoring cadre notes about a
 # mentee, tied to no mentor, shift, year or ART, and shown on every roster the
 # mentee is on. person_id is the mentee, written_by_id who wrote the note.
-# Add-only, so no updated_at.
+# No updated_at: the audit log keeps a note's edits.
 #
 # utf8mb4 by name, as person_mentor's notes are: the server default is not a
 # promise, and a note may hold an emoji.

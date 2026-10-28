@@ -6,7 +6,7 @@
 # one entry sharing the status, each with its own notes (ruled 2026-10-27; an
 # Alpha walk leaves timesheet_id NULL and is never touched here). A pass can
 # also carry the grants the reader chose for it (ArtMentoring::Pass), and a
-# mentee a new cadre note (PersonMentoringNote): one roster, one Save.
+# mentee a new general note (PersonMentoringNote): one roster, one Save.
 #
 # Every row is checked before anything is written, and the shift is written in
 # one transaction, grants included, so a refused row -- or a refused grant --
@@ -35,7 +35,7 @@ class ArtMentoring::Assignment
 
   # `row_errors` is keyed by timesheet id. `conflict` is a save that lost a race
   # to someone recording the same shift at the same moment; `denied` the reason
-  # a grant was refused. Neither wrote anything. `noted_count` is the cadre
+  # a grant was refused. Neither wrote anything. `noted_count` is the general
   # notes added; `granted` is what each pass did, by person
   # (ArtMentoring::Pass::Grant).
   Result = Data.define(:row_errors, :conflict, :denied, :saved_count, :cleared_count, :noted_count, :granted) do
@@ -66,8 +66,8 @@ class ArtMentoring::Assignment
   # @param shifts [ArtMentoring::Shifts] the year the group belongs to
   # @param group [ArtMentoring::Shifts::Group]
   # @param rows [Hash{Integer => Row}] keyed by timesheet id
-  # @param cadre_notes [Hash{Integer => String}] a new cadre note, by mentee person id
-  def initialize(shifts, group, rows, cadre_notes: {})
+  # @param general_notes [Hash{Integer => String}] a new general note, by mentee person id
+  def initialize(shifts, group, rows, general_notes: {})
     @shifts = shifts
     @group = group
     @entries = group.mentee_entries.index_by(&:id)
@@ -78,16 +78,16 @@ class ArtMentoring::Assignment
     @first_entries = group.first_entries.index_by(&:person_id)
     # By person. The form offers a box for each of the shift's mentees, and a
     # note typed for one moved to another shift since the page was drawn is
-    # still added: a cadre note is tied to no shift. A note about anyone but
+    # still added: a general note is tied to no shift. A note about anyone but
     # the year's mentees is a hand-edited request.
     mentees = shifts.mentee_entries.to_h { |entry| [entry.person_id, entry.person] }
-    @cadre_notes = cadre_notes.filter_map { |person_id, notes| [mentees[person_id], notes] if mentees[person_id] }.to_h
+    @general_notes = general_notes.filter_map { |person_id, notes| [mentees[person_id], notes] if mentees[person_id] }.to_h
   end
 
-  # @return [Hash{Integer => String}] by timesheet id; a refused cadre note
+  # @return [Hash{Integer => String}] by timesheet id; a refused general note
   #   under its mentee's first entry, where the roster shows it, unless that
   #   entry's row has an error of its own
-  def row_errors = @row_errors ||= cadre_note_errors.merge(entry_errors)
+  def row_errors = @row_errors ||= general_note_errors.merge(entry_errors)
 
   # What a refused or questioned save shows again as typed, by timesheet id. A
   # row left as drawn, one that could not be read and one someone else saved in
@@ -104,7 +104,7 @@ class ArtMentoring::Assignment
   # The entries this save records as passed, newly or again.
   def passed = @rows.select(&:passed?).map { |row| @entries.fetch(row.timesheet_id) }
 
-  # @param written_by [Person] who wrote the cadre notes
+  # @param written_by [Person] who wrote the general notes
   # @param grants [Hash{Integer => Hash}] by timesheet id: { join:, revoke: }
   # @return [Result]
   def save!(written_by:, grants: {})
@@ -116,7 +116,7 @@ class ArtMentoring::Assignment
 
     PersonMentor.transaction do
       @rows.each { |row| counts[sync(row, @entries.fetch(row.timesheet_id))] += 1 }
-      @cadre_notes.each do |person, notes|
+      @general_notes.each do |person, notes|
         next if PersonMentoringNote.resubmitted?(person:, written_by:, notes:)
 
         PersonMentoringNote.create!(person:, written_by:, notes:)
@@ -178,12 +178,12 @@ class ArtMentoring::Assignment
     end
   end
 
-  def cadre_note_errors
-    @cadre_notes.filter_map do |person, notes|
+  def general_note_errors
+    @general_notes.filter_map do |person, notes|
       next if notes.length <= PersonMentoringNote::NOTES_MAX
 
       # A mentee moved off the shift has no row here to show it under.
-      [@first_entries[person.id]&.id, "A cadre note can be at most #{PersonMentoringNote::NOTES_MAX} characters."]
+      [@first_entries[person.id]&.id, "A general note can be at most #{PersonMentoringNote::NOTES_MAX} characters."]
     end.to_h
   end
 

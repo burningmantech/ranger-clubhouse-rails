@@ -1452,6 +1452,8 @@ Rails.application.routes.draw do
       get "assignment", to: "assignments#index", as: :assignment
       get "assignment/:key", to: "assignments#show", as: :assignment_shift, constraints: { key: /t?\d+/ }
       post "assignment/:key", to: "assignments#save", constraints: { key: /t?\d+/ }
+      # A general note is added with the roster's Save; these change one.
+      resources :general_notes, path: "general-notes", only: %i[edit update destroy]
       get "verdicts", to: "verdicts#index", as: :verdicts
       get "multiple-shifts", to: "multiple_shifts#index", as: :multiple_shifts
     end

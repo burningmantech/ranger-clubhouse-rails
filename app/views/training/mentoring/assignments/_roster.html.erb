@@ -1,14 +1,14 @@
-<%# locals: (group:, submitted:, result:, pass_offers:, cadre_notes:, typed_notes:) %>
+<%# locals: (group:, submitted:, result:, pass_offers:, general_notes:, typed_notes:) %>
 <%#
   One mentoring shift: the window it lists, the mentors on it, and its mentees,
-  each with mentors, a result, each mentor's notes, and the cadre's notes about
+  each with mentors, a result, each mentor's notes, and the general notes about
   the mentee with a box for one more, saved together, in any year (ruled
   2026-10-22: a past year's walks are recorded and corrected here too). A
   reader without the trainer role gets the same table with nothing to change.
   `submitted` holds the rows a refused or questioned save shows again as typed
   (ArtMentoring::Assignment#typed_rows), so the reader keeps their edits, and
-  `typed_notes` the cadre notes typed into it, by person id;
-  `pass_offers` is the pass question that save is waiting on. `cadre_notes`
+  `typed_notes` the general notes typed into it, by person id;
+  `pass_offers` is the pass question that save is waiting on. `general_notes`
   are the stored ones, every year's, by person id (PersonMentoringNote).
 %>
 <% editable = can_manage_session? %>
@@ -83,10 +83,10 @@
         Set every mentor to <%= MentorHelper::NO_MENTOR %>, leave the result at
         <%= mentor_result_label(PersonMentor::STATUS_PENDING) %> and every mentor's notes empty, and save.
       </dd>
-      <dt>What are cadre notes?</dt>
+      <dt>What are general notes?</dt>
       <dd>
         Notes about a mentee for the whole cadre, tied to no mentor, shift or ART. Each one shows on every roster
-        the mentee is on, in any ART and any year, and cannot be changed or deleted once saved.
+        the mentee is on, in any ART and any year. Only the person who wrote a note can edit or delete it.
       </dd>
       <dt>What else happens when I record a pass?</dt>
       <dd>
@@ -219,7 +219,7 @@
               </div>
             <% end %>
           <% end %>
-          <%# Right under the fields it is about, before the cadre's notes. %>
+          <%# Right under the fields it is about, before the general notes. %>
           <% if error %>
             <%= t.row id: "walk-#{entry.id}-error", state: :error do %>
               <%= t.cell colspan: 5 do %>
@@ -227,14 +227,14 @@
               <% end %>
             <% end %>
           <% end %>
-          <%# The cadre's notes about the mentee and the box for one more, on
+          <%# The general notes about the mentee and the box for one more, on
               the mentee's first entry only (Shifts::Group#first_entries). %>
-          <% notes = cadre_notes.fetch(entry.person_id, []) %>
+          <% notes = general_notes.fetch(entry.person_id, []) %>
           <% if first_entries.include?(entry) && (notes.any? || editable) %>
-            <%= t.row id: "walk-#{entry.id}-cadre-row" do %>
+            <%= t.row id: "walk-#{entry.id}-general-notes-row" do %>
               <%= t.cell colspan: 5, class: "basis-full" do %>
-                <%= render "cadre_notes", notes:, person_id: entry.person_id, callsign:,
-                                          typed: typed_notes[entry.person_id], editable: %>
+                <%= render "general_notes", notes:, person_id: entry.person_id, callsign:,
+                                            typed: typed_notes[entry.person_id], editable: %>
               <% end %>
             <% end %>
           <% end %>

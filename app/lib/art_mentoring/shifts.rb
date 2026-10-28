@@ -64,7 +64,7 @@ class ArtMentoring::Shifts
     def mentee_count_for(mentor) = walks.values.count { |walk| walk.mentor_ids.include?(mentor.id) }
     def needing_mentor = mentee_entries.reject { |entry| walks.key?(entry.id) }
     # Each mentee's first entry: someone signed in twice is one mentee, and the
-    # roster shows their cadre notes on that entry's rows.
+    # roster shows their general notes on that entry's rows.
     def first_entries = mentee_entries.uniq(&:person_id)
 
     # The sign-ins it lists: the hour either side of a shift's start, or the

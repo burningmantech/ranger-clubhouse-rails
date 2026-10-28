@@ -132,11 +132,11 @@ mentor; an entry corrected onto another ART's mentee position takes its walk wit
 _Avoid_: "assignment" for the row, which names the Mentor Assignment page and `ArtMentoring::Assignment`, the
 object that writes walks.
 
-**Cadre note** (`PersonMentoringNote`):
+**General note** (`PersonMentoringNote`):
 What an ART's mentoring cadre notes about a mentee, tied to no mentor, shift, year or ART: every roster the
-mentee is on lists all of them, newest first, with when and by whom. One is added with the roster's Save, and none
-is ever edited or deleted.
-_Avoid_: a walk's notes, which are one mentor's about one mentee shift.
+mentee is on lists all of them, newest first, with when and by whom. One is added with the roster's Save, and only
+its author edits or deletes it.
+_Avoid_: "cadre note", its name until 2026-10-28; a walk's notes, which are one mentor's about one mentee shift.
 
 **Mentoring verdict** (`PersonMentor#status`):
 How a walk ended: `pass`, `bonk`, `self-bonk` or `pending`, shown as Passed, Bonked, Self-bonked and Pending

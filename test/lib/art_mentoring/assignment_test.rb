@@ -34,12 +34,12 @@ class ArtMentoring::AssignmentTest < ActiveSupport::TestCase
     travel_back
   end
 
-  # Cinder writes the cadre notes.
-  def save(*rows, grants: {}, cadre_notes: {}) = assignment(*rows, cadre_notes:).save!(written_by: @cinder, grants:)
+  # Cinder writes the general notes.
+  def save(*rows, grants: {}, general_notes: {}) = assignment(*rows, general_notes:).save!(written_by: @cinder, grants:)
 
-  def assignment(*rows, cadre_notes: {})
+  def assignment(*rows, general_notes: {})
     shifts = ArtMentoring::Shifts.new(@training, YEAR)
-    ArtMentoring::Assignment.new(shifts, shifts.group(@slot.id.to_s), rows.index_by(&:timesheet_id), cadre_notes:)
+    ArtMentoring::Assignment.new(shifts, shifts.group(@slot.id.to_s), rows.index_by(&:timesheet_id), general_notes:)
   end
 
   # A submitted row. Each mentor slot is a person, nil for "No mentor", or
@@ -255,10 +255,10 @@ class ArtMentoring::AssignmentTest < ActiveSupport::TestCase
     assert_equal [[@cinder.id, "Calm on the radio."]], PersonMentor.where(timesheet_id: @first.id).pluck(:mentor_id, :notes)
   end
 
-  # ---------------------------------------------------------- cadre notes
+  # ---------------------------------------------------------- general notes
 
-  test "a cadre note is written with the shift, by its author" do
-    result = save(row(@first, @ferrous), cadre_notes: { @tinsel.id => "Ask about the radio." })
+  test "a general note is written with the shift, by its author" do
+    result = save(row(@first, @ferrous), general_notes: { @tinsel.id => "Ask about the radio." })
 
     assert result.ok?
     assert_equal 1, result.noted_count
@@ -266,43 +266,43 @@ class ArtMentoring::AssignmentTest < ActiveSupport::TestCase
     assert_equal ["Ask about the radio.", @cinder.id], [note.notes, note.written_by_id]
   end
 
-  test "a cadre note over the limit is refused under the mentee's first entry, and nothing is written" do
+  test "a general note over the limit is refused under the mentee's first entry, and nothing is written" do
     long = "a" * (PersonMentoringNote::NOTES_MAX + 1)
 
-    result = save(row(@first, @ferrous), cadre_notes: { @moonrake.id => long })
+    result = save(row(@first, @ferrous), general_notes: { @moonrake.id => long })
 
-    assert_equal({ @second.id => "A cadre note can be at most 2000 characters." }, result.row_errors)
+    assert_equal({ @second.id => "A general note can be at most 2000 characters." }, result.row_errors)
     assert_not PersonMentor.exists?(timesheet_id: @first.id)
     assert_not PersonMentoringNote.exists?
   end
 
-  test "a cadre note for someone who is not one of the year's mentees is ignored" do
-    result = save(row(@first, @ferrous), cadre_notes: { @ferrous.id => "Not a mentee here." })
+  test "a general note for someone who is not one of the year's mentees is ignored" do
+    result = save(row(@first, @ferrous), general_notes: { @ferrous.id => "Not a mentee here." })
 
     assert result.ok?
     assert_equal 0, result.noted_count
     assert_not PersonMentoringNote.exists?
   end
 
-  test "a cadre note typed for a mentee moved to another shift since is still added" do
+  test "a general note typed for a mentee moved to another shift since is still added" do
     later = mentee_shift(@slot.begins + 1.day)
     moved = mentee_entry(create_person("Drifter"), later.begins, off_duty: later.ends, slot: later)
 
-    result = save(row(@first, @ferrous), cadre_notes: { moved.person_id => "Moved to the next shift." })
+    result = save(row(@first, @ferrous), general_notes: { moved.person_id => "Moved to the next shift." })
 
     assert result.ok?
     assert_equal ["Moved to the next shift."], PersonMentoringNote.where(person_id: moved.person_id).pluck(:notes)
   end
 
-  test "a resubmitted cadre note is added once, and the same words on a later day are a new note" do
+  test "a resubmitted general note is added once, and the same words on a later day are a new note" do
     notes = { @tinsel.id => "Ask about the radio." }
 
-    assert_equal 1, save(row(@first, @ferrous), cadre_notes: notes).noted_count
-    assert_equal 0, save(row(@first, @ferrous), cadre_notes: notes).noted_count
+    assert_equal 1, save(row(@first, @ferrous), general_notes: notes).noted_count
+    assert_equal 0, save(row(@first, @ferrous), general_notes: notes).noted_count
     assert_equal 1, PersonMentoringNote.where(person_id: @tinsel.id).count
 
     travel PersonMentoringNote::RESUBMIT_WITHIN + 1.minute
-    assert_equal 1, save(row(@first, @ferrous), cadre_notes: notes).noted_count
+    assert_equal 1, save(row(@first, @ferrous), general_notes: notes).noted_count
   end
 
   # ---------------------------------------------------------- pass grants

@@ -1,0 +1,23 @@
+<%# locals: (notes:, person_id:, callsign:, typed:, editable:) %>
+<%#
+  One mentee's general notes on the roster (ruled 2026-10-27): the list, then,
+  for a reader who can record the shift, the box for one more, which the
+  roster's Save writes. `typed` is what a refused or questioned save sent for
+  it.
+%>
+<% field_id = "general-note-#{person_id}" %>
+<div class="space-y-2">
+  <%= render "training/mentoring/assignments/general_notes_list", notes:, person_id:, callsign: %>
+  <% if editable %>
+    <div>
+      <%= label_tag field_id, "Add a General Note", class: AppFormBuilder::LABEL_CLASSES %>
+      <%= text_area_tag "general_notes[#{person_id}]", typed, id: field_id, rows: 2,
+                        maxlength: PersonMentoringNote::NOTES_MAX, class: AppFormBuilder::TEXTAREA_CLASSES,
+                        aria: { label: "Add a general note about #{callsign}", describedby: "#{field_id}-help" } %>
+      <%# The lasting consequence stays in sight here, not only in How This
+          Page Works: every ART reads the note. %>
+      <%= tag.p "Saved with the shift, and shown on every roster this mentee is on, in any ART and any year.",
+                id: "#{field_id}-help", class: AppFormBuilder::HELP_TEXT_CLASSES %>
+    </div>
+  <% end %>
+</div>

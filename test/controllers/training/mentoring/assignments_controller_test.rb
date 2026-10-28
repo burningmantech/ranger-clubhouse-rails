@@ -61,8 +61,8 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
   def drawn_was(entry = @tinsel) = css_select("input[name='walks[#{entry.id}][was]']").first["value"]
 
   def save_walk(mentor_id:, status: PersonMentor::STATUS_PENDING, notes: "", entry: @tinsel, path: shift_path,
-                cadre_notes: {})
-    post path, params: { walks: { entry.id => walk_params([mentor_id, notes], status:) }, cadre_notes: }
+                general_notes: {})
+    post path, params: { walks: { entry.id => walk_params([mentor_id, notes], status:) }, general_notes: }
   end
 
   test "the picker shows each mentoring shift as a card that opens its roster" do
@@ -108,7 +108,7 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
 
     assert_response :success
     assert_unique_dom_ids
-    assert_select "textarea[name=?]", "cadre_notes[#{@tinsel.person_id}]", count: 1
+    assert_select "textarea[name=?]", "general_notes[#{@tinsel.person_id}]", count: 1
   end
 
   test "a mentee holding the mentor position is not offered as their own mentor" do
@@ -217,10 +217,10 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     walk(@tinsel, @ferrous, notes: "Ready.")
 
     post shift_path, params: { walks: { @tinsel.id => walk_params(was:) },
-                               cadre_notes: { @tinsel.person_id => "Ask about the radio." } }
+                               general_notes: { @tinsel.person_id => "Ask about the radio." } }
 
     assert_redirected_to shift_path
-    assert_equal "Cadre note added.", flash[:success]
+    assert_equal "General note added.", flash[:success]
     assert_equal [[@ferrous.id, "Ready."]], PersonMentor.where(timesheet_id: @tinsel.id).pluck(:mentor_id, :notes)
   end
 
@@ -255,40 +255,55 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     assert_select "div.whitespace-pre-line", text: "Cinder: Calm on the radio."
   end
 
-  # ------------------------------------------------------------ cadre notes
+  # ------------------------------------------------------------ general notes
 
-  test "the roster lists the cadre's notes about a mentee from every year, newest first" do
+  test "the roster lists the general notes about a mentee from every year, newest first" do
     PersonMentoringNote.create!(person: @tinsel.person, written_by: @cinder, notes: "Quiet on the radio.",
                                 created_at: Time.zone.local(YEAR - 2, 9, 1, 12, 0, 0))
     PersonMentoringNote.create!(person: @tinsel.person, written_by: @ferrous, notes: "Much better this year.")
 
     get shift_path
 
-    assert_select "tr#walk-#{@tinsel.id}-cadre-row" do
+    assert_select "tr#walk-#{@tinsel.id}-general-notes-row" do
       assert_select "li", count: 2
       assert_select "li:first-child", text: /Sep 2, 2026 @ \d\d:\d\d · Ferrous.*Much better this year\./m
       assert_select "li:last-child", text: /Sep 1, 2024 @ \d\d:\d\d · Cinder.*Quiet on the radio\./m
-      assert_select "textarea[name=?][aria-label=?]", "cadre_notes[#{@tinsel.person_id}]", "Add a cadre note about Tinsel"
-      assert_select "p#cadre-note-#{@tinsel.person_id}-help", text: /cannot be changed or deleted after\. Shown on every roster this mentee is on, in any ART and any year\./
+      assert_select "textarea[name=?][aria-label=?]", "general_notes[#{@tinsel.person_id}]", "Add a general note about Tinsel"
+      assert_select "p#general-note-#{@tinsel.person_id}-help",
+                    text: "Saved with the shift, and shown on every roster this mentee is on, in any ART and any year."
+      assert_select "a", count: 0, message: "only a note's author gets Edit and Delete"
     end
   end
 
-  test "a save adds a cadre note by its author, and says so" do
-    save_walk(mentor_id: @ferrous.id, cadre_notes: { @tinsel.person_id => "Ask about the radio.\r\nTwice." })
+  test "the reader's own general notes have Edit and Delete" do
+    mine = PersonMentoringNote.create!(person: @tinsel.person, written_by: @art_trainer, notes: "Mine.")
+    PersonMentoringNote.create!(person: @tinsel.person, written_by: @cinder, notes: "Theirs.")
+
+    get shift_path
+
+    assert_select "#general-notes-#{@tinsel.person_id}" do
+      assert_select "a", count: 2
+      assert_select "a[href=?][data-turbo-frame=modal]", edit_training_mentoring_general_note_path(SLUG, mine)
+      assert_select "a[href=?][data-turbo-method=delete]", training_mentoring_general_note_path(SLUG, mine)
+    end
+  end
+
+  test "a save adds a general note by its author, and says so" do
+    save_walk(mentor_id: @ferrous.id, general_notes: { @tinsel.person_id => "Ask about the radio.\r\nTwice." })
 
     assert_redirected_to shift_path
-    assert_equal "Recorded 1 mentee. Cadre note added.", flash[:success]
+    assert_equal "Recorded 1 mentee. General note added.", flash[:success]
     note = PersonMentoringNote.find_by!(person_id: @tinsel.person_id)
     assert_equal ["Ask about the radio.\nTwice.", @art_trainer.id], [note.notes, note.written_by_id]
     assert ActionLog.exists?(event: "person-mentoring-note-create"), "the note is audited"
   end
 
-  test "a refused save keeps the typed cadre note and writes nothing" do
+  test "a refused save keeps the typed general note and writes nothing" do
     save_walk(mentor_id: "", status: PersonMentor::STATUS_BONK,
-              cadre_notes: { @tinsel.person_id => "Ask about the radio." })
+              general_notes: { @tinsel.person_id => "Ask about the radio." })
 
     assert_response :unprocessable_entity
-    assert_select "textarea#cadre-note-#{@tinsel.person_id}", text: /Ask about the radio\./
+    assert_select "textarea#general-note-#{@tinsel.person_id}", text: /Ask about the radio\./
     assert_not PersonMentoringNote.exists?(person_id: @tinsel.person_id)
   end
 
@@ -310,10 +325,10 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     assert_response :unprocessable_entity
     assert_includes response.body, "Pick a mentor before recording a result."
     assert_select "select#walk-#{@tinsel.id}-status option[selected][value=?]", PersonMentor::STATUS_BONK
-    # The reason sits right under the fields it is about, and the cadre's notes
+    # The reason sits right under the fields it is about, and the general notes
     # below it are not shaded as though they had failed.
     assert_select "tr#walk-#{@tinsel.id}-notes-row + tr#walk-#{@tinsel.id}-error + " \
-                  "tr#walk-#{@tinsel.id}-cadre-row:not([class*=bg-error])"
+                  "tr#walk-#{@tinsel.id}-general-notes-row:not([class*=bg-error])"
     assert_not PersonMentor.exists?(timesheet_id: @tinsel.id)
   end
 
@@ -441,20 +456,20 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
                  "Record Pass is the form's default button, so Enter in the dialog presses it"
   end
 
-  test "a cadre note typed before the pass question rides Record Pass" do
+  test "a general note typed before the pass question rides Record Pass" do
     become_graduate
     hold_mentee_position(@tinsel.person)
 
     save_walk(mentor_id: @ferrous.id, status: PersonMentor::STATUS_PASS,
-              cadre_notes: { @tinsel.person_id => "Ready for the team." })
+              general_notes: { @tinsel.person_id => "Ready for the team." })
     assert_response :unprocessable_entity
     assert_select "dialog#pass-dialog"
-    assert_select "textarea#cadre-note-#{@tinsel.person_id}", text: /Ready for the team\./
+    assert_select "textarea#general-note-#{@tinsel.person_id}", text: /Ready for the team\./
     assert_not PersonMentoringNote.exists?(person_id: @tinsel.person_id)
 
     post shift_path, params: { walks: { @tinsel.id => walk_params([@ferrous.id], status: PersonMentor::STATUS_PASS) },
                                confirmed: "Record Pass", grants: { @tinsel.id => { join: "0", revoke: "0" } },
-                               cadre_notes: { @tinsel.person_id => "Ready for the team." } }
+                               general_notes: { @tinsel.person_id => "Ready for the team." } }
     assert_redirected_to shift_path
     assert_equal ["Ready for the team."], PersonMentoringNote.where(person_id: @tinsel.person_id).pluck(:notes)
   end

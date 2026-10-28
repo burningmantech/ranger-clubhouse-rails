@@ -2,7 +2,7 @@
 
 # Training › Mentoring › Mentor Assignment. The index picks a mentoring shift;
 # show is one shift's roster, where each mentee is paired with mentors, the
-# result and each mentor's notes are recorded, and the cadre's notes about the
+# result and each mentor's notes are recorded, and the general notes about the
 # mentee are read and added to; save writes that roster. A shift still to come
 # shows its sign-ups and takes no save. See ArtMentoring::Shifts for how
 # timesheet entries become shifts.
@@ -31,8 +31,8 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
       return redirect_to(shift_path, error: "No one has signed in for that shift yet, so there is nothing to record.")
     end
 
-    @typed_notes = submitted_cadre_notes
-    assignment = ArtMentoring::Assignment.new(@shifts, @group, submitted_rows, cadre_notes: @typed_notes)
+    @typed_notes = submitted_general_notes
+    assignment = ArtMentoring::Assignment.new(@shifts, @group, submitted_rows, general_notes: @typed_notes)
     # The rows the page shows again as typed, should it come back.
     @submitted = assignment.typed_rows
     @pass_offers = assignment.row_errors.empty? ? pass_offers_to_ask(assignment) : {}
@@ -64,11 +64,11 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
     training_mentoring_assignment_shift_path(training_slug, params[:key], year: @year)
   end
 
-  # The cadre's notes about the roster's mentees, every year's, by person id.
+  # The general notes about the roster's mentees, every year's, by person id.
   # Read when the roster renders, so a refused save -- which reads the shift
   # again -- shows them as stored, and a save that redirects reads none.
-  helper_method def cadre_notes
-    @cadre_notes ||= PersonMentoringNote.for_people(@group.first_entries.map(&:person_id)).group_by(&:person_id)
+  helper_method def general_notes
+    @general_notes ||= PersonMentoringNote.for_people(@group.first_entries.map(&:person_id)).group_by(&:person_id)
   end
 
   # The roster arrives as walks[<timesheet id>][status|was] and, per mentor
@@ -111,9 +111,9 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
 
   def text_only?(value) = value.respond_to?(:each_pair) && value.each_pair.all? { |_key, text| text.is_a?(String) }
 
-  # A new cadre note per mentee, cadre_notes[<person id>]; a blank box adds none.
-  def submitted_cadre_notes
-    notes = params[:cadre_notes]
+  # A new general note per mentee, general_notes[<person id>]; a blank box adds none.
+  def submitted_general_notes
+    notes = params[:general_notes]
     return {} unless notes.respond_to?(:each_pair)
 
     notes.each_pair.filter_map do |person_id, text|
@@ -158,7 +158,7 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
     parts << "cleared #{helpers.pluralize(result.cleared_count, "mentee")}" if result.cleared_count.positive?
     sentences = parts.any? ? ["#{parts.to_sentence.upcase_first}."] : []
     if result.noted_count.positive?
-      sentences << (result.noted_count == 1 ? "Cadre note added." : "#{result.noted_count} cadre notes added.")
+      sentences << (result.noted_count == 1 ? "General note added." : "#{result.noted_count} general notes added.")
     end
     sentences += result.granted.map { |person, done| pass_sentence(person, done) }
     sentences.any? ? sentences.join(" ") : "Nothing had changed, so nothing was recorded."

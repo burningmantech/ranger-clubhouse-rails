@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-# Cadre notes (ruled 2026-10-27): every year's, about the people asked for,
+# General notes (ruled 2026-10-27): every year's, about the people asked for,
 # newest first, each with its author.
 class PersonMentoringNoteTest < ActiveSupport::TestCase
   test "a mentee's notes come newest first, with their authors, and nobody else's" do

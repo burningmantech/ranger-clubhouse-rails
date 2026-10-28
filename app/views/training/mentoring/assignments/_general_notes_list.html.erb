@@ -1,0 +1,32 @@
+<%# locals: (notes:, person_id:, callsign:) %>
+<%#
+  One mentee's general notes: every year's, newest first, each with when and
+  by whom, as the app's other note lists show them, and Edit and Delete on the
+  reader's own while they may record the shift. Drawn hidden when there are
+  none, so Training::Mentoring::GeneralNotesController can redraw it in place.
+%>
+<% may_change = can_manage_session? %>
+<%= tag.div id: "general-notes-#{person_id}", hidden: notes.empty? do %>
+  <%= tag.span "General Notes", class: AppFormBuilder::LABEL_CLASSES %>
+  <%= tag.ul class: "space-y-2", aria: { label: "General notes about #{callsign}" } do %>
+    <% notes.each do |note| %>
+      <li>
+        <div class="text-sm text-stone-muted">
+          <%= datetime_format(note.created_at, year: true) %> &middot; <%= person_display_name(note.written_by, note.written_by_id) %>
+        </div>
+        <div class="whitespace-pre-line"><%= note.notes %></div>
+        <% if may_change && note.written_by?(Current.person) %>
+          <div class="mt-1 flex gap-2">
+            <%= edit_link edit_training_mentoring_general_note_path(training_slug, note), data: { turbo_frame: "modal" } %>
+            <%= delete_button training_mentoring_general_note_path(training_slug, note), "Delete",
+                              confirm_modal: {
+                                title: "Delete General Note",
+                                message: "Delete this general note about #{callsign}? This cannot be undone.",
+                                confirm_label: "Delete Note"
+                              } %>
+          </div>
+        <% end %>
+      </li>
+    <% end %>
+  <% end %>
+<% end %>
