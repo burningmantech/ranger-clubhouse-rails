@@ -331,7 +331,13 @@ class PersonPhoto < ApplicationRecord
   # Where a photo file sits in storage: by filename under photos/, the layout
   # Clubhouse 2 used in the same bucket, with the staging server's kept apart.
   def photo_key(blob)
-    dir = Current.is_staging? ? "staging/photos" : "photos"
+    dir = if Current.is_staging?
+            "staging/photos"
+          elsif Current.is_development?
+            "photos"
+          else
+            "production/photos"
+          end
     "#{dir}/#{blob.filename}"
   end
 

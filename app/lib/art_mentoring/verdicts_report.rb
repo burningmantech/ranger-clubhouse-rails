@@ -64,7 +64,8 @@ class ArtMentoring::VerdictsReport
   def mentors
     @mentors ||= begin
       entries = shifts.mentor_entries.group_by(&:person_id)
-      walks_by = walks.group_by(&:mentor_id)
+      # A pass recorded without a mentor is no mentor's.
+      walks_by = walks.select(&:mentor_id).group_by(&:mentor_id)
       people = (shifts.mentor_entries.map(&:person) + walks.map(&:mentor)).compact.index_by(&:id)
 
       (entries.keys | walks_by.keys).map do |id|

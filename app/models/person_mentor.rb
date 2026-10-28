@@ -58,14 +58,14 @@ class PersonMentor < ApplicationRecord
 
   # Associations
   belongs_to :person
-  belongs_to :mentor, class_name: "Person"
+  # Optional only for an ART pass; the check below holds every other walk to it.
+  belongs_to :mentor, class_name: "Person", optional: true
   # An ART walk's mentee shift. Optional: an Alpha walk has none, and a walk
   # outlives a deleted entry (ruled 2026-10-21).
   belongs_to :timesheet, optional: true
 
   # Validations
   validates :person_id, presence: true
-  validates :mentor_id, presence: true
   validates :mentor_year, presence: true
   # The table is shared by mentee position: position_id names the position the
   # walk was for, every reader below takes it as a required keyword, and every
@@ -76,6 +76,9 @@ class PersonMentor < ApplicationRecord
   # An ART walk (it names a timesheet entry) may also end Abstained or Not
   # completed; an Alpha walk never does, since every Alpha reader knows four.
   validates :status, presence: true, inclusion: { in: ->(row) { row.timesheet_id ? STATUSES : ALPHA_STATUSES } }
+  # Every walk names its mentor except an ART pass recorded without one (owner,
+  # 2026-10-28): one row with mentor_id NULL (ArtMentoring::Assignment).
+  validates :mentor, presence: { message: :required }, unless: :mentor_optional?
   # An ART walk is one row per mentor who walked the mentee's shift, each
   # naming the mentee's timesheet entry. Alpha walks leave it NULL.
   validates :timesheet_id, uniqueness: { scope: :mentor_id,
@@ -94,6 +97,9 @@ class PersonMentor < ApplicationRecord
                           timesheet_id.nil? &&
                             (new_record? || changed.intersect?(%w[person_id mentor_id mentor_year position_id timesheet_id]))
                         }
+
+  # An ART walk's pass, the one walk that may name no mentor.
+  def mentor_optional? = timesheet_id.present? && status == STATUS_PASS
 
   class << self
     # May the mentoring pages offer Send Message to this person: a Ranger the

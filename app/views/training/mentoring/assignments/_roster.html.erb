@@ -135,7 +135,6 @@
         <%= t.heading "Mentee" %>
         <%= t.heading "Signed In" %>
         <%= t.heading "Duration", right: true %>
-        <%= t.heading "Mentors" %>
         <%= t.heading "Result" %>
       <% end %>
       <%= t.body do %>
@@ -156,25 +155,6 @@
             <% end %>
             <%= t.cell datetime_format(entry.on_duty), class: "whitespace-nowrap" %>
             <%= t.cell art_mentoring_duration(entry), right: true, class: "whitespace-nowrap" %>
-            <%# One select per mentor slot, as the Alpha roster has them. The
-                hidden fields carry back what the row and each slot held when
-                the page was drawn (ArtMentoring::Assignment). %>
-            <%= t.cell do %>
-              <%= hidden_field_tag "walks[#{entry.id}][was]",
-                                   typed&.was || ArtMentoring::Assignment.stored_fingerprint(walk) %>
-              <div class="space-y-2">
-                <% ArtMentoring::Assignment::MENTOR_SLOTS.times do |i| %>
-                  <div>
-                    <%= hidden_field_tag "walks[#{entry.id}][mentors][#{i}][loaded_id]", slots[i]&.id %>
-                    <%= select_tag "walks[#{entry.id}][mentors][#{i}][id]",
-                                   art_mentor_choices(group, @shifts.mentor_holders, entry, slots[i]&.id),
-                                   id: "walk-#{entry.id}-mentor-#{i + 1}", disabled: !editable,
-                                   class: "#{AppFormBuilder::SELECT_CLASSES} min-w-36",
-                                   aria: { label: "Mentor #{i + 1} for #{callsign}" } %>
-                  </div>
-                <% end %>
-              </div>
-            <% end %>
             <%= t.cell do %>
               <%= select_tag "walks[#{entry.id}][status]",
                              options_for_select(result_options,
@@ -198,17 +178,29 @@
               <% end %>
             <% end %>
           <% end %>
-          <%# Each mentor's notes on their own line under the mentee, numbered as
-              the selects are (ruled 2026-10-27): stacked, side by side from lg.
-              basis-full: below the fold the cell is a flex item, and colspan
-              means nothing there. %>
+          <%# Each mentor slot on the line under the mentee: its select above its
+              notes (owner, 2026-10-28), numbered (ruled 2026-10-27), stacked,
+              side by side from lg. The hidden fields carry back what the row
+              and each slot held when the page was drawn
+              (ArtMentoring::Assignment). basis-full: below the fold the cell is
+              a flex item, and colspan means nothing there. %>
           <%= t.row id: "walk-#{entry.id}-notes-row", state: (:error if error) do %>
-            <%= t.cell colspan: 5, class: "basis-full" do %>
+            <%= t.cell colspan: 4, class: "basis-full" do %>
+              <%= hidden_field_tag "walks[#{entry.id}][was]",
+                                   typed&.was || ArtMentoring::Assignment.stored_fingerprint(walk) %>
               <div class="stack-to-row-lg">
                 <% ArtMentoring::Assignment::MENTOR_SLOTS.times do |i| %>
-                  <% notes_id = "walk-#{entry.id}-mentor-#{i + 1}-notes" %>
+                  <% mentor_id = "walk-#{entry.id}-mentor-#{i + 1}" %>
+                  <% notes_id = "#{mentor_id}-notes" %>
                   <div class="lg:flex-1">
-                    <%= label_tag notes_id, "Mentor #{i + 1} Notes", class: AppFormBuilder::LABEL_CLASSES %>
+                    <%= hidden_field_tag "walks[#{entry.id}][mentors][#{i}][loaded_id]", slots[i]&.id %>
+                    <%= label_tag mentor_id, "Mentor #{i + 1}", class: AppFormBuilder::LABEL_CLASSES %>
+                    <%= select_tag "walks[#{entry.id}][mentors][#{i}][id]",
+                                   art_mentor_choices(group, @shifts.mentor_holders, entry, slots[i]&.id),
+                                   id: mentor_id, disabled: !editable,
+                                   class: "#{AppFormBuilder::SELECT_CLASSES} w-full",
+                                   aria: { label: "Mentor #{i + 1} for #{callsign}" } %>
+                    <%= label_tag notes_id, "Mentor #{i + 1} Notes", class: "#{AppFormBuilder::LABEL_CLASSES} mt-3" %>
                     <%= text_area_tag "walks[#{entry.id}][mentors][#{i}][notes]", slots[i]&.notes,
                                       id: notes_id, rows: 3, disabled: !editable,
                                       maxlength: ArtMentoring::Assignment::NOTES_MAX,
@@ -222,7 +214,7 @@
           <%# Right under the fields it is about, before the general notes. %>
           <% if error %>
             <%= t.row id: "walk-#{entry.id}-error", state: :error do %>
-              <%= t.cell colspan: 5 do %>
+              <%= t.cell colspan: 4 do %>
                 <span class="text-error"><%= fa_icon "triangle-exclamation", :solid, end: 2 %><%= error %></span>
               <% end %>
             <% end %>
@@ -232,7 +224,7 @@
           <% notes = general_notes.fetch(entry.person_id, []) %>
           <% if first_entries.include?(entry) && (notes.any? || editable) %>
             <%= t.row id: "walk-#{entry.id}-general-notes-row" do %>
-              <%= t.cell colspan: 5, class: "basis-full" do %>
+              <%= t.cell colspan: 4, class: "basis-full" do %>
                 <%= render "general_notes", notes:, person_id: entry.person_id, callsign:,
                                             typed: typed_notes[entry.person_id], editable: %>
               <% end %>

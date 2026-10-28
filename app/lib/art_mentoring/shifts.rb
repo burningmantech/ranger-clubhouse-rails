@@ -40,11 +40,14 @@ class ArtMentoring::Shifts
 
   # One entry's walk: its person_mentor rows, one per mentor who walked it,
   # which share a status (ArtMentoring::Assignment writes them together;
-  # year_verdict settles rows that disagree), each with its own notes.
+  # year_verdict settles rows that disagree), each with its own notes. A pass
+  # recorded without a mentor (owner, 2026-10-28) is one row naming none, and
+  # has no mentors.
   Walk = Data.define(:rows) do
-    def mentor_ids = rows.map(&:mentor_id)
+    def mentor_ids = rows.filter_map(&:mentor_id)
     def status = PersonMentor.year_verdict(rows.map(&:status))
-    def mentors = rows.map { |row| WalkMentor.new(id: row.mentor_id, notes: row.notes.to_s) }
+    def mentors = rows.filter_map { |row| WalkMentor.new(id: row.mentor_id, notes: row.notes.to_s) if row.mentor_id }
+    def without_mentor? = mentor_ids.empty?
   end
 
   # One mentoring shift. A group whose entries matched no shift has no slot: it
@@ -52,8 +55,8 @@ class ArtMentoring::Shifts
   # timesheet id, since there is no slot id to put in a URL.
   #
   # `walks` is each entry's Walk by timesheet id, for the entries that have one.
-  # A row cannot exist without a mentor, so an entry with no walk is a mentee
-  # no one has been paired with. `on_shift_entries` are the entries still
+  # Only a pass is recorded without a mentor, so an entry with no walk is a
+  # mentee no one has been paired with. `on_shift_entries` are the entries still
   # signed in (ON_SHIFT_WITHIN).
   Group = Data.define(:key, :slot, :begins, :mentee_entries, :on_shift_entries, :mentor_entries, :walks) do
     def unmatched? = slot.nil?

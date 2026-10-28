@@ -15,7 +15,7 @@ module DashboardTasks
     end
 
     def self.check(facts)
-      if !facts.did_work || (!facts.timesheets_unverified && facts.timesheet_confirmed)
+      if !facts.did_work || (facts.timesheets_unverified.zero? && facts.timesheet_confirmed)
         return (facts.did_work && facts.timesheet_confirmed) ? completed_task : skip_task
       end
 

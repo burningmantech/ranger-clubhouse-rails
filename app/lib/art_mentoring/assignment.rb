@@ -104,18 +104,36 @@ class ArtMentoring::Assignment
   # The entries this save records as passed, newly or again.
   def passed = @rows.select(&:passed?).map { |row| @entries.fetch(row.timesheet_id) }
 
+  # The entries this save passes with no mentor selected, unless already
+  # recorded so: the roster asks before recording one (owner, 2026-10-28).
+  def passed_without_mentor
+    @rows.filter_map do |row|
+      next unless row.passed? && row.mentor_ids.empty?
+
+      entry = @entries.fetch(row.timesheet_id)
+      walk = @group.walk_for(entry)
+      entry unless walk&.status == PersonMentor::STATUS_PASS && walk.without_mentor?
+    end
+  end
+
   # @param written_by [Person] who wrote the general notes
   # @param grants [Hash{Integer => Hash}] by timesheet id: { join:, revoke: }
+  # @param record_without_mentor [Boolean] false leaves each #passed_without_mentor
+  #   row as stored -- promoted without a verdict (owner, 2026-10-28) -- while
+  #   its grants still apply
   # @return [Result]
-  def save!(written_by:, grants: {})
+  def save!(written_by:, grants: {}, record_without_mentor: true)
     return result(row_errors:) if row_errors.any?
 
     passed_by_id = passed.index_by(&:id)
+    unrecorded = record_without_mentor ? [] : passed_without_mentor.map(&:id)
     counts = Hash.new(0)
     granted = {}
 
     PersonMentor.transaction do
-      @rows.each { |row| counts[sync(row, @entries.fetch(row.timesheet_id))] += 1 }
+      @rows.each do |row|
+        counts[sync(row, @entries.fetch(row.timesheet_id))] += 1 unless unrecorded.include?(row.timesheet_id)
+      end
       @general_notes.each do |person, notes|
         next if PersonMentoringNote.resubmitted?(person:, written_by:, notes:)
 
@@ -123,7 +141,8 @@ class ArtMentoring::Assignment
         counts[:noted] += 1
       end
 
-      # Only for a row this save records as passed: a grant rides on its pass.
+      # Only for a row this save passes: a grant rides on its pass, recorded or
+      # -- promoted without a verdict -- not.
       grants.each do |timesheet_id, choice|
         entry = passed_by_id[timesheet_id]
         next unless entry
@@ -213,7 +232,8 @@ class ArtMentoring::Assignment
     return "A mentee has at most #{MENTOR_SLOTS} mentors." if row.mentor_ids.size > MENTOR_SLOTS
 
     if row.mentor_ids.empty?
-      return "Pick a mentor before recording a result." unless row.status == PersonMentor::STATUS_PENDING
+      # A pass may be recorded without one; the roster asks first (owner, 2026-10-28).
+      return "Pick a mentor before recording a result." unless row.status == PersonMentor::STATUS_PENDING || row.passed?
 
       return nil
     end
@@ -255,13 +275,15 @@ class ArtMentoring::Assignment
   # @return [Symbol, nil] :saved, :cleared, or nil when nothing changed
   def sync(row, entry)
     stored = (@group.walk_for(entry)&.rows || []).index_by(&:mentor_id)
-    removed = stored.except(*row.mentor_ids).values.each do |walk|
+    # A pass with no mentor is one row naming none (owner, 2026-10-28).
+    mentor_ids = row.mentor_ids.empty? && row.passed? ? [nil] : row.mentor_ids
+    removed = stored.except(*mentor_ids).values.each do |walk|
       walk.audit_reason = "mentor assignment removed"
       walk.destroy!
     end
-    return (:cleared if removed.any?) if row.mentor_ids.empty?
+    return (:cleared if removed.any?) if mentor_ids.empty?
 
-    written = row.mentor_ids.count do |mentor_id|
+    written = mentor_ids.count do |mentor_id|
       walk = stored[mentor_id] || PersonMentor.new(person_id: entry.person_id, timesheet_id: entry.id, mentor_id:)
       # position_id and mentor_year too: a walk recorded under another ART's
       # mentee position, before its entry was corrected onto this one, is filed
@@ -278,6 +300,7 @@ class ArtMentoring::Assignment
   end
 
   def audit_reason(walk)
+    return "pass recorded without a mentor" if walk.new_record? && walk.mentor_id.nil?
     return "mentor assignment" if walk.new_record? || walk.position_id_changed?
     return "mentor status change" if walk.status_changed?
 

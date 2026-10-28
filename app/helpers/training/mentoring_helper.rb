@@ -7,6 +7,10 @@ module Training::MentoringHelper
   # The button on a recorded pass that still has something to grant; the
   # roster's card names it too.
   GRANT_TEAM_POSITIONS = "Grant Team Positions"
+  # The pass question's other answers (owner, 2026-10-28): each is a submit
+  # named `confirmed` whose value is its label, read back by the controller.
+  RECORD_PASS_NOT_PROMOTE = "Record Pass but Not Promote"
+  PROMOTE_WITHOUT_VERDICT = "Promote Without a Verdict"
   # The picker's badge on sign-ins that matched no shift; its card explains it.
   CHECK_SIGN_IN = "Check the sign-in"
   # Where a walk's mentee entry was deleted (ruled 2026-10-21); the Verdicts
@@ -102,7 +106,7 @@ module Training::MentoringHelper
     listed = on_shift.to_set(&:last) << entry.person_id
     others = holders.reject { |person| listed.include?(person.id) }.map { |person| [person.callsign, person.id] }
     listed.merge(others.map(&:last))
-    former = (walk&.rows || []).reject { |row| listed.include?(row.mentor_id) }
+    former = (walk&.rows || []).reject { |row| row.mentor_id.nil? || listed.include?(row.mentor_id) }
                                .map { |row| [person_display_name(row.mentor, row.mentor_id), row.mentor_id] }
 
     mentor_choices([["On shift", on_shift], ["Other mentors", others], ["No longer a mentor", former]], selected)
@@ -116,9 +120,10 @@ module Training::MentoringHelper
   end
 
   # The mentors the verdicts name, { id => name }: one map for the Mentor
-  # filter's options and its chip, so the two read alike.
+  # filter's options and its chip, so the two read alike. A pass recorded
+  # without a mentor names none.
   def art_verdict_mentor_names(verdicts)
-    verdicts.to_h { |walk| [walk.mentor_id.to_s, person_display_name(walk.mentor, walk.mentor_id)] }
+    verdicts.select(&:mentor_id).to_h { |walk| [walk.mentor_id.to_s, person_display_name(walk.mentor, walk.mentor_id)] }
   end
 
   # The mentors the verdicts name, by callsign.

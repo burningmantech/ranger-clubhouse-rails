@@ -95,7 +95,11 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
       assert_select "select[name=?]", "walks[#{@tinsel.id}][mentors][#{i}][id]", count: 1
       assert_select "textarea[name=?]", "walks[#{@tinsel.id}][mentors][#{i}][notes]", count: 1
       assert_select "input[type=hidden][name=?]", "walks[#{@tinsel.id}][mentors][#{i}][loaded_id]", count: 1
+      # Each mentor's select sits above that mentor's notes, on the line under the mentee.
+      slot = "walk-#{@tinsel.id}-mentor-#{i + 1}"
+      assert_select "tr#walk-#{@tinsel.id}-notes-row label[for=#{slot}] + select##{slot} ~ textarea##{slot}-notes"
     end
+    assert_select "tr#walk-#{@tinsel.id} select[id^=?]", "walk-#{@tinsel.id}-mentor-", count: 0
     assert_select "select[id^=?]", "walk-#{@tinsel.id}-mentor-", count: ArtMentoring::Assignment::MENTOR_SLOTS
     assert_select "input[type=hidden][name=?]", "walks[#{@tinsel.id}][was]", count: 1
     assert_select "form[action=?]", shift_path

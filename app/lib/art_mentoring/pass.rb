@@ -28,6 +28,20 @@ class ArtMentoring::Pass
     def merge(other) = Grant.new(joined: joined || other.joined, revoked: revoked | other.revoked)
   end
 
+  # What the roster asks before a save, by timesheet id: `offers` for a
+  # graduate-role holder (#offers), and `without_mentor`, each mentee passed
+  # with no mentor selected, whoever records it (owner, 2026-10-28), to their
+  # person. `granting` is a press of Grant Team Positions, whose pass is
+  # already recorded.
+  Question = Data.define(:offers, :without_mentor, :granting) do
+    def any? = offers.any? || without_mentor.any?
+    def people = without_mentor.merge(offers.transform_values(&:person))
+    # Record Pass but Not Promote: a pass to record with something to promote.
+    def promotable? = !granting && offers.any?
+    # Promote Without a Verdict: something to promote for a pass with no mentor.
+    def promotable_without_mentor? = offers.keys.intersect?(without_mentor.keys)
+  end
+
   attr_reader :team, :mentee_position
 
   # @param training [Position] an ART mentoring training

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_27_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_28_000001) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.integer "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -673,7 +673,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_000002) do
 
   create_table "person_mentor", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false, unsigned: true
-    t.bigint "mentor_id", null: false, unsigned: true
+    t.bigint "mentor_id", unsigned: true
     t.integer "mentor_year", null: false, unsigned: true
     t.column "status", "enum('pass','bonk','self-bonk','pending','abstain','not-completed')"
     t.text "notes", size: :medium

@@ -24,7 +24,7 @@ class Training::Mentoring::VerdictsController < Training::Mentoring::BaseControl
 
   # A value the page does not offer -- a stale bookmark, a typo -- reads as all.
   def filter_params
-    mentor_ids = @report.verdicts.map { |walk| walk.mentor_id.to_s }
+    mentor_ids = @report.verdicts.filter_map { |walk| walk.mentor_id&.to_s }
     { status: UiComponents::FilterBarHelper.known_filter(params[:status], ArtMentoring::VerdictsReport::VERDICTS),
       mentor_id: UiComponents::FilterBarHelper.known_filter(params[:mentor_id], mentor_ids) }
   end

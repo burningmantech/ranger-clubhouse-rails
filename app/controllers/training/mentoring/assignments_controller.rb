@@ -22,10 +22,11 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
 
   # A clean save comes back to the same shift (post/redirect/get). Anything
   # else re-renders it at 422 with what was typed, because Turbo drops a 200
-  # response to a form submission: a refused row, or -- for a graduate-role
-  # holder passing someone the pass can still grant something to -- the pass
-  # question. Nothing is written until it is answered; its Record Pass button
-  # sends the same rows again with `confirmed` and the chosen grants.
+  # response to a form submission: a refused row, or the pass question -- for a
+  # graduate-role holder passing someone the pass can still grant something
+  # to, and for anyone passing a mentee with no mentor selected. Nothing is
+  # written until it is answered; each of its buttons sends the same rows
+  # again with `confirmed` naming the answer, and the chosen grants.
   def save
     unless @group
       return redirect_to(shift_path, error: "No one has signed in for that shift yet, so there is nothing to record.")
@@ -35,10 +36,11 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
     assignment = ArtMentoring::Assignment.new(@shifts, @group, submitted_rows, general_notes: @typed_notes)
     # The rows the page shows again as typed, should it come back.
     @submitted = assignment.typed_rows
-    @pass_offers = assignment.row_errors.empty? ? pass_offers_to_ask(assignment) : {}
-    return render(:show, status: :unprocessable_entity) if @pass_offers.any?
+    @pass_question = pass_question(assignment) if assignment.row_errors.empty?
+    return render(:show, status: :unprocessable_entity) if @pass_question
 
-    @result = assignment.save!(written_by: current_user, grants: submitted_grants)
+    @result = assignment.save!(written_by: current_user, grants: submitted_grants,
+                               record_without_mentor: !answered?(Training::MentoringHelper::PROMOTE_WITHOUT_VERDICT))
     return redirect_to(shift_path, success: saved_message(@result)) if @result.ok?
 
     # The save rolled back, but its edits stay on the walks Shifts loaded: read
@@ -123,25 +125,37 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
     end.to_h
   end
 
-  # Whom to ask before saving: a graduate-role holder who has not answered yet,
+  # What to ask before saving, until it is answered: a graduate-role holder,
   # about each mentee this save newly passes -- and the one whose Grant Team
-  # Positions button was pressed -- who still has something to gain from it.
-  # @return [Hash{Integer => ArtMentoring::Pass::Offer}] by timesheet id
-  def pass_offers_to_ask(assignment)
-    return {} if params[:confirmed].present? || !can_graduate?
+  # Positions button was pressed -- who still has something to gain from it;
+  # and anyone, about each mentee passed with no mentor selected.
+  # @return [ArtMentoring::Pass::Question, nil] nil when there is nothing to ask
+  def pass_question(assignment)
+    return if params[:confirmed].present?
 
-    asked = assignment.newly_passed
+    without_mentor = assignment.passed_without_mentor
     grant_for = IdList.id(params[:grant_for])
-    asked += assignment.passed.select { |entry| entry.id == grant_for } if grant_for
-    @shifts.pass.offers(asked.uniq)
+    offers = {}
+    if can_graduate?
+      asked = assignment.newly_passed + without_mentor
+      asked += assignment.passed.select { |entry| entry.id == grant_for } if grant_for
+      offers = @shifts.pass.offers(asked.uniq)
+    end
+    question = ArtMentoring::Pass::Question.new(offers:, without_mentor: without_mentor.to_h { [it.id, it.person] },
+                                                granting: grant_for.present?)
+    question if question.any?
   end
 
+  # Which of the pass question's buttons answered it.
+  def answered?(label) = params[:confirmed] == label
+
   # The pass dialog's answers, grants[<timesheet id>][join|revoke]. Read only
-  # from a graduate-role holder's answered save: a crafted one from anyone else
-  # grants nothing.
+  # from a graduate-role holder's answered save, and not from Record Pass but
+  # Not Promote: a crafted one from anyone else grants nothing.
   def submitted_grants
     grants = params[:grants]
     return {} unless params[:confirmed].present? && can_graduate? && grants.respond_to?(:each_pair)
+    return {} if answered?(Training::MentoringHelper::RECORD_PASS_NOT_PROMOTE)
 
     grants.each_pair.filter_map do |timesheet_id, choice|
       id = IdList.id(timesheet_id)
