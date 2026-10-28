@@ -51,7 +51,7 @@
           <%= t.row do %>
             <%= t.cell history.email %>
             <%= t.cell person_display_link(history.source_person, nil, blank: "-") %>
-            <%= t.cell datetime_format(history.created_at, year: true) %>
+            <%= t.cell pacific_datetime_format(history.created_at, tz_abbr: nil) %>
           <% end %>
         <% end %>
       <% end %>

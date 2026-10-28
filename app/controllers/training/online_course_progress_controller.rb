@@ -56,7 +56,8 @@ class Training::OnlineCourseProgressController < Training::BaseController
   end
 
   # A NULL enrolled_at is a direct Moodle enrollment with no known date --
-  # it exports as an empty cell, same as upstream.
+  # it exports as an empty cell, same as upstream. The times are on Pacific's
+  # clock, as the headers say.
   def csv_rows
     rows = [CSV_HEADER]
 
@@ -64,11 +65,13 @@ class Training::OnlineCourseProgressController < Training::BaseController
       rows << [poc.person.callsign,
                poc.person.status,
                poc.person.lms_username,
-               poc.enrolled_at&.strftime(DateTimeHelper::CSV_TIME),
-               poc.completed_at&.strftime(DateTimeHelper::CSV_TIME)]
+               pacific_csv_time(poc.enrolled_at),
+               pacific_csv_time(poc.completed_at)]
     end
     rows
   end
+
+  def pacific_csv_time(time) = time&.in_time_zone(DateTimeHelper::PACIFIC)&.strftime(DateTimeHelper::CSV_TIME)
 
   def authorize_progress_report
     return if has_role?(Training.online_course_progress_roles(@training))

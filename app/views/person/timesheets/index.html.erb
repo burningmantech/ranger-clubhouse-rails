@@ -42,7 +42,7 @@
 <% if @is_current_year %>
   <% if @event.timesheet_confirmed %>
     <%= ui_callout_box :success do %>
-      Timesheet confirmed correct on <%= datetime_format @event.timesheet_confirmed_at, year: true %> (Pacific).
+      Timesheet confirmed correct on <%= pacific_datetime_format @event.timesheet_confirmed_at, tz_abbr: nil %> (Pacific).
       Any further updates to the entries will un-confirm the entire timesheet.
     <% end %>
   <% elsif @timesheets.any? %>

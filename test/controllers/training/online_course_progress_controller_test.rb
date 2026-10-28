@@ -72,8 +72,9 @@ class Training::OnlineCourseProgressControllerTest < ActionDispatch::Integration
     [finished, plodding, direct].each do |p|
       assert_select "td,th", text: p.callsign
     end
-    # The wall-clock digits render unchanged (parse_time_in_zone stamps, never shifts).
-    assert_match "Sun Jan 18 @ 09:14", response.body
+    # On Pacific's clock, as the heading says: 09:14 here is 08:14 in Los
+    # Angeles in January, when Pacific runs an hour behind Phoenix.
+    assert_match "Sun Jan 18 @ 08:14", response.body
     # Read off the row, not the page: the card says "direct enrollment" too.
     assert_select "td", text: /direct enrollment/, count: 1
   end
@@ -159,7 +160,9 @@ class Training::OnlineCourseProgressControllerTest < ActionDispatch::Integration
     lines = response.body.split("\n")
     assert_equal "Callsign,Status,Moodle Username,Enrolled At (Pacific),Completed At (Pacific)", lines.first
     assert_equal 3, lines.size
-    assert_match(/#{active.callsign},active,.*,#{YEAR}-01-18 09:14,#{YEAR}-01-19 21:40/, response.body)
+    # Pacific's clock, as the headers say: an hour behind Phoenix in January,
+    # the same in April.
+    assert_match(/#{active.callsign},active,.*,#{YEAR}-01-18 08:14,#{YEAR}-01-19 20:40/, response.body)
     # A direct enrollment exports an empty Enrolled cell.
     assert_match(/#{direct.callsign},auditor,.*,,#{YEAR}-04-01 16:27/, response.body)
   end

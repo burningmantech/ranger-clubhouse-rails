@@ -11,12 +11,12 @@ module Training::OnlineCourseProgressHelper
     "direct" => "Direct enrollment"
   }.freeze
 
-  # A timestamp cell: the stored wall-clock stamp, or the blank marker for a
-  # value the record does not have.
+  # A timestamp cell, on Pacific's clock as its heading says, or the blank
+  # marker for a value the record does not have.
   def online_course_progress_time(time, blank = "—")
     return blank if time.blank?
 
-    tag.span datetime_format(time), class: "whitespace-nowrap tabular-nums"
+    tag.span pacific_datetime_format(time, tz_abbr: nil, year: false), class: "whitespace-nowrap tabular-nums"
   end
 
   # Choices carry their counts, and a choice that can only return nothing is

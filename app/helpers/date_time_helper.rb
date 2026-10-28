@@ -38,6 +38,9 @@ module DateTimeHelper
   # logs). Rows land many to the second, and a page stamped only to the minute
   # cannot be read in order.
   LOG_TIME = "%Y-%m-%d %H:%M:%S"
+  # The zone of the pages that say Pacific. From November to March it runs an
+  # hour behind the app's clock (Phoenix), so a timestamp is converted into it.
+  PACIFIC = "America/Los_Angeles"
 
   # tz: names the zone the digits were written in, and the digits are stamped
   # with it, never converted. A timestamp (created_at, on_duty) is written on
@@ -89,18 +92,22 @@ module DateTimeHelper
     datetime_format(slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr)
   end
 
-  # A timestamp on another zone's clock, named and dated: a training session's,
-  # or Pacific. Converted, where datetime_format's tz: would keep the app's
-  # digits and only relabel them -- an hour late from November to March, when
-  # Pacific falls behind Phoenix.
-  def zoned_datetime_format(time, tz:, tz_abbr:)
+  # A timestamp on another zone's clock, dated unless year: false: a training
+  # session's, or Pacific. Converted, where datetime_format's tz: would keep the
+  # app's digits and only relabel them -- an hour late from November to March,
+  # when Pacific falls behind Phoenix. Leave out tz_abbr only where the page
+  # already names the zone, as a column heading does.
+  def zoned_datetime_format(time, tz:, tz_abbr: nil, year: true)
     return "" unless time
 
-    format_date(time.in_time_zone(tz), MONTH_DAY_TIME_YEAR, " (#{tz_abbr})")
+    format_date(time.in_time_zone(tz), year ? MONTH_DAY_TIME_YEAR : MONTH_DAY_TIME, tz_abbr ? " (#{tz_abbr})" : "")
   end
 
-  # The note lists' clock, labelled PT as they always have been.
-  def pacific_datetime_format(time) = zoned_datetime_format(time, tz: "America/Los_Angeles", tz_abbr: "PT")
+  # Pacific's clock, labelled PT as the note lists always have been; tz_abbr:
+  # nil under a heading or in a sentence that says Pacific itself.
+  def pacific_datetime_format(time, tz_abbr: "PT", year: true)
+    zoned_datetime_format(time, tz: PACIFIC, tz_abbr:, year:)
+  end
 
   # A timestamp on an admin log page, to the second.
   def log_time_format(time)

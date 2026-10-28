@@ -64,6 +64,15 @@ class DateTimeHelperTest < ActionView::TestCase
     assert_equal "", pacific_datetime_format(nil)
   end
 
+  # Under a heading that already says Pacific, the cell carries no label of its
+  # own, and a one-year report can leave the year off too.
+  test "a Pacific timestamp can leave the label and the year to the page" do
+    time = Time.zone.local(2026, 11, 5, 14, 30)
+
+    assert_includes pacific_datetime_format(time, tz_abbr: nil), ">Thu Nov 5, 2026 @ 13:30<"
+    assert_includes pacific_datetime_format(time, tz_abbr: nil, year: false), ">Thu Nov 5 @ 13:30<"
+  end
+
   # The second 01:30 of the night Pacific falls back. Stamping those digits
   # again, as datetime_format's tz: would, lands on the first one.
   test "a zoned timestamp in the repeated hour keeps its instant" do
