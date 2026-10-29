@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.integer "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -44,6 +44,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
     t.text "changes"
     t.integer "changer_person_id", null: false
     t.datetime "created_at", precision: nil, default: -> { "current_timestamp()" }, null: false
+    t.index ["record_id"], name: "index_access_document_changes_on_record_id"
   end
 
   create_table "action_logs", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -57,7 +58,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
     t.string "user_agent", limit: 191
     t.index ["created_at", "id"], name: "created_at_id_idx"
     t.index ["event"], name: "action_logs_event"
-    t.index ["id"], name: "secondary_id_idx"
     t.index ["person_id", "created_at"], name: "action_logs_person_id_created_at_index"
     t.index ["person_id", "event", "created_at"], name: "action_logs_person_id_event_created_at_index"
     t.index ["target_person_id", "created_at"], name: "action_logs_target_person_id_created_at_index"
@@ -557,7 +557,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
     t.boolean "check_out_forced", default: false, null: false
     t.index ["asset_id"], name: "asset_id"
     t.index ["person_id", "checked_out"], name: "person_asset_person_id_checked_out_index"
-    t.index ["person_id"], name: "person_id"
   end
 
   create_table "person_award", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -586,7 +585,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
     t.bigint "creator_person_id", unsigned: true
     t.bigint "updater_person_id", unsigned: true
     t.index ["person_id", "is_permanent", "created_at"], name: "person_banner_person_id_is_permanent_created_at_index"
-    t.index ["person_id"], name: "person_banner_person_id_index"
   end
 
   create_table "person_certification", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -601,7 +599,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
     t.timestamp "updated_at"
     t.index ["certification_id"], name: "person_certification_certification_id_index"
     t.index ["person_id", "certification_id"], name: "person_certification_person_id_certification_id_index"
-    t.index ["person_id"], name: "person_certification_person_id_index"
   end
 
   create_table "person_event", id: false, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -867,6 +864,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
     t.date "left_on"
     t.timestamp "created_at"
     t.timestamp "updated_at"
+    t.index ["person_id", "left_on"], name: "index_person_position_log_on_person_id_and_left_on"
+    t.index ["position_id", "left_on"], name: "index_person_position_log_on_position_id_and_left_on"
   end
 
   create_table "person_role", id: false, charset: "utf8mb3", collation: "utf8mb3_unicode_ci", comment: "links person to role", force: :cascade do |t|
@@ -881,7 +880,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
     t.datetime "created_at", precision: nil, default: -> { "current_timestamp()" }, null: false
     t.index ["person_id"], name: "person_id"
     t.index ["slot_id", "person_id"], name: "person_slot_slot_id_person_id", unique: true
-    t.index ["slot_id"], name: "slot_id"
   end
 
   create_table "person_status", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -922,6 +920,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
     t.date "left_on"
     t.timestamp "created_at"
     t.timestamp "updated_at"
+    t.index ["person_id", "left_on"], name: "index_person_team_log_on_person_id_and_left_on"
+    t.index ["team_id", "left_on"], name: "index_person_team_log_on_team_id_and_left_on"
   end
 
   create_table "pod", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -938,7 +938,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
     t.column "transport", "enum('foot','bicycle','vehicle')", default: "foot", null: false
     t.index ["formed_at"], name: "pod_formed_at_index"
     t.index ["slot_id", "formed_at"], name: "pod_slot_id_formed_at_index"
-    t.index ["slot_id"], name: "pod_slot_id_index"
   end
 
   create_table "position", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -1007,7 +1006,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
     t.index ["position_id", "start_time"], name: "position_credit_position_id_start_time_index"
     t.index ["start_year", "end_year"], name: "position_credit_start_year_end_year_index"
     t.index ["start_year", "position_id"], name: "position_credit_start_year_position_id_index"
-    t.index ["start_year"], name: "position_credit_start_year_index"
   end
 
   create_table "position_lineup", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -1126,7 +1124,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
     t.text "partners"
     t.index ["radio_id", "ended_at"], name: "radio_id_3"
     t.index ["radio_id", "started_at"], name: "radio_id_2"
-    t.index ["radio_id"], name: "radio_id"
   end
 
   create_table "request_log", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -1483,6 +1480,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
     t.integer "team_id", null: false
     t.timestamp "created_at"
     t.timestamp "updated_at"
+    t.index ["person_id", "team_id"], name: "index_team_manager_on_person_id_and_team_id", unique: true
   end
 
   create_table "team_role", id: false, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -1510,12 +1508,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000002) do
     t.datetime "desired_off_duty", precision: nil
     t.text "signin_force_reason"
     t.index ["on_duty", "was_signin_forced"], name: "timesheet_on_duty_was_signin_forced_index"
-    t.index ["on_duty"], name: "timesheet_on_duty_index"
     t.index ["person_id", "on_duty"], name: "timesheet_person_id_on_duty_index"
     t.index ["person_id", "position_id"], name: "timesheet_person_id_position_id_index"
-    t.index ["person_id"], name: "person_id"
     t.index ["position_id", "on_duty"], name: "timesheet_position_id_on_duty_index"
-    t.index ["position_id"], name: "position_id"
     t.index ["review_status"], name: "verified"
     t.index ["slot_id"], name: "timesheet_slot_id"
   end
