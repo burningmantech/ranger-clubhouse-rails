@@ -42,7 +42,10 @@ export default class extends Controller {
                 // buttons): the page says which view is showing, in the link's
                 // name. A link with no query matches every view of its path, so
                 // stamping it here would call both views current.
-                if (link.hasAttribute('data-active-ignore')) {
+                // The attribute also sits on a whole list that never marks the
+                // page it is on -- the account menu in the navbar, where daisyUI
+                // paints a link marked current as pressed.
+                if (link.closest('[data-active-ignore]')) {
                     return;
                 }
                 const url = new URL(href, window.location.origin)

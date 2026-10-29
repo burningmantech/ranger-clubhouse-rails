@@ -30,6 +30,17 @@ class AccountMenuTest < ApplicationSystemTestCase
     assert_no_selector "details.account-menu[open]"
   end
 
+  # The sidebar marks the page being shown (active_links_controller); this list
+  # never does, or daisyUI's menu would paint the link to it as pressed.
+  test "the account menu does not mark the page it is on as current" do
+    visit me_profile_path
+    assert_selector "a.sidebar-nav-item.active[aria-current='true'][href='#{me_profile_path}']"
+    open_account_menu
+    assert_selector "details.account-menu a[href='#{me_profile_path}']"
+    assert_no_selector "details.account-menu a[aria-current='true']"
+    assert_no_selector "details.account-menu a.active"
+  end
+
   private
 
   def open_account_menu

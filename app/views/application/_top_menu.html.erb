@@ -105,9 +105,11 @@
       <%= navbar_render_menu(Menus::USER, @menu_context) %>
     <% end %>
 
-    <%# Desktop user menu %>
+    <%# Desktop user menu. data-active-ignore, here and on the phone trigger: the
+        page being shown is the sidebar's to mark (navbar.css), and in this list
+        daisyUI would paint the link to it as pressed. %>
     <%= dropdown_menu "Hello #{current_user.callsign}", variant: :ghost, menu_label: "User menu",
-                      class: "account-menu dropdown-end hidden lg:block" do %>
+                      class: "account-menu dropdown-end hidden lg:block", data: { active_ignore: true } do %>
       <%= account_menu %>
     <% end %>
 
@@ -115,7 +117,8 @@
         greeting does not fit beside the controls above %>
     <%= dropdown_menu fa_icon("circle-user", :solid), variant: :ghost,
                       trigger_label: "User menu", menu_label: "User menu",
-                      summary_class: "btn-square", class: "account-menu dropdown-end lg:hidden" do %>
+                      summary_class: "btn-square", class: "account-menu dropdown-end lg:hidden",
+                      data: { active_ignore: true } do %>
       <%= account_menu %>
     <% end %>
   </div>
