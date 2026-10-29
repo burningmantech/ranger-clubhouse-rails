@@ -120,13 +120,13 @@ no slot named, to the slot starting within an hour of the sign-in (the nearer of
 cluster around the earliest of them. A mentor is on the mentoring shift when their own mentor-position entry
 starts within that hour. The hour is these pages' own; Alpha Sign-Out and the Mentor Shift Report keep theirs.
 Who is on it, needs a mentor or awaits a verdict is counted by entry, not by shift; a sign-in left open for a day
-has ended. An entry with no walk needs a mentor, on shift or after.
+has ended. An entry with no walk needs a mentor, on shift or after, unless its mentee has already been promoted.
 _Avoid_: "shift" alone, which elsewhere means a slot or one timesheet entry.
 
 **Walk** (`PersonMentor` with a `timesheet_id`):
 One mentee's entry on a mentoring shift, paired with the mentors who walked with them: one row per mentor, up to
 three, keyed by the mentee's `timesheet_id` and the `mentor_id`, the rows sharing one verdict, each mentor keeping
-their own notes. A walk
+their own notes. A pass may be recorded with no mentor: one row naming none. A walk
 outlives its entry: deleting the entry leaves the rows, shown as "Shift deleted" and still counted for each
 mentor; an entry corrected onto another ART's mentee position takes its walk with it. Alpha mentor assignments are `person_mentor` rows too, with no `timesheet_id`.
 _Avoid_: "assignment" for the row, which names the Mentor Assignment page and `ArtMentoring::Assignment`, the

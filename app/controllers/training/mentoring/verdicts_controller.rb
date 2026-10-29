@@ -40,7 +40,7 @@ class Training::Mentoring::VerdictsController < Training::Mentoring::BaseControl
       entry = @report.entry_for(walk)
       rows << [helpers.person_display_name(walk.person, walk.person_id),
                helpers.mentor_result_label(walk.status),
-               helpers.person_display_name(walk.mentor, walk.mentor_id),
+               helpers.person_display_name(walk.mentor, walk.mentor_id, blank: nil),
                entry ? entry.on_duty.strftime(DateTimeHelper::CSV_TIME) : Training::MentoringHelper::SHIFT_DELETED,
                entry ? helpers.hour_minute_format(entry.duration) : "",
                walk.notes.to_s]

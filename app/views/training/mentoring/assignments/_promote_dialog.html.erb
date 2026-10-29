@@ -1,0 +1,31 @@
+<%# locals: (f:, offers:, unsaved:) %>
+<%#
+  Promote Without a Verdict, asked from beside Save This Shift (owner,
+  2026-10-28): the pass dialog's grants for any of the shift's mentees who can
+  still gain something, recording no verdict and saving nothing typed into the
+  roster -- `unsaved` warns when something was. Inside the roster's form, and
+  not closable from the backdrop, for the pass dialog's reasons. Promote sends
+  `promote=confirm`, so Cancel and then Save This Shift saves as usual. The
+  boxes are ticked only for a lone mentee: with several, the reader picks.
+%>
+<%= modal id: "promote-dialog", closable: false, close_button: false do |m| %>
+  <%= m.title Training::MentoringHelper::PROMOTE_WITHOUT_VERDICT %>
+  <%= m.body do %>
+    <p>Choose what each mentee gets. No verdict is recorded.</p>
+    <% if unsaved %>
+      <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid, class: "my-4" do %>
+        Promote does not save the changes you made to the roster. To keep them, cancel and save the shift first.
+      <% end %>
+    <% end %>
+    <% offers.each do |timesheet_id, offer| %>
+      <%= f.fieldset offer.person.callsign do %>
+        <%= render "grant_choices", f:, timesheet_id:, offer:, chosen: offers.one? %>
+      <% end %>
+    <% end %>
+    <%= button_row do %>
+      <%= button_action Training::MentoringHelper::PROMOTE, :primary, type: "submit", name: "promote", value: "confirm",
+                                                                      data: { turbo_submits_with: "Promoting…" } %>
+      <%= modal_close_button "Cancel" %>
+    <% end %>
+  <% end %>
+<% end %>

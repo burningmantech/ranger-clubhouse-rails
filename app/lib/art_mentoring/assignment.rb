@@ -92,9 +92,12 @@ class ArtMentoring::Assignment
   # What a refused or questioned save shows again as typed, by timesheet id. A
   # row left as drawn, one that could not be read and one someone else saved in
   # the meantime show what is stored instead, so a second Save cannot write
-  # what the reader never saw.
-  def typed_rows
-    @submitted.reject { |row| drawn?(row) || row.mentor_malformed || stale?(row) }.index_by(&:timesheet_id)
+  # what the reader never saw. A promote writes no row (#promote!), so it keeps
+  # that last one as typed, still carrying the walk it was drawn with: the Save
+  # that follows refuses it and says why.
+  def typed_rows(promoting: false)
+    @submitted.reject { |row| drawn?(row) || row.mentor_malformed || (!promoting && stale?(row)) }
+              .index_by(&:timesheet_id)
   end
 
   # The entries this save passes that were not passed before: the passes a
@@ -118,19 +121,18 @@ class ArtMentoring::Assignment
 
   # @param written_by [Person] who wrote the general notes
   # @param grants [Hash{Integer => Hash}] by timesheet id: { join:, revoke: }
-  # @param record_without_mentor [Boolean] false leaves each #passed_without_mentor
-  #   row as stored -- promoted without a verdict (owner, 2026-10-28) -- while
-  #   its grants still apply
+  # @param without_verdict [Boolean] Promote Without a Verdict (owner,
+  #   2026-10-28): a #passed_without_mentor row whose mentee the grants promote
+  #   is left as stored; every other pass is recorded
   # @return [Result]
-  def save!(written_by:, grants: {}, record_without_mentor: true)
+  def save!(written_by:, grants: {}, without_verdict: false)
     return result(row_errors:) if row_errors.any?
 
-    passed_by_id = passed.index_by(&:id)
-    unrecorded = record_without_mentor ? [] : passed_without_mentor.map(&:id)
     counts = Hash.new(0)
-    granted = {}
-
-    PersonMentor.transaction do
+    granted = PersonMentor.transaction do
+      # Only for a row this save passes: a grant rides on its pass.
+      promoted = apply_grants(grants, passed.index_by(&:id))
+      unrecorded = without_verdict ? passed_without_mentor.select { |entry| promoted.key?(entry.person) }.map(&:id) : []
       @rows.each do |row|
         counts[sync(row, @entries.fetch(row.timesheet_id))] += 1 unless unrecorded.include?(row.timesheet_id)
       end
@@ -140,19 +142,7 @@ class ArtMentoring::Assignment
         PersonMentoringNote.create!(person:, written_by:, notes:)
         counts[:noted] += 1
       end
-
-      # Only for a row this save passes: a grant rides on its pass, recorded or
-      # -- promoted without a verdict -- not.
-      grants.each do |timesheet_id, choice|
-        entry = passed_by_id[timesheet_id]
-        next unless entry
-
-        done = @shifts.pass.apply!(entry.person, join: choice[:join], revoke: choice[:revoke])
-        next unless done.any?
-
-        # A crafted request can answer for two of one person's entries.
-        granted[entry.person] = granted.key?(entry.person) ? granted[entry.person].merge(done) : done
-      end
+      promoted
     end
     result(saved_count: counts[:saved], cleared_count: counts[:cleared], noted_count: counts[:noted], granted:)
   rescue ActiveRecord::RecordNotUnique
@@ -165,7 +155,34 @@ class ArtMentoring::Assignment
     result(denied: e.message)
   end
 
+  # Promote Without a Verdict beside Save This Shift (owner, 2026-10-28): the
+  # grants alone, for any of the shift's mentees, writing no walk and nothing
+  # else the roster sent.
+  # @param grants [Hash{Integer => Hash}] by timesheet id: { join:, revoke: }
+  # @return [Result]
+  def promote!(grants:)
+    result(granted: PersonMentor.transaction { apply_grants(grants, @entries) })
+  rescue ActiveRecord::RecordNotUnique
+    result(conflict: true)
+  rescue AuthorizationError => e
+    result(denied: e.message)
+  end
+
   private
+
+  # What each grant did, by person, for the entries in `entries` it names.
+  def apply_grants(grants, entries)
+    grants.each_with_object({}) do |(timesheet_id, choice), granted|
+      entry = entries[timesheet_id]
+      next unless entry
+
+      done = @shifts.pass.apply!(entry.person, join: choice[:join], revoke: choice[:revoke])
+      next unless done.any?
+
+      # A crafted request can answer for two of one person's entries.
+      granted[entry.person] = granted.key?(entry.person) ? granted[entry.person].merge(done) : done
+    end
+  end
 
   def result(row_errors: {}, conflict: false, denied: nil, saved_count: 0, cleared_count: 0, noted_count: 0, granted: {})
     Result.new(row_errors:, conflict:, denied:, saved_count:, cleared_count:, noted_count:, granted:)

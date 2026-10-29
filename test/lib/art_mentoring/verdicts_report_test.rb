@@ -63,6 +63,18 @@ class ArtMentoring::VerdictsReportTest < ActiveSupport::TestCase
                              report.count(PersonMentor::STATUS_PASS), report.count(*ArtMentoring::VerdictsReport::BONKS)]
   end
 
+  # A pass recorded on the roster with no mentor selected (owner, 2026-10-28).
+  test "a pass recorded without a mentor counts as a pass and is no mentor's" do
+    sable = mentee_entry(create_person("Sable"), @slot.begins + 20.minutes, off_duty: @slot.ends, slot: @slot)
+    alone = PersonMentor.create!(person_id: sable.person_id, timesheet_id: sable.id, mentor_year: YEAR,
+                                 position_id: @mentee_position.id, status: PersonMentor::STATUS_PASS)
+    report = self.report
+
+    assert_includes report.verdicts, alone
+    assert_equal 2, report.count(PersonMentor::STATUS_PASS)
+    assert_equal [@cinder, @ferrous], report.mentors.map(&:person)
+  end
+
   test "each mentor's season counts their shifts, mentees and results, and averages only ended shifts" do
     cinder, ferrous = report.mentors
 

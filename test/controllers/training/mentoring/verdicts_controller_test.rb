@@ -74,6 +74,15 @@ class Training::Mentoring::VerdictsControllerTest < ActionDispatch::IntegrationT
                  response.body.lines(chomp: true)
   end
 
+  test "a pass recorded with no mentor leaves the CSV's Mentor cell empty" do
+    rook = mentee_entry(create_person("Rook"), @slot.begins + 10.minutes, off_duty: @slot.ends, slot: @slot)
+    walk(rook, nil, status: PersonMentor::STATUS_PASS)
+
+    get verdicts_path(format: :csv)
+
+    assert_includes response.body.lines(chomp: true), "Rook,Passed,,2026-09-01 17:55,5:50,"
+  end
+
   test "an ART-only verdict is listed with its badge and can be filtered" do
     rook = mentee_entry(create_person("Rook"), @slot.begins + 10.minutes, off_duty: @slot.ends, slot: @slot)
     abstained = walk(rook, @ferrous, status: PersonMentor::STATUS_ABSTAIN)

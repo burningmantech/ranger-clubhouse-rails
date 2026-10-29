@@ -1,41 +1,70 @@
-<%# locals: (f:, offers:) %>
+<%# locals: (f:, question:) %>
 <%#
   The pass question (ruled 2026-10-21): whether each newly passed mentee also
   joins the training's team, with its Recommended positions, and loses the
-  mentee positions. Rendered inside the roster's form, so the answers travel with
-  the rows, and opened by the modal controller as soon as it connects.
+  mentee positions -- and, for a mentee passed with no mentor selected,
+  whether to record the pass without one (owner, 2026-10-28). Rendered inside
+  the roster's form, so the answers travel with the rows, and opened by the
+  modal controller as soon as it connects.
 
   Not closable from the backdrop or with Escape: the backdrop is a form of its
-  own, and a form cannot sit inside another. Record Pass names itself
-  `confirmed`, so only it -- not the page's Save -- answers the question;
-  Cancel closes the dialog and leaves every row as it was typed.
+  own, and a form cannot sit inside another. Every answer is a submit named
+  `confirmed` whose value is its key in Training::MentoringHelper::PASS_ANSWERS,
+  so only they -- not the page's Save -- answer the question. Record Pass comes
+  first, as the form's default button. Cancel closes the dialog and leaves
+  every row as it was typed. Each mentee gets one fieldset, signed in twice or
+  not (ArtMentoring::Pass::Question#people).
 %>
-<% pass = @shifts.pass %>
-<% team = pass.team&.title || "team" %>
-<% positions = pass.recommended_positions.map(&:title) %>
+<% team = @shifts.pass.team&.title || "team" %>
+<% people = question.people %>
+<% answers = Training::MentoringHelper::PASS_ANSWERS %>
 <%= modal id: "pass-dialog", closable: false, close_button: false do |m| %>
-  <%= m.title(offers.one? ? "Pass #{offers.values.first.person.callsign}" : "Pass #{pluralize(offers.size, "Mentee")}") %>
+  <%= m.title(people.one? ? "Pass #{people.values.first.callsign}" : "Pass #{pluralize(people.size, "Mentee")}") %>
   <%= m.body do %>
-    <p>A pass can also give a mentee their place on the <%= team %>. Nothing is recorded until you choose.</p>
-    <% offers.each do |timesheet_id, offer| %>
-      <%= f.fieldset offer.person.callsign do %>
-        <%= f.check_box "grants[#{timesheet_id}][join]",
-                        label: "Add to the #{team}#{" and grant #{positions.to_sentence}" if positions.any?}",
-                        checked: offer.join, disabled: !offer.join,
-                        help_text: (unless offer.join
-                                      if pass.joinable?(offer.person)
-                                        "Already a member."
-                                      else
-                                        "Their status is #{offer.person.status}, so they cannot join a team."
-                                      end
-                                    end) %>
-        <%= f.check_box "grants[#{timesheet_id}][revoke]",
-                        label: "Revoke #{(offer.revoke.presence || pass.revoked_positions).map(&:title).to_sentence}",
-                        checked: offer.revoke.any?, disabled: offer.revoke.empty?,
-                        help_text: offer.revoke.any? ? "Also drops their future sign-ups." : "Holds no mentee position." %>
+    <p>
+      <% if question.offers.any? %>
+        A pass can also give a mentee their place on the <%= team %>.
+      <% end %>
+      Nothing is recorded until you choose.
+    </p>
+    <% people.each do |timesheet_id, person| %>
+      <% offer = question.offers[timesheet_id] %>
+      <%= f.fieldset person.callsign do %>
+        <% if question.without_mentor?(person) %>
+          <p>No mentor is selected, so the pass is recorded without one.</p>
+        <% end %>
+        <%= render "grant_choices", f:, timesheet_id:, offer:, chosen: true if offer %>
       <% end %>
     <% end %>
-    <%= modal_form_footer f, submit: "Record Pass", name: "confirmed",
-                             data: { turbo_submits_with: "Recording…" } %>
+    <% if question.promotable? || question.promotable_without_mentor? %>
+      <dl class="instruction-list mb-4">
+        <% if question.promotable? %>
+          <dt>Not ready for the <%= team %> yet?</dt>
+          <dd>
+            <%= Training::MentoringHelper::RECORD_PASS_NOT_PROMOTE %> records the pass and changes nothing else. A
+            graduate can promote them later with <%= Training::MentoringHelper::GRANT_TEAM_POSITIONS %>.
+          </dd>
+        <% end %>
+        <% if question.promotable_without_mentor? %>
+          <dt>No verdict to record?</dt>
+          <dd>
+            <%= Training::MentoringHelper::PROMOTE_WITHOUT_VERDICT %> makes the changes above. A mentee it promotes
+            who has no mentor selected gets no pass recorded; every other pass is recorded.
+          </dd>
+        <% end %>
+      </dl>
+    <% end %>
+    <%= button_row do %>
+      <%= button_action answers[:record], :primary, type: "submit", name: "confirmed", value: :record,
+                        data: { turbo_submits_with: "Recording…" } %>
+      <% if question.promotable? %>
+        <%= button_action answers[:record_only], :secondary, type: "submit", name: "confirmed", value: :record_only %>
+      <% end %>
+      <% if question.promotable_without_mentor? %>
+        <%= button_action answers[:without_verdict], :secondary, type: "submit", name: "confirmed",
+                                                                 value: :without_verdict %>
+      <% end %>
+      <%= modal_close_button "Cancel" %>
+    <% end %>
   <% end %>
 <% end %>

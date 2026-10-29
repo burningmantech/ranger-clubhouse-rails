@@ -127,6 +127,43 @@ class PersonMentorTest < ActiveSupport::TestCase
     assert_equal PersonMentor::STATUS_NOT_COMPLETED, art.reload.status, "the column holds it"
   end
 
+  # A pass recorded on the ART roster with no mentor selected (owner,
+  # 2026-10-28) is one row naming none; every other walk names its mentor.
+  test "only an ART walk's pass may name no mentor, once per mentee shift" do
+    art = { person: @mentee, mentor_year: YEAR, timesheet_id: 9_001, position_id: Position::GREEN_DOT_MENTEE }
+    pass = PersonMentor.create!(**art, status: PersonMentor::STATUS_PASS)
+    assert_nil pass.reload.mentor_id, "the column takes NULL"
+
+    again = PersonMentor.new(**art, status: PersonMentor::STATUS_PASS)
+    assert_not again.valid?
+    assert again.errors.of_kind?(:timesheet_id, :taken), "one mentor-less row per mentee shift"
+    # The database holds it too, for a save racing past the check: mentor_key
+    # reads 0 for the NULL, which a unique key never matches against another.
+    assert_raises(ActiveRecord::RecordNotUnique) { again.save!(validate: false) }
+
+    bonk = PersonMentor.new(**art, timesheet_id: 9_002, status: PersonMentor::STATUS_BONK)
+    assert_not bonk.valid?
+    assert bonk.errors.of_kind?(:mentor, :blank)
+    alpha = PersonMentor.new(person: @mentee, mentor_year: YEAR, status: PersonMentor::STATUS_PASS)
+    assert_not alpha.valid?
+    assert alpha.errors.of_kind?(:mentor, :blank)
+  end
+
+  # Nothing removes person_mentor rows when a person goes. As the required
+  # belongs_to it replaced, the mentor check runs only when mentor_id changes.
+  test "a walk whose mentor's account is gone still takes a new result and notes" do
+    walk = PersonMentor.create!(person: @mentee, mentor: @mentors.first, mentor_year: YEAR, timesheet_id: 9_003,
+                                position_id: Position::GREEN_DOT_MENTEE, status: PersonMentor::STATUS_PENDING)
+    gone = Person.maximum(:id) + 1
+    walk.update_column(:mentor_id, gone)
+
+    assert walk.reload.update(status: PersonMentor::STATUS_BONK, notes: "Left early."), walk.errors.full_messages.to_sentence
+
+    walk.mentor_id = gone + 1
+    assert_not walk.valid?
+    assert walk.errors.of_kind?(:mentor, :blank), "a new mentor must exist"
+  end
+
   test "either ART verdict outranks a pass and yields to a bonk" do
     assert_equal PersonMentor::STATUS_ABSTAIN,
                  PersonMentor.year_verdict([PersonMentor::STATUS_PASS, PersonMentor::STATUS_ABSTAIN])

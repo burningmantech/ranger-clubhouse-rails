@@ -129,6 +129,20 @@ class ArtMentoring::ShiftsTest < ActiveSupport::TestCase
     assert_equal [1, 1], [current.needing_mentor_count, current.awaiting_verdict_count]
   end
 
+  # Promote Without a Verdict writes no walk (owner, 2026-10-28): a mentee a
+  # pass can no longer promote is done (chosen by Claude 2026-10-28).
+  test "a mentee already promoted needs no mentor, walk or not" do
+    slot = mentee_shift(@evening)
+    promoted = mentee_entry(@mentees[0], @evening, off_duty: @evening + 6.hours, slot:)
+    mentee_entry(@mentees[1], @evening, off_duty: @evening + 6.hours, slot:)
+    PersonTeam.create!(team_id: @training.team_id, person_id: promoted.person_id)
+
+    current = shifts
+
+    assert_equal %w[Moonrake], current.group(slot.id.to_s).needing_mentor.map { |sheet| sheet.person.callsign }
+    assert_equal 1, current.needing_mentor_count
+  end
+
   test "a sign-in left open for more than a day has ended" do
     slot = mentee_shift(@evening - 1.day)
     forgotten = mentee_entry(@mentees[0], slot.begins, slot:)

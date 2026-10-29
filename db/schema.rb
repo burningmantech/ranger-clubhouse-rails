@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_28_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_28_000002) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.integer "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -679,10 +679,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_000001) do
     t.text "notes", size: :medium
     t.bigint "position_id", default: 1, null: false, unsigned: true
     t.bigint "timesheet_id", unsigned: true
+    t.virtual "mentor_key", type: :bigint, unsigned: true, as: "ifnull(`mentor_id`,0)", stored: true
     t.index ["mentor_id", "position_id"], name: "index_person_mentor_on_mentor_id_and_position_id"
     t.index ["mentor_year", "status"], name: "index_person_mentor_on_mentor_year_and_status"
     t.index ["person_id", "mentor_id", "mentor_year", "position_id", "timesheet_id"], name: "person_id", unique: true
-    t.index ["timesheet_id", "mentor_id"], name: "index_person_mentor_on_timesheet_id_and_mentor_id", unique: true
+    t.index ["timesheet_id", "mentor_key"], name: "index_person_mentor_on_timesheet_id_and_mentor_key", unique: true
   end
 
   create_table "person_mentoring_note", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|

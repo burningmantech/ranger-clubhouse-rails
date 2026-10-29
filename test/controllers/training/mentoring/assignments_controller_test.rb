@@ -395,7 +395,7 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
 
   def answer_pass(join: "1", revoke: "1")
     post shift_path, params: { walks: { @tinsel.id => walk_params([@ferrous.id], status: PersonMentor::STATUS_PASS) },
-                               confirmed: "Record Pass",
+                               confirmed: "record",
                                grants: { @tinsel.id => { join:, revoke: } } }
   end
 
@@ -410,7 +410,7 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     assert_select "dialog#pass-dialog", text: /Pass Tinsel/ do
       assert_select "input[type=checkbox][name=?][checked]", "grants[#{@tinsel.id}][join]"
       assert_select "input[type=checkbox][name=?][checked]", "grants[#{@tinsel.id}][revoke]"
-      assert_select "input[type=submit][name=confirmed]"
+      assert_select "button[type=submit][name=confirmed][value=?]", "record", text: "Record Pass"
     end
     assert_not PersonMentor.exists?(timesheet_id: @tinsel.id)
   end
@@ -456,8 +456,75 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
                                grant_for: @tinsel.id }
     assert_response :unprocessable_entity
     assert_select "dialog#pass-dialog"
-    assert_equal "confirmed", css_select(%(form[action="#{shift_path}"] [type=submit])).first["name"],
+    assert_select "dialog#pass-dialog button[value=?]", "record_only", count: 0,
+                  message: "the pass is recorded already"
+    default = css_select(%(form[action="#{shift_path}"] [type=submit])).first
+    assert_equal %w[confirmed record], [default["name"], default["value"]],
                  "Record Pass is the form's default button, so Enter in the dialog presses it"
+  end
+
+  test "Record Pass but Not Promote records the pass alone, for a graduate to promote later" do
+    become_graduate
+    hold_mentee_position(@tinsel.person)
+
+    save_walk(mentor_id: @ferrous.id, status: PersonMentor::STATUS_PASS)
+    assert_select "dialog#pass-dialog" do
+      assert_select "button[type=submit][name=confirmed][value=?]", "record_only", text: "Record Pass but Not Promote"
+      assert_select "button[value=?]", "without_verdict", count: 0, message: "Tinsel has a mentor"
+    end
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params([@ferrous.id], status: PersonMentor::STATUS_PASS) },
+                               confirmed: "record_only",
+                               grants: { @tinsel.id => { join: "1", revoke: "1" } } }
+
+    assert_redirected_to shift_path
+    assert_equal "Recorded 1 mentee.", flash[:success]
+    assert_equal PersonMentor::STATUS_PASS, PersonMentor.find_by!(timesheet_id: @tinsel.id).status
+    assert_not PersonTeam.exists?(team_id: @training.team_id, person_id: @tinsel.person_id)
+    assert PersonPosition.exists?(person_id: @tinsel.person_id, position_id: @mentee_position.id)
+    get shift_path
+    assert_select "button[type=submit][name=grant_for][value=?]", @tinsel.id.to_s
+  end
+
+  test "a pass with no mentor selected is asked about, even without the graduate role, and recorded without one" do
+    save_walk(mentor_id: "", status: PersonMentor::STATUS_PASS)
+
+    assert_response :unprocessable_entity
+    assert_select "dialog#pass-dialog", text: /No mentor is selected, so the pass is recorded without one\./ do
+      assert_select "button[type=submit][name=confirmed]", count: 1, message: "nothing to promote: Record Pass alone"
+    end
+    assert_not PersonMentor.exists?(timesheet_id: @tinsel.id)
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params(status: PersonMentor::STATUS_PASS) },
+                               confirmed: "record" }
+
+    assert_redirected_to shift_path
+    assert_equal [[nil, PersonMentor::STATUS_PASS]], PersonMentor.where(timesheet_id: @tinsel.id).pluck(:mentor_id, :status)
+    get shift_path
+    assert_select "select#walk-#{@tinsel.id}-status option[selected][value=?]", PersonMentor::STATUS_PASS
+    assert_select "select#walk-#{@tinsel.id}-mentor-1 option[selected][value='']", text: "No mentor"
+    assert_select "select#walk-#{@tinsel.id}-mentor-1 option[value='']", count: 1, message: "no blank former mentor"
+  end
+
+  test "a graduate may promote a mentee passed with no mentor without recording a verdict" do
+    become_graduate
+    hold_mentee_position(@tinsel.person)
+
+    save_walk(mentor_id: "", status: PersonMentor::STATUS_PASS)
+    assert_select "dialog#pass-dialog" do
+      Training::MentoringHelper::PASS_ANSWERS.each do |answer, label|
+        assert_select "button[type=submit][name=confirmed][value=?]", answer.name, text: label
+      end
+    end
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params(status: PersonMentor::STATUS_PASS) },
+                               confirmed: "without_verdict",
+                               grants: { @tinsel.id => { join: "1", revoke: "1" } } }
+
+    assert_redirected_to shift_path
+    assert_not PersonMentor.exists?(timesheet_id: @tinsel.id), "no verdict is recorded"
+    assert PersonTeam.exists?(team_id: @training.team_id, person_id: @tinsel.person_id)
+    assert_not PersonPosition.exists?(person_id: @tinsel.person_id, position_id: @mentee_position.id)
   end
 
   test "a general note typed before the pass question rides Record Pass" do
@@ -472,10 +539,63 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     assert_not PersonMentoringNote.exists?(person_id: @tinsel.person_id)
 
     post shift_path, params: { walks: { @tinsel.id => walk_params([@ferrous.id], status: PersonMentor::STATUS_PASS) },
-                               confirmed: "Record Pass", grants: { @tinsel.id => { join: "0", revoke: "0" } },
+                               confirmed: "record", grants: { @tinsel.id => { join: "0", revoke: "0" } },
                                general_notes: { @tinsel.person_id => "Ready for the team." } }
     assert_redirected_to shift_path
     assert_equal ["Ready for the team."], PersonMentoringNote.where(person_id: @tinsel.person_id).pluck(:notes)
+  end
+
+  test "Promote Without a Verdict beside Save is a graduate's, while a mentee can still gain something" do
+    promote = "button[type=submit][name=promote][value=?]"
+    get shift_path
+    assert_select promote, "ask", count: 0, message: "a trainer alone cannot promote"
+
+    become_graduate
+    get shift_path
+    assert_select promote, "ask", count: 1, text: "Promote Without a Verdict"
+
+    PersonTeam.create!(team_id: @training.team_id, person_id: @tinsel.person_id)
+    get shift_path
+    assert_select promote, "ask", count: 0, message: "nothing left to grant"
+  end
+
+  test "Promote Without a Verdict asks first, then grants alone, saving nothing typed into the roster" do
+    become_graduate
+    hold_mentee_position(@tinsel.person)
+    typed = { walks: { @tinsel.id => walk_params([@ferrous.id], status: PersonMentor::STATUS_PASS) },
+              general_notes: { @tinsel.person_id => "Ready." } }
+
+    post shift_path, params: typed.merge(promote: "ask")
+
+    assert_response :unprocessable_entity
+    assert_select "dialog#promote-dialog", text: /Promote does not save the changes you made to the roster\./ do
+      assert_select "input[type=checkbox][name=?][checked]", "grants[#{@tinsel.id}][join]"
+      assert_select "input[type=checkbox][name=?][checked]", "grants[#{@tinsel.id}][revoke]"
+      assert_select "button[type=submit][name=promote][value=?]", "confirm", text: "Promote"
+    end
+    assert_select "dialog#pass-dialog", count: 0
+
+    post shift_path, params: typed.merge(promote: "confirm", grants: { @tinsel.id => { join: "1", revoke: "1" } })
+
+    assert_redirected_to shift_path
+    assert_equal "Tinsel joined the Green Dot Cadre and no longer holds Green Dot Mentee.", flash[:success]
+    assert PersonTeam.exists?(team_id: @training.team_id, person_id: @tinsel.person_id)
+    assert_not PersonPosition.exists?(person_id: @tinsel.person_id, position_id: @mentee_position.id)
+    assert_not PersonMentor.exists?(timesheet_id: @tinsel.id), "no verdict is recorded"
+    assert_not PersonMentoringNote.exists?(person_id: @tinsel.person_id), "nor anything else typed"
+
+    get training_mentoring_assignment_path(SLUG)
+    assert_not_includes response.body, "need a mentor", "promoted, Tinsel needs no mentor"
+  end
+
+  test "without the graduate role a crafted promotion is refused" do
+    hold_mentee_position(@tinsel.person)
+
+    post shift_path, params: { promote: "confirm", grants: { @tinsel.id => { join: "1", revoke: "1" } } }
+
+    assert_redirected_to shift_path
+    assert_equal "Promoting needs the Green Dot Training graduate role.", flash[:error]
+    assert PersonPosition.exists?(person_id: @tinsel.person_id, position_id: @mentee_position.id)
   end
 
   test "a pass with nothing left to grant is saved without the question" do
@@ -486,5 +606,117 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
 
     assert_redirected_to shift_path
     assert_equal PersonMentor::STATUS_PASS, PersonMentor.find_by!(timesheet_id: @tinsel.id).status
+  end
+
+  test "taking the mentors off a recorded pass asks only about recording it without one" do
+    become_graduate
+    hold_mentee_position(@tinsel.person)
+    walk(@tinsel, @ferrous, status: PersonMentor::STATUS_PASS)
+
+    save_walk(mentor_id: "", status: PersonMentor::STATUS_PASS)
+
+    assert_response :unprocessable_entity
+    assert_select "dialog#pass-dialog", text: /No mentor is selected/ do
+      assert_select "input[type=checkbox]", count: 0, message: "not a new pass: one held back stays so"
+      assert_select "button[type=submit][name=confirmed]", count: 1
+    end
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params(status: PersonMentor::STATUS_PASS) }, confirmed: "record" }
+
+    assert_redirected_to shift_path
+    assert_equal [[nil, PersonMentor::STATUS_PASS]], PersonMentor.where(timesheet_id: @tinsel.id).pluck(:mentor_id, :status)
+    assert PersonPosition.exists?(person_id: @tinsel.person_id, position_id: @mentee_position.id)
+  end
+
+  test "an answer the pass dialog never sends asks the question again" do
+    become_graduate
+    hold_mentee_position(@tinsel.person)
+
+    # A translated page's button label, say.
+    post shift_path, params: { walks: { @tinsel.id => walk_params([@ferrous.id], status: PersonMentor::STATUS_PASS) },
+                               confirmed: "Registrar el pase pero no promover",
+                               grants: { @tinsel.id => { join: "1", revoke: "1" } } }
+
+    assert_response :unprocessable_entity
+    assert_select "dialog#pass-dialog"
+    assert_not PersonMentor.exists?(timesheet_id: @tinsel.id)
+    assert PersonPosition.exists?(person_id: @tinsel.person_id, position_id: @mentee_position.id), "nothing granted"
+  end
+
+  test "a mentee signed in twice is one fieldset in the pass dialog, and may be promoted without a verdict" do
+    become_graduate
+    hold_mentee_position(@tinsel.person)
+    again = mentee_entry(@tinsel.person, @slot.begins + 30.minutes, off_duty: @slot.ends, slot: @slot)
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params([@ferrous.id], status: PersonMentor::STATUS_PASS),
+                                        again.id => walk_params(status: PersonMentor::STATUS_PASS) } }
+
+    assert_response :unprocessable_entity
+    assert_select "dialog#pass-dialog", text: /Pass Tinsel/ do
+      assert_select "fieldset", count: 1
+      assert_select "button[name=confirmed][value=?]", "without_verdict"
+    end
+  end
+
+  test "Grant Team Positions beside a new pass still offers Record Pass but Not Promote" do
+    become_graduate
+    hold_mentee_position(@tinsel.person)
+    walk(@tinsel, @ferrous, status: PersonMentor::STATUS_PASS)
+    aster = mentee_entry(create_person("Aster"), @slot.begins + 5.minutes, off_duty: @slot.ends, slot: @slot)
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params([@ferrous.id], status: PersonMentor::STATUS_PASS),
+                                        aster.id => walk_params([@cinder.id], status: PersonMentor::STATUS_PASS) },
+                               grant_for: @tinsel.id }
+
+    assert_response :unprocessable_entity
+    assert_select "dialog#pass-dialog button[name=confirmed][value=?]", "record_only",
+                  message: "Aster's pass is new, so it may be recorded without promoting them"
+  end
+
+  test "a row someone else saved meanwhile stays as typed behind the promote dialog" do
+    become_graduate
+    hold_mentee_position(@tinsel.person)
+    stored = walk(@tinsel, @ferrous)
+    get shift_path
+    was = drawn_was
+    stored.update!(status: PersonMentor::STATUS_ABSTAIN)
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params([@ferrous.id], status: PersonMentor::STATUS_BONK, was:) },
+                               promote: "ask" }
+
+    assert_response :unprocessable_entity
+    assert_select "dialog#promote-dialog", text: /Promote does not save the changes you made to the roster\./
+    assert_select "select#walk-#{@tinsel.id}-status option[selected][value=?]", PersonMentor::STATUS_BONK
+    assert_equal was, drawn_was, "still the walk it was drawn with, so the Save that follows refuses it and says why"
+  end
+
+  test "Promote Without a Verdict with nothing left to promote says so, with no empty dialog" do
+    become_graduate
+    PersonTeam.create!(team_id: @training.team_id, person_id: @tinsel.person_id)
+
+    post shift_path, params: { promote: "ask" }
+
+    assert_response :unprocessable_entity
+    assert_equal "No mentee on this shift has anything left to promote.", flash[:error]
+    assert_select "dialog#promote-dialog", count: 0
+  end
+
+  test "a roster drawn again with what was typed keeps the unsaved-changes guard armed" do
+    get shift_path
+    assert_select "form[data-unsaved-changes-dirty-value=?]", "false"
+
+    save_walk(mentor_id: @ferrous.id, notes: "x" * (ArtMentoring::Assignment::NOTES_MAX + 1))
+
+    assert_response :unprocessable_entity
+    assert_select "form[data-unsaved-changes-dirty-value=?]", "true"
+  end
+
+  test "a picker card counts a pass recorded with no mentor as having none and needing none" do
+    walk(@tinsel, nil, status: PersonMentor::STATUS_PASS)
+
+    get training_mentoring_assignment_path(SLUG)
+
+    assert_select "div[role=progressbar].bg-success[aria-label=?]", "0 of 1 mentees have a mentor"
+    assert_not_includes response.body, "need a mentor"
   end
 end

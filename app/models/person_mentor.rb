@@ -77,8 +77,12 @@ class PersonMentor < ApplicationRecord
   # completed; an Alpha walk never does, since every Alpha reader knows four.
   validates :status, presence: true, inclusion: { in: ->(row) { row.timesheet_id ? STATUSES : ALPHA_STATUSES } }
   # Every walk names its mentor except an ART pass recorded without one (owner,
-  # 2026-10-28): one row with mentor_id NULL (ArtMentoring::Assignment).
-  validates :mentor, presence: { message: :required }, unless: :mentor_optional?
+  # 2026-10-28): one row with mentor_id NULL (ArtMentoring::Assignment). Checked,
+  # as the required belongs_to it replaced was, only when mentor_id is missing or
+  # changes: nothing removes these rows when a person goes, and a walk whose
+  # mentor's account is gone still takes a new result or notes.
+  validates :mentor, presence: { message: :required }, unless: :mentor_optional?,
+                     if: -> { mentor_id.nil? || mentor_id_changed? }
   # An ART walk is one row per mentor who walked the mentee's shift, each
   # naming the mentee's timesheet entry. Alpha walks leave it NULL.
   validates :timesheet_id, uniqueness: { scope: :mentor_id,

@@ -11,7 +11,7 @@ class Training::MentoringHelperTest < ActionView::TestCase
 
   def group(slot:, begins:)
     ArtMentoring::Shifts::Group.new(key: "k", slot:, begins:, mentee_entries: [], on_shift_entries: [],
-                                    mentor_entries: [], walks: {})
+                                    mentor_entries: [], walks: {}, promotable: Set.new)
   end
 
   test "a matched group's shift and window are on the shift's own clock" do

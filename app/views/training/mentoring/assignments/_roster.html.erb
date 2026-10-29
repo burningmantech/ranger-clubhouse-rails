@@ -1,4 +1,4 @@
-<%# locals: (group:, submitted:, result:, pass_offers:, general_notes:, typed_notes:) %>
+<%# locals: (group:, submitted:, result:, pass_question:, promote_asked:, general_notes:, typed_notes:) %>
 <%#
   One mentoring shift: the window it lists, the mentors on it, and its mentees,
   each with mentors, a result, each mentor's notes, and the general notes about
@@ -8,8 +8,11 @@
   `submitted` holds the rows a refused or questioned save shows again as typed
   (ArtMentoring::Assignment#typed_rows), so the reader keeps their edits, and
   `typed_notes` the general notes typed into it, by person id;
-  `pass_offers` is the pass question that save is waiting on. `general_notes`
-  are the stored ones, every year's, by person id (PersonMentoringNote).
+  `pass_question` is what that save is waiting on (nil when nothing), and
+  `promote_asked` whether Promote Without a Verdict was pressed with something
+  to offer (`promote_offers`).
+  `general_notes` are the stored ones, every year's, by person id
+  (PersonMentoringNote).
 %>
 <% editable = can_manage_session? %>
 <% mentee_title = @shifts.mentee_position.title %>
@@ -21,7 +24,7 @@
                "Someone else saved this shift at the same moment. Check the rows below, then save again to record " \
                  "your changes."
              elsif result&.denied
-               "#{result.denied} Record the pass without that grant, or ask someone who may make it."
+               "#{result.denied} Choose again without that grant, or ask someone who may make it."
              elsif row_errors.any?
                "#{pluralize(row_errors.size, "row")} below still #{row_errors.one? ? "needs" : "need"} fixing. " \
                  "The shift is saved as a whole, so no part of it was written."
@@ -91,10 +94,20 @@
       <dt>What else happens when I record a pass?</dt>
       <dd>
         Someone with the <%= @training.title %> graduate role is asked whether to add the mentee to the
-        <%= @shifts.pass.team&.title || "team" %> with its Recommended positions, and to revoke
-        <%= @shifts.pass.revoked_positions.map(&:title).to_sentence %>.
-        Without that role the pass is recorded alone, and a graduate can finish it later with
-        <%= Training::MentoringHelper::GRANT_TEAM_POSITIONS %>.
+        <%= @shifts.pass.team&.title || "team" %> with its Recommended positions and revoke
+        <%= @shifts.pass.revoked_positions.map(&:title).to_sentence %>, or to record the pass alone
+        (<%= Training::MentoringHelper::RECORD_PASS_NOT_PROMOTE %>). Without that role nothing is granted, and a
+        graduate can finish it later with <%= Training::MentoringHelper::GRANT_TEAM_POSITIONS %>.
+      </dd>
+      <dt>Can I record a pass with no mentor?</dt>
+      <dd>
+        Yes. Leave every mentor at <%= MentorHelper::NO_MENTOR %>: you are asked first, then the pass is recorded
+        without one.
+      </dd>
+      <dt>What does <%= Training::MentoringHelper::PROMOTE_WITHOUT_VERDICT %> do?</dt>
+      <dd>
+        It promotes a mentee without recording a verdict, for someone with the graduate role. Beside Save This
+        Shift it saves nothing else typed on this page, so save your changes first.
       </dd>
     </dl>
   <% end %>
@@ -149,7 +162,7 @@
           <% callsign = entry.person.callsign %>
           <%# The fields share one name scheme, so each carries an explicit
               id: Turbo's morph drops fields whose ids collide. %>
-          <%= t.row id: "walk-#{entry.id}", state: (:error if error) do %>
+          <%= t.row id: "walk-#{entry.id}", state: (:error if error), align: :middle do %>
             <%= t.row_header do %>
               <%= person_display_link entry.person, entry.person_id %>
             <% end %>
@@ -237,14 +250,25 @@
 <% end %>
 
 <% if editable %>
+  <% unsaved = submitted.present? || typed_notes.present? %>
+  <%# A page drawn again with what was typed is still unsaved: the submit that
+      brought it back disarmed the guard (unsaved-changes#dirtyValue). %>
   <%= ui_form nil, training_mentoring_assignment_shift_path(training_slug, group.key, year: @year),
-              method: :post, local: true, no_error_summary: true, data: { controller: "unsaved-changes" } do |f| %>
+              method: :post, local: true, no_error_summary: true,
+              data: { controller: "unsaved-changes", unsaved_changes_dirty_value: unsaved } do |f| %>
     <%# First in the form, so Record Pass is its default button: Enter on a
         dialog check box presses it, not an earlier Grant Team Positions. %>
-    <%= render "pass_dialog", f:, offers: pass_offers if pass_offers.any? %>
+    <%= render "pass_dialog", f:, question: pass_question if pass_question %>
+    <%= render("promote_dialog", f:, offers: promote_offers, unsaved:) if promote_asked %>
     <%= mentees %>
     <%= button_row do %>
       <%= f.submit "Save This Shift", data: { turbo_submits_with: "Recording…" } %>
+      <%# Promotes without recording a verdict (owner, 2026-10-28): offered to a
+          graduate while a mentee on the shift can still gain something. %>
+      <% if promote_offers.any? %>
+        <%= button_action Training::MentoringHelper::PROMOTE_WITHOUT_VERDICT, :secondary, type: "submit",
+                                                                                  name: "promote", value: "ask" %>
+      <% end %>
       <%= cancel_link training_mentoring_assignment_path(training_slug, year: @year) %>
     <% end %>
   <% end %>

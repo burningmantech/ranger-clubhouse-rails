@@ -1,0 +1,23 @@
+<%# locals: (f:, timesheet_id:, offer:, chosen:) %>
+<%#
+  One mentee's grants, grants[<timesheet id>][join|revoke], for the pass and
+  promote dialogs: each box offered only while it still applies
+  (ArtMentoring::Pass::Offer), and ticked when `chosen`.
+%>
+<% pass = @shifts.pass %>
+<% team = pass.team&.title || "team" %>
+<% positions = pass.recommended_positions.map(&:title) %>
+<%= f.check_box "grants[#{timesheet_id}][join]",
+                label: "Add to the #{team}#{" and grant #{positions.to_sentence}" if positions.any?}",
+                checked: chosen && offer.join, disabled: !offer.join,
+                help_text: (unless offer.join
+                              if pass.joinable?(offer.person)
+                                "Already a member."
+                              else
+                                "Their status is #{offer.person.status}, so they cannot join a team."
+                              end
+                            end) %>
+<%= f.check_box "grants[#{timesheet_id}][revoke]",
+                label: "Revoke #{(offer.revoke.presence || pass.revoked_positions).map(&:title).to_sentence}",
+                checked: chosen && offer.revoke.any?, disabled: offer.revoke.empty?,
+                help_text: offer.revoke.any? ? "Also drops their future sign-ups." : "Holds no mentee position." %>

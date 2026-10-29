@@ -17,9 +17,11 @@
 # keep different windows on purpose; do not unify them.
 #
 # Who is on shift, who needs a mentor and who awaits a verdict are counted by
-# mentee entry, not by group, and each entry is in one state: no mentor yet
-# (needs one -- on shift or after, since a verdict waits on a mentor), paired
-# and signed out with the result still Pending (awaits a verdict), or done.
+# mentee entry, not by group, and each entry is in one state: no walk yet
+# (needs a mentor -- on shift or after, since every verdict but a pass waits on
+# one), paired and signed out with the result still Pending (awaits a verdict),
+# or done. A mentee a pass can no longer promote -- promoted without a verdict
+# (owner, 2026-10-28) -- is done too, walk or not.
 #
 # Built once per request, one query per source. A training whose team has no
 # ART mentee position flagged lists nothing.
@@ -57,15 +59,19 @@ class ArtMentoring::Shifts
   # `walks` is each entry's Walk by timesheet id, for the entries that have one.
   # Only a pass is recorded without a mentor, so an entry with no walk is a
   # mentee no one has been paired with. `on_shift_entries` are the entries still
-  # signed in (ON_SHIFT_WITHIN).
-  Group = Data.define(:key, :slot, :begins, :mentee_entries, :on_shift_entries, :mentor_entries, :walks) do
+  # signed in (ON_SHIFT_WITHIN). `promotable` holds the person ids among the
+  # year's mentees that a pass could still promote (Pass#offers).
+  Group = Data.define(:key, :slot, :begins, :mentee_entries, :on_shift_entries, :mentor_entries, :walks,
+                      :promotable) do
     def unmatched? = slot.nil?
     def ends = slot&.ends
     def in_progress? = on_shift_entries.any?
     def walk_for(entry) = walks[entry.id]
     def mentors = mentor_entries.map(&:person).uniq
     def mentee_count_for(mentor) = walks.values.count { |walk| walk.mentor_ids.include?(mentor.id) }
-    def needing_mentor = mentee_entries.reject { |entry| walks.key?(entry.id) }
+    # No walk, and a mentee still: one promoted without a verdict needs no mentor
+    # (chosen by Claude 2026-10-28, reversible).
+    def needing_mentor = mentee_entries.reject { |entry| walks.key?(entry.id) || !promotable.include?(entry.person_id) }
     # Each mentee's first entry: someone signed in twice is one mentee, and the
     # roster shows their general notes on that entry's rows.
     def first_entries = mentee_entries.uniq(&:person_id)
@@ -185,6 +191,7 @@ class ArtMentoring::Shifts
     # files the walk here (ArtMentoring::Assignment).
     @walks = PersonMentor.where(timesheet_id: mentee_entries.map(&:id)).includes(:mentor).order(:id)
                          .group_by(&:timesheet_id).transform_values { |rows| Walk.new(rows:) }
+    @promotable = pass.offers(mentee_entries).each_value.to_set { |offer| offer.person.id }
 
     @groups = build_groups(mentee_slots, mentor_slots)
     @upcoming = build_upcoming(mentee_slots, mentor_slots)
@@ -224,7 +231,7 @@ class ArtMentoring::Shifts
       at = begins.to_i
       on_shift = mentor_entries.select.with_index { |_entry, i| (mentor_starts[i] - at).abs <= window }
       Group.new(key:, slot:, begins:, mentee_entries: members, on_shift_entries: members.select { |entry| signed_in?(entry) },
-                mentor_entries: on_shift, walks: walks.slice(*members.map(&:id)))
+                mentor_entries: on_shift, walks: walks.slice(*members.map(&:id)), promotable: @promotable)
     end.sort_by(&:begins)
   end
 

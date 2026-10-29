@@ -35,12 +35,14 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
     @typed_notes = submitted_general_notes
     assignment = ArtMentoring::Assignment.new(@shifts, @group, submitted_rows, general_notes: @typed_notes)
     # The rows the page shows again as typed, should it come back.
-    @submitted = assignment.typed_rows
+    @submitted = assignment.typed_rows(promoting: params[:promote].present?)
+    return promote(assignment) if params[:promote].present?
+
     @pass_question = pass_question(assignment) if assignment.row_errors.empty?
     return render(:show, status: :unprocessable_entity) if @pass_question
 
     @result = assignment.save!(written_by: current_user, grants: submitted_grants,
-                               record_without_mentor: !answered?(Training::MentoringHelper::PROMOTE_WITHOUT_VERDICT))
+                               without_verdict: pass_answer == :without_verdict)
     return redirect_to(shift_path, success: saved_message(@result)) if @result.ok?
 
     # The save rolled back, but its edits stay on the walks Shifts loaded: read
@@ -51,6 +53,36 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
   end
 
   private
+
+  # Promote Without a Verdict beside Save This Shift (owner, 2026-10-28): what a
+  # pass can grant, for any of the shift's mentees, recording no verdict and
+  # saving nothing typed into the roster. Asked first, like a pass: the button
+  # sends `promote=ask`, and the dialog's Promote `promote=confirm`. A
+  # graduate-role holder's alone.
+  def promote(assignment)
+    return redirect_to(shift_path, error: "Promoting needs the #{@training.title} graduate role.") unless can_graduate?
+
+    unless promoting?
+      # Someone may have promoted them since the page was drawn.
+      @promote_asked = promote_offers.any?
+      flash.now[:error] = "No mentee on this shift has anything left to promote." unless @promote_asked
+      return render(:show, status: :unprocessable_entity)
+    end
+
+    @result = assignment.promote!(grants: submitted_grants)
+    return redirect_to(shift_path, success: saved_message(@result)) if @result.ok?
+
+    render :show, status: :unprocessable_entity
+  end
+
+  def promoting? = params[:promote] == "confirm"
+
+  # What Promote Without a Verdict can still grant, for any of the shift's
+  # mentees: the footer offers it while this holds anyone, and its dialog asks
+  # about each. A graduate-role holder's alone.
+  helper_method def promote_offers
+    @promote_offers ||= can_graduate? ? @shifts.pass.offers(@group.first_entries) : {}
+  end
 
   def load_shift
     key = params[:key].to_s
@@ -131,31 +163,36 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
   # and anyone, about each mentee passed with no mentor selected.
   # @return [ArtMentoring::Pass::Question, nil] nil when there is nothing to ask
   def pass_question(assignment)
-    return if params[:confirmed].present?
+    return if pass_answer
 
     without_mentor = assignment.passed_without_mentor
     grant_for = IdList.id(params[:grant_for])
     offers = {}
     if can_graduate?
-      asked = assignment.newly_passed + without_mentor
+      # Not a pass recorded before and only stripped of its mentors: one held
+      # back with Record Pass but Not Promote stays so (chosen by Claude
+      # 2026-10-28, reversible), and Grant Team Positions still promotes it.
+      asked = assignment.newly_passed
       asked += assignment.passed.select { |entry| entry.id == grant_for } if grant_for
       offers = @shifts.pass.offers(asked.uniq)
     end
-    question = ArtMentoring::Pass::Question.new(offers:, without_mentor: without_mentor.to_h { [it.id, it.person] },
-                                                granting: grant_for.present?)
+    people = without_mentor.to_h { |entry| [entry.id, entry.person] }
+    question = ArtMentoring::Pass::Question.new(offers:, without_mentor: people, granting: grant_for)
     question if question.any?
   end
 
-  # Which of the pass question's buttons answered it.
-  def answered?(label) = params[:confirmed] == label
+  # Which of the pass question's buttons answered it
+  # (Training::MentoringHelper::PASS_ANSWERS), or nil: a value the dialog never
+  # sends answers nothing, and the question is asked again.
+  def pass_answer = Training::MentoringHelper::PASS_ANSWERS.each_key.find { |answer| answer.name == params[:confirmed] }
 
-  # The pass dialog's answers, grants[<timesheet id>][join|revoke]. Read only
-  # from a graduate-role holder's answered save, and not from Record Pass but
+  # The pass and promote dialogs' answers, grants[<timesheet id>][join|revoke].
+  # Read only from a graduate-role holder's answer, and not from Record Pass but
   # Not Promote: a crafted one from anyone else grants nothing.
   def submitted_grants
     grants = params[:grants]
-    return {} unless params[:confirmed].present? && can_graduate? && grants.respond_to?(:each_pair)
-    return {} if answered?(Training::MentoringHelper::RECORD_PASS_NOT_PROMOTE)
+    return {} unless (pass_answer || promoting?) && can_graduate? && grants.respond_to?(:each_pair)
+    return {} if pass_answer == :record_only
 
     grants.each_pair.filter_map do |timesheet_id, choice|
       id = IdList.id(timesheet_id)

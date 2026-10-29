@@ -347,6 +347,69 @@ class ArtMentoring::AssignmentTest < ActiveSupport::TestCase
     assert_equal({ @tinsel => ArtMentoring::Pass::Grant.new(joined: true, revoked: [@mentee_position]) }, result.granted)
   end
 
+  # ------------------------------------------- a pass with no mentor
+
+  test "a pass with no mentor is one row naming none, until a mentor is picked" do
+    pass = row(@first, nil, status: PersonMentor::STATUS_PASS)
+    assert_equal [@first], assignment(pass).passed_without_mentor
+
+    assert save(pass).ok?
+    assert_equal [[nil, PersonMentor::STATUS_PASS]], PersonMentor.where(timesheet_id: @first.id).pluck(:mentor_id, :status)
+    assert_empty assignment(pass).passed_without_mentor, "recorded so, it is not asked about again"
+    assert_equal 0, save(pass).saved_count, "and saved again unchanged, it writes nothing"
+
+    save(row(@first, @ferrous, status: PersonMentor::STATUS_PASS))
+    assert_equal [@ferrous.id], PersonMentor.where(timesheet_id: @first.id).pluck(:mentor_id)
+  end
+
+  test "promoted without a verdict, a pass with no mentor records nothing but its grants" do
+    hold_mentee_position(@tinsel)
+
+    result = assignment(row(@first, nil, status: PersonMentor::STATUS_PASS))
+             .save!(written_by: @cinder, grants: { @first.id => { join: true, revoke: true } }, without_verdict: true)
+
+    assert result.ok?
+    assert_equal 0, result.saved_count
+    assert_not PersonMentor.exists?(timesheet_id: @first.id)
+    assert PersonTeam.exists?(team_id: @training.team_id, person_id: @tinsel.id)
+    assert_not PersonPosition.exists?(person_id: @tinsel.id, position_id: @mentee_position.id)
+  end
+
+  test "promoted without a verdict, a pass with no mentor that no grant promotes is recorded" do
+    hold_mentee_position(@tinsel)
+
+    result = assignment(row(@first, nil, status: PersonMentor::STATUS_PASS), row(@second, nil, status: PersonMentor::STATUS_PASS))
+             .save!(written_by: @cinder, grants: { @first.id => { join: true, revoke: true } }, without_verdict: true)
+
+    assert result.ok?
+    assert_not PersonMentor.exists?(timesheet_id: @first.id), "Tinsel was promoted, with no verdict"
+    assert_equal [[nil, PersonMentor::STATUS_PASS]], PersonMentor.where(timesheet_id: @second.id).pluck(:mentor_id, :status),
+                 "Moonrake gained nothing, so the pass typed for them stands"
+  end
+
+  # Another graduate's grant committing between this one's check and its write.
+  test "a promote that loses a race to another grant is a conflict, not an error" do
+    shifts = ArtMentoring::Shifts.new(@training, YEAR)
+    shifts.pass.define_singleton_method(:apply!) { |*, **| raise ActiveRecord::RecordNotUnique, "Duplicate entry" }
+    promoting = ArtMentoring::Assignment.new(shifts, shifts.group(@slot.id.to_s), {})
+
+    result = promoting.promote!(grants: { @first.id => { join: true, revoke: true } })
+
+    assert result.conflict
+    assert_not result.ok?
+  end
+
+  test "promoting without a verdict grants for any of the shift's mentees and writes no walk" do
+    hold_mentee_position(@moonrake)
+
+    result = assignment(row(@first, @ferrous, status: PersonMentor::STATUS_PASS), row(@second, nil))
+             .promote!(grants: { @second.id => { join: true, revoke: true } })
+
+    assert result.ok?
+    assert_equal({ @moonrake => ArtMentoring::Pass::Grant.new(joined: true, revoked: [@mentee_position]) }, result.granted)
+    assert_not PersonMentor.exists?(timesheet_id: [@first.id, @second.id]), "not even the row typed as passed"
+  end
+
   test "a pass already recorded is passed again, not newly" do
     walk(@first, @ferrous, status: PersonMentor::STATUS_PASS)
 

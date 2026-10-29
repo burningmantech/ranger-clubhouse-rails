@@ -294,6 +294,19 @@ class Me::MentoringControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", new_me_message_path(to: "Tinsel"), text: "Send Message"
   end
 
+  test "a pass recorded with no mentor is a No Mentor card, with no one to contact" do
+    art_walk.update_column(:mentor_id, nil)
+    sign_in_as(@mentee)
+
+    get me_mentoring_path
+
+    assert_select "section", text: /#{ART_YEAR} Green Dot Training Mentors/ do
+      assert_select "div.text-heading", text: "No Mentor"
+    end
+    assert_select "span", text: "no contact allowed", count: 0
+    assert_select "a", text: "Send Message", count: 0
+  end
+
   test "an ART mentor who can't start a message gets no Send Message" do
     art_walk
     @mentee.update!(last_seen_at: 1.day.ago)

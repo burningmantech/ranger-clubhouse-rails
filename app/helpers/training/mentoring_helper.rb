@@ -7,10 +7,17 @@ module Training::MentoringHelper
   # The button on a recorded pass that still has something to grant; the
   # roster's card names it too.
   GRANT_TEAM_POSITIONS = "Grant Team Positions"
-  # The pass question's other answers (owner, 2026-10-28): each is a submit
-  # named `confirmed` whose value is its label, read back by the controller.
+  # The pass question's other answers (owner, 2026-10-28).
   RECORD_PASS_NOT_PROMOTE = "Record Pass but Not Promote"
   PROMOTE_WITHOUT_VERDICT = "Promote Without a Verdict"
+  # The pass question's answers by the value each sends as `confirmed`, never
+  # its label: a browser's page translation rewrites that, and a value not here
+  # is asked again.
+  PASS_ANSWERS = { record: "Record Pass", record_only: RECORD_PASS_NOT_PROMOTE,
+                   without_verdict: PROMOTE_WITHOUT_VERDICT }.freeze
+  # The promote dialog's answer, a submit sending `promote=confirm` (Save This
+  # Shift's Promote Without a Verdict asks with `promote=ask`).
+  PROMOTE = "Promote"
   # The picker's badge on sign-ins that matched no shift; its card explains it.
   CHECK_SIGN_IN = "Check the sign-in"
   # Where a walk's mentee entry was deleted (ruled 2026-10-21); the Verdicts

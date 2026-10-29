@@ -37,10 +37,10 @@
     <%= render "training/mentoring/shift_rule", shifts: @shifts %>
     <dt>Who needs a mentor, and who awaits a verdict?</dt>
     <dd>
-      A mentee no one has been paired with needs a mentor, whether still on shift or signed out: a verdict is
-      recorded with a mentor. A mentee paired with one awaits a verdict once signed out, until a result other than
-      <%= mentor_result_label(PersonMentor::STATUS_PENDING) %> is recorded. A sign-in left open for a day counts as
-      signed out.
+      A mentee no one has been paired with needs a mentor, whether still on shift or signed out: every verdict
+      but a pass is recorded with one. A mentee paired with one awaits a verdict once signed out, until a result
+      other than <%= mentor_result_label(PersonMentor::STATUS_PENDING) %> is recorded. Neither counts a pass recorded
+      with no mentor, or a mentee already promoted. A sign-in left open for a day counts as signed out.
     </dd>
     <dt>What do <%= passed_label %> and <%= bonked_label %> count?</dt>
     <dd>The year's mentee shifts recorded with that result. Bonked includes self-bonks.</dd>
