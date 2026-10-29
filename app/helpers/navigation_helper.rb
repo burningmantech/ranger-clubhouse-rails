@@ -15,6 +15,9 @@ module NavigationHelper
   # over a plain list of links, never reports open or closed, and needs a focus
   # event iOS Safari does not reliably send to a button; <details> does all
   # three natively.
+  # Only its own summary closes a <details>; application.js also closes an open
+  # dropdown from a link inside it or a click outside it, so a page Turbo caches
+  # on the way out never holds one open.
   #
   # @param label [String] The trigger button label
   # @param variant [Symbol] ButtonHelper variant for the trigger (default :secondary)

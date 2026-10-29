@@ -110,3 +110,15 @@ Turbo.config.forms.confirm = (message, element, submitter) => {
         dialog.showModal();
     });
 };
+
+// A dropdown menu is a native <details> (NavigationHelper#dropdown_menu),
+// which only its own summary closes. A link in it closes it here, and so does
+// a click anywhere outside it. Turbo brings the next page in only once it has
+// arrived, so until then the menu hung open over this one; and the copy of
+// this page Turbo caches on the way out -- the one Back shows -- was taken
+// after the click, with the menu as it was.
+document.addEventListener("click", ({target}) => {
+    document.querySelectorAll("details.dropdown[open]").forEach((menu) => {
+        if (!menu.contains(target) || target.closest("a")) menu.open = false;
+    });
+});
