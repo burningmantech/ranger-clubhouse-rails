@@ -7,28 +7,28 @@ class DashboardTasks::VerifyTimesheetsFinishedTest < ActiveSupport::TestCase
 
   test "skips when no work was done" do
     result = DashboardTasks::VerifyTimesheetsFinished.check(
-      facts(did_work: false, timesheets_unverified: false, timesheet_confirmed: true)
+      facts(did_work: false, timesheets_unverified: 0, timesheet_confirmed: true)
     )
     assert_equal DashboardTask::STATUS_SKIP, result.result
   end
 
   test "skips when timesheets are unverified" do
     result = DashboardTasks::VerifyTimesheetsFinished.check(
-      facts(did_work: true, timesheets_unverified: true, timesheet_confirmed: true)
+      facts(did_work: true, timesheets_unverified: 2, timesheet_confirmed: true)
     )
     assert_equal DashboardTask::STATUS_SKIP, result.result
   end
 
   test "skips when timesheet is not confirmed" do
     result = DashboardTasks::VerifyTimesheetsFinished.check(
-      facts(did_work: true, timesheets_unverified: false, timesheet_confirmed: false)
+      facts(did_work: true, timesheets_unverified: 0, timesheet_confirmed: false)
     )
     assert_equal DashboardTask::STATUS_SKIP, result.result
   end
 
   test "completed when work done, verified, and confirmed" do
     result = DashboardTasks::VerifyTimesheetsFinished.check(
-      facts(did_work: true, timesheets_unverified: false, timesheet_confirmed: true)
+      facts(did_work: true, timesheets_unverified: 0, timesheet_confirmed: true)
     )
     assert_equal DashboardTask::STATUS_COMPLETED, result.result
     assert_equal "verify_timesheets_finished", result.partial

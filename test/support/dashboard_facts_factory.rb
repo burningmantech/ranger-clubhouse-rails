@@ -253,7 +253,7 @@ module DashboardFactsFactory
       surveys: outstanding_surveys,
       did_work: true,
       timesheet_confirmed: true,
-      timesheets_unverified: false
+      timesheets_unverified: 0
     )
   end
 end

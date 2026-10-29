@@ -7,28 +7,28 @@ class DashboardTasks::VerifyTimesheetsTest < ActiveSupport::TestCase
 
   test "no work done skips the task" do
     result = DashboardTasks::VerifyTimesheets.check(
-      facts(did_work: false, timesheets_unverified: false, timesheet_confirmed: false)
+      facts(did_work: false, timesheets_unverified: 0, timesheet_confirmed: false)
     )
     assert_equal DashboardTask::STATUS_SKIP, result.result
   end
 
   test "no work done skips even when timesheet confirmed" do
     result = DashboardTasks::VerifyTimesheets.check(
-      facts(did_work: false, timesheets_unverified: false, timesheet_confirmed: true)
+      facts(did_work: false, timesheets_unverified: 0, timesheet_confirmed: true)
     )
     assert_equal DashboardTask::STATUS_SKIP, result.result
   end
 
   test "work done, nothing unverified, timesheet confirmed completes the task" do
     result = DashboardTasks::VerifyTimesheets.check(
-      facts(did_work: true, timesheets_unverified: false, timesheet_confirmed: true)
+      facts(did_work: true, timesheets_unverified: 0, timesheet_confirmed: true)
     )
     assert_equal DashboardTask::STATUS_COMPLETED, result.result
   end
 
   test "work done, nothing unverified, timesheet not confirmed needs action" do
     result = DashboardTasks::VerifyTimesheets.check(
-      facts(did_work: true, timesheets_unverified: false, timesheet_confirmed: false)
+      facts(did_work: true, timesheets_unverified: 0, timesheet_confirmed: false)
     )
     assert_equal DashboardTask::STATUS_ACTION_NEEDED, result.result
     assert_equal "verify_timesheets", result.partial
@@ -36,7 +36,7 @@ class DashboardTasks::VerifyTimesheetsTest < ActiveSupport::TestCase
 
   test "work done with unverified timesheets needs action" do
     result = DashboardTasks::VerifyTimesheets.check(
-      facts(did_work: true, timesheets_unverified: true, timesheet_confirmed: false)
+      facts(did_work: true, timesheets_unverified: 2, timesheet_confirmed: false)
     )
     assert_equal DashboardTask::STATUS_ACTION_NEEDED, result.result
     assert_equal "verify_timesheets", result.partial
@@ -44,7 +44,7 @@ class DashboardTasks::VerifyTimesheetsTest < ActiveSupport::TestCase
 
   test "work done with unverified timesheets needs action even if confirmed" do
     result = DashboardTasks::VerifyTimesheets.check(
-      facts(did_work: true, timesheets_unverified: true, timesheet_confirmed: true)
+      facts(did_work: true, timesheets_unverified: 2, timesheet_confirmed: true)
     )
     assert_equal DashboardTask::STATUS_ACTION_NEEDED, result.result
     assert_equal "verify_timesheets", result.partial

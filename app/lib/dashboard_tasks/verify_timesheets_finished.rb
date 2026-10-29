@@ -11,7 +11,7 @@ module DashboardTasks
     end
 
     def self.check(facts)
-      if !facts.did_work || facts.timesheets_unverified || !facts.timesheet_confirmed
+      if !facts.did_work || facts.timesheets_unverified.positive? || !facts.timesheet_confirmed
         return skip_task
       end
 
