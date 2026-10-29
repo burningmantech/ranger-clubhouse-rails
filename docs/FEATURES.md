@@ -471,7 +471,7 @@ Owner: `Person#authenticate` (`app/models/person.rb`), `Authentication#start_new
 Touches: `person` (w), `sessions` (w), `action_logs` (w)
 Verify: `test/controllers/sessions_controller_test.rb`, `test/forms/dead_submit_removed_test.rb`
 Trap: `Authentication#request_authentication` remembers the address to return to only for a page load (`returnable_request?`): a form post, frame, fetch or stream request goes back to /me after signing in, since its own address may be POST-only, a fragment or raw JSON.
-Trap: `Person#authenticate` is not a pure check — a matching legacy SHA1 `salt:hash` password is rewritten to Argon2 with `save(validate: false)`, writing the `person` row.
+Trap: only an Argon2 hash signs in. `RetireSha1Passwords` (2026-10-29) blanked every other `person.password` (the salted-SHA1 `salt:hash` rows and the placeholder values), so a blank password is an account that must go through Forgot; `Person#authenticate` answers false for it without raising, and the form shows the same "don't match" line as a wrong password.
 Trap: `AuthenticationTestHelper` prepends a `find_session_by_cookie` override on `ApplicationController` that is never removed; it falls back to the real cookie only while no `sign_in_as` session is set, so a test mixing the two follows the helper's session.
 
 ### Sign In with a Passkey

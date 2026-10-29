@@ -1,4 +1,3 @@
-require "digest"
 require "argon2"
 
 class Person < ApplicationRecord
@@ -411,20 +410,14 @@ class Person < ApplicationRecord
     }
   end
 
+  # Only an Argon2 hash verifies. A blank password is an account whose
+  # salted-SHA1 hash was retired (RetireSha1Passwords); its holder sets a new
+  # one through Forgot.
   def authenticate(password)
-    begin
-      return Argon2::Password.verify_password(password, self.password)
-    rescue Argon2::ArgonHashFail
-      # using the old SHA1 password encoding
-    end
+    return false if self.password.blank?
 
-    salt, hash = self.password.split(":")
-    if salt && hash && Digest::SHA1.hexdigest(salt + password) == hash
-      # Convert to Argon2
-      self.password = password
-      save(validate: false)
-      return true
-    end
+    Argon2::Password.verify_password(password, self.password)
+  rescue Argon2::ArgonHashFail
     false
   end
 

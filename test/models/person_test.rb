@@ -122,6 +122,23 @@ class PersonTest < ActiveSupport::TestCase
     end
   end
 
+  test "only an Argon2 hash signs in" do
+    subject = person(:active_ranger)
+    subject.password = "password"
+    subject.save!(validate: false)
+    assert subject.authenticate("password")
+    assert_not subject.authenticate("wrong")
+
+    legacy = "0123456789abcdef:#{Digest::SHA1.hexdigest("0123456789abcdefpassword")}"
+    subject.update_column(:password, legacy)
+    assert_not subject.authenticate("password"), "a salted-SHA1 hash no longer verifies"
+    assert_equal legacy, subject.reload.password, "and is not rewritten"
+
+    subject.update_column(:password, "")
+    assert_not subject.authenticate(""), "a retired password matches nothing, not even blank"
+    assert_not subject.authenticate("password")
+  end
+
   def new_person
     Person.new(callsign: "Brandnew", first_name: "Brand", last_name: "New",
                email: "brandnew@example.com", status: Person::PROSPECTIVE,
