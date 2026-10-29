@@ -1,0 +1,92 @@
+<% heading = "Teams & Positions History — #{@person.callsign}" %>
+<% content_for :title, heading %>
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1, id: "person-membership-history-header",
+               title: heading,
+               description: "Every team membership and position grant on record for #{@person.callsign}, with the dates each began and ended.",
+               back_to: [@person.callsign, person_path(@person)] %>
+
+<% teams = @history.teams %>
+<% positions = @history.positions %>
+
+<%# Where the records start: the card says it while there are rows, and the
+    empty state says it instead, because a gap may be the whole reason nothing
+    is listed. %>
+<% if teams.empty? && positions.empty? %>
+  <%= ui_empty_state "No team memberships or position grants are on record for #{@person.callsign}. Teams and positions held before #{membership_tracking_began} were never recorded here.",
+                     icon: "clock-rotate-left", icon_type: :solid %>
+<% else %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>How far back does it go?</dt>
+      <dd>Team and position changes have been recorded since <%= membership_tracking_began %>. Anything held before then reads “<%= membership_before_tracking_label %>” in place of a start date.</dd>
+      <dt>What does “<%= Person::MembershipHistoryHelper::NOT_RECORDED %>” mean?</dt>
+      <dd>The membership or grant began or ended without the date being written down, so the record shows the gap instead of a guess.</dd>
+      <dt>Why is a position missing?</dt>
+      <dd>A position granted before <%= membership_tracking_began %> and revoked since left no record here. The Action Log keeps every revocation.</dd>
+      <dt>Who made a change?</dt>
+      <dd>This page records when, not who. Admins can find the person behind each change in the Action Log under Team Grant/Revokes and Position Manual Grant/Revokes.</dd>
+      <dt>Is it scoped to an event year?</dt>
+      <dd>No. It is the whole history on file.</dd>
+    </dl>
+  <% end %>
+
+  <%= ui_section "Team Membership", icon: "people-group", icon_type: :solid, border: false do %>
+    <% if teams.any? %>
+      <% members = teams.count(&:current) %>
+      <p>
+        <%= pluralize members, "current membership" %> and <%= pluralize teams.size - members, "past membership" %>, by team.
+      </p>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Team" %>
+          <%= t.heading "Joined" %>
+          <%= t.heading "Left" %>
+          <%= t.heading "Status" %>
+        <% end %>
+        <%= t.body do %>
+          <% teams.each do |spell| %>
+            <%= t.row do %>
+              <%= t.row_header title_marking_inactive(spell) %>
+              <%= t.cell membership_began_cell(spell) %>
+              <%= t.cell membership_ended_cell(spell) %>
+              <%= t.cell membership_status_cell(spell, "Member", "Left") %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= ui_empty_state "No team memberships on record.", icon: "people-group", icon_type: :solid %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section "Positions", icon: "user-shield", icon_type: :solid, border: false do %>
+    <% if positions.any? %>
+      <% held = positions.count(&:current) %>
+      <p>
+        <%= pluralize held, "position" %> held and <%= pluralize positions.size - held, "revocation" %>, by position.
+      </p>
+      <%= ui_table full_width: true, striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Position" %>
+          <%= t.heading "Team" %>
+          <%= t.heading "Granted" %>
+          <%= t.heading "Revoked" %>
+          <%= t.heading "Status" %>
+        <% end %>
+        <%= t.body do %>
+          <% positions.each do |spell| %>
+            <%= t.row do %>
+              <%= t.row_header title_marking_inactive(spell) %>
+              <%= t.cell value_or_dash(spell.team_title) %>
+              <%= t.cell membership_began_cell(spell) %>
+              <%= t.cell membership_ended_cell(spell) %>
+              <%= t.cell membership_status_cell(spell, "Held", "Revoked") %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= ui_empty_state "No position grants on record.", icon: "user-shield", icon_type: :solid %>
+    <% end %>
+  <% end %>
+<% end %>

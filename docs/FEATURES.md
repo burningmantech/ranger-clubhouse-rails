@@ -27,7 +27,7 @@ Paths are relative to the repository root. To find a feature, grep this file for
 - [My Clubhouse: messages, announcements & info](#my-clubhouse-messages-announcements--info) (9)
 - [My Clubhouse: schedule, tickets, timesheet & vehicles](#my-clubhouse-schedule-tickets-timesheet--vehicles) (9)
 - [Person Manage: account & identity](#person-manage-account--identity) (15)
-- [Person Manage: communication, membership & training](#person-manage-communication-membership--training) (13)
+- [Person Manage: communication, membership & training](#person-manage-communication-membership--training) (14)
 - [Person Manage: event records](#person-manage-event-records) (15)
 - [HQ Window](#hq-window) (12)
 - [Training: sessions](#training-sessions) (9)
@@ -307,7 +307,7 @@ Trap: `Person`'s after_save `log_status_change` already calls `PersonStatusManag
 Trap: `person.audit_reason` becomes the `person_status` reason (otherwise "Status changed") — set it before saving a new status.
 
 ### Position & team grants (PersonPosition, PersonTeam, Membership)
-Used by: Person › Manage Teams & Positions (`PersonMembershipForm` → `Membership.update_*_for_person`), Person › Overview and Me › Operational Summary (`Membership.retrieve_for_person`), Teams & Positions › Team Records / Position Records (`Membership.update_team_roles` / `update_position_roles`), Roster Management (`RosterAction`), Bulk Team / Bulk Position Grant / Revoke (`TeamManagement::BulkTeamChange`, `TeamManagement::BulkPositionChange`), Position Sanity Checker repairs (`PositionSanityCheck::*`), Training › Graduate Trainees and Current Mentees (`TrainingSession::Graduation`, `Training::MenteesController`), status-change defaults (`PersonStatusManagement`)
+Used by: Person › Manage Teams & Positions (`PersonMembershipForm` → `Membership.update_*_for_person`), Person › Overview and Me › Operational Summary (`Membership.retrieve_for_person`), Teams & Positions › Team Records / Position Records (`Membership.update_team_roles` / `update_position_roles`), Roster Management (`RosterAction`), Bulk Team / Bulk Position Grant / Revoke (`TeamManagement::BulkTeamChange`, `TeamManagement::BulkPositionChange`), Position Sanity Checker repairs (`PositionSanityCheck::*`), Training › Graduate Trainees and Current Mentees (`TrainingSession::Graduation`, `Training::MenteesController`), status-change defaults (`PersonStatusManagement`), Person › Teams & Positions History (`MembershipHistory`, reads both logs against the roster)
 Owner: `PersonPosition.add_ids_to_person` / `remove_ids_from_person` (`app/models/person_position.rb`), `PersonTeam.add_person` / `remove_person` (`app/models/person_team.rb`), `Membership` (`app/lib/membership.rb`)
 Touches: `person_position` (w), `person_position_log` (w), `person_team` (w), `person_team_log` (w), `team_manager` (w), `position_role` (w), `team_role` (w), `person_slot` (w), `slot` (w), `action_logs` (w), `position`, `team`
 Verify: `test/controllers/person/memberships_controller_test.rb`, `test/lib/team_management/bulk_position_change_test.rb`, `test/lib/team_management/bulk_team_change_test.rb`, `test/models/role_cache_invalidation_test.rb`, `test/controllers/person_controller_test.rb`
@@ -951,7 +951,7 @@ Trap: `Me::PersonalVehiclesController` skips `authorize_status` and builds no `V
 Every controller includes `PersonConcern`: `set_person` loads `params[:person_id] || params[:id]`; `authorize_role VIEW_ROLES` admits Person › Overview's Gate roles. `authorize_role` is last-call-wins: a controller's own call *replaces* VIEW_ROLES, while `before_action` checks stack on top. No page has a year selector (present year); only `layout "person"` controllers (or `PersonController`) show the Person sidebar (`Menus::PERSON`).
 
 ### Person › Overview
-Reach it: `GET /person/:id` → Person sidebar › Essentials › Overview, and callsign links passing `can_view_person_page?`; Switch to HQ Interface `GET /person/:person_id/redirect_to_hq`; Actions › Resend Welcome Message `POST /person/:person_id/resend_welcome`; Actions › Reset Onboarding Tour `POST /person/:person_id/reset_onboarding`; email banner › Clear Bounce Report / Clear Spam Report `POST /person/:person_id/email-suppression/clear` (also in the HQ shell)
+Reach it: `GET /person/:id` → Person sidebar › Essentials › Overview, and callsign links passing `can_view_person_page?`; Switch to HQ Interface `GET /person/:person_id/redirect_to_hq`; Teams & Positions › View History `GET /person/:person_id/membership/history`; Actions › Resend Welcome Message `POST /person/:person_id/resend_welcome`; Actions › Reset Onboarding Tour `POST /person/:person_id/reset_onboarding`; email banner › Clear Bounce Report / Clear Spam Report `POST /person/:person_id/email-suppression/clear` (also in the HQ shell)
 Gate: `ADMIN`, `EVENT_MANAGEMENT`, `EVENT_MANAGEMENT_ON_PLAYA`, `MENTOR`, `TRAINER`, `VC`, `SHIFT_MANAGEMENT` (PersonConcern::VIEW_ROLES); redirect_to_hq also needs setting HQ_WINDOW_INTERFACE_ENABLED; resend_welcome also needs `ADMIN` or `VC` (`authorize_ability :resend_welcome`, as Clubhouse 2's `PersonPolicy#sendWelcomeEmail`; the Actions item asks `can?(:resend_welcome)`, the same gate; denied → `person_path`), then status prospective; reset_onboarding the same, with its own `authorize_ability` and `can?`, offered only once `person.on_boarded_at` is set; the email clear `ADMIN`, `TECH_NINJA` (its own `authorize_role`, replacing VIEW_ROLES)
 Controller: `app/controllers/person_controller.rb` (`show`, `redirect_to_hq`, `resend_welcome`, `reset_onboarding`), `app/controllers/concerns/person_concern.rb`, `app/controllers/person/email_suppressions_controller.rb` (`clear`)
 Owner: `PersonPermissionPresenter#overview_rows` (`app/presenters/person_permission_presenter.rb`), `RoleManager` (`app/lib/role_manager.rb`), `Membership.retrieve_for_person` (`app/lib/membership.rb`), `EmailSuppression` (`app/models/email_suppression.rb`)
@@ -1165,6 +1165,19 @@ Touches: `person_team` (w), `person_team_log` (w), `team_manager` (w), `person_p
 Verify: `test/controllers/person/memberships_controller_test.rb`
 Trap: A missing list stays nil and is left alone, but a sent empty list revokes everything the editor manages — the form's hidden blanks and the `IdList.clean?` / 400 check in `membership_params` stop malformed wipes.
 Trap: Despite `Membership.update_positions_for_person`'s VC/Mentor comment, only `ADMIN` manages team-less positions: `can_manage_positions` keeps only managed `team_id`s and `PersonMembershipPresenter#can_manage_general_positions?` is admin-only.
+
+### Person › Teams & Positions History
+Reach it: `GET /person/:person_id/membership/history` → Person › Overview › Teams & Positions › View History (not in the sidebar)
+Gate: PersonConcern::VIEW_ROLES, the gate of the Overview section that links here — ruled 2026-10-28 over Clubhouse 2's `PersonTeamLogPolicy` / `PersonPositionLogPolicy` (Admin, Event Management or the person themself), since the section already shows every viewer today's lists and this page adds only the dates
+Controller: `app/controllers/person/membership_history_controller.rb` (`show`)
+Owner: `MembershipHistory` (`app/lib/membership_history.rb`), `Person::MembershipHistoryHelper` (`app/helpers/person/membership_history_helper.rb`)
+Touches: `person_team_log`, `person_position_log`, `person_team`, `person_position`, `team`, `position`
+Verify: `test/lib/membership_history_test.rb`, `test/controllers/person/membership_history_controller_test.rb`, `test/controllers/person_controller_test.rb`
+Trap: the roster decides what is current and the log only dates it — on the 2026-10-28 dev copy 761 open `person_team_log` rows had no `person_team` row (shown as ended, "Not recorded"), 197 current memberships had only closed rows (a start of "Not recorded" beside the closed spell), and 2,413 team rows carried the 2022-11-29 deployment backfill date, printed "Before Nov 29, 2022" (`MembershipHistory::TRACKING_BEGAN`), never as a join date — that day exactly: an earlier date is a real one, written by Bulk Membership History, and prints as a date.
+Trap: a position granted before tracking and revoked since left no log row (`PersonPosition.remove_ids_from_person` closes open rows only; 10,916 revoke action logs against 7,008 closed rows), so the page cannot list it — the Action Log can.
+Trap: `created_at` is nil on every Clubhouse 2 position log row and every `person_team` row; never read or sort by it.
+Trap: a deleted position keeps its log rows (`PositionManagement.destroy`), so the page reads the log without joining `position` and prints `Position #id` for an id with no row, as `Position.retrieve_title` does; a held team or position with several open rows shows the latest as today's spell and the earlier ones as ended on an unrecorded date, where `Reports::TeamMembershipReport` and `Training::MenteesReport` summarize the same rows as "since the earliest".
+Trap: the roster side is not filtered on `active`, so a held inactive position is listed here (marked "(inactive)" by `title_marking_inactive`) though the Overview's Teams & Positions section, which reads `PersonPosition.retrieve_all_for_person`, leaves it out — the two pages' position counts can differ.
 
 ### Person › Applications
 Reach it: `GET /person/:person_id/applications` → Person › Intake › Applications

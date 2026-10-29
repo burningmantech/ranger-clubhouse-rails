@@ -1,5 +1,7 @@
 <%# locals: (person:, person_membership:) %>
-<%= ui_section "Teams & Positions", icon: "people-group", icon_type: :solid, edit_link: is_team_manager? ? edit_person_membership_path(person) : nil do %>
+<%= ui_section "Teams & Positions", icon: "people-group", icon_type: :solid,
+               action: { partial: "person/teams_positions_actions",
+                         locals: { person: } } do %>
   <% if person_membership.teams.empty? %>
     <%= ui_empty_state "No team memberships.", icon: "people-group", icon_type: :solid %>
   <% else %>

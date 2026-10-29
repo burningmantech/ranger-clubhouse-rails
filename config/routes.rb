@@ -1629,6 +1629,7 @@ Rails.application.routes.draw do
         end
       end
       resource :membership, only: [:edit, :update]
+      get "membership/history", to: "membership_history#show", as: :membership_history
 
       get "permissions", to: "permissions#edit", as: :permissions
       patch "permissions", to: "permissions#update"

@@ -1,0 +1,11 @@
+<%# locals: (person:) %>
+<%# ui_section's edit_link: slot holds one control, so the history button and
+    the team managers' Edit ride its action: slot, as the survey group headers do. %>
+<%= button_row do %>
+  <%= button_link "View History", :secondary, person_membership_history_path(person),
+                  icon: "clock-rotate-left", icon_type: :solid %>
+  <% if is_team_manager? %>
+    <%= edit_link edit_person_membership_path(person),
+                  aria: { label: "Edit Teams & Positions" }, title: "Edit Teams & Positions" %>
+  <% end %>
+<% end %>

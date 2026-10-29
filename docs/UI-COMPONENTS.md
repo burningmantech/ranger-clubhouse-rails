@@ -75,7 +75,9 @@ ui_section(title = nil, options = {}, &block)
 | `badge_color:` | Symbol | `:secondary` | Badge color variant |
 | `icon:` | String | `nil` | FontAwesome icon name |
 | `icon_type:` | Symbol | `:regular` | Icon style |
-| `edit_link:` | String | `nil` | Path for edit button |
+| `edit_link:` | String | `nil` | Path for edit button; the link's accessible name is "Edit <title>" |
+| `link:` | SafeBuffer | `nil` | A rendered link at the header's right edge, in place of `edit_link:` |
+| `action:` | Hash | `nil` | `{ partial:, locals: }` rendered at the header's right edge, for more than one control (a `button_row`); `edit_link:` wins when both are given |
 | `border:` | Boolean | `true` | Include padding |
 | `body_class:` | String | `nil` | Additional classes for body |
 | `class:` | String | `nil` | Additional classes for container |

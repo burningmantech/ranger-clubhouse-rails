@@ -189,6 +189,23 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     assert_select "[role='heading']", text: /Permissions/, count: 1
   end
 
+  test "offers the teams and positions history to every viewer and the editor to team managers" do
+    sign_in_as(@limited_viewer)
+
+    get person_path(@target)
+
+    assert_response :success
+    assert_select "a[href=?]", person_membership_history_path(@target), text: /View History/, count: 1
+    assert_select "a[href=?]", edit_person_membership_path(@target), count: 0
+
+    TeamManager.create!(person_id: @limited_viewer.id, team_id: teams(:council_cadre).id)
+    get person_path(@target)
+
+    assert_response :success
+    assert_select "a[href=?]", person_membership_history_path(@target), text: /View History/, count: 1
+    assert_select "a[href=?]", edit_person_membership_path(@target), count: 1
+  end
+
   test "toggling on site records the change and who made it" do
     subject = person(:echelon_ranger)
     ensure_role(Role::SHIFT_MANAGEMENT, "Shift Management")
