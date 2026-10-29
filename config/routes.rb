@@ -1714,6 +1714,10 @@ Rails.application.routes.draw do
     # purposes.
     get "clubhouse1-log", to: "clubhouse1_log#index", as: :clubhouse1_log
 
+    # The same log converted to Action Log form (legacy_log), filled once by
+    # bin/rails legacy_log:convert and read-only like the log itself.
+    get "legacy-log", to: "legacy_log#index", as: :legacy_log
+
     # The documents the Clubhouse displays: agreements, dashboard links, contact
     # sections, and bookmarks. Each preview loads on demand, so opening the list
     # does not render every document at once.

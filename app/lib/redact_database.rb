@@ -53,6 +53,7 @@ class RedactDatabase
     contact_log
     email_history
     error_logs
+    legacy_log
     log
     mail_log
     manual_review

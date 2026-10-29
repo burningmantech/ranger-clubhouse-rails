@@ -1,0 +1,160 @@
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1, id: "admin-legacy-log-header",
+               title: "Legacy Clubhouse 1 Log",
+               description: "Browse the audit log the first Clubhouse kept from 2008 to 2019, converted to Action Log form." %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Where do these entries come from?</dt>
+    <dd>
+      Each one is a database change the first Clubhouse logged between 2008 and 2019, given an Action Log
+      event name. The <%= link_to "Clubhouse 1 Log", admin_clubhouse1_log_path %> shows the same entries as
+      they were written.
+    </dd>
+    <dt>Who are User and Target?</dt>
+    <dd>
+      User is who was signed in. Target is the person the change names. The first Clubhouse's own target
+      column held the person the session had last opened, which is wrong for every bulk change, so an
+      entry that disagrees keeps that person in its data as the session person.
+    </dd>
+    <dt>What does the Unknown event mean?</dt>
+    <dd>
+      The conversion could not read that entry with confidence, so it is kept as written, with the
+      session's person as its target.
+    </dd>
+  </dl>
+<% end %>
+
+<%= filter_bar id: "legacy-log-filters",
+               chips: action_log_filter_chips(@form, path: :admin_legacy_log_path, category_labels: LegacyLogFilterForm::EVENT_FILTER_LABELS),
+               clear_url: admin_legacy_log_path,
+               url: admin_legacy_log_path, model: @form, scope: "filter" do |f| %>
+  <%= form_row do %>
+    <%= f.text_field :person_callsign,
+                     label: "User Callsign",
+                     help_text: "Who acted. A callsign or a person id.",
+                     maxlength: 64,
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+    <%= f.text_field :target_person_callsign,
+                     label: "Target Callsign",
+                     help_text: "Who was acted upon. A callsign or a person id.",
+                     maxlength: 64,
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.datetime_field :start_time,
+                         label: "Starts At",
+                         width: "w-full",
+                         wrapper_class: "flex-1" %>
+    <%= f.datetime_field :end_time,
+                         label: "Ends At",
+                         width: "w-full",
+                         wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= form_row do %>
+    <%= f.text_field :event_name,
+                     label: "Event Name",
+                     maxlength: 30,
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+    <%= f.text_field :message,
+                     label: "Message",
+                     width: "w-full",
+                     wrapper_class: "flex-1" %>
+  <% end %>
+
+  <%= ui_disclosure "Event Categories",
+                    variant: :card,
+                    open: @form.event_filters.any?,
+                    subtitle: @form.event_filters.any? ? "#{@form.event_filters.count} selected" : "Show event filter options" do %>
+    <%# PARAM_SCOPE, not the form object's own name: these boxes stand outside
+        the form builder, and the rest of the search arrives under filter[...].
+        Named after the object they would be dropped. %>
+    <%= render "common/checkbox_grid",
+               name: "#{LegacyLogFilterForm::PARAM_SCOPE}[event_filters][]",
+               options: LegacyLogFilterForm::EVENT_FILTER_LABELS,
+               selected: @form.event_filters,
+               id_prefix: "legacy-log-event",
+               align: :start %>
+  <% end %>
+
+  <%= button_row class: "mt-4" do %>
+    <%= f.submit "Search" %>
+  <% end %>
+<% end %>
+
+<%= ui_section "Legacy Log Entries", icon: "table-list", icon_type: :solid do %>
+  <% pager = ui_pager(@pagy, summary: action_log_pager_summary(@result)) { |page| admin_legacy_log_path(@form.query_params(page:)) } %>
+  <% if @legacy_logs.empty? %>
+    <%= ui_empty_state legacy_log_empty_message(@form, @pagy), icon: "magnifying-glass", icon_type: :solid %>
+    <%# A reader who paged past the last entry needs one step back to the start,
+        not one Previous click per page they went past. %>
+    <% if @pagy.previous %>
+      <div class="mt-4">
+        <%= pager %>
+      </div>
+      <%= button_row class: "mt-4" do %>
+        <%= button_link "Back to the First Page", :primary, admin_legacy_log_path(@form.query_params) %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="mb-3">
+      <%= pager %>
+    </div>
+
+    <%= ui_table striped: false do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Timestamp" %>
+        <%= t.heading "User" %>
+        <%= t.heading "Target" %>
+        <%= t.heading "Event" %>
+        <%= t.heading "Message" %>
+      <% end %>
+      <%= t.body do %>
+        <% @legacy_logs.each do |row| %>
+          <% detail_dom_id = "legacy-log-detail-#{row.id}" %>
+          <% timestamp = log_time_format(row.created_at) %>
+          <%= t.row class: "align-middle" do %>
+            <%= t.cell class: "align-top" do %>
+              <%= t.detail_row_toggle timestamp, id: detail_dom_id, describing: "Clubhouse 1 entry" %>
+            <% end %>
+            <%# person_display_link: a Tech Ninja reads this page but not the
+                person pages, so they get the callsign without a link that
+                would bounce them to /me. %>
+            <%= t.cell class: log_text_class("align-middle") do %>
+              <%= person_display_link(row.person, row.person_id, blank: "-") %>
+            <% end %>
+            <%= t.cell class: log_text_class("align-middle") do %>
+              <%= person_display_link(row.target_person, row.target_person_id, blank: "-") %>
+            <% end %>
+            <%= t.cell class: log_text_class("align-middle", Admin::ActionLogsHelper::ACTION_LOG_EVENT_MAX_WIDTH) do %>
+              <%= log_truncated(row.event) %>
+            <% end %>
+            <%= t.cell class: log_text_class("align-middle") do %>
+              <%= action_log_message_cell(row) %>
+            <% end %>
+          <% end %>
+
+          <%= t.detail_row id: detail_dom_id, label: timestamp do %>
+            <div class="py-2">
+              <div class="<%= log_heading_class %>">Data</div>
+              <%= action_log_pretty_data_block(row) %>
+              <%= ui_label_value label_width: "10rem", class: "mt-4" do |list| %>
+                <% legacy_log_detail_items(row).each do |label, value| %>
+                  <%= list.row label, value %>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <div class="mt-4">
+      <%= pager %>
+    </div>
+  <% end %>
+<% end %>

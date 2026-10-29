@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_28_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_28_000003) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.integer "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -317,6 +317,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_000002) do
     t.integer "person_id", unsigned: true
     t.timestamp "created_at", default: -> { "current_timestamp()" }, null: false
     t.index ["help_id", "created_at"], name: "help_hit_help_id_created_at_index"
+  end
+
+  create_table "legacy_log", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.bigint "log_id", null: false, unsigned: true
+    t.integer "person_id", unsigned: true
+    t.integer "target_person_id", unsigned: true
+    t.string "event", limit: 191, null: false
+    t.text "message", null: false
+    t.text "data", size: :long
+    t.datetime "created_at", precision: nil, null: false
+    t.index ["created_at", "id"], name: "index_legacy_log_on_created_at_and_id"
+    t.index ["event"], name: "index_legacy_log_on_event"
+    t.index ["log_id"], name: "index_legacy_log_on_log_id", unique: true
+    t.index ["person_id", "created_at"], name: "index_legacy_log_on_person_id_and_created_at"
+    t.index ["target_person_id", "created_at"], name: "index_legacy_log_on_target_person_id_and_created_at"
   end
 
   create_table "log", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", comment: "logs certain actions", force: :cascade do |t|

@@ -61,7 +61,7 @@ module ClubhouseDatabaseTasks
   # A copy taken before MergePersonMessageArchives ran still keeps messages in a
   # table per year as well, so the prefix is matched rather than the one table named.
   def skipped_logs(config)
-    %w[log mail_log] + DatabaseDump.tables_like(config, "person_message%")
+    %w[legacy_log log mail_log] + DatabaseDump.tables_like(config, "person_message%")
   end
 
   # Six in the evening on the Saturday of last year's burn.

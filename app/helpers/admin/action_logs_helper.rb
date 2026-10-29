@@ -19,20 +19,22 @@ module Admin::ActionLogsHelper
 
   # One filter_bar chip per active Action Log filter (fields plus each event
   # category); each URL drops that filter, keeps the rest, and resets paging.
-  def action_log_filter_chips(form)
+  # path: and category_labels: let the Legacy Clubhouse 1 Log, whose search
+  # has the same fields, draw its chips with it.
+  def action_log_filter_chips(form, path: :admin_action_logs_path, category_labels: ACTION_LOG_EVENT_FILTER_LABELS)
     values = form.query_params[ActionLogFilterForm::PARAM_SCOPE]&.except(:page) || {}
     active = values.slice(*ACTION_LOG_FILTER_CHIP_LABELS.keys).reject { |_key, value| value.blank? }
     display = ->(key, value) { [:start_time, :end_time].include?(key) ? action_log_chip_time(form, key) : value }
 
     # Chip URLs drop the field from the full values hash so event_filters survive.
     field_chips = filter_chips(active, ACTION_LOG_FILTER_CHIP_LABELS, value_label: display) do |_remaining, key|
-      admin_action_logs_path(action_log_chip_params(values.except(key)))
+      public_send(path, action_log_chip_params(values.except(key)))
     end
 
     category_chips = form.event_filters.map do |category|
       remaining = values.merge(event_filters: form.event_filters - [category])
-      { label: "Category: #{ACTION_LOG_EVENT_FILTER_LABELS.fetch(category, category)}",
-        url: admin_action_logs_path(action_log_chip_params(remaining)) }
+      { label: "Category: #{category_labels.fetch(category, category)}",
+        url: public_send(path, action_log_chip_params(remaining)) }
     end
 
     field_chips + category_chips
@@ -163,7 +165,8 @@ module Admin::ActionLogsHelper
   # total is estimated from the id range, so there is no "of N" to promise.
   def action_log_pager_summary(result)
     total = result[:total]
-    total_label = result[:approximate_total] ? "Approximately #{total} total records" : "#{total} total records"
+    total_label = "#{number_with_delimiter(total)} total records"
+    total_label = "Approximately #{total_label}" if result[:approximate_total]
     "Page #{result[:pagy].page} · #{total_label}"
   end
 

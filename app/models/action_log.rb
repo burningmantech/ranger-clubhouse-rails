@@ -20,6 +20,9 @@ class ActionLog < ApplicationRecord
     # another follows), and the total the pager names beside it -- counted, or
     # estimated from the ids when nothing filters a table of millions of rows.
     #
+    # LegacyLog.find_for_query is this query over the converted Clubhouse 1
+    # log, without lastday, redact_data and the enrichment; keep the two in step.
+    #
     # @return [Hash] { action_logs:, pagy:, total:, approximate_total: }
     def find_for_query(query = {}, redact_data: false, **query_kwargs)
       query = query.to_h.symbolize_keys.merge(query_kwargs)

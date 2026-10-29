@@ -47,7 +47,7 @@ Paths are relative to the repository root. To find a feature, grep this file for
 - [Pogs](#pogs) (2)
 - [Quartermaster](#quartermaster) (7)
 - [Communication](#communication) (10)
-- [Admin](#admin) (17)
+- [Admin](#admin) (18)
 - [Background jobs & mail](#background-jobs--mail) (19)
 
 ## Shared engines
@@ -3453,6 +3453,18 @@ Touches: `log`, `person`
 Verify: `test/controllers/admin/clubhouse1_log_controller_test.rb`, `test/models/clubhouse1_log_test.rb`
 Trap: `event` is unindexed across about 2.4 million rows, so `Clubhouse1Log.find_for_query` pages with Pagy's countless mode, which fetches `page_size + 1` rows for previous/next and never counts — do not add a total. It returns `[pagy, rows]`; an unknown person, and an `event_text` with a four-byte character the column cannot hold, run the same query on `none`.
 Trap: `TECH_NINJA` is not in `PersonConcern::VIEW_ROLES`, so `callsign_link` bounces a Tech Ninja to /me — use `person_display_link`, as `Admin::Clubhouse1LogHelper` does.
+Trap: Target here is `current_person_id`, the person the session had selected — stale on a bulk action, so not always who was acted upon. The same rows in Action Log form, with the target read from the statement, are the Legacy Clubhouse 1 Log (`legacy_log`, next entry).
+
+### Legacy Clubhouse 1 Log
+Reach it: `GET /admin/legacy-log` → Administration › System Logs › Legacy Clubhouse 1 Log
+Gate: `ADMIN`, `TECH_NINJA`; refused on the Groundhog Day Server (`prevent_if_ghd_server`)
+Controller: `app/controllers/admin/legacy_log_controller.rb` (`index`)
+Owner: `LegacyLog` (`app/models/legacy_log.rb`), `LegacyLogFilterForm` (`app/forms/legacy_log_filter_form.rb`), `Admin::LegacyLogHelper` (`app/helpers/admin/legacy_log_helper.rb`); the conversion is `LegacyLog::Conversion`, `LegacyLog::Converter` and `LegacyLog::Parser` (`app/lib/legacy_log/`) behind `bin/rails legacy_log:convert` (`lib/tasks/legacy_log.rake`); the plan and its slices are `.scratch/legacy-log/PRD.md`
+Touches: `legacy_log` (w, by the task only), `log`, `person`
+Verify: `test/controllers/admin/legacy_log_controller_test.rb`, `test/models/legacy_log_test.rb`, `test/lib/legacy_log/conversion_test.rb`, `test/lib/legacy_log/parser_test.rb`
+Trap: `person_id` is who acted, from `log.user_person_id`, and `target_person_id` who it was done to. The brief that asked for the table described the columns the other way round; Classic's logger (`Log::save`, `standard/controllers/log.php`) writes `user_person_id` from the signed-in user and `current_person_id` from the person the session had selected, and the table's DDL comments say the same — a reviewer who trusts the brief will "fix" the conversion backwards. The session column is stale on every bulk action, so a converted row (slice 02) takes its target from the statement and keeps a differing session person in `data.session_person_id`; an `unknown` row keeps the session column as target and says so with `data.target_source`.
+Trap: the task is the maintainer's to run, once, after the deploy that adds the table; the page says the conversion has not run until then. It reads `log` by id batch and writes only `legacy_log`; `upsert_all` keyed by the unique `log_id` makes a rerun rewrite rather than duplicate, and is called without `unique_by:`, which MariaDB refuses. `#` events, `!` diagnostics and `-sessions` purges are skipped by the 2026-10-28 rulings; until slice 02 lands every other row is `unknown`, with the raw event as its message and the session's person as its target.
+Trap: the page reuses `Admin::ActionLogsHelper` — `action_log_filter_chips` (given `path:` and `category_labels:`), `action_log_message_cell`, `action_log_pretty_data_block`, `action_log_pager_summary` — so a change to those shows on both pages; its row toggle is `TableHelper#detail_row_toggle`. `legacy_log` is emptied by `RedactDatabase` and skipped by the clone tasks like `log`: it carries the same statements.
 
 ### Error Logs
 Reach it: `GET /admin/error-log` → Administration › System Logs › Error Logs; purge `DELETE /admin/error-log`
