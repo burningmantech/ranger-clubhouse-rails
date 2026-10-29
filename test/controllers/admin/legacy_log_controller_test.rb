@@ -6,6 +6,7 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
   include AuthenticationTestHelper
   include TimesheetAdminTestHelper # ensure_role / grant_role
   include EnvTestHelper
+  include LegacyLogTestHelper
 
   setup do
     Rails.cache.clear
@@ -29,17 +30,6 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
     Rails.cache.clear
   end
 
-  # A row as the conversion writes it: the raw event as the message, and the
-  # event, log id and target source in data, unless the test says otherwise.
-  def legacy(event: "unknown", message: "=person.status=alpha@id=1", person: nil, target: nil,
-             created_at: Time.zone.parse("2015-06-01 12:00:00"), data: nil)
-    log_id = (LegacyLog.maximum(:log_id) || 0) + 1
-    data ||= { "event" => message, "log_id" => log_id, "target_source" => "session" }
-    LegacyLog.insert!({ log_id:, person_id: person&.id, target_person_id: target&.id, event:, message:, data:,
-                        created_at: })
-    LegacyLog.find_by!(log_id:)
-  end
-
   test "denies access without the admin or tech ninja role" do
     sign_in_as(@outsider)
 
@@ -58,11 +48,12 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
     assert_select "label", text: /User Callsign/
     assert_select "label", text: /Starts At/
     assert_select "label", text: /Ends At/
+    assert_select "input[name=?]", "filter[message]", count: 0
     assert_match "from 2008 to 2019", response.body
   end
 
   test "tech ninja can view the index, with callsigns as text rather than links that bounce" do
-    legacy(person: @actor, target: @subject)
+    create_legacy_log(person: @actor, target: @subject)
 
     sign_in_as(@tech_ninja)
 
@@ -83,8 +74,8 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to me_root_path
   end
 
-  test "shows an entry with its people, and its detail row" do
-    row = legacy(person: @actor, target: @subject)
+  test "shows an entry with its people, its details and its detail row" do
+    row = create_legacy_log(person: @actor, target: @subject)
 
     sign_in_as(@admin)
 
@@ -93,6 +84,7 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "a[href=?]", person_path(@actor), text: @actor.callsign
     assert_select "a[href=?]", person_path(@subject), text: @subject.callsign
+    assert_select "th", text: "Details"
     assert_select "button[data-controller='toggle'][data-toggle-dom-id-value=?]", "legacy-log-detail-#{row.id}", count: 1
     assert_select "tr#legacy-log-detail-#{row.id}.hidden", count: 1
     assert_select "tr#legacy-log-detail-#{row.id}" do
@@ -106,10 +98,24 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
     assert_match "=person.status=alpha@id=1", response.body
   end
 
+  test "a converted row's details come from its data" do
+    create_legacy_log(event: "person-slot-add", person: @actor, target: @subject,
+           data: { "columns" => "personid,slotid",
+                   "values" => "5,386", "slot_id" => 386 })
+
+    sign_in_as(@admin)
+
+    get admin_legacy_log_path
+
+    assert_response :success
+    assert_match "personid=5, slotid=386", response.body
+    assert_select "pre", text: /"slot_id": 386/
+  end
+
   test "the session person and the truncation note appear when the data carries them" do
-    row = legacy(event: "person-update", message: "UPDATE person SET status=alpha WHERE id=#{@subject.id}",
-                 person: @actor, target: @subject,
-                 data: { "event" => "x", "log_id" => 1, "session_person_id" => @actor.id, "truncated" => true })
+    row = create_legacy_log(event: "person-update", person: @actor, target: @subject,
+                 data: { "set" => "status=alpha", "where" => "id=#{@subject.id}",
+                         "session_person_id" => @actor.id, "truncated" => true })
 
     sign_in_as(@admin)
 
@@ -124,8 +130,8 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "a long message folds behind Show More" do
-    legacy(message: "=person.#{"x" * 80}@id=1")
+  test "a long detail line folds behind Show More" do
+    create_legacy_log(statement: "=person.#{"x" * 80}@id=1")
 
     sign_in_as(@admin)
 
@@ -136,7 +142,7 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a person id naming no one reads as deleted rather than as a blank" do
-    legacy(person: @actor)
+    create_legacy_log(person: @actor)
     LegacyLog.update_all(person_id: 999_999)
 
     sign_in_as(@admin)
@@ -157,11 +163,11 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "says so when a search matched nothing" do
-    legacy
+    create_legacy_log
 
     sign_in_as(@admin)
 
-    get admin_legacy_log_path(filter: { message: "nothing matches this" })
+    get admin_legacy_log_path(filter: { event_name: "nothing-matches-this" })
 
     assert_response :success
     assert_match "No entries matched the current filters.", response.body
@@ -169,7 +175,7 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a page past the last entry offers one step back to the start" do
-    legacy
+    create_legacy_log
 
     sign_in_as(@admin)
 
@@ -181,8 +187,8 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "narrows the list by who acted, drawing a chip for it" do
-    legacy(message: "=person.status=mine@id=1", person: @actor)
-    legacy(message: "=person.status=theirs@id=1", person: @subject)
+    create_legacy_log(statement: "=person.status=mine@id=1", person: @actor)
+    create_legacy_log(statement: "=person.status=theirs@id=1", person: @subject)
 
     sign_in_as(@admin)
 
@@ -195,8 +201,8 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "narrows the list by who was acted upon" do
-    legacy(message: "=person.status=mine@id=1", target: @subject)
-    legacy(message: "=person.status=theirs@id=1", target: @actor)
+    create_legacy_log(statement: "=person.status=mine@id=1", target: @subject)
+    create_legacy_log(statement: "=person.status=theirs@id=1", target: @actor)
 
     sign_in_as(@admin)
 
@@ -208,8 +214,8 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "reads a bare number as a person id" do
-    legacy(message: "=person.status=mine@id=1", person: @actor)
-    legacy(message: "=person.status=theirs@id=1", person: @subject)
+    create_legacy_log(statement: "=person.status=mine@id=1", person: @actor)
+    create_legacy_log(statement: "=person.status=theirs@id=1", person: @subject)
 
     sign_in_as(@admin)
 
@@ -221,7 +227,7 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a callsign no one holds returns nothing rather than everything" do
-    legacy(person: @actor)
+    create_legacy_log(person: @actor)
 
     sign_in_as(@admin)
 
@@ -232,8 +238,8 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a chosen category reaches the search, and draws a chip" do
-    legacy(event: "unknown", message: "=person.status=raw@id=1")
-    legacy(event: "person-update", message: "UPDATE person SET status=alpha WHERE id=1")
+    create_legacy_log(event: "unknown", statement: "=person.status=raw@id=1")
+    create_legacy_log(event: "person-update", data: { "set" => "status=alpha", "where" => "id=1" })
 
     sign_in_as(@admin)
 
@@ -241,7 +247,7 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "=person.status=raw@id=1", response.body
-    assert_no_match "UPDATE person SET status=alpha WHERE id=1", response.body
+    assert_no_match "status=alpha where id=1", response.body
     assert_select "a[aria-label^='Remove filter: Category: Unknown']"
   end
 
@@ -253,10 +259,11 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "input[type=checkbox][name=?][value=?]", "filter[event_filters][]", "unknown"
     assert_select "input[type=checkbox][name=?][value=?]", "filter[event_filters][]", "person-slot-%"
+    assert_select "input[type=checkbox][value=?]", "person-xfield-%", count: 0
   end
 
   test "a category no one offers is ignored rather than matching nothing" do
-    legacy(message: "=person.status=raw@id=1")
+    create_legacy_log(statement: "=person.status=raw@id=1")
 
     sign_in_as(@admin)
 
@@ -267,9 +274,9 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a category and an event name combine as either matching" do
-    legacy(event: "unknown", message: "=person.status=raw@id=1")
-    legacy(event: "person-update", message: "UPDATE person SET status=alpha WHERE id=1")
-    legacy(event: "slot-create", message: "INSERT INTO slot")
+    create_legacy_log(event: "unknown", statement: "=person.status=raw@id=1")
+    create_legacy_log(event: "person-update", data: { "set" => "status=alpha", "where" => "id=1" })
+    create_legacy_log(event: "slot-create", data: { "set" => "max=15" })
 
     sign_in_as(@admin)
 
@@ -277,13 +284,13 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "=person.status=raw@id=1", response.body
-    assert_match "UPDATE person SET status=alpha WHERE id=1", response.body
-    assert_no_match "INSERT INTO slot", response.body
+    assert_match "status=alpha where id=1", response.body
+    assert_no_match "max=15", response.body
   end
 
   test "narrows the list by time range" do
-    legacy(message: "=person.status=inside@id=1", created_at: Time.zone.parse("2015-06-01 12:00:00"))
-    legacy(message: "=person.status=outside@id=1", created_at: Time.zone.parse("2010-06-01 12:00:00"))
+    create_legacy_log(statement: "=person.status=inside@id=1", created_at: Time.zone.parse("2015-06-01 12:00:00"))
+    create_legacy_log(statement: "=person.status=outside@id=1", created_at: Time.zone.parse("2010-06-01 12:00:00"))
 
     sign_in_as(@admin)
 
@@ -296,7 +303,7 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a partial date narrows nothing and draws no chip" do
-    legacy(message: "=person.status=old@id=1", created_at: Time.zone.parse("2010-06-01 12:00:00"))
+    create_legacy_log(statement: "=person.status=old@id=1", created_at: Time.zone.parse("2010-06-01 12:00:00"))
 
     sign_in_as(@admin)
 
@@ -308,7 +315,7 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "offers the next page while one follows, and carries the filters along" do
-    (LegacyLog::PAGE_SIZE_DEFAULT + 1).times { |n| legacy(message: "=person.status=row#{n}@id=1") }
+    (LegacyLog::PAGE_SIZE_DEFAULT + 1).times { |n| create_legacy_log(statement: "=person.status=row#{n}@id=1") }
 
     sign_in_as(@admin)
 
@@ -329,7 +336,7 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a filter param that is not a hash is ignored rather than raising" do
-    legacy(message: "=person.status=raw@id=1")
+    create_legacy_log(statement: "=person.status=raw@id=1")
 
     sign_in_as(@admin)
 

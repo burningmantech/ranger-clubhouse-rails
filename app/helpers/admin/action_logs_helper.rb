@@ -125,8 +125,10 @@ module Admin::ActionLogsHelper
     lines
   end
 
-  def action_log_message_cell(row)
-    message = row.message.to_s
+  # message: the text to show when it is not the row's message column, as
+  # the Legacy Clubhouse 1 Log's summary is.
+  def action_log_message_cell(row, message: row.message)
+    message = message.to_s
     return "-" if message.blank?
     return message if message.length <= ACTION_LOG_MESSAGE_TRUNCATE_LENGTH
 

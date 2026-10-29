@@ -4,7 +4,8 @@
 # form: one row per convertible `log` row, written only by
 # `bin/rails legacy_log:convert` (LegacyLog::Conversion), which upserts on
 # log_id so a rerun rewrites rather than duplicates. No ip, user_agent or
-# updated_at: the first Clubhouse recorded neither. created_at is a DATETIME
+# updated_at: the first Clubhouse recorded neither. No message either (ruled
+# 2026-10-28): what a row did is read from data. created_at is a DATETIME
 # rather than the TIMESTAMP action_logs has: a TIMESTAMP column can pick up
 # the server's implicit default and ON UPDATE rule, which schema.rb never
 # shows, and a copied timestamp must stay what the log said.
@@ -16,7 +17,6 @@ class CreateLegacyLog < ActiveRecord::Migration[8.1]
       t.integer :person_id, unsigned: true
       t.integer :target_person_id, unsigned: true
       t.string :event, limit: 191, null: false
-      t.text :message, null: false
       t.text :data, size: :long
       t.datetime :created_at, precision: nil, null: false
       t.index :log_id, unique: true

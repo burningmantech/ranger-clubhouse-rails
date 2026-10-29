@@ -21,6 +21,11 @@
       The conversion could not read that entry with confidence, so it is kept as written, with the
       session's person as its target.
     </dd>
+    <dt>What is left out?</dt>
+    <dd>
+      Logins, requests, errors, session housekeeping and custom-field values, none of which has an
+      Action Log equivalent.
+    </dd>
   </dl>
 <% end %>
 
@@ -54,17 +59,10 @@
                          wrapper_class: "flex-1" %>
   <% end %>
 
-  <%= form_row do %>
-    <%= f.text_field :event_name,
-                     label: "Event Name",
-                     maxlength: 30,
-                     width: "w-full",
-                     wrapper_class: "flex-1" %>
-    <%= f.text_field :message,
-                     label: "Message",
-                     width: "w-full",
-                     wrapper_class: "flex-1" %>
-  <% end %>
+  <%= f.text_field :event_name,
+                   label: "Event Name",
+                   maxlength: 30,
+                   width: "w-full lg:w-1/2" %>
 
   <%= ui_disclosure "Event Categories",
                     variant: :card,
@@ -111,7 +109,7 @@
         <%= t.heading "User" %>
         <%= t.heading "Target" %>
         <%= t.heading "Event" %>
-        <%= t.heading "Message" %>
+        <%= t.heading "Details" %>
       <% end %>
       <%= t.body do %>
         <% @legacy_logs.each do |row| %>
@@ -134,7 +132,7 @@
               <%= log_truncated(row.event) %>
             <% end %>
             <%= t.cell class: log_text_class("align-middle") do %>
-              <%= action_log_message_cell(row) %>
+              <%= action_log_message_cell(row, message: row.summary) %>
             <% end %>
           <% end %>
 

@@ -324,7 +324,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_000003) do
     t.integer "person_id", unsigned: true
     t.integer "target_person_id", unsigned: true
     t.string "event", limit: 191, null: false
-    t.text "message", null: false
     t.text "data", size: :long
     t.datetime "created_at", precision: nil, null: false
     t.index ["created_at", "id"], name: "index_legacy_log_on_created_at_and_id"

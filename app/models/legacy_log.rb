@@ -27,6 +27,10 @@ class LegacyLog < ApplicationRecord
 
   serialize :data, coder: JSON
 
+  # The session's person, loaded a page at a time by find_for_query: most
+  # timesheet rows carry one, so a lookup per row would be fifty a page.
+  attr_accessor :session_person
+
   # Nothing writes here through a record: the task writes its rows in bulk.
   def readonly?
     true
@@ -42,6 +46,18 @@ class LegacyLog < ApplicationRecord
     data.is_a?(Hash) && data["truncated"] == true
   end
 
+  # What the row did, in a line, read from data (ruling 8: the table keeps
+  # no message): an insert's columns paired with its values, an update's
+  # assignments and conditions, a delete's conditions, or the raw event of an
+  # unknown row.
+  def summary
+    return "" unless data.is_a?(Hash)
+    return data["event"].to_s if event == UNKNOWN
+
+    where = ("where #{data["where"].gsub("&", " and ")}" if data["where"])
+    [data["set"] || tuple_summary, where].compact.join(" ")
+  end
+
   class << self
     include Pagy::Method
 
@@ -54,18 +70,15 @@ class LegacyLog < ApplicationRecord
     # @param events [Array<String>] exact event names, or patterns with `%`
     # @return [Hash] { legacy_logs:, pagy:, total:, approximate_total: }
     def find_for_query(person_id: nil, target_person_id: nil, start_time: nil, end_time: nil, events: [],
-                       message: nil, page: 1, page_size: PAGE_SIZE_DEFAULT)
+                       page: 1, page_size: PAGE_SIZE_DEFAULT)
       scope = all
       scope = scope.where(person_id:) if person_id.present?
       scope = scope.where(target_person_id:) if target_person_id.present?
       scope = scope.where(events_condition(events)) if events.present?
       scope = scope.where(created_at: start_time..) if start_time.present?
       scope = scope.where(created_at: ..end_time) if end_time.present?
-      if message.present?
-        scope = message.include?("%") ? scope.where_like("message", message) : scope.where(message:)
-      end
 
-      filtered = [person_id, target_person_id, events, start_time, end_time, message].any?(&:present?)
+      filtered = [person_id, target_person_id, events, start_time, end_time].any?(&:present?)
       total = filtered ? scope.count : estimated_total(scope)
       # Nothing to fetch on a page past the last row -- a stale or hand-typed
       # page number would otherwise walk an offset of millions for nothing. The
@@ -76,6 +89,7 @@ class LegacyLog < ApplicationRecord
       # wrote in bursts.
       scope = scope.order(created_at: :desc, id: :desc).includes(:person, :target_person)
       pagy, rows = pagy(:countless, scope, page:, limit: page_size, request: { params: {} })
+      load_session_people(rows)
 
       # An estimate only where the ids gave one: a search for no one has none.
       { legacy_logs: rows, pagy:, total:, approximate_total: !filtered && total.positive? }
@@ -92,11 +106,33 @@ class LegacyLog < ApplicationRecord
       conditions.reduce { |combined, condition| combined.or(condition) }
     end
 
+    def load_session_people(rows)
+      ids = rows.filter_map(&:session_person_id).uniq
+      return if ids.empty?
+
+      people = Person.where(id: ids).index_by(&:id)
+      rows.each { |row| row.session_person = people[row.session_person_id] }
+    end
+
     # count(*) walks every row; the id range is an index read at either end.
     # Asked of the scope, so a search on none finds none.
     def estimated_total(scope)
       first_id = scope.reorder(:id).pick(:id)
       first_id ? scope.reorder(id: :desc).pick(:id) - first_id + 1 : 0
     end
+  end
+
+  private
+
+  # The values text paired with its columns when the counts agree; a value
+  # holding a comma throws the pairing off, and then the text stands alone.
+  def tuple_summary
+    return unless data["values"]
+
+    columns = data["columns"].to_s.split(",")
+    values = data["values"].split(",", -1)
+    return data["values"] unless columns.size == values.size
+
+    columns.zip(values).map { |column, value| "#{column}=#{value}" }.join(", ")
   end
 end

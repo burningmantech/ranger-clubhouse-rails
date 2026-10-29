@@ -17,7 +17,6 @@ class Admin::LegacyLogController < ApplicationController
       start_time: @form.parsed_start_time,
       end_time: @form.parsed_end_time,
       events: @form.events,
-      message: @form.message,
       page: @form.page
     )
     @legacy_logs = @result[:legacy_logs]
@@ -28,7 +27,7 @@ class Admin::LegacyLogController < ApplicationController
 
   def filter_params
     scoped_params(LegacyLogFilterForm::PARAM_SCOPE, :person_callsign, :target_person_callsign, :start_time,
-                  :end_time, :event_name, :message, :page, event_filters: [])
+                  :end_time, :event_name, :page, event_filters: [])
   end
 
   # The log names people by id, and some no longer have a record, so a bare

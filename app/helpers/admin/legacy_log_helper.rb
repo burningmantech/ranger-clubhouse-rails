@@ -12,12 +12,12 @@ module Admin::LegacyLogHelper
   end
 
   # The lines under the Data block: the source row always; the session's
-  # person when the statement named someone else (one lookup, for the few
-  # rows that carry it); and whether the first Clubhouse cut the statement.
+  # person when the statement named someone else; and whether the first
+  # Clubhouse cut the statement.
   def legacy_log_detail_items(row)
     items = [["Clubhouse 1 Entry", "##{row.log_id}"]]
     if (session_person_id = row.session_person_id.presence)
-      items << ["Session Person", person_display_link(Person.find_by(id: session_person_id), session_person_id, blank: "-")]
+      items << ["Session Person", person_display_link(row.session_person, session_person_id, blank: "-")]
     end
     items << ["Truncated", "Yes, the first Clubhouse cut this statement short"] if row.truncated?
     items

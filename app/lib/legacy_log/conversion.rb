@@ -6,7 +6,8 @@
 # and a grammar fix needs only a rerun. It reads `log` and writes
 # `legacy_log`, and deletes nothing. The report at the end is the evidence the
 # conversion is judged by: rows read, skipped by reason, converted, unknown,
-# and each family with a few of its unknown rows.
+# how many targets differed from the session's person, and each family with a
+# few of its unknown rows.
 class LegacyLog::Conversion
   BATCH = 5_000
   EXAMPLES = 3
@@ -45,11 +46,12 @@ class LegacyLog::Conversion
 
   def report
     written = @counts[:converted] + @counts[:unknown]
-    skipped = LegacyLog::Converter::SKIPS.map { |reason, opening| "#{delimited(@counts[reason])} #{reason} (#{opening})" }
+    skipped = LegacyLog::Converter::SKIP_REASONS.map { |reason, opening| "#{delimited(@counts[reason])} #{reason} (#{opening})" }
     lines = ["Legacy log conversion#{" (dry run)" if @dry_run}: #{delimited(@counts[:read])} rows read"]
     lines << "  Skipped: #{skipped.join(", ")}"
     lines << "  Converted: #{delimited(@counts[:converted])}#{share(@counts[:converted], written)}"
     lines << "  Unknown: #{delimited(@counts[:unknown])}#{share(@counts[:unknown], written)}"
+    lines << "  Targets differing from the session's person: #{delimited(@counts[:session_disagreements])}"
     lines << "  By family (converted / unknown, with unknown examples):"
     @families.sort_by { |family, tally| [-(tally[:converted] + tally[:unknown]), family] }.each do |family, tally|
       lines << "    #{family}: #{delimited(tally[:converted])} / #{delimited(tally[:unknown])}"
@@ -73,8 +75,9 @@ class LegacyLog::Conversion
     tally = @families[family || "other"]
     @counts[result] += 1
     tally[result] += 1
+    @counts[:session_disagreements] += 1 if row[:target_person_id] && row[:data]["session_person_id"]
     if result == :unknown && tally[:examples].size < EXAMPLES
-      tally[:examples] << "##{row[:log_id]} #{row[:message].truncate(EXAMPLE_LENGTH)}"
+      tally[:examples] << "##{values.first} #{values.last.truncate(EXAMPLE_LENGTH)}"
     end
     row
   end

@@ -18,7 +18,6 @@ class LegacyLogFilterForm
   # every statement the conversion could not read.
   EVENT_FILTER_LABELS = {
     "person-create,person-update,person-delete" => "Person",
-    "person-xfield-%" => "Custom Fields",
     "person-slot-%" => "Schedule",
     "person-position-%" => "Positions",
     "person-role-%" => "Roles",
@@ -39,7 +38,6 @@ class LegacyLogFilterForm
   attribute :start_time, :string
   attribute :end_time, :string
   attribute :event_name, :string
-  attribute :message, :string
   attribute :page, :integer, default: 1
   attribute :event_filters, default: -> { [] }
 
@@ -77,8 +75,7 @@ class LegacyLogFilterForm
       target_person_callsign: target_person_callsign.presence,
       start_time: (start_time.presence if parsed_start_time),
       end_time: (end_time.presence if parsed_end_time),
-      event_name: event_name.presence,
-      message: message.presence
+      event_name: event_name.presence
     }.compact
     values[:event_filters] = event_filters if event_filters.any?
     values[:page] = page if page.to_i > 1
