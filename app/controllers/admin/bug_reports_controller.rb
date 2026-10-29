@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# The problems people reported from the Bug Report button in the top menu.
+# The problems people reported from the Bug Report link in the account menu.
 # Tech Team only, and that is narrower than the other logs on purpose: an
 # Admin who is not also a Tech Ninja is turned away.
 class Admin::BugReportsController < ApplicationController

@@ -200,12 +200,13 @@ module Me
         assert_select "a[href=?][data-turbo-method='delete'][data-turbo-confirm]", logout_path
         # Action items get a spacer instead of a favorite star
         assert_select "span.mega-menu-star-spacer", count: 1
-        # My Profile, Change Password, Passkeys and Replay Onboarding are
-        # ordinary pages, one star each (Replay Onboarding's /me?tour=1 is an
-        # app-relative String path, which MegaMenu.linkable? admits). Passkeys
-        # is there because a test machine offers them (Passkeys.enabled?); the
-        # item goes where they are off.
-        assert_select ".mega-menu-item button.mega-menu-star", count: 4
+        # My Profile, Change Password, Passkeys, Replay Onboarding and Bug Report
+        # are plain GET links, one star each (Replay Onboarding's /me?tour=1 is an
+        # app-relative String path, which MegaMenu.linkable? admits, and Bug
+        # Report's modal-frame dialog is a GET into this app too). Passkeys is
+        # there because a test machine offers them (Passkeys.enabled?); the item
+        # goes where they are off.
+        assert_select ".mega-menu-item button.mega-menu-star", count: 5
         # The category itself carries one more, beside its heading
         assert_select "#mega-star-account-category-account[aria-pressed='false']"
       end

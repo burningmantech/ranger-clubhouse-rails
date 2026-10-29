@@ -39,7 +39,7 @@ class Me::OnboardingTourTest < ApplicationSystemTestCase
     assert_selector ".account-menu.driver-active-element"
     assert_selector ".driver-popover-title", text: "Account Menu"
     click_on "Next"
-    assert_selector "#bug-report.driver-active-element"
+    assert_selector ".account-menu.driver-active-element"
     assert_selector ".driver-popover-title", text: "File A Bug Report"
     # A double-click on Next moves one step: the second click lands while the
     # scroll to Links & Things is pending and is ignored.

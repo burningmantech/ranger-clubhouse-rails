@@ -2,8 +2,8 @@
 
 require "test_helper"
 
-# The menu entry for the log the Tech Team reads. Filing a report has no menu
-# entry: its button is on the top menu bar itself, at every width.
+# The menu entry for the log the Tech Team reads. Filing a report is the
+# Account menu's Bug Report item (Menus::USER), with the other account links.
 class BugReportMenuTest < ActiveSupport::TestCase
   include TimesheetAdminTestHelper
 

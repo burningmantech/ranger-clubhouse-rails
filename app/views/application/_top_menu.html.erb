@@ -13,23 +13,26 @@
       brand's slot in the middle takes whatever they leave (flex-1).
 
       The brand shows only when that slot can hold it: 7rem, the brand's 107px
-      and a little air. With the labelled Bug Report button and the user icon
-      the controls on the right come to 217px, and each of the search button
-      and the unread envelope adds 36px. So the brand shows from about 381px
-      with neither, 417px with one, and 453px with both (measured 2026-10-17);
-      below that it steps aside rather than push the page sideways. With both,
-      a 320px phone is about 21px short: accepted 2026-10-17 to give phones
-      the user menu. That is a container query
-      on the slot, not a breakpoint: the answer depends on who is signed in,
-      and on whether they have unread messages, as well as on the screen.
+      and a little air. The labelled sidebar toggle is 89px, and on the right
+      the mega menu and user icons and their 8px gap come to 80px; the search
+      button adds 44px, and so does the unread envelope. So the brand shows
+      from about 297px with neither, 341px with one, and 385px with both
+      (measured 2026-10-29), and below that it steps aside rather than push
+      the page sideways; the controls themselves fit any phone. That is a
+      container query on the slot, not a breakpoint: the answer depends on who
+      is signed in, and on whether they have unread messages, as well as on
+      the screen.
 
-      What keeps the numbers that small, all below lg only: no gap between the
-      controls on the right, btn-square (36px) icon buttons, and a brand with
-      little padding. test/integration/top_menu_test.rb holds the line. %>
+      What keeps the numbers that small, all below lg only: 8px gaps between
+      the controls on the right (16px from lg: gap-x-2 lg:gap-x-4), btn-square
+      (36px) icon buttons and a brand with little padding. The toggle is
+      labelled and so never square: squared, its content spilled out of the
+      36px box on both sides, the icon past the bar's edge.
+      test/integration/top_menu_test.rb holds the line. %>
   <%# sidebar-toggle, menu-open and menu-open-phone are where the first-sign-in
       tour points (me/dashboard/_onboarding). %>
   <div class="navbar-start w-auto lg:w-1/2">
-    <label for="sidebar-drawer" id="sidebar-toggle" class="btn btn-square btn-ghost btn-sm lg:hidden" aria-label="Open sidebar">
+    <label for="sidebar-drawer" id="sidebar-toggle" class="btn btn-ghost btn-sm lg:hidden" aria-label="Open sidebar">
       <%= fa_icon "bars", :solid %> Sidebar
     </label>
     <%= link_to "Clubhouse", me_root_path, class: "btn btn-ghost text-sm lg:text-xl no-decoration hidden lg:inline-flex" %>
@@ -61,25 +64,13 @@
     <%= link_to "Clubhouse", me_root_path,
                 class: "btn btn-ghost text-xl no-decoration px-1 hidden @min-brand:inline-flex" %>
   </div>
-  <div class="navbar-end w-auto lg:w-1/2 gap-x-4 gap-y-0">
+  <div class="navbar-end w-auto lg:w-1/2 gap-x-2 lg:gap-x-4 gap-y-0">
     <%= render "application/search_bar_placeholder", enabled: SearchBarPolicy.allowed?(current_user) %>
 
     <%# Unread messages: only for the people the Messages menu item is for, who
         alone pay for the count. %>
     <% if current_user.mailbox_user? %>
       <%= render "application/navbar_messages", count: PersonMessage.count_unread(current_user.id) %>
-    <% end %>
-
-    <%# Bug Report, labelled at every width -- on a phone it looks as it does
-        on a desktop, and the brand is what makes room for it (see the note at
-        the top). Opens the dialog in the layout's modal frame. Not for a past
-        prospective, whom ApplicationController#confine_past_prospective turns
-        away from it. %>
-    <% if current_user.is_ranger? %>
-      <%= button_link "Bug Report", :ghost, new_bug_report_path,
-                      id: "bug-report",
-                      icon: "bug", icon_type: :solid,
-                      data: { turbo_frame: "modal" } %>
     <% end %>
 
     <%# Mobile mega menu trigger. Icon-only: the labelled variant does not fit

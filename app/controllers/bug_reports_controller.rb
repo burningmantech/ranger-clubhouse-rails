@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# The Bug Report dialog in the top menu. Anyone signed in may file a report;
+# The Bug Report dialog, from the account menu. Anyone signed in may file a report;
 # the Tech Team reads them at admin/bug-reports.
 class BugReportsController < ApplicationController
   # A GET, so it opens into the layout's modal frame.

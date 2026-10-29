@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# A problem someone reported from the Bug Report button in the top menu, with
+# A problem someone reported from the Bug Report link in the account menu, with
 # enough about where they were and what they were using for the Tech Team to
 # go and look.
 class BugReport < ApplicationRecord

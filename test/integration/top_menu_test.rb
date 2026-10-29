@@ -67,32 +67,37 @@ class TopMenuTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # One button, labelled, at every width -- a phone shows what a desktop shows.
-  # Nothing hides it at any size, there is no icon-only twin, and it is on the
-  # bar itself rather than inside a menu.
-  test "the bug report button is labelled on the bar at every width and opens the dialog" do
+  # In the account menu (Menus::USER): the "Hello <callsign>" dropdown on a
+  # desktop and the icon-only one on a phone share the list, so it is there
+  # twice. It opens the dialog in the layout's modal frame. Not on the bar,
+  # which it left on 2026-10-29, and not for a past prospective, whom the
+  # dialog turns away.
+  test "the bug report link is in the account menu and opens the dialog" do
     sign_in_as(person(:active_ranger))
     get me_root_url
 
     assert_response :success
-    assert_select "nav.navbar a[href=?]", new_bug_report_path, count: 1
-    assert_select "nav.navbar .navbar-end > a[href=?][data-turbo-frame=modal]", new_bug_report_path,
-                  text: /Bug Report/ do |links|
-      classes = links.first["class"].split
-      assert_empty classes & %w[hidden lg:hidden lg:inline-flex btn-square]
-      # accessibility.css floors .btn-sm at 36px, so the size is the touch floor.
-      assert_includes classes, "btn-sm"
-    end
+    assert_select "nav.navbar .navbar-end > a[href=?]", new_bug_report_path, count: 0
+    assert_select "ul[aria-label='User menu'] > li > a[href=?][data-turbo-frame=modal]", new_bug_report_path,
+                  text: "Bug Report", count: 2
+
+    sign_in_as(person(:past_prospective_ranger))
+    get me_root_url
+
+    assert_response :success
+    assert_select "a[href=?]", new_bug_report_path, count: 0
   end
 
-  # The labelled button is what makes the phone bar tight: with it, the user
-  # icon, the search button and the unread envelope the controls on the right
-  # come to 289px, and a 375px phone has 34px left for a brand whose slot waits
-  # for 112 (measured 2026-10-17). So the brand steps aside when its slot cannot hold it, and
+  # The phone bar is laid out by content: the labelled sidebar toggle, the
+  # brand's slot, and on the right the mega menu and user icons, the search
+  # button and the unread envelope, 8px apart. The brand's slot waits for
+  # 112px, which a 320px phone with the search button has not got (measured
+  # 2026-10-29). So the brand steps aside when its slot cannot hold it, and
   # everything else on the bar is kept as narrow as the 36px touch floor
   # allows. Each class below is one of the things that buys that. Lose the
-  # container query and the brand pushes the page sideways on most phones; lose
-  # one of the others and the brand disappears from phones it used to fit on.
+  # container query and the brand pushes the page sideways on the narrowest
+  # phones; lose one of the others and the brand disappears from phones it
+  # used to fit on.
   test "the phone bar keeps the classes its width budget depends on" do
     sign_in_as(person(:active_ranger))
     get me_root_url
@@ -102,6 +107,8 @@ class TopMenuTest < ActionDispatch::IntegrationTest
     # on a phone only; a desktop bar gets its halves back.
     assert_select "nav.navbar .navbar-start.w-auto"
     assert_select "nav.navbar .navbar-end.w-auto"
+    # The 8px gaps below lg are 24px of the budget; from lg up they are 16px.
+    assert_select "nav.navbar .navbar-end.gap-x-2.lg\\:gap-x-4"
     # The brand's slot takes what the controls leave, and the brand is hidden
     # until the slot is wide enough for it.
     assert_select "nav.navbar .navbar-center" do |slots|
@@ -113,7 +120,9 @@ class TopMenuTest < ActionDispatch::IntegrationTest
     # btn-sm is the 36px height (accessibility.css floors it), and btn-square
     # makes an icon-only control as wide as it is tall. Without it the side
     # padding makes the button 41px wide, and a min-w-9 floor never applies.
-    assert_select "nav.navbar label[for=sidebar-drawer].btn-square.btn-sm"
+    # The sidebar toggle is labelled, so it is as wide as its label and never
+    # square: squared, its content spilled out of the 36px box on both sides.
+    assert_select "nav.navbar label[for=sidebar-drawer].btn-sm:not(.btn-square)"
     assert_select "nav.navbar .navbar-end button[data-action='mega-menu#open'].btn-square.btn-sm"
     assert_select "nav.navbar .navbar-end details.lg\\:hidden > summary.btn-square.btn-sm"
   end

@@ -220,7 +220,7 @@ module Menus
             description: "Watch the job queues, retry or delete failed jobs, and see which workers are running",
             visible_if: { roles: [Role::TECH_NINJA] } },
           { title: "Bug Reports", path: :admin_bug_reports_path, root: true,
-            description: "Read the problems people reported from the Bug Report button",
+            description: "Read the problems people reported from the account menu's Bug Report link",
             visible_if: { roles: [Role::TECH_NINJA] } },
           { title: "Clubhouse 1 Log", path: :admin_clubhouse1_log_path, root: true,
             description: "Search the audit log kept by the first Clubhouse",
@@ -1301,7 +1301,14 @@ module Menus
           # branches, which me/dashboard/index renders without it.
           { title: "Replay Onboarding", path: "/me?tour=1",
             description: "Take the tour of the Clubhouse again",
-            visible_if: { not_status: [:past_prospective?, :is_any_bonked?] } }
+            visible_if: { not_status: [:past_prospective?, :is_any_bonked?] } },
+          # Opens the "Report a Bug" dialog in the layout's modal frame, from
+          # this menu and the mega menu's Account category alike (a frame load,
+          # so never a recent page). Not for a past prospective, whom
+          # ApplicationController#confine_past_prospective turns away from it.
+          { title: "Bug Report", path: :new_bug_report_path, data: { turbo_frame: "modal" },
+            description: "Tell the Tech Team about a problem with the Clubhouse",
+            visible_if: { status: [:is_ranger?] } }
         ]
       },
       {

@@ -687,7 +687,7 @@ class Bmid::ManageControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "span#bmid-showers-cell-#{@admin.id}"
     assert_select "span#bmid-showers-cell-#{@admin.id} a", count: 0
-    # Within the page itself: the top menu's Bug Report button opens a dialog
+    # Within the page itself: the account menu's Bug Report link opens a dialog
     # too, on every page.
     assert_select "main a[data-turbo-frame=modal]", count: 0
   end
