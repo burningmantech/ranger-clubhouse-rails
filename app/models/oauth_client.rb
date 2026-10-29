@@ -7,9 +7,19 @@ class OauthClient < ApplicationRecord
   self.table_name = "oauth_client"
   self.audit_model = true
 
-  # The log records that a client changed. The key itself is never copied
-  # into it -- anyone who could read the log could otherwise use the key.
-  self.audit_exclude = %w[secret].freeze
+  # The log records that a client changed. The key's digest is never copied
+  # into it: nothing signs in with a digest, but nothing is learned from it.
+  self.audit_exclude = %w[secret_digest].freeze
+
+  # The secret is kept as a bcrypt digest. #secret is the plain text, and only
+  # on the object that was just given one; a client read back from the
+  # database can say no more than whether a presented secret matches
+  # (authenticate_secret).
+  has_secure_password :secret, validations: false
+
+  # bcrypt reads no further than this many bytes, so a longer secret would
+  # match on its first 72 and silently not on the rest.
+  SECRET_MAX_LENGTH = ActiveModel::SecurePassword::MAX_PASSWORD_LENGTH_ALLOWED
 
   # How many characters a generated secret has.
   SECRET_LENGTH = 32
@@ -23,7 +33,7 @@ class OauthClient < ApplicationRecord
   # website presents it, so it is taken off before anything is stored. squish
   # rather than strip: copying a value out of a page brings the wide spaces
   # that strip leaves behind, and those read as ordinary spaces to no one.
-  normalizes :client_id, :description, :secret, :redirect_uri, with: ->(value) { value.squish }
+  normalizes :client_id, :description, :redirect_uri, with: ->(value) { value.squish }
 
   # Associations
   has_many :oauth_codes, dependent: :delete_all
@@ -36,7 +46,8 @@ class OauthClient < ApplicationRecord
   validates :client_id, presence: true, uniqueness: true,
                         length: { maximum: TEXT_COLUMN_LIMIT }
   validates :description, presence: true, length: { maximum: TEXT_COLUMN_LIMIT }
-  validates :secret, presence: true, length: { maximum: TEXT_COLUMN_LIMIT }
+  validates :secret_digest, presence: true
+  validate :secret_fits_bcrypt
 
   # Where the website is sent back to with a sign-in code: a full web address,
   # compared as written. Nothing after a # -- the browser keeps that part to
@@ -65,6 +76,14 @@ class OauthClient < ApplicationRecord
     self.secret = SecureRandom.alphanumeric(SECRET_LENGTH)
   end
 
+  # The trimming the three columns get (normalizes above), done here because
+  # the plain secret is not a column. An empty value is left to
+  # has_secure_password, which keeps the stored digest for it: on the edit
+  # form, a blank Secret box means "keep the one on file".
+  def secret=(plain)
+    super(plain.is_a?(String) ? plain.squish : plain)
+  end
+
   #
   # Whether a code may be sent to an address: one is recorded, and this is
   # it, character for character. Asked when a code is handed out and again
@@ -75,5 +94,15 @@ class OauthClient < ApplicationRecord
   #
   def accepts_redirect_uri?(uri)
     redirect_uri.present? ?  uri == redirect_uri : true
+  end
+
+  private
+
+  # In bytes, as bcrypt counts: a length rule counts characters, and 40
+  # three-byte characters are 120 bytes.
+  def secret_fits_bcrypt
+    return if secret.nil? || secret.bytesize <= SECRET_MAX_LENGTH
+
+    errors.add(:secret, :too_long, count: SECRET_MAX_LENGTH)
   end
 end

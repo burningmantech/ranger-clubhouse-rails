@@ -35,7 +35,10 @@ class SsoControllerTest < ActionDispatch::IntegrationTest
     assert_equal @person.id, code.person_id
     assert_equal @client.id, code.oauth_client_id
     assert_equal Sso::SCOPE, code.scope
-    expected = "#{@client.redirect_uri}?code=#{code.code}&state=xyz"
+    # The row keeps only a digest of the code: the page is where the code is.
+    assert_equal OauthCode.digest(issued_code), code.code_digest
+    expected = "#{@client.redirect_uri}?code=#{issued_code}&state=xyz"
+    assert_equal expected, continue_link
     assert_select "meta[http-equiv=refresh][content=?]", "0;url=#{expected}"
     assert_select "a[href=?]", expected, text: /Continue to #{Regexp.escape(@client.description)}/
     assert_select "[role=status]", text: /Sending you back to #{Regexp.escape(@client.description)}/
@@ -48,7 +51,8 @@ class SsoControllerTest < ActionDispatch::IntegrationTest
     get sso_authorize_path, params: grant_params.except(:state)
 
     assert_response :success
-    assert_select "a[href=?]", "#{@client.redirect_uri}?code=#{OauthCode.last.code}"
+    assert_equal "#{@client.redirect_uri}?code=#{issued_code}", continue_link
+    assert_equal OauthCode.digest(issued_code), OauthCode.last.code_digest
   end
 
   test "someone not signed in is sent to sign in, and this page is where they come back to" do
@@ -279,6 +283,18 @@ class SsoControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  # Where the authorize page sends the person back to: the one link to the
+  # client, as the page spells it.
+  def continue_link
+    links = css_select("a[href^=\"#{@client.redirect_uri}\"]")
+    assert_equal 1, links.size, "one link back to the client"
+    links.first["href"]
+  end
+
+  def issued_code
+    Rack::Utils.parse_query(URI(continue_link).query).fetch("code")
+  end
 
   def stub_exchange(chid:)
     stub_sso_transport(token: [200, { access_token: "tok", token_type: "Bearer" }.to_json],

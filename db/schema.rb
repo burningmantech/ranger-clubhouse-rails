@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_28_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_000001) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.integer "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -409,7 +409,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_000003) do
   create_table "oauth_client", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "client_id", null: false
     t.string "description", null: false
-    t.string "secret", null: false
+    t.string "secret_digest", null: false
     t.timestamp "created_at"
     t.timestamp "updated_at"
     t.string "redirect_uri", default: "", null: false
@@ -417,12 +417,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_000003) do
   end
 
   create_table "oauth_code", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.string "code", null: false
+    t.string "code_digest", null: false
     t.string "scope", null: false
     t.integer "oauth_client_id", null: false
     t.integer "person_id", null: false
     t.datetime "created_at", precision: nil, null: false
-    t.index ["oauth_client_id", "code"], name: "oauth_code_oauth_client_id_code_unique", unique: true
+    t.index ["oauth_client_id", "code_digest"], name: "index_oauth_code_on_oauth_client_id_and_code_digest", unique: true
   end
 
   create_table "online_course", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -470,8 +470,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_000003) do
     t.string "shirt_size", limit: 10
     t.column "status", "enum('active','alpha','auditor','bonked','echelon','deceased','dismissed','inactive','inactive extension','past prospective','prospective','resigned','retired','suspended','uberbonked')", null: false
     t.date "status_date"
-    t.string "tpassword", limit: 64
-    t.integer "tpassword_expire"
     t.datetime "updated_at", precision: nil, default: -> { "current_timestamp()" }, null: false, comment: "Most recent modification time."
     t.string "shirt_style", limit: 32
     t.string "gender_custom", limit: 32

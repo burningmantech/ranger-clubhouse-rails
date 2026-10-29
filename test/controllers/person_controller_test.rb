@@ -314,52 +314,57 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
   # As long as Create Prospectives' first link, and as Clubhouse 2's resend.
   test "a VC resends the welcome message with a link that lasts 14 days" do
     prospective = person(:prospective_ranger)
-    sign_in_as(create_vc)
+    vc = create_vc
+    sign_in_as(vc)
     freeze_time
+    token = nil
 
-    assert_enqueued_emails 1 do
+    assert_enqueued_email_with WelcomeMailer, :notify, params: { sender_id: vc.id },
+                                                       args: ->(args) { token = args.first[:invite_token] } do
       post person_resend_welcome_path(prospective)
     end
     assert_redirected_to person_path(prospective)
     assert_equal "Welcome message resent.", flash[:success]
-    assert_equal Current.time.to_i + Person::PNV_INVITATION_EXPIRE, prospective.reload.tpassword_expire
+
+    assert_equal prospective, Person.find_by_token_for(:invitation, token)
+    travel Person::PNV_INVITATION_EXPIRE.seconds - 1.second
+    assert_equal prospective, Person.find_by_token_for(:invitation, token), "the link lasts the full 14 days"
+    travel 2.seconds
+    assert_nil Person.find_by_token_for(:invitation, token), "and not a moment longer"
   end
 
-  # A link already sent keeps working, for the new 14 days.
-  test "a resend keeps an unexpired token" do
+  # The token is signed, not stored, so a link already sent is not disturbed by
+  # a resend: both open until their own 14 days are up, or the password is set.
+  test "a resend leaves an earlier link working" do
     prospective = person(:prospective_ranger)
-    prospective.update_columns(tpassword: "0042keepThis", tpassword_expire: Current.time.to_i + 3600)
+    earlier = prospective.generate_token_for(:invitation)
     sign_in_as(create_vc)
-    freeze_time
 
     post person_resend_welcome_path(prospective)
 
-    prospective.reload
-    assert_equal "0042keepThis", prospective.tpassword
-    assert_equal Current.time.to_i + Person::PNV_INVITATION_EXPIRE, prospective.tpassword_expire
+    assert_equal prospective, Person.find_by_token_for(:invitation, earlier)
   end
 
-  # The token saves without validations; a second save would run them, and fail
-  # or rewrite an older record.
-  test "a resend sends for a record that fails validation, and changes only the token" do
+  # Nothing is saved: the token is signed from the record as it stands, so a
+  # record that would fail validation still gets its email, untouched.
+  test "a resend sends for a record that fails validation, and changes nothing" do
     prospective = person(:prospective_ranger)
     prospective.update_columns(home_phone: "")
     assert_not prospective.valid?
-    untouched = prospective.reload.attributes.except("tpassword", "tpassword_expire", "updated_at")
+    untouched = prospective.reload.attributes
     sign_in_as(create_vc)
 
     assert_enqueued_emails 1 do
       post person_resend_welcome_path(prospective)
     end
     assert_redirected_to person_path(prospective)
-    assert_equal untouched, prospective.reload.attributes.except("tpassword", "tpassword_expire", "updated_at")
+    assert_equal untouched, prospective.reload.attributes
   end
 
   # Clubhouse 2's PersonPolicy#sendWelcomeEmail admits Admin or VC.
   test "every page role without Admin or VC is refused the resend and offered no menu item" do
     Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
     prospective = person(:prospective_ranger)
-    prospective.update_columns(tpassword: "0042keepThis", tpassword_expire: Current.time.to_i + 3600)
 
     (PersonConcern::VIEW_ROLES - [Role::ADMIN, Role::VC]).each do |role_id|
       ensure_role(role_id, "Role #{role_id}")
@@ -372,10 +377,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
       assert_select "a[href='#{person_resend_welcome_path(prospective)}']", count: 0
 
       assert_no_enqueued_emails do
-        assert_no_changes -> { prospective.reload.slice(:tpassword, :tpassword_expire) },
-                          "role #{role_id} moved the token" do
-          post person_resend_welcome_path(prospective)
-        end
+        post person_resend_welcome_path(prospective)
       end
       assert_redirected_to person_path(prospective)
       assert_equal "Admin or Volunteer Coordinator role required to resend the welcome message.", flash[:error]

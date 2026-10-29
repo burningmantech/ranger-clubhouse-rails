@@ -79,7 +79,7 @@ class Sso::ApiController < ActionController::API
     client_id, secret = client_credentials
     client = OauthClient.find_by(client_id: client_id) if client_id.present?
 
-    if client && secret.present? && client.secret == secret
+    if client && secret.present? && client.authenticate_secret(secret)
       return client
     end
 

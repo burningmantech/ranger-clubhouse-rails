@@ -18,8 +18,6 @@ class Person::PasswordsControllerTest < ActionDispatch::IntegrationTest
     grant_role(@non_admin, Role::TRAINER)
 
     @target.password = "password"
-    @target.tpassword = "staletoken"
-    @target.tpassword_expire = 2.hours.from_now.to_i
     @target.save!(validate: false)
   end
 
@@ -66,6 +64,7 @@ class Person::PasswordsControllerTest < ActionDispatch::IntegrationTest
 
   test "admin can update a person's password" do
     sign_in_as(@admin)
+    reset_link = @target.generate_token_for(:password_reset)
 
     patch person_password_path(@target), params: {
       person_password_form: {
@@ -80,8 +79,7 @@ class Person::PasswordsControllerTest < ActionDispatch::IntegrationTest
     @target.reload
     assert @target.authenticate("newpassword123"), "New password should work"
     assert_not @target.authenticate("password"), "Old password should not work"
-    assert_equal "", @target.tpassword
-    assert_equal 0, @target.tpassword_expire
+    assert_nil Person.find_by_token_for(:password_reset, reset_link), "an outstanding reset link is spent"
   end
 
   test "invalid password rerenders the form" do

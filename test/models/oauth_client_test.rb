@@ -3,6 +3,8 @@
 require "test_helper"
 
 class OauthClientTest < ActiveSupport::TestCase
+  include SsoTestHelper
+
   setup do
     @client = oauth_client(:moodle)
   end
@@ -27,20 +29,30 @@ class OauthClientTest < ActiveSupport::TestCase
   end
 
   test "generating a secret replaces the one the client had" do
-    was = @client.secret
+    assert @client.authenticate_secret(fixture_secret(@client))
 
     @client.generate_secret
 
-    assert_not_equal was, @client.secret
+    assert_not @client.authenticate_secret(fixture_secret(@client))
     assert_equal OauthClient::SECRET_LENGTH, @client.secret.length
+    assert @client.authenticate_secret(@client.secret)
+  end
+
+  # Only the object that was handed the secret knows it. The row keeps a
+  # bcrypt digest, so reading the table signs nothing in.
+  test "a client read back knows only whether a secret matches" do
+    client = OauthClient.find(@client.id)
+
+    assert_nil client.secret
+    assert_not_equal fixture_secret(@client), client.secret_digest
+    assert client.authenticate_secret(fixture_secret(@client))
+    assert_not client.authenticate_secret("not-the-secret")
   end
 
   test "a saved client keeps the secret it was given" do
-    was = @client.secret
-
     @client.update!(description: "A new description")
 
-    assert_equal was, @client.reload.secret
+    assert @client.reload.authenticate_secret(fixture_secret(@client))
   end
 
   # ----------------------------------------------------------- validations
@@ -64,7 +76,7 @@ class OauthClientTest < ActiveSupport::TestCase
 
     # No :redirect_uri -- it has no length rule any more, so the column is what
     # would refuse an over-long one, by raising rather than by validating.
-    [:client_id, :description, :secret].each do |field|
+    [:client_id, :description].each do |field|
       # A fresh copy each time, read back rather than taken from the fixture
       # accessor, which hands out the same object every call -- reusing it
       # carries the last field's error over and the check stops proving
@@ -78,11 +90,33 @@ class OauthClientTest < ActiveSupport::TestCase
     end
   end
 
-  test "a blank secret on an existing client is refused" do
-    @client.secret = ""
+  # bcrypt reads 72 bytes and no more, so a longer secret would be accepted
+  # and then match on its first 72 alone.
+  test "a secret longer than bcrypt reads is refused" do
+    @client.secret = "x" * (OauthClient::SECRET_MAX_LENGTH + 1)
 
     assert_not @client.valid?
     assert_predicate @client.errors[:secret], :any?
+  end
+
+  # bcrypt counts bytes, so the rule does too: 40 three-byte characters are
+  # 120 bytes, and a character count would wave them through.
+  test "the secret limit is counted in bytes" do
+    @client.secret = "€" * 40
+
+    assert_not @client.valid?
+    assert_predicate @client.errors[:secret], :any?
+
+    @client.secret = "€" * 24
+    assert @client.valid?
+  end
+
+  # What the edit form sends when the Secret box is left alone.
+  test "a blank secret on an existing client keeps the one on file" do
+    @client.secret = ""
+
+    assert @client.valid?
+    assert @client.authenticate_secret(fixture_secret(@client))
   end
 
   # The model used to refuse a return address that was not a full web address
@@ -178,8 +212,8 @@ class OauthClientTest < ActiveSupport::TestCase
     assert_not_nil entry
     # Name the column outright. Reading the list the guard is built from would
     # make this pass by doing nothing the moment that list went empty.
-    assert_includes OauthClient.audit_exclude, "secret"
-    assert_not entry.data.key?("secret"), "the secret must stay out of the action log"
+    assert_includes OauthClient.audit_exclude, "secret_digest"
+    assert_not entry.data.key?("secret_digest"), "the secret's digest must stay out of the action log"
     assert_equal client.client_id, entry.data["client_id"]
   end
 
@@ -196,7 +230,7 @@ class OauthClientTest < ActiveSupport::TestCase
 
     entry = ActionLog.where(event: "oauth-client-update").last
     assert_not_nil entry, "rotating a secret must leave a trace"
-    assert_not entry.data.key?("secret")
+    assert_not entry.data.key?("secret_digest")
     assert entry.data.key?("updated_at"), "the timestamp is what keeps the entry from being empty"
   end
 end

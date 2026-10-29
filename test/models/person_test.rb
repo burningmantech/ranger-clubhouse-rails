@@ -117,7 +117,7 @@ class PersonTest < ActiveSupport::TestCase
   end
 
   test "the action log never carries a secret for a person" do
-    %w[password tpassword sms_code].each do |column|
+    %w[password sms_code].each do |column|
       assert_includes Person.audit_exclude, column
     end
   end

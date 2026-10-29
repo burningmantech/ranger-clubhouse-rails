@@ -21,6 +21,20 @@
   </p>
 <% end %>
 
+<%# @client is the one just saved, and knows its secret only then. %>
+<% if @client&.secret %>
+  <div data-controller="scroll-to-top" hidden></div>
+  <%= ui_callout_box :success, title: "New Secret for #{@client.client_id}" do %>
+    <strong>Copy it now: the Clubhouse shows it this once.</strong> It keeps a fingerprint of the
+    secret, not the secret, so put this one in the website's sign-in settings before leaving the page.
+    <p class="mt-2">
+      <%= clipboard_button(@client.secret) do %>
+        <span class="font-mono break-all"><%= @client.secret %></span>
+      <% end %>
+    </p>
+  <% end %>
+<% end %>
+
 <%= button_row class: "my-4" do %>
   <%= button_link "Add Client", :primary, new_admin_oauth_client_path,
                   icon: "plus", icon_type: :solid %>
@@ -33,7 +47,6 @@
         <%= t.heading "Client ID" %>
         <%= t.heading "Description" %>
         <%= t.heading "Redirect URI" %>
-        <%= t.heading "Secret" %>
         <%= t.heading "Created" %>
         <%= t.heading "Updated" %>
         <%= t.heading "Action" %>
@@ -50,11 +63,6 @@
                 <span class="font-mono break-all"><%= client.redirect_uri %></span>
               <% else %>
                 <%= ui_badge "Not Set", :warning, icon: "triangle-exclamation", icon_type: :solid %>
-              <% end %>
-            <% end %>
-            <%= t.cell do %>
-              <%= clipboard_button(client.secret) do %>
-                <span class="font-mono break-all"><%= client.secret %></span>
               <% end %>
             <% end %>
             <%= t.cell datetime_format(client.created_at, year: true), class: "whitespace-nowrap" %>

@@ -6,6 +6,7 @@ class Admin::OauthClientsControllerTest < ActionDispatch::IntegrationTest
   include AuthenticationTestHelper
   include TimesheetAdminTestHelper
   include DomIdTestHelper
+  include SsoTestHelper
 
   setup do
     Rails.cache.clear
@@ -48,14 +49,15 @@ class Admin::OauthClientsControllerTest < ActionDispatch::IntegrationTest
     assert_unique_dom_ids
   end
 
-  test "the secret is shown with a way to copy it" do
+  # The rows hold digests, so there is no secret for the list to show.
+  test "the list shows no secret" do
     sign_in_as(@tech_ninja)
 
     get admin_oauth_clients_path
 
     assert_response :success
-    assert_select "td", text: /#{Regexp.escape(@client.secret)}/
-    assert_select "[data-copy-to-clipboard-content-value=?]", @client.secret
+    assert_select "th", text: "Secret", count: 0
+    assert_select "[data-copy-to-clipboard-content-value]", count: 0
   end
 
   test "the index offers a way to add and to edit a client" do
@@ -154,7 +156,9 @@ class Admin::OauthClientsControllerTest < ActionDispatch::IntegrationTest
     assert_unique_dom_ids
   end
 
-  test "tech ninja creates a client and the Clubhouse gives it a secret" do
+  # The secret is shown this once, on the list, from the POST itself: a
+  # redirect would lose it, since only its digest is stored.
+  test "tech ninja creates a client and the Clubhouse gives it a secret, shown once" do
     sign_in_as(@tech_ninja)
 
     assert_difference "OauthClient.count", 1 do
@@ -162,13 +166,23 @@ class Admin::OauthClientsControllerTest < ActionDispatch::IntegrationTest
            params: { oauth_client: { client_id: "new-website", description: "A new website", redirect_uri: "https://new.example.org/callback" } }
     end
 
-    assert_redirected_to admin_oauth_clients_path
+    assert_response :unprocessable_entity
     assert_equal "Client new-website created.", flash[:success]
+    assert_select "h1", text: /OAuth Clients/
+    assert_select "[data-controller='scroll-to-top']"
+    assert_select "tbody tr", count: 3
 
     created = OauthClient.find_by(client_id: "new-website")
     assert_equal "A new website", created.description
     assert_equal "https://new.example.org/callback", created.redirect_uri
-    assert_equal OauthClient::SECRET_LENGTH, created.secret.length
+    shown = shown_secret
+    assert_equal OauthClient::SECRET_LENGTH, shown.length
+    assert created.authenticate_secret(shown), "the secret on the page is the one stored"
+    assert_select "body", text: /New Secret for new-website/
+    assert_select "body", text: /shows it this once/
+
+    get admin_oauth_clients_path
+    assert_select "[data-copy-to-clipboard-content-value]", count: 0
   end
 
   test "a secret posted to the create form is thrown away" do
@@ -180,10 +194,10 @@ class Admin::OauthClientsControllerTest < ActionDispatch::IntegrationTest
                                      secret: "a-secret-somebody-else-chose" } }
     end
 
-    assert_redirected_to admin_oauth_clients_path
+    assert_response :unprocessable_entity
     created = OauthClient.find_by(client_id: "new-website")
-    assert_not_equal "a-secret-somebody-else-chose", created.secret
-    assert_equal OauthClient::SECRET_LENGTH, created.secret.length
+    assert_not created.authenticate_secret("a-secret-somebody-else-chose")
+    assert created.authenticate_secret(shown_secret)
   end
 
   test "the create action records the client without its secret" do
@@ -195,7 +209,7 @@ class Admin::OauthClientsControllerTest < ActionDispatch::IntegrationTest
     entry = ActionLog.where(event: "oauth-client-create").last
     assert_not_nil entry
     assert_equal "new-website", entry.data["client_id"]
-    assert_not entry.data.key?("secret"), "the secret must stay out of the action log"
+    assert_not entry.data.key?("secret_digest"), "the secret's digest must stay out of the action log"
   end
 
   # Each case pins the message it should produce, not just that something went
@@ -236,7 +250,9 @@ class Admin::OauthClientsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: /Edit ranger-moodle/
-    assert_select "input[name=?][value=?]", "oauth_client[secret]", @client.secret
+    assert_select "input[name=?]", "oauth_client[secret]"
+    assert_select "input[name=?][value]", "oauth_client[secret]", count: 0
+    assert_select "body", text: /Leave blank to keep the secret on file/
     assert_select "input[type=submit][value=?]", "Save Client"
     assert_select "input[type=submit][name=?][value=?]", "new_secret", "Save with New Secret"
     assert_unique_dom_ids
@@ -258,17 +274,15 @@ class Admin::OauthClientsControllerTest < ActionDispatch::IntegrationTest
 
   test "tech ninja changes a description and the secret is left alone" do
     sign_in_as(@tech_ninja)
-    was = @client.secret
 
     patch admin_oauth_client_path(@client),
-          params: { oauth_client: { client_id: @client.client_id, description: "Renamed",
-                                    secret: was } }
+          params: { oauth_client: { client_id: @client.client_id, description: "Renamed", secret: "" } }
 
     assert_redirected_to admin_oauth_clients_path
     assert_equal "Client ranger-moodle updated.", flash[:success]
     @client.reload
     assert_equal "Renamed", @client.description
-    assert_equal was, @client.secret
+    assert @client.authenticate_secret(fixture_secret(@client))
   end
 
   test "a secret typed into the form is kept" do
@@ -280,24 +294,29 @@ class Admin::OauthClientsControllerTest < ActionDispatch::IntegrationTest
                                     secret: "a-secret-the-tech-team-chose" } }
 
     assert_redirected_to admin_oauth_clients_path
-    assert_equal "a-secret-the-tech-team-chose", @client.reload.secret
+    assert @client.reload.authenticate_secret("a-secret-the-tech-team-chose")
+    assert_not @client.authenticate_secret(fixture_secret(@client))
   end
 
-  test "the second save button replaces the secret and says so" do
+  # A secret typed beside the button is dropped, not stored: the fresh one wins.
+  test "the second save button replaces the secret and shows the new one once" do
     sign_in_as(@tech_ninja)
-    was = @client.secret
 
     patch admin_oauth_client_path(@client),
           params: { new_secret: "Save with New Secret",
-                    oauth_client: { client_id: @client.client_id,
-                                    description: "Renamed too", secret: was } }
+                    oauth_client: { client_id: @client.client_id, description: "Renamed too",
+                                    secret: "typed-and-then-replaced" } }
 
-    assert_redirected_to admin_oauth_clients_path
+    assert_response :unprocessable_entity
     assert_equal "Client ranger-moodle saved with a new secret.", flash[:success]
+    assert_select "body", text: /New Secret for ranger-moodle/
 
     @client.reload
-    assert_not_equal was, @client.secret
-    assert_equal OauthClient::SECRET_LENGTH, @client.secret.length
+    assert_not @client.authenticate_secret(fixture_secret(@client))
+    assert_not @client.authenticate_secret("typed-and-then-replaced")
+    shown = shown_secret
+    assert_equal OauthClient::SECRET_LENGTH, shown.length
+    assert @client.authenticate_secret(shown)
     # The rest of the form is saved along with the new secret.
     assert_equal "Renamed too", @client.description
   end
@@ -305,18 +324,16 @@ class Admin::OauthClientsControllerTest < ActionDispatch::IntegrationTest
   # A refused rotation must not leave the new secret on the form. Shown there,
   # it reads as the live key -- and the next save would store it while saying
   # only that the client was updated.
-  test "a refused save with a new secret puts the stored one back on the form" do
+  test "a refused save with a new secret leaves the stored one, and shows none" do
     sign_in_as(@tech_ninja)
-    was = @client.secret
 
     patch admin_oauth_client_path(@client),
           params: { new_secret: "Save with New Secret",
-                    oauth_client: { client_id: "ranger-hq-osticket",
-                                    description: @client.description, secret: was } }
+                    oauth_client: { client_id: "ranger-hq-osticket", description: @client.description } }
 
     assert_response :unprocessable_entity
-    assert_equal was, @client.reload.secret
-    assert_select "input[name=?][value=?]", "oauth_client[secret]", was
+    assert @client.reload.authenticate_secret(fixture_secret(@client))
+    assert_select "input[name=?][value]", "oauth_client[secret]", count: 0
   end
 
   test "a rejected edit keeps naming the client as it is stored" do
@@ -324,8 +341,7 @@ class Admin::OauthClientsControllerTest < ActionDispatch::IntegrationTest
 
     patch admin_oauth_client_path(@client),
           params: { oauth_client: { client_id: "ranger-hq-osticket",
-                                    description: @client.description,
-                                    secret: @client.secret } }
+                                    description: @client.description } }
 
     assert_response :unprocessable_entity
     assert_select "h1", text: /Edit ranger-moodle/
@@ -333,16 +349,16 @@ class Admin::OauthClientsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "ranger-moodle", @client.reload.client_id
   end
 
-  test "an edit that empties the secret is refused" do
+  # A blank Secret box is how the edit form says "keep it".
+  test "an edit with a blank secret keeps the one on file" do
     sign_in_as(@tech_ninja)
-    was = @client.secret
 
     patch admin_oauth_client_path(@client),
           params: { oauth_client: { client_id: @client.client_id,
                                     description: @client.description, secret: "" } }
 
-    assert_response :unprocessable_entity
-    assert_equal was, @client.reload.secret
+    assert_redirected_to admin_oauth_clients_path
+    assert @client.reload.authenticate_secret(fixture_secret(@client))
   end
 
   # -------------------------------------------------------------- destroy
@@ -359,5 +375,14 @@ class Admin::OauthClientsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to admin_oauth_clients_path
     assert_equal "Client ranger-moodle deleted.", flash[:success]
+  end
+
+  private
+
+  # The one secret on the page, read off its copy control.
+  def shown_secret
+    controls = css_select("[data-copy-to-clipboard-content-value]")
+    assert_equal 1, controls.size, "one secret shown, no more"
+    controls.first["data-copy-to-clipboard-content-value"]
   end
 end

@@ -1,6 +1,7 @@
 # Test fixtures for the OauthClient model.
 #
-# The secrets here are made up. Reference these BY NAME.
+# The secrets here are made up, and stored as the digests the app keeps; the
+# plain ones are SsoTestHelper::FIXTURE_SECRETS. Reference these BY NAME.
 #
 # Named so `ordered` (by client_id) puts osticket first and moodle second --
 # the opposite of the order they are declared in, so a test that asserts the
@@ -18,7 +19,7 @@
 moodle:
   client_id: "ranger-moodle"
   description: "Ranger Moodle Server"
-  secret: "TestMoodleSecretAAAAAAAAAAAAAAAA"
+  secret_digest: <%= BCrypt::Password.create(SsoTestHelper::FIXTURE_SECRETS.fetch("ranger-moodle"), cost: BCrypt::Engine::MIN_COST) %>
   redirect_uri: "https://learn.example.org/admin/oauth2callback.php"
   created_at: <%= Time.zone.local(2023, 12, 9, 20, 9, 33) %>
   updated_at: <%= Time.zone.local(2023, 12, 9, 20, 9, 33) %>
@@ -26,7 +27,7 @@ moodle:
 osticket:
   client_id: "ranger-hq-osticket"
   description: "HQ Window OSTicket"
-  secret: "TestOSTicketSecretBBBBBBBBBBBBBB"
+  secret_digest: <%= BCrypt::Password.create(SsoTestHelper::FIXTURE_SECRETS.fetch("ranger-hq-osticket"), cost: BCrypt::Engine::MIN_COST) %>
   redirect_uri: "https://tickets.example.org/api/auth/ext"
   created_at: <%= Time.zone.local(2024, 3, 11, 19, 19, 8) %>
   updated_at: <%= Time.zone.local(2024, 3, 11, 19, 19, 8) %>

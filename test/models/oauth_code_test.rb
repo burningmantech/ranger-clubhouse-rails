@@ -29,6 +29,9 @@ class OauthCodeTest < ActiveSupport::TestCase
     assert_equal "openid email profile", code.scope
     assert_operator code.code.length, :>=, 64
     assert_in_delta Time.current, code.created_at, 2.seconds
+    # The row keeps a digest of the code, never the code.
+    assert_equal OauthCode.digest(code.code), code.code_digest
+    assert_nil OauthCode.find(code.id).code
   end
 
   test "a code is redeemed once, by the client it was issued to" do

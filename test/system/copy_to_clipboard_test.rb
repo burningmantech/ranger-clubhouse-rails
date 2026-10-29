@@ -16,7 +16,16 @@ class CopyToClipboardTest < ApplicationSystemTestCase
     grant_role(tech_ninja, Role::TECH_NINJA)
     sign_in(tech_ninja)
 
-    visit admin_oauth_clients_path
+    # The copy control under test is the one on a client secret, which is shown
+    # once, on the list a save renders -- so make a client to get there.
+    visit new_admin_oauth_client_path
+    fill_in "Client ID", with: "copy-test"
+    fill_in "Description", with: "A website to copy a secret for"
+    click_on "Save Client"
+    assert_selector CONTROL
+    # The save's own "created" toast is not what these tests are about, and
+    # one of them asserts that a copy raises no toast at all.
+    execute_script("document.querySelectorAll('.toast-base').forEach((toast) => toast.remove())")
     # The real clipboard wants a focused window and a permission. What was
     # handed to it is all these need.
     execute_script(<<~JS)

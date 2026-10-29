@@ -170,9 +170,18 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/invalid or has expired/i, flash[:alert])
   end
 
+  # A token that is not text is refused like any other bad link, not crashed on.
+  test "reset_token with a token that is not text redirects to forgot" do
+    get reset_token_path(token: ["x"])
+    assert_redirected_to forgot_path
+
+    get reset_token_path(token: { a: "b" })
+    assert_redirected_to forgot_path
+  end
+
   test "reset_token with expired token redirects to forgot" do
-    token = @person.create_temporary_login_token
-    @person.update_columns(tpassword_expire: 1.hour.ago.to_i)
+    token = @person.generate_token_for(:password_reset)
+    travel (Person::RESET_PASSWORD_EXPIRE + 1).seconds
 
     get reset_token_path(token: token)
     assert_redirected_to forgot_path
@@ -180,7 +189,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "reset_token with valid token renders reset form" do
-    token = @person.create_temporary_login_token
+    token = @person.generate_token_for(:password_reset)
 
     get reset_token_path(token: token)
     assert_response :success
@@ -193,7 +202,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   # --- POST /update-password ---
 
   test "update_password with invalid form rerenders reset_token" do
-    token = @person.create_temporary_login_token
+    token = @person.generate_token_for(:password_reset)
 
     post update_password_path, params: {
       password_update_form: { token: token, password: "short", password_confirmation: "short" }
@@ -202,7 +211,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update_password with mismatched confirmation rerenders reset_token" do
-    token = @person.create_temporary_login_token
+    token = @person.generate_token_for(:password_reset)
 
     post update_password_path, params: {
       password_update_form: { token: token, password: "newpassword1", password_confirmation: "different1" }
@@ -211,8 +220,8 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update_password with expired token redirects to forgot" do
-    token = @person.create_temporary_login_token
-    @person.update_columns(tpassword_expire: 1.hour.ago.to_i)
+    token = @person.generate_token_for(:password_reset)
+    travel (Person::RESET_PASSWORD_EXPIRE + 1).seconds
 
     post update_password_path, params: {
       password_update_form: { token: token, password: "newpassword1", password_confirmation: "newpassword1" }
@@ -229,7 +238,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update_password with valid token updates password and redirects to login" do
-    token = @person.create_temporary_login_token
+    token = @person.generate_token_for(:password_reset)
 
     post update_password_path, params: {
       password_update_form: { token: token, password: "mynewpassword", password_confirmation: "mynewpassword" }
@@ -242,17 +251,20 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_not @person.authenticate("password"), "Old password should not work"
   end
 
-  test "update_password clears temporary token after success" do
-    token = @person.create_temporary_login_token
+  # The token carries the tail of the password hash it was made against, so
+  # setting the password is what spends it -- and every other link made
+  # before, used or not.
+  test "update_password spends the link, and every earlier one" do
+    token = @person.generate_token_for(:password_reset)
+    earlier = @person.generate_token_for(:password_reset)
 
     post update_password_path, params: {
       password_update_form: { token: token, password: "mynewpassword", password_confirmation: "mynewpassword" }
     }
 
-    @person.reload
-    # Person#password= clears tpassword and tpassword_expire
-    assert_equal "", @person.tpassword
-    assert_equal 0, @person.tpassword_expire
+    [token, earlier].each do |spent|
+      assert_nil Person.find_by_token_for(:password_reset, spent), "a link made before the change still opens"
+    end
   end
 
   # --- the welcome email's link (welcome=1) ---
@@ -261,7 +273,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
                         "sign in with it. If not, request a reset link here."
 
   test "reset_token with welcome reads as a welcome and carries the flag into the form" do
-    token = @person.create_temporary_login_token
+    token = @person.generate_token_for(:invitation)
 
     get reset_token_path(token:, welcome: 1)
     assert_response :success
@@ -274,7 +286,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "reset_token without welcome reads as a reset" do
-    token = @person.create_temporary_login_token
+    token = @person.generate_token_for(:password_reset)
 
     get reset_token_path(token:)
     assert_response :success
@@ -286,7 +298,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update_password with welcome and a mismatched confirmation rerenders the welcome" do
-    token = @person.create_temporary_login_token
+    token = @person.generate_token_for(:password_reset)
 
     post update_password_path, params: {
       password_update_form: { token:, password: "newpassword1", password_confirmation: "different1", welcome: "true" }
@@ -297,7 +309,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update_password with welcome sets the password and says welcome" do
-    token = @person.create_temporary_login_token
+    token = @person.generate_token_for(:invitation)
 
     post update_password_path, params: {
       password_update_form: { token:, password: "mynewpassword", password_confirmation: "mynewpassword", welcome: "true" }
@@ -308,8 +320,8 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "an expired welcome link sends its reader to Forgot with the welcome message" do
-    token = @person.create_temporary_login_token
-    @person.update_columns(tpassword_expire: 1.hour.ago.to_i)
+    token = @person.generate_token_for(:invitation)
+    travel (Person::PNV_INVITATION_EXPIRE + 1).seconds
 
     get reset_token_path(token:, welcome: 1)
     assert_redirected_to forgot_path
@@ -568,7 +580,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a reset link sent before the lock sets no password and signs no one in" do
-    token = @person.create_temporary_login_token
+    token = @person.generate_token_for(:password_reset)
     @person.update_columns(status: Person::RESIGNED)
 
     assert_locked_refused do

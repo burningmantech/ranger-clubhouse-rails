@@ -18,7 +18,7 @@ class Sso::ApiControllerTest < ActionDispatch::IntegrationTest
 
   def token_params(**overrides)
     { grant_type: "authorization_code", code: @code.code, client_id: @client.client_id,
-      client_secret: @client.secret, redirect_uri: @client.redirect_uri }.merge(overrides)
+      client_secret: fixture_secret(@client), redirect_uri: @client.redirect_uri }.merge(overrides)
   end
 
   # ------------------------------------------------------------ discovery
@@ -65,7 +65,7 @@ class Sso::ApiControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "the credentials may come as HTTP Basic instead of form fields" do
-    credentials = ActionController::HttpAuthentication::Basic.encode_credentials(@client.client_id, @client.secret)
+    credentials = ActionController::HttpAuthentication::Basic.encode_credentials(@client.client_id, fixture_secret(@client))
 
     post sso_token_path, params: token_params.except(:client_id, :client_secret),
                          headers: { "Authorization" => credentials }
@@ -97,7 +97,7 @@ class Sso::ApiControllerTest < ActionDispatch::IntegrationTest
   test "another client cannot redeem the code, and does not burn it" do
     other = oauth_client(:osticket)
 
-    post sso_token_path, params: token_params(client_id: other.client_id, client_secret: other.secret,
+    post sso_token_path, params: token_params(client_id: other.client_id, client_secret: fixture_secret(other),
                                                redirect_uri: other.redirect_uri)
 
     assert_response :bad_request

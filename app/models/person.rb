@@ -16,7 +16,7 @@ class Person < ApplicationRecord
   # checked to confirm a phone number, so anyone who could read one out of the
   # log could finish somebody else's verification.
   self.audit_exclude = %w[
-    password tpassword tpassword_expire logged_in_at last_seen_at
+    password logged_in_at last_seen_at
     callsign_normalized callsign_soundex
     sms_code sms_on_playa_code sms_off_playa_code
   ].freeze
@@ -377,6 +377,26 @@ class Person < ApplicationRecord
   # kept nowhere: find_by_token_for reads the person and the expiry back out.
   generates_token_for :sso_access, expires_in: SSO_ACCESS_TOKEN_LIFETIME
 
+  # The links that set a password: the reset email's and the welcome email's.
+  # Signed and dated like the one above, and kept nowhere, so nothing in the
+  # database is a sign-in. Each carries the tail of the password hash it was
+  # made against: once the password changes, every link made before stops
+  # opening, used or not.
+  PASSWORD_LINKS = { password_reset: RESET_PASSWORD_EXPIRE, invitation: PNV_INVITATION_EXPIRE }.freeze
+  PASSWORD_LINKS.each do |purpose, lifetime|
+    generates_token_for(purpose, expires_in: lifetime.seconds) { password&.last(10) }
+  end
+
+  # Whoever a password link is for, or nil for a link that is spent, expired,
+  # altered, or no link at all. A token that is not text (token[]=x) is no
+  # link either: the verifier would raise on it rather than refuse it.
+  def self.find_by_password_link(token)
+    return nil unless token.is_a?(String) && token.present?
+
+    PASSWORD_LINKS.each_key { |purpose| (person = find_by_token_for(purpose, token)) and return person }
+    nil
+  end
+
   # What a website is told about the person its token stands for. The keys
   # are the ones the learning site and the HQ ticket desk map their fields
   # from, so they stay as Clubhouse 2 spelled them, plus the standard sub.
@@ -410,22 +430,6 @@ class Person < ApplicationRecord
 
   def password=(new_password)
     write_attribute(:password, Argon2::Password.new(m_cost: ARGON2_MEMORY_COST).create(new_password))
-    self.tpassword = ""
-    self.tpassword_expire = 0
-  end
-
-  # Create temporary login token
-  def create_temporary_login_token(expire_duration = RESET_PASSWORD_EXPIRE)
-    timestamp = Current.time.to_i
-
-    if self.tpassword.blank? || timestamp > tpassword_expire
-      self.tpassword = sprintf("%04x%s", id, SecureRandom.alphanumeric(8))
-    end
-
-    self.tpassword_expire = timestamp + expire_duration
-    save(validate: false)
-
-    self.tpassword
   end
 
   def is_applicant?

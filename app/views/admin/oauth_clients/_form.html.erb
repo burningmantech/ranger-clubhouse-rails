@@ -10,7 +10,7 @@
         <dt>What about the secret?</dt>
         <dd>
           The Clubhouse makes one of <%= OauthClient::SECRET_LENGTH %> characters when the client is
-          created, and shows it in the list.
+          created, and shows it once, right after the save. Copy it then: only a fingerprint is kept.
         </dd>
       <% end %>
     </dl>
@@ -22,10 +22,12 @@
                      maxlength: OauthClient::TEXT_COLUMN_LIMIT,
                      help_text: "What the website is, for the Tech Team's reference." %>
     <% if persisted %>
-      <%# autocomplete off so the browser never files this away as a password. %>
-      <%= f.text_field :secret, label: "Secret", required: true, width: "w-full sm:w-96",
-                       maxlength: OauthClient::TEXT_COLUMN_LIMIT, autocomplete: "off",
-                       help_text: "The shared key the website presents with its Client ID. Keep it private." %>
+      <%# Never prefilled: only a fingerprint of the secret is kept, and a secret
+          made for a refused save must not sit on the form as if it were live.
+          autocomplete off so the browser never files this away as a password. %>
+      <%= f.text_field :secret, label: "Secret", value: nil, width: "w-full sm:w-96",
+                       maxlength: OauthClient::SECRET_MAX_LENGTH, autocomplete: "off",
+                       help_text: "Leave blank to keep the secret on file. Type one to record the key a website already presents with its Client ID." %>
     <% end %>
   <% end %>
 

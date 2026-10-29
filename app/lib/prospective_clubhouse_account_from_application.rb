@@ -531,7 +531,7 @@ class ProspectiveClubhouseAccountFromApplication
   def send_welcome_email(person)
     return unless Setting.get_value(Setting::SEND_WELCOME_EMAIL)
 
-    invite_token = person.create_temporary_login_token(Person::PNV_INVITATION_EXPIRE)
+    invite_token = person.generate_token_for(:invitation)
     WelcomeMailer.with(sender_id: Current.person_id).notify(person:, invite_token:).deliver_later
   end
 

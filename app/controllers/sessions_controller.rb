@@ -104,7 +104,7 @@ class SessionsController < ApplicationController
     return refuse_locked(:forgot) if person && sign_in_refused?(person)
 
     if person
-        token = person.create_temporary_login_token
+        token = person.generate_token_for(:password_reset)
         PasswordResetMailer.notify(person:, reset_token: token).deliver_now
         render :reset_password_confirmation, status: :accepted
         return
@@ -188,12 +188,6 @@ class SessionsController < ApplicationController
   end
 
   def find_person_by_token(token)
-    return nil if token.blank?
-
-    person = Person.find_by(tpassword: token)
-    return nil unless person
-    return nil if person.tpassword_expire <= Current.time.to_i
-
-    person
+    Person.find_by_password_link(token)
   end
 end

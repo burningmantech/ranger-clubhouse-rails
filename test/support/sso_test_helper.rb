@@ -17,6 +17,17 @@ module SsoTestHelper
 
   ENV_KEYS = [Sso::MODE_VAR, *Sso::CLIENT_VARS.values].freeze
 
+  # The plain secrets behind the oauth_client fixtures, by client_id. The rows
+  # hold only their digests, so this is the one place a test can read them.
+  FIXTURE_SECRETS = {
+    "ranger-moodle" => "TestMoodleSecretAAAAAAAAAAAAAAAA",
+    "ranger-hq-osticket" => "TestOSTicketSecretBBBBBBBBBBBBBB"
+  }.freeze
+
+  def fixture_secret(client)
+    FIXTURE_SECRETS.fetch(client.client_id)
+  end
+
   included do
     teardown do
       clear_sso_env

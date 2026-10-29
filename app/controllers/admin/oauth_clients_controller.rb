@@ -22,7 +22,7 @@ class Admin::OauthClientsController < ApplicationController
     @client = OauthClient.new(client_params)
 
     if @client.save
-      redirect_to admin_oauth_clients_path, success: "Client #{@client.client_id} created."
+      show_new_secret "Client #{@client.client_id} created."
       return
     end
 
@@ -33,16 +33,20 @@ class Admin::OauthClientsController < ApplicationController
   end
 
   def update
-    @client.assign_attributes(client_params)
-    # The second submit button asks for a fresh secret along with the save. It
-    # is made only once the rest of the form passes, so a refused save never
-    # leaves a secret on the page that was never stored.
+    # The second submit button asks for a fresh secret along with the save, so
+    # a secret typed beside it is dropped unread rather than hashed and thrown
+    # away. The fresh one is made only once the rest of the form passes, so a
+    # refused save never leaves a secret on the page that was never stored.
+    @client.assign_attributes(params[:new_secret].present? ? client_params.except(:secret) : client_params)
     new_secret = params[:new_secret].present? && @client.valid?
     @client.generate_secret if new_secret
 
     if @client.save
-      saved = new_secret ? "saved with a new secret" : "updated"
-      redirect_to admin_oauth_clients_path, success: "Client #{@client.client_id} #{saved}."
+      if new_secret
+        show_new_secret "Client #{@client.client_id} saved with a new secret."
+      else
+        redirect_to admin_oauth_clients_path, success: "Client #{@client.client_id} updated."
+      end
       return
     end
 
@@ -55,6 +59,16 @@ class Admin::OauthClientsController < ApplicationController
   end
 
   private
+
+  # The list, with the secret just made on it, this once. Rendered from the
+  # POST rather than reached by a redirect: the row keeps a digest, so no GET
+  # could show the secret again -- and at 422, since Turbo drops a 200 answer
+  # to a form.
+  def show_new_secret(message)
+    flash.now[:success] = message
+    index
+    render :index, status: :unprocessable_entity
+  end
 
   def set_client
     @client = OauthClient.find(params.expect!(:id))

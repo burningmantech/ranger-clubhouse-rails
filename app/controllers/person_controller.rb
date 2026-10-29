@@ -68,9 +68,10 @@ class PersonController < ApplicationController
       return
     end
 
-    # As long as Create Prospectives' first link. The token saves itself without
-    # validations: a second save would run them, and an older record fails them.
-    invite_token = @person.create_temporary_login_token(Person::PNV_INVITATION_EXPIRE)
+    # As long as Create Prospectives' first link. Nothing is saved: the token is
+    # signed from the record as it stands, so an older record that fails
+    # validation still gets its email.
+    invite_token = @person.generate_token_for(:invitation)
     WelcomeMailer.with(sender_id: current_user.id).notify(person: @person, invite_token:).deliver_later
     redirect_to person_path(@person), success: "Welcome message resent."
   end

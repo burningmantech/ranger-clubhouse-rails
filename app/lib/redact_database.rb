@@ -35,7 +35,6 @@ class RedactDatabase
     state: "NT",
     street1: "123 Any St.",
     street2: "",
-    tpassword: "",
     vehicle_blacklisted: false,
     zip: "99999"
   }.freeze
