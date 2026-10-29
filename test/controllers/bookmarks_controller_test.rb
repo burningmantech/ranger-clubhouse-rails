@@ -59,7 +59,7 @@ class BookmarksControllerTest < ActionDispatch::IntegrationTest
   end
 
   # This is the reason the page can be public at all. Agreements, contact lists,
-  # and team resource documents all share this table.
+  # and team documents all share this table.
   test "a document that is not a bookmark cannot be reached" do
     create_document(tag: Document::DEPT_NDA_TAG, description: "Private document",
                     body: "Secrets")

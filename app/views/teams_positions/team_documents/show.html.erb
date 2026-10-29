@@ -1,0 +1,15 @@
+<% content_for :title, @team.title %>
+
+<%= hero_panel icon: "book-open", heading_level: :h1, id: "team-document-header",
+               back_to: ["Team Documents", teams_positions_team_documents_path] do |panel| %>
+  <% panel.title do %>
+    <%= @team.title %>
+  <% end %>
+  <% panel.description do %>
+    The one document <%= @team.title %> writes for its members.
+  <% end %>
+<% end %>
+
+<%= render "common/resource_documents/document", document: @document, entity: @team,
+           edit_path: teams_positions_edit_team_document_path(@team),
+           empty_message: "No team document has been written for #{@team.title} yet." %>

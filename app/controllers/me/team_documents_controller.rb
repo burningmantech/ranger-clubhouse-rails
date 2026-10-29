@@ -8,7 +8,7 @@
 # runs to megabytes, so the summary that links here never selects it.
 #
 # The team's resource_tag is typed in Team Records, so it is followed only
-# through Document.resource_tag, as Teams & Positions › Team Resources follows
+# through Document.resource_tag, as Teams & Positions › Team Documents follows
 # it: a pointer at a bookmark- page or a document the code reads by name is no
 # team document.
 class Me::TeamDocumentsController < ApplicationController

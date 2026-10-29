@@ -2,11 +2,11 @@
 
 require "test_helper"
 
-# Teams & Positions › Team Resources: who reaches which team's document, the
+# Teams & Positions › Team Documents: who reaches which team's document, the
 # list that never carries a document's text, the read page's states, and the
 # pointer each team keeps to the document it published. The editor's own
 # behavior is the shared concern's, pinned by the Trainer Resources test.
-class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationTest
+class TeamsPositions::TeamDocumentsControllerTest < ActionDispatch::IntegrationTest
   include AuthenticationTestHelper
   include TimesheetAdminTestHelper # ensure_role / grant_role
 
@@ -44,22 +44,22 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
 
   test "an admin is offered every team" do
     sign_in_as(@admin)
-    get teams_positions_team_resources_path
+    get teams_positions_team_documents_path
 
     assert_response :success
-    assert_select "h1", /Team Resources/
+    assert_select "h1", /Team Documents/
     assert_match "You can open the document of any of the #{Team.count} teams.", response.body
-    assert_select "a[href=?]", teams_positions_team_resource_path(@other_team)
+    assert_select "a[href=?]", teams_positions_team_document_path(@other_team)
   end
 
   test "a manager holding the role is offered only the teams they manage" do
     sign_in_as(@manager)
-    get teams_positions_team_resources_path
+    get teams_positions_team_documents_path
 
     assert_response :success
     assert_match "You manage 1 team.", response.body
-    assert_select "a[href=?]", teams_positions_team_resource_path(@team)
-    assert_select "a[href=?]", teams_positions_team_resource_path(@other_team), count: 0
+    assert_select "a[href=?]", teams_positions_team_document_path(@team)
+    assert_select "a[href=?]", teams_positions_team_document_path(@other_team), count: 0
   end
 
   # Upstream's Ember route for the page (ops) turned away anyone without Event
@@ -68,7 +68,7 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     revoke_event_management(@manager)
 
     sign_in_as(@manager)
-    get teams_positions_team_resources_path
+    get teams_positions_team_documents_path
 
     assert_redirected_to me_root_path
     assert_match(/Event Management or Vehicle Info Update/, flash[:error])
@@ -79,7 +79,7 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     grant_role(@manager, Role::VEHICLE_INFO_UPDATE)
 
     sign_in_as(@manager)
-    get teams_positions_team_resource_path(@team)
+    get teams_positions_team_document_path(@team)
 
     assert_response :success
   end
@@ -89,11 +89,11 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
   test "a manager without the role is turned away from the list and the editor alike" do
     sign_in_as(@roleless_manager)
 
-    get teams_positions_team_resources_path
+    get teams_positions_team_documents_path
     assert_redirected_to me_root_path
     assert_match(/Team Resource Doc Mgmt/, flash[:error])
 
-    get teams_positions_edit_team_resource_path(@team)
+    get teams_positions_edit_team_document_path(@team)
     assert_redirected_to me_root_path
     assert_match(/Team Resource Doc Mgmt/, flash[:error])
   end
@@ -101,9 +101,9 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
   test "managing one team does not open another's document" do
     sign_in_as(@manager)
 
-    [-> { get teams_positions_team_resource_path(@other_team) },
-     -> { get teams_positions_edit_team_resource_path(@other_team) },
-     -> { post teams_positions_team_resource_path(@other_team), params: { document: { body: "<p>Mine now.</p>" } } }].each do |request|
+    [-> { get teams_positions_team_document_path(@other_team) },
+     -> { get teams_positions_edit_team_document_path(@other_team) },
+     -> { post teams_positions_team_document_path(@other_team), params: { document: { body: "<p>Mine now.</p>" } } }].each do |request|
       request.call
       assert_redirected_to me_root_path
       assert_equal "That team's document is not available to you.", flash[:error]
@@ -116,15 +116,15 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     gone = Team.maximum(:id) + 1
 
     sign_in_as(@admin)
-    get "/teams-positions/team-resources/#{gone}/edit"
+    get "/teams-positions/team-documents/#{gone}/edit"
 
-    assert_redirected_to teams_positions_team_resources_path
+    assert_redirected_to teams_positions_team_documents_path
     assert_equal "That team no longer exists.", flash[:error]
   end
 
   test "a manager holding the role reaches their team's editor" do
     sign_in_as(@manager)
-    get teams_positions_edit_team_resource_path(@team)
+    get teams_positions_edit_team_document_path(@team)
 
     assert_response :success
     assert_select "lexxy-editor[name=?]", "document[body]"
@@ -135,15 +135,15 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
 
   test "the menu offers the page to a manager holding the role and to no other manager" do
     sign_in_as(@manager)
-    get teams_positions_team_resources_path
-    assert_select "#sidebar-drawer-content a[href=?]", teams_positions_team_resources_path
+    get teams_positions_team_documents_path
+    assert_select "#sidebar-drawer-content a[href=?]", teams_positions_team_documents_path
 
     # Bulk Membership History admits any team manager, so its sidebar is the
     # one a manager without the role can see.
     sign_in_as(@roleless_manager)
     get teams_positions_bulk_membership_history_path
     assert_response :success
-    assert_select "#sidebar-drawer-content a[href=?]", teams_positions_team_resources_path, count: 0
+    assert_select "#sidebar-drawer-content a[href=?]", teams_positions_team_documents_path, count: 0
   end
 
   # --- the list ------------------------------------------------------------
@@ -154,7 +154,7 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     teams(:mentor_cadre).update_columns(resource_tag: Document::DEPT_NDA_TAG)
 
     sign_in_as(@admin)
-    get teams_positions_team_resources_path
+    get teams_positions_team_documents_path
 
     assert_response :success
     assert_select "#team-#{@team.id}", text: /Updated .+ by #{@manager.callsign}/
@@ -171,7 +171,7 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     @team.update_columns(resource_tag: "DIRT-Team-Info ")
 
     sign_in_as(@admin)
-    get teams_positions_team_resources_path
+    get teams_positions_team_documents_path
 
     assert_select "#team-#{@team.id}", text: /Updated .+ by #{@manager.callsign}/
     assert_select "#team-#{@team.id} .badge", count: 0
@@ -184,7 +184,7 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     sign_in_as(@admin)
     assert_queries_match(/`document`\.`tag` (=|IN)/) do
       assert_no_queries_match(/`document`\.(\*|`body`)/) do
-        get teams_positions_team_resources_path
+        get teams_positions_team_documents_path
       end
     end
 
@@ -198,13 +198,13 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     write_document(@team, body: "<h2>Before your first shift</h2><ul><li>Bring a radio</li></ul>", by: @manager)
 
     sign_in_as(@manager)
-    get teams_positions_team_resource_path(@team)
+    get teams_positions_team_document_path(@team)
 
     assert_response :success
     assert_select "h1", /#{@team.title}/
     assert_select ".lexxy-content h2", text: "Before your first shift"
     assert_select ".lexxy-content li", text: "Bring a radio"
-    assert_select "a[href=?]", teams_positions_edit_team_resource_path(@team)
+    assert_select "a[href=?]", teams_positions_edit_team_document_path(@team)
     assert_select "p.me-muted", text: /Last updated .+ by\s+#{@manager.callsign}\./m
   end
 
@@ -214,7 +214,7 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     write_document(@team, body: %(<p>Read <strong>this</strong>.</p><img src="x" onerror="alert(1)"><script>alert(2)</script>))
 
     sign_in_as(@manager)
-    get teams_positions_team_resource_path(@team)
+    get teams_positions_team_document_path(@team)
 
     assert_response :success
     assert_select ".lexxy-content strong", text: "this"
@@ -224,11 +224,11 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
 
   test "a team with no document offers to write one" do
     sign_in_as(@manager)
-    get teams_positions_team_resource_path(@team)
+    get teams_positions_team_document_path(@team)
 
     assert_response :success
-    assert_match "No resource document has been written for #{@team.title} yet.", response.body
-    assert_select "a[href=?]", teams_positions_edit_team_resource_path(@team), text: /Write the Document/
+    assert_match "No team document has been written for #{@team.title} yet.", response.body
+    assert_select "a[href=?]", teams_positions_edit_team_document_path(@team), text: /Write the Document/
   end
 
   # The callout sits right under the page's h1.
@@ -236,7 +236,7 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     @team.update_columns(resource_tag: "dirt-team-info")
 
     sign_in_as(@manager)
-    get teams_positions_team_resource_path(@team)
+    get teams_positions_team_document_path(@team)
 
     assert_response :success
     assert_select "h2", text: "The Document Is Missing"
@@ -250,11 +250,11 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     @team.update_columns(resource_tag: "")
 
     sign_in_as(@manager)
-    get teams_positions_team_resource_path(@team)
+    get teams_positions_team_document_path(@team)
 
     assert_response :success
     assert_select "h2", text: "The Document Tag Is Taken"
-    assert_select "a[href=?]", teams_positions_edit_team_resource_path(@team), count: 0
+    assert_select "a[href=?]", teams_positions_edit_team_document_path(@team), count: 0
   end
 
   # --- pointers that must not be followed ------------------------------------
@@ -268,17 +268,17 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     @team.update_columns(resource_tag: Document::MOTORPOOL_POLICY_TAG)
 
     sign_in_as(@manager)
-    get teams_positions_team_resource_path(@team)
+    get teams_positions_team_document_path(@team)
 
     assert_response :success
     assert_select "h2", text: "The Document Tag Cannot Be Used"
     assert_no_match "Drive carefully.", response.body
 
     assert_difference "Document.count", 1 do
-      post teams_positions_team_resource_path(@team), params: { document: { body: "<p>Ours.</p>" } }
+      post teams_positions_team_document_path(@team), params: { document: { body: "<p>Ours.</p>" } }
     end
 
-    assert_redirected_to teams_positions_team_resource_path(@team)
+    assert_redirected_to teams_positions_team_document_path(@team)
     assert_equal "dirt-team-info", @team.reload.resource_tag
     assert_equal "<p>Drive carefully.</p>", policy.reload.body
   end
@@ -289,9 +289,9 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     @team.update_columns(resource_tag: Document::DEPT_NDA_TAG)
 
     sign_in_as(@manager)
-    post teams_positions_team_resource_path(@team), params: { document: { body: "<p>Ours.</p>" } }
+    post teams_positions_team_document_path(@team), params: { document: { body: "<p>Ours.</p>" } }
 
-    assert_redirected_to teams_positions_team_resource_path(@team)
+    assert_redirected_to teams_positions_team_document_path(@team)
     assert_not Document.exists?(tag: Document::DEPT_NDA_TAG)
     assert_equal "dirt-team-info", @team.reload.resource_tag
   end
@@ -302,9 +302,9 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     @team.update_columns(resource_tag: "dirt team info")
 
     sign_in_as(@manager)
-    post teams_positions_team_resource_path(@team), params: { document: { body: "<p>Ours.</p>" } }
+    post teams_positions_team_document_path(@team), params: { document: { body: "<p>Ours.</p>" } }
 
-    assert_redirected_to teams_positions_team_resource_path(@team)
+    assert_redirected_to teams_positions_team_document_path(@team)
     assert Document.exists?(tag: "dirt-team-info")
     assert_equal "dirt-team-info", @team.reload.resource_tag
   end
@@ -315,11 +315,11 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     sign_in_as(@manager)
 
     assert_difference "Document.count", 1 do
-      post teams_positions_team_resource_path(@team), params: { document: { body: "<p>Read this first.</p>" } }
+      post teams_positions_team_document_path(@team), params: { document: { body: "<p>Read this first.</p>" } }
     end
 
-    assert_redirected_to teams_positions_team_resource_path(@team)
-    assert_equal "Team resource document created.", flash[:success]
+    assert_redirected_to teams_positions_team_document_path(@team)
+    assert_equal "Team document created.", flash[:success]
 
     document = Document.find_by(tag: "dirt-team-info")
     assert_equal "DIRT Team Document", document.description
@@ -338,13 +338,13 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
   # one's after Back -- edits the document now there instead of failing on its tag.
   test "a second first-save edits the document the first one created" do
     sign_in_as(@manager)
-    post teams_positions_team_resource_path(@team), params: { document: { body: "<p>First.</p>" } }
+    post teams_positions_team_document_path(@team), params: { document: { body: "<p>First.</p>" } }
 
     assert_no_difference "Document.count" do
-      post teams_positions_team_resource_path(@team), params: { document: { body: "<p>Second.</p>" } }
+      post teams_positions_team_document_path(@team), params: { document: { body: "<p>Second.</p>" } }
     end
 
-    assert_redirected_to teams_positions_team_resource_path(@team)
+    assert_redirected_to teams_positions_team_document_path(@team)
     assert_equal "<p>Second.</p>", Document.find_by(tag: "dirt-team-info").body
   end
 
@@ -354,11 +354,11 @@ class TeamsPositions::TeamResourcesControllerTest < ActionDispatch::IntegrationT
     sign_in_as(@manager)
 
     assert_difference "Document.count", -1 do
-      delete teams_positions_team_resource_path(@team)
+      delete teams_positions_team_document_path(@team)
     end
 
-    assert_redirected_to teams_positions_team_resource_path(@team)
-    assert_equal "Team resource document deleted.", flash[:success]
+    assert_redirected_to teams_positions_team_document_path(@team)
+    assert_equal "Team document deleted.", flash[:success]
     assert_nil @team.reload.resource_tag
     assert_equal ["dirt-team-info", nil], ActionLog.where(event: "team-update").order(:id).last.data["resource_tag"]
   end

@@ -51,7 +51,7 @@ class Me::TeamDocumentsControllerTest < ActionDispatch::IntegrationTest
 
   # Team Records takes the pointer as typed, so a tag no team document may have --
   # a bookmark- page anyone can read without signing in -- is never served as one
-  # (Document.resource_tag, as Team Resources follows it).
+  # (Document.resource_tag, as Team Documents follows it).
   test "a tag no team document may have reads as no document" do
     publish_team_document(@team, tag: "#{Document::BOOKMARK_TAG_PREFIX}khaki", description: "Khaki Bookmark",
                                  body: "<p>Not for members.</p>")

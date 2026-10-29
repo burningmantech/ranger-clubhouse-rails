@@ -71,7 +71,7 @@ module Menus
     visible_if: { not_status: [:is_auditor?, :past_prospective?] },
     items: [
       { title: "Agreements / Documents", path: :me_agreements_path,
-        description: "Review and sign required agreements. View available team resource documents." },
+        description: "Review and sign required agreements. View available team documents." },
       { title: "Operational Summary", path: :me_operational_summary_path,
         description: "Review your event readiness in one place" },
       { title: "Tickets & Stuff", path: :me_tickets_path,
@@ -987,9 +987,9 @@ module Menus
           # Management or Vehicle Info Update (upstream's Ember ops area wanted
           # one of them of everyone), then Admin, or Team Resource Doc Mgmt AND
           # a team_manager row -- one question, since menu conditions are ANDed.
-          { title: "Team Resources", path: :teams_positions_team_resources_path, active_prefix: true,
-            description: "Write and update the resource document of each team you manage",
-            visible_if: { computed: :manages_team_resources } }
+          { title: "Team Documents", path: :teams_positions_team_documents_path, active_prefix: true,
+            description: "Write and update the document of each team you manage",
+            visible_if: { computed: :manages_team_documents } }
         ]
       },
       {

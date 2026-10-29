@@ -3,7 +3,7 @@
 # Resource-document CRUD — the fetch-or-scaffold editor and the actions behind
 # it — shared by every page that manages the single document an entity
 # publishes: the training interface's Trainer Resources page and Teams &
-# Positions › Team Resources. (Laravel: DocumentController's resourceEdit,
+# Positions › Team Documents. (Laravel: DocumentController's resourceEdit,
 # store, update, and resourceDelete.)
 #
 # An entity points at its document with a resource_tag column rather than a

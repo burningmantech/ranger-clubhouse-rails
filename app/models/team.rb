@@ -78,7 +78,7 @@ class Team < ApplicationRecord
 
   def self.manages_every_team?(person) = person.has_role?(ROSTER_ALL_TEAMS_ROLES)
 
-  # Team resource documents (Teams & Positions › Team Resources) also take two
+  # Team documents (Teams & Positions › Team Documents) also take two
   # things, and a different pair from rosters.
   #
   # RESOURCE_ACCESS_ROLES opens the page at all, of everyone, Admins included:

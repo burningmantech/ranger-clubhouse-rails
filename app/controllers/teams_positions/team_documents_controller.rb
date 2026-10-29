@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Teams & Positions › Team Resources (Ember ops/team-resources): the one
+# Teams & Positions › Team Documents (Ember ops/team-resources): the one
 # document each team writes for its members, kept by the team's managers.
 #
 # No authorize_role here, as on Roster Management: the gate is a role, then
@@ -12,10 +12,10 @@
 # Reading and writing are one permission here, unlike Trainer Resources (where
 # the whole training interface reads and only the resource role writes): the
 # read page is the manager's preview of what members will see.
-class TeamsPositions::TeamResourcesController < ApplicationController
+class TeamsPositions::TeamDocumentsController < ApplicationController
   layout "teams_positions"
 
-  before_action :require_team_resource_manager
+  before_action :require_team_document_manager
   before_action :set_team, except: :index
 
   # Below this controller's gates, so their messages are the ones a refused
@@ -37,10 +37,10 @@ class TeamsPositions::TeamResourcesController < ApplicationController
 
   private
 
-  def require_team_resource_manager
+  def require_team_document_manager
     return if Team.resource_manageable_by?(Current.person)
 
-    not_authorized_redirect("Team Resources needs Event Management or Vehicle Info Update, and either Admin " \
+    not_authorized_redirect("Team Documents needs Event Management or Vehicle Info Update, and either Admin " \
                             "or the Team Resource Doc Mgmt permission with a team to manage.")
   end
 
@@ -51,7 +51,7 @@ class TeamsPositions::TeamResourcesController < ApplicationController
     return if resource_entity
 
     if Team.resource_manages_every_team?(Current.person)
-      redirect_to teams_positions_team_resources_path, error: "That team no longer exists."
+      redirect_to teams_positions_team_documents_path, error: "That team no longer exists."
     else
       not_authorized_redirect("That team's document is not available to you.")
     end
@@ -70,11 +70,11 @@ class TeamsPositions::TeamResourcesController < ApplicationController
 
   def can_manage_resource? = resource_entity.present?
 
-  def resource_show_path = teams_positions_team_resource_path(@team)
+  def resource_show_path = teams_positions_team_document_path(@team)
 
   def resource_return_label = @team.title
 
-  def resource_form_path = teams_positions_team_resource_path(@team)
+  def resource_form_path = teams_positions_team_document_path(@team)
 
-  def resource_document_label = "team resource document"
+  def resource_document_label = "team document"
 end

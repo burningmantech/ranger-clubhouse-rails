@@ -2,10 +2,10 @@
   The teams whose document the reader may write. Only the rows: a document's
   body is loaded on its own team's page, never here.
 %>
-<% content_for :title, "Team Resources" %>
+<% content_for :title, "Team Documents" %>
 
-<%= hero_panel icon: "book-open", heading_level: :h1, id: "team-resources-header",
-               title: "Team Resources",
+<%= hero_panel icon: "book-open", heading_level: :h1, id: "team-documents-header",
+               title: "Team Documents",
                description: "The one document each team writes for its members." %>
 
 <% if @teams.any? %>
@@ -20,7 +20,7 @@
   </div>
   <div class="lg:w-3/4">
     <% @teams.each do |team| %>
-      <%= team_resource_row(team, @documents[team.resource_tag]) %>
+      <%= team_document_row(team, @documents[team.resource_tag]) %>
     <% end %>
   </div>
 <% else %>

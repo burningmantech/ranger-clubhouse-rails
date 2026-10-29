@@ -815,14 +815,14 @@ Trap: `PersonEventInfo.find_for_person_year` assumes `Position::TRAINING` is amo
 
 ### Me › Team Document
 Reach it: `GET /me/teams/:id/document` ← "View Team Document" under a team in Operational Summary › Teams & Positions, or a team's row (`ui_drill_down_row`) under Ranger Team Info Documents on Me › Agreements (`?from=agreements`) (`:id` = team id); no menu entry
-Gate: membership only — the team is found through the person's own `person_team` rows, so a team they are not on is a 404; no role and no team-manager check (writing it is Teams & Positions › Team Resources)
+Gate: membership only — the team is found through the person's own `person_team` rows, so a team they are not on is a 404; no role and no team-manager check (writing it is Teams & Positions › Team Documents)
 Controller: `app/controllers/me/team_documents_controller.rb` (`show`)
 Owner: `Document.resource_tag` / `Document.listed_by_pointer` (`app/models/document.rb`), `Team#resource_tag`
 Touches: `team`, `person_team`, `document`
 Verify: `test/controllers/me/team_documents_controller_test.rb`, `test/controllers/me/agreements_controller_test.rb` (the Ranger Team Info Documents block)
 Trap: `from` is a whitelist: `agreements` backs the hero to Me › Agreements, anything else to Operational Summary — never the referer.
 Trap: The body is read only here — Operational Summary and Me › Agreements list which teams have one through `Document.listed_by_pointer` (`@team_documents`, keyed by the team's pointer, `LIST_COLUMNS` only) and never selects `document.body`, which runs to megabytes for the Mentor team; keep any list that way.
-Trap: `show` renders `rich_text(@document.body)`, cleaned on the way out as well as in (`ResourceDocumentCrudConcern#submitted_body`): the team documents written through Clubhouse 2 never passed this app's editor. Never print it `html_safe`. The tag is followed only through `Document.resource_tag` (see Team Resources), so a `bookmark-` or `Document::*_TAG` pointer reads as no document.
+Trap: `show` renders `rich_text(@document.body)`, cleaned on the way out as well as in (`ResourceDocumentCrudConcern#submitted_body`): the team documents written through Clubhouse 2 never passed this app's editor. Never print it `html_safe`. The tag is followed only through `Document.resource_tag` (see Team Documents), so a `bookmark-` or `Document::*_TAG` pointer reads as no document.
 
 ### Me › Event Summary
 Reach it: `GET /me/timesheet/event-summary` ← "Hours & Credits" links on `GET /me/timesheet` (My Clubhouse › Essentials › Timesheet)
@@ -1610,11 +1610,11 @@ Trap: The report's bands (`band_label_for`, auditor status first) differ from `T
 Reach it: `GET /training/:slug/resources` → In-Person Training › In-Person Training › Trainer Resources (ARTs: ART <name> › ART <name> › Trainer Resources); editor `GET /training/:slug/resources/edit`; save `POST`/`PATCH /training/:slug/resources`; delete `DELETE /training/:slug/resources`
 Gate: read: `authorize_training_view`; write (`edit`, `create`, `update`, `destroy`): plus `can_manage_resource?` — `ADMIN`, or a view role + `TRAINER_RESOURCE_MANAGEMENT_BASE | position.id`; an ART with no `team_id` refuses everyone, admins included
 Controller: `app/controllers/training/resources_controller.rb` (`show`, concern hooks), `app/controllers/concerns/resource_document_crud_concern.rb` (`edit`, `create`, `update`, `destroy`)
-Owner: `ResourceDocumentCrudConcern` (`app/controllers/concerns/resource_document_crud_concern.rb`), `Document` (`app/models/document.rb`), `Position#build_resource_tag` (`app/models/position.rb`); the concern and `app/views/common/resource_documents/` are shared with Teams & Positions › Team Resources
+Owner: `ResourceDocumentCrudConcern` (`app/controllers/concerns/resource_document_crud_concern.rb`), `Document` (`app/models/document.rb`), `Position#build_resource_tag` (`app/models/position.rb`); the concern and `app/views/common/resource_documents/` are shared with Teams & Positions › Team Documents
 Touches: `document` (w), `position` (w), `action_logs` (w)
 Verify: `test/controllers/training/resources_controller_test.rb`, `test/models/position_test.rb`
 Trap: The body is cleaned twice: on the way in (`submitted_body` → `helpers.rich_text`) and again on the way out (`common/resource_documents/_document` renders `rich_text(document.body)`), because documents written through Clubhouse 2 or Admin › Documents never passed the editor. Never print it `html_safe`.
-Trap: A position's `resource_tag` is typed in Position Records and followed only through `Document.resource_tag` (see Team Resources), and every pointer change writes a `position-update` action log by hand (`sync_resource_tag`): Position is not an audited model.
+Trap: A position's `resource_tag` is typed in Position Records and followed only through `Document.resource_tag` (see Team Documents), and every pointer change writes a `position-update` action log by hand (`sync_resource_tag`): Position is not an audited model.
 Trap: The tag is derived once, at first save (`scaffold_resource_document` + `sync_resource_tag`), so renaming a position never re-files its document — don't re-derive it on save (it collides with the unique tag index).
 
 ## Training: reports & follow-up
@@ -2552,13 +2552,13 @@ Verify: `test/controllers/teams_positions/roster_management_controller_test.rb`,
 Trap: No `authorize_role`: the unconditional `require_roster_manager` and the `Team.manageable_by` scope in `set_team` are the whole gate, so Event Management alone opens nothing without a `team_manager` row.
 Trap: `PersonTeam.remove_person` and `PersonPosition.remove_ids_from_person` lack the Admin/Tech Ninja guard that `add_person` and `add_ids_to_person` carry — a new remover must reapply `RosterManagementController#guarded_roles_lacked`.
 
-### Team Resources
-Reach it: `GET /teams-positions/team-resources` → Teams & Positions › Teams & Positions Menu › Team Resources; read `GET /teams-positions/team-resources/:team_id`; editor `GET /teams-positions/team-resources/:team_id/edit`; save `POST`/`PATCH /teams-positions/team-resources/:team_id`; delete `DELETE /teams-positions/team-resources/:team_id`
+### Team Documents
+Reach it: `GET /teams-positions/team-documents` → Teams & Positions › Teams & Positions Menu › Team Documents; read `GET /teams-positions/team-documents/:team_id`; editor `GET /teams-positions/team-documents/:team_id/edit`; save `POST`/`PATCH /teams-positions/team-documents/:team_id`; delete `DELETE /teams-positions/team-documents/:team_id`
 Gate: `Team.resource_manageable_by?` — first `EVENT_MANAGEMENT` or `VEHICLE_INFO_UPDATE` (`Team::RESOURCE_ACCESS_ROLES`, of everyone, Admins included: upstream's Ember `ops` route), then `ADMIN` (every team) or `TEAM_RESOURCE_MANAGEMENT` (132, granted through `team_role`) plus a `team_manager` row for that team; Tech Ninja adds nothing. Reading and writing are one permission here
-Controller: `app/controllers/teams_positions/team_resources_controller.rb` (`index`, `show`, concern hooks), `app/controllers/concerns/resource_document_crud_concern.rb` (`edit`, `create`, `update`, `destroy`)
+Controller: `app/controllers/teams_positions/team_documents_controller.rb` (`index`, `show`, concern hooks), `app/controllers/concerns/resource_document_crud_concern.rb` (`edit`, `create`, `update`, `destroy`)
 Owner: `ResourceDocumentCrudConcern`, `Document.resource_tag` / `Document.listed_by_pointer` (`app/models/document.rb`), `Team.resource_manageable_by` and `Team#build_resource_tag` (`app/models/team.rb`); the editor and the read page's `_document` partial are shared with Trainer Resources in `app/views/common/resource_documents/`
 Touches: `document` (w), `team` (w), `team_manager`, `action_logs` (w)
-Verify: `test/controllers/teams_positions/team_resources_controller_test.rb`, `test/models/team_test.rb`, `test/models/document_test.rb`
+Verify: `test/controllers/teams_positions/team_documents_controller_test.rb`, `test/models/team_test.rb`, `test/models/document_test.rb`
 Trap: A team's `resource_tag` is typed in Team Records, so it is followed only through `Document.resource_tag`: stripped, never a `Document::*_TAG` document or a `bookmark-` page, never a tag no document could have. A pointer that fails gives way to `build_resource_tag` on the first save (which repoints the team), and the read page says so. Look tags up through it, or `Document.listed_by_pointer` for a list: the column compares without case and trailing spaces, a Ruby hash does not.
 Trap: `include ResourceDocumentCrudConcern` sits below the controller's gates only so their messages answer first; `resource_entity` is a memoized lookup, so the concern's own gate works wherever it runs. An Admin who asks for a missing team is sent to the index ("That team no longer exists."); anyone else is not told whether it exists.
 Trap: The index looks documents up with `Document::LIST_COLUMNS` — never select `document.body` on a list: the Mentor Team document runs to megabytes (dev, 2026-10-26).

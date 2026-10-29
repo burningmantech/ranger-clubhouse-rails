@@ -696,10 +696,10 @@ Rails.application.routes.draw do
     # ops/team-resources port). Upstream went straight from the team list into
     # the editor; here a team gets a read page between them, as Trainer
     # Resources does, whose concern and editor these routes reuse.
-    scope path: "team-resources", controller: :team_resources do
-      get "/", action: :index, as: :team_resources
-      get ":team_id", action: :show, as: :team_resource
-      get ":team_id/edit", action: :edit, as: :edit_team_resource
+    scope path: "team-documents", controller: :team_documents do
+      get "/", action: :index, as: :team_documents
+      get ":team_id", action: :show, as: :team_document
+      get ":team_id/edit", action: :edit, as: :edit_team_document
       post ":team_id", action: :create
       patch ":team_id", action: :update
       delete ":team_id", action: :destroy
