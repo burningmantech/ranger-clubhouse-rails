@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_000011) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_000012) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -153,6 +153,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000011) do
     t.text "person_ids", null: false
     t.integer "person_id", null: false
     t.datetime "created_at", precision: nil, null: false
+    t.check_constraint "json_valid(`person_ids`)", name: "person_ids"
   end
 
   create_table "bmid_title", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
