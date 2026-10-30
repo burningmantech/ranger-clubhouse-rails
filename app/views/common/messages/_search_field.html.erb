@@ -10,9 +10,11 @@
   its text, and either runs the search at once, as removing a chip does. Enter
   sends the text, a picked row aside, without waiting for the suggestions
   (the autocomplete's free_text). In one box, as the compose form's recipients
-  are (shared/_callsign_chips).
+  are (shared/_callsign_chips): the suggestions hang from the box, across all
+  of it, and a press anywhere in it but a button puts the caret in the text.
 %>
-<div class="<%= AppFormBuilder::INPUT_CLASSES %> w-full h-auto flex flex-wrap items-center gap-2 py-1">
+<div class="<%= AppFormBuilder::INPUT_CLASSES %> relative w-full h-auto flex flex-wrap items-center gap-2 py-1"
+     data-action="mousedown->message-search#focus">
   <%= fa_icon "magnifying-glass", :solid, class: "text-stone-muted" %>
   <span class="contents" data-message-search-target="list">
     <%= render partial: "shared/callsign_chip", collection: search_with, as: :callsign,
@@ -20,7 +22,7 @@
   </span>
   <%= render "shared/autocomplete", url: suggest_messages_path, name: "q", value: search_query, type: "search",
                                     maxlength: 100, placeholder: "Search messages", aria_label: "Search Messages",
-                                    form_field: true, free_text: true,
+                                    form_field: true, free_text: true, positioned: false,
                                     wrapper_class: "flex-1 min-w-32",
                                     input_class: "w-full min-h-9 bg-transparent outline-none",
                                     input_data: { "message-search-target" => "input" } %>

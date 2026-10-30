@@ -206,13 +206,19 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
 
     fill_in "Search messages", with: "ran"
     assert_selector "[role=option][aria-selected=true]", text: "Search messages for “ran”"
-    # The search's own row has no header over it; the people have theirs.
+    # The search's own row has no header over it and is in no group; the people have theirs.
     assert_selector ".ac-group-header", count: 1
-    find("[role=option]", text: "RANGER1").click
+    assert_no_selector "[role=group] [role=option]", text: "Search messages"
+    find("[role=group][aria-label='#{MessagesConcern::SUGGESTED_PEOPLE}'] [role=option]", text: "RANGER1").click
 
     assert_selector CHIP, text: "RANGER1"
     assert_field "Search messages", with: ""
     assert_selector "[role=status]", text: "2 conversations with RANGER1 in every folder"
+
+    # Review finding: a person the field holds as a chip was suggested again.
+    fill_in "Search messages", with: "ran"
+    assert_selector "[role=option]", text: "Search messages for “ran”"
+    assert_no_selector "[role=option]", text: "RANGER1"
 
     fill_in "Search messages", with: "dirt"
     find_field("Search messages").send_keys(:enter)
@@ -230,10 +236,14 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     sign_in(person(:inactive_ranger))
     visit me_messages_path
 
-    # Before the suggestions come: a person among them must not hold the Enter.
+    # Before the suggestions come: a person among them must not hold the Enter,
+    # and the search for them still in its debounce never starts.
+    count_searches_after_enter
     fill_in "Search messages", with: "ran"
     find_field("Search messages").send_keys(:enter)
     assert_selector "[role=status]", text: "2 conversations match “ran” in every folder"
+    wait_out_debounce
+    assert_equal 0, page.evaluate_script("window.searchesAfterEnter"), "The suggestions were fetched after the Enter"
     assert_no_selector "[role=option]"
 
     fill_in "Search messages", with: "rang"
@@ -248,6 +258,111 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     find_field("Search messages").send_keys(:down, :enter)
     assert_selector CHIP, text: "RANGER1"
     assert_selector "[role=status]", text: "2 conversations with RANGER1 in every folder"
+  end
+
+  # Review finding: Tab dropped a person the reader had arrowed to.
+  test "Tab takes a person arrowed to as a chip, and leaves the text's own row as it leaves the text" do
+    sign_in(person(:inactive_ranger))
+    visit me_messages_path
+
+    fill_in "Search messages", with: "rang"
+    assert_selector "[role=option][aria-selected=true]", text: "Search messages for “rang”"
+    find_field("Search messages").send_keys(:tab)
+    assert_no_selector "[role=option]"
+    assert_field "Search messages", with: "rang"
+    assert_no_selector CHIP
+
+    fill_in "Search messages", with: "ran"
+    assert_selector "[role=option]", text: "RANGER1"
+    find_field("Search messages").send_keys(:down, :tab)
+    assert_selector CHIP, text: "RANGER1"
+    assert_selector "[role=status]", text: "2 conversations with RANGER1 in every folder"
+  end
+
+  # Review finding: Back restored the chips a search had just set, over the list from before it.
+  test "Back from a search shows the mailbox as it was, without the search's chips" do
+    sign_in(person(:inactive_ranger))
+    visit me_messages_path
+
+    fill_in "Search messages", with: "ran"
+    page.execute_script(<<~JS)
+      document.addEventListener("turbo:load", () => { document.documentElement.dataset.searchVisited = "true" }, {once: true})
+    JS
+    find("[role=option]", text: "RANGER1").click
+    assert_selector "[role=status]", text: "2 conversations with RANGER1 in every folder"
+    # The list's frame renders, then makes a page visit of its own for the
+    # address (turbo:load): one starting after a Back would cancel Back's.
+    assert_selector "html[data-search-visited]", visible: :all
+
+    go_back
+    assert_selector "[role=tablist]"
+    assert_no_selector CHIP
+    assert_no_selector "[role=status]", text: "RANGER1"
+  end
+
+  # Review finding: a press on the box beside the text focused nothing, and closed an open list.
+  test "a press anywhere in the search box puts the caret in the text, and an open list stays" do
+    sign_in(person(:inactive_ranger))
+    visit me_messages_path
+    icon = find("form#messages-search .fa-magnifying-glass")
+
+    icon.click
+    assert_selector "form#messages-search input[name=q]:focus"
+
+    find_field("Search messages").send_keys("ran")
+    assert_selector "[role=option]", text: "RANGER1"
+    icon.click
+    assert_selector "form#messages-search input[name=q]:focus"
+    assert_selector "[role=option]", text: "RANGER1"
+  end
+
+  # Review finding: beside a chip the list was as narrow as the text after it,
+  # and a long row pushed it sideways rather than being cut short.
+  test "the suggestions hang under the whole search box, and a long row is cut short" do
+    sign_in(person(:inactive_ranger))
+    on_a_phone do
+      visit me_messages_path(with: ["RetiredRanger"])
+      assert_selector CHIP, text: "RetiredRanger"
+      fill_in "Search messages", with: "radio handoff at the outpost by the gate after the burn"
+      assert_selector "[role=option]", text: "Search messages for"
+
+      edges = page.evaluate_script(<<~JS)
+        (() => {
+          const box = document.querySelector("[data-message-search-target=list]").parentElement.getBoundingClientRect()
+          const list = document.querySelector("form#messages-search [role=listbox]")
+          const rect = list.getBoundingClientRect()
+          return [rect.left - box.left, box.right - rect.right, list.scrollWidth - list.clientWidth]
+        })()
+      JS
+      left, right, overflow = edges
+      assert_in_delta 0, left, 2, "The list starts where the box does"
+      assert_in_delta 0, right, 2, "The list ends where the box does"
+      assert_equal 0, overflow, "A row ran past the list"
+    end
+  end
+
+  # Review finding: the first row's highlight scrolled it into view, which
+  # moved the page when the list sat above the field and reached past its top.
+  test "the first suggestion arrives highlighted without scrolling anything, and the arrow keys still bring a row into view" do
+    sign_in(person(:inactive_ranger))
+    visit me_messages_path
+    page.execute_script(<<~JS)
+      window.scrolledIntoView = 0
+      const scrollIntoView = Element.prototype.scrollIntoView
+      Element.prototype.scrollIntoView = function (...args) {
+        window.scrolledIntoView++
+        return scrollIntoView.apply(this, args)
+      }
+    JS
+
+    fill_in "Search messages", with: "ran"
+    assert_selector "[role=option]", text: "RANGER1"
+    assert_selector "[role=option][aria-selected=true]", text: "Search messages for “ran”"
+    assert_equal 0, page.evaluate_script("window.scrolledIntoView")
+
+    find_field("Search messages").send_keys(:down)
+    assert_selector "[role=option][aria-selected=true]", text: "RANGER1"
+    assert_equal 1, page.evaluate_script("window.scrolledIntoView")
   end
 
   # A hit opens its thread at the first message holding a match
@@ -398,6 +513,16 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
   end
 
   def drawer_scroll_top = page.evaluate_script("document.querySelector('.drawer-content').scrollTop")
+
+  # Count the autocomplete searches that start after an Enter, from here on.
+  def count_searches_after_enter
+    page.execute_script(<<~JS)
+      window.searchesAfterEnter = 0
+      let entered = false
+      document.addEventListener("keydown", (event) => { if (event.key === "Enter") entered = true }, true)
+      document.addEventListener("autocomplete.loadstart", () => { if (entered) window.searchesAfterEnter++ })
+    JS
+  end
 
   def row(message)
     "a.review-line[data-review-id='#{message.id}']"

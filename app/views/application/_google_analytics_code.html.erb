@@ -7,5 +7,7 @@
     }
 
     gtag('js', new Date());
-    gtag('config', '<%= gtag %>');
+    // No page_view of its own, which would carry the whole address: the
+    // turbo:load handler in application.js sends every one, this page's included.
+    gtag('config', '<%= gtag %>', {send_page_view: false});
 </script>

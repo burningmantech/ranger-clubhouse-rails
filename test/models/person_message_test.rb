@@ -266,22 +266,33 @@ class PersonMessageTest < ActiveSupport::TestCase
   # --- The search field's chips and suggestions (.scratch/messages-search/PRD.md, slices 4 and 5)
 
   test "a chip keeps the search to its person's conversations, and alone lists them all" do
-    assert_equal [@radio, @khaki], search("", with: ["RANGER1"])
-    assert_equal [@radio], search("dirt", with: ["RANGER1"])
+    ranger1 = person(:plate_collision_ranger)
+
+    assert_equal [@radio, @khaki], search("", with: [ranger1])
+    assert_equal [@radio], search("dirt", with: [ranger1])
     # RANGER1's thread with AlphaNewbie holds both words, but it is not the owner's.
-    assert_empty search("roster", with: ["RANGER1"])
-    assert_empty search("khaki", with: ["AlphaNewbie"])
+    assert_empty search("roster", with: [ranger1])
+    assert_empty search("khaki", with: [person(:alpha_ranger)])
   end
 
   test "chips need every person in the conversation, and one naming nobody finds nothing" do
     crew = person_message(:search_group_crew)
+    retired = person(:retired_ranger)
 
-    assert_equal [crew], search("", with: %w[RetiredRanger EchelonTest])
-    assert_empty search("", with: %w[RetiredRanger RANGER1])
-    assert_empty search("", with: ["NoSuchRanger"])
-    assert_empty search("dirt", with: %w[RANGER1 NoSuchRanger])
-    # Looked up as the compose form looks one up: case and punctuation aside.
-    assert_equal [@radio, @khaki], search("", with: ["ranger-1"])
+    assert_equal [crew], search("", with: [retired, person(:echelon_ranger)])
+    assert_empty search("", with: [retired, person(:plate_collision_ranger)])
+    assert_empty search("", with: [nil])
+    assert_empty search("dirt", with: [person(:plate_collision_ranger), nil])
+  end
+
+  # Review finding: text starting a chip's own callsign matched every thread the chip kept.
+  test "with a chip, a callsign in the text matches the others in its threads, never the chip's own person" do
+    retired = person(:retired_ranger)
+
+    assert_empty search("ran", with: [person(:plate_collision_ranger)])
+    assert_empty search("retired", with: [retired])
+    # EchelonTest is in the crew's thread beside the chip.
+    assert_equal [person_message(:search_group_crew)], search("echelon", with: [retired])
   end
 
   test "the field suggests the other people in the owner's conversations, with how many each shares" do
@@ -290,6 +301,33 @@ class PersonMessageTest < ActiveSupport::TestCase
     assert_equal [[person(:alpha_ranger), 1]], suggest("Alpha-N")[:people]
     assert_empty suggest("inactive")[:people], "never the owner"
     assert_equal({ people: [], teams: [] }, suggest(" "))
+    # Nor one the field holds as a chip already.
+    assert_empty PersonMessage.search_suggestions_for_person(@owner.id, "ran", without: [person(:plate_collision_ranger)])[:people]
+  end
+
+  test "the field suggests the people shared most first, as many as asked for" do
+    retired = person(:retired_ranger)
+    2.times { letter(retired, to: @owner) }
+
+    assert_equal [[retired, 3], [person(:plate_collision_ranger), 2]], suggest("r")[:people]
+    assert_equal [[retired, 3]], PersonMessage.search_suggestions_for_person(@owner.id, "r", limit: 1)[:people]
+  end
+
+  # Review finding: the field suggested, and a chip or a callsign found, the
+  # members a team brought into a thread, whom its row names as the team.
+  test "the members a team brings into a thread are the team there: never suggested, chipped or matched by callsign" do
+    cadre = teams(:green_dot_cadre)
+    author = person(:active_ranger)
+    echelon = person(:echelon_ranger)
+    [author, echelon].each { |member| join_team(member, cadre) }
+    top = create_group_thread(author, @owner, as_team: cadre, subject: "Radios")
+    assert_equal({ author.id => cadre.id, echelon.id => cadre.id, @owner.id => nil }, team_marks(top))
+
+    assert_equal [[echelon, 1]], suggest("echelon")[:people], "the crew's thread alone"
+    assert_empty suggest("TestRanger")[:people]
+    assert_not_includes search("", with: [echelon]), top
+    assert_not_includes search("TestRanger"), top
+    assert_includes search("Green Dot"), top
   end
 
   test "the field suggests the teams of the owner's team conversations whose name holds the text" do

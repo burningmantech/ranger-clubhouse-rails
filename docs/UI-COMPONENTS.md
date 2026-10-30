@@ -977,6 +977,9 @@ Several callsigns in one input box, each a removable chip, over `shared/_autocom
   Its text is a search, never a chip, which is why it does not reuse `callsign_chips_controller`.
   `shared/_autocomplete` gained `type:`, `value:` and `maxlength:` for its input, and `free_text:` (see
   `docs/autocomplete-component.md`) for it.
+- Both fields pass `shared/_autocomplete` `positioned: false` and make their box `relative`, so the
+  suggestions hang from the box, across all of it, rather than from the text beside the chips, where a
+  chip left them a sliver of the width (`.ac-results` gets `left-0`).
 
 ---
 

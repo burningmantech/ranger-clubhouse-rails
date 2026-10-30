@@ -3,7 +3,8 @@
     adds one (a suggestion taken, a callsign typed and Entered, or one still
     typed when the form is sent), in one input box. The list's id is what a Find Recipient choice is appended to. `max`
     caps the chips, a new one replacing the oldest. %>
-<div class="<%= box_class %>"
+<%# relative: the suggestions hang from the box, across all of it, not from the text beside the chips. %>
+<div class="<%= class_names("relative", box_class) %>"
      data-controller="callsign-chips"
      <%= tag.attributes(data: { callsign_chips_max_value: max }) %>
      data-action="autocomplete.change->callsign-chips#add autocomplete.loadend->callsign-chips#loaded keydown->callsign-chips#keydown">
@@ -13,7 +14,7 @@
   <%# aria_label: nil, so the field's visible label (To, From) names the input. %>
   <%= render "shared/autocomplete", url:, input_id: "#{field_id}_lookup", field_id:, describedby:, invalid:, placeholder:,
                                     aria_label: nil,
-                                    wrapper_class: "flex-1 min-w-32",
+                                    wrapper_class: "flex-1 min-w-32", positioned: false,
                                     input_class: "w-full min-h-9 bg-transparent outline-none",
                                     form_field: true,
                                     input_data: { "callsign-chips-target" => "input" } %>

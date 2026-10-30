@@ -89,6 +89,18 @@ module SystemTestHelpers
     end
   end
 
+  # Wait until the debounce the last keys started in an autocomplete has run out,
+  # so that a search it was going to start has started. The timer is on the
+  # page's own clock, set after those keys and for longer than the component's
+  # 300ms default, so it cannot fire first.
+  def wait_out_debounce
+    page.execute_script(<<~JS)
+      delete document.documentElement.dataset.debounceOver
+      setTimeout(() => { document.documentElement.dataset.debounceOver = "true" }, 320)
+    JS
+    assert_selector "html[data-debounce-over='true']", visible: :all
+  end
+
   # Headless Chrome will not shrink its window below about 500px, so the phone
   # is emulated through the devtools protocol instead. 375x812 is an iPhone X;
   # height: 667 is the SE, for a test that needs the fold higher up.

@@ -164,7 +164,7 @@ Each filter in the `filters` array includes:
 Each group in the `groups` array includes:
 
 - **`key`** (string): Unique group identifier
-- **`title`** (string): Display title for the group header; a blank title draws no header (the mailbox search's own row, above its People and Teams)
+- **`title`** (string): Display title for the group header and the name of its `role="group"`; a blank title draws no header and no group, its rows sitting in the list itself (the mailbox search's own row, above its People and Teams)
 - **`item_ids`** (array): Ordered list of item IDs in this group
 
 ## 4. ARIA & Accessibility
@@ -173,9 +173,10 @@ The autocomplete component follows WCAG 2.1 Level AA standards with comprehensiv
 
 ### Roles
 
-- **Combobox wrapper**: `role="combobox"` on the outer container
+- **Combobox wrapper**: `role="combobox"` on the outer container, named by `aria_label:` as the input is (none with `aria_label: nil`, where a `<label for>` names the input)
 - **Results container**: `role="listbox"` on the results dropdown
 - **Result options**: `role="option"` on each selectable item
+- **Groups**: `role="group"` named by the group's title; a group with no title is no group, its options sitting in the listbox itself
 - **Group headers**: `role="presentation"` (decorative only, not selectable)
 
 ### ARIA Attributes
@@ -230,7 +231,7 @@ Examples:
 | **Escape** | Results not up yet | Call off the search still to come and an Enter waiting for it; the key is left to the page (a dialog closes on it) |
 | Any key | Kept by an input method (`keyCode` 229) | No action |
 | **Tab** | Form field, option selected, no search in progress | Commit selection, close results, move focus to next field |
-| **Tab** | Search in progress, no selection, free text, or the global search dialog | Commit nothing; focus moves as in the two rows below |
+| **Tab** | Search in progress, no selection, a free-text field's first row, or the global search dialog | Commit nothing; focus moves as in the two rows below |
 | **Tab** | Nothing committed, filter chips shown | Move focus to the first filter chip; results stay open |
 | **Tab** | Nothing committed, no filter chips | Close results, move focus to next field |
 | **Enter** / **Space** | Filter chip focused | Apply that filter and return focus to the input |
@@ -242,14 +243,14 @@ Examples:
 ### Keyboard Behavior Details
 
 - **Wrapping navigation**: Arrow keys wrap around (up from first goes to last, down from last goes to first)
-- **Scroll into view**: Selected option automatically scrolls into view using `scrollIntoView({ block: "nearest" })`, smoothly unless the reader prefers reduced motion
+- **Scroll into view**: An option the arrow keys select scrolls into view using `scrollIntoView({ block: "nearest" })`, smoothly unless the reader prefers reduced motion. One highlighted as the list arrives (a lone result, a free-text field's first row) scrolls nothing: it is the list's first row, and the list's own scroll is set back to its top. A list placed above its field can reach past the top of the page's scroller, which `scrollIntoView` would move
 - **Visual selection**: Selected option receives `aria-selected="true"` and visual styling class
 - **Search in progress**: From the keystroke that changes the text until the results for that text are shown or the list is emptied. It covers the debounce before the request starts, and text too short to search. A response for earlier text is discarded, and its failure shows no error
 - **Typing over a chosen value**: In a form field the chosen value (the hidden target) is cleared by the keystroke itself, not after the debounce, so the form never submits the previous value under new text. Fields filled by metadata writeback are not cleared
 - **Enter key handling**: If search is in progress when Enter is pressed, waits for results and auto-selects if only one result, ignoring any row still highlighted from the previous query. An Enter pressed on text too short to search is not kept. An Enter still waiting is forgotten on a dismissal (next), or when the text drops below the minimum length
 - **Dismissal ends the search**: Escape, focus leaving the component, a result being chosen and the controller disconnecting drop the search in flight, call off the one still in its debounce, and forget an Enter waiting for either. No search follows until the text changes again
 - **Input methods**: A keydown reported with `keyCode` 229 is a key the input method kept for itself, such as the Enter that confirms a composition or the arrows that pick a candidate, and is ignored. The test is `keyCode`, not `isComposing`: Safari reports that Enter with `isComposing` false, and a phone keyboard composes every word as it is typed, so its plain Enter (13) has to work mid-word
-- **Tab key**: In a form field (a hidden value field, or submit-on-select), commits the selection if an option is selected and no search is in progress. In the global search dialog Tab commits nothing, whatever is highlighted: it only moves the focus, which keeps the filter chips reachable while an option is highlighted, as a lone result is on arrival
+- **Tab key**: In a form field (a hidden value field, or submit-on-select), commits the selection if an option is selected and no search is in progress. A free-text field's first row is its text, highlighted on arrival, so Tab leaves it as it leaves the text, and takes a row the reader moved to. In the global search dialog Tab commits nothing, whatever is highlighted: it only moves the focus, which keeps the filter chips reachable while an option is highlighted, as a lone result is on arrival
 - **Click on the results that hits no option**: A click on the filter bar's background, a group header or a message hands focus back to the input
 - **Focus leaving the component**: The results are cleared, as Escape clears them, when focus moves anywhere outside the input and its results, and a search still in flight is dropped. Switching windows or tabs does not count, because focus has not moved. Nothing is committed unless `select_on_blur` is set, and then only the highlighted option or a sole result, and never while a search is in progress, when those rows belong to the previous text
 - **Global search dialog**: Does not set `select_on_blur`. A result opens only on Enter or a click, as in Clubhouse 2. A result with no page to open (a fleet or team vehicle has no owner) is not committed by Enter or a click, nor by an Enter that waited for its search: the dialog has no field for a value to go into. The text typed and the results stay as they are, that option is highlighted and focus stays in the input
@@ -448,7 +449,7 @@ The autocomplete Stimulus controller accepts the following data values:
 | `queryParam` | String | "q" | Query parameter name for the search string |
 | `limit` | Number | 5 | Maximum number of results to request |
 | `submitOnSelect` | Boolean | false | Auto-submit form after selection |
-| `freeText` | Boolean | false | The text is itself a choice (the mailbox search, `free_text: true` on `shared/_autocomplete`): the first row stands for it and arrives highlighted, Enter sends the form with the text without waiting for the list unless the reader picked a row below the first, and Tab takes no row. A held Enter (`pendingEnter`) commits only a sole result, so without this a person among the suggestions swallowed the Enter |
+| `freeText` | Boolean | false | The text is itself a choice (the mailbox search, `free_text: true` on `shared/_autocomplete`): the first row stands for it and arrives highlighted, Enter sends the form with the text without waiting for the list unless the reader picked a row below the first, and Tab takes only a row the reader moved to. A held Enter (`pendingEnter`) commits only a sole result, so without this a person among the suggestions swallowed the Enter |
 | `formField` | Boolean | false | A form field with no hidden target: a selection fills the input and dispatches `autocomplete.change` (the callsign chips field, `form_field: true` on `shared/_autocomplete`) |
 
 ### Optional Values

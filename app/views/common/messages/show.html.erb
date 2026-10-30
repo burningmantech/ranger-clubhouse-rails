@@ -4,7 +4,8 @@
     back link is the way back to it, to the folder the thread was opened from
     (the Inbox keeps the bare address), or to the search it was a hit of.
     messages_path resolves to the namespace that rendered this, so the back
-    link needs no local. %>
+    link needs no local. Never kept for Back, as the index is not. %>
+<% turbo_exempts_page_from_cache %>
 <% back_path = messages_path(folder: (@folder unless @folder == PersonMessage::FOLDER_INBOX), **search_scope) %>
 <div class="mb-2">
   <% if @person %>

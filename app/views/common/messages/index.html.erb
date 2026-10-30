@@ -6,6 +6,10 @@
     page stays inside whichever namespace rendered it. Only back_link needs
     a local — it leaves the mailbox, and each management shell has its own
     home. %>
+<%# Never kept for Back: a search sets the chips and text in its field before
+    its list loads, so the page Turbo would keep paired the new field with the
+    old list (message_search_controller). Back loads the address instead. %>
+<% turbo_exempts_page_from_cache %>
 <div class="mb-2">
   <% if @person %>
     <%= hero_panel icon: "comments", heading_level: :h1, id: "messages-header",

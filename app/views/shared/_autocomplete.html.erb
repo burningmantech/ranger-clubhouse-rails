@@ -1,10 +1,13 @@
-<%# locals: (url:, mode: nil, name: nil, input_id: nil, field_id: nil, describedby: nil, invalid: false, wrapper_class: nil, form_field: false, placeholder: "Search...", min_length: 2, limit: 5, delay: 300, meta_mapping: nil, submit_on_select: false, recents_key: nil, autofocus: false, input_class: nil, results_class: nil, hidden_field_name: nil, hidden_field_id: nil, aria_label: "Search", input_data: nil, inline: false, select_on_blur: false, keyboard_help: false, type: "text", value: nil, maxlength: nil, free_text: false) %>
+<%# locals: (url:, mode: nil, name: nil, input_id: nil, field_id: nil, describedby: nil, invalid: false, wrapper_class: nil, form_field: false, placeholder: "Search...", min_length: 2, limit: 5, delay: 300, meta_mapping: nil, submit_on_select: false, recents_key: nil, autofocus: false, input_class: nil, results_class: nil, hidden_field_name: nil, hidden_field_id: nil, aria_label: "Search", input_data: nil, inline: false, select_on_blur: false, keyboard_help: false, type: "text", value: nil, maxlength: nil, free_text: false, positioned: true) %>
 <%# field_id: the text input's own id, for a form label that names it; describedby: its help or error line;
     wrapper_class: the component's own box, as a flex item in a field (callsign_chips_field);
     form_field: a field with no hidden target, whose selection only dispatches autocomplete.change;
     aria_label: nil when a <label for=field_id> names the input, since an aria-label would outrank it.
     free_text: the text is itself a choice (the mailbox search, MessagesConcern#suggest): the first row stands for it
-    and arrives highlighted, and Enter sends the form with the text unless the reader picked another row. %>
+    and arrives highlighted, and Enter sends the form with the text unless the reader picked another row.
+    positioned: false hangs the list from the box the caller positions around the component, across all of it: a
+    chips field's, where the component is only the text after the chips (shared/_callsign_chips,
+    common/messages/_search_field). %>
 <%
   wrapper_id = input_id || "autocomplete-#{SecureRandom.hex(4)}"
   results_id = "#{wrapper_id}-results"
@@ -29,7 +32,8 @@
      aria-expanded="false"
      aria-haspopup="listbox"
      aria-owns="<%= results_id %>"
-     class="<%= class_names("relative", wrapper_class) %>">
+     <% if aria_label %>aria-label="<%= aria_label %>"<% end %>
+     class="<%= class_names(wrapper_class, relative: positioned) %>">
 
   <input type="<%= type %>"
          id="<%= input_field_id %>"
@@ -68,7 +72,7 @@
   <div id="<%= results_id %>"
        data-autocomplete-target="results"
        role="listbox"
-       class="ac-results <%= results_class %>"
+       class="<%= class_names("ac-results", results_class, "left-0": !positioned) %>"
        hidden>
   </div>
 

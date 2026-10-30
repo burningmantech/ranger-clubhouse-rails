@@ -1631,6 +1631,8 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
 
     get suggest_me_messages_path(q: "ran")
     assert_response :success
+    # Review finding: each keystroke's JSON built the menu, which only a layout reads.
+    assert_nil @controller.instance_variable_get(:@menu_context)
     body = response.parsed_body
     assert_equal [["search", ""], ["people", MessagesConcern::SUGGESTED_PEOPLE]], body["groups"].map { |group| group.values_at("key", "title") }
     search, ranger = body["items"]
@@ -1638,6 +1640,10 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes search["html"], "Search messages for “ran”"
     assert_equal ["RANGER1", "person"], [ranger["value"], ranger.dig("meta", "kind")]
     assert_includes ranger["html"], "2 conversations"
+
+    # Review finding: a person the field holds as a chip was suggested again.
+    get suggest_me_messages_path(q: "ran", with: ["ranger-1"])
+    assert_equal %w[search], response.parsed_body["groups"].pluck("key")
   end
 
   test "the search field suggests a team of the owner's conversations as a search for its name, and escapes the text" do
@@ -1663,6 +1669,9 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
 
     get me_messages_path(with: ["RANGER1"])
     assert_response :success
+    # Never kept for Back, which would pair the chips with the list before them.
+    assert_select "head meta[name='turbo-cache-control'][content='no-cache']"
+    assert_select "form#messages-search [role=combobox][aria-label='Search Messages']"
     assert_select "form#messages-search [data-message-search-target=list] input[type=hidden][name='with[]'][value=RANGER1]"
     assert_select "form#messages-search button[aria-label='Remove RANGER1'][data-action='message-search#remove']"
     assert_select "[role=tablist]", count: 0
@@ -1692,6 +1701,18 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     get me_messages_path(with: %w[RANGER1 ranger1 RetiredRanger EchelonTest AlphaNewbie])
     assert_select "[data-message-search-target=list] input[name='with[]']", count: 3
     assert_select "[role=status]", text: /No conversations with RANGER1, RetiredRanger, and EchelonTest in any folder/
+
+    # Review finding: each spelling of one person was a chip of its own, as typed.
+    # Each is looked up as the compose form looks one up, and shown as the person's.
+    get me_messages_path(with: %w[ranger-1 RANGER1])
+    assert_select "[data-message-search-target=list] input[name='with[]']", count: 1
+    assert_select "[data-message-search-target=list] input[name='with[]'][value=RANGER1]"
+    assert_select "[role=status]", text: /2 conversations with RANGER1 in every folder/
+
+    # One naming nobody stays as typed, and finds nothing.
+    get me_messages_path(with: %w[ranger-1 NoSuchRanger])
+    assert_select "[data-message-search-target=list] input[name='with[]'][value=NoSuchRanger]"
+    assert_select "[role=status]", text: /No conversations with RANGER1 and NoSuchRanger in any folder/
   end
 
   test "a hit's thread carries the chips to its back link, its lazy list and the toggles" do
@@ -1700,6 +1721,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
 
     get me_message_path(khaki, with: ["RANGER1"])
     assert_response :success
+    assert_select "head meta[name='turbo-cache-control'][content='no-cache']"
     assert_select "a[aria-label='Back to Messages'][href=?]", me_messages_path(with: ["RANGER1"])
     assert_select "form#messages-search input[name='with[]'][value=RANGER1]"
     assert_select "turbo-frame#messages-conversation-list[loading=lazy][src=?]",

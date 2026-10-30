@@ -9,7 +9,9 @@
   lines entries are plain strings; ERB escapes them, so a value containing < or
   & is safe to pass through.
 %>
-<div class="flex items-center gap-3 px-3 py-2">
+<%# flex-1 min-w-0: the option is a flex row too, and the row would not shrink below its title, so a long one
+    pushed the list sideways instead of truncating. %>
+<div class="flex flex-1 min-w-0 items-center gap-3 px-3 py-2">
   <div class="shrink-0 w-8 h-8">
     <% if photo %>
       <%= image_tag photo, width: 32, height: 32, class: "rounded-full object-cover w-8 h-8", alt: "" %>

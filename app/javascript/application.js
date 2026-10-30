@@ -62,9 +62,13 @@ document.addEventListener("turbo:load", () => {
         }
     }
 
+    // The first page's view too: the config sends none of its own
+    // (application/_google_analytics_code). The address goes without its
+    // query, as the request log keeps it (RequestLogger#path_for): a query can
+    // carry personal data, such as a mailbox search's text and callsigns.
     if (typeof gtag === 'function') {
         gtag('event', 'page_view', {
-            page_location: window.location.href,
+            page_location: window.location.origin + window.location.pathname,
             page_path: window.location.pathname,
             page_title: document.title
         });

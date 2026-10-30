@@ -157,7 +157,9 @@ export default class Autocomplete extends Controller {
         return sibling || def
     }
 
-    select(target) {
+    // scroll: false leaves the list and the page where they are (a row
+    // highlighted as the list arrives, renderJsonResults).
+    select(target, {scroll = true} = {}) {
         const previouslySelected = this.selectedOption
         if (previouslySelected) {
             previouslySelected.removeAttribute("aria-selected")
@@ -167,6 +169,7 @@ export default class Autocomplete extends Controller {
         target.setAttribute("aria-selected", "true")
         target.classList.add(...this.selectedClassesOrDefault)
         this.inputTarget.setAttribute("aria-activedescendant", target.id)
+        if (!scroll) return
 
         // The filter bar is sticky inside the scrolling list, so "nearest" alone
         // parks a row arriving from above underneath it. Reserve the bar's height,
@@ -222,10 +225,13 @@ export default class Autocomplete extends Controller {
         // Only a form field's row is taken, on the way to the next field. In the
         // search dialog a row is left to Enter and a click: Tab is the only key
         // that reaches the filter chips, and a lone result arrives highlighted,
-        // so there Tab only moves the focus. Nor is a row taken before the list
-        // has caught up with the text: see onEnterKeydown.
+        // so there Tab only moves the focus. A free-text field's first row is
+        // its text, highlighted as it arrives, so Tab leaves it as it leaves the
+        // text, and takes a row the reader moved to. Nor is a row taken before
+        // the list has caught up with the text: see onEnterKeydown.
         const selected = this.selectedOption
-        if (selected && !this.searching && this.formField && !this.freeTextValue) this.commit(selected)
+        const lead = this.freeTextValue && selected === this.options[0]
+        if (selected && !this.searching && this.formField && !lead) this.commit(selected)
     }
 
     onEnterKeydown = (event) => {
@@ -729,10 +735,14 @@ export default class Autocomplete extends Controller {
         // A lone result is pre-highlighted (selected, not navigated) so the user can
         // confirm it and press Enter to open it, and a free-text field's first row,
         // the text itself. Skip if an Enter was queued mid-fetch (consumePendingEnter
-        // will commit it) to avoid a flash of selection.
+        // will commit it) to avoid a flash of selection. Nothing is scrolled into
+        // view for it: the row is the list's first, at its top, and a list placed
+        // above the field can reach past the top of the page's scroller, which
+        // scrollIntoView would move.
         const opts = this.options
         if (opts.length && (opts.length === 1 || this.freeTextValue) && !this.pendingEnter) {
-            this.select(opts[0])
+            this.select(opts[0], {scroll: false})
+            this.resultsTarget.scrollTop = 0
         }
 
         // Announce result count to screen readers
@@ -772,7 +782,8 @@ export default class Autocomplete extends Controller {
         return container
     }
 
-    // A group with no title has no header: the mailbox search's own row.
+    // A group with no title has no header and is no group, only rows of the
+    // list: the mailbox search's own row, which stands for the text.
     renderGroup(group, itemMap) {
         const container = document.createElement("div")
         container.className = "ac-group"
@@ -786,8 +797,10 @@ export default class Autocomplete extends Controller {
         }
 
         const list = document.createElement("div")
-        list.setAttribute("role", "group")
-        if (group.title) list.setAttribute("aria-label", group.title)
+        if (group.title) {
+            list.setAttribute("role", "group")
+            list.setAttribute("aria-label", group.title)
+        }
 
         group.item_ids.forEach(id => {
             const item = itemMap.get(id)

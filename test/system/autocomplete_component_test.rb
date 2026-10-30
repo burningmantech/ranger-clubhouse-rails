@@ -566,17 +566,6 @@ class AutocompleteComponentTest < ApplicationSystemTestCase
     page.evaluate_script("window.searchesStarted")
   end
 
-  # Wait until the debounce the last keys started has run out, so that a search
-  # it was going to start has started. The timer is on the page's own clock, set
-  # after those keys and for longer than the fixture's 300ms, so it cannot fire first.
-  def wait_out_debounce
-    page.execute_script(<<~JS)
-      delete document.documentElement.dataset.debounceOver
-      setTimeout(() => { document.documentElement.dataset.debounceOver = "true" }, 320)
-    JS
-    assert_selector "html[data-debounce-over='true']", visible: :all
-  end
-
   # Whether the highlighted option sits wholly in the part of the list a user
   # can see: below the sticky filter bar and above the list's bottom edge.
   def selected_option_fully_visible?(list_id)

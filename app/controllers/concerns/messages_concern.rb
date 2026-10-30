@@ -19,7 +19,7 @@ module MessagesConcern
   AWAY_TOO_LONG = ["Hasn't logged in for over 2 years.", "They may not receive notifications."].freeze
 
   # The most people a search names as chips (?with[]=): the field replaces the
-  # oldest with a fourth, and #search_with reads no more than this.
+  # oldest with a fourth, and #search_chips reads no more than this.
   MAX_SEARCH_WITH = 3
 
   # Over the people the search field suggests: what taking one does.
@@ -27,6 +27,8 @@ module MessagesConcern
 
   included do
     before_action :set_message, only: %i[show create_reply toggle_read toggle_archive mark_read]
+    # Suggestions are JSON, fetched as the reader types: no layout, so no menu.
+    skip_before_action :build_menu_items, only: %i[suggest suggest_callsigns]
 
     helper_method :message_owner, :messages_route_prefix, :search_query, :search_with, :searching?, :search_scope,
                   :lookup_label, :lookup_role_label, :direction_params,
@@ -142,11 +144,12 @@ module MessagesConcern
   # autocomplete JSON, from the owner's own conversations: the search for the
   # text first, then the people in them whose callsign starts with it, each
   # taken as a chip that narrows the search to the conversations they are in,
-  # then the teams whose name holds it, each a search for that name. Each row's
-  # meta.kind tells message_search_controller which it is.
+  # less those the field holds already (?with[]=), then the teams whose name
+  # holds it, each a search for that name. Each row's meta.kind tells
+  # message_search_controller which it is.
   def suggest
     query = params[:q].is_a?(String) ? params[:q].strip.first(100) : ""
-    found = PersonMessage.search_suggestions_for_person(message_owner.id, query)
+    found = PersonMessage.search_suggestions_for_person(message_owner.id, query, without: search_people.compact)
     preload_avatars(found[:people].map(&:first))
 
     search = query.present? ? [search_suggestion("search", "search", query, title: "Search messages for “#{query}”")] : []
@@ -412,12 +415,24 @@ module MessagesConcern
     @search_query = (params[:q].strip.first(100).presence if params[:q].is_a?(String))
   end
 
-  # The callsigns the search field holds as chips (?with[]=): the search keeps
-  # to the conversations every one of them is in. Carried with the query.
-  def search_with
-    @search_with ||= Array(params[:with].presence).grep(String).map { |callsign| callsign.strip.first(Person::CALLSIGN_MAX_LENGTH) }
-                                                  .compact_blank.uniq(&:downcase).first(MAX_SEARCH_WITH)
+  # The search's chips (?with[]=), each the callsign it shows and the person it
+  # names: looked up as the compose form looks one up and shown as that
+  # person's callsign, so however an address spells someone, they are one chip.
+  # One naming nobody shows as typed, with no person, and the search finds
+  # nothing (PersonMessage.search_for_person).
+  def search_chips
+    @search_chips ||= Array(params[:with].presence).grep(String).map { |callsign| callsign.strip.first(Person::CALLSIGN_MAX_LENGTH) }
+                                                   .compact_blank.uniq(&:downcase).first(MAX_SEARCH_WITH)
+                                                   .map { |callsign| Person.resolve_callsign(callsign).then { |person| [person&.callsign || callsign, person] } }
+                                                   .uniq(&:first)
   end
+
+  # The callsigns the search field holds as chips: the search keeps to the
+  # conversations every one of them is in. Carried with the query.
+  def search_with = search_chips.map(&:first)
+
+  # Whom the chips name, nil for one naming nobody.
+  def search_people = search_chips.map(&:last)
 
   # Whether the list shows a search's hits: some text, or a chip alone.
   def searching?
@@ -480,7 +495,7 @@ module MessagesConcern
 
   # The list column's rows: a search's hits in every folder, else the folder's.
   def retrieve_list_messages
-    return PersonMessage.search_for_person(message_owner.id, search_query, with: search_with) if searching?
+    return PersonMessage.search_for_person(message_owner.id, search_query, with: search_people) if searching?
 
     PersonMessage.retrieve_for_person(message_owner.id, @folder)
   end
