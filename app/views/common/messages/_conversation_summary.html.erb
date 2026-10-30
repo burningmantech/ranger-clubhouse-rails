@@ -56,6 +56,12 @@
         <% elsif !is_read %>
           <% has_new_reply = message.replies.any? { |reply| reply.unread?(owner.id) } %>
           <%= ui_badge(has_new_reply ? "New Reply" : "New", :warning, size: :xs, class: "shrink-0") %>
+        <% elsif q && is_sender %>
+          <%# A search's hit says where it was found, as Archived does: Sent
+              for a thread the owner started, which the Sent folder lists
+              whether archived or not, so it is in the Inbox too. A folder's
+              own rows never need it. %>
+          <%= ui_badge "Sent", :secondary, size: :xs, class: "shrink-0" %>
         <% end %>
         <time datetime="<%= latest.created_at.iso8601 %>" class="ms-auto shrink-0 whitespace-nowrap text-sm text-stone-subtle">
           <%= message_list_time latest.created_at %>

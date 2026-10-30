@@ -83,18 +83,46 @@ module MessagesHelper
   end
 
   # A list row's last line: the latest message in the thread; on a search's
-  # hit, five words either side of the first match in the thread, top first,
-  # marked -- or the latest message still, for a hit on the subject or the
-  # other party's callsign alone. Both read the text the search matched
-  # (body_text), never the editor's markup.
+  # hit, five words either side of the first match in the thread -- in the
+  # message the hit opens on (#message_search_landing) -- marked, or the latest
+  # message still, for a hit on the subject or the other party's callsign
+  # alone. Both read the text the search matched (body_text), never the
+  # editor's markup.
   def message_list_snippet(message, query)
     rows = [message, *message.replies]
-    if query.present?
+    if (landing = message_search_landing(rows, query))
       pattern = message_search_pattern(query)
-      text = rows.lazy.map(&:body_text).find { |body| body.match?(pattern) }
-      return mark_search_hits(excerpt(text, pattern, radius: 5, separator: " ", omission: "…"), pattern) if text
+      return mark_search_hits(excerpt(landing.body_text, pattern, radius: 5, separator: " ", omission: "…"), pattern)
     end
     truncate(rows.last.body_text, length: 70)
+  end
+
+  # The message of a thread's +rows+ that a search's hit opens on: the first
+  # whose text holds a match, read from body_text as the search reads it; nil
+  # with no search, or for a hit on the subject or a callsign alone.
+  def message_search_landing(rows, query)
+    return if query.blank?
+
+    pattern = message_search_pattern(query)
+    rows.find { |row| row.body_text.match?(pattern) }
+  end
+
+  # A card's body, rendered and sanitized (rich_text, hyperlink_text), with a
+  # search's matches marked in its text alone: never in a tag or an attribute,
+  # such as a link's address, and after sanitizing, which keeps no class but
+  # the editor's. A text node holding a match gives way to the list row's
+  # marks (#mark_search_hits), whose text is escaped, so text that reads like
+  # a tag stays text. A body with nothing to mark comes back as it was.
+  def message_body_marks(html, query)
+    return html if query.blank?
+
+    pattern = message_search_pattern(query)
+    fragment = Nokogiri::HTML5.fragment(html)
+    texts = fragment.xpath(".//text()").select { |text| text.content.match?(pattern) }
+    return html if texts.empty?
+
+    texts.each { |text| text.replace(mark_search_hits(text.content, pattern)) }
+    fragment.to_html.html_safe
   end
 
   # The Cadres and Delegations compose can send to, for its select.

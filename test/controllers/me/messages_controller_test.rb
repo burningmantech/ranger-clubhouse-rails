@@ -1451,6 +1451,84 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "turbo-stream[target=messages-folder-selector] template [role=tablist]", count: 0
   end
 
+  test "a hit's thread marks its matches and lands on the first message holding one" do
+    sign_in_as(person(:inactive_ranger))
+    swap = person_message(:search_dirt_swap)
+    reply_id = ActionView::RecordIdentifier.dom_id(person_message(:search_dirt_swap_reply), :card)
+    top_card = "article##{ActionView::RecordIdentifier.dom_id(swap, :card)}"
+    reply_card = "article##{reply_id}"
+
+    get me_message_path(swap, q: "thermos")
+    assert_response :success
+    assert_select "#messages-thread [data-controller=scroll-to-element][hidden][data-scroll-to-element-id-value=?]" \
+                  "[data-scroll-to-element-container-value='.review-pane']", reply_id
+    assert_select "article.ring-primary", count: 1
+    assert_select "#{reply_card}.ring-primary.scroll-mt-4 mark.search-hit", text: "thermos"
+    assert_select "#{top_card} mark", count: 0
+
+    # Both messages match: the top, first.
+    get me_message_path(swap, q: "dirt shift")
+    assert_select "#{top_card}.ring-primary mark.search-hit", count: 2
+    assert_select "#{reply_card}.ring-primary", count: 0
+
+    # A hit on the subject or the callsign alone, or no search: no mark, ring or scroll.
+    ["Thursday", "AlphaN", nil].each do |q|
+      get me_message_path(swap, q:)
+      assert_select "article mark", count: 0
+      assert_select "article.ring-primary", count: 0
+      assert_select "[data-controller=scroll-to-element]", count: 0
+    end
+  end
+
+  test "a hit in a message written in the editor is marked in its text, never in its markup" do
+    sign_in_as(person(:inactive_ranger))
+    radio = person_message(:search_radio_archived)
+    rich_card = "article##{ActionView::RecordIdentifier.dom_id(person_message(:search_radio_rich_reply), :card)}"
+
+    get me_message_path(radio, q: "depot")
+    assert_response :success
+    assert_select "#{rich_card}.ring-primary .lexxy-content a[href=?] mark.search-hit", "https://example.org/depot",
+                  text: "depot"
+
+    # Words of the markup alone -- the link's address, a tag -- are no match.
+    %w[https strong].each do |q|
+      get me_message_path(radio, q:)
+      assert_select "article mark", count: 0
+      assert_select "article.ring-primary", count: 0
+    end
+  end
+
+  test "Mark Unread morphs the cards with the search's marks and the landing card's ring" do
+    sign_in_as(person(:inactive_ranger))
+    swap = person_message(:search_dirt_swap)
+    top_card, reply_card = [swap, person_message(:search_dirt_swap_reply)].map do |message|
+      "turbo-stream[action=replace][method=morph][target=#{ActionView::RecordIdentifier.dom_id(message, :card)}] template article"
+    end
+
+    post toggle_read_me_message_path(swap), params: { folder: PersonMessage::FOLDER_INBOX, q: "thermos" }, as: :turbo_stream
+    assert_response :success
+    assert_select "#{reply_card}.ring-primary mark.search-hit", text: "thermos"
+    assert_select "#{top_card} mark", count: 0
+    assert_select "#{top_card}.ring-primary", count: 0
+  end
+
+  test "a search's hit the owner started says Sent, under Archived, and a folder's row never does" do
+    sign_in_as(person(:inactive_ranger))
+    radio = person_message(:search_radio_archived)
+    chips = -> { css_select("a.review-line[data-review-id='#{radio.id}'] .badge").map { |chip| chip.text.strip } }
+
+    # Sent and archived by the owner: one chip, where it was found.
+    get me_messages_path(q: "radio")
+    assert_equal ["Archived"], chips.call
+
+    person_message_member(:search_radio_archived_inactive_ranger).update!(archived: false)
+    get me_messages_path(q: "radio")
+    assert_equal ["Sent"], chips.call
+
+    get me_messages_path(folder: PersonMessage::FOLDER_SENT)
+    assert_empty chips.call
+  end
+
   # --- Group threads (messaging rework slice 3, ruling D2) ----------------------
 
   test "a message to three callsigns is one shared thread: one top, a member row each, three notified" do

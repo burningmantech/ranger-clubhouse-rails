@@ -54,6 +54,33 @@ class MessagesHelperTest < ActionView::TestCase
     assert_equal "Bring the spare batteries to the depot.\nThanks!", message_list_snippet(radio, nil)
   end
 
+  test "message_search_landing is the thread's first message whose text holds a match" do
+    swap = person_message(:search_dirt_swap)
+    rows = [swap, *swap.replies]
+    assert_equal person_message(:search_dirt_swap_reply), message_search_landing(rows, "thermos")
+    assert_equal swap, message_search_landing(rows, "dirt shift")
+
+    # A hit on the subject or the callsign alone, or no search: nowhere to land.
+    assert_nil message_search_landing(rows, "Thursday")
+    assert_nil message_search_landing(rows, "AlphaN")
+    assert_nil message_search_landing(rows, nil)
+  end
+
+  test "message_body_marks marks a body's text, never a tag or an attribute, and keeps escaped text as text" do
+    html = %(<p>Meet at <a href="https://dirt.example/dirt">the Dirt depot</a>, not <strong>undirty</strong></p>).html_safe
+    marked = message_body_marks(html, "dirt")
+    assert_equal %(<p>Meet at <a href="https://dirt.example/dirt">the <mark class="search-hit">Dirt</mark> depot</a>, ) +
+                 %(not <strong>undirty</strong></p>), marked
+    assert_predicate marked, :html_safe?
+
+    assert_equal %(&lt;img src=x onerror=alert(1)&gt; <mark class="search-hit">dirt</mark>),
+                 message_body_marks(%(&lt;img src=x onerror=alert(1)&gt; dirt).html_safe, "dirt")
+
+    # Nothing to mark, or no search: the body as it was.
+    assert_same html, message_body_marks(html, "thermos")
+    assert_same html, message_body_marks(html, nil)
+  end
+
   test "message_search_summary counts the hits" do
     assert_equal "1 conversation matches “dirt” in every folder", message_search_summary(1, "dirt")
     assert_equal "3 conversations match “dirt” in every folder", message_search_summary(3, "dirt")

@@ -606,10 +606,14 @@ module MessagesConcern
   # new and the reply form is left alone. Card by card, never the whole thread:
   # a reply that landed live after this request loaded the thread is not in it,
   # and a morph of #messages-thread would remove that card (review finding V10).
+  # With the search the request posts, so the marks and the landing card's ring
+  # stay as _thread drew them.
   def card_streams
-    [@message, *@message.replies].map do |card|
+    rows = [@message, *@message.replies]
+    landing = helpers.message_search_landing(rows, search_query)
+    rows.map do |card|
       turbo_stream.replace(helpers.dom_id(card, :card), method: :morph, partial: "common/messages/message_card",
-                                                        locals: { message: card, owner: message_owner })
+                                                        locals: { message: card, owner: message_owner, q: search_query, landing: })
     end
   end
 

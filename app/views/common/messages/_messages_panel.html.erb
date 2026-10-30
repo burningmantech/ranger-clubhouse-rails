@@ -17,7 +17,7 @@
   <%= tag.div id: "messages-thread", role: "log", aria: { label: "Conversation", live: "polite" },
               data: ({ controller: "thread-live",
                        thread_live_url_value: mark_read_message_path(message, folder:, q: search_query) } if live && mark_read_on_view?) do %>
-    <%= render partial: "common/messages/thread", locals: { message:, owner: message_owner } %>
+    <%= render partial: "common/messages/thread", locals: { message:, owner: message_owner, q: search_query } %>
   <% end %>
 
   <div class="border-t border-line pt-3">

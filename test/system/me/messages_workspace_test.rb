@@ -184,7 +184,45 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     assert_no_selector "[role=tablist]"
   end
 
+  # A hit opens its thread at the first message holding a match
+  # (.scratch/messages-search/PRD.md, slice 1). From lg the pane scrolls itself
+  # there and the page under it stays put, keeping the list where the reader
+  # left it; below lg the thread is the page, and the page scrolls. Visited by
+  # address: the full-text index never sees the replies a test creates.
+  test "a hit's thread opens at its match, scrolling the pane from lg and never the page under it" do
+    20.times do |index|
+      body = index == 10 ? "Bring the thermos." : (["Reply #{index}."] * 6).join("\n")
+      send_message(@sender, @owner, "Shift swap", body:, reply_to: @thread)
+    end
+    landing = "#messages-thread article.ring-primary"
+    sign_in(@owner)
+
+    visit me_message_path(@thread, q: "thermos")
+    assert_selector landing, text: "Bring the thermos."
+    assert_eventually("the pane never brought the match to its top") { landed_below?(landing, "aside.review-pane") }
+    assert_equal 0, page.evaluate_script("document.querySelector('.drawer-content').scrollTop")
+
+    on_a_phone do
+      visit me_message_path(@thread, q: "thermos")
+      assert_selector landing, text: "Bring the thermos."
+      assert_eventually("the page never brought the match to its top") { landed_below?(landing, ".drawer-content") }
+      # The drawer's scroller moved, not the document under the navbar.
+      assert_equal 0, page.evaluate_script("window.scrollY")
+    end
+  end
+
   private
+
+  # The card sits a scroll-mt-4 (16px) below the top of the scroller's view.
+  def landed_below?(card, scroller)
+    page.evaluate_script(<<~JS).between?(15, 17)
+      (() => {
+        const scroller = document.querySelector(#{scroller.to_json})
+        const top = document.querySelector(#{card.to_json}).getBoundingClientRect().top
+        return top - scroller.getBoundingClientRect().top - scroller.clientTop
+      })()
+    JS
+  end
 
   def row(message)
     "a.review-line[data-review-id='#{message.id}']"
@@ -196,9 +234,9 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     assert_selector "turbo-frame#messages-pane:not([disabled])", visible: :all
   end
 
-  def send_message(sender, recipient, subject)
+  def send_message(sender, recipient, subject, body: "#{subject}, please.", reply_to: nil)
     PersonMessage.create!(message_type: PersonMessage::MESSAGE_TYPE_CONTACT, person: recipient,
                           creator_person: sender, sender_person: sender,
-                          sender_type: PersonMessage::SENDER_TYPE_PERSON, subject:, body: "#{subject}, please.")
+                          sender_type: PersonMessage::SENDER_TYPE_PERSON, subject:, body:, reply_to:)
   end
 end

@@ -749,7 +749,10 @@ raw-Tailwind color runs left in the system — don't copy the pattern into new c
 
 **Purpose:** marks what a search matched inside a result. One use so far: the mailbox's hits
 (`MessagesHelper#message_search_marks`, `<mark class="search-hit">` around each matched word in a
-hit's subject and snippet). Owner-approved 2026-10-18.
+hit's subject and snippet), and the cards of the thread a hit opens (`#message_body_marks`), where
+the first card holding a match is also ringed `ring-2 ring-primary`, the review pane's selection
+colour, and scrolled to the top of the pane. Owner-approved 2026-10-18; the cards and the ring
+2026-10-29, as design B of `.scratch/messages-search/PRD.md`.
 
 ```css
 @utility search-hit { @apply bg-warning/30 text-inherit rounded-sm; }  /* components/messages.css */

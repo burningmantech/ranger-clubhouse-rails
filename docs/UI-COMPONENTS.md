@@ -1827,6 +1827,14 @@ the page when it connects. Only /me renders it: Person and HQ never mark a threa
 Brings one element into view when the page renders, named by its id. Use it to put the reader back
 beside the record they just changed after an edit redirects them to a list or a parent page.
 
+**An element inside a scroller of its own** names that scroller as a selector in
+`data-scroll-to-element-container-value` (the mailbox's pane, `.review-pane`, which scrolls itself
+from lg up). While the container scrolls, only it moves, putting the element at its top less the
+element's `scroll-margin-top`; otherwise the page scrolls as it does with no container named.
+`scrollIntoView` would move every container around the element, the page under the pane too,
+carrying the list beside it away from the row the reader chose, and its `container: "nearest"`
+option is Chrome's alone.
+
 **A `#fragment` cannot do this job after a form submission.** Turbo takes the page to visit from the
 response's URL, and a URL's fragment is not part of it, so `redirect_to path(anchor: "group-7")` from a
 POST, PATCH, or DELETE is silently dropped and the reader lands at the top. (Fragments still work for
@@ -1839,7 +1847,8 @@ ordinary link visits.) Carry the id as a query parameter instead, and render thi
 ```
 
 It respects `prefers-reduced-motion`. In use on Survey Management
-(`app/views/communication/surveys/show.html.erb`).
+(`app/views/communication/surveys/show.html.erb`), and in the mailbox, where a search's hit opens
+its thread on the first message holding a match (`app/views/common/messages/_thread.html.erb`).
 
 **Measuring it:** `window.scrollY` stays `0` in this application — `body` is `h-screen` and the scroller
 is an inner `div.drawer-content`. Read `document.querySelector(".drawer-content").scrollTop` instead.

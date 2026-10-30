@@ -15,8 +15,16 @@ import {Controller} from "@hotwired/stimulus"
 // which Turbo treats as a refresh and morphs. Morphing leaves this element
 // alone, so connect() never runs again, and without the listener the second
 // move would leave the reader looking at whatever took the row's place.
+//
+// data-scroll-to-element-container-value names, as a selector, an ancestor
+// that scrolls itself in some layouts: the mailbox's pane, from lg up
+// (components/review-pane.css). While it does, only it moves, putting the
+// element at its top less the element's scroll-margin-top. scrollIntoView
+// would move every container around the element too -- the page under the
+// pane, carrying the list beside it away from the row the reader chose -- and
+// its option to stop at the nearest (container: "nearest") is Chrome's alone.
 export default class extends Controller {
-    static values = {id: String}
+    static values = {id: String, container: String}
 
     connect() {
         this.reveal = this.reveal.bind(this)
@@ -34,7 +42,13 @@ export default class extends Controller {
             return
         }
 
-        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        target.scrollIntoView({behavior: reduced ? "auto" : "smooth", block: "start"})
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+        const container = this.containerValue && target.closest(this.containerValue)
+        if (container && ["auto", "scroll"].includes(getComputedStyle(container).overflowY)) {
+            const top = target.getBoundingClientRect().top - container.getBoundingClientRect().top - container.clientTop
+            container.scrollBy({top: top - parseFloat(getComputedStyle(target).scrollMarginTop), behavior})
+        } else {
+            target.scrollIntoView({behavior, block: "start"})
+        }
     }
 }
