@@ -185,7 +185,7 @@ class OnDutyShiftLeadReportTest < ActiveSupport::TestCase
 
   def report = OnDutyShiftLeadReport.execute
 
-  def create_position(id, title, short_title: nil, type: Position::TYPE_FRONTLINE, on_sl_report: nil)
+  def create_position(id, title, short_title: nil, type: Position::TYPE_FRONTLINE, on_sl_report: false)
     Position.create!(id:, title:, short_title:, type:, active: true, on_sl_report:)
   end
 

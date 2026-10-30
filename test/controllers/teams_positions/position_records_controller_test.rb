@@ -166,20 +166,6 @@ class TeamsPositions::PositionRecordsControllerTest < ActionDispatch::Integratio
     assert_select "tr#position-#{@training.id}", false, "a position without the flag must not survive"
   end
 
-  # on_sl_report is the only nullable flag -- a third of the live table holds
-  # NULL. `= TRUE` has to exclude those rows the way it excludes FALSE.
-  test "a nullable attribute filter drops rows holding NULL" do
-    @position.update_column(:on_sl_report, nil)
-    @training.update!(on_sl_report: true)
-
-    get teams_positions_position_records_path(attribute: "on-sl-report")
-
-    assert_response :success
-    assert_select "tr#position-#{@training.id}"
-    assert_select "tr#position-#{@position.id}", false,
-                  "a NULL flag means the position does not carry it"
-  end
-
   test "index filters by having a paycode" do
     @position.update!(paycode: "RANGER1")
     @training.update!(paycode: nil)

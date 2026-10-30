@@ -64,26 +64,6 @@ class PositionManagementTest < ActiveSupport::TestCase
     assert position.errors[:parent_position_id].any?
   end
 
-  # on_sl_report is the one nullable flag, and a checkbox always posts its hidden
-  # "0". Saving an unrelated field must not rewrite NULL to false.
-  test "save leaves a null shift-lead flag alone" do
-    @position.update_column(:on_sl_report, nil)
-    position = Position.find(@position.id)
-    position.assign_attributes(title: "ZZ Renamed", on_sl_report: false)
-
-    assert PositionManagement.save(position)
-    assert_nil position.reload.on_sl_report
-  end
-
-  test "save still records a shift-lead flag the reader actually set" do
-    @position.update_column(:on_sl_report, nil)
-    position = Position.find(@position.id)
-    position.on_sl_report = true
-
-    assert PositionManagement.save(position)
-    assert position.reload.on_sl_report
-  end
-
   # The model owns the three cross-field rules; the service used to repeat them,
   # so every one of them reached the reader twice in two different wordings.
   test "a cross-field conflict is reported once" do

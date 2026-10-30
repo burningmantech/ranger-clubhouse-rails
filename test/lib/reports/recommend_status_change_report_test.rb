@@ -201,14 +201,6 @@ class RecommendStatusChangeReportTest < ActiveSupport::TestCase
     assert_equal RETIRED_CUTOFF - 1, row.last_year
   end
 
-  test "a person whose vintage flag was never written is still proposed" do
-    person = create_person("Legacy", years: (2010..2019).to_a)
-    person.update_columns(vintage: nil)
-
-    assert_equal [person.id], group_ids(RecommendStatusChangeReport::VINTAGE)
-    assert_not rows_for(RecommendStatusChangeReport::VINTAGE).sole.vintage
-  end
-
   test "a years column that is not a list of years proposes no one for vintage" do
     person = create_person("Malformed")
     person.update_columns(years_as_ranger: { "a" => 1, "b" => 2, "c" => 3, "d" => 4, "e" => 5,

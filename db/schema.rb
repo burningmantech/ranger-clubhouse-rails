@@ -10,14 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_000013) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_000014) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
     t.column "status", "enum('qualified','claimed','banked','used','cancelled','expired','submitted','turned_down')", default: "qualified", null: false
     t.integer "source_year"
     t.datetime "access_date", precision: nil
-    t.boolean "access_any_time", default: false
+    t.boolean "access_any_time", default: false, null: false
     t.text "name"
     t.text "comments"
     t.date "expiry_date"
@@ -135,7 +135,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000013) do
     t.string "title1", limit: 64
     t.string "title2", limit: 64
     t.string "title3", limit: 64
-    t.boolean "showers", default: false
+    t.boolean "showers", default: false, null: false
     t.boolean "org_vehicle_insurance", default: false
     t.column "meals", "enum('all','pre','post','event','pre+event','event+post','pre+post')"
     t.string "batch", limit: 128
@@ -478,7 +478,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000013) do
     t.string "bpguid", limit: 64
     t.string "sfuid", limit: 64
     t.text "emergency_contact", size: :medium
-    t.boolean "vintage", default: false
+    t.boolean "vintage", default: false, null: false
     t.string "sms_off_playa"
     t.string "sms_on_playa"
     t.boolean "sms_off_playa_stopped", default: false, null: false
@@ -967,7 +967,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000013) do
     t.boolean "count_hours", default: true, null: false
     t.integer "min", default: 1, null: false, comment: "Min suggested Rangers per slot"
     t.integer "max", comment: "Max suggested Rangers per slot"
-    t.boolean "on_sl_report"
+    t.boolean "on_sl_report", default: false, null: false
     t.boolean "on_trainer_report", default: false, null: false
     t.string "short_title", limit: 6
     t.string "type", limit: 32

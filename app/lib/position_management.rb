@@ -22,15 +22,14 @@ module PositionManagement
   SAVE_REASON = "Position record edit"
 
   # Booleans the schema declares NOT NULL. A blank checkbox casts to nil and
-  # would reach MariaDB as a NotNullViolation 500. on_sl_report is deliberately
-  # absent: it is the one nullable flag, and 73 live rows are NULL.
+  # would reach MariaDB as a NotNullViolation 500.
   BOOLEAN_COLUMNS = %i[
     active alert_when_becomes_empty alert_when_no_trainers all_rangers allow_echelon
     auto_sign_out awards_auto_grant awards_eligible awards_grants_service_year count_hours
     cruise_direction deselect_on_team_join has_art_mentoring has_online_course
     is_art_mentee is_art_mentor is_checkin_time_restricted
     mvr_eligible mvr_signup_eligible new_user_eligible no_payroll_hours_adjustment
-    no_training_required not_timesheet_eligible on_trainer_report
+    no_training_required not_timesheet_eligible on_sl_report on_trainer_report
     prevent_multiple_enrollments pvr_eligible require_signin_for_roles
     require_training_for_roles
   ].freeze
@@ -68,7 +67,6 @@ module PositionManagement
   # awards zeroing as a before_save.
   def save(position, role_ids: nil, is_tech_ninja: false)
     NULL_IF_EMPTY.each { |column| position[column] = position[column].presence }
-    preserve_null_sl_report(position)
 
     desired_roles = IdList.parse(role_ids) if is_tech_ninja && role_ids
     return false unless valid?(position, desired_roles)
@@ -240,16 +238,6 @@ module PositionManagement
     grant_count: 0, award_count: 0, child_count: 0, trained_count: 0,
     lineup_count: 0, shift_coverage_type_count: 0, shift_coverage_post_count: 0, timesheet_count: 0
   }.freeze
-
-  # on_sl_report is the one nullable flag on the table, and a checkbox posts its
-  # hidden "0" companion whether or not the reader touched it. Without this,
-  # saving any of the NULL rows for an unrelated reason rewrites NULL to false
-  # and logs a change no one made. Nothing here reads the two differently, so
-  # the third state is left alone rather than normalized away -- the Laravel
-  # writers still share this column.
-  def preserve_null_sl_report(position)
-    position.on_sl_report = nil if position.on_sl_report == false && position.on_sl_report_was.nil?
-  end
 
   # Position validates title, short_title, min, max, and type already. What is
   # checked here is everything else the columns or upstream require: the three

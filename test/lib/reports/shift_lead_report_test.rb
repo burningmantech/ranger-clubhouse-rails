@@ -372,7 +372,7 @@ class ShiftLeadReportTest < ActiveSupport::TestCase
   # and a day later than the day it is listed under.
   def evening_report_slot = slot_over(26.hours, 29.hours)
 
-  def create_position(id, title, short_title: nil, type: Position::TYPE_FRONTLINE, on_sl_report: nil)
+  def create_position(id, title, short_title: nil, type: Position::TYPE_FRONTLINE, on_sl_report: false)
     Position.create!(id:, title:, short_title:, type:, active: true, on_sl_report:)
   end
 
