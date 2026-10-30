@@ -243,8 +243,6 @@ class ProspectiveClubhouseAccountFromApplicationTest < ActiveSupport::TestCase
   # presses Create Accounts, named by the application field it came from.
   {
     "a phone that is not a phone number" => [{ phone: "775-555-JOAN" }, I18n.t("errors.messages.phone_invalid", attribute: "Phone")],
-    "an email too long for an account" => [{ email: "#{'x' * 60}@example.com" },
-                                           "Email is too long (maximum is 50 characters)."],
     "a last name too long for an account" => [{ last_name: "x" * 26 },
                                               "Last Name is too long (maximum is 25 characters)."]
   }.each do |what, (columns, message)|
@@ -416,7 +414,8 @@ class ProspectiveClubhouseAccountFromApplicationTest < ActiveSupport::TestCase
   end
 
   test "the batch continues past an application the account would refuse" do
-    broken = duplicate_application(email: "#{'x' * 60}@example.com", handle: "Windward")
+    broken = duplicate_application(email: "windward@example.com", handle: "Windward")
+    broken.update_columns(last_name: "x" * 26)
 
     results = nil
     silence_error_log do |calls|
@@ -428,7 +427,7 @@ class ProspectiveClubhouseAccountFromApplicationTest < ActiveSupport::TestCase
 
     failed = results.find { |result| result.application.id == broken.id }
     assert_equal Creator::STATUS_INVALID, failed.status
-    assert_equal ["Email is too long (maximum is 50 characters)."], failed.errors
+    assert_equal ["Last Name is too long (maximum is 25 characters)."], failed.errors
     assert_equal ProspectiveApplication::STATUS_APPROVED, broken.reload.status
 
     other = results.find { |result| result.application.id != broken.id }

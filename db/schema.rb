@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.integer "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -91,9 +91,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "alert", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
+  create_table "alert", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "title"
-    t.text "description"
+    t.text "description", size: :medium
     t.boolean "on_playa", default: false, null: false
     t.timestamp "created_at", default: -> { "current_timestamp()" }, null: false
     t.timestamp "updated_at", default: -> { "current_timestamp() ON UPDATE current_timestamp()" }, null: false
@@ -279,7 +279,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
     t.index ["person_id", "created_at"], name: "error_logs_person_id_created_at_index"
   end
 
-  create_table "event_dates", id: { type: :integer, unsigned: true }, charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
+  create_table "event_dates", id: { type: :integer, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.datetime "event_start", precision: nil
     t.datetime "event_end", precision: nil
     t.datetime "pre_event_start", precision: nil
@@ -459,7 +459,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
     t.string "country", limit: 25, default: "", null: false
     t.string "home_phone", limit: 25, default: "", null: false
     t.string "alt_phone", limit: 25, default: "", null: false
-    t.string "email", limit: 50
+    t.string "email"
     t.string "camp_location", limit: 200, default: "", null: false
     t.boolean "on_site", default: false, null: false
     t.boolean "vehicle_blacklisted", default: false, null: false
@@ -485,8 +485,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
     t.boolean "sms_on_playa_verified", default: false, null: false
     t.string "sms_off_playa_code", limit: 16
     t.string "sms_on_playa_code", limit: 16
-    t.boolean "timesheet_confirmed", default: false, null: false
-    t.datetime "timesheet_confirmed_at", precision: nil
     t.string "callsign_normalized", limit: 128, null: false
     t.string "callsign_soundex", limit: 128, null: false
     t.boolean "behavioral_agreement", default: false, null: false
@@ -536,7 +534,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
     t.check_constraint "json_valid(`years_seen`)", name: "years_seen"
   end
 
-  create_table "person_alert", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
+  create_table "person_alert", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.bigint "alert_id", null: false
     t.boolean "use_sms", default: true, null: false
@@ -601,7 +599,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
     t.index ["person_id", "certification_id"], name: "person_certification_person_id_certification_id_index"
   end
 
-  create_table "person_event", id: false, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  create_table "person_event", primary_key: ["person_id", "year"], charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.integer "year", null: false
     t.boolean "may_request_stickers", default: false, null: false
@@ -623,7 +621,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
     t.boolean "ignore_mvr", default: false, null: false
     t.boolean "ignore_pvr", default: false, null: false
     t.index ["year", "mvr_eligible"], name: "person_event_year_mvr_eligible_index"
-    t.index ["year", "person_id"], name: "person_event_year_person_id_unique", unique: true
   end
 
   create_table "person_favorite", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
@@ -741,11 +738,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
     t.index ["team_id"], name: "index_person_message_member_on_team_id"
   end
 
-  create_table "person_motd", id: false, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  create_table "person_motd", primary_key: ["person_id", "motd_id"], charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.bigint "motd_id", null: false
     t.datetime "read_at", precision: nil, null: false
-    t.index ["person_id", "motd_id"], name: "person_motd_person_id_motd_id_index"
   end
 
   create_table "person_on_site", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
@@ -868,10 +864,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
     t.index ["position_id", "left_on"], name: "index_person_position_log_on_position_id_and_left_on"
   end
 
-  create_table "person_role", id: false, charset: "utf8mb3", collation: "utf8mb3_unicode_ci", comment: "links person to role", force: :cascade do |t|
+  create_table "person_role", primary_key: ["person_id", "role_id"], charset: "utf8mb4", collation: "utf8mb4_unicode_ci", comment: "links person to role", force: :cascade do |t|
     t.bigint "person_id", null: false, unsigned: true
     t.bigint "role_id", null: false, unsigned: true
-    t.index ["person_id", "role_id"], name: "person_id_and_role_id", unique: true
   end
 
   create_table "person_slot", id: { type: :bigint, unsigned: true }, charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
@@ -1014,17 +1009,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
     t.timestamp "updated_at"
   end
 
-  create_table "position_lineup_member", id: false, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  create_table "position_lineup_member", primary_key: "position_id", id: :integer, default: nil, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.integer "position_lineup_id", null: false
-    t.integer "position_id", null: false
     t.datetime "created_at", precision: nil, null: false
-    t.index ["position_id"], name: "position_lineup_member_position_id_unique", unique: true
   end
 
-  create_table "position_role", id: false, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  create_table "position_role", primary_key: ["position_id", "role_id"], charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.integer "position_id", null: false
     t.integer "role_id", null: false
-    t.index ["position_id", "role_id"], name: "position_role_position_id_role_id_unique", unique: true
   end
 
   create_table "prospective_application", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -1483,10 +1475,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
     t.index ["person_id", "team_id"], name: "index_team_manager_on_person_id_and_team_id", unique: true
   end
 
-  create_table "team_role", id: false, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  create_table "team_role", primary_key: ["team_id", "role_id"], charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.integer "team_id", null: false
     t.integer "role_id", null: false
-    t.index ["team_id", "role_id"], name: "team_role_team_id_role_id_unique", unique: true
   end
 
   create_table "timesheet", id: { type: :bigint, unsigned: true }, charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
@@ -1515,25 +1506,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000003) do
     t.index ["slot_id"], name: "timesheet_slot_id"
   end
 
-  create_table "timesheet_log", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
+  create_table "timesheet_log", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.integer "create_person_id"
     t.bigint "timesheet_id"
     t.column "action", "enum('unconfirmed','confirmed','signon','signoff','created','update','delete','review','verify','unverified','delete-mistake')", null: false
-    t.text "message"
+    t.text "message", size: :medium
     t.datetime "created_at", precision: nil, null: false
     t.integer "year", default: 0, null: false
     t.text "data", size: :long
     t.index ["person_id", "action"], name: "person_id"
   end
 
-  create_table "timesheet_missing", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
+  create_table "timesheet_missing", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.bigint "create_person_id", null: false
     t.bigint "position_id", null: false
     t.datetime "on_duty", precision: nil, null: false
     t.datetime "off_duty", precision: nil, null: false
-    t.string "partner", null: false, collation: "utf8mb3_unicode_ci"
+    t.string "partner", null: false
     t.column "review_status", "enum('approved','rejected','pending')", default: "pending"
     t.bigint "reviewer_person_id"
     t.datetime "reviewed_at", precision: nil

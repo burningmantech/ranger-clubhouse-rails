@@ -19,5 +19,8 @@ class PersonMotd < ApplicationRecord
       record.save!
       true
     end
+  rescue ActiveRecord::RecordNotUnique
+    # Two clicks raced to mark it read; the row is there, so it is read.
+    true
   end
 end

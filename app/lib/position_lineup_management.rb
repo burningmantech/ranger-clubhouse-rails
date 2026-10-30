@@ -55,8 +55,8 @@ module PositionLineupManagement
     description = lineup.description
 
     ApplicationRecord.transaction do
-      # Cleared explicitly rather than through dependent: :destroy so the row
-      # removal cannot depend on the composite-key association behaving.
+      # Cleared explicitly rather than through dependent: :destroy: one statement
+      # instead of a load and a destroy per member.
       PositionLineupMember.where(position_lineup_id:).delete_all
       lineup.delete
       ActionLog.record(Current.person, "position-lineup-delete", DELETE_REASON,

@@ -212,7 +212,7 @@ class Person < ApplicationRecord
   validates :callsign, presence: true, length: { maximum: CALLSIGN_MAX_LENGTH }
 
   validates :callsign, uniqueness: true, if: -> { callsign.present? and (new_record? or callsign_changed?) }
-  validates :email, presence: true, length: { maximum: 50 },
+  validates :email, presence: true, length: { maximum: 255 },
                     format: { with: URI::MailTo::EMAIL_REGEXP, message: EMAIL_MESSAGE }
   validates :email, uniqueness: true, if: -> { new_record? or (email.present? and email_changed?) }
   # Held only to an address being changed, like the phones below, so one stored

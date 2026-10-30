@@ -24,7 +24,7 @@
       <%= f.text_field :callsign, label: "Callsign", width: "w-full sm:w-64",
                        maxlength: 64, required: true, help_text: "Must be unique." %>
       <%= f.email_field :email, label: "Email Address", width: "w-full sm:w-72",
-                        maxlength: 50, required: true, help_text: "Must be unique." %>
+                        maxlength: 255, required: true, help_text: "Must be unique." %>
       <%= f.select :status, Person::ALL_STATUSES, label: "Status",
                    width: "w-full sm:w-44", required: true %>
     <% end %>

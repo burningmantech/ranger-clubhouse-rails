@@ -57,7 +57,7 @@
       <dd>Yes, from your profile once you have signed in.</dd>
     </dl>
     <%= f.email_field :email, label: "Email Address", width: "w-full sm:w-72",
-                      maxlength: 50, required: true, required_label: "", autocomplete: "email" %>
+                      maxlength: 255, required: true, required_label: "", autocomplete: "email" %>
     <%= form_row do %>
       <%= f.password_field :password, label: "Password", width: "w-full sm:w-64",
                            minlength: RegisterForm::PASSWORD_MINIMUM,
