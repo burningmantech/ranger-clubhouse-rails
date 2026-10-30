@@ -666,6 +666,12 @@ class Slot < ApplicationRecord
     errors.add(:parent_signup_slot_id, msg)
   end
 
+  # The derived columns, kept here rather than as generated columns because
+  # timezone_abbr follows the zone's daylight-saving rule and begins_year the
+  # app time zone: begins_time and ends_time are Unix epoch seconds of begins
+  # and ends read in the slot's own zone (SignInBlocker compares them with a
+  # timestamp), duration is ends_time minus begins_time in seconds, and
+  # begins_year is the year of begins.
   def compute_time_fields
     if begins_changed? || timezone_changed?
       adjusted = begins_adjusted
