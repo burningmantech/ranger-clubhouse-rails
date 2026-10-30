@@ -1825,15 +1825,22 @@ the page when it connects. Only /me renders it: Person and HQ never mark a threa
 ```
 
 Brings one element into view when the page renders, named by its id. Use it to put the reader back
-beside the record they just changed after an edit redirects them to a list or a parent page.
+beside the record they just changed after an edit redirects them to a list or a parent page. An
+element already wholly on screen is left where it is: scrolling it to the top would only hide what
+sits above it. "On screen" is a hit test of its top and bottom edges, so an element clipped by a
+scroller, past the window's edge or under the navbar is not.
 
 **An element inside a scroller of its own** names that scroller as a selector in
 `data-scroll-to-element-container-value` (the mailbox's pane, `.review-pane`, which scrolls itself
-from lg up). While the container scrolls, only it moves, putting the element at its top less the
-element's `scroll-margin-top`; otherwise the page scrolls as it does with no container named.
-`scrollIntoView` would move every container around the element, the page under the pane too,
-carrying the list beside it away from the row the reader chose, and its `container: "nearest"`
-option is Chrome's alone.
+from lg up). While the container scrolls, it moves first, putting the element at its top less the
+element's `scroll-margin-top` -- measured past any CSS `zoom` on the way up (the HQ shell's), since
+`getBoundingClientRect` reads drawn pixels and `scrollTop` the container's own. The page then moves
+only if the element is still off screen, and only as far as it takes (`block: "nearest"`): the
+container itself is off screen, stacked under the list in the HQ window or starting too low for its
+foot to show. `scrollIntoView` alone would move every container around the element, the page under
+the pane too, carrying the list beside it away from the row the reader chose, and its
+`container: "nearest"` option is Chrome's alone. With no container named, or one that is not
+scrolling, the page scrolls the element to its top.
 
 **A `#fragment` cannot do this job after a form submission.** Turbo takes the page to visit from the
 response's URL, and a URL's fragment is not part of it, so `redirect_to path(anchor: "group-7")` from a

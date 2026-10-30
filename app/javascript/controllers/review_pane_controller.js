@@ -36,10 +36,12 @@ export default class extends Controller {
         this.desktop = window.matchMedia("(width >= 64rem)")
         this.place = this.place.bind(this)
         this.beforeRender = this.beforeRender.bind(this)
-        this.keepMark = this.keepMark.bind(this)
+        this.keepAttribute = this.keepAttribute.bind(this)
+        this.keepBody = this.keepBody.bind(this)
         this.desktop.addEventListener("change", this.place)
         this.element.addEventListener("turbo:before-frame-render", this.beforeRender)
-        this.element.addEventListener("turbo:before-morph-attribute", this.keepMark)
+        this.element.addEventListener("turbo:before-morph-attribute", this.keepAttribute)
+        this.element.addEventListener("turbo:before-morph-element", this.keepBody)
         document.addEventListener("turbo:load", this.place)
 
         this.select(this.shownId(this.frame))
@@ -50,7 +52,8 @@ export default class extends Controller {
     disconnect() {
         this.desktop?.removeEventListener("change", this.place)
         this.element.removeEventListener("turbo:before-frame-render", this.beforeRender)
-        this.element.removeEventListener("turbo:before-morph-attribute", this.keepMark)
+        this.element.removeEventListener("turbo:before-morph-attribute", this.keepAttribute)
+        this.element.removeEventListener("turbo:before-morph-element", this.keepBody)
         document.removeEventListener("turbo:load", this.place)
     }
 
@@ -78,19 +81,47 @@ export default class extends Controller {
     // disconnects it, which cancels its request -- before the render that
     // fetches the src again, after it the page visit loses the response (and
     // with it the snapshot a later Back restores).
+    //
+    // The pane keeps its scroll through the swap, which would open the new
+    // record wherever the last was left -- a long way down after the mailbox
+    // landed a search's match (scroll_to_element_controller). So it is put back
+    // to the top as the content is swapped, before the new content's
+    // controllers connect and a landing scrolls it again.
     beforeRender(event) {
         if (event.target === this.frame) {
             this.select(this.shownId(event.detail.newFrame))
+            const render = event.detail.render
+            event.detail.render = (currentElement, newElement) => {
+                const rendered = render(currentElement, newElement)
+                this.paneTarget.scrollTop = 0
+                return rendered
+            }
         }
     }
 
-    // A line morphed in place stays the same node, so lineTargetConnected never
-    // sees it: the mailbox's row a live reply re-renders, with no selection
-    // (common/messages/_list_reply). The open line keeps its mark.
-    keepMark(event) {
+    // A line or a card morphed in place stays the same node, so
+    // lineTargetConnected never sees it, and its new render knows less than
+    // the page: the mailbox's row a live reply re-renders has no selection, no
+    // folder and no search (common/messages/_list_reply), and a card's
+    // read-state morph no search (MessagesConcern#card_streams). So the open
+    // line keeps its mark, a line its address -- only a fresh render of the
+    // list, never a morph, changes one -- and a card the ring of the search
+    // the thread was opened with (data-landing, common/messages/_thread).
+    keepAttribute(event) {
         const {attributeName, mutationType} = event.detail
-        if (attributeName === "aria-current" && mutationType === "remove" &&
-            event.target.dataset.reviewId === this.currentId && this.lineTargets.includes(event.target)) {
+        const line = this.lineTargets.includes(event.target)
+        if ((line && attributeName === "aria-current" && mutationType === "remove" &&
+                event.target.dataset.reviewId === this.currentId) ||
+            (line && attributeName === "href") || attributeName === "data-landing") {
+            event.preventDefault()
+        }
+    }
+
+    // A message's body never changes once sent, so a morph of its card keeps
+    // the one the page drew, with the search's marks _thread put in it, and
+    // never adds marks to a card that landed live in the log region.
+    keepBody(event) {
+        if (event.target.matches?.("[data-message-body]")) {
             event.preventDefault()
         }
     }

@@ -12,6 +12,15 @@ module MessagesHelper
   def message_no_reply_icon(message)
     NO_REPLY_ICONS.fetch(message.sender_type, "user-slash")
   end
+
+  # What a search's match is marked with: the utility in components/messages.css,
+  # and the mark as a card's body serializes it.
+  SEARCH_HIT_CLASS = "search-hit"
+  SEARCH_HIT_MARK = %(<mark class="#{SEARCH_HIT_CLASS}">).freeze
+
+  # Where a line of a message's text ends, as PersonMessage.plain_text ends
+  # one: at a block or a line break. A word never runs on across one.
+  MESSAGE_LINE_ELEMENTS = Set.new([*PersonMessage::RICH_TEXT_BLOCKS, "br"]).freeze
   # Renders a folder tab for the mailbox's tab row
   #
   # @param label [String] The tab label text
@@ -83,46 +92,60 @@ module MessagesHelper
   end
 
   # A list row's last line: the latest message in the thread; on a search's
-  # hit, five words either side of the first match in the thread -- in the
-  # message the hit opens on (#message_search_landing) -- marked, or the latest
-  # message still, for a hit on the subject or the other party's callsign
-  # alone. Both read the text the search matched (body_text), never the
-  # editor's markup.
+  # hit, five words either side of the first match in the message the hit
+  # stands for (#message_search_pick), marked, or the latest message still,
+  # for a hit on the subject or the other party's callsign alone. Both read the
+  # text the search matched (body_text), never the editor's markup.
   def message_list_snippet(message, query)
     rows = [message, *message.replies]
-    if (landing = message_search_landing(rows, query))
+    if query.present?
       pattern = message_search_pattern(query)
-      return mark_search_hits(excerpt(landing.body_text, pattern, radius: 5, separator: " ", omission: "…"), pattern)
+      match = message_search_pick(rows.select { |row| row.body_text.match?(pattern) }, query)
+      return mark_search_hits(excerpt(match.body_text, pattern, radius: 5, separator: " ", omission: "…"), pattern) if match
     end
     truncate(rows.last.body_text, length: 70)
   end
 
-  # The message of a thread's +rows+ that a search's hit opens on: the first
-  # whose text holds a match, read from body_text as the search reads it; nil
-  # with no search, or for a hit on the subject or a callsign alone.
-  def message_search_landing(rows, query)
-    return if query.blank?
-
-    pattern = message_search_pattern(query)
-    rows.find { |row| row.body_text.match?(pattern) }
+  # A card's body as its reader sees it: the editor's HTML, sanitized
+  # (rich_text), or a plain body with its addresses and numbers linked
+  # (hyperlink_text).
+  def message_body(message)
+    message.rich_text? ? rich_text(message.body) : hyperlink_text(message.body)
   end
 
-  # A card's body, rendered and sanitized (rich_text, hyperlink_text), with a
-  # search's matches marked in its text alone: never in a tag or an attribute,
-  # such as a link's address, and after sanitizing, which keeps no class but
-  # the editor's. A text node holding a match gives way to the list row's
-  # marks (#mark_search_hits), whose text is escaped, so text that reads like
-  # a tag stays text. A body with nothing to mark comes back as it was.
+  # A card's body, rendered (#message_body), with a search's matches marked in
+  # its text: never in a tag or an attribute, such as a link's address, and
+  # after sanitizing, which keeps no class but the editor's. The text is read
+  # whole, as the search reads body_text, a line break wherever a line ends and
+  # none where formatting splits a word, so a word is marked from its start, as
+  # it was matched, never from the start of a bold run inside it. Each piece
+  # goes in as a node of its own, so text that reads like a tag stays text. A
+  # body with nothing to mark, or nested deeper than the HTML5 parser goes (400
+  # levels), comes back as it was.
   def message_body_marks(html, query)
     return html if query.blank?
 
-    pattern = message_search_pattern(query)
-    fragment = Nokogiri::HTML5.fragment(html)
-    texts = fragment.xpath(".//text()").select { |text| text.content.match?(pattern) }
-    return html if texts.empty?
+    fragment = begin
+      Nokogiri::HTML5.fragment(html)
+    rescue ArgumentError # "Document tree depth limit exceeded"
+      return html
+    end
+    runs, text = message_text_runs(fragment)
+    hits = text.to_enum(:scan, message_search_pattern(query)).map { Regexp.last_match.offset(0) }
+    return html if hits.empty?
 
-    texts.each { |text| text.replace(mark_search_hits(text.content, pattern)) }
-    fragment.to_html.html_safe
+    runs.each { |node, start| mark_text_run(node, start, hits) }
+    fragment.to_html(preserve_newline: true).html_safe
+  end
+
+  # The message of a thread's +rows+ a search's hit opens on, given their
+  # +bodies+ as #message_body_marks drew them: of the cards showing a mark,
+  # the one #message_search_pick picks; nil when none shows one -- a hit on
+  # the subject or a callsign alone, or text the sanitizer left out of a card.
+  def message_search_landing(rows, bodies, query)
+    return if query.blank?
+
+    message_search_pick(rows.zip(bodies).filter_map { |row, body| row if body.include?(SEARCH_HIT_MARK) }, query)
   end
 
   # The Cadres and Delegations compose can send to, for its select.
@@ -186,6 +209,52 @@ module MessagesHelper
   # The pattern holds one group, so split hands back each match at an odd index.
   def mark_search_hits(text, pattern)
     parts = text.to_s.split(pattern)
-    safe_join(parts.each_with_index.map { |part, index| index.odd? ? tag.mark(part, class: "search-hit") : part })
+    safe_join(parts.each_with_index.map { |part, index| index.odd? ? tag.mark(part, class: SEARCH_HIT_CLASS) : part })
+  end
+
+  # Of the +rows+ holding a search's match, the one its hit stands for: the
+  # first whose subject and text hold every word of the search, as the row
+  # PersonMessage.search_for_person matched must (each word the start of one),
+  # or else the first. One word alone matches anywhere it marks.
+  def message_search_pick(rows, query)
+    words = PersonMessage.search_words(query).map { |word| /(?<![[:alnum:]_])#{Regexp.escape(word)}/i }
+    rows.find { |row| words.all? { |word| word.match?(row.subject) || word.match?(row.body_text) } } || rows.first
+  end
+
+  # The text nodes under +node+ in reading order, each with where it starts in
+  # the text they make, and that text: a line break where a line ends, as
+  # PersonMessage.plain_text writes one, and nothing between inline runs.
+  def message_text_runs(node, runs = [], text = +"")
+    node.children.each do |child|
+      if child.text?
+        runs << [child, text.length]
+        text << child.content
+      elsif child.element?
+        line = MESSAGE_LINE_ELEMENTS.include?(child.name)
+        text << "\n" if line
+        message_text_runs(child, runs, text)
+        text << "\n" if line
+      end
+    end
+    [runs, text]
+  end
+
+  # The text +node+, which starts at +start+ of its body's text, with the
+  # parts of it the +hits+ (that text's [from, to] offsets) cover marked.
+  def mark_text_run(node, start, hits)
+    content = node.content
+    stop = start + content.length
+    covered = hits.filter_map { |from, to| [[from, start].max - start, [to, stop].min - start] if from < stop && to > start }
+    return if covered.empty?
+
+    document = node.document
+    cursor = 0
+    covered.each do |from, to|
+      node.add_previous_sibling(document.create_text_node(content[cursor...from])) if from > cursor
+      node.add_previous_sibling(document.create_element("mark", content[from...to], class: SEARCH_HIT_CLASS))
+      cursor = to
+    end
+    node.add_previous_sibling(document.create_text_node(content[cursor..])) if cursor < content.length
+    node.remove
   end
 end

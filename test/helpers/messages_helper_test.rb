@@ -54,16 +54,31 @@ class MessagesHelperTest < ActionView::TestCase
     assert_equal "Bring the spare batteries to the depot.\nThanks!", message_list_snippet(radio, nil)
   end
 
-  test "message_search_landing is the thread's first message whose text holds a match" do
+  test "message_search_landing is the first card showing a mark, the one holding every word ahead of it" do
     swap = person_message(:search_dirt_swap)
-    rows = [swap, *swap.replies]
-    assert_equal person_message(:search_dirt_swap_reply), message_search_landing(rows, "thermos")
-    assert_equal swap, message_search_landing(rows, "dirt shift")
+    reply = person_message(:search_dirt_swap_reply)
+    rows = [swap, reply]
+    bodies = ->(query) { rows.map { |row| message_body_marks(ERB::Util.html_escape(row.body_text), query) } }
+    landing = ->(query) { message_search_landing(rows, bodies.call(query), query) }
+
+    assert_equal reply, landing.call("thermos")
+    assert_equal swap, landing.call("dirt shift")
+    # Both bodies hold "I'll" (its words are too short to index, so the whole
+    # query is matched): the first.
+    assert_equal swap, landing.call("I'll")
+    # The top holds "shift" alone; the reply, whose subject ("Shift swap…")
+    # and text hold both, is the row the search matched.
+    assert_equal reply, landing.call("thermos shift")
 
     # A hit on the subject or the callsign alone, or no search: nowhere to land.
-    assert_nil message_search_landing(rows, "Thursday")
-    assert_nil message_search_landing(rows, "AlphaN")
-    assert_nil message_search_landing(rows, nil)
+    assert_nil landing.call("Thursday")
+    assert_nil landing.call("AlphaN")
+    assert_nil landing.call(nil)
+  end
+
+  test "message_list_snippet quotes the message holding every word of the search" do
+    swap = person_message(:search_dirt_swap)
+    assert_equal %(Sure, I&#39;ll bring the <mark class="search-hit">thermos</mark>.), message_list_snippet(swap, "thermos shift")
   end
 
   test "message_body_marks marks a body's text, never a tag or an attribute, and keeps escaped text as text" do
@@ -79,6 +94,30 @@ class MessagesHelperTest < ActionView::TestCase
     # Nothing to mark, or no search: the body as it was.
     assert_same html, message_body_marks(html, "thermos")
     assert_same html, message_body_marks(html, nil)
+  end
+
+  test "message_body_marks reads a word whole across formatting, and never across a line" do
+    # A word continued by a bold run, or a number glued to a letter before its
+    # phone link: the search never matched either, so nothing is marked.
+    midshift = %(<p>The <strong>mid</strong>shift crew</p>).html_safe
+    assert_same midshift, message_body_marks(midshift, "shift")
+    phone = %(Ref x<a href="tel:5551234567">555-123-4567</a>).html_safe
+    assert_same phone, message_body_marks(phone, "555")
+
+    # A word split by formatting is marked whole, a piece in each run.
+    assert_equal %(<p><strong><mark class="search-hit">Dirt</mark></strong><mark class="search-hit">y</mark> boots</p>),
+                 message_body_marks(%(<p><strong>Dirt</strong>y boots</p>).html_safe, "dirty")
+    # A line ends a word, as plain_text ends one.
+    assert_equal %(<p>un</p><p><mark class="search-hit">dirt</mark> road</p>),
+                 message_body_marks(%(<p>un</p><p>dirt road</p>).html_safe, "dirt")
+  end
+
+  test "message_body_marks leaves too deep a body unmarked and keeps a <pre>'s first line" do
+    deep = (("<b>" * 401) + "dirt" + ("</b>" * 401)).html_safe
+    assert_same deep, message_body_marks(deep, "dirt")
+
+    assert_equal %(<p><mark class="search-hit">dirt</mark></p><pre>\n\nfirst line</pre>),
+                 message_body_marks(%(<p>dirt</p><pre>\n\nfirst line</pre>).html_safe, "dirt")
   end
 
   test "message_search_summary counts the hits" do

@@ -4,11 +4,15 @@
     (MessagesConcern#card_streams), never the whole of it, whose morph would
     remove a card that landed live after their request loaded the thread.
 
-    Opened from a search (q), the thread lands on the first message holding a
-    match: ringed, and brought to the top of the pane from lg, of the page
-    below it, by the marker, which names the pane as the scroller to move. %>
+    Opened from a search (q), each body is drawn with the search's matches
+    marked, and the thread lands on the card that stands for the hit
+    (MessagesHelper#message_search_landing): ringed, and brought into view by
+    the marker, which names the pane as the scroller to move from lg. Both are
+    drawn here alone: review_pane_controller keeps them through the cards'
+    read-state morphs, whose renders know no search. %>
 <% rows = [message, *message.replies] %>
-<% landing = message_search_landing(rows, q) %>
+<% bodies = rows.map { |row| message_body_marks(message_body(row), q) } %>
+<% landing = message_search_landing(rows, bodies, q) %>
 <% if landing %>
   <div data-controller="scroll-to-element" data-scroll-to-element-id-value="<%= dom_id(landing, :card) %>"
        data-scroll-to-element-container-value=".review-pane" hidden></div>
@@ -22,4 +26,6 @@
     Expires <%= datetime_format message.expires_at %>
   <% end %>
 <% end %>
-<%= render partial: "common/messages/message_card", collection: rows, as: :message, locals: { owner:, q:, landing: } %>
+<% rows.zip(bodies).each do |row, body| %>
+  <%= render "common/messages/message_card", message: row, owner:, body:, landing: row == landing %>
+<% end %>

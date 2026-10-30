@@ -139,13 +139,23 @@ module ApplicationHelper
   # a message cover the reader's screen (review finding 8).
   PLAIN_TEXT_ATTRIBUTES = (Rails::HTML5::SafeListSanitizer.allowed_attributes - %w[class]).freeze
 
+  # A plain text field ready to render: its own markup sanitized, and its web
+  # and email addresses, phone numbers and line breaks made into links and
+  # <br>s -- found in its text alone, one text node at a time. Matched in the
+  # sanitized HTML instead, a link landed inside an attribute's quotes and
+  # turned the rest of the value into live markup: a title holding a phone
+  # number, or a URL after a ">", let any member's message run script in its
+  # reader's page. Markup nested deeper than the HTML5 parser goes (400
+  # levels), which no editor writes, is shown as typed, escaped.
   def hyperlink_text(text)
-    text = auto_link(sanitize(text, attributes: PLAIN_TEXT_ATTRIBUTES)).gsub(/\n/, "<br>")
-    text.gsub(TELEPHONE_REGEXP) do |match|
-      # Remove non-numeric characters for the href
-      cleaned_number = match.gsub(/\D/, "")
-      link_to match, "tel:#{cleaned_number}"
-    end.html_safe
+    fragment = begin
+      Nokogiri::HTML5.fragment(sanitize(text.to_s, attributes: PLAIN_TEXT_ATTRIBUTES))
+    rescue ArgumentError # "Document tree depth limit exceeded"
+      return safe_join(text.to_s.split("\n", -1), tag.br)
+    end
+    # descendant-or-self: on a fragment, ".//text()[...]" skips the text at its top level.
+    fragment.xpath("descendant-or-self::text()[not(ancestor::a)]").each { |node| node.replace(hyperlinked_text(node.content)) }
+    fragment.to_html(preserve_newline: true).html_safe
   end
 
   def nl2br(text)
@@ -296,6 +306,21 @@ module ApplicationHelper
   # The unit printed after a threshold, matching qualification_amount.
   def qualification_unit(item)
     item.measure == TicketsAndProvisionsProgress::MEASURE_HOURS ? "hr" : item.measure.to_s
+  end
+
+  private
+
+  # One text node of a plain text field, as markup: its web and email
+  # addresses linked (auto_link), then, in the text between those links, its
+  # phone numbers and line breaks. It starts from the text escaped, so the only
+  # tags in what auto_link hands back are the links it made.
+  def hyperlinked_text(content)
+    linked = auto_link(ERB::Util.html_escape(content).to_str, sanitize: false)
+    linked.split(%r{(<a\b[^>]*>.*?</a>)}m).each_with_index.map do |part, index|
+      next part if index.odd?
+
+      part.gsub(TELEPHONE_REGEXP) { |number| link_to(number, "tel:#{number.gsub(/\D/, "")}") }.gsub("\n", "<br>")
+    end.join
   end
 
   # "15.30 of 19.0 credits", "0 of 60 hr": the threshold printed beside it

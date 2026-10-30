@@ -77,7 +77,9 @@ module MessagesConcern
   # (thread_live_controller; ruling D6 of the messaging rework). Idempotent,
   # unlike the toggle, and only where reading a thread marks it read: only /me
   # routes it. It answers what opening the thread would have changed, and the
-  # cards, whose New chips go.
+  # cards, whose New chips go. The folder and search it posts are the list's,
+  # from the tab row's fields as the toggles post them, so the row comes back
+  # as that list draws it, never with the search the pane was opened with.
   def mark_read
     @folder = normalize_folder(params[:folder])
     @message.mark_thread_read!(message_owner.id) unless @message.thread_read?(message_owner.id)
@@ -606,14 +608,15 @@ module MessagesConcern
   # new and the reply form is left alone. Card by card, never the whole thread:
   # a reply that landed live after this request loaded the thread is not in it,
   # and a morph of #messages-thread would remove that card (review finding V10).
-  # With the search the request posts, so the marks and the landing card's ring
-  # stay as _thread drew them.
+  # A body and the ring of the card a search landed on are the page's own:
+  # _thread drew them with the search the pane was opened with, which this
+  # request does not carry, and review_pane_controller keeps them through the
+  # morph, so the marks never follow another search and a live card never
+  # gains any.
   def card_streams
-    rows = [@message, *@message.replies]
-    landing = helpers.message_search_landing(rows, search_query)
-    rows.map do |card|
+    [@message, *@message.replies].map do |card|
       turbo_stream.replace(helpers.dom_id(card, :card), method: :morph, partial: "common/messages/message_card",
-                                                        locals: { message: card, owner: message_owner, q: search_query, landing: })
+                                                        locals: { message: card, owner: message_owner })
     end
   end
 

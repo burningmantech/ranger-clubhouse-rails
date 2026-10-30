@@ -11,7 +11,9 @@
   <%= ui_empty_state "No messages in this folder.", icon: "envelope", class: "mx-3 text-center" %>
 <% end %>
 <% if messages.any? %>
-  <ul class="flex flex-col gap-1 p-1" role="list" aria-label="<%= search_query ? "Search results" : "Conversations" %>">
+  <%# data-search shows what only a search's rows show (_conversation_summary's Sent chip). %>
+  <ul class="flex flex-col gap-1 p-1" role="list" aria-label="<%= search_query ? "Search results" : "Conversations" %>"
+      <%= tag.attributes(data: { search: (true if search_query) }) %>>
     <%= render partial: "common/messages/conversation_summary", collection: messages, as: :message,
                locals: { owner: message_owner, namespace: messages_route_prefix, folder:, q: search_query,
                          selected_id: } %>

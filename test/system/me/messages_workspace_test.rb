@@ -12,6 +12,15 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
 
   REVIEW_PANE = "[data-controller~=review-pane]"
 
+  # The card a search's hit opened on (common/messages/_thread).
+  LANDING = "#messages-thread article[data-landing]"
+
+  # The landing again, as the page's own scroll-to-element marker runs it.
+  REVEAL_AGAIN = <<~JS
+    const marker = document.querySelector("#messages-thread [data-controller=scroll-to-element]")
+    window.Stimulus.getControllerForElementAndIdentifier(marker, "scroll-to-element").reveal()
+  JS
+
   setup do
     @owner = person(:active_ranger)
     @sender = person(:ranger_with_custom_gender)
@@ -190,39 +199,148 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
   # left it; below lg the thread is the page, and the page scrolls. Visited by
   # address: the full-text index never sees the replies a test creates.
   test "a hit's thread opens at its match, scrolling the pane from lg and never the page under it" do
-    20.times do |index|
-      body = index == 10 ? "Bring the thermos." : (["Reply #{index}."] * 6).join("\n")
-      send_message(@sender, @owner, "Shift swap", body:, reply_to: @thread)
-    end
-    landing = "#messages-thread article.ring-primary"
+    long_thread
     sign_in(@owner)
 
     visit me_message_path(@thread, q: "thermos")
-    assert_selector landing, text: "Bring the thermos."
-    assert_eventually("the pane never brought the match to its top") { landed_below?(landing, "aside.review-pane") }
-    assert_equal 0, page.evaluate_script("document.querySelector('.drawer-content').scrollTop")
+    assert_selector LANDING, text: "Bring the thermos."
+    assert_eventually("the pane never brought the match to its top") { landed_below?(LANDING, "aside.review-pane") }
+    assert_equal 0, drawer_scroll_top
 
     on_a_phone do
       visit me_message_path(@thread, q: "thermos")
-      assert_selector landing, text: "Bring the thermos."
-      assert_eventually("the page never brought the match to its top") { landed_below?(landing, ".drawer-content") }
-      # The drawer's scroller moved, not the document under the navbar.
-      assert_equal 0, page.evaluate_script("window.scrollY")
+      assert_selector LANDING, text: "Bring the thermos."
+      assert_eventually("the page never brought the match to its top") { landed_below?(LANDING, ".drawer-content") }
     end
+  end
+
+  # The top message is on screen as its thread opens: landing on it moves
+  # nothing, so the header above it -- the party, the subject, the toggles,
+  # and on a phone the hero's back link -- stays in view.
+  test "a hit on the thread's top message moves nothing" do
+    top = send_message(@sender, @owner, "Gate", body: "Who brings the thermos?")
+    long_thread(top, word_at: nil)
+    marker = "#messages-thread [data-controller=scroll-to-element]"
+    sign_in(@owner)
+
+    visit me_message_path(top, q: "thermos")
+    assert_selector LANDING, text: "Who brings the thermos?"
+    wait_for_controller "scroll-to-element", marker
+    assert_equal 0, page.evaluate_script("document.querySelector('aside.review-pane').scrollTop")
+
+    on_a_phone do
+      visit me_message_path(top, q: "thermos")
+      assert_selector LANDING, text: "Who brings the thermos?"
+      wait_for_controller "scroll-to-element", marker
+      assert_equal 0, drawer_scroll_top
+    end
+  end
+
+  # The HQ shell zooms itself on a wide shared display (components/hq-window.css):
+  # what is drawn is measured zoomed, but the pane scrolls in its own pixels.
+  test "a hit lands on its match under a CSS zoom" do
+    long_thread
+    sign_in(@owner)
+    visit me_message_path(@thread, q: "thermos")
+    assert_selector LANDING, text: "Bring the thermos."
+    assert_eventually("the pane never landed") { landed_below?(LANDING, "aside.review-pane") }
+
+    page.execute_script(<<~JS)
+      document.querySelector(".messages-workspace").style.zoom = "1.15"
+      document.querySelector("aside.review-pane").scrollTop = 0
+      #{REVEAL_AGAIN}
+    JS
+    # scroll-mt-4's 16px and the pane's 1px border, drawn 15% larger.
+    assert_eventually("the zoomed pane missed the match") { landed_below?(LANDING, "aside.review-pane", at: 18.55) }
+  end
+
+  # The pane keeps its scroll through a frame's swap, so the next thread opened
+  # in it began a long way down, where the last search's landing had left it.
+  test "the pane opens each thread at its top" do
+    long_thread
+    long_thread(@other, word_at: nil)
+    sign_in(@owner)
+    visit me_messages_path
+    pane_enabled
+    page.execute_script("document.querySelector('turbo-frame#messages-pane').src = #{me_message_path(@thread, q: "thermos").to_json}")
+    assert_eventually("the pane never landed") { landed_below?(LANDING, "aside.review-pane") }
+
+    find(row(@other)).click
+    assert_selector "aside.review-pane [data-review-id='#{@other.id}']"
+    assert_eventually("the pane kept the last thread's scroll") do
+      page.evaluate_script("document.querySelector('aside.review-pane').scrollTop").zero?
+    end
+  end
+
+  # A pane off screen -- stacked under the list in the HQ window, or starting
+  # too low for its foot to show -- scrolls to the match, and then the page
+  # moves just as far as it takes to show it.
+  test "a hit in a pane off screen brings the page to the match" do
+    long_thread
+    sign_in(@owner)
+    visit me_message_path(@thread, q: "thermos")
+    assert_eventually("the pane never landed") { landed_below?(LANDING, "aside.review-pane") }
+
+    page.execute_script(<<~JS)
+      document.querySelector(".messages-workspace").insertAdjacentHTML("beforebegin", '<div style="height: 1600px"></div>')
+      document.querySelector("aside.review-pane").scrollTop = 0
+      #{REVEAL_AGAIN}
+    JS
+    assert_eventually("the match never came on screen") { on_screen?(LANDING) }
+    assert_operator drawer_scroll_top, :>, 0
+  end
+
+  # The cards' read-state morphs draw no search (MessagesConcern#card_streams):
+  # the page keeps the marks and the ring _thread drew.
+  test "Mark Unread and Mark Read leave the search's marks and ring as drawn" do
+    long_thread
+    sign_in(@owner)
+    visit me_message_path(@thread, q: "thermos")
+    assert_selector "#{LANDING} mark.search-hit", text: "thermos"
+
+    click_on "Mark Unread"
+    assert_selector "#messages-thread article[data-unread]"
+    assert_selector "#{LANDING} mark.search-hit", text: "thermos"
+    click_on "Mark Read"
+    assert_no_selector "#messages-thread article[data-unread]"
+    assert_selector "#{LANDING} mark.search-hit", text: "thermos"
+    assert_selector "#messages-thread article[data-landing]", count: 1
   end
 
   private
 
-  # The card sits a scroll-mt-4 (16px) below the top of the scroller's view.
-  def landed_below?(card, scroller)
-    page.evaluate_script(<<~JS).between?(15, 17)
+  # Twenty replies in +thread+, the one at +word_at+ alone saying "thermos": a
+  # match far below the top of a pane that scrolls.
+  def long_thread(thread = @thread, word_at: 10)
+    20.times do |index|
+      body = index == word_at ? "Bring the thermos." : (["Reply #{index}."] * 6).join("\n")
+      send_message(@sender, @owner, thread.subject, body:, reply_to: thread)
+    end
+  end
+
+  # The card sits +at+ pixels -- scroll-my-4's 16 -- below the top of the
+  # scroller's view; false while it is not on the page yet.
+  def landed_below?(card, scroller, at: 16)
+    page.evaluate_script(<<~JS)&.between?(at - 1.2, at + 1.2)
       (() => {
+        const card = document.querySelector(#{card.to_json})
         const scroller = document.querySelector(#{scroller.to_json})
-        const top = document.querySelector(#{card.to_json}).getBoundingClientRect().top
-        return top - scroller.getBoundingClientRect().top - scroller.clientTop
+        if (!card || !scroller) return null
+        return card.getBoundingClientRect().top - scroller.getBoundingClientRect().top - scroller.clientTop
       })()
     JS
   end
+
+  def on_screen?(selector)
+    page.evaluate_script(<<~JS)
+      (() => {
+        const {top, bottom} = document.querySelector(#{selector.to_json}).getBoundingClientRect()
+        return top >= 0 && bottom <= window.innerHeight
+      })()
+    JS
+  end
+
+  def drawer_scroll_top = page.evaluate_script("document.querySelector('.drawer-content').scrollTop")
 
   def row(message)
     "a.review-line[data-review-id='#{message.id}']"

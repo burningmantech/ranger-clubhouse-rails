@@ -1,4 +1,4 @@
-<%# locals: (message:, owner:, q: nil, landing: nil) %>
+<%# locals: (message:, owner:, body: nil, landing: false) %>
 <%#
   One message of a thread: who, when, and the body, stacked newest last
   (ruling D3 of .scratch/messaging-rework/PRD.md). A row the owner has not read
@@ -6,17 +6,20 @@
   `owner` is a local rather than the message_owner helper so a broadcast render
   (a live reply, slice 5) needs no controller.
 
-  `q` is the search the thread was opened from: its matches are marked in the
-  body. `landing` is the message that search's hit opens on
-  (MessagesHelper#message_search_landing): ringed, and kept a margin below the
-  top when _thread scrolls to it. A live reply's card has neither.
+  `body` is the body as _thread draws it, a search's matches marked; a card
+  rendered on its own -- a live reply, a read-state morph -- draws it plain.
+  `landing` makes this the card a search's hit opens on: data-landing, which
+  rings it and keeps it a margin inside the edge _thread scrolls it to.
+  review_pane_controller keeps the body (data-message-body; a body never
+  changes once sent) and data-landing through a morph, so the card's own
+  renders, which know no search, never take them away.
 %>
 <% unread = message.unread?(owner.id) %>
 <%# data-unread is how thread_live_controller knows a live card is someone else's, still unread. %>
 <article id="<%= dom_id(message, :card) %>"
-         class="<%= class_names("rounded-lg border border-line p-3 mb-3", "bg-warning/10": unread,
-                                "ring-2 ring-primary scroll-mt-4": message == landing) %>"
-         <%= tag.attributes(data: { unread: (true if unread) }) %>>
+         class="<%= class_names("rounded-lg border border-line p-3 mb-3",
+                                "data-landing:ring-2 data-landing:ring-primary data-landing:scroll-my-4", "bg-warning/10": unread) %>"
+         <%= tag.attributes(data: { unread: (true if unread), landing: (true if landing) }) %>>
   <div class="flex flex-wrap items-baseline gap-x-2 mb-1 text-sm text-stone-subtle">
     <%# A row written as a team names the team; to the team's members alone
         (PersonMessage#reveals_author_to?) it names its author, as an individual
@@ -37,6 +40,5 @@
       The editor's HTML is sanitized (rich_text) and read with lexxy-content's
       rules; a plain body -- everything from before the editor -- keeps its
       line breaks and has its addresses and numbers linked. %>
-  <% rich = message.rich_text? %>
-  <div class="<%= class_names("text-body wrap-anywhere", "lexxy-content": rich) %>"><%= message_body_marks(rich ? rich_text(message.body) : hyperlink_text(message.body), q) %></div>
+  <div class="<%= class_names("text-body wrap-anywhere", "lexxy-content": message.rich_text?) %>" data-message-body><%= body || message_body(message) %></div>
 </article>

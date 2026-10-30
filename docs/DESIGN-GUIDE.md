@@ -750,8 +750,10 @@ raw-Tailwind color runs left in the system — don't copy the pattern into new c
 **Purpose:** marks what a search matched inside a result. One use so far: the mailbox's hits
 (`MessagesHelper#message_search_marks`, `<mark class="search-hit">` around each matched word in a
 hit's subject and snippet), and the cards of the thread a hit opens (`#message_body_marks`), where
-the first card holding a match is also ringed `ring-2 ring-primary`, the review pane's selection
-colour, and scrolled to the top of the pane. Owner-approved 2026-10-18; the cards and the ring
+the card the hit lands on is also ringed in the review pane's selection colour and brought into
+view: its `data-landing` attribute switches on `data-landing:ring-2 data-landing:ring-primary
+data-landing:scroll-my-4`, which every card carries, so the read-state morphs that redraw a card
+with no search leave the ring where it was. Owner-approved 2026-10-18; the cards and the ring
 2026-10-29, as design B of `.scratch/messages-search/PRD.md`.
 
 ```css

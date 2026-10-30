@@ -10,13 +10,15 @@
   <%# Replies land here live (PersonMessage#announce_reply), on the
       owner's own page and on the Person and HQ pages viewing their mailbox.
       Where reading a thread marks it read (/me), one that lands while the page
-      is on screen is marked read too (thread_live_controller, ruling D6). A
-      broadcast, a team message or a walk-up takes no reply, so it listens for none. %>
+      is on screen is marked read too (thread_live_controller, ruling D6),
+      posting what the list beside the pane shows when it does, so the URL
+      carries no folder or search of its own. A broadcast, a team message or a
+      walk-up takes no reply, so it listens for none. %>
   <% live = message.accepts_replies? %>
   <%= turbo_stream_from message_owner, message, channel: MailboxStreamsChannel if live %>
   <%= tag.div id: "messages-thread", role: "log", aria: { label: "Conversation", live: "polite" },
               data: ({ controller: "thread-live",
-                       thread_live_url_value: mark_read_message_path(message, folder:, q: search_query) } if live && mark_read_on_view?) do %>
+                       thread_live_url_value: mark_read_message_path(message) } if live && mark_read_on_view?) do %>
     <%= render partial: "common/messages/thread", locals: { message:, owner: message_owner, q: search_query } %>
   <% end %>
 

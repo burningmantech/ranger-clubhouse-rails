@@ -42,7 +42,9 @@ class Person::LiveMessageListTest < ApplicationSystemTestCase
     reply = deliver(reply_to: thread)
 
     assert_selector "#{row}.messages-conversation-unread .badge", text: "New Reply"
-    assert_selector "#{row}[aria-current=true][href='#{person_message_path(@ranger, thread)}']"
+    # The broadcast knows no list, so the row keeps the address its list drew,
+    # folder and all (review_pane_controller#keepAttribute).
+    assert_selector "#{row}[aria-current=true][href='#{person_message_path(@ranger, thread, folder: PersonMessage::FOLDER_INBOX)}']"
     assert_selector "#messages-folder-selector a[role=tab][aria-selected=true]", text: "Inbox"
     assert_selector "#messages-unread-count", text: "1"
     assert_selector "#messages-thread article", text: "On my way"

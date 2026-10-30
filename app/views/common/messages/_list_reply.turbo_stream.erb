@@ -5,9 +5,11 @@
     never moved or added, since the broadcast cannot know which folder or
     search each page shows; a page not listing it has no target, and Turbo
     skips the stream. Morphed, its link stays the same node, so the reader's
-    focus stays on it (review finding 14). For the same reason its link carries
-    no folder or search, and no mark: review_pane_controller keeps the open
-    row's (keepMark). %>
+    focus stays on it (review finding 14). For the same reason it is drawn with
+    no folder or search, and no mark: review_pane_controller keeps the link's
+    address and the open row's mark (#keepAttribute), and a search's Sent chip
+    shows by the list it sits in, not by this render. Its snippet loses the
+    search's marks. %>
 <%= turbo_stream.replace dom_id(message, :conversation), method: :morph,
                          partial: "common/messages/conversation_summary",
                          locals: { message:, owner:, namespace:, folder: nil } %>

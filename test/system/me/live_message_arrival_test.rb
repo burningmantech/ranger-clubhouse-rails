@@ -56,7 +56,9 @@ class Me::LiveMessageArrivalTest < ApplicationSystemTestCase
 
     card = "#messages-thread article##{ActionView::RecordIdentifier.dom_id(reply, :card)}"
     assert_selector card, text: "On my way"
-    assert_equal [mark_read_me_message_path(@thread, folder: PersonMessage::FOLDER_INBOX)], mark_read_posts
+    # It posts what the list beside the pane shows, from the tab row's fields.
+    assert_equal [mark_read_me_message_path(@thread)], mark_read_posts
+    assert_equal [{ "folder" => PersonMessage::FOLDER_INBOX }], mark_read_bodies
     # Read where it landed: its New chip goes, and the envelope that went up for
     # it comes back down to the other thread.
     assert_no_selector "#{card}[data-unread]"
@@ -131,6 +133,49 @@ class Me::LiveMessageArrivalTest < ApplicationSystemTestCase
     assert_empty mark_read_posts, "the author's own card is read"
   end
 
+  # The read a reply's arrival posts morphs the cards with no search
+  # (MessagesConcern#card_streams): the page keeps the marks and the ring the
+  # thread was opened with, and the card that just landed in the log gains none.
+  test "a reply that lands in a thread opened from a search leaves the marks as they were" do
+    open_thread(q: "has")
+    top = "#messages-thread article##{ActionView::RecordIdentifier.dom_id(@thread, :card)}"
+    assert_selector "#{top}[data-landing] mark.search-hit", text: "has"
+
+    reply = PersonMessage.create!(person: @ranger, sender_person: @sender, creator_person: @sender, reply_to: @thread,
+                                  sender_type: PersonMessage::SENDER_TYPE_PERSON, subject: @thread.subject,
+                                  body: "<p>Nobody has it yet</p>")
+
+    card = "#messages-thread article##{ActionView::RecordIdentifier.dom_id(reply, :card)}"
+    assert_selector card, text: "Nobody has it yet"
+    # Read: the mark-read answer has morphed the cards.
+    assert_no_selector "#{card}[data-unread]"
+    assert_selector "#{top}[data-landing] mark.search-hit", text: "has"
+    assert_no_selector "#{card} mark"
+    assert_no_selector "#{card}[data-landing]"
+  end
+
+  # A reply's broadcast redraws the thread's row knowing no list
+  # (common/messages/_list_reply): in a search's list the row keeps its address,
+  # search and all, and its Sent chip.
+  test "a reply leaves a search's row its address and its Sent chip" do
+    owner = person(:inactive_ranger)
+    radio = person_message(:search_radio_archived)
+    person_message_member(:search_radio_archived_inactive_ranger).update!(archived: false)
+    sign_in(owner)
+    visit me_messages_path(q: "radio")
+    row = "a.review-line[data-review-id='#{radio.id}'][href='#{me_message_path(radio, folder: PersonMessage::FOLDER_INBOX, q: "radio")}']"
+    assert_selector row, text: "Sent"
+    list = Turbo::StreamsChannel.signed_stream_name([owner, :messages, "me"])
+    assert_selector "turbo-cable-stream-source[connected][signed-stream-name='#{list}']", visible: :all
+
+    PersonMessage.create!(person: person(:plate_collision_ranger), sender_person: owner, creator_person: owner,
+                          reply_to: radio, sender_type: PersonMessage::SENDER_TYPE_PERSON, subject: radio.subject,
+                          body: "Batteries are charged")
+
+    assert_selector row, text: "Batteries are charged"
+    assert_selector "#{row} .badge", text: "Sent"
+  end
+
   private
 
   # A message from CustomGender to TestRanger, or a reply in their thread.
@@ -143,18 +188,22 @@ class Me::LiveMessageArrivalTest < ApplicationSystemTestCase
   # Signed in, on a new thread with its three streams subscribed (the layout's,
   # the mailbox list's and the thread's) and thread-live connected, recording what the page posts and what
   # the envelope says.
-  def open_thread
+  def open_thread(q: nil)
     @thread = deliver
     sign_in(@ranger)
-    visit me_message_path(@thread)
+    visit me_message_path(@thread, q:)
     assert_selector "turbo-cable-stream-source[connected]", count: 3, visible: :all
     wait_for_controller("thread-live", "#messages-thread")
     page.execute_script(<<~JS)
       window.posts = []
+      window.postBodies = []
       const fetch = window.fetch
       window.fetch = (resource, options) => {
         const url = new URL(resource, location)
-        if (options?.method?.toUpperCase() === "POST") window.posts.push(url.pathname + url.search)
+        if (options?.method?.toUpperCase() === "POST") {
+          window.posts.push(url.pathname + url.search)
+          window.postBodies.push([url.pathname, options.body instanceof FormData ? Object.fromEntries(options.body) : null])
+        }
         return fetch(resource, options)
       }
       window.envelopes = []
@@ -166,4 +215,6 @@ class Me::LiveMessageArrivalTest < ApplicationSystemTestCase
   end
 
   def mark_read_posts = page.evaluate_script("window.posts").grep(%r{/mark-read})
+
+  def mark_read_bodies = page.evaluate_script("window.postBodies").filter_map { |path, body| body if path.include?("/mark-read") }
 end

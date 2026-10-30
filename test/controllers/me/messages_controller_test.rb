@@ -1304,8 +1304,9 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     get me_message_path(message, folder: PersonMessage::FOLDER_SENT)
     assert_select "#messages-pane turbo-cable-stream-source[channel=MailboxStreamsChannel][signed-stream-name=?]",
                   Turbo::StreamsChannel.signed_stream_name([@sender, message])
+    # No folder or search of its own: it posts what the list shows when it posts.
     assert_select "#messages-thread[data-controller=thread-live][data-thread-live-url-value=?]",
-                  mark_read_me_message_path(message, folder: PersonMessage::FOLDER_SENT)
+                  mark_read_me_message_path(message)
     # And the list beside it, whose row and Unread count a reply replaces.
     assert_select "turbo-cable-stream-source[channel=MailboxStreamsChannel][signed-stream-name=?]",
                   Turbo::StreamsChannel.signed_stream_name([@sender, :messages, "me"])
@@ -1462,22 +1463,43 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "#messages-thread [data-controller=scroll-to-element][hidden][data-scroll-to-element-id-value=?]" \
                   "[data-scroll-to-element-container-value='.review-pane']", reply_id
-    assert_select "article.ring-primary", count: 1
-    assert_select "#{reply_card}.ring-primary.scroll-mt-4 mark.search-hit", text: "thermos"
+    assert_select "article[data-landing]", count: 1
+    assert_select "#{reply_card}[data-landing] mark.search-hit", text: "thermos"
     assert_select "#{top_card} mark", count: 0
 
-    # Both messages match: the top, first.
+    # Only the top holds "dirt shift".
     get me_message_path(swap, q: "dirt shift")
-    assert_select "#{top_card}.ring-primary mark.search-hit", count: 2
-    assert_select "#{reply_card}.ring-primary", count: 0
+    assert_select "#{top_card}[data-landing] mark.search-hit", count: 2
+    assert_select "#{reply_card}[data-landing]", count: 0
+
+    # Both hold "I'll": both marked, the first landed on.
+    get me_message_path(swap, q: "I'll")
+    assert_select "article mark.search-hit", count: 2
+    assert_select "#{top_card}[data-landing]"
+    assert_select "#{reply_card}[data-landing]", count: 0
 
     # A hit on the subject or the callsign alone, or no search: no mark, ring or scroll.
     ["Thursday", "AlphaN", nil].each do |q|
       get me_message_path(swap, q:)
+      assert_response :success
+      assert_select "article", count: 2
       assert_select "article mark", count: 0
-      assert_select "article.ring-primary", count: 0
+      assert_select "article[data-landing]", count: 0
       assert_select "[data-controller=scroll-to-element]", count: 0
     end
+  end
+
+  # PersonMessage.search_for_person needs every word in one row, its subject
+  # counted: here the reply's ("Shift swap…") and its "thermos". The top holds
+  # "shift" alone and is marked, but is not the hit.
+  test "a search of several words lands on the message holding them all" do
+    sign_in_as(person(:inactive_ranger))
+    swap = person_message(:search_dirt_swap)
+
+    get me_message_path(swap, q: "thermos shift")
+    assert_select "article##{ActionView::RecordIdentifier.dom_id(swap, :card)}:not([data-landing]) mark.search-hit", text: "shift"
+    assert_select "article##{ActionView::RecordIdentifier.dom_id(person_message(:search_dirt_swap_reply), :card)}[data-landing] " \
+                  "mark.search-hit", text: "thermos"
   end
 
   test "a hit in a message written in the editor is marked in its text, never in its markup" do
@@ -1487,35 +1509,91 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
 
     get me_message_path(radio, q: "depot")
     assert_response :success
-    assert_select "#{rich_card}.ring-primary .lexxy-content a[href=?] mark.search-hit", "https://example.org/depot",
+    assert_select "#{rich_card}[data-landing] .lexxy-content a[href=?] mark.search-hit", "https://example.org/depot",
                   text: "depot"
 
     # Words of the markup alone -- the link's address, a tag -- are no match.
     %w[https strong].each do |q|
       get me_message_path(radio, q:)
       assert_select "article mark", count: 0
-      assert_select "article.ring-primary", count: 0
+      assert_select "article[data-landing]", count: 0
     end
   end
 
-  test "Mark Unread morphs the cards with the search's marks and the landing card's ring" do
+  # The legacy body's "<name@example.org>" is in its text, but the sanitizer
+  # takes it out of the card as a tag: the card that shows a mark is landed on.
+  test "a hit lands on a card that shows its match, never on one whose match the sanitizer took out" do
+    top = create_message(@recipient, @sender, "Gate list", "Jane Smith <name@example.org> wrote:\nsee you Thursday")
+    reply = create_message(@recipient, @sender, "Gate list", "The example form is on the board.", reply_to_id: top.id)
+
+    get me_message_path(top, q: "example")
+    assert_select "article##{ActionView::RecordIdentifier.dom_id(top, :card)}:not([data-landing])"
+    assert_select "article##{ActionView::RecordIdentifier.dom_id(top, :card)} mark", count: 0
+    assert_select "article##{ActionView::RecordIdentifier.dom_id(reply, :card)}[data-landing] mark.search-hit", text: "example"
+  end
+
+  # A plain body's own markup is sanitized, and its links are found in its
+  # text: matched in the HTML, a phone number or a URL in a title made a link
+  # whose quotes ended the title, and the rest of the value ran as markup.
+  test "a plain body's links are found in its text, never inside one of its attributes" do
+    titled = [%(<b title="555-123-4567<img src=x onerror=alert(1)>">hi</b>),
+              %(<b title="a>b http://x.example/ <img src=x onerror=alert(2)>">hi</b>)].map do |body|
+      create_message(@recipient, @sender, "Gate", body)
+    end
+    titled.each do |message|
+      get me_message_path(message)
+      assert_response :success
+      assert_select "#messages-thread img", count: 0
+      assert_select "#messages-thread a[href^='tel:'], #messages-thread a[href^='http']", count: 0
+      assert_select "article [data-message-body] b[title]", text: "hi"
+    end
+
+    plain = create_message(@recipient, @sender, "Gate", "Call 775-555-1234 or see https://example.org/a?b=1&c=2.\nThanks")
+    get me_message_path(plain)
+    card = "article##{ActionView::RecordIdentifier.dom_id(plain, :card)} [data-message-body]"
+    assert_select "#{card} a[href='tel:7755551234']", text: "775-555-1234"
+    assert_select "#{card} a[href=?]", "https://example.org/a?b=1&c=2", text: "https://example.org/a?b=1&c=2"
+    assert_select "#{card} br"
+  end
+
+  # Nested to the HTML5 parser's limit with a link at the bottom, which adds a
+  # level: the card renders, unmarked, rather than failing the page. Read as
+  # text: assert_select's own parse of the page stops at that limit too.
+  test "a body nested as deep as the parser goes opens from a search" do
+    message = create_message(@recipient, @sender, "Deep", ("<b>" * 400) + "dirt http://example.org/x" + ("</b>" * 400))
+
+    get me_message_path(message, q: "dirt")
+    assert_response :success
+    assert_includes response.body, %(<a href="http://example.org/x">http://example.org/x</a>)
+    assert_not_includes response.body, %(<mark class="search-hit">dirt</mark>)
+  end
+
+  # The read-state morphs know no search: the page keeps the bodies and the
+  # ring _thread drew (review_pane_controller; the system test watches it).
+  test "Mark Unread morphs every card, drawing no search's marks or ring" do
     sign_in_as(person(:inactive_ranger))
     swap = person_message(:search_dirt_swap)
-    top_card, reply_card = [swap, person_message(:search_dirt_swap_reply)].map do |message|
+    cards = [swap, person_message(:search_dirt_swap_reply)].map do |message|
       "turbo-stream[action=replace][method=morph][target=#{ActionView::RecordIdentifier.dom_id(message, :card)}] template article"
     end
 
     post toggle_read_me_message_path(swap), params: { folder: PersonMessage::FOLDER_INBOX, q: "thermos" }, as: :turbo_stream
     assert_response :success
-    assert_select "#{reply_card}.ring-primary mark.search-hit", text: "thermos"
-    assert_select "#{top_card} mark", count: 0
-    assert_select "#{top_card}.ring-primary", count: 0
+    cards.each do |card|
+      assert_select "#{card} [data-message-body]", count: 1
+      assert_select "#{card} mark", count: 0
+      assert_select "#{card}[data-landing]", count: 0
+    end
   end
 
-  test "a search's hit the owner started says Sent, under Archived, and a folder's row never does" do
+  # Drawn on every row the owner started and shown by a search's list alone
+  # (data-search), so a render that cannot know the list -- a live reply's
+  # broadcast -- still draws it right.
+  test "a search's hit the owner started says Sent, under Archived, and a folder's list never shows it" do
     sign_in_as(person(:inactive_ranger))
     radio = person_message(:search_radio_archived)
-    chips = -> { css_select("a.review-line[data-review-id='#{radio.id}'] .badge").map { |chip| chip.text.strip } }
+    row = "a.review-line[data-review-id='#{radio.id}']"
+    chips = -> { css_select("#{row} .badge").map { |chip| chip.text.strip } }
 
     # Sent and archived by the owner: one chip, where it was found.
     get me_messages_path(q: "radio")
@@ -1524,9 +1602,26 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     person_message_member(:search_radio_archived_inactive_ranger).update!(archived: false)
     get me_messages_path(q: "radio")
     assert_equal ["Sent"], chips.call
+    assert_select "ul[data-search] #{row} .badge.hidden.in-data-search\\:inline-flex", text: "Sent"
 
     get me_messages_path(folder: PersonMessage::FOLDER_SENT)
-    assert_empty chips.call
+    assert_select row
+    assert_select "ul[data-search]", count: 0
+  end
+
+  # The live mark-read posts the list's folder and search (thread_live_controller),
+  # as the toggles do, and the row comes back as that list draws it.
+  test "mark read draws the row for the folder and search it posts" do
+    sign_in_as(person(:inactive_ranger))
+    radio = person_message(:search_radio_archived)
+    row = "turbo-stream[target=#{ActionView::RecordIdentifier.dom_id(radio, :conversation)}] template a.review-line"
+
+    post mark_read_me_message_path(radio), params: { folder: PersonMessage::FOLDER_ARCHIVED, q: "radio" }, as: :turbo_stream
+    assert_select "#{row}[href=?] mark.search-hit", me_message_path(radio, folder: PersonMessage::FOLDER_ARCHIVED, q: "radio")
+
+    post mark_read_me_message_path(radio), params: { folder: PersonMessage::FOLDER_ARCHIVED }, as: :turbo_stream
+    assert_select "#{row}[href=?]", me_message_path(radio, folder: PersonMessage::FOLDER_ARCHIVED)
+    assert_select "#{row} mark", count: 0
   end
 
   # --- Group threads (messaging rework slice 3, ruling D2) ----------------------
