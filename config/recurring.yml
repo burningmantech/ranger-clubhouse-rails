@@ -46,6 +46,9 @@ production:
   expire_request_logs:
     class: ExpireRequestLogsJob
     schedule: at 5am every day
+  expire_action_logs:
+    class: ExpireActionLogsJob
+    schedule: at 5:30am every day
   photo_pending:
     class: PhotoPendingJob
     schedule: "0 9,21 * * *"
