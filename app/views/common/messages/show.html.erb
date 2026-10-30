@@ -5,7 +5,7 @@
     (the Inbox keeps the bare address), or to the search it was a hit of.
     messages_path resolves to the namespace that rendered this, so the back
     link needs no local. %>
-<% back_path = messages_path(folder: (@folder unless @folder == PersonMessage::FOLDER_INBOX), q: search_query) %>
+<% back_path = messages_path(folder: (@folder unless @folder == PersonMessage::FOLDER_INBOX), **search_scope) %>
 <div class="mb-2">
   <% if @person %>
     <%= hero_panel icon: "comments", heading_level: :h1, id: "messages-header",

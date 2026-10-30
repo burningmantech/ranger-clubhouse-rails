@@ -125,4 +125,11 @@ class MessagesHelperTest < ActionView::TestCase
     assert_equal "3 conversations match “dirt” in every folder", message_search_summary(3, "dirt")
     assert_equal "No conversations match “dirt” in any folder", message_search_summary(0, "dirt")
   end
+
+  test "message_search_summary names the search field's chips" do
+    assert_equal "2 conversations with RANGER1 in every folder", message_search_summary(2, nil, ["RANGER1"])
+    assert_equal "1 conversation with RANGER1 matches “dirt” in every folder", message_search_summary(1, "dirt", ["RANGER1"])
+    assert_equal "No conversations with AlphaNewbie and RANGER1 match “khaki” in any folder",
+                 message_search_summary(0, "khaki", %w[AlphaNewbie RANGER1])
+  end
 end

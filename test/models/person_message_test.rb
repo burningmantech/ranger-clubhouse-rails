@@ -263,6 +263,45 @@ class PersonMessageTest < ActiveSupport::TestCase
     assert_empty PersonMessage.search_for_person(starter.id, "retired")
   end
 
+  # --- The search field's chips and suggestions (.scratch/messages-search/PRD.md, slices 4 and 5)
+
+  test "a chip keeps the search to its person's conversations, and alone lists them all" do
+    assert_equal [@radio, @khaki], search("", with: ["RANGER1"])
+    assert_equal [@radio], search("dirt", with: ["RANGER1"])
+    # RANGER1's thread with AlphaNewbie holds both words, but it is not the owner's.
+    assert_empty search("roster", with: ["RANGER1"])
+    assert_empty search("khaki", with: ["AlphaNewbie"])
+  end
+
+  test "chips need every person in the conversation, and one naming nobody finds nothing" do
+    crew = person_message(:search_group_crew)
+
+    assert_equal [crew], search("", with: %w[RetiredRanger EchelonTest])
+    assert_empty search("", with: %w[RetiredRanger RANGER1])
+    assert_empty search("", with: ["NoSuchRanger"])
+    assert_empty search("dirt", with: %w[RANGER1 NoSuchRanger])
+    # Looked up as the compose form looks one up: case and punctuation aside.
+    assert_equal [@radio, @khaki], search("", with: ["ranger-1"])
+  end
+
+  test "the field suggests the other people in the owner's conversations, with how many each shares" do
+    assert_equal [[person(:plate_collision_ranger), 2]], suggest("ran")[:people]
+    # The thread AlphaNewbie shares with RANGER1 is not the owner's, so it is not counted.
+    assert_equal [[person(:alpha_ranger), 1]], suggest("Alpha-N")[:people]
+    assert_empty suggest("inactive")[:people], "never the owner"
+    assert_equal({ people: [], teams: [] }, suggest(" "))
+  end
+
+  test "the field suggests the teams of the owner's team conversations whose name holds the text" do
+    cadre = teams(:green_dot_cadre)
+    author = person(:active_ranger)
+    [@owner, author].each { |member| join_team(member, cadre) }
+    create_team_thread(author, cadre)
+
+    assert_equal [cadre], suggest("dot cad")[:teams]
+    assert_empty PersonMessage.search_suggestions_for_person(person(:alpha_ranger).id, "dot cad")[:teams]
+  end
+
   # --- Group threads: each member's own read and archive state ------------------
 
   test "a group thread is unread for each member until they read it, and again when someone else replies" do
@@ -531,7 +570,8 @@ class PersonMessageTest < ActiveSupport::TestCase
 
   private
 
-  def search(query) = PersonMessage.search_for_person(@owner.id, query)
+  def search(query, with: []) = PersonMessage.search_for_person(@owner.id, query, with:)
+  def suggest(query) = PersonMessage.search_suggestions_for_person(@owner.id, query)
 
   def folder(person, name) = PersonMessage.retrieve_for_person(person.id, name)
 

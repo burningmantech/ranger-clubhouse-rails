@@ -1,8 +1,10 @@
-<%# locals: (url:, mode: nil, name: nil, input_id: nil, field_id: nil, describedby: nil, invalid: false, wrapper_class: nil, form_field: false, placeholder: "Search...", min_length: 2, limit: 5, delay: 300, meta_mapping: nil, submit_on_select: false, recents_key: nil, autofocus: false, input_class: nil, results_class: nil, hidden_field_name: nil, hidden_field_id: nil, aria_label: "Search", input_data: nil, inline: false, select_on_blur: false, keyboard_help: false) %>
+<%# locals: (url:, mode: nil, name: nil, input_id: nil, field_id: nil, describedby: nil, invalid: false, wrapper_class: nil, form_field: false, placeholder: "Search...", min_length: 2, limit: 5, delay: 300, meta_mapping: nil, submit_on_select: false, recents_key: nil, autofocus: false, input_class: nil, results_class: nil, hidden_field_name: nil, hidden_field_id: nil, aria_label: "Search", input_data: nil, inline: false, select_on_blur: false, keyboard_help: false, type: "text", value: nil, maxlength: nil, free_text: false) %>
 <%# field_id: the text input's own id, for a form label that names it; describedby: its help or error line;
     wrapper_class: the component's own box, as a flex item in a field (callsign_chips_field);
     form_field: a field with no hidden target, whose selection only dispatches autocomplete.change;
-    aria_label: nil when a <label for=field_id> names the input, since an aria-label would outrank it. %>
+    aria_label: nil when a <label for=field_id> names the input, since an aria-label would outrank it.
+    free_text: the text is itself a choice (the mailbox search, MessagesConcern#suggest): the first row stands for it
+    and arrives highlighted, and Enter sends the form with the text unless the reader picked another row. %>
 <%
   wrapper_id = input_id || "autocomplete-#{SecureRandom.hex(4)}"
   results_id = "#{wrapper_id}-results"
@@ -21,6 +23,7 @@
      <% if form_field %>data-autocomplete-form-field-value="true"<% end %>
      <% if inline %>data-autocomplete-inline-value="true"<% end %>
      <% if select_on_blur %>data-autocomplete-select-on-blur-value="true"<% end %>
+     <% if free_text %>data-autocomplete-free-text-value="true"<% end %>
      <% if recents_key.present? %>data-autocomplete-recents-key-value="<%= recents_key %>"<% end %>
      role="combobox"
      aria-expanded="false"
@@ -28,11 +31,13 @@
      aria-owns="<%= results_id %>"
      class="<%= class_names("relative", wrapper_class) %>">
 
-  <input type="text"
+  <input type="<%= type %>"
          id="<%= input_field_id %>"
          <% if name.present? %>name="<%= name %>"<% end %>
+         <% unless value.nil? %>value="<%= value %>"<% end %>
+         <% if maxlength %>maxlength="<%= maxlength %>"<% end %>
          data-autocomplete-target="input"
-         <% (input_data || {}).each do |key, value| %>data-<%= key %>="<%= value %>" <% end %>
+         <% (input_data || {}).each do |key, data_value| %>data-<%= key %>="<%= data_value %>" <% end %>
          placeholder="<%= placeholder %>"
          autocomplete="off"
          spellcheck="false"

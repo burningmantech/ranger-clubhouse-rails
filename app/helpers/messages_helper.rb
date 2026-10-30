@@ -75,12 +75,14 @@ module MessagesHelper
     local.strftime(local.year == today.year ? "%b %-d" : DateTimeHelper::DATE)
   end
 
-  # The line over a search's hits: how many threads it found, and that it looked
-  # in every folder, since the tab row is gone while it shows.
-  def message_search_summary(count, query)
-    return "No conversations match “#{query}” in any folder" if count.zero?
-
-    "#{pluralize(count, "conversation")} #{count == 1 ? "matches" : "match"} “#{query}” in every folder"
+  # The line over a search's hits: how many threads it found, with whom (the
+  # field's chips) and for what, and that it looked in every folder, since the
+  # tab row is gone while it shows.
+  def message_search_summary(count, query, with = [])
+    found = count.zero? ? "No conversations" : pluralize(count, "conversation")
+    found += " with #{with.to_sentence}" if with.any?
+    found += " #{count == 1 ? "matches" : "match"} “#{query}”" if query
+    "#{found} in #{count.zero? ? "any" : "every"} folder"
   end
 
   # +text+ with whatever the search matched marked (PersonMessage.search_pattern).

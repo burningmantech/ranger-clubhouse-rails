@@ -971,6 +971,12 @@ Several callsigns in one input box, each a removable chip, over `shared/_autocom
 - `shared/_autocomplete` gained `field_id:` (the text input's id, so the builder's label names it),
   `describedby:`, `wrapper_class:` (its box as a flex item) and `form_field:` (a form field with no hidden
   target: a selection only dispatches `autocomplete.change`) for this.
+- The mailbox search field (`common/messages/_search_field`, 2026-10-30) holds its people as these chips
+  too, under its own controller: `shared/_callsign_chip` takes `controller:` (default `callsign-chips`),
+  the Stimulus identifier its target and remove action name, and the field passes `message-search`.
+  Its text is a search, never a chip, which is why it does not reuse `callsign_chips_controller`.
+  `shared/_autocomplete` gained `type:`, `value:` and `maxlength:` for its input, and `free_text:` (see
+  `docs/autocomplete-component.md`) for it.
 
 ---
 

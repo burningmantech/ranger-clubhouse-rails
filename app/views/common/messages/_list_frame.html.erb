@@ -6,7 +6,7 @@
   frame is on screen, which the list column never is below lg, so a phone
   opening a thread never loads the folder. refresh: morph reloads it after a
   morphing page refresh, which would otherwise leave the placeholder behind.
-  Either way it lists a search's hits instead while there is one (?q=).
+  Either way it lists a search's hits instead while there is one (?q=, ?with[]=).
 
   `streams` ride inside the frame's own answer and run as it renders: the tab
   row, which a search takes away (MessagesConcern#index).
@@ -17,7 +17,7 @@
     <%= safe_join(streams) %>
   <% end %>
 <% else %>
-  <%= turbo_frame_tag "messages-conversation-list", src: messages_path(folder:, selected: selected_id, q: search_query),
+  <%= turbo_frame_tag "messages-conversation-list", src: messages_path(folder:, selected: selected_id, **search_scope),
                                                     loading: :lazy, refresh: :morph do %>
     <%= render "shared/frame_spinner", label: "Loading conversations…" %>
   <% end %>

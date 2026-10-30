@@ -234,8 +234,16 @@ class PersonMessage < ApplicationRecord
   # anywhere in the subject or text instead. Only letters, digits and '_'
   # reach AGAINST, so the query's own + - * " ( ) ~ < > @ are never operators.
   #
-  def self.search_for_person(person_id, query)
+  # +with+ is the callsigns the search field holds as chips: only threads every
+  # one of them is a member of are searched, and with no query they are all
+  # listed. A callsign that names nobody finds nothing, never the rest.
+  #
+  def self.search_for_person(person_id, query, with: [])
     query = query.to_s.strip
+    thread_ids = PersonMessageMember.where(person_id:).pluck(:person_message_id)
+    thread_ids = threads_with(thread_ids, with) if with.any?
+    return thread_list(where(id: thread_ids)) if query.empty?
+
     words = search_words(query)
     text = if words.any?
              where("MATCH(subject, body_text) AGAINST (? IN BOOLEAN MODE)", words.map { |word| "+#{word}*" }.join(" "))
@@ -243,7 +251,6 @@ class PersonMessage < ApplicationRecord
              like = "%#{sanitize_sql_like(query)}%"
              where(arel_table[:subject].matches(like)).or(where(arel_table[:body_text].matches(like)))
            end
-    thread_ids = PersonMessageMember.where(person_id:).pluck(:person_message_id)
     hits = where(id: thread_ids).or(where(reply_to_id: thread_ids)).and(text)
                                 .distinct.pluck(Arel.sql("COALESCE(reply_to_id, id)"))
     callsign = WordUtils.normalize_word(query)
@@ -260,6 +267,46 @@ class PersonMessage < ApplicationRecord
     end
 
     thread_list(where(id: hits))
+  end
+
+  # The ones of +thread_ids+ every callsign names a member of, each looked up
+  # as the compose form looks one up; none when one names nobody.
+  def self.threads_with(thread_ids, callsigns)
+    people = callsigns.map { |callsign| Person.resolve_callsign(callsign) }
+    return [] if people.include?(nil)
+
+    people.reduce(thread_ids) do |ids, person|
+      PersonMessageMember.where(person_message_id: ids, person_id: person.id).pluck(:person_message_id)
+    end
+  end
+  private_class_method :threads_with
+
+  ##
+  # What the search field suggests for +query+ (MessagesConcern#suggest), from
+  # the person's own threads alone. People: the other members whose callsign
+  # starts with it, compared as search_for_person compares one, the most
+  # threads shared first, each with that count. Teams: those a thread was
+  # written to or as whose name holds it, as search_for_person finds a team
+  # thread by it.
+  #
+  def self.search_suggestions_for_person(person_id, query, limit: 5)
+    query = query.to_s.strip
+    callsign = WordUtils.normalize_word(query)
+    return { people: [], teams: [] } if callsign.blank?
+
+    thread_ids = PersonMessageMember.where(person_id:).pluck(:person_message_id)
+    counts = PersonMessageMember.joins(:person).where(person_message_id: thread_ids).where.not(person_id:)
+                                .where(Person.arel_table[:callsign_normalized].matches("#{sanitize_sql_like(callsign)}%"))
+                                .group(:person_id).count
+    people = Person.where(id: counts.keys).index_by(&:id)
+    tops = where(id: thread_ids)
+    teams = Team.where(id: tops.select(:sender_team_id)).or(Team.where(id: tops.select(:recipient_team_id)))
+                .where(Team.arel_table[:title].matches("%#{sanitize_sql_like(query)}%"))
+    {
+      people: counts.map { |id, count| [people.fetch(id), count] }
+                    .sort_by { |person, count| [-count, person.callsign.downcase] }.first(limit),
+      teams: teams.order(:title).limit(limit).to_a
+    }
   end
 
   # The words of a query that the full-text index can match. InnoDB counts

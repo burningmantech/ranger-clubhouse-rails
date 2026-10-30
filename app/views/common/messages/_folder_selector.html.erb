@@ -1,7 +1,7 @@
 <%# locals: (folder:) %>
 <%# A search spans every folder, so no tab is the one showing: the row goes,
     and the hits' count line says where they came from. %>
-<% unless search_query %>
+<% unless searching? %>
   <div role="tablist" class="tabs tabs-lift">
     <%= messages_folder_tab "Inbox", PersonMessage::FOLDER_INBOX, folder %>
     <%= messages_folder_tab "Unread", PersonMessage::FOLDER_UNREAD, folder, badge: unread_message_count %>
@@ -17,6 +17,7 @@
 <% %w[messages-toggle-read messages-toggle-archive].each do |form| %>
   <%= hidden_field_tag :folder, folder, form:, id: nil %>
   <%= hidden_field_tag :q, search_query, form:, id: nil if search_query %>
+  <% search_with.each do |callsign| %><%= hidden_field_tag "with[]", callsign, form:, id: nil %><% end %>
 <% end %>
 <%# And for the search field (_workspace), so Clear Search and a blank search
     come back to the folder the search started from; Inbox, the default, is

@@ -308,6 +308,16 @@ class Hq::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_no_match "Switch to Person Manage", response.body
   end
 
+  test "the search field's suggestions answer as JSON, without the shell" do
+    owner = person(:inactive_ranger)
+
+    get suggest_hq_messages_path(owner, q: "ran")
+    assert_response :success
+    assert_equal "application/json", response.media_type
+    assert_equal %w[ran RANGER1], response.parsed_body["items"].pluck("value")
+    assert_nil session[:hq_warned_person_id]
+  end
+
   test "a thread that cannot be shown is refused in the pane, without the shell" do
     message = create_message(@other, @viewer, "Private", "Not the subject's thread")
 

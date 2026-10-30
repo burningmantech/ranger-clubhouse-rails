@@ -1624,6 +1624,94 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#{row} mark", count: 0
   end
 
+  # --- The search field's suggestions and chips (.scratch/messages-search/PRD.md, slices 4 and 5)
+
+  test "the search field suggests the search first, then the owner's people with how many conversations each shares" do
+    sign_in_as(person(:inactive_ranger))
+
+    get suggest_me_messages_path(q: "ran")
+    assert_response :success
+    body = response.parsed_body
+    assert_equal [["search", ""], ["people", MessagesConcern::SUGGESTED_PEOPLE]], body["groups"].map { |group| group.values_at("key", "title") }
+    search, ranger = body["items"]
+    assert_equal ["ran", "search"], [search["value"], search.dig("meta", "kind")]
+    assert_includes search["html"], "Search messages for “ran”"
+    assert_equal ["RANGER1", "person"], [ranger["value"], ranger.dig("meta", "kind")]
+    assert_includes ranger["html"], "2 conversations"
+  end
+
+  test "the search field suggests a team of the owner's conversations as a search for its name, and escapes the text" do
+    owner = person(:inactive_ranger)
+    cadre = teams(:green_dot_cadre)
+    [owner, @recipient].each { |member| join_team(member, cadre) }
+    create_team_thread(@recipient, cadre)
+    sign_in_as(owner)
+
+    get suggest_me_messages_path(q: "green")
+    team = response.parsed_body["items"].find { |item| item.dig("meta", "kind") == "team" }
+    assert_equal "Green Dot Cadre", team["value"]
+    assert_equal %w[search teams], response.parsed_body["groups"].pluck("key")
+
+    get suggest_me_messages_path(q: "<b>tag")
+    assert_includes response.parsed_body["items"].first["html"], "&lt;b&gt;tag"
+  end
+
+  test "a chip keeps the search to its person's conversations, and every link and toggle carries it" do
+    sign_in_as(person(:inactive_ranger))
+    radio = person_message(:search_radio_archived)
+    khaki = person_message(:search_khaki_notes)
+
+    get me_messages_path(with: ["RANGER1"])
+    assert_response :success
+    assert_select "form#messages-search [data-message-search-target=list] input[type=hidden][name='with[]'][value=RANGER1]"
+    assert_select "form#messages-search button[aria-label='Remove RANGER1'][data-action='message-search#remove']"
+    assert_select "[role=tablist]", count: 0
+    assert_select "#messages-conversation-list [role=status]", text: /2 conversations with RANGER1 in every folder/
+    assert_select "ul[aria-label='Search results'][data-search] a.review-line", count: 2
+    assert_select "a.review-line[href=?]", me_message_path(khaki, folder: PersonMessage::FOLDER_INBOX, with: ["RANGER1"])
+    assert_select "#messages-folder-selector input[name='with[]'][form=messages-toggle-read][value=RANGER1]"
+
+    get me_messages_path(q: "dirt", with: ["RANGER1"])
+    assert_select "[role=status]", text: /1 conversation with RANGER1 matches “dirt” in every folder/
+    assert_select "a.review-line[href=?] mark.search-hit",
+                  me_message_path(radio, folder: PersonMessage::FOLDER_INBOX, q: "dirt", with: ["RANGER1"]), text: "Dirt"
+
+    # RANGER1's thread with AlphaNewbie says "roster", but it is someone else's mail.
+    get me_messages_path(q: "roster", with: ["RANGER1"])
+    assert_select "[role=status]", text: /No conversations with RANGER1 match “roster” in any folder/
+    assert_select "a.review-line", count: 0
+  end
+
+  test "the chips are callsigns, each once, three at most" do
+    sign_in_as(person(:inactive_ranger))
+
+    get me_messages_path(with: { "a" => "RANGER1" })
+    assert_select "[role=tablist]"
+    assert_select "[data-message-search-target=list] [data-message-search-target=chip]", count: 0
+
+    get me_messages_path(with: %w[RANGER1 ranger1 RetiredRanger EchelonTest AlphaNewbie])
+    assert_select "[data-message-search-target=list] input[name='with[]']", count: 3
+    assert_select "[role=status]", text: /No conversations with RANGER1, RetiredRanger, and EchelonTest in any folder/
+  end
+
+  test "a hit's thread carries the chips to its back link, its lazy list and the toggles" do
+    sign_in_as(person(:inactive_ranger))
+    khaki = person_message(:search_khaki_notes)
+
+    get me_message_path(khaki, with: ["RANGER1"])
+    assert_response :success
+    assert_select "a[aria-label='Back to Messages'][href=?]", me_messages_path(with: ["RANGER1"])
+    assert_select "form#messages-search input[name='with[]'][value=RANGER1]"
+    assert_select "turbo-frame#messages-conversation-list[loading=lazy][src=?]",
+                  me_messages_path(folder: PersonMessage::FOLDER_INBOX, selected: khaki.id, with: ["RANGER1"])
+
+    post toggle_archive_me_message_path(khaki), params: { folder: PersonMessage::FOLDER_INBOX, with: ["RANGER1"] },
+                                                as: :turbo_stream
+    list = "turbo-stream[action=update][target=messages-conversation-list] template"
+    assert_select "#{list} [role=status]", text: /2 conversations with RANGER1/
+    assert_select "#{list} a.review-line[aria-current=true][data-review-id=?] .badge", khaki.id.to_s, text: "Archived"
+  end
+
   # --- Group threads (messaging rework slice 3, ruling D2) ----------------------
 
   test "a message to three callsigns is one shared thread: one top, a member row each, three notified" do

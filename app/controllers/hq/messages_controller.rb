@@ -27,7 +27,7 @@ class Hq::MessagesController < ApplicationController
   # modal (load_hq_shell consumes session[:hq_warned_person_id]).
   # :create keeps the shell — it re-renders :new on a validation error.
   skip_before_action :load_hq_shell,
-                     only: %i[index show find_recipient search_callsigns suggest_callsigns select_callsign
+                     only: %i[index show find_recipient search_callsigns suggest_callsigns select_callsign suggest
                               toggle_read toggle_archive create_reply]
 
   # :index answers the shell page, the folder-switch turbo-stream (the folder

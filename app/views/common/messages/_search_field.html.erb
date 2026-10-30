@@ -1,0 +1,30 @@
+<%# locals: () %>
+<%#
+  The search field (design B of .scratch/messages-search/PRD.md, slices 4 and
+  5): the text searched for, and up to MessagesConcern::MAX_SEARCH_WITH people
+  as chips (?with[]=), each keeping the search to the conversations they are in.
+  Typing two letters or more offers suggestions from the owner's own
+  conversations (MessagesConcern#suggest): the search for the text, people,
+  and teams. message_search_controller takes them: a person becomes a chip in
+  place of the text that found them, a team or the search itself searches for
+  its text, and either runs the search at once, as removing a chip does. Enter
+  sends the text, a picked row aside, without waiting for the suggestions
+  (the autocomplete's free_text). In one box, as the compose form's recipients
+  are (shared/_callsign_chips).
+%>
+<div class="<%= AppFormBuilder::INPUT_CLASSES %> w-full h-auto flex flex-wrap items-center gap-2 py-1">
+  <%= fa_icon "magnifying-glass", :solid, class: "text-stone-muted" %>
+  <span class="contents" data-message-search-target="list">
+    <%= render partial: "shared/callsign_chip", collection: search_with, as: :callsign,
+               locals: { name: "with[]", controller: "message-search" } %>
+  </span>
+  <%= render "shared/autocomplete", url: suggest_messages_path, name: "q", value: search_query, type: "search",
+                                    maxlength: 100, placeholder: "Search messages", aria_label: "Search Messages",
+                                    form_field: true, free_text: true,
+                                    wrapper_class: "flex-1 min-w-32",
+                                    input_class: "w-full min-h-9 bg-transparent outline-none",
+                                    input_data: { "message-search-target" => "input" } %>
+  <template data-message-search-target="template">
+    <%= render "shared/callsign_chip", name: "with[]", callsign: "", controller: "message-search" %>
+  </template>
+</div>

@@ -399,6 +399,21 @@ class Person::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "mark.search-hit", text: "Dirt"
   end
 
+  test "the search field suggests the person's own people, and a chip keeps the hits inside the namespace" do
+    owner = person(:inactive_ranger)
+
+    get suggest_person_messages_path(owner, q: "ran")
+    assert_response :success
+    assert_equal %w[ran RANGER1], response.parsed_body["items"].pluck("value")
+
+    get person_messages_path(owner, with: ["RANGER1"])
+    assert_select "form#messages-search input[type=search][data-autocomplete-target=input]"
+    assert_select "[data-controller=autocomplete][data-autocomplete-url-value=?]", suggest_person_messages_path(owner)
+    assert_select "a.review-line[href=?]",
+                  person_message_path(owner, person_message(:search_khaki_notes), folder: PersonMessage::FOLDER_INBOX,
+                                                                                   with: ["RANGER1"])
+  end
+
   # --- Group threads ---------------------------------------------------------
 
   test "sending from the person may address several people as one shared thread" do

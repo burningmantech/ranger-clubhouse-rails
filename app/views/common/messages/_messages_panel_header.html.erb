@@ -83,10 +83,10 @@
         page visit below lg); with none left, back to the list. %>
     <% unless mark_read_on_view? %>
       <% if (next_unread = next_unread_id(message)) %>
-        <%= button_link "Next Unread", :secondary, message_path(next_unread, folder:, q: search_query),
+        <%= button_link "Next Unread", :secondary, message_path(next_unread, folder:, **search_scope),
                         icon: "arrow-right", icon_type: :solid, data: { turbo_frame: "messages-pane" } %>
       <% else %>
-        <%= button_link "Back to Messages", :secondary, messages_path(folder:, q: search_query),
+        <%= button_link "Back to Messages", :secondary, messages_path(folder:, **search_scope),
                         icon: "arrow-left", icon_type: :solid, data: { turbo_frame: "_top" } %>
       <% end %>
     <% end %>

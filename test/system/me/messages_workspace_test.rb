@@ -15,6 +15,9 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
   # The card a search's hit opened on (common/messages/_thread).
   LANDING = "#messages-thread article[data-landing]"
 
+  # A chip in the search field, not the blank one its template holds.
+  CHIP = "[data-message-search-target=list] [data-message-search-target=chip]"
+
   # The landing again, as the page's own scroll-to-element marker runs it.
   REVEAL_AGAIN = <<~JS
     const marker = document.querySelector("#messages-thread [data-controller=scroll-to-element]")
@@ -191,6 +194,60 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     assert_selector "#{row(swap)}[aria-current=true] .badge", text: "Archived"
     assert_selector "[role=status]", text: "2 conversations match “dirt shift” in every folder"
     assert_no_selector "[role=tablist]"
+  end
+
+  # Slices 4 and 5 (.scratch/messages-search/PRD.md): suggestions while typing,
+  # and a person's chip keeping the search to the conversations they are in.
+  test "a person suggested in the search field becomes a chip, and the search keeps to their conversations" do
+    radio = person_message(:search_radio_archived)
+    swap = person_message(:search_dirt_swap)
+    sign_in(person(:inactive_ranger))
+    visit me_messages_path
+
+    fill_in "Search messages", with: "ran"
+    assert_selector "[role=option][aria-selected=true]", text: "Search messages for “ran”"
+    # The search's own row has no header over it; the people have theirs.
+    assert_selector ".ac-group-header", count: 1
+    find("[role=option]", text: "RANGER1").click
+
+    assert_selector CHIP, text: "RANGER1"
+    assert_field "Search messages", with: ""
+    assert_selector "[role=status]", text: "2 conversations with RANGER1 in every folder"
+
+    fill_in "Search messages", with: "dirt"
+    find_field("Search messages").send_keys(:enter)
+    assert_selector "[role=status]", text: "1 conversation with RANGER1 matches “dirt” in every folder"
+    assert_selector row(radio)
+    assert_no_selector row(swap)
+
+    find("button[aria-label='Remove RANGER1']").click
+    assert_selector "[role=status]", text: "2 conversations match “dirt” in every folder"
+    assert_selector row(swap)
+    assert_no_selector CHIP
+  end
+
+  test "Enter searches for the text, the suggestions up or still to come, and a person arrowed to is taken as a chip" do
+    sign_in(person(:inactive_ranger))
+    visit me_messages_path
+
+    # Before the suggestions come: a person among them must not hold the Enter.
+    fill_in "Search messages", with: "ran"
+    find_field("Search messages").send_keys(:enter)
+    assert_selector "[role=status]", text: "2 conversations match “ran” in every folder"
+    assert_no_selector "[role=option]"
+
+    fill_in "Search messages", with: "rang"
+    assert_selector "[role=option]", text: "RANGER1"
+    find_field("Search messages").send_keys(:enter)
+    assert_selector "[role=status]", text: "2 conversations match “rang” in every folder"
+    assert_no_selector "[role=option]"
+    assert_no_selector CHIP
+
+    fill_in "Search messages", with: "ran"
+    assert_selector "[role=option]", text: "RANGER1"
+    find_field("Search messages").send_keys(:down, :enter)
+    assert_selector CHIP, text: "RANGER1"
+    assert_selector "[role=status]", text: "2 conversations with RANGER1 in every folder"
   end
 
   # A hit opens its thread at the first message holding a match

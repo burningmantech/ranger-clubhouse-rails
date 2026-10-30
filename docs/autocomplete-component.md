@@ -164,7 +164,7 @@ Each filter in the `filters` array includes:
 Each group in the `groups` array includes:
 
 - **`key`** (string): Unique group identifier
-- **`title`** (string): Display title for the group header
+- **`title`** (string): Display title for the group header; a blank title draws no header (the mailbox search's own row, above its People and Teams)
 - **`item_ids`** (array): Ordered list of item IDs in this group
 
 ## 4. ARIA & Accessibility
@@ -225,11 +225,12 @@ Examples:
 | **Enter** | No selection, 1 result | Auto-select the single result |
 | **Enter** | Global search dialog, the option has no page to open | Commit nothing (see Global search dialog) |
 | **Enter** | No selection, multiple results | No action |
+| **Enter** | Free text (`free_text`), the first row or none highlighted, or a search in progress | Empty the list and leave the key to the form, which sends the text at once |
 | **Escape** | Results open | Close results dropdown; the key goes no further |
 | **Escape** | Results not up yet | Call off the search still to come and an Enter waiting for it; the key is left to the page (a dialog closes on it) |
 | Any key | Kept by an input method (`keyCode` 229) | No action |
 | **Tab** | Form field, option selected, no search in progress | Commit selection, close results, move focus to next field |
-| **Tab** | Search in progress, no selection, or the global search dialog | Commit nothing; focus moves as in the two rows below |
+| **Tab** | Search in progress, no selection, free text, or the global search dialog | Commit nothing; focus moves as in the two rows below |
 | **Tab** | Nothing committed, filter chips shown | Move focus to the first filter chip; results stay open |
 | **Tab** | Nothing committed, no filter chips | Close results, move focus to next field |
 | **Enter** / **Space** | Filter chip focused | Apply that filter and return focus to the input |
@@ -447,6 +448,7 @@ The autocomplete Stimulus controller accepts the following data values:
 | `queryParam` | String | "q" | Query parameter name for the search string |
 | `limit` | Number | 5 | Maximum number of results to request |
 | `submitOnSelect` | Boolean | false | Auto-submit form after selection |
+| `freeText` | Boolean | false | The text is itself a choice (the mailbox search, `free_text: true` on `shared/_autocomplete`): the first row stands for it and arrives highlighted, Enter sends the form with the text without waiting for the list unless the reader picked a row below the first, and Tab takes no row. A held Enter (`pendingEnter`) commits only a sole result, so without this a person among the suggestions swallowed the Enter |
 | `formField` | Boolean | false | A form field with no hidden target: a selection fills the input and dispatches `autocomplete.change` (the callsign chips field, `form_field: true` on `shared/_autocomplete`) |
 
 ### Optional Values

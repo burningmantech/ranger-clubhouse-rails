@@ -30,15 +30,16 @@
           viewer may still see the mailbox. %>
       <%= turbo_stream_from message_owner, :messages, messages_route_prefix, channel: MailboxStreamsChannel %>
       <%# Search covers subject, body and the other party's callsign in every
-          folder. It loads the list's frame alone, so a thread open in the pane
-          stays open, and advances the address, so a reload or a hit's back link
-          comes back to the hits. Enter submits; a blank search is the folder,
-          which the tab row's frame adds (_folder_selector). %>
+          folder, kept to the people chipped in the field (_search_field). It
+          loads the list's frame alone, so a thread open in the pane stays open,
+          and advances the address, so a reload or a hit's back link comes back
+          to the hits. Enter submits; a blank search is the folder, which the tab
+          row's frame adds (_folder_selector). %>
       <%= ui_form nil, messages_path, method: :get, id: "messages-search", class: "mb-2", html: { role: "search" },
-                  data: { turbo_frame: "messages-conversation-list", turbo_action: "advance" } do |f| %>
-        <%= f.search_field :q, value: search_query, hide_label: true, wrapper: false, width: "w-full",
-                           icon: "magnifying-glass", placeholder: "Search messages", maxlength: 100,
-                           autocomplete: "off", aria: { label: "Search Messages" } %>
+                  data: { turbo_frame: "messages-conversation-list", turbo_action: "advance",
+                          controller: "message-search", message_search_max_value: MessagesConcern::MAX_SEARCH_WITH,
+                          action: "autocomplete.change->message-search#take" } do %>
+        <%= render partial: "common/messages/search_field" %>
       <% end %>
       <%# One folder tab row at every width: all four tabs fit at 375px, and a
           folder switch streams both frames back in place. The Unread tab carries

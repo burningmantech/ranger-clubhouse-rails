@@ -53,6 +53,10 @@ export default class Autocomplete extends Controller {
         formField: Boolean,
         inline: Boolean,
         selectOnBlur: Boolean,
+        // The text is itself a choice (the mailbox search): the first row
+        // stands for it and arrives highlighted, and Enter sends the form with
+        // the text unless the reader picked another row (onEnterKeydown).
+        freeText: Boolean,
         url: String,
         minLength: {type: Number, default: 2},
         delay: {type: Number, default: 300},
@@ -221,11 +225,19 @@ export default class Autocomplete extends Controller {
         // so there Tab only moves the focus. Nor is a row taken before the list
         // has caught up with the text: see onEnterKeydown.
         const selected = this.selectedOption
-        if (selected && !this.searching && this.formField) this.commit(selected)
+        if (selected && !this.searching && this.formField && !this.freeTextValue) this.commit(selected)
     }
 
     onEnterKeydown = (event) => {
         const selected = this.selectedOption
+        // A free-text field sends its text at once, as a plain field would,
+        // without waiting for the list: the list is emptied and the key left to
+        // the form. Only a row the reader picked below the first is taken, and
+        // only from a list that has caught up with the text.
+        if (this.freeTextValue && (this.searching || !selected || selected === this.options[0])) {
+            this.hideAndRemoveOptions()
+            return
+        }
         if (this.searching) {
             // The list has not caught up with the text. Checked first, because the
             // rows still on screen, and any highlight among them, belong to the
@@ -715,10 +727,11 @@ export default class Autocomplete extends Controller {
         this.open()
 
         // A lone result is pre-highlighted (selected, not navigated) so the user can
-        // confirm it and press Enter to open it. Skip if an Enter was queued mid-fetch
-        // (consumePendingEnter will commit it) to avoid a flash of selection.
+        // confirm it and press Enter to open it, and a free-text field's first row,
+        // the text itself. Skip if an Enter was queued mid-fetch (consumePendingEnter
+        // will commit it) to avoid a flash of selection.
         const opts = this.options
-        if (opts.length === 1 && !this.pendingEnter) {
+        if (opts.length && (opts.length === 1 || this.freeTextValue) && !this.pendingEnter) {
             this.select(opts[0])
         }
 
@@ -759,19 +772,22 @@ export default class Autocomplete extends Controller {
         return container
     }
 
+    // A group with no title has no header: the mailbox search's own row.
     renderGroup(group, itemMap) {
         const container = document.createElement("div")
         container.className = "ac-group"
 
-        const header = document.createElement("div")
-        header.className = "ac-group-header"
-        header.setAttribute("role", "presentation")
-        header.textContent = group.title
-        container.appendChild(header)
+        if (group.title) {
+            const header = document.createElement("div")
+            header.className = "ac-group-header"
+            header.setAttribute("role", "presentation")
+            header.textContent = group.title
+            container.appendChild(header)
+        }
 
         const list = document.createElement("div")
         list.setAttribute("role", "group")
-        list.setAttribute("aria-label", group.title)
+        if (group.title) list.setAttribute("aria-label", group.title)
 
         group.item_ids.forEach(id => {
             const item = itemMap.get(id)

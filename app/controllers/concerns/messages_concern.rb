@@ -18,12 +18,20 @@ module MessagesConcern
   # Under a suggested callsign whose person last signed in over two years ago.
   AWAY_TOO_LONG = ["Hasn't logged in for over 2 years.", "They may not receive notifications."].freeze
 
+  # The most people a search names as chips (?with[]=): the field replaces the
+  # oldest with a fourth, and #search_with reads no more than this.
+  MAX_SEARCH_WITH = 3
+
+  # Over the people the search field suggests: what taking one does.
+  SUGGESTED_PEOPLE = "People — Add as a Filter"
+
   included do
     before_action :set_message, only: %i[show create_reply toggle_read toggle_archive mark_read]
 
-    helper_method :message_owner, :messages_route_prefix, :search_query, :lookup_label, :lookup_role_label, :direction_params,
+    helper_method :message_owner, :messages_route_prefix, :search_query, :search_with, :searching?, :search_scope,
+                  :lookup_label, :lookup_role_label, :direction_params,
                   :mark_read_on_view?, :mark_read_message_path,
-                  :messages_path, :message_path, :new_message_path,
+                  :messages_path, :message_path, :new_message_path, :suggest_messages_path,
                   :find_recipient_messages_path, :search_callsigns_messages_path, :suggest_callsigns_messages_path,
                   :select_callsign_messages_path, :create_reply_message_path, :group_send_allowed?,
                   :toggle_read_message_path, :toggle_archive_message_path
@@ -128,6 +136,30 @@ module MessagesConcern
       query: find_form.query, mode: "callsign",
       adapter_result: { items:, flat_item_ids: items.pluck(:id), empty_text: NO_CALLSIGNS_MATCHED }
     )
+  end
+
+  # The search field's suggestions (common/messages/_search_field), as
+  # autocomplete JSON, from the owner's own conversations: the search for the
+  # text first, then the people in them whose callsign starts with it, each
+  # taken as a chip that narrows the search to the conversations they are in,
+  # then the teams whose name holds it, each a search for that name. Each row's
+  # meta.kind tells message_search_controller which it is.
+  def suggest
+    query = params[:q].is_a?(String) ? params[:q].strip.first(100) : ""
+    found = PersonMessage.search_suggestions_for_person(message_owner.id, query)
+    preload_avatars(found[:people].map(&:first))
+
+    search = query.present? ? [search_suggestion("search", "search", query, title: "Search messages for “#{query}”")] : []
+    people = found[:people].map do |person, count|
+      photo = rails_blob_path(person.avatar_photo, only_path: true) if person.avatar_photo
+      search_suggestion("person-#{person.id}", "person", person.callsign, icon: "user", photo:,
+                                                                         lines: [helpers.pluralize(count, "conversation")])
+    end
+    teams = found[:teams].map { |team| search_suggestion("team-#{team.id}", "team", team.title, icon: "people-group") }
+    groups = { "search" => ["", search], "people" => [SUGGESTED_PEOPLE, people], "teams" => ["Teams", teams] }
+               .filter_map { |key, (title, rows)| { key:, title:, item_ids: rows.pluck(:id) } if rows.any? }
+    render json: Autocomplete::ResponseBuilder.build(query:, mode: "messages",
+                                                     adapter_result: { items: [*search, *people, *teams], groups: })
   end
 
   def select_callsign
@@ -319,6 +351,7 @@ module MessagesConcern
   def find_recipient_messages_path(**opts) = send(:"find_recipient_#{messages_route_prefix}_messages_path", *messages_route_args, **opts)
   def search_callsigns_messages_path(**opts) = send(:"search_callsigns_#{messages_route_prefix}_messages_path", *messages_route_args, **opts)
   def suggest_callsigns_messages_path(**opts) = send(:"suggest_callsigns_#{messages_route_prefix}_messages_path", *messages_route_args, **opts)
+  def suggest_messages_path(**opts) = send(:"suggest_#{messages_route_prefix}_messages_path", *messages_route_args, **opts)
   def select_callsign_messages_path(**opts) = send(:"select_callsign_#{messages_route_prefix}_messages_path", *messages_route_args, **opts)
   def create_reply_message_path(message, **opts) = send(:"create_reply_#{messages_route_prefix}_message_path", *messages_route_args, message, **opts)
   def toggle_read_message_path(message, **opts) = send(:"toggle_read_#{messages_route_prefix}_message_path", *messages_route_args, message, **opts)
@@ -331,10 +364,20 @@ module MessagesConcern
   # The people a send would accept whose callsign starts with the query: the
   # five the Find Recipient modal lists and the chip field suggests.
   def callsign_matches(find_form)
-    PersonSearch.search_callsigns_for_messaging(find_form.query, PersonSearch::TYPE_CONTACT).tap do |people|
-      ActiveRecord::Associations::Preloader.new(records: people,
-                                                associations: { avatar_photo_attachment: { avatar_attachment: :blob } }).call
-    end
+    PersonSearch.search_callsigns_for_messaging(find_form.query, PersonSearch::TYPE_CONTACT).tap { |people| preload_avatars(people) }
+  end
+
+  # The photos a suggestion row draws, for every person in one go.
+  def preload_avatars(people)
+    ActiveRecord::Associations::Preloader.new(records: people,
+                                              associations: { avatar_photo_attachment: { avatar_attachment: :blob } }).call
+  end
+
+  # One row of #suggest, drawn as every autocomplete row is: +value+ is what
+  # taking it puts in the field, +kind+ what message_search_controller does then.
+  def search_suggestion(id, kind, value, icon: "magnifying-glass", title: value, photo: nil, lines: [])
+    html = render_to_string(partial: "autocomplete/item", formats: [:html], locals: { icon:, title:, photo:, lines: })
+    { id:, label: value, value:, html:, meta: { kind: } }
   end
 
   # Rbs.message_notify, which may text or email, for each person a one-to-one
@@ -367,6 +410,24 @@ module MessagesConcern
     return @search_query if defined?(@search_query)
 
     @search_query = (params[:q].strip.first(100).presence if params[:q].is_a?(String))
+  end
+
+  # The callsigns the search field holds as chips (?with[]=): the search keeps
+  # to the conversations every one of them is in. Carried with the query.
+  def search_with
+    @search_with ||= Array(params[:with].presence).grep(String).map { |callsign| callsign.strip.first(Person::CALLSIGN_MAX_LENGTH) }
+                                                  .compact_blank.uniq(&:downcase).first(MAX_SEARCH_WITH)
+  end
+
+  # Whether the list shows a search's hits: some text, or a chip alone.
+  def searching?
+    search_query.present? || search_with.any?
+  end
+
+  # A search as a link carries it, to stay on its hits: a hit's thread, the
+  # thread page's lazy list, Next Unread and the way back.
+  def search_scope
+    { q: search_query, with: search_with.presence }
   end
 
   # The folder tabs and the list, streamed back in place: a folder switch, and a
@@ -405,7 +466,7 @@ module MessagesConcern
       turbo_stream.replace(helpers.dom_id(@message, :conversation), method: :morph,
                            partial: "common/messages/conversation_summary",
                            locals: { message: @message, owner: message_owner, namespace: messages_route_prefix,
-                                     folder: @folder, q: search_query, selected_id: @message.id })
+                                     folder: @folder, selected_id: @message.id, **search_scope })
     ]
   end
 
@@ -419,7 +480,7 @@ module MessagesConcern
 
   # The list column's rows: a search's hits in every folder, else the folder's.
   def retrieve_list_messages
-    return PersonMessage.search_for_person(message_owner.id, search_query) if search_query
+    return PersonMessage.search_for_person(message_owner.id, search_query, with: search_with) if searching?
 
     PersonMessage.retrieve_for_person(message_owner.id, @folder)
   end

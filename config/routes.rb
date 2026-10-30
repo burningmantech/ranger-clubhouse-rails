@@ -85,6 +85,8 @@ Rails.application.routes.draw do
 
     resources :messages, only: %w[index new create show] do
       get :find_recipient, on: :collection
+      # The search field's suggestions (MessagesConcern#suggest).
+      get :suggest, on: :collection
       get :suggest_callsigns, on: :collection
       post :search_callsigns, on: :collection
       post :select_callsign, on: :collection
@@ -1373,6 +1375,8 @@ Rails.application.routes.draw do
     # Ranger standing at the window does not eject the operator from the shell.
     resources :messages, only: [:index, :new, :create, :show] do
       get :find_recipient, on: :collection
+      # The search field's suggestions (MessagesConcern#suggest).
+      get :suggest, on: :collection
       get :suggest_callsigns, on: :collection
       post :search_callsigns, on: :collection
       post :select_callsign, on: :collection
@@ -1639,6 +1643,8 @@ Rails.application.routes.draw do
 
       resources :messages, only: [:index, :new, :create, :show] do
         get :find_recipient, on: :collection
+        # The search field's suggestions (MessagesConcern#suggest).
+        get :suggest, on: :collection
         get :suggest_callsigns, on: :collection
         post :search_callsigns, on: :collection
         post :select_callsign, on: :collection

@@ -1,12 +1,13 @@
-<%# locals: (name:, callsign:) %>
+<%# locals: (name:, callsign:, controller: "callsign-chips") %>
 <%# One chip of AppFormBuilder#callsign_chips_field: the callsign, the value the
     form sends, and its remove button. callsign_chips_controller clones a blank
     one from the field's template, filling the label, the value and the button's
-    label; a Find Recipient choice is streamed in as one. %>
+    label; a Find Recipient choice is streamed in as one. `controller` is the one
+    that owns the chips: the mailbox search field's own (common/messages/_search_field). %>
 <span class="inline-flex min-h-9 items-center gap-1 rounded-full border border-line bg-base-200 ps-3 pe-1 text-sm text-body"
-      data-callsign-chips-target="chip">
+      <%= tag.attributes(data: { "#{controller}-target": "chip" }) %>>
   <span><%= callsign %></span>
   <%= hidden_field_tag name, callsign, id: nil %>
   <%= button_action nil, :ghost, icon: "xmark", icon_type: :solid, class: "btn-square btn-circle",
-                    aria: { label: "Remove #{callsign}" }, data: { action: "callsign-chips#remove" } %>
+                    aria: { label: "Remove #{callsign}" }, data: { action: "#{controller}#remove" } %>
 </span>

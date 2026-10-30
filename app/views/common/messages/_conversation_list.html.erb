@@ -1,9 +1,9 @@
 <%# locals: (messages:,folder:,selected_id: nil) %>
-<% if search_query %>
+<% if searching? %>
   <%# In the tab row's place: what the search found, and the way back to the
-      folder, as a fresh page so the field empties too. %>
+      folder, as a fresh page so the field and its chips empty too. %>
   <div class="flex flex-wrap items-center gap-2 px-3 text-sm text-stone-muted" role="status">
-    <span><%= message_search_summary(messages.size, search_query) %></span>
+    <span><%= message_search_summary(messages.size, search_query, search_with) %></span>
     <%= button_link "Clear Search", :ghost, messages_path(folder: (folder unless folder == PersonMessage::FOLDER_INBOX)),
                     class: "ms-auto", data: { turbo_frame: "_top" } %>
   </div>
@@ -12,10 +12,9 @@
 <% end %>
 <% if messages.any? %>
   <%# data-search shows what only a search's rows show (_conversation_summary's Sent chip). %>
-  <ul class="flex flex-col gap-1 p-1" role="list" aria-label="<%= search_query ? "Search results" : "Conversations" %>"
-      <%= tag.attributes(data: { search: (true if search_query) }) %>>
+  <ul class="flex flex-col gap-1 p-1" role="list" aria-label="<%= searching? ? "Search results" : "Conversations" %>"
+      <%= tag.attributes(data: { search: (true if searching?) }) %>>
     <%= render partial: "common/messages/conversation_summary", collection: messages, as: :message,
-               locals: { owner: message_owner, namespace: messages_route_prefix, folder:, q: search_query,
-                         selected_id: } %>
+               locals: { owner: message_owner, namespace: messages_route_prefix, folder:, selected_id:, **search_scope } %>
   </ul>
 <% end %>
