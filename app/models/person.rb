@@ -207,6 +207,30 @@ class Person < ApplicationRecord
   has_many :slot, through: :person_slot
   has_many :team, through: :person_team
   has_many :timesheet, dependent: :destroy
+  # The rest of what an account owns, Clubhouse 2's ASSOC_TABLES list; each
+  # table has a foreign key to person, so a child left out here refuses the
+  # delete instead of dangling. In one statement each: a deleted person has no
+  # years or caches left to recompute.
+  has_many :access_documents, dependent: :destroy  # takes its change log
+  has_many :bmids, dependent: :delete_all
+  has_many :person_awards, dependent: :delete_all
+  has_many :person_events, dependent: :delete_all
+  has_many :person_intakes, dependent: :delete_all
+  has_many :person_intake_notes, dependent: :delete_all
+  has_many :person_mentors, dependent: :delete_all
+  has_many :person_online_courses, dependent: :delete_all
+  has_many :team_managers, dependent: :delete_all
+  has_many :timesheet_missings, dependent: :destroy  # takes its notes
+  has_many :trainee_notes, dependent: :delete_all
+  has_many :trainee_statuses, dependent: :delete_all
+  has_many :trainer_statuses, dependent: :delete_all
+  has_many :person_alerts, dependent: :delete_all
+  has_many :person_assets, dependent: :delete_all
+  has_many :person_pogs, dependent: :delete_all
+  has_many :person_pods, dependent: :delete_all
+  has_many :person_on_sites, dependent: :delete_all
+  has_many :oauth_codes, dependent: :delete_all
+  has_many :provisions, dependent: :delete_all
 
   # Validations
   validates :callsign, presence: true, length: { maximum: CALLSIGN_MAX_LENGTH }

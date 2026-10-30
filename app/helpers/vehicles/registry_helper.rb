@@ -73,7 +73,7 @@ module Vehicles::RegistryHelper
     owner = if vehicle.type == Vehicle::FLEET
               vehicle.team_assignment.present? ? "Fleet — #{vehicle.team_assignment}" : "Fleet vehicle"
             else
-              vehicle.person&.callsign || "Deleted person ##{vehicle.person_id}"
+              vehicle.person&.callsign || "Owner deleted"
             end
 
     description = [vehicle.vehicle_year, vehicle.vehicle_make, vehicle.vehicle_model].compact_blank.join(" ")
@@ -86,12 +86,13 @@ module Vehicles::RegistryHelper
   end
 
   # Personal vehicles link to their owner; fleet vehicles name their team. A row
-  # whose person has since been deleted still has to render.
+  # whose owner has since been deleted has no person_id left (the key sets it
+  # NULL) and still has to render.
   def vehicle_owner(row)
     return fleet_owner(row) if row.fleet?
     return callsign_link(row.person) if row.person
 
-    tag.span("Deleted person ##{row.person_id}", class: "italic text-stone-muted")
+    tag.span("Owner deleted", class: "italic text-stone-muted")
   end
 
   # "NV-7ABC123", built only from the parts that exist so a plateless fleet

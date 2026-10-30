@@ -131,25 +131,4 @@ class TimesheetTotalsReportTest < ActiveSupport::TestCase
 
     assert_equal ["2Step", "5th Element", "10Step", "abacus", "Abderian"], ordered
   end
-
-  test "a person whose row is gone still sorts and reads as deleted" do
-    timesheet = create_timesheet(on_duty: Time.zone.local(YEAR, 8, 25, 10, 0, 0))
-    timesheet.update_columns(person_id: 0)
-
-    row = TimesheetTotalsReport.summary(year: YEAR).find { |r| r.person_id.zero? }
-
-    assert_equal "Person #0", row.callsign
-    assert_equal "deleted", row.person_status
-  end
-
-  # A position row can also be gone -- the row is simply excluded, matching
-  # upstream's whereIn over a plucked, currently-existing id list.
-  test "a timesheet whose position row is gone is left out entirely" do
-    timesheet = create_timesheet(on_duty: Time.zone.local(YEAR, 8, 25, 10, 0, 0))
-    timesheet.update_columns(position_id: 0)
-
-    roster = TimesheetTotalsReport.summary(year: YEAR)
-
-    assert_empty roster.select { |row| row.person_id == @person.id }
-  end
 end

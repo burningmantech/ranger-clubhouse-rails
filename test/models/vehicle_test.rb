@@ -7,6 +7,8 @@ require "test_helper"
 # created a fleet vehicle, or a personal vehicle from a callsign, through the
 # ActiveRecord layer.
 class VehicleTest < ActiveSupport::TestCase
+  include PersonTestFactory
+
   test "a fleet vehicle saves without an owner" do
     vehicle = Vehicle.new(type: Vehicle::FLEET,
                           event_year: 2026,
@@ -80,17 +82,19 @@ class VehicleTest < ActiveSupport::TestCase
     assert_equal Vehicle::APPROVED, vehicle.status
   end
 
-  # A request whose owner account is gone has no callsign, and the list is
-  # ordered by callsign. Left in, it stopped the reviewers' nightly mail from
-  # being built at all.
+  # A request whose owner account is gone (vehicle.person_id is set NULL by its
+  # foreign key) has no callsign, and the list is ordered by callsign. Left in,
+  # it stopped the reviewers' nightly mail from being built at all.
   test "find_all_pending skips a request whose owner is gone" do
     kept = vehicle(:pending_vehicle)
-    orphan = Vehicle.create!(person: person(:active_ranger), type: Vehicle::PERSONAL,
+    owner = create_person("Ghost")
+    orphan = Vehicle.create!(person: owner, type: Vehicle::PERSONAL,
                              status: Vehicle::PENDING, event_year: kept.event_year,
                              license_number: "GHOST01", vehicle_make: "Ford",
                              vehicle_model: "Ranger", vehicle_color: "Grey")
-    orphan.update_column(:person_id, 0)
+    owner.destroy!
 
+    assert_nil orphan.reload.person_id
     pending = Vehicle.find_all_pending
 
     assert_includes pending.map(&:id), kept.id

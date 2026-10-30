@@ -1942,12 +1942,13 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "a group thread whose member row names a deleted person still lists, opens and takes a reply" do
+  # The member row goes with the person (person_message_member.person_id is a
+  # foreign key); the thread the others share lists, opens and takes a reply
+  # without them.
+  test "a group thread lists, opens and takes a reply after a member's account is deleted" do
     people = group_recipients
     top = create_group_thread(@sender, *people)
-    gone = people.last
-    # A row left by a deletion before member rows went with the person.
-    Person.where(id: gone.id).delete_all
+    people.last.destroy!
     remaining = people.first(2).map(&:callsign).sort_by(&:downcase).join(", ")
 
     get me_messages_path, headers: { "Turbo-Frame" => "messages-conversation-list" }
@@ -1962,13 +1963,13 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal people.first(2).map(&:id).sort, notified.sort
   end
 
-  # A deleted person's messages stay (the schema has no foreign keys), with no
-  # name or photo left: they read as LinkHelper#person_display_name names a
-  # person no longer there.
+  # A deleted person's messages stay (person_message has no foreign key to
+  # person), with no name or photo left: they read as
+  # LinkHelper#person_display_name names a person no longer there.
   test "a deleted person's thread lists and opens, naming them by id" do
     from_gone = create_message(@recipient, @sender, "From the Gone", "Body")
     to_gone = create_message(@sender, @recipient, "To the Gone", "Body")
-    Person.where(id: @recipient.id).delete_all
+    @recipient.destroy!
     deleted = Regexp.escape("Deleted ##{@recipient.id}")
 
     get me_messages_path, headers: { "Turbo-Frame" => "messages-conversation-list" }

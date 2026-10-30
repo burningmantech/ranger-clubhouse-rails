@@ -172,25 +172,6 @@ class Quartermaster::SwagDistributionControllerTest < ActionDispatch::Integratio
     assert_includes item_lines, "T-Shirt: Ranger T-Shirt S"
   end
 
-  # person_swag has no database foreign keys and the upstream Laravel app writes
-  # the same table, so a row can outlive its swag or its person.
-  test "an orphaned row does not take the whole report down" do
-    PersonSwag.insert_all([{ person_id: @past.id, swag_id: 999_999, year_issued: REPORT_YEAR,
-                             notes: "" },
-                           { person_id: 999_999, swag_id: swag(:tshirt_small).id,
-                             year_issued: REPORT_YEAR, notes: "" }])
-
-    get quartermaster_swag_distribution_path(year: REPORT_YEAR)
-    assert_response :success
-    # The missing swag is named rather than rendered blank; the row whose person
-    # is gone has nothing to render and is left out.
-    assert_includes item_lines, "Other: unknown swag 999999"
-    assert_equal [@shirts, @decorated, @dupe, @past].map(&:callsign).sort, roster_callsigns.sort
-
-    get quartermaster_swag_distribution_path(year: REPORT_YEAR, format: :csv)
-    assert_response :success
-  end
-
   # Each line reads "Category: Title". Org pins get their own label -- upstream
   # dumped the whole org-pin type in Other.
   test "every item renders on its own labelled line, org pins under their own category" do

@@ -400,18 +400,4 @@ class Timesheets::TimesheetByPositionControllerTest < ActionDispatch::Integratio
     assert_response :success
     assert_select "a", text: /No provisions/
   end
-
-  # A timesheet outlives its position -- the schema carries no FK. The row still
-  # has to show the hours, but it must not offer a link that only ever bounces.
-  test "a deleted position's row is shown but cannot be followed" do
-    timesheet = create_timesheet(@admin, @unowned_position, on_duty: august(25))
-    timesheet.update_columns(position_id: 0)
-
-    get timesheets_timesheet_by_position_path(year: YEAR)
-    assert_response :success
-
-    assert_select "body", text: /Position #0/
-    assert_select "body", text: /This position has been deleted/
-    assert_select "a[href*='/position/0']", count: 0
-  end
 end

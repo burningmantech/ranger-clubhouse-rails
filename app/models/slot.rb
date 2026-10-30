@@ -50,6 +50,10 @@ class Slot < ApplicationRecord
   has_many :person_slot, dependent: :destroy
   has_many :trainer_status, foreign_key: "trainer_slot_id", dependent: :destroy
   has_many :trainee_statuses, class_name: "TraineeStatus", dependent: :destroy
+  # A trainer's status names the session in slot_id and the trainer's own shift
+  # in trainer_slot_id; both sides go with the slot, and so do the session's notes.
+  has_many :session_trainer_statuses, class_name: "TrainerStatus", dependent: :destroy
+  has_many :trainee_notes, dependent: :delete_all
   has_many :sign_ups, through: :person_slot, source: :person
 
   # Validations

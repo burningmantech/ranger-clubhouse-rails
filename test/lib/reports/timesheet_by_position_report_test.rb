@@ -54,20 +54,6 @@ class TimesheetByPositionReportTest < ActiveSupport::TestCase
     assert_equal ["Alpha", "mentor", "zebra wrangler"], ordered
   end
 
-  # The Laravel-shared schema carries no FK, so the position row can be gone
-  # while its timesheets remain -- and the index still has to sort and render.
-  test "a position whose row is gone reads as a deleted id" do
-    timesheet = create_timesheet(on_duty: august(25))
-    timesheet.update_columns(position_id: 0)
-
-    row = TimesheetByPositionReport.summary(year: YEAR, viewer: @viewer)
-                                   .positions.find { |p| p.position_id.zero? }
-
-    assert_equal "Position #0", row.title
-    assert_not row.active
-    assert_not row.count_hours
-  end
-
   # One row per position, not per entry: the same ranger rangering a position
   # twice is one ranger.
   test "the index counts entries and rangers separately" do

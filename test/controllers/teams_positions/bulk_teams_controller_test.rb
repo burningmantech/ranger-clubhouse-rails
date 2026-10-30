@@ -439,25 +439,6 @@ class TeamsPositions::BulkTeamsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # The guard must not decide "is this role guarded?" by whether a `role` ROW
-  # comes back: position_role carries no foreign key to role, so a missing row
-  # would let the check pass. The revoke path has no model-level backstop, so
-  # this gate is the only thing standing there.
-  test "a guarded position with no matching role row still blocks a manager" do
-    PositionRole.create!(position_id: @optional.id, role_id: Role::ADMIN)
-    Role.where(id: Role::ADMIN).delete_all
-    sign_in_as(@manager)
-
-    assert_no_difference "PersonTeam.count" do
-      post teams_positions_apply_bulk_teams_path,
-           params: preview_params(@member.callsign, direction: "revoke")
-    end
-
-    assert_response :unprocessable_entity
-    assert_match(/Role ##{Role::ADMIN}/, flash[:error],
-                 "with no role row to name, the refusal falls back to the id rather than passing")
-  end
-
   # An Optional position is not handed over by a grant, so its role grant is not
   # the grant's business either.
   test "a grant is not blocked by a role on a position it does not move" do

@@ -134,46 +134,16 @@ class TimesheetSlotRepairTest < ActiveSupport::TestCase
     assert_empty TimesheetSlotRepair.preview(YEAR)
   end
 
-  # The schema carries no foreign keys, so slot_id outlives a deleted shift.
-  # The link was still real, so this is a removal and not an addition.
-  test "an entry pointing at a deleted shift counts as having had one" do
-    gone = shift(august(17, 18))
+  test "clearing a stale link is reported as a success, not an error" do
+    stale = shift(august(17, 18))
     row = entry(on_duty: august(20, 17, 45))
-    row.update_column(:slot_id, gone.id)
-    Slot.where(id: gone.id).delete_all
-
-    change = TimesheetSlotRepair.preview(YEAR).first
-
-    assert_equal :remove, change.kind
-    assert_equal gone.id, change.old_slot_id
-    assert_nil change.old_shift, "the shift row is gone, so there is nothing to show"
-    assert_nil change.new_slot_id
-  end
-
-  test "clearing a deleted shift is reported as a success, not an error" do
-    gone = shift(august(17, 18))
-    row = entry(on_duty: august(20, 17, 45))
-    row.update_column(:slot_id, gone.id)
-    Slot.where(id: gone.id).delete_all
+    row.update_column(:slot_id, stale.id)
 
     results, = TimesheetSlotRepair.apply(YEAR, [row.id.to_s])
 
     assert_nil results.first.error
     assert_equal "no longer linked to a shift", results.first.message
     assert_nil row.reload.slot_id
-  end
-
-  test "a deleted shift replaced by a real one is still a change" do
-    gone = shift(august(17, 18))
-    match = shift(august(20, 18))
-    row = entry(on_duty: august(20, 17, 45))
-    row.update_column(:slot_id, gone.id)
-    Slot.where(id: gone.id).delete_all
-
-    change = TimesheetSlotRepair.preview(YEAR).first
-
-    assert_equal :change, change.kind
-    assert_equal match.id, change.new_slot_id
   end
 
   # --- the window --------------------------------------------------------

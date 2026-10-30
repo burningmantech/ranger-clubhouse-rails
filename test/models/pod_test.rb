@@ -214,21 +214,6 @@ class PodTest < ActiveSupport::TestCase
     assert_nil pod.disbanded_at
   end
 
-  # person_pod carries no foreign key, and the Laravel side writes this table
-  # too, so a membership can outlive its pod. This hook runs inside every
-  # sign-out's transaction app-wide -- it must never take one down.
-  test "a shift ending survives a membership whose pod has gone" do
-    pod = Pod.create_alpha_set!(@slot).sub_pods.find(&:alpha?)
-    timesheet = Timesheet.create!(person_id: @alpha.id, position_id: @position.id,
-                                  on_duty: Current.time - 1.hour,
-                                  additional_notes: "signed in for the walk")
-    pod.add_person!(@alpha)
-    Pod.where(id: pod.id).delete_all
-
-    assert_nothing_raised { timesheet.update!(off_duty: Current.time) }
-    assert_not_nil timesheet.reload.off_duty, "the sign-out still committed"
-  end
-
   # --- auditing ---
 
   test "membership changes are audited but reordering is not" do

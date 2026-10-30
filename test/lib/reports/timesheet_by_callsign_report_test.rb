@@ -94,17 +94,6 @@ class TimesheetByCallsignReportTest < ActiveSupport::TestCase
     assert_in_delta 30.0, credits[next_year.id], 0.001
   end
 
-  # The Laravel-shared schema carries no FK, so position can be nil even though
-  # the association is not optional.
-  test "an entry whose position row is gone earns nothing rather than raising" do
-    timesheet = create_timesheet(on_duty: Time.zone.local(YEAR, 8, 25, 10, 0, 0))
-    timesheet.update_columns(position_id: 0)
-
-    credits = TimesheetByCallsignReport.credits_by_id([timesheet.reload])
-
-    assert_in_delta 0.0, credits[timesheet.id], 0.001
-  end
-
   # --- Ordering -----------------------------------------------------------
 
   # Upstream sorts with SORT_NATURAL | SORT_FLAG_CASE: digit runs compare as
@@ -123,16 +112,5 @@ class TimesheetByCallsignReportTest < ActiveSupport::TestCase
     ordered = roster.select { |row| people.map(&:id).include?(row.person_id) }.map(&:callsign)
 
     assert_equal ["2Step", "5th Element", "10Step", "abacus", "Abderian"], ordered
-  end
-
-  test "a person whose row is gone still sorts and reads as deleted" do
-    timesheet = create_timesheet(on_duty: Time.zone.local(YEAR, 8, 25, 10, 0, 0))
-    timesheet.update_columns(person_id: 0)
-
-    row = TimesheetByCallsignReport.summary(year: YEAR, viewer: @viewer)
-                                   .people.find { |p| p.person_id.zero? }
-
-    assert_equal "Person #0", row.callsign
-    assert_equal "deleted", row.person_status
   end
 end

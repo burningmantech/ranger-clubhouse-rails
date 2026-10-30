@@ -84,7 +84,7 @@ class PersonMessageTest < ActiveSupport::TestCase
     end
 
     reply = create_group_reply(top, author, as_team: cadre.tap { |team| team.update!(active: true) })
-    Team.where(id: cadre.id).delete_all
+    TeamManagement.destroy(cadre)
     reply = PersonMessage.find(reply.id)
     assert_equal "Deleted Team ##{cadre.id}", reply.sender_name
     assert_equal ["Deleted Team ##{cadre.id}"], PersonMessage.find(top.id).group_party_names(author.id)

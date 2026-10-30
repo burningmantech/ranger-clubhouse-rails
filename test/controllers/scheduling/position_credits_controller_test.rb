@@ -37,15 +37,6 @@ class Scheduling::PositionCreditsControllerTest < ActionDispatch::IntegrationTes
                              credits_per_hour: 2.5, description: "Morning" }.merge(attrs))
   end
 
-  # Leaves a credit whose position no longer exists, the Ember "POSITION DOES
-  # NOT EXIST" case.
-  def create_orphan_credit
-    doomed = Position.create!(title: "Doomed Position", active: true)
-    credit = create_credit(position: doomed)
-    Position.where(id: doomed.id).delete_all
-    credit
-  end
-
   test "denies access without the admin role" do
     sign_in_as(@outsider)
 
@@ -67,16 +58,6 @@ class Scheduling::PositionCreditsControllerTest < ActionDispatch::IntegrationTes
     assert_select "body", text: /2 credits/
     assert_select "body", text: /#{Regexp.escape(@other_position.title)}/
     assert_select "body", text: /Showing 2 positions with 3 position credits/
-  end
-
-  test "index flags credits whose position was deleted" do
-    orphan = create_orphan_credit
-
-    get scheduling_position_credits_path
-
-    assert_response :success
-    assert_select "body", text: /Position ##{orphan.position_id} \(deleted\)/
-    assert_select "body", text: /position deleted/
   end
 
   test "index shows an empty state for a year without credits" do
@@ -128,16 +109,6 @@ class Scheduling::PositionCreditsControllerTest < ActionDispatch::IntegrationTes
     assert_select "body", text: /Day: Thu Aug 27/
   end
 
-  test "position page renders for a deleted position so orphans can be cleaned up" do
-    orphan = create_orphan_credit
-
-    get scheduling_position_credits_position_path(orphan.position_id, year: 2026)
-
-    assert_response :success
-    assert_select "body", text: /This Position No Longer Exists/
-    assert_select "tr#credit-#{orphan.id}"
-  end
-
   test "position page redirects when the position has no credits at all" do
     get scheduling_position_credits_position_path(0, year: 2026)
 
@@ -169,16 +140,6 @@ class Scheduling::PositionCreditsControllerTest < ActionDispatch::IntegrationTes
     assert_select "[data-tip*='Elsewhere']", count: 0
     assert_select "table tbody tr", minimum: 1
     assert_select "a[href=?]", scheduling_position_credits_position_timeline_path(@position.id, year: 2026, format: :csv)
-  end
-
-  test "timeline warns when the position was deleted" do
-    orphan = create_orphan_credit
-
-    get scheduling_position_credits_position_timeline_path(orphan.position_id, year: 2026)
-
-    assert_response :success
-    assert_select "body", text: /This Position No Longer Exists/
-    assert_select ".ct", count: 1
   end
 
   test "timeline exports the rate table as csv" do
@@ -440,16 +401,5 @@ class Scheduling::PositionCreditsControllerTest < ActionDispatch::IntegrationTes
     end
 
     assert_equal "Select at least one position credit to delete.", flash[:error]
-  end
-
-  test "bulk delete works for a deleted position's orphaned credits" do
-    orphan = create_orphan_credit
-
-    assert_difference "PositionCredit.count", -1 do
-      delete scheduling_position_credits_position_bulk_delete_path(orphan.position_id, year: 2026),
-             params: { credit_ids: [orphan.id] }
-    end
-
-    assert_equal "1 position credit deleted.", flash[:success]
   end
 end

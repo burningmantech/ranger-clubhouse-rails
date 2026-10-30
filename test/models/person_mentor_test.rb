@@ -8,9 +8,15 @@ require "test_helper"
 # A year's rows can disagree -- rows this app did not write -- and the verdict
 # is settled by VERDICT_PRECEDENCE rather than by whichever row comes back first.
 class PersonMentorTest < ActiveSupport::TestCase
+  include AlphaPositionTestHelper
+  include ArtMentoringTestHelper
+
   YEAR = 2026
 
   setup do
+    setup_alpha_position
+    setup_cheetah_cub_position
+    setup_art_mentoring
     @mentee = person(:alpha_ranger)
     # The losing status goes in first, against the lower mentor id, so it is
     # the row `first` read whichever order the database returned them in.
@@ -58,13 +64,14 @@ class PersonMentorTest < ActiveSupport::TestCase
     assert_equal PersonMentor::STATUS_BONK, passing.current_status
   end
 
-  test "a mentor's mentee list survives rows naming deleted people" do
+  # A deleted account takes its own walks with it (Person's person_mentors);
+  # the walks it mentored stay, naming it by id. mentor_id has no key.
+  test "a mentor's mentee list survives a row naming a deleted mentor" do
     mentor = @mentors.first
-    gone_mentor_id, gone_mentee_id = 999_999_001, 999_999_002
+    gone_mentor_id = 999_999_001
     PersonMentor.create!(person: @mentee, mentor:, mentor_year: YEAR, status: PersonMentor::STATUS_PASS)
     PersonMentor.insert_all!([
-      { person_id: @mentee.id, mentor_id: gone_mentor_id, mentor_year: YEAR, status: PersonMentor::STATUS_PASS },
-      { person_id: gone_mentee_id, mentor_id: mentor.id, mentor_year: YEAR, status: PersonMentor::STATUS_PASS }
+      { person_id: @mentee.id, mentor_id: gone_mentor_id, mentor_year: YEAR, status: PersonMentor::STATUS_PASS }
     ])
 
     cohort = PersonMentor.retrieve_mentees_for_person(mentor.id, position_id: Position::ALPHA).find { |c| c.year == YEAR }
@@ -74,10 +81,9 @@ class PersonMentorTest < ActiveSupport::TestCase
   end
 
   # An ART walk is one row per mentor per mentee shift, named by the mentee's
-  # timesheet entry. person_mentor carries no foreign keys, so any id stands in
-  # for one.
+  # timesheet entry.
   test "one mentee shift takes each mentor once" do
-    shift = 9_001
+    shift = mentee_entry(@mentee, Time.zone.local(YEAR, 9, 1, 18, 0, 0)).id
     PersonMentor.create!(person: @mentee, mentor: @mentors.first, mentor_year: YEAR, timesheet_id: shift,
                          position_id: Position::GREEN_DOT_MENTEE, status: PersonMentor::STATUS_PENDING)
     second = PersonMentor.new(person: @mentee, mentor: @mentors.last, mentor_year: YEAR, timesheet_id: shift,
@@ -92,7 +98,8 @@ class PersonMentorTest < ActiveSupport::TestCase
   end
 
   test "one mentor may walk one mentee on two shifts in a year" do
-    [9_001, 9_002].each do |shift|
+    [1, 2].each do |day|
+      shift = mentee_entry(@mentee, Time.zone.local(YEAR, 9, day, 18, 0, 0)).id
       PersonMentor.create!(person: @mentee, mentor: @mentors.first, mentor_year: YEAR, timesheet_id: shift,
                            position_id: Position::GREEN_DOT_MENTEE, status: PersonMentor::STATUS_PASS)
     end
@@ -122,7 +129,8 @@ class PersonMentorTest < ActiveSupport::TestCase
     assert_not alpha.valid?
     assert_equal ["Status is not included in the list."], alpha.errors[:status]
 
-    art = PersonMentor.create!(person: @mentee, mentor: @mentors.first, mentor_year: YEAR, timesheet_id: 9_001,
+    shift = mentee_entry(@mentee, Time.zone.local(YEAR, 9, 1, 18, 0, 0)).id
+    art = PersonMentor.create!(person: @mentee, mentor: @mentors.first, mentor_year: YEAR, timesheet_id: shift,
                                position_id: Position::GREEN_DOT_MENTEE, status: PersonMentor::STATUS_NOT_COMPLETED)
     assert_equal PersonMentor::STATUS_NOT_COMPLETED, art.reload.status, "the column holds it"
   end
@@ -130,7 +138,8 @@ class PersonMentorTest < ActiveSupport::TestCase
   # A pass recorded on the ART roster with no mentor selected (owner,
   # 2026-10-28) is one row naming none; every other walk names its mentor.
   test "only an ART walk's pass may name no mentor, once per mentee shift" do
-    art = { person: @mentee, mentor_year: YEAR, timesheet_id: 9_001, position_id: Position::GREEN_DOT_MENTEE }
+    shift = mentee_entry(@mentee, Time.zone.local(YEAR, 9, 1, 18, 0, 0)).id
+    art = { person: @mentee, mentor_year: YEAR, timesheet_id: shift, position_id: Position::GREEN_DOT_MENTEE }
     pass = PersonMentor.create!(**art, status: PersonMentor::STATUS_PASS)
     assert_nil pass.reload.mentor_id, "the column takes NULL"
 
@@ -141,7 +150,8 @@ class PersonMentorTest < ActiveSupport::TestCase
     # reads 0 for the NULL, which a unique key never matches against another.
     assert_raises(ActiveRecord::RecordNotUnique) { again.save!(validate: false) }
 
-    bonk = PersonMentor.new(**art, timesheet_id: 9_002, status: PersonMentor::STATUS_BONK)
+    later = mentee_entry(@mentee, Time.zone.local(YEAR, 9, 2, 18, 0, 0)).id
+    bonk = PersonMentor.new(**art, timesheet_id: later, status: PersonMentor::STATUS_BONK)
     assert_not bonk.valid?
     assert bonk.errors.of_kind?(:mentor, :blank)
     alpha = PersonMentor.new(person: @mentee, mentor_year: YEAR, status: PersonMentor::STATUS_PASS)
@@ -149,10 +159,12 @@ class PersonMentorTest < ActiveSupport::TestCase
     assert alpha.errors.of_kind?(:mentor, :blank)
   end
 
-  # Nothing removes person_mentor rows when a person goes. As the required
-  # belongs_to it replaced, the mentor check runs only when mentor_id changes.
+  # A deleted account leaves the walks it mentored, naming it by id. As the
+  # required belongs_to it replaced, the mentor check runs only when mentor_id
+  # changes.
   test "a walk whose mentor's account is gone still takes a new result and notes" do
-    walk = PersonMentor.create!(person: @mentee, mentor: @mentors.first, mentor_year: YEAR, timesheet_id: 9_003,
+    shift = mentee_entry(@mentee, Time.zone.local(YEAR, 9, 3, 18, 0, 0)).id
+    walk = PersonMentor.create!(person: @mentee, mentor: @mentors.first, mentor_year: YEAR, timesheet_id: shift,
                                 position_id: Position::GREEN_DOT_MENTEE, status: PersonMentor::STATUS_PENDING)
     gone = Person.maximum(:id) + 1
     walk.update_column(:mentor_id, gone)

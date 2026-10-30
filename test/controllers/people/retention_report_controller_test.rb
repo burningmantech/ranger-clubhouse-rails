@@ -29,7 +29,7 @@ class People::RetentionReportControllerTest < ActionDispatch::IntegrationTest
     # subjects are given shifts and years. The shifts decide who is listed; the
     # years are set directly, because YearsManagement does not run in tests and
     # creating a timesheet therefore recomputes nothing.
-    Timesheet.delete_all
+    Timesheet.destroy_all
     Person.update_all(years_as_ranger: nil)
 
     @regular = rangering_person("Regular", years: @years)
@@ -75,7 +75,7 @@ class People::RetentionReportControllerTest < ActionDispatch::IntegrationTest
     assert_report_card
     assert_match(/any of the last five events/, card_answer("Who is listed?"))
 
-    Timesheet.delete_all
+    Timesheet.destroy_all
     get people_retention_report_path
 
     assert_match "there is no one to survey", response.body

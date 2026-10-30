@@ -436,16 +436,6 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name='login_form[email]']"
   end
 
-  # Clubhouse 2 shares the database and can delete a person without knowing
-  # the passkey table exists.
-  test "a passkey whose account is gone is refused like any unknown passkey" do
-    register_passkey_for(@person).update_columns(person_id: Person.maximum(:id) + 1)
-
-    assert_passkey_refused do
-      post passkey_sign_in_path, params: { credential: passkey_assertion_for(passkey_sign_in_options) }
-    end
-  end
-
   test "a passkey answering from another website is refused, and the reason is recorded" do
     ErrorLog.delete_all
     device = WebAuthn::FakeClient.new("https://clubhouse.example.net")

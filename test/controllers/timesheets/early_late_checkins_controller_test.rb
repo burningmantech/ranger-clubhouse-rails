@@ -285,18 +285,6 @@ class Timesheets::EarlyLateCheckinsControllerTest < ActionDispatch::IntegrationT
     assert_select "*", text: /No late check-in matched these filters/
   end
 
-  # The report's only name for a deleted ranger is the one the row prints, so
-  # the rows no one can click through to have to be reachable by it.
-  test "the callsign filter reaches a deleted ranger by the name the row prints" do
-    timesheet = create_early
-    timesheet.update_columns(person_id: 0)
-
-    get timesheets_early_late_checkins_path(year: YEAR, callsign: "deleted")
-
-    assert_response :success
-    assert_select "th", text: "Deleted #0"
-  end
-
   test "the via filter narrows to one check-in method" do
     check_in(@now - 90.minutes, via: TimesheetLog::VIA_MISSING_ENTRY)
     create_early(person: @admin)

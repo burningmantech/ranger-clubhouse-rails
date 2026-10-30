@@ -37,13 +37,6 @@ class Scheduling::PositionCreditCopiesControllerTest < ActionDispatch::Integrati
                              credits_per_hour: 2.5, description: "Morning" }.merge(attrs))
   end
 
-  def create_orphan_credit
-    doomed = Position.create!(title: "Doomed Position", active: true)
-    credit = create_credit(position: doomed)
-    Position.where(id: doomed.id).delete_all
-    credit
-  end
-
   # Labor Day 2025 is September 1; Labor Day 2026 is September 7.
   LABOR_DAY_DIFF = 371
 
@@ -87,17 +80,6 @@ class Scheduling::PositionCreditCopiesControllerTest < ActionDispatch::Integrati
     assert_response :success
     assert_select "input#copy-credit-#{mine.id}"
     assert_select "input#copy-credit-#{theirs.id}", count: 0
-  end
-
-  test "new excludes credits whose position was deleted and says so" do
-    orphan = create_orphan_credit
-    create_credit
-
-    get scheduling_new_position_credit_copy_path(year: 2025)
-
-    assert_response :success
-    assert_select "input#copy-credit-#{orphan.id}", count: 0
-    assert_select "body", text: /Not listed below: 1 credit from 2025/
   end
 
   test "new warns when copying from the current year" do
@@ -160,20 +142,6 @@ class Scheduling::PositionCreditCopiesControllerTest < ActionDispatch::Integrati
 
     assert_response :unprocessable_entity
     assert_equal "Multiple positions cannot be copied into a single position.", flash[:error]
-  end
-
-  test "ignores submitted credits whose position was deleted" do
-    credit = create_credit
-    orphan = create_orphan_credit
-
-    assert_difference "PositionCredit.count", 1 do
-      post scheduling_position_credit_copies_path(year: 2025), params: {
-        credit_ids: [credit.id, orphan.id],
-        delta_days: LABOR_DAY_DIFF
-      }
-    end
-
-    assert_equal credit.position_id, PositionCredit.order(:id).last.position_id
   end
 
   test "copying nothing reports an error" do

@@ -205,16 +205,6 @@ class OnDutyReportTest < ActiveSupport::TestCase
     assert_equal 0, report.excessive_count
   end
 
-  test "a timesheet whose position row is gone renders a placeholder, not a crash" do
-    # belongs_to demands the row at creation, so delete it afterwards. There is
-    # no FK, so production carries these.
-    orphan_position = Position.create!(id: 99_412, title: "Gone")
-    create_timesheet(@ranger, orphan_position, on_duty: @now - 1.hour)
-    Position.delete(orphan_position.id)
-
-    assert_equal ["Position #99412"], OnDutyReport.execute.positions.map(&:title)
-  end
-
   test "an open entry's elapsed time is measured to the duty date, not to now" do
     at = @now - 6.hours
     create_timesheet(@ranger, @ood, on_duty: at - 1.hour)

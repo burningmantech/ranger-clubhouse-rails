@@ -320,18 +320,6 @@ class HoursCreditsReportTest < ActiveSupport::TestCase
     assert_operator row.event_duration, :>=, 0
   end
 
-  # The position record is gone, so nothing says whether its hours count. Its
-  # time is set aside instead of taking the whole page down.
-  test "a shift on a position that no longer exists does not break the report" do
-    entry = shift(on_duty: EVENT_START + 1.hour, off_duty: EVENT_START + 5.hours)
-    entry.update_columns(position_id: 0)
-
-    row = row_for
-
-    assert_not_nil row, "the ranger should still be listed"
-    assert_equal 0, row.counted_duration
-  end
-
   test "a ranger whose seasons are not a list of years counts as none" do
     @person.update_columns(years_as_ranger: "{}")
     shift(on_duty: EVENT_START + 1.hour, off_duty: EVENT_START + 5.hours)

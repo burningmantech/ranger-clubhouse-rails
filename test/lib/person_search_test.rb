@@ -121,9 +121,14 @@ class PersonSearchTest < ActiveSupport::TestCase
   # --- cheetahcub pseudo-status (dormant; reachable only once hq is enabled) --
 
   # Build a Cheetah Cub shift in the given year and sign `person` up for it.
-  # Validations are bypassed on the slot so the test needn't seed a Position row
-  # (there is no DB foreign key on slot.position_id).
+  # slot.position_id is keyed to position, so the Cheetah Cub row is created on
+  # first use; the slot's own validations are still bypassed.
   def sign_up_for_cheetah_cub(person, year: Current.year)
+    Position.find_or_create_by!(id: Position::CHEETAH_CUB) do |position|
+      position.title = "Cheetah Cub"
+      position.type = Position::TYPE_MENTORING
+      position.active = true
+    end
     # `begins` must fall within `year`: Slot#compute_time_fields derives begins_year
     # from begins.year, overwriting any explicit begins_year.
     begins = Time.utc(year, 8, 1, 12, 0, 0)

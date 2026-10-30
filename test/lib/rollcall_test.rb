@@ -150,26 +150,6 @@ class RollcallTest < ActiveSupport::TestCase
     assert_empty Rollcall.sign_out_positions.sole.members
   end
 
-  # The schema has no app-domain foreign keys, so an open entry can name a
-  # Ranger who no longer exists. Such an entry cannot be signed off at all, and
-  # if the picker and the count see it while the roster does not, the position
-  # appears with an empty roster over a headline number nothing can drive to
-  # zero.
-  test "an entry whose Ranger is gone is invisible to the picker, the count and the roster" do
-    position = make_position(9012, "Rollcall Position")
-    entry = make_entry(@ranger, position, on_duty: @now - 1.hour)
-    # A control first: while the Ranger exists, all three see the entry.
-    assert_equal 1, Rollcall.sign_out_positions.size
-    assert_equal 1, Rollcall.on_duty_count(position.id)
-    assert_equal 1, Rollcall.sign_out_roster(position.id).size
-
-    entry.update_columns(person_id: 0)
-
-    assert_empty Rollcall.sign_out_positions
-    assert_equal 0, Rollcall.on_duty_count(position.id)
-    assert_empty Rollcall.sign_out_roster(position.id)
-  end
-
   test "on_duty_count refuses a blank position rather than counting orphans" do
     assert_equal 0, Rollcall.on_duty_count(nil)
     assert_equal 0, Rollcall.on_duty_count("")

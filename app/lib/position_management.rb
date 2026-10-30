@@ -146,6 +146,7 @@ module PositionManagement
       # release: an orphan here is a row no page can reach and no admin can
       # remove. PositionCredit rows also sit in a cached per-year map.
       PositionCredit.where(position_id:).delete_all
+      BmidTitle.where(position_id:).delete_all
       PersonOnlineCourse.where(position_id:).delete_all
       OnlineCourse.where(position_id:).delete_all
       # These two are nullable, so the surveys themselves survive.

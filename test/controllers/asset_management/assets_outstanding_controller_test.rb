@@ -211,22 +211,6 @@ class AssetManagement::AssetsOutstandingControllerTest < ActionDispatch::Integra
     assert_select "body", text: /No asset records have been added yet/
   end
 
-  test "a deleted holder is named by id rather than left blank" do
-    holder = person(:prospective_ranger)
-    person_asset = check_out(create_asset(barcode: "RAD-GONE"), holder)
-    Person.where(id: holder.id).delete_all
-
-    sign_in_as(@admin)
-    get asset_management_assets_outstanding_path
-
-    assert_response :success
-    assert_select "body", text: /Deleted ##{person_asset.person_id}/
-
-    get asset_management_assets_outstanding_path(format: :csv)
-    assert_response :success
-    assert_includes response.body, "Deleted ##{person_asset.person_id}"
-  end
-
   test "an attachment is shown on the page and in the export" do
     # asset_attachment carries no auto-increment -- the id has to be supplied.
     attachment = AssetAttachment.create!(id: 9_001, parent_type: AssetAttachment::RADIO,

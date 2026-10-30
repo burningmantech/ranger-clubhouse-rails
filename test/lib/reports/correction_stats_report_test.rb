@@ -140,10 +140,11 @@ class CorrectionStatsReportTest < ActiveSupport::TestCase
     assert_empty report.reviewers
   end
 
-  # Upstream's inner join: the entry is gone, so its reviews are gone too.
+  # Upstream's inner join: the entry is gone, so its reviews are gone too --
+  # destroying the entry takes its review logs with it.
   test "reviews of a deleted entry drop out of the correction counts" do
     entry = create_correction!
-    entry.delete
+    entry.destroy!
 
     assert_equal 0, report.corrections.decided
   end
@@ -151,9 +152,10 @@ class CorrectionStatsReportTest < ActiveSupport::TestCase
   test "an entry deleted after being logged is counted as deleted" do
     entry = create_correction!
     log_review!(timesheet: entry, to: Timesheet::STATUS_REJECTED)
-    entry.delete
+    entry.destroy!
 
-    # Two logs, one entry: the count is of entries, not of their logs.
+    # The reviews went with the entry; only the deletion log survives, and it
+    # counts the entry once.
     assert_equal 1, report.entries_deleted
   end
 
@@ -222,19 +224,6 @@ class CorrectionStatsReportTest < ActiveSupport::TestCase
     end
 
     assert_equal CorrectionStatsReport::TOP_LIMIT, report.corrections.top_positions.size
-  end
-
-  # The tally is keyed on an id, and a position row can be gone while the id
-  # lives on in the timesheet -- the Laravel-shared schema carries no keys.
-  test "a deleted position is named by its id rather than dropped" do
-    position = Position.create!(title: "Vanishing Position", type: "Frontline")
-    create_correction!(position:)
-    position.delete
-
-    tally = report.corrections.top_positions.sole
-
-    assert_nil tally.title
-    assert_equal "Deleted position ##{position.id}", tally.label
   end
 
   # --- missing-entry requests --------------------------------------------

@@ -105,18 +105,6 @@ class Admin::PasskeysControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil row_for("Own Phone")
   end
 
-  # Clubhouse 2 shares the database and can delete a person without knowing
-  # the passkey table exists.
-  test "a passkey whose account is gone is listed as such rather than breaking the page" do
-    @theirs.update_columns(person_id: Person.maximum(:id) + 1)
-    sign_in_as(@admin)
-
-    get admin_passkeys_path
-
-    assert_response :success
-    assert_match(/Account deleted/, row_for("Retired Laptop").text)
-  end
-
   test "an enrolled key whose Admin is gone never reads as self-added" do
     @enrolled.update_columns(added_by_person_id: Person.maximum(:id) + 1)
     sign_in_as(@admin)

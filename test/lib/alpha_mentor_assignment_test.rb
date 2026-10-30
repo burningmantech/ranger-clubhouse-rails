@@ -10,6 +10,7 @@ require "test_helper"
 # person.yml carries an Alpha of its own ("AlphaNewbie") who is on every roster.
 class AlphaMentorAssignmentTest < ActiveSupport::TestCase
   include TrainingSlotTestHelper
+  include AlphaPositionTestHelper
   include PersonTestFactory
   include ActiveSupport::Testing::TimeHelpers
 
@@ -237,6 +238,7 @@ class AlphaMentorAssignmentTest < ActiveSupport::TestCase
   end
 
   test "clearing the Alpha row leaves another position's walk for the same year alone" do
+    setup_cheetah_cub_position
     PersonMentor.create!(person: @alpha, mentor: @mentor, mentor_year: YEAR,
                          status: PersonMentor::STATUS_PENDING)
     other = PersonMentor.create!(person: @alpha, mentor: @mentor, mentor_year: YEAR,

@@ -396,17 +396,6 @@ class FlakeReportTest < ActiveSupport::TestCase
     assert_equal callsigns.sort_by(&:downcase), callsigns
   end
 
-  test "a deleted person keeps the row with a placeholder callsign" do
-    sign_up(@ranger)
-    person_id = @ranger.id
-    PersonSlot.where(person_id:).update_all(person_id: 0)
-
-    flake = only_slot_detail.flakes.sole
-
-    assert_equal "Deleted #0", flake.callsign
-    assert_nil flake.person
-  end
-
   test "the signed-up count on a shift comes from the sign-ups, not slot.signed_up" do
     sign_up(@ranger)
     sign_up(@other)

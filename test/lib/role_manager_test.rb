@@ -163,7 +163,7 @@ class RoleManagerTest < ActiveSupport::TestCase
     go_on_duty(other)
     assert_not RoleManager.retrieve(@person).has_role?(Role::VIEW_EMAIL), "on duty for a different position"
 
-    Timesheet.where(person_id: @person.id).delete_all
+    Timesheet.where(person_id: @person.id).destroy_all
     go_on_duty(position)
     assert RoleManager.retrieve(@person).has_role?(Role::VIEW_EMAIL), "on duty for it"
   end

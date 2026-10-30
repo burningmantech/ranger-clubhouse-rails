@@ -7,6 +7,7 @@ require "test_helper"
 # the ART's own mentoring pages.
 class Person::MentoringControllerTest < ActionDispatch::IntegrationTest
   include AuthenticationTestHelper
+  include AlphaPositionTestHelper
   include TimesheetAdminTestHelper # ensure_role / grant_role
   include ArtMentoringTestHelper
   include PersonTestFactory
@@ -29,6 +30,7 @@ class Person::MentoringControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "the Alpha status select offers only the four Alpha verdicts" do
+    setup_alpha_position
     PersonMentor.create!(person: @mentee, mentor: @mentor, mentor_year: YEAR, status: PersonMentor::STATUS_PASS)
     admin = person(:echelon_ranger)
     grant_role(admin, Role::ADMIN)

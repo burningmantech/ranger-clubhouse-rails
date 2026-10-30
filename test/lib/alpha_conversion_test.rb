@@ -6,9 +6,13 @@ require "test_helper"
 # Alpha walk alone: another mentee position's pass must not mint an Alpha, and
 # its bonk, which outranks a pass, must not bonk one.
 class AlphaConversionTest < ActiveSupport::TestCase
+  include AlphaPositionTestHelper
+
   YEAR = 2026
 
   setup do
+    setup_alpha_position
+    setup_cheetah_cub_position
     @alpha = person(:alpha_ranger)
     @mentor = person(:active_ranger)
   end

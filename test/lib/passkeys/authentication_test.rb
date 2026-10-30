@@ -53,13 +53,10 @@ class Passkeys::AuthenticationTest < ActiveSupport::TestCase
     end
   end
 
-  # Clubhouse 2 shares the database and can delete a person without knowing
-  # this table exists. Either way it is the one sentence for every failure:
-  # from outside, an unknown passkey and a failed one look the same.
-  test "a passkey whose account is gone, or that is gone itself, is refused" do
-    @passkey.update_columns(person_id: Person.maximum(:id) + 1)
-    assert_equal Passkeys::Authentication::UNRECOGNIZED, authentication.finish(passkey_assertion_for(start)).error
-
+  # The one sentence for every failure: from outside, an unknown passkey and a
+  # failed one look the same. (A passkey whose account is gone cannot exist:
+  # person_passkey.person_id is a foreign key, and Person destroys its passkeys.)
+  test "a passkey that is gone is refused" do
     @passkey.delete
     assert_equal Passkeys::Authentication::UNRECOGNIZED, authentication.finish(passkey_assertion_for(start)).error
   end

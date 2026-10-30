@@ -276,7 +276,7 @@ class Vehicles::RegistryController < ApplicationController
   def csv_owner(row)
     return row.team_assignment.presence || "Fleet vehicle" if row.fleet?
 
-    row.person&.callsign || "Deleted person ##{row.person_id}"
+    row.person&.callsign || "Owner deleted"
   end
 
   # Stickers, decals and chits for a denied request: there are none to issue.

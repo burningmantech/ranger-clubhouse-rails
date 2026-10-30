@@ -178,19 +178,6 @@ class ShiftOperations::MassSignoutControllerTest < ActionDispatch::IntegrationTe
     assert_equal 1, report.stale_count
   end
 
-  # No FK on person_id in the Laravel-shared schema, so a non-optional
-  # belongs_to still reads nil. callsign_link raises on that, and one orphaned
-  # row must not take the whole board down.
-  test "an entry whose Ranger is gone still renders" do
-    orphan = create_timesheet(@ranger, @ood, on_duty: @now - 2.hours)
-    orphan.update_column(:person_id, 0)
-
-    get shift_operations_mass_signout_path
-
-    assert_response :success
-    assert_select "#mass-signout-row-#{orphan.id}", text: /Deleted #0/
-  end
-
   test "an entry open longer than a day is flagged but stays pre-selected" do
     long = create_timesheet(@ranger, @ood, on_duty: @now - 30.hours)
 
@@ -318,50 +305,5 @@ class ShiftOperations::MassSignoutControllerTest < ActionDispatch::IntegrationTe
     assert_match(/were converted back to Active/, flash[:success])
     assert_match(/#{@inactive.callsign}/, flash[:success])
     assert_match(/#{second.callsign}/, flash[:success])
-  end
-
-  # TimesheetLog belongs_to a required :person, so an orphaned entry cannot be
-  # signed off at all -- the audit write raises. It used to render pre-checked
-  # and armed by select-all, which took the whole sweep down mid-loop after the
-  # earlier rows were already committed. Now it is not offered, and a submitted
-  # id for one is skipped and reported rather than raising.
-  test "an orphaned entry is skipped and reported, and the rest of the sweep lands" do
-    first = create_timesheet(@ranger, @ood, on_duty: @now - 2.hours)
-    orphan = create_timesheet(@admin, @ood, on_duty: @now - 2.hours)
-    orphan.update_column(:person_id, 0)
-    last = create_timesheet(@inactive, @mentor, on_duty: @now - 1.hour)
-
-    post shift_operations_mass_signout_path,
-         params: { ids: [first.id, orphan.id, last.id] }
-
-    assert_redirected_to shift_operations_mass_signout_path
-    assert_equal @now, first.reload.off_duty
-    assert_equal @now, last.reload.off_duty
-    assert_nil orphan.reload.off_duty
-    assert_match(/1 entry could not be signed out/, flash[:success])
-  end
-
-  test "an orphaned entry is not offered for selection" do
-    orphan = create_timesheet(@ranger, @ood, on_duty: @now - 2.hours)
-    orphan.update_column(:person_id, 0)
-
-    get shift_operations_mass_signout_path
-
-    assert_select "#mass-signout-check-#{orphan.id}[checked]", count: 0
-    assert_select "#mass-signout-check-#{orphan.id}[data-skip-select-all]"
-    assert_select "#mass-signout-check-#{orphan.id}[aria-label*='record is gone']"
-  end
-
-  # Same wall, one line further into convert_inactive_to_active.
-  test "sweeping an inactive Ranger whose position is gone does not crash" do
-    entry = create_timesheet(@inactive, @ood, on_duty: @now - 2.hours)
-    entry.update_column(:position_id, 0)
-
-    post shift_operations_mass_signout_path, params: { ids: [entry.id] }
-
-    assert_redirected_to shift_operations_mass_signout_path
-    assert_equal @now, entry.reload.off_duty
-    # No position means no conversion decision can be made, so none is made.
-    assert_equal Person::INACTIVE, @inactive.reload.status
   end
 end

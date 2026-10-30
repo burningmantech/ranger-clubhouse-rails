@@ -41,20 +41,6 @@ class MentorShiftReportTest < ActiveSupport::TestCase
     assert_not_includes window_slot_ids, past_late_edge.id
   end
 
-  test "a position whose row was deleted still renders a placeholder title" do
-    # belongs_to demands the row at creation, so delete it afterwards.
-    khaki_position = Position.create!(id: Position::MENTOR_KHAKI, title: "Mentor Khaki")
-    khaki_slot = create_slot(khaki_position, begins: Time.zone.local(YEAR, 8, 26, 7, 0, 0),
-                             ends: Time.zone.local(YEAR, 8, 26, 13, 0, 0))
-    Position.delete(khaki_position.id)
-
-    report = MentorShiftReport.for_slot(@alpha_slot)
-
-    operations = report.groups.find { |group| group.key == :operations }
-    khaki = operations.positions.find { |position| position.slots.any? { |slot_sign_ups| slot_sign_ups.slot.id == khaki_slot.id } }
-    assert_equal "Position ##{Position::MENTOR_KHAKI}", khaki.title
-  end
-
   test "unfilled counts empty shifts while group counts tally people" do
     mentor_slot = create_slot(@mentor_position, begins: Time.zone.local(YEAR, 8, 26, 7, 0, 0),
                               ends: Time.zone.local(YEAR, 8, 26, 13, 0, 0))

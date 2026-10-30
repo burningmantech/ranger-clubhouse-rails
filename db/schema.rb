@@ -10,9 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_000010) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
-    t.integer "person_id", null: false
+    t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
     t.column "status", "enum('qualified','claimed','banked','used','cancelled','expired','submitted','turned_down')", default: "qualified", null: false
     t.integer "source_year"
@@ -130,7 +130,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "bmid", id: { type: :bigint, unsigned: true }, charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
-    t.integer "person_id", null: false
+    t.bigint "person_id", null: false
     t.column "status", "enum('in_prep','do_not_print','ready_to_print','ready_to_reprint_lost','ready_to_reprint_changed','issues','submitted')"
     t.integer "year", default: 0, null: false
     t.string "title1", limit: 64
@@ -182,6 +182,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.datetime "retry_at", precision: nil
     t.bigint "retry_person_id"
     t.datetime "expires_at", precision: nil
+    t.index ["alert_id"], name: "fk_rails_13463f4240"
     t.index ["sender_id"], name: "sender_id"
   end
 
@@ -245,7 +246,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "email_history", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "person_id", null: false
+    t.bigint "person_id", null: false
     t.integer "source_person_id"
     t.string "email", null: false
     t.timestamp "created_at"
@@ -419,16 +420,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   create_table "oauth_code", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "code_digest", null: false
     t.string "scope", null: false
-    t.integer "oauth_client_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "oauth_client_id", null: false, unsigned: true
+    t.bigint "person_id", null: false
     t.datetime "created_at", precision: nil, null: false
     t.index ["oauth_client_id", "code_digest"], name: "index_oauth_code_on_oauth_client_id_and_code_digest", unique: true
+    t.index ["person_id"], name: "fk_rails_869bbf9dce"
   end
 
   create_table "online_course", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name", default: "", null: false
     t.integer "year", null: false
-    t.integer "position_id", null: false
+    t.bigint "position_id", null: false, unsigned: true
     t.string "course_id", default: "", null: false
     t.boolean "active", default: true, null: false
     t.column "course_for", "enum('all','returning','new')", default: "all", null: false
@@ -501,9 +503,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.datetime "pi_reviewed_for_dashboard_at", precision: nil
     t.string "lms_username", limit: 191
     t.boolean "is_bouncing", default: false, null: false
-    t.integer "tshirt_swag_id"
-    t.integer "tshirt_secondary_swag_id"
-    t.integer "long_sleeve_swag_id"
+    t.bigint "tshirt_swag_id", unsigned: true
+    t.bigint "tshirt_secondary_swag_id", unsigned: true
+    t.bigint "long_sleeve_swag_id", unsigned: true
     t.datetime "vanity_changed_at", precision: nil
     t.boolean "used_vanity_change", default: false, null: false
     t.string "employee_id"
@@ -526,8 +528,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.index ["callsign_soundex"], name: "person_callsign_soundex_index"
     t.index ["email"], name: "email", unique: true
     t.index ["lms_id"], name: "person_lms_id_index"
+    t.index ["long_sleeve_swag_id"], name: "fk_rails_0b2fe07ac6"
+    t.index ["person_photo_id"], name: "fk_rails_d7812cb3e5"
     t.index ["sms_number"], name: "index_person_on_sms_number"
     t.index ["status"], name: "person_status_index"
+    t.index ["tshirt_secondary_swag_id"], name: "fk_rails_caca9f7594"
+    t.index ["tshirt_swag_id"], name: "fk_rails_d4ce3b4b17"
     t.check_constraint "json_valid(`years_as_contributor`)", name: "years_as_contributor"
     t.check_constraint "json_valid(`years_as_ranger`)", name: "years_as_ranger"
     t.check_constraint "json_valid(`years_combined`)", name: "years_combined"
@@ -541,12 +547,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.boolean "use_email", default: true, null: false
     t.timestamp "created_at", default: -> { "current_timestamp()" }, null: false
     t.timestamp "updated_at", default: -> { "current_timestamp() ON UPDATE current_timestamp()" }, null: false
+    t.index ["alert_id"], name: "fk_rails_b959b5a80c"
     t.index ["person_id", "alert_id"], name: "person_id", unique: true
   end
 
   create_table "person_asset", id: { type: :bigint, unsigned: true }, charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
-    t.bigint "person_id", null: false, unsigned: true
-    t.bigint "asset_id", null: false, unsigned: true
+    t.bigint "person_id", null: false
+    t.bigint "asset_id", null: false
     t.datetime "checked_out", precision: nil, null: false
     t.datetime "checked_in", precision: nil
     t.bigint "attachment_id", unsigned: true
@@ -554,28 +561,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.integer "check_in_person_id"
     t.boolean "check_out_forced", default: false, null: false
     t.index ["asset_id"], name: "asset_id"
+    t.index ["attachment_id"], name: "fk_rails_120a87780c"
     t.index ["person_id", "checked_out"], name: "person_asset_person_id_checked_out_index"
   end
 
   create_table "person_award", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "person_id", null: false
-    t.integer "award_id"
+    t.bigint "person_id", null: false
+    t.bigint "award_id", unsigned: true
     t.text "notes", null: false
     t.timestamp "created_at"
     t.timestamp "updated_at"
-    t.integer "team_id"
-    t.integer "position_id"
+    t.bigint "team_id", unsigned: true
+    t.bigint "position_id", unsigned: true
     t.integer "year", null: false
     t.integer "creator_person_id"
     t.boolean "awards_grants_service_year", default: false, null: false
+    t.index ["award_id"], name: "fk_rails_808f800448"
     t.index ["person_id", "award_id"], name: "person_award_person_id_award_id_index"
     t.index ["person_id", "year", "award_id"], name: "person_award_person_id_year_award_id_index"
     t.index ["person_id", "year", "position_id"], name: "person_award_person_id_year_position_id_index"
     t.index ["person_id", "year", "team_id"], name: "person_award_person_id_year_team_id_index"
+    t.index ["position_id"], name: "fk_rails_38d43bc726"
+    t.index ["team_id"], name: "fk_rails_27f3bc135e"
   end
 
   create_table "person_banner", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.bigint "person_id", null: false, unsigned: true
+    t.bigint "person_id", null: false
     t.boolean "is_permanent", default: false, null: false
     t.text "message", null: false
     t.timestamp "created_at"
@@ -586,9 +597,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "person_certification", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "person_id", null: false
+    t.bigint "person_id", null: false
     t.integer "recorder_id"
-    t.integer "certification_id", null: false
+    t.bigint "certification_id", null: false, unsigned: true
     t.date "issued_on"
     t.date "trained_on"
     t.string "card_number"
@@ -631,7 +642,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "person_fka", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "person_id", null: false
+    t.bigint "person_id", null: false
     t.datetime "created_at", precision: nil
     t.string "fka", null: false
     t.string "fka_normalized", null: false
@@ -669,7 +680,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "person_language", id: :integer, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "person_id", null: false
+    t.bigint "person_id", null: false
     t.string "language_name", limit: 32, null: false
     t.string "proficiency", default: "unknown", null: false
     t.string "language_custom", limit: 32
@@ -678,7 +689,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "person_mentor", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.bigint "person_id", null: false, unsigned: true
+    t.bigint "person_id", null: false
     t.bigint "mentor_id", unsigned: true
     t.integer "mentor_year", null: false, unsigned: true
     t.column "status", "enum('pass','bonk','self-bonk','pending','abstain','not-completed')"
@@ -689,6 +700,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.index ["mentor_id", "position_id"], name: "index_person_mentor_on_mentor_id_and_position_id"
     t.index ["mentor_year", "status"], name: "index_person_mentor_on_mentor_year_and_status"
     t.index ["person_id", "mentor_id", "mentor_year", "position_id", "timesheet_id"], name: "person_id", unique: true
+    t.index ["position_id"], name: "fk_rails_a07f9146ba"
     t.index ["timesheet_id", "mentor_key"], name: "index_person_mentor_on_timesheet_id_and_mentor_key", unique: true
   end
 
@@ -728,7 +740,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
 
   create_table "person_message_member", id: :integer, charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.integer "person_message_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "person_id", null: false
     t.boolean "archived", default: false, null: false
     t.datetime "created_at", precision: nil, null: false
     t.integer "last_read_message_id"
@@ -740,8 +752,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
 
   create_table "person_motd", primary_key: ["person_id", "motd_id"], charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
-    t.bigint "motd_id", null: false
+    t.bigint "motd_id", null: false, unsigned: true
     t.datetime "read_at", precision: nil, null: false
+    t.index ["motd_id"], name: "fk_rails_e0ba5f229e"
   end
 
   create_table "person_on_site", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
@@ -758,12 +771,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.datetime "completed_at", precision: nil
     t.string "type", limit: 191, default: "", null: false
     t.timestamp "created_at", default: -> { "current_timestamp()" }, null: false
-    t.integer "position_id", default: 0, null: false
+    t.bigint "position_id", default: 0, null: false, unsigned: true
     t.integer "online_course_id", default: 0, null: false
     t.integer "year", default: 0, null: false
     t.datetime "enrolled_at", precision: nil
     t.index ["person_id", "completed_at"], name: "person_online_training_person_id_completed_at_index"
     t.index ["person_id", "position_id", "year"], name: "person_online_course_person_id_position_id_year_unique", unique: true
+    t.index ["position_id"], name: "fk_rails_f2050905cc"
   end
 
   create_table "person_page_visit", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
@@ -822,14 +836,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   create_table "person_pod", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.timestamp "created_at"
     t.timestamp "updated_at"
-    t.integer "pod_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "pod_id", null: false, unsigned: true
+    t.bigint "person_id", null: false
     t.boolean "is_lead", default: false, null: false
     t.datetime "joined_at", precision: nil, null: false
     t.datetime "left_at", precision: nil
     t.datetime "removed_at", precision: nil
     t.integer "sort_index", default: 0, null: false
-    t.integer "timesheet_id"
+    t.bigint "timesheet_id", unsigned: true
+    t.index ["person_id"], name: "fk_rails_2d2baf515b"
     t.index ["pod_id", "person_id"], name: "person_pod_pod_id_person_id_index"
     t.index ["timesheet_id"], name: "person_pod_timesheet_id_index"
   end
@@ -837,18 +852,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   create_table "person_pog", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.timestamp "created_at"
     t.timestamp "updated_at"
-    t.integer "person_id", null: false
+    t.bigint "person_id", null: false
     t.integer "issued_by_id", null: false
-    t.integer "timesheet_id"
+    t.bigint "timesheet_id", unsigned: true
     t.string "pog", null: false
     t.string "status", null: false
     t.text "notes", null: false
     t.datetime "issued_at", precision: nil, null: false
     t.index ["person_id", "pog", "created_at"], name: "person_pog_person_id_pog_created_at_index"
+    t.index ["timesheet_id"], name: "fk_rails_979901a9e1"
   end
 
   create_table "person_position", primary_key: ["person_id", "position_id"], charset: "utf8mb3", collation: "utf8mb3_unicode_ci", comment: "links person to position", force: :cascade do |t|
-    t.bigint "person_id", null: false, unsigned: true
+    t.bigint "person_id", null: false
     t.bigint "position_id", null: false, unsigned: true
     t.index ["position_id"], name: "index_person_position_on_position_id"
   end
@@ -865,12 +881,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "person_role", primary_key: ["person_id", "role_id"], charset: "utf8mb4", collation: "utf8mb4_unicode_ci", comment: "links person to role", force: :cascade do |t|
-    t.bigint "person_id", null: false, unsigned: true
+    t.bigint "person_id", null: false
     t.bigint "role_id", null: false, unsigned: true
+    t.index ["role_id"], name: "fk_rails_acfe160ac8"
   end
 
   create_table "person_slot", id: { type: :bigint, unsigned: true }, charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
-    t.bigint "person_id", null: false, unsigned: true
+    t.bigint "person_id", null: false
     t.bigint "slot_id", null: false, unsigned: true
     t.datetime "created_at", precision: nil, default: -> { "current_timestamp()" }, null: false
     t.index ["person_id"], name: "person_id"
@@ -890,18 +907,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "person_swag", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "person_id", null: false
-    t.integer "swag_id", null: false
+    t.bigint "person_id", null: false
+    t.bigint "swag_id", null: false, unsigned: true
     t.integer "year_issued"
     t.text "notes", null: false
     t.timestamp "created_at"
     t.timestamp "updated_at"
     t.index ["person_id", "swag_id"], name: "person_swag_person_id_swag_id_index"
+    t.index ["swag_id"], name: "fk_rails_352f8e2940"
   end
 
   create_table "person_team", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "person_id", null: false
-    t.integer "team_id", null: false
+    t.bigint "person_id", null: false
+    t.bigint "team_id", null: false, unsigned: true
     t.timestamp "created_at"
     t.timestamp "updated_at"
     t.index ["person_id", "team_id"], name: "person_team_person_id_team_id_unique", unique: true
@@ -925,13 +943,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.column "type", "enum('alpha','mentor','mitten','shift')", null: false
     t.datetime "formed_at", precision: nil, null: false
     t.datetime "disbanded_at", precision: nil
-    t.integer "slot_id"
-    t.integer "mentor_pod_id"
+    t.bigint "slot_id", unsigned: true
+    t.bigint "mentor_pod_id", unsigned: true
     t.integer "person_count", default: 0, null: false
     t.integer "sort_index", default: 0, null: false
     t.string "location"
     t.column "transport", "enum('foot','bicycle','vehicle')", default: "foot", null: false
     t.index ["formed_at"], name: "pod_formed_at_index"
+    t.index ["mentor_pod_id"], name: "fk_rails_43e94f5e16"
     t.index ["slot_id", "formed_at"], name: "pod_slot_id_formed_at_index"
   end
 
@@ -951,7 +970,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.boolean "prevent_multiple_enrollments", default: false, null: false
     t.boolean "active", default: true, null: false
     t.boolean "alert_when_empty", default: false, null: false
-    t.integer "team_id"
+    t.bigint "team_id", unsigned: true
     t.boolean "require_training_for_roles", default: false, null: false
     t.column "team_category", "enum('public','all_members','optional')", default: "public", null: false
     t.boolean "alert_when_becomes_empty", default: false, null: false
@@ -965,7 +984,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.float "sign_out_hour_cap", limit: 53, default: 0.0, null: false
     t.boolean "mvr_eligible", default: false, null: false
     t.boolean "pvr_eligible", default: false, null: false
-    t.integer "parent_position_id"
+    t.bigint "parent_position_id", unsigned: true
     t.boolean "not_timesheet_eligible", default: false, null: false
     t.boolean "cruise_direction", default: false, null: false
     t.boolean "mvr_signup_eligible", default: false, null: false
@@ -986,10 +1005,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.index ["mvr_eligible"], name: "position_mvr_eligible_index"
     t.index ["parent_position_id"], name: "position_parent_position_id_index"
     t.index ["pvr_eligible"], name: "position_pvr_eligible_index"
+    t.index ["team_id"], name: "fk_rails_a7a42c945b"
+    t.index ["training_position_id"], name: "fk_rails_e2f2a7f980"
   end
 
   create_table "position_credit", id: :integer, charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
-    t.integer "position_id", null: false
+    t.bigint "position_id", null: false, unsigned: true
     t.datetime "start_time", precision: nil, null: false
     t.datetime "end_time", precision: nil, null: false
     t.decimal "credits_per_hour", precision: 4, scale: 2, null: false
@@ -1009,14 +1030,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.timestamp "updated_at"
   end
 
-  create_table "position_lineup_member", primary_key: "position_id", id: :integer, default: nil, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "position_lineup_id", null: false
+  create_table "position_lineup_member", primary_key: "position_id", id: { type: :bigint, unsigned: true, default: nil }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.bigint "position_lineup_id", null: false, unsigned: true
     t.datetime "created_at", precision: nil, null: false
+    t.index ["position_lineup_id"], name: "fk_rails_475aeb185b"
   end
 
   create_table "position_role", primary_key: ["position_id", "role_id"], charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "position_id", null: false
-    t.integer "role_id", null: false
+    t.bigint "position_id", null: false, unsigned: true
+    t.bigint "role_id", null: false, unsigned: true
+    t.index ["role_id"], name: "fk_rails_877d125c67"
   end
 
   create_table "prospective_application", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -1036,7 +1059,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.integer "year", null: false
     t.string "email", null: false
     t.string "bpguid", null: false
-    t.integer "person_id"
+    t.bigint "person_id"
     t.text "why_volunteer", default: "", null: false
     t.string "why_volunteer_review", default: "unreviewed", null: false
     t.integer "review_person_id"
@@ -1058,11 +1081,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.timestamp "updated_at"
     t.text "problem_handles"
     t.index ["created_at"], name: "index_prospective_application_on_created_at"
+    t.index ["person_id"], name: "fk_rails_21577f48b2"
     t.index ["year", "status"], name: "prospective_application_year_status_index"
   end
 
   create_table "prospective_application_log", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "prospective_application_id", null: false
+    t.bigint "prospective_application_id", null: false, unsigned: true
     t.integer "person_id"
     t.text "data"
     t.string "action", null: false
@@ -1072,7 +1096,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
 
   create_table "prospective_application_note", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "type", null: false
-    t.integer "prospective_application_id", null: false
+    t.bigint "prospective_application_id", null: false, unsigned: true
     t.integer "person_id"
     t.text "note", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -1080,7 +1104,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "provision", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "person_id", null: false
+    t.bigint "person_id", null: false
     t.integer "source_year", null: false
     t.string "type", null: false
     t.string "status", default: "available", null: false
@@ -1094,6 +1118,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.boolean "pre_event_meals", default: false, null: false
     t.boolean "event_week_meals", default: false, null: false
     t.boolean "post_event_meals", default: false, null: false
+    t.index ["person_id"], name: "fk_rails_ac39c5a71c"
   end
 
   create_table "radio_eligible", primary_key: ["person_id", "year"], charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
@@ -1143,7 +1168,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.string "session_id"
     t.string "ip_address"
     t.string "user_agent"
-    t.integer "person_id"
+    t.bigint "person_id"
     t.text "data", size: :medium
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -1197,12 +1222,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.integer "duration", default: 0, null: false
     t.integer "begins_time", default: 0, null: false
     t.integer "ends_time", default: 0, null: false
-    t.integer "parent_signup_slot_id"
+    t.bigint "parent_signup_slot_id", unsigned: true
     t.boolean "did_notify", default: false, null: false
     t.index ["begins"], name: "begins"
     t.index ["begins_year", "position_id"], name: "slot_begins_year_position_id_index"
     t.index ["parent_signup_slot_id"], name: "slot_parent_signup_slot_id_index"
     t.index ["position_id"], name: "position_id"
+    t.index ["trainee_slot_id"], name: "fk_rails_f9d2ce86a9"
+    t.index ["trainer_slot_id"], name: "fk_rails_65977306a3"
   end
 
   create_table "solid_cable_messages", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
@@ -1379,24 +1406,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   create_table "survey", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.integer "year", null: false
     t.column "type", "enum('trainer','training','alpha','mentor-for-mentees','mentees-for-mentor')", null: false
-    t.integer "position_id"
+    t.bigint "position_id", unsigned: true
     t.string "title", limit: 191, null: false
     t.text "prologue", null: false
     t.text "epilogue", null: false
     t.timestamp "created_at"
     t.timestamp "updated_at"
     t.boolean "active", default: true, null: false
-    t.integer "mentoring_position_id"
+    t.bigint "mentoring_position_id", unsigned: true
+    t.index ["mentoring_position_id"], name: "fk_rails_b502626f61"
+    t.index ["position_id"], name: "fk_rails_4cd8358882"
   end
 
   create_table "survey_answer", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.string "callsign", limit: 191
-    t.integer "survey_id", null: false
-    t.integer "survey_question_id", null: false
-    t.integer "survey_group_id", null: false
+    t.bigint "survey_id", null: false, unsigned: true
+    t.bigint "survey_question_id", null: false, unsigned: true
+    t.bigint "survey_group_id", null: false, unsigned: true
     t.text "response", null: false
-    t.bigint "slot_id"
+    t.bigint "slot_id", unsigned: true
     t.bigint "trainer_id"
     t.boolean "can_share_name", default: true, null: false
     t.timestamp "created_at"
@@ -1410,7 +1439,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "survey_group", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "survey_id", null: false
+    t.bigint "survey_id", null: false, unsigned: true
     t.integer "sort_index", default: 1, null: false
     t.string "title", limit: 191, null: false
     t.text "description", null: false
@@ -1423,8 +1452,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "survey_question", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "survey_id", null: false
-    t.integer "survey_group_id", null: false
+    t.bigint "survey_id", null: false, unsigned: true
+    t.bigint "survey_group_id", null: false, unsigned: true
     t.integer "sort_index", default: 1, null: false
     t.boolean "is_required", default: false, null: false
     t.text "options", null: false
@@ -1468,21 +1497,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "team_manager", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "person_id", null: false
-    t.integer "team_id", null: false
+    t.bigint "person_id", null: false
+    t.bigint "team_id", null: false, unsigned: true
     t.timestamp "created_at"
     t.timestamp "updated_at"
     t.index ["person_id", "team_id"], name: "index_team_manager_on_person_id_and_team_id", unique: true
+    t.index ["team_id"], name: "fk_rails_ab674ecf4e"
   end
 
   create_table "team_role", primary_key: ["team_id", "role_id"], charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "team_id", null: false
-    t.integer "role_id", null: false
+    t.bigint "team_id", null: false, unsigned: true
+    t.bigint "role_id", null: false, unsigned: true
+    t.index ["role_id"], name: "fk_rails_d5f672b9f3"
   end
 
   create_table "timesheet", id: { type: :bigint, unsigned: true }, charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "position_id", null: false, unsigned: true
-    t.bigint "person_id", null: false, unsigned: true
+    t.bigint "person_id", null: false
     t.datetime "on_duty", precision: nil, null: false, comment: "date/time that person signed onto duty"
     t.datetime "off_duty", precision: nil, comment: "date/time that person signed off of duty"
     t.datetime "verified_at", precision: nil
@@ -1490,14 +1521,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.column "review_status", "enum('approved','rejected','pending','unverified','verified')", default: "unverified"
     t.bigint "reviewer_person_id"
     t.datetime "reviewed_at", precision: nil
-    t.bigint "slot_id"
+    t.bigint "slot_id", unsigned: true
     t.boolean "is_echelon", default: false, null: false
     t.boolean "suppress_duration_warning", default: false, null: false
     t.boolean "was_signin_forced", default: false, null: false
-    t.integer "desired_position_id"
+    t.bigint "desired_position_id", unsigned: true
     t.datetime "desired_on_duty", precision: nil
     t.datetime "desired_off_duty", precision: nil
     t.text "signin_force_reason"
+    t.index ["desired_position_id"], name: "fk_rails_17bf59465e"
     t.index ["on_duty", "was_signin_forced"], name: "timesheet_on_duty_was_signin_forced_index"
     t.index ["person_id", "on_duty"], name: "timesheet_person_id_on_duty_index"
     t.index ["person_id", "position_id"], name: "timesheet_person_id_position_id_index"
@@ -1533,25 +1565,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "timesheet_missing_note", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "timesheet_missing_id", null: false
+    t.bigint "timesheet_missing_id", null: false
     t.column "type", "enum('user','hq-worker','wrangler','admin')", default: "user", null: false
     t.text "note", null: false
     t.integer "create_person_id"
     t.datetime "created_at", precision: nil, null: false
+    t.index ["timesheet_missing_id"], name: "fk_rails_d33e1dccfc"
   end
 
   create_table "timesheet_note", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "timesheet_id", null: false
+    t.bigint "timesheet_id", null: false, unsigned: true
     t.text "note", null: false
     t.integer "create_person_id"
     t.column "type", "enum('user','hq-worker','wrangler','admin')", default: "user", null: false
     t.datetime "created_at", precision: nil, null: false
+    t.index ["timesheet_id"], name: "fk_rails_27e66aa061"
   end
 
   create_table "trainee_note", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.integer "person_id", null: false
+    t.bigint "person_id", null: false
     t.integer "person_source_id"
-    t.integer "slot_id", null: false
+    t.bigint "slot_id", null: false, unsigned: true
     t.text "note", null: false
     t.boolean "is_log", default: false, null: false
     t.timestamp "created_at"
@@ -1562,7 +1596,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
 
   create_table "trainee_status", id: { type: :bigint, unsigned: true }, charset: "utf8mb3", collation: "utf8mb3_general_ci", force: :cascade do |t|
     t.bigint "slot_id", default: 0, null: false, unsigned: true
-    t.bigint "person_id", default: 0, null: false, unsigned: true
+    t.bigint "person_id", default: 0, null: false
     t.text "notes"
     t.integer "rank", default: 0, unsigned: true
     t.boolean "feedback_delivered", default: false, null: false
@@ -1572,7 +1606,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   end
 
   create_table "trainer_status", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.bigint "person_id", null: false, unsigned: true
+    t.bigint "person_id", null: false
     t.bigint "trainer_slot_id", null: false, unsigned: true
     t.bigint "slot_id", null: false, unsigned: true
     t.column "status", "enum('attended','no-show','pending')", default: "attended", null: false
@@ -1581,6 +1615,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.boolean "is_lead", default: false, null: false
     t.index ["person_id", "slot_id"], name: "person_id_and_slot_id", unique: true
     t.index ["slot_id"], name: "index_trainer_status_on_slot_id"
+    t.index ["trainer_slot_id"], name: "fk_rails_0e396e1fac"
   end
 
   create_table "vehicle", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -1612,8 +1647,87 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
     t.index ["person_id"], name: "vehicle_person_id_index"
   end
 
+  add_foreign_key "access_document", "person"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "bmid", "person"
+  add_foreign_key "bmid_title", "position"
+  add_foreign_key "broadcast", "alert"
+  add_foreign_key "broadcast_message", "broadcast"
+  add_foreign_key "email_history", "person"
+  add_foreign_key "oauth_code", "oauth_client"
+  add_foreign_key "oauth_code", "person"
+  add_foreign_key "online_course", "position"
+  add_foreign_key "person", "person_photo", on_delete: :nullify
+  add_foreign_key "person", "swag", column: "long_sleeve_swag_id", on_delete: :nullify
+  add_foreign_key "person", "swag", column: "tshirt_secondary_swag_id", on_delete: :nullify
+  add_foreign_key "person", "swag", column: "tshirt_swag_id", on_delete: :nullify
+  add_foreign_key "person_alert", "alert"
+  add_foreign_key "person_alert", "person"
+  add_foreign_key "person_asset", "asset"
+  add_foreign_key "person_asset", "asset_attachment", column: "attachment_id", on_delete: :nullify
+  add_foreign_key "person_asset", "person"
+  add_foreign_key "person_award", "award"
+  add_foreign_key "person_award", "person"
+  add_foreign_key "person_award", "position"
+  add_foreign_key "person_award", "team"
+  add_foreign_key "person_banner", "person"
+  add_foreign_key "person_certification", "certification"
+  add_foreign_key "person_certification", "person"
+  add_foreign_key "person_event", "person"
+  add_foreign_key "person_favorite", "person"
+  add_foreign_key "person_fka", "person"
+  add_foreign_key "person_intake", "person"
+  add_foreign_key "person_intake_note", "person"
+  add_foreign_key "person_language", "person"
+  add_foreign_key "person_mentor", "person"
+  add_foreign_key "person_mentor", "position"
+  add_foreign_key "person_message", "person_message", column: "reply_to_id"
+  add_foreign_key "person_message_member", "person"
+  add_foreign_key "person_message_member", "person_message"
+  add_foreign_key "person_motd", "motd"
+  add_foreign_key "person_motd", "person"
+  add_foreign_key "person_on_site", "person"
+  add_foreign_key "person_online_course", "person"
+  add_foreign_key "person_online_course", "position"
+  add_foreign_key "person_page_visit", "person"
+  add_foreign_key "person_passkey", "person"
+  add_foreign_key "person_photo", "person"
+  add_foreign_key "person_pod", "person"
+  add_foreign_key "person_pod", "pod"
+  add_foreign_key "person_pod", "timesheet", on_delete: :nullify
+  add_foreign_key "person_pog", "person"
+  add_foreign_key "person_pog", "timesheet", on_delete: :nullify
+  add_foreign_key "person_position", "person"
+  add_foreign_key "person_position", "position"
+  add_foreign_key "person_role", "person"
+  add_foreign_key "person_role", "role"
+  add_foreign_key "person_slot", "person"
+  add_foreign_key "person_slot", "slot"
+  add_foreign_key "person_swag", "person"
+  add_foreign_key "person_swag", "swag"
+  add_foreign_key "person_team", "person"
+  add_foreign_key "person_team", "team"
+  add_foreign_key "pod", "pod", column: "mentor_pod_id", on_delete: :nullify
+  add_foreign_key "pod", "slot", on_delete: :nullify
+  add_foreign_key "position", "position", column: "parent_position_id", on_delete: :nullify
+  add_foreign_key "position", "position", column: "training_position_id", on_delete: :nullify
+  add_foreign_key "position", "team"
+  add_foreign_key "position_credit", "position"
+  add_foreign_key "position_lineup_member", "position"
+  add_foreign_key "position_lineup_member", "position_lineup"
+  add_foreign_key "position_role", "position"
+  add_foreign_key "position_role", "role"
+  add_foreign_key "prospective_application", "person", on_delete: :nullify
+  add_foreign_key "prospective_application_log", "prospective_application"
+  add_foreign_key "prospective_application_note", "prospective_application"
+  add_foreign_key "provision", "person"
+  add_foreign_key "sessions", "person"
+  add_foreign_key "shift_coverage_position", "shift_coverage_group"
+  add_foreign_key "slot", "position"
+  add_foreign_key "slot", "slot", column: "parent_signup_slot_id", on_delete: :nullify
+  add_foreign_key "slot", "slot", column: "trainee_slot_id", on_delete: :nullify
+  add_foreign_key "slot", "slot", column: "trainer_slot_id", on_delete: :nullify
   add_foreign_key "solid_queue_batch_executions", "solid_queue_batches", column: "batch_id", on_delete: :cascade
   add_foreign_key "solid_queue_batch_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
@@ -1622,4 +1736,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000007) do
   add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "survey", "position", column: "mentoring_position_id", on_delete: :nullify
+  add_foreign_key "survey", "position", on_delete: :nullify
+  add_foreign_key "survey_answer", "slot", on_delete: :nullify
+  add_foreign_key "survey_answer", "survey"
+  add_foreign_key "survey_answer", "survey_group"
+  add_foreign_key "survey_answer", "survey_question"
+  add_foreign_key "survey_group", "survey"
+  add_foreign_key "survey_question", "survey"
+  add_foreign_key "survey_question", "survey_group"
+  add_foreign_key "team_manager", "person"
+  add_foreign_key "team_manager", "team"
+  add_foreign_key "team_role", "role"
+  add_foreign_key "team_role", "team"
+  add_foreign_key "timesheet", "person"
+  add_foreign_key "timesheet", "position"
+  add_foreign_key "timesheet", "position", column: "desired_position_id", on_delete: :nullify
+  add_foreign_key "timesheet", "slot", on_delete: :nullify
+  add_foreign_key "timesheet_missing", "person"
+  add_foreign_key "timesheet_missing_note", "timesheet_missing"
+  add_foreign_key "timesheet_note", "timesheet"
+  add_foreign_key "trainee_note", "person"
+  add_foreign_key "trainee_note", "slot"
+  add_foreign_key "trainee_status", "person"
+  add_foreign_key "trainee_status", "slot"
+  add_foreign_key "trainer_status", "person"
+  add_foreign_key "trainer_status", "slot"
+  add_foreign_key "trainer_status", "slot", column: "trainer_slot_id"
+  add_foreign_key "vehicle", "person", on_delete: :nullify
 end

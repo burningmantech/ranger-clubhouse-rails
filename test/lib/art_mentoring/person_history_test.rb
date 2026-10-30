@@ -4,7 +4,7 @@ require "test_helper"
 
 # How ArtMentoring::PersonHistory files a person's ART walks: one section per
 # ART with a cohort per year, the ART and year taken from the mentee entry as
-# the roster files them, and the fallbacks once the entry or position is gone.
+# the roster files them, and the fallback once the entry is gone.
 class ArtMentoring::PersonHistoryTest < ActiveSupport::TestCase
   include ArtMentoringTestHelper
   include PersonTestFactory
@@ -57,7 +57,7 @@ class ArtMentoring::PersonHistoryTest < ActiveSupport::TestCase
   end
 
   test "a walk whose entry was deleted sorts last, under its mentor_year" do
-    @first.delete
+    @first.destroy
 
     cohort = history(@mentee).sections.first.as_mentee.first
     assert_equal YEAR, cohort.year
@@ -89,15 +89,5 @@ class ArtMentoring::PersonHistoryTest < ActiveSupport::TestCase
     section = history(@mentee).sections.first
     assert_nil section.training
     assert_equal "Green Dot Mentee", section.title
-  end
-
-  test "walks under a deleted position row are kept, titled by its id" do
-    [@first, @second].each(&:delete)
-    Position.where(id: @mentee_position.id).delete_all
-
-    section = history(@mentee).sections.first
-    assert_nil section.training
-    assert_equal "Position ##{Position::GREEN_DOT_MENTEE}", section.title
-    assert_equal 2, section.as_mentee.first.rows.size
   end
 end

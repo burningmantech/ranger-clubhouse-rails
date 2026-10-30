@@ -31,7 +31,7 @@ class ArtMentoring::VerdictsReportTest < ActiveSupport::TestCase
     @bonked = walk(@moonrake, @cinder, status: PersonMentor::STATUS_BONK) # Cinder never signed in
     @pending = walk(@bramble, @ferrous)
     @orphan = walk(@quartz, @ferrous, status: PersonMentor::STATUS_SELF_BONK)
-    @quartz.delete # the walk keeps naming it
+    @quartz.destroy # the walk keeps naming it
   end
 
   teardown do

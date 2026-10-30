@@ -87,16 +87,21 @@ class PersonPermissionPresenterTest < ActiveSupport::TestCase
                  row.paths.sole.conditions.last.text
   end
 
-  test "a training position that no longer exists is one nobody can pass" do
-    pass_training
-    @position.update_columns(training_position_id: 987_654, require_signin_for_roles: false)
+  # Deleting the training position NULLs training_position_id and drops the
+  # requirement with it (PositionManagement.release_trained_positions), so the
+  # position goes on conferring its roles with no training left to pass.
+  test "deleting the training position lifts the training requirement" do
+    @position.update_columns(require_signin_for_roles: false)
+    assert PositionManagement.destroy(@training)
 
     row = row_for(Role::VIEW_EMAIL)
 
-    assert_not row.active
-    condition = row.paths.sole.conditions.sole
-    assert_not condition.met
-    assert_equal "Requires training, but its training position (#987654) no longer exists", condition.text
+    @position.reload
+    assert_nil @position.training_position_id
+    assert_not @position.require_training_for_roles
+    assert row.active
+    assert_empty row.paths.sole.conditions
+    assert row.paths.sole.confers?
   end
 
   test "a position that requires training but names none shows the condition unmet" do

@@ -81,19 +81,17 @@ class MassSignoutReportTest < ActiveSupport::TestCase
 
   # There are no position_credit fixtures, so every row prices at 0.0 unless a
   # credit is created -- asserting 0.0 alone would pass with the pricing torn
-  # out entirely. The priced row is what makes the orphan's zero mean something.
-  test "rows are priced, and an entry whose position is gone prices at zero" do
+  # out entirely.
+  test "rows are priced from the position credit table" do
     PositionCredit.create!(position: @ood, start_time: @now - 2.hours, end_time: @now,
                            credits_per_hour: 2.0, description: "test credits")
     priced = create_timesheet(on_duty: @now - 1.hour)
-    orphan = create_timesheet(on_duty: @now - 1.hour)
-    orphan.update_column(:position_id, 0)
+    unpriced = create_timesheet(on_duty: @now - 1.hour, position: positions(:mentor_lead))
 
     rows = MassSignoutReport.execute.rows.index_by { _1.timesheet.id }
 
     assert_equal 2.0, rows[priced.id].credits
-    assert_nil rows[orphan.id].position
-    assert_equal 0.0, rows[orphan.id].credits
+    assert_equal 0.0, rows[unpriced.id].credits
   end
 
   # OnDutyReport floors its elapsed at zero for this exact case; the sibling
@@ -117,17 +115,5 @@ class MassSignoutReportTest < ActiveSupport::TestCase
 
     assert_equal [open_entry.id], signable.map(&:id)
     assert_empty unsignable
-  end
-
-  # An entry whose Ranger row is gone comes back in the second bucket: it is
-  # still open, but TimesheetLog cannot record a signoff for a missing person.
-  test "selectable separates an entry whose Ranger is gone" do
-    orphan = create_timesheet(on_duty: @now - 1.hour)
-    orphan.update_column(:person_id, 0)
-
-    signable, unsignable = MassSignoutReport.selectable([orphan.id])
-
-    assert_empty signable
-    assert_equal [orphan.id], unsignable.map(&:id)
   end
 end

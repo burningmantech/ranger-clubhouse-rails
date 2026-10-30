@@ -156,22 +156,6 @@ class TeamsPositions::PositionSanityCheckerControllerTest < ActionDispatch::Inte
     assert_empty PersonTeam.where(person_id: bonked.id)
   end
 
-  # PersonTeam.remove_all_from_person walks find_all_teams_for_person, which
-  # INNER JOINs team, so a membership row pointing at a team that no longer
-  # exists is invisible to it -- while the check reads person_team directly and
-  # does list it. The repair reported success and the finding stayed put.
-  test "a membership row whose team is gone is still removed" do
-    bonked = person(:bonked_ranger)
-    PersonTeam.create!(person_id: bonked.id, team_id: teams(:dirt_team).id)
-    PersonTeam.where(person_id: bonked.id).update_all(team_id: 987_654)
-
-    post repair_path(:deactivated_accounts), params: { keys: [bonked.id.to_s] }
-    assert_response :unprocessable_entity
-
-    assert_empty PersonTeam.where(person_id: bonked.id),
-                 "the orphaned membership row survived a repair that claimed success"
-  end
-
   # Two positions in live data carry both all_rangers and new_user_eligible,
   # and both passes of the check reach them.
   test "a position carrying both flags is listed and granted once" do

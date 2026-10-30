@@ -16,6 +16,8 @@ class Me::OnlineCourseControllerTest < ActionDispatch::IntegrationTest
     Setting.create!(name: Setting::ONLINE_COURSE_SITE_URL, value: SITE_URL)
     # person_online_course.yml already enrolls active_ranger in 2026.
     PersonOnlineCourse.delete_all
+    # The online_course fixtures name Position::TRAINING, which no position fixture carries.
+    Position.create!(id: Position::TRAINING, title: "Training", type: Position::TYPE_TRAINING, active: true)
     @ranger = person(:active_ranger)
     sign_in_as(@ranger)
   end

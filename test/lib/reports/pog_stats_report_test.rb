@@ -63,8 +63,8 @@ class PogStatsReportTest < ActiveSupport::TestCase
   end
 
   test "the linked share counts issued pogs recorded with a shift" do
-    PersonPog.insert_all([row(timesheet_id: 1), row, row,
-                          row(timesheet_id: 2, status: PersonPog::STATUS_CANCELLED)])
+    PersonPog.insert_all([row(timesheet_id: shift.id), row, row,
+                          row(timesheet_id: shift.id, status: PersonPog::STATUS_CANCELLED)])
 
     report = PogStatsReport.execute(year: YEAR)
 
@@ -85,10 +85,10 @@ class PogStatsReportTest < ActiveSupport::TestCase
   # is left out everywhere, and one spelled differently is counted everywhere --
   # never in some sections and not others.
   test "every section counts the same rows" do
-    PersonPog.insert_all([row(timesheet_id: 1),
-                          row(pog: "Meal", timesheet_id: 2),
-                          row(pog: "lunch", timesheet_id: 3),
-                          row(status: "lost", timesheet_id: 4)])
+    PersonPog.insert_all([row(timesheet_id: shift.id),
+                          row(pog: "Meal", timesheet_id: shift.id),
+                          row(pog: "lunch", timesheet_id: shift.id),
+                          row(status: "lost", timesheet_id: shift.id)])
 
     report = PogStatsReport.execute(year: YEAR)
 
@@ -107,6 +107,13 @@ class PogStatsReportTest < ActiveSupport::TestCase
       types: [PogStatsReport::TypeCount.new(pog: PersonPog::POG_MEAL, issued:, redeemed: 0, cancelled: 0)],
       days: [], busiest_day: nil, issuers: [], recipients: [], issuer_count: 0, recipient_count: 0, linked:
     )
+  end
+
+  # A shift of the recipient's for a pog to be recorded against.
+  def shift
+    Timesheet.create!(person: @recipient, position: positions(:ood_position),
+                      on_duty: Time.zone.local(YEAR, 8, 27, 6), off_duty: Time.zone.local(YEAR, 8, 27, 12),
+                      additional_notes: "pog shift")
   end
 
   def row(**attrs)

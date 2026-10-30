@@ -46,13 +46,6 @@ class LanguagesKnownReportTest < ActiveSupport::TestCase
     assert_equal ["RetiredRanger"], find("French").speakers.map(&:callsign)
   end
 
-  test "a record whose person is gone is left out" do
-    speaks(@on_site, "French")
-    PersonLanguage.where(person_id: @on_site.id).update_all(person_id: 0)
-
-    assert_nil find("French")
-  end
-
   # --- grouping -------------------------------------------------------------
 
   test "a language typed in by hand is listed as other" do

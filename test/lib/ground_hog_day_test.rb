@@ -4,6 +4,7 @@ require "test_helper"
 
 class GroundHogDayTest < ActiveSupport::TestCase
   include EnvTestHelper
+  include TimesheetAdminTestHelper # ensure_role
 
   YEAR = 2026
   MOMENT = "#{YEAR}-09-05 18:00:00"
@@ -160,6 +161,7 @@ class GroundHogDayTest < ActiveSupport::TestCase
   # Everybody active is passed, so training can be practised from any account.
   test "train_actives signs up and passes every active Ranger" do
     Position.create!(id: Position::TRAINING, title: "Training", type: Position::TYPE_TRAINING, active: true)
+    ensure_role(Role::EVENT_MANAGEMENT_ON_PLAYA, "Event Management On Playa")
     expected = Person.where(status: Person::ACTIVE).count
 
     slot = GroundHogDay.train_actives(YEAR)

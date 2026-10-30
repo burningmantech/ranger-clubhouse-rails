@@ -102,7 +102,7 @@ class Training::Mentoring::VerdictsControllerTest < ActionDispatch::IntegrationT
   end
 
   test "a verdict whose timesheet entry was deleted stays, as Shift deleted" do
-    Timesheet.find(@passed.timesheet_id).delete
+    Timesheet.find(@passed.timesheet_id).destroy
 
     get verdicts_path
 

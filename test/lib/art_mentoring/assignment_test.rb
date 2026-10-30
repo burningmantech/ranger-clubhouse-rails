@@ -7,6 +7,7 @@ require "test_helper"
 # written, and the whole shift written together.
 class ArtMentoring::AssignmentTest < ActiveSupport::TestCase
   include TimesheetAdminTestHelper # ensure_role
+  include AlphaPositionTestHelper
   include ArtMentoringTestHelper
   include PersonTestFactory
   include ActiveSupport::Testing::TimeHelpers
@@ -173,6 +174,7 @@ class ArtMentoring::AssignmentTest < ActiveSupport::TestCase
   end
 
   test "one mentor walking one mentee twice in a year is two rows, and an Alpha row is left alone" do
+    setup_alpha_position
     later = mentee_shift(@slot.begins + 1.day)
     again = mentee_entry(@tinsel, later.begins, off_duty: later.ends, slot: later)
     alpha = PersonMentor.create!(person: @tinsel, mentor: @ferrous, mentor_year: YEAR, status: PersonMentor::STATUS_PASS)

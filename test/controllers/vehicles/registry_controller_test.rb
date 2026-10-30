@@ -6,6 +6,7 @@ class Vehicles::RegistryControllerTest < ActionDispatch::IntegrationTest
   include AuthenticationTestHelper
   include TimesheetAdminTestHelper # ensure_role / grant_role
   include ActiveSupport::Testing::TimeHelpers
+  include PersonTestFactory
 
   setup do
     travel_to Time.zone.local(2026, 4, 16, 12, 0, 0)
@@ -713,18 +714,23 @@ class Vehicles::RegistryControllerTest < ActionDispatch::IntegrationTest
     assert_includes @response.body, "not checked"
   end
 
-  test "a vehicle whose owner has been deleted still exports" do
-    vehicle = create_personal_vehicle(person: @editor)
-    vehicle.update_column(:person_id, 0)
+  # Deleting the owner leaves the vehicle with no person (vehicle.person_id is
+  # set NULL by its foreign key); the row still renders and exports.
+  test "a vehicle whose owner has been deleted still lists and exports" do
+    owner = create_person("Ghost")
+    vehicle = create_personal_vehicle(person: owner)
+    owner.destroy!
+    assert_nil vehicle.reload.person_id
 
     sign_in_as(@event_manager)
 
     get vehicles_registry_index_path
     assert_response :success
-    assert_includes @response.body, "Deleted person #0"
+    assert_includes @response.body, "Owner deleted"
 
     get vehicles_registry_index_path(format: :csv)
-    assert_includes @response.body, "Deleted person #0"
+    assert_response :success
+    assert_includes @response.body, "Owner deleted"
   end
 
   # ----------------------------------------------------------------- menu ----

@@ -6,7 +6,14 @@ require "test_helper"
 # so its Alpha-only scope is the one thing keeping another mentee position's
 # walk for the same year out of the overwrite.
 class PersonMentorStatusFormTest < ActiveSupport::TestCase
+  include AlphaPositionTestHelper
+
   YEAR = 2026
+
+  setup do
+    setup_alpha_position
+    setup_cheetah_cub_position
+  end
 
   test "a status change restates the Alpha walk and leaves another position's walk that year alone" do
     mentee = person(:alpha_ranger)

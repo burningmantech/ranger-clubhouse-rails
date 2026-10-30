@@ -3,6 +3,7 @@
 require "test_helper"
 
 class TimesheetTest < ActiveSupport::TestCase
+  include AlphaPositionTestHelper
   include ActiveSupport::Testing::TimeHelpers
 
   setup do
@@ -21,6 +22,8 @@ class TimesheetTest < ActiveSupport::TestCase
   # Runs the years query directly: test_helper stubs YearsManagement, the only
   # caller, so no other test reaches this SQL.
   test "a 2025 Alpha shift counts as a Ranger year after an Alpha pass, not another position's pass" do
+    setup_alpha_position
+    setup_cheetah_cub_position
     alpha = person(:alpha_ranger)
     mentor = person(:active_ranger)
     Timesheet.insert_all!([{ person_id: alpha.id, position_id: Position::ALPHA, is_echelon: false,

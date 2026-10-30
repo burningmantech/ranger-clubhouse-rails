@@ -327,21 +327,6 @@ class AssetManagement::AssetHistoryControllerTest < ActionDispatch::IntegrationT
     assert_select "a[href^='/person/']", count: 0
   end
 
-  test "a deleted holder is named by id rather than left blank" do
-    holder = person(:prospective_ranger)
-    row = check_out(gear(barcode: "GEAR-GONE"), holder)
-    Person.where(id: holder.id).delete_all
-
-    sign_in_as(@admin)
-    get asset_management_asset_history_path
-
-    assert_response :success
-    assert_select "body", text: /Deleted ##{row.person_id}/
-
-    get asset_management_asset_history_path(format: :csv)
-    assert_includes response.body, "Deleted ##{row.person_id}"
-  end
-
   test "a NULL-typed asset does not hijack the unfiltered page" do
     check_out(gear(barcode: "GEAR-1"), @editor)
     untyped = gear(barcode: "MYSTERY")
