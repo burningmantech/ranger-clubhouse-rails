@@ -300,6 +300,46 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     assert_no_selector "[role=status]", text: "RANGER1"
   end
 
+  # The iPad check: Clear Search goes to the bare mailbox path, the page it is on,
+  # so active_links_controller marked it current, pressed and read as the current
+  # page, on every whole load of a search: Back, a reload, a link.
+  test "Clear Search is never marked as the current page" do
+    sign_in(person(:inactive_ranger))
+    visit me_messages_path(q: "dirt")
+    wait_for_controller "active-links", "body"
+
+    assert_selector "a", text: "Clear Search"
+    assert_no_selector "a[aria-current=true]", text: "Clear Search"
+  end
+
+  # The iPad check: with a keyboard up, the suggestions open above the field, and
+  # never under the sticky navbar, since the page scrolls inside .drawer-content,
+  # which clips what reaches past its top.
+  test "suggestions above the field stay under the navbar" do
+    sign_in(person(:inactive_ranger))
+    page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride", width: 1280, height: 420,
+                                                                           deviceScaleFactor: 1, mobile: false)
+    visit me_messages_path
+    # The field 180px down the window, a keyboard over all from 40px under it.
+    page.execute_script(<<~JS)
+      const field = document.querySelector("form#messages-search input[name=q]")
+      document.querySelector(".drawer-content").scrollTop += field.getBoundingClientRect().top - 180
+      const bottom = field.getBoundingClientRect().bottom + 40
+      Object.defineProperty(window, "visualViewport", {configurable: true, value: {offsetTop: 0, pageTop: 0, height: bottom}})
+    JS
+
+    fill_in "Search messages", with: "ran"
+    assert_selector "[role=option]", text: "RANGER1"
+    list, scroller = page.evaluate_script(<<~JS)
+      [document.querySelector("form#messages-search [role=listbox]").getBoundingClientRect().toJSON(),
+       document.querySelector(".drawer-content").getBoundingClientRect().toJSON()]
+    JS
+    assert_operator list["bottom"], :<=, 180, "The list went below the field, under the keyboard"
+    assert_operator list["top"], :>=, scroller["top"], "The list ran under the navbar"
+  ensure
+    page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
+  end
+
   # Review finding: a press on the box beside the text focused nothing, and closed an open list.
   test "a press anywhere in the search box puts the caret in the text, and an open list stays" do
     sign_in(person(:inactive_ranger))

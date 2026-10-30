@@ -261,21 +261,27 @@ Examples:
 
 - **Position**: Dropdown appears directly below the input field
 - **Width**: Matches input width minimum, expands if content requires more space
-- **Max height**: 20em (approximately 10-12 results) with vertical scroll
+- **Max height**: 20rem, or less where the screen has less room (below), with vertical scroll
 - **Margin**: 0.25rem (4px) gap between input and dropdown
 
 ### Auto-Flip
 
-The component automatically flips above the input when:
+Placed as the list opens, and kept while it stays open (`updatePlacement`): below the input,
+unless the list does not fit there and there is more room above (`ac-results-above`). The list
+is then cut to the room on its side (an inline `max-height`, 20rem at most and 96px at least)
+and scrolls.
 
-1. Insufficient space below input (less than dropdown height)
-2. More space available above input
-3. Window is scrolled near bottom
+The room is what is on screen (`visibleBounds`):
 
-Flip detection runs on:
-- Initial open
-- Window resize
-- Window scroll
+1. The visual viewport, which an on-screen keyboard shrinks. iPad Safari's
+   `window.innerHeight` does not follow the keyboard, and once it scrolls the page for
+   the keyboard (landscape), its `visualViewport.offsetTop` counts from the top of the page while
+   the rects count from the top of the screen, so the top is `pageTop - scrollY`.
+2. Less what the nearest ancestor that clips its overflow cuts off: the page's scroller,
+   `.drawer-content`, under the sticky navbar, or a dialog's box.
+
+The system tests stub `window.visualViewport` to put a keyboard on screen
+(`test/system/autocomplete_component_test.rb`, `test/system/me/messages_workspace_test.rb`).
 
 ### Z-Index Layering
 

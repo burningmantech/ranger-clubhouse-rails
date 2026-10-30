@@ -1,11 +1,14 @@
 <%# locals: (messages:,folder:,selected_id: nil) %>
 <% if searching? %>
   <%# In the tab row's place: what the search found, and the way back to the
-      folder, as a fresh page so the field and its chips empty too. %>
+      folder, as a fresh page so the field and its chips empty too. It is no
+      menu link (active_ignore): the bare mailbox path it goes to is the page
+      it is on, so active_links_controller would mark it current, pressed and
+      read as "current page", on every whole load of a search (Back, a reload). %>
   <div class="flex flex-wrap items-center gap-2 px-3 text-sm text-stone-muted" role="status">
     <span><%= message_search_summary(messages.size, search_query, search_with) %></span>
     <%= button_link "Clear Search", :ghost, messages_path(folder: (folder unless folder == PersonMessage::FOLDER_INBOX)),
-                    class: "ms-auto", data: { turbo_frame: "_top" } %>
+                    class: "ms-auto", data: { turbo_frame: "_top", active_ignore: true } %>
   </div>
 <% elsif messages.empty? %>
   <%= ui_empty_state "No messages in this folder.", icon: "envelope", class: "mx-3 text-center" %>

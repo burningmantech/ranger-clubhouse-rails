@@ -26,6 +26,13 @@ const activeSelector = "[aria-selected='true']"
 // How long a search may run before its "Searching..." row calls the connection slow
 const SLOW_SEARCH_MS = 10_000
 
+// A floating list's height at most (.ac-results' 20rem), the gap it keeps from
+// its field and from the edge of what is on screen, and the least it is cut to:
+// a row and a group's header.
+const LIST_MAX = 320
+const LIST_GAP = 16
+const LIST_FLOOR = 96
+
 // A TypeError is what fetch, and a read of the body after it, reject with when
 // the network fails: no answer at all, or one cut off. Invalid JSON is a
 // SyntaxError, and stays a "failed" answer from the server.
@@ -1002,12 +1009,13 @@ export default class Autocomplete extends Controller {
     open() {
         if (this.resultsShown) return
 
+        // Shown before it is placed, so the placement reads the list's own height.
+        this.resultsShown = true
         // Inline (embedded) results render in normal flow inside their container
         // (e.g. the search modal body), so skip the floating above/below flip.
         if (!this.inlineValue) {
             this.updatePlacement()
         }
-        this.resultsShown = true
         this.element.setAttribute("aria-expanded", "true")
         this.element.dispatchEvent(
             new CustomEvent("autocomplete.open", {
@@ -1017,19 +1025,42 @@ export default class Autocomplete extends Controller {
         )
     }
 
+    // Below the field, unless the list does not fit there and there is more room
+    // above, and cut to the room on its side, where it scrolls. The room is the
+    // part of the page on screen (visibleBounds), so an on-screen keyboard never
+    // hides the list.
     updatePlacement() {
-        const input = this.inputTarget
         const results = this.resultsTarget
-        const rect = input.getBoundingClientRect()
-        const spaceBelow = window.innerHeight - rect.bottom
-        const spaceAbove = rect.top
-        const resultsHeight = Math.min(results.scrollHeight || 320, 320)
+        const rect = this.inputTarget.getBoundingClientRect()
+        const {top, bottom} = this.visibleBounds()
+        const spaceBelow = bottom - rect.bottom
+        const spaceAbove = rect.top - top
+        const above = spaceBelow < Math.min(results.scrollHeight, LIST_MAX) && spaceAbove > spaceBelow
 
-        if (spaceBelow < resultsHeight && spaceAbove > spaceBelow) {
-            results.classList.add("ac-results-above")
-        } else {
-            results.classList.remove("ac-results-above")
+        results.classList.toggle("ac-results-above", above)
+        const room = Math.max((above ? spaceAbove : spaceBelow) - LIST_GAP, LIST_FLOOR)
+        results.style.maxHeight = `${Math.min(room, LIST_MAX)}px`
+    }
+
+    // What of the page is on screen, top and bottom, in the field's coordinates:
+    // the visual viewport, which an on-screen keyboard shrinks (iPad Safari's
+    // window.innerHeight does not follow it), less what the nearest box
+    // around the field that clips its overflow cuts off, such as the page's
+    // scroller under the sticky navbar. Its top is pageTop less scrollY, not
+    // offsetTop: once iPad Safari scrolls the page for the keyboard (landscape),
+    // offsetTop counts from the top of the page, where the rects count from the
+    // top of the screen.
+    visibleBounds() {
+        const viewport = window.visualViewport
+        const top = viewport ? viewport.pageTop - window.scrollY : 0
+        const bottom = viewport ? top + viewport.height : window.innerHeight
+        for (let box = this.element.parentElement; box; box = box.parentElement) {
+            if (getComputedStyle(box).overflowY !== "visible") {
+                const clip = box.getBoundingClientRect()
+                return {top: Math.max(top, clip.top), bottom: Math.min(bottom, clip.bottom)}
+            }
         }
+        return {top, bottom}
     }
 
     close() {
