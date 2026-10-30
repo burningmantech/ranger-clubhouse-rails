@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_000015) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_000016) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -479,14 +479,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000015) do
     t.string "sfuid", limit: 64
     t.text "emergency_contact", size: :medium
     t.boolean "vintage", default: false, null: false
-    t.string "sms_off_playa"
-    t.string "sms_on_playa"
-    t.boolean "sms_off_playa_stopped", default: false, null: false
-    t.boolean "sms_on_playa_stopped", default: false, null: false
-    t.boolean "sms_off_playa_verified", default: false, null: false
-    t.boolean "sms_on_playa_verified", default: false, null: false
-    t.string "sms_off_playa_code", limit: 16
-    t.string "sms_on_playa_code", limit: 16
     t.string "callsign_normalized", limit: 128, null: false
     t.string "callsign_soundex", limit: 128, null: false
     t.boolean "behavioral_agreement", default: false, null: false
@@ -502,7 +494,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000015) do
     t.string "pronouns_custom", limit: 191, null: false
     t.datetime "pi_reviewed_for_dashboard_at", precision: nil
     t.string "lms_username", limit: 191
-    t.boolean "is_bouncing", default: false, null: false
     t.bigint "tshirt_swag_id", unsigned: true
     t.bigint "tshirt_secondary_swag_id", unsigned: true
     t.bigint "long_sleeve_swag_id", unsigned: true

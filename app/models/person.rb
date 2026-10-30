@@ -17,7 +17,7 @@ class Person < ApplicationRecord
   self.audit_exclude = %w[
     password logged_in_at last_seen_at
     callsign_normalized callsign_soundex
-    sms_code sms_on_playa_code sms_off_playa_code
+    sms_code
   ].freeze
 
   # memory cost is a power of 2
@@ -277,7 +277,6 @@ class Person < ApplicationRecord
   before_validation :store_phones_as_e164
 
   before_save :set_status_date_if_changed
-  before_save :clear_bouncing_on_email_change
   before_save :set_vanity_changed_at
   before_save :handle_past_prospective_status
   before_save :clear_callsign_pronunciation
@@ -783,12 +782,6 @@ class Person < ApplicationRecord
   def set_status_date_if_changed
     if status_changed?
       self.status_date = Current.time
-    end
-  end
-
-  def clear_bouncing_on_email_change
-    if email_changed?
-      self.is_bouncing = false
     end
   end
 

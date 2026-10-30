@@ -103,13 +103,6 @@ class Infrastructure::AwsSnsController < ApplicationController
       end
       person = Person.find_by(email: email)
 
-      # A permanent bounce means the address is gone, not busy. Stop sending to
-      # it until somebody fixes the address.
-      if person && bounce_type == "Permanent"
-        person.is_bouncing = true
-        person.save(validate: false)
-      end
-
       ActionLog.record(nil, "email-bouncing", "", {
         to_email: email,
         message_id: message_id,

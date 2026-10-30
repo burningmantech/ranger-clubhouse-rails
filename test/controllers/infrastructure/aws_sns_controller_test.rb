@@ -33,7 +33,7 @@ class Infrastructure::AwsSnsControllerTest < ActionDispatch::IntegrationTest
     Setting.create!(name: Setting::SES_SNS_TOPIC_ARN, value: TOPIC)
 
     @person = person(:active_ranger)
-    @person.update_columns(email: "ranger@example.com", is_bouncing: false)
+    @person.update_columns(email: "ranger@example.com")
 
     @mail_log = MailLog.create!(
       message_id: "message-1@example.com",
@@ -105,20 +105,20 @@ class Infrastructure::AwsSnsControllerTest < ActionDispatch::IntegrationTest
   # Bounce
   # =========================================================================
 
-  test "a permanent bounce marks the mail log, the person, and the action log" do
+  test "a permanent bounce marks the mail log, suppresses the address, and writes the action log" do
     post_event(bounce_event("Permanent"))
 
     assert_response :success
     assert @mail_log.reload.did_bounce
-    assert @person.reload.is_bouncing
+    assert EmailSuppression.suppressed?(@person.email)
     assert_equal 1, ActionLog.where(event: "email-bouncing", target_person_id: @person.id).count
   end
 
-  test "a transient bounce leaves the person sendable" do
+  test "a transient bounce leaves the address sendable" do
     post_event(bounce_event("Transient"))
 
     assert @mail_log.reload.did_bounce
-    assert_not @person.reload.is_bouncing
+    assert_not EmailSuppression.suppressed?(@person.email)
   end
 
   # Mail sent through the :ses_mail delivery method is logged once per To
@@ -461,14 +461,14 @@ class Infrastructure::AwsSnsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :forbidden
     assert_not @mail_log.reload.did_bounce
-    assert_not @person.reload.is_bouncing
+    assert_not EmailSuppression.suppressed?(@person.email)
   end
 
   test "a signed message from somebody else's topic is refused" do
     post_event(bounce_event("Permanent"), topic: "arn:aws:sns:us-west-2:999999999999:not-ours")
 
     assert_response :forbidden
-    assert_not @person.reload.is_bouncing
+    assert_not EmailSuppression.suppressed?(@person.email)
   end
 
   test "nothing is accepted until the topic is configured" do

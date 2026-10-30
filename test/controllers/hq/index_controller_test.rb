@@ -110,9 +110,7 @@ class Hq::IndexControllerTest < ActionDispatch::IntegrationTest
                   "[data-turbo-method='post']", text: "Clear Bounce Report"
   end
 
-  test "no email banner shows in the shell without a row, nor for is_bouncing alone" do
-    @subject.update_columns(is_bouncing: true)
-
+  test "no email banner shows in the shell without a row" do
     open_shell
 
     assert_select "#email-suppression-banner", count: 0

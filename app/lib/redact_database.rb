@@ -30,8 +30,6 @@ class RedactDatabase
     sfuid: "",
     sms_code: "",
     sms_number: "",
-    sms_off_playa: "",
-    sms_on_playa: "",
     state: "NT",
     street1: "123 Any St.",
     street2: "",

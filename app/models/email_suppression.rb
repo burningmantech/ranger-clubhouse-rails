@@ -43,7 +43,6 @@ class EmailSuppression < ApplicationRecord
   SQL
 
   # One bounce log the bouncing-flag copy counts.
-  LoggedBounce = Data.define(:id, :created_at, :sub_type, :message_id)
 
   normalizes :email, with: ->(e) { e.strip.downcase }
 
@@ -81,59 +80,6 @@ class EmailSuppression < ApplicationRecord
 
   def self.suppressed?(address) = suppressed([address]).any?
 
-  # A one-time copy of person.is_bouncing, run by the data migration
-  # CopyBouncingFlagsToEmailSuppression. Reading the column here is part of
-  # replacing it: when is_bouncing is removed, this method is deleted and that
-  # migration's up emptied.
-  #
-  # A flag says only that one Permanent bounce came back since the address last
-  # changed, and Clubhouse 2 never acted on it, so one may be years stale. Each
-  # flag is copied only when a Permanent email-bouncing log names the person's
-  # current address, dated from the first and last of those logs; Clubhouse 2
-  # wrote one with each flag and never pruned them. An address that already has
-  # a row is left as it is, so running this again adds nothing.
-  #
-  # @return [Array(Integer, Integer)] how many flagged people were copied, and skipped
-  def self.copy_bouncing_flags
-    flagged = Person.where(is_bouncing: true).pluck(:id, :email)
-    addresses = flagged.to_h { |id, email| [id, normalize_value_for(:email, email.to_s)] }.compact_blank
-    bounces = Hash.new { |hash, person_id| hash[person_id] = [] }
-
-    # The event index narrows action_logs to the bounce logs before any data is read.
-    ActionLog.select(:id, :target_person_id, :created_at, :data)
-             .where(event: "email-bouncing", target_person_id: addresses.keys)
-             .find_each(batch_size: 10_000) do |log|
-      bounce = logged_bounce(log, addresses[log.target_person_id])
-      bounces[log.target_person_id] << bounce if bounce
-    end
-
-    taken = where(email: bounces.keys.map { addresses[it] }).pluck(:email).to_set
-    rows = bounces.filter_map do |person_id, logs|
-      next if taken.include?(addresses[person_id])
-
-      first, last = logs.minmax_by { [it.created_at, it.id] }
-      { email: addresses[person_id], reason: BOUNCE, sub_type: last.sub_type, message_id: last.message_id,
-        first_reported_at: first.created_at, last_reported_at: last.created_at, report_count: logs.size }
-    end
-    insert_all(rows) if rows.any?
-
-    [rows.size, flagged.size - rows.size]
-  end
-
-  # A Permanent bounce of address from one email-bouncing log, or nil for any
-  # other log. ActionLog decodes data itself and raises on a row that does not
-  # parse, so this reads the raw column and skips such a row.
-  def self.logged_bounce(log, address)
-    data = JSON.parse(log.data_before_type_cast.to_s)
-    return unless data.is_a?(Hash) && data["bounce_type"] == "Permanent"
-    return unless normalize_value_for(:email, data["to_email"].to_s) == address
-
-    LoggedBounce.new(id: log.id, created_at: log.created_at, message_id: data["message_id"].presence,
-                     sub_type: data.dig("message", "bounce", "bounceSubType").presence)
-  rescue JSON::ParserError, TypeError
-    nil
-  end
-  private_class_method :logged_bounce
 
   # Deletes the row, and writes an action log naming who cleared it, for whom,
   # and what the row held.

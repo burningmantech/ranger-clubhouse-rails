@@ -158,9 +158,8 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes CGI.unescapeHTML(banner.to_html), @target.email
   end
 
-  test "no email banner shows without a row, nor for is_bouncing alone" do
+  test "no email banner shows without a row for the person's address" do
     suppress_email("someone-else@example.com")
-    @target.update_columns(is_bouncing: true)
     sign_in_as(@pii_viewer)
 
     get person_path(@target)
