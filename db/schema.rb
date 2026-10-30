@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_000014) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_000015) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -101,7 +101,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000014) do
   create_table "asset", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.string "type"
     t.string "barcode", limit: 25, null: false
-    t.string "description", limit: 25, comment: "placed by staff"
+    t.string "description", limit: 64, comment: "placed by staff"
     t.boolean "perm_assign", default: false, null: false, comment: "assigned \"permanently\" to a person?"
     t.datetime "created_at", precision: nil, default: -> { "current_timestamp()" }, null: false
     t.string "group_name", limit: 25
@@ -448,9 +448,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000014) do
   end
 
   create_table "person", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.string "first_name", limit: 25, null: false
+    t.string "first_name", limit: 50, null: false
     t.string "mi", limit: 10, default: "", null: false
-    t.string "last_name", limit: 25, null: false
+    t.string "last_name", limit: 50, null: false
     t.string "callsign", limit: 64, null: false
     t.string "street1", limit: 128, default: "", null: false
     t.string "street2", limit: 128, default: "", null: false
@@ -961,7 +961,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000014) do
   end
 
   create_table "position", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.string "title", limit: 40, null: false
+    t.string "title", limit: 64, null: false
     t.boolean "new_user_eligible", default: false, null: false
     t.boolean "all_rangers", default: false, null: false
     t.boolean "count_hours", default: true, null: false

@@ -32,7 +32,7 @@ class Asset < ApplicationRecord
 
   validates :barcode, presence: true, length: { maximum: 25 }, uniqueness: { scope: :year }
   validates :group_name, length: { maximum: 25 }, allow_nil: true
-  validates :description, length: { maximum: 25 }, allow_nil: true
+  validates :description, length: { maximum: 64 }, allow_nil: true
   validates :type, presence: true
   validates :year, presence: true, numericality: { only_integer: true }
 

@@ -309,7 +309,7 @@ class Position < ApplicationRecord
   has_many :slot, dependent: :destroy
 
   # Validations
-  validates :title, presence: true, length: { maximum: 40 }
+  validates :title, presence: true, length: { maximum: 64 }
   validates :short_title, length: { maximum: 6 }, allow_nil: true
   validates :min, numericality: { only_integer: true }, allow_nil: true
   validates :max, numericality: { only_integer: true }, allow_nil: true

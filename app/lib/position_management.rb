@@ -10,7 +10,7 @@
 module PositionManagement
   # The API's rule ('title' => 'required|string|max:40'), which matches the
   # column. Ember's form caps the input at the same 40.
-  TITLE_MAX = 40
+  TITLE_MAX = 64
   SHORT_TITLE_MAX = 6
   # Column limits. Upstream validates neither, so a shorter cap here would
   # reject rows the Laravel writers legitimately store.

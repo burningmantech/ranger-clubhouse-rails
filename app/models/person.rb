@@ -243,8 +243,8 @@ class Person < ApplicationRecord
   # before addresses were checked never blocks saving something else.
   validate :email_is_sendable, if: :email_changed_beyond_case?
 
-  validates :first_name, presence: true, length: { maximum: 25 }
-  validates :last_name, presence: true, length: { maximum: 25 }
+  validates :first_name, presence: true, length: { maximum: 50 }
+  validates :last_name, presence: true, length: { maximum: 50 }
   validates :mi, length: { maximum: 10 }
   validates :status, presence: true, inclusion: { in: ALL_STATUSES }
   validates :gender_identity, inclusion: { in: GENDER_TYPES }
