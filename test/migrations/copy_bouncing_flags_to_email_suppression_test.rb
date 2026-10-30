@@ -6,7 +6,9 @@ require Rails.root.join("db/migrate/20261010000002_copy_bouncing_flags_to_email_
 # The copy still has to run on a database that is behind, after person.is_bouncing
 # left the schema, so the test puts the column back for its own run. Adding a
 # column commits the test transaction, so this class runs without one and cleans
-# up by hand.
+# up by hand. That costs the suite two full fixture reloads (before this test and
+# before the next one in the worker): a price worth paying here alone, not a
+# pattern for an ordinary test.
 class CopyBouncingFlagsToEmailSuppressionTest < ActiveSupport::TestCase
   self.use_transactional_tests = false
 
@@ -17,7 +19,7 @@ class CopyBouncingFlagsToEmailSuppressionTest < ActiveSupport::TestCase
     ActiveRecord::Migration.suppress_messages do
       ActiveRecord::Base.connection.add_column :person, :is_bouncing, :boolean, default: false, null: false
     end
-    MIGRATION::MigrationPerson.reset_column_information
+    reset_person_columns
     @ranger = person(:active_ranger)
   end
 
@@ -65,7 +67,13 @@ class CopyBouncingFlagsToEmailSuppressionTest < ActiveSupport::TestCase
     return unless connection.column_exists?(:person, :is_bouncing)
 
     ActiveRecord::Migration.suppress_messages { connection.remove_column :person, :is_bouncing }
+    reset_person_columns
+  end
+
+  # Both classes read the person table and both cache its columns.
+  def reset_person_columns
     MIGRATION::MigrationPerson.reset_column_information
+    Person.reset_column_information
   end
 
   def flag(person)
