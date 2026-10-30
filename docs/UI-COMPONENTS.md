@@ -1857,7 +1857,7 @@ It respects `prefers-reduced-motion`. In use on Survey Management
 (`app/views/communication/surveys/show.html.erb`), and in the mailbox, where a search's hit opens
 its thread on the first message holding a match (`app/views/common/messages/_thread.html.erb`).
 
-**Measuring it:** `window.scrollY` stays `0` in this application — `body` is `h-screen` and the scroller
+**Measuring it:** `window.scrollY` stays `0` in this application — `body` is `h-dvh` and the scroller
 is an inner `div.drawer-content`. Read `document.querySelector(".drawer-content").scrollTop` instead.
 
 ---

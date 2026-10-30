@@ -52,7 +52,10 @@
   <link rel="modulepreload" href="<%= asset_path("controllers/application.js") %>">
 </head>
 <%= google_analytics %>
-<body class="h-screen flex flex-col" data-controller="active-links local-time" data-turbo-prefetch="false">
+<%# h-dvh, not 100vh: Safari counts 100vh as if its toolbars were hidden, so a
+    100vh body ran past the screen and the window could scroll the page under the
+    sticky navbar. dvh is the height actually showing. %>
+<body class="h-dvh flex flex-col" data-controller="active-links local-time" data-turbo-prefetch="false">
 <% if authenticated? %>
   <%= render "application/top_menu" %>
   <%# This person's live updates over Action Cable, such as a new message
