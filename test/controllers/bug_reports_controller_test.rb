@@ -46,9 +46,20 @@ class BugReportsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "turbo-frame#modal dialog#bug-report-dialog", text: /cadre that manages/ do
+      assert_select "a[href=?][data-turbo-frame=_top]", me_directory_path, text: "Cadre Directory"
       assert_select "a[href=?]", "mailto:#{EmailAddresses::TECH_CADRE}", text: EmailAddresses::TECH_CADRE
       assert_select "textarea", count: 0
     end
+  end
+
+  test "an unknown kind asks the question again" do
+    sign_in_as(@reporter)
+
+    get new_bug_report_path(kind: "other")
+
+    assert_response :success
+    assert_select "dialog#bug-report-dialog a[href=?]", new_bug_report_path(kind: "bug")
+    assert_select "dialog#bug-report-dialog a[href=?]", new_bug_report_path(kind: "feature")
   end
 
   test "a bug opens the form with the field focused" do
@@ -107,6 +118,7 @@ class BugReportsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert_select "turbo-frame#modal dialog#bug-report-dialog", text: /Please describe what went wrong\./
+    assert_select "dialog#bug-report-dialog textarea[name='bug_report[description]']"
   end
 
   test "a report longer than the limit is refused" do
@@ -118,5 +130,6 @@ class BugReportsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert_select "dialog#bug-report-dialog", text: /must be 5,000 characters or fewer/
+    assert_select "dialog#bug-report-dialog textarea[name='bug_report[description]']"
   end
 end

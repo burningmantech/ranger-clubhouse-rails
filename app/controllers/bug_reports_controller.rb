@@ -7,7 +7,8 @@ class BugReportsController < ApplicationController
   # bug or feature request; kind=bug is the form, and kind=feature says where
   # a feature request goes instead (the view).
   def new
-    @bug_report = BugReport.new if params[:kind] == "bug"
+    @kind = params[:kind]
+    @bug_report = BugReport.new if @kind == "bug"
   end
 
   def create

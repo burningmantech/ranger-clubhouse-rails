@@ -16,11 +16,12 @@
       <%= modal_form_footer f, submit: "Send Bug Report" %>
     <% end %>
   <% end %>
-<% elsif params[:kind] == "feature" %>
+<% elsif @kind == "feature" %>
   <%= modal_dialog id: "bug-report-dialog", title: "Feature Request" do %>
     <p class="mb-2">
-      <strong>Feature requests are not taken here.</strong> Contact the cadre that manages the
-      part of the Clubhouse you would like to see enhanced.
+      <strong>This dialog is for bugs only.</strong> To ask for a new feature, contact the cadre
+      that manages that part of the Clubhouse. The
+      <%= link_to "Cadre Directory", me_directory_path, data: { turbo_frame: "_top" } %> lists them.
     </p>
     <p>
       Not sure who that is? Email the Tech Cadre at
