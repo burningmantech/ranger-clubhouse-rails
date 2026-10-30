@@ -8,8 +8,8 @@
 # translation. Each method notes what should move onto the model when it
 # reopens.
 module PositionManagement
-  # The API's rule ('title' => 'required|string|max:40'), which matches the
-  # column. Ember's form caps the input at the same 40.
+  # The column's width (widened from Clubhouse 2's 40 on 2026-10-29); Position
+  # validates the same number.
   TITLE_MAX = 64
   SHORT_TITLE_MAX = 6
   # Column limits. Upstream validates neither, so a shorter cap here would
