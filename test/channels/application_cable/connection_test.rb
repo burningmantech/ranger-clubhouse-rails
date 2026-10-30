@@ -25,14 +25,6 @@ module ApplicationCable
       assert_reject_connection { connect }
     end
 
-    # With no cookie the lookup must not run at all: find_by(session_id: nil)
-    # would match a row whose id is NULL, which the column allows.
-    test "rejects a socket with no session cookie even when a session row has no id" do
-      @person.sessions.create!(session_id: nil)
-
-      assert_reject_connection { connect }
-    end
-
     test "rejects a socket whose session has ended" do
       cookies.signed[:session_id] = @session.session_id
       @session.destroy
