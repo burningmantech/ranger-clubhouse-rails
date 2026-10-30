@@ -6,7 +6,7 @@ class PersonAward < ApplicationRecord
   belongs_to :person
   # An award recognizes exactly one of a team, a position or a special award, so the other
   # two columns are null -- as is creator_person_id for automatically granted awards. The
-  # "at least one of the three" rule lives in #validate_award_requirements.
+  # "exactly one of the three" rule lives in #validate_award_requirements.
   belongs_to :award, optional: true
   belongs_to :team, optional: true
   belongs_to :position, optional: true
@@ -31,7 +31,7 @@ class PersonAward < ApplicationRecord
 
   validates :year, numericality: { greater_than_or_equal_to: FIRST_YEAR_PERMITTED }
 
-  MISSING_TYPE_ERROR = "either award_id, position_id, team_id must be specified"
+  MISSING_TYPE_ERROR = "An award names exactly one of an award, a position or a team."
 
   def self.find_for_query(query = {})
     sql = includes(:award, :team, :position, :person)
@@ -82,8 +82,8 @@ class PersonAward < ApplicationRecord
   private
 
   def validate_award_requirements
-    # Check if at least one type is present
-    if award_id.blank? && position_id.blank? && team_id.blank?
+    # Exactly one target; the person_award_one_target check says the same.
+    if [award_id, position_id, team_id].count(&:present?) != 1
       errors.add(:award_id, MISSING_TYPE_ERROR)
       errors.add(:position_id, MISSING_TYPE_ERROR)
       errors.add(:team_id, MISSING_TYPE_ERROR)

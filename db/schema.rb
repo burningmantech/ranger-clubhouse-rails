@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_000012) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_000013) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -38,7 +38,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000012) do
   end
 
   create_table "access_document_changes", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
-    t.string "table_name", limit: 32, null: false
     t.integer "record_id", null: false
     t.column "operation", "enum('create','modify','delete')", null: false
     t.text "changes"
@@ -587,6 +586,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000012) do
     t.index ["person_id", "year", "team_id"], name: "person_award_person_id_year_team_id_index"
     t.index ["position_id"], name: "fk_rails_38d43bc726"
     t.index ["team_id"], name: "fk_rails_27f3bc135e"
+    t.check_constraint "(`award_id` is not null) + (`position_id` is not null) + (`team_id` is not null) = 1", name: "person_award_one_target"
   end
 
   create_table "person_banner", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -740,6 +740,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000012) do
     t.index ["sender_person_id", "created_at"], name: "person_message_sender_person_id_created_at_index"
     t.index ["sender_person_id", "reply_to_id", "created_at"], name: "person_message_sender_person_id_reply_to_id_created_at_index"
     t.index ["subject", "body_text"], name: "index_person_message_on_subject_and_body_text", type: :fulltext
+    t.check_constraint "`sender_type` <> 'person' or `sender_person_id` is not null", name: "person_message_person_sender_named"
+    t.check_constraint "`sender_type` <> 'team' or `sender_team_id` is not null", name: "person_message_team_sender_named"
   end
 
   create_table "person_message_member", id: :integer, charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|

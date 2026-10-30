@@ -34,7 +34,6 @@ class AccessDocumentChange < ApplicationRecord
     return if changes.blank?
 
     create!(
-      table_name: "access_document",
       record_id: record.id,
       operation:,
       changes:,
