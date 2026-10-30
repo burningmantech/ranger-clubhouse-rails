@@ -3,9 +3,11 @@
 # The Bug Report dialog, from the account menu. Anyone signed in may file a report;
 # the Tech Team reads them at admin/bug-reports.
 class BugReportsController < ApplicationController
-  # A GET, so it opens into the layout's modal frame.
+  # A GET, so it opens into the layout's modal frame. Without a kind it asks
+  # bug or feature request; kind=bug is the form, and kind=feature says where
+  # a feature request goes instead (the view).
   def new
-    @bug_report = BugReport.new
+    @bug_report = BugReport.new if params[:kind] == "bug"
   end
 
   def create

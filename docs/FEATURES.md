@@ -581,7 +581,7 @@ Trap: failures show as callouts inside the dialog (`application/_dialog_status`,
 Trap: Turbo disables a submitting button, which drops its focus — `mega_menu_controller#rememberStar` (on `turbo:submit-start`) puts focus back on the re-rendered star, and `starSubmitted` (on `turbo:submit-end`) on a star whose toggle failed (not one the next star called off, which ends with neither an answer nor an error); don't remove it thinking Turbo's own restore-by-id covers it.
 
 ### Bug Report
-Reach it: `GET /bug-reports/new` → Account › Bug Report, in the navbar's "Hello <callsign>" menu or the mega menu's Account category ("Report a Bug" dialog in the layout's modal frame); send `POST /bug-reports`
+Reach it: `GET /bug-reports/new` → Account › Bug Report, in the navbar's "Hello <callsign>" menu or the mega menu's Account category (a dialog in the layout's modal frame asking bug or feature request; `?kind=bug` is the "Report a Bug" form, `?kind=feature` points at the managing cadre and `EmailAddresses::TECH_CADRE`); send `POST /bug-reports`
 Gate: any signed-in person
 Controller: `app/controllers/bug_reports_controller.rb` (`new`, `create`)
 Owner: `BugReport` (`app/models/bug_report.rb`)

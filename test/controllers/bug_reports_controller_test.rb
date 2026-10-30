@@ -26,10 +26,35 @@ class BugReportsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
-  test "the dialog opens inside the modal frame with the field focused" do
+  test "the dialog opens inside the modal frame asking bug or feature request" do
     sign_in_as(@reporter)
 
     get new_bug_report_path
+
+    assert_response :success
+    assert_select "turbo-frame#modal dialog#bug-report-dialog" do
+      assert_select "a[href=?][autofocus]", new_bug_report_path(kind: "bug"), text: "Report a Bug"
+      assert_select "a[href=?]", new_bug_report_path(kind: "feature"), text: "Request a Feature"
+      assert_select "textarea", count: 0
+    end
+  end
+
+  test "a feature request is pointed at the managing cadre and the Tech Cadre" do
+    sign_in_as(@reporter)
+
+    get new_bug_report_path(kind: "feature")
+
+    assert_response :success
+    assert_select "turbo-frame#modal dialog#bug-report-dialog", text: /cadre that manages/ do
+      assert_select "a[href=?]", "mailto:#{EmailAddresses::TECH_CADRE}", text: EmailAddresses::TECH_CADRE
+      assert_select "textarea", count: 0
+    end
+  end
+
+  test "a bug opens the form with the field focused" do
+    sign_in_as(@reporter)
+
+    get new_bug_report_path(kind: "bug")
 
     assert_response :success
     assert_select "turbo-frame#modal dialog#bug-report-dialog" do
