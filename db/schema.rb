@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_000016) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_000017) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -1162,7 +1162,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000016) do
   end
 
   create_table "sessions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
-    t.string "session_id"
+    t.string "session_id", null: false
     t.string "ip_address"
     t.string "user_agent"
     t.bigint "person_id"
@@ -1171,6 +1171,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000016) do
     t.datetime "updated_at", null: false
     t.index ["person_id"], name: "index_sessions_on_person_id"
     t.index ["session_id"], name: "index_sessions_on_session_id", unique: true
+    t.index ["updated_at"], name: "index_sessions_on_updated_at"
   end
 
   create_table "setting", id: { type: :integer, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
