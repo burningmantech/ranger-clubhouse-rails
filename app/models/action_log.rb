@@ -3,13 +3,6 @@
 class ActionLog < ApplicationRecord
   PAGE_SIZE_DEFAULT = 50
 
-  # Rows are kept this long, then removed by ExpireActionLogsJob; the schedule
-  # events stay for good, as the Schedule Log is a person's sign-up history
-  # (RedactDatabase keeps the same two when it empties the table).
-  EXPIRE_YEARS_DEFAULT = 7
-  EXPIRE_BATCH_SIZE = 10_000
-  EXPIRE_KEEP_EVENTS = %w[person-slot-add person-slot-remove].freeze
-
   belongs_to :person, optional: true
   belongs_to :target_person, class_name: "Person", optional: true
 
@@ -21,16 +14,6 @@ class ActionLog < ApplicationRecord
 
   class << self
     include Pagy::Method
-
-    # Remove rows older than the retention window, the schedule events excepted.
-    #
-    # @return [Integer] how many rows were removed
-    def expire(years = EXPIRE_YEARS_DEFAULT)
-      where("created_at <= ?", years.years.ago)
-        .where.not(event: EXPIRE_KEEP_EVENTS)
-        .in_batches(of: EXPIRE_BATCH_SIZE)
-        .sum(&:delete_all)
-    end
 
     # Retrieve action log records based on the given query criteria: a page
     # of them, paged by Pagy's countless mode (a row past the page says whether
