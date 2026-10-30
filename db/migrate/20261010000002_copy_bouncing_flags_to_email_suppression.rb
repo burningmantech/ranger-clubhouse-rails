@@ -57,8 +57,7 @@ class CopyBouncingFlagsToEmailSuppression < ActiveRecord::Migration[8.1]
 
       first, last = logs.minmax_by { [it.created_at, it.id] }
       { email: addresses[person_id], reason: "bounce", sub_type: last.sub_type, message_id: last.message_id,
-        first_reported_at: first.created_at, last_reported_at: last.created_at, report_count: logs.size,
-        created_at: Time.current, updated_at: Time.current }
+        first_reported_at: first.created_at, last_reported_at: last.created_at, report_count: logs.size }
     end
     MigrationEmailSuppression.insert_all(rows) if rows.any?
 

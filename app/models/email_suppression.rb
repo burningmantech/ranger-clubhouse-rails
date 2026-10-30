@@ -42,8 +42,6 @@ class EmailSuppression < ApplicationRecord
     message_id = VALUES(message_id)
   SQL
 
-  # One bounce log the bouncing-flag copy counts.
-
   normalizes :email, with: ->(e) { e.strip.downcase }
 
   validates :email, presence: true
