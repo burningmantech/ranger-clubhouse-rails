@@ -35,4 +35,7 @@ class PersonPod < ApplicationRecord
   scope :ordered, -> { joins(:person).order(:sort_index).order("person.callsign") }
 
   before_create -> { self.joined_at ||= Current.time }
+  # pod.person_count counts the current rows; a row destroyed outside Pod's own
+  # paths (Person's deletion) refreshes it, disbanding an emptied pod.
+  after_destroy -> { pod.refresh_person_count! }
 end

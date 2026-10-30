@@ -30,6 +30,9 @@ class PersonSlot < ApplicationRecord
   # Callbacks
   after_create :update_signup_years
   after_destroy :update_signup_years
+  # slot.signed_up is a counter the scheduling store keeps on its own path; a
+  # row destroyed any other way (Person's deletion) recounts it here.
+  after_destroy :recount_slot
 
   class << self
     # Is a person signed up for a given slot?
@@ -120,5 +123,9 @@ class PersonSlot < ApplicationRecord
   # Update the person's signup years after create/destroy
   def update_signup_years
     YearsManagement.update_signup_years(person_id)
+  end
+
+  def recount_slot
+    Slot.where(id: slot_id).update_all("signed_up = (SELECT COUNT(*) FROM person_slot WHERE person_slot.slot_id = slot.id)")
   end
 end

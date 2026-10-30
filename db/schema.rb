@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_000010) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_000011) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -537,6 +537,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000010) do
     t.check_constraint "json_valid(`years_as_contributor`)", name: "years_as_contributor"
     t.check_constraint "json_valid(`years_as_ranger`)", name: "years_as_ranger"
     t.check_constraint "json_valid(`years_combined`)", name: "years_combined"
+    t.check_constraint "json_valid(`years_of_awards`)", name: "years_of_awards"
+    t.check_constraint "json_valid(`years_of_service`)", name: "years_of_service"
+    t.check_constraint "json_valid(`years_of_signups`)", name: "years_of_signups"
     t.check_constraint "json_valid(`years_seen`)", name: "years_seen"
   end
 

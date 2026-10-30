@@ -200,7 +200,7 @@ class Person < ApplicationRecord
   has_many :person_message_member, dependent: :delete_all
   has_many :person_position, dependent: :delete_all
   has_many :person_role, dependent: :delete_all
-  has_many :person_slot, dependent: :delete_all
+  has_many :person_slot, dependent: :destroy  # each recounts its slot
   has_many :person_team, dependent: :delete_all
   has_many :position, through: :person_position
   has_many :role, through: :person_role
@@ -227,7 +227,7 @@ class Person < ApplicationRecord
   has_many :person_alerts, dependent: :delete_all
   has_many :person_assets, dependent: :delete_all
   has_many :person_pogs, dependent: :delete_all
-  has_many :person_pods, dependent: :delete_all
+  has_many :person_pods, dependent: :destroy  # each refreshes its pod's count
   has_many :person_on_sites, dependent: :delete_all
   has_many :oauth_codes, dependent: :delete_all
   has_many :provisions, dependent: :delete_all

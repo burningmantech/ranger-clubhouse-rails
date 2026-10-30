@@ -3,6 +3,9 @@
 require "test_helper"
 
 class PersonTest < ActiveSupport::TestCase
+  include PersonTestFactory
+  include TrainingSlotTestHelper
+
   # Renaming records the outgoing callsign as an FKA. Whether it stays
   # searchable is usually decided by its shape (PersonFka::IRRELEVANT_REGEXP),
   # but three status transitions override that -- see Person#fka_irrelevant_override.
@@ -137,6 +140,27 @@ class PersonTest < ActiveSupport::TestCase
     subject.update_column(:password, "")
     assert_not subject.authenticate(""), "a retired password matches nothing, not even blank"
     assert_not subject.authenticate("password")
+  end
+
+  # Deleting an account is the one path that removes sign-ups and pod seats
+  # outside the scheduling store and Pod's own methods, so the rows recount
+  # their counters themselves.
+  test "deleting an account recounts the shifts and pods it was on" do
+    leaver = create_person("Leaver")
+    slot = create_slot(positions(:ood_position), begins: Time.zone.local(2026, 8, 30, 12))
+    sign_up(leaver, slot)
+    sign_up(person(:active_ranger), slot)
+    slot.update!(signed_up: 2)
+    pod = Pod.create_alpha_set!(slot).sub_pods.find(&:alpha?)
+    PersonPod.create!(pod:, person: leaver, sort_index: 1)
+    pod.refresh_person_count!
+    assert_equal 1, pod.reload.person_count
+
+    leaver.destroy!
+
+    assert_equal 1, slot.reload.signed_up
+    assert_equal 0, pod.reload.person_count
+    assert_not_nil pod.disbanded_at, "an emptied pod disbands"
   end
 
   def new_person
