@@ -17,17 +17,18 @@ class ExpireAnonymousSessionsJobTest < ActiveSupport::TestCase
   end
 
   test "expire_anonymous reports how many rows went" do
-    anonymous_row(40.days.ago)
-    anonymous_row(50.days.ago)
+    anonymous_row((Session::ANONYMOUS_IDLE_DAYS + 10).days.ago)
+    anonymous_row((Session::ANONYMOUS_IDLE_DAYS + 20).days.ago)
 
     assert_equal 2, Session.expire_anonymous
   end
 
   private
 
-  # A row as the Rack session store writes one: no person, data, touched at +at+.
+  # A row as the Rack session store writes one: no person, data, last saved at +at+.
   def anonymous_row(at)
-    Session.insert({ session_id: SecureRandom.hex(16), data: "", created_at: at, updated_at: at }, record_timestamps: false)
-    Session.where(person_id: nil).order(:id).last
+    sid = SecureRandom.hex(16)
+    Session.insert({ session_id: sid, data: "", created_at: at, updated_at: at }, record_timestamps: false)
+    Session.find_by!(session_id: sid)
   end
 end

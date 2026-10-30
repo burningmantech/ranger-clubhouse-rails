@@ -1,11 +1,14 @@
 class Session < ApplicationRecord
   # The table is shared with the Rack session store (config.session_store
   # :active_record_store), whose rows carry no person and hold only the flash,
-  # the CSRF token and the odd return-to address; the store touches a row on
-  # every request. One idle this long is a visitor who left, and goes. A
-  # sign-in row is never touched after it is written, so it is never swept:
-  # the cookie is permanent by design and Person › Login Sessions ends one.
-  ANONYMOUS_IDLE_DAYS = 30
+  # the CSRF token and the odd return-to address. The store saves a row only
+  # when its data changed, so updated_at is the last change, not the last
+  # visit: a row unchanged this long goes, and a reader who somehow never
+  # changed theirs in that time gets a fresh session and a new CSRF token (one
+  # form left open fails once). A sign-in row is never touched after it is
+  # written, so it is never swept: the cookie is permanent by design and
+  # Person › Login Sessions ends one.
+  ANONYMOUS_IDLE_DAYS = 90
   EXPIRE_BATCH_SIZE = 5_000
 
   belongs_to :person
@@ -18,7 +21,7 @@ class Session < ApplicationRecord
   # session still stands does at once and a browser without one is refused.
   after_destroy_commit -> { ActionCable.server.remote_connections.where(current_user: person).disconnect }
 
-  # Remove the Rack session store's rows nobody has used in a month.
+  # Remove the Rack session store's rows whose data has not changed in ANONYMOUS_IDLE_DAYS.
   #
   # @return [Integer] how many rows were removed
   def self.expire_anonymous(days = ANONYMOUS_IDLE_DAYS)

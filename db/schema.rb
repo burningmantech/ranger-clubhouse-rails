@@ -1169,9 +1169,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000017) do
     t.text "data", size: :medium
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["person_id"], name: "index_sessions_on_person_id"
+    t.index ["person_id", "updated_at"], name: "index_sessions_on_person_id_and_updated_at"
     t.index ["session_id"], name: "index_sessions_on_session_id", unique: true
-    t.index ["updated_at"], name: "index_sessions_on_updated_at"
   end
 
   create_table "setting", id: { type: :integer, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
