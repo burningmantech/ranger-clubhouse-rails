@@ -62,8 +62,9 @@
            data-autocomplete-target="hidden" />
   <% end %>
 
-  <%# Loading indicator %>
-  <div data-autocomplete-target="loading" hidden class="ac-loading">
+  <%# Loading indicator. Pinned left as the list is where it hangs from the caller's box (positioned: false):
+      absolute with no left, it kept its place after the chips while it took the whole box's width. %>
+  <div data-autocomplete-target="loading" hidden class="<%= class_names("ac-loading", "left-0": !positioned) %>">
     <%= fa_icon "spinner", :solid, class: "animate-spin me-1" %>
     Searching…
   </div>

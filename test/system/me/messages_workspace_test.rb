@@ -301,6 +301,30 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     page.driver.browser.execute_cdp("Network.disable")
   end
 
+  # The text too, which taking a person turns into the chip: the field goes
+  # back to the search the list answers to (message_search_controller).
+  test "a person taken for a search that fails leaves the field as the list answers to it" do
+    sign_in(person(:inactive_ranger))
+    visit me_messages_path(q: "ran")
+    assert_selector "[role=status]", text: "match “ran”"
+    wait_for_controller "message-search", "form#messages-search"
+    fill_in "Search messages", with: "ran"
+    assert_selector "[role=option]", text: "RANGER1"
+
+    page.driver.browser.execute_cdp("Network.enable")
+    page.driver.browser.execute_cdp("Network.setBlockedURLs", urls: ["*/me/messages?*"])
+    page.execute_script(<<~JS)
+      document.addEventListener("turbo:submit-end", ({detail}) => { document.documentElement.dataset.searched = detail.success }, {once: true})
+    JS
+    find("[role=option]", text: "RANGER1").click
+    assert_selector "html[data-searched=false]", visible: :all
+    assert_field "Search messages", with: "ran"
+    assert_no_selector CHIP
+    assert_selector "[role=status]", text: "match “ran”"
+  ensure
+    page.driver.browser.execute_cdp("Network.disable")
+  end
+
   # Shared with compose (callsign_chips_controller#addChip): nothing goes until
   # the max is reached, then the oldest. Compose takes one chip and the search
   # three, so the max is set higher here, where the sum once went wrong.
@@ -323,10 +347,15 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     assert_equal %w[Two Three Four Five], all(CHIP).map(&:text)
   end
 
-  # Review finding: Back restored the chips a search had just set, over the list from before it.
-  test "Back from a search shows the mailbox as it was, without the search's chips" do
+  # Review finding: Back restored the chips a search had just set, over the
+  # list from before it. Turbo keeps the page as the search's answer arrives,
+  # with the field showing that search; restored, the field goes back to its
+  # own address, so Back is the kept page, not a fetch.
+  test "Back from a search shows the mailbox as it was, without the search's chips or text" do
     sign_in(person(:inactive_ranger))
-    visit me_messages_path
+    visit me_messages_path(q: "dirt")
+    assert_selector "[role=status]", text: "match “dirt”"
+    page.execute_script("document.body.dataset.kept = 'yes'")
 
     fill_in "Search messages", with: "ran"
     page.execute_script(<<~JS)
@@ -339,9 +368,10 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     assert_selector "html[data-search-visited]", visible: :all
 
     go_back
-    assert_selector "[role=tablist]"
+    assert_selector "[role=status]", text: "match “dirt”"
+    assert_selector "body[data-kept=yes]" # the kept page, once it shows
+    assert_field "Search messages", with: "dirt"
     assert_no_selector CHIP
-    assert_no_selector "[role=status]", text: "RANGER1"
   end
 
   # The iPad check: Clear Search goes to the bare mailbox path, the page it is on,
@@ -382,6 +412,66 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     assert_operator list["top"], :>=, scroller["top"], "The list ran under the navbar"
   ensure
     page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
+  end
+
+  # Review finding: the room above was measured from the text, but the list
+  # hangs from the box around the chips, so a chip that wrapped the text to a
+  # second line put the list's first rows under the navbar. Where there is less
+  # room than its floor, the list takes what there is.
+  test "suggestions above a field whose chips wrap its text stay under the navbar" do
+    sign_in(person(:inactive_ranger))
+    page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride", width: 1024, height: 420,
+                                                                           deviceScaleFactor: 1, mobile: false)
+    visit me_messages_path(with: ["RetiredRanger"])
+    assert_selector CHIP, text: "RetiredRanger"
+    # The text on a line of its own, 180px down the window, a keyboard over all from 40px under it.
+    page.execute_script(<<~JS)
+      const field = document.querySelector("form#messages-search input[name=q]")
+      document.querySelector(".drawer-content").scrollTop += field.getBoundingClientRect().top - 180
+      const bottom = field.getBoundingClientRect().bottom + 40
+      Object.defineProperty(window, "visualViewport", {configurable: true, value: {offsetTop: 0, pageTop: 0, height: bottom}})
+    JS
+    assert_operator page.evaluate_script(<<~JS), :>, 30, "The chip never wrapped the text"
+      document.querySelector("form#messages-search input[name=q]").getBoundingClientRect().top -
+        document.querySelector("form#messages-search [data-message-search-target=list]").parentElement.getBoundingClientRect().top
+    JS
+
+    fill_in "Search messages", with: "ran"
+    assert_selector "[role=option]", text: "RANGER1"
+    list, box, scroller = page.evaluate_script(<<~JS)
+      [document.querySelector("form#messages-search [role=listbox]").getBoundingClientRect().toJSON(),
+       document.querySelector("form#messages-search [data-message-search-target=list]").parentElement.getBoundingClientRect().toJSON(),
+       document.querySelector(".drawer-content").getBoundingClientRect().toJSON()]
+    JS
+    assert_operator list["bottom"], :<=, box["top"], "The list went below the box"
+    assert_operator list["top"], :>=, scroller["top"], "The list ran under the navbar"
+  ensure
+    page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
+  end
+
+  # Review finding: the "Searching…" row kept its place after the chips but took
+  # the whole box's width, so it ran past the box, and on a phone made the page
+  # scroll sideways while a search was out.
+  test "the searching row keeps within the search box" do
+    sign_in(person(:inactive_ranger))
+    on_a_phone do
+      visit me_messages_path(with: ["RetiredRanger"])
+      assert_selector CHIP, text: "RetiredRanger"
+      wait_for_controller "autocomplete", "#messages-search-autocomplete"
+      row, box, scroller = page.evaluate_script(<<~JS)
+        (() => {
+          const component = document.getElementById("messages-search-autocomplete")
+          window.Stimulus.getControllerForElementAndIdentifier(component, "autocomplete").showLoading()
+          const box = document.querySelector("form#messages-search [data-message-search-target=list]").parentElement
+          const scroller = document.querySelector(".drawer-content")
+          return [component.querySelector("[data-autocomplete-target=loading]").getBoundingClientRect().toJSON(),
+                  box.getBoundingClientRect().toJSON(), {scrollWidth: scroller.scrollWidth, clientWidth: scroller.clientWidth}]
+        })()
+      JS
+      assert_in_delta box["left"], row["left"], 1.5, "The row did not start at the box"
+      assert_operator row["right"], :<=, box["right"] + 1, "The row ran past the box"
+      assert_equal scroller["clientWidth"], scroller["scrollWidth"], "The page scrolls sideways"
+    end
   end
 
   # Review finding: a press on the box beside the text focused nothing, and closed an open list.
@@ -506,8 +596,8 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
       document.querySelector("aside.review-pane").scrollTop = 0
       #{REVEAL_AGAIN}
     JS
-    # scroll-mt-14's 56px and the pane's 1px border, drawn 15% larger.
-    assert_eventually("the zoomed pane missed the match") { landed_below?(LANDING, "aside.review-pane", at: 64.55) }
+    # scroll-mt-18's 72px and the pane's 1px border, drawn 15% larger.
+    assert_eventually("the zoomed pane missed the match") { landed_below?(LANDING, "aside.review-pane", at: 82.95) }
   end
 
   # The pane keeps its scroll through a frame's swap, so the next thread opened
@@ -565,11 +655,9 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
       assert_selector STEPPER, text: count
       assert_selector LANDING, text: body
       assert_selector "#messages-thread article[data-landing]", count: 1
-      if at_top
-        assert_eventually("the pane never brought #{body} below the stepper") { landed_below?(LANDING, "aside.review-pane") }
-      else
-        assert_eventually("#{body} never came into the pane's view") { in_view_under_stepper?(LANDING, "aside.review-pane") }
-      end
+      # At once, and clear of the stepper.
+      assert in_view_under_stepper?(LANDING, "aside.review-pane"), "#{body} never came into the pane's view, clear of the stepper"
+      assert landed_below?(LANDING, "aside.review-pane"), "the pane never brought #{body} to its top" if at_top
       assert_equal 24, pinned_below(STEPPER, "aside.review-pane").round, "the stepper left the top of the pane"
     end
     assert_equal 0, drawer_scroll_top
@@ -577,11 +665,81 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     on_a_phone do
       visit me_message_path(@thread, q: "thermos")
       assert_selector STEPPER, text: "Match 1 of 3"
+      assert_eventually("the page never brought the match to its top") { landed_below?(LANDING, ".drawer-content") }
       step_match("next")
       assert_selector LANDING, text: "(10)"
-      assert_eventually("the page never brought the match below the stepper") { landed_below?(LANDING, ".drawer-content") }
+      # At once: a second step taken while a smooth scroll still ran would find
+      # its card passing through the screen and leave it where that scroll ended.
+      assert landed_below?(LANDING, ".drawer-content"), "the page never brought the match to its top at once"
+      assert in_view_under_stepper?(LANDING, ".drawer-content"), "the match sits under the stepper"
       assert_operator pinned_below(STEPPER, ".drawer-content"), :<, 56, "the stepper scrolled away with the page"
     end
+  end
+
+  # A match the reader scrolled under the stepper, or into the room its card
+  # keeps for it (scroll-mt-18), is on screen but not in view: a step to it
+  # scrolls it clear.
+  test "a step to a match under the stepper scrolls it clear" do
+    long_thread(word_at: [3, 10, 17])
+    sign_in(@owner)
+    visit me_message_path(@thread, q: "thermos")
+    assert_selector STEPPER, text: "Match 1 of 3"
+    wait_for_controller "scroll-to-element", "#messages-thread [data-controller=scroll-to-element]"
+
+    page.execute_script(<<~JS)
+      const pane = document.querySelector("aside.review-pane")
+      const card = [...document.querySelectorAll("#messages-thread article")].find((card) => card.textContent.includes("(10)"))
+      pane.scrollTop += card.getBoundingClientRect().top - pane.getBoundingClientRect().top - pane.clientTop - 30
+    JS
+    step_match("next")
+    assert_selector LANDING, text: "(10)"
+    assert landed_below?(LANDING, "aside.review-pane"), "the step left the match under the stepper"
+  end
+
+  # A match taller than the pane is never wholly on screen. Its first arrival
+  # may bring the pane's foot on screen, as any match's may; after that, steps
+  # to it scroll the pane alone, never the page under it, which carried the
+  # list a little further from the open row at each arrival.
+  test "a step to a match taller than the pane leaves the page where it is" do
+    long_thread(word_at: [3, 17])
+    send_message(@sender, @owner, @thread.subject, body: ["Bring the thermos. (20)", *["More."] * 80].join("\n"), reply_to: @thread)
+    sign_in(@owner)
+    visit me_message_path(@thread, q: "thermos")
+    assert_selector STEPPER, text: "Match 1 of 3"
+
+    step_match("previous")
+    assert_selector LANDING, text: "(20)"
+    assert landed_below?(LANDING, "aside.review-pane"), "the pane never brought the tall match to its top"
+    settled = drawer_scroll_top
+    %w[(3) (17) (20)].each do |body|
+      step_match("next")
+      assert_selector LANDING, text: body
+      assert landed_below?(LANDING, "aside.review-pane"), "the pane never brought #{body} to its top" if body == "(20)"
+      assert_equal settled, drawer_scroll_top, "the step to #{body} moved the page"
+    end
+  end
+
+  # A morphing refresh -- a form redirecting back to the page, as the HQ
+  # banner's do -- draws the stepper at the match the thread opened on, while
+  # review_pane_controller keeps the ring where the reader stepped it: the
+  # count and the landing go with the ring.
+  test "a morphing refresh leaves the stepper at the match the reader stepped to" do
+    long_thread(word_at: [3, 10, 17])
+    sign_in(@owner)
+    visit me_message_path(@thread, q: "thermos")
+    assert_selector STEPPER, text: "Match 1 of 3"
+    step_match("next")
+    assert_selector LANDING, text: "(10)"
+
+    page.execute_script(<<~JS)
+      document.addEventListener("turbo:morph", () => { document.documentElement.dataset.morphed = "yes" }, {once: true})
+      Turbo.visit(location.href, {action: "replace"})
+    JS
+    assert_selector "html[data-morphed=yes]"
+    assert_selector STEPPER, text: "Match 2 of 3"
+    assert_selector "#messages-thread article[data-landing]", count: 1
+    assert_selector LANDING, text: "(10)"
+    assert landed_below?(LANDING, "aside.review-pane"), "the refresh took the pane to another match"
   end
 
   # The cards' read-state morphs draw no search (MessagesConcern#card_streams):
@@ -616,14 +774,16 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     find("#{STEPPER} button[aria-label='#{direction.capitalize} match']").click
   end
 
-  # The card is wholly in +scroller+'s view and on screen, below the stepper.
+  # The card is wholly in +scroller+'s view and on screen, clear of the
+  # stepper: the gap its scroll margin leaves, 12px or more, less a pixel for
+  # the scroll's rounding.
   def in_view_under_stepper?(card, scroller)
     page.evaluate_script(<<~JS)
       (() => {
         const card = document.querySelector(#{card.to_json}).getBoundingClientRect()
         const view = document.querySelector(#{scroller.to_json}).getBoundingClientRect()
         const stepper = document.querySelector(#{STEPPER.to_json}).getBoundingClientRect()
-        return card.top >= stepper.bottom && card.bottom <= Math.min(view.bottom, window.innerHeight)
+        return card.top - stepper.bottom >= 11 && card.bottom <= Math.min(view.bottom, window.innerHeight)
       })()
     JS
   end
@@ -640,10 +800,10 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     JS
   end
 
-  # The card sits +at+ pixels -- scroll-mt-14's 56, clear of the stepper
+  # The card sits +at+ pixels -- scroll-mt-18's 72, clear of the stepper
   # pinned over the cards -- below the top of the scroller's view; false while
   # it is not on the page yet.
-  def landed_below?(card, scroller, at: 56)
+  def landed_below?(card, scroller, at: 72)
     page.evaluate_script(<<~JS)&.between?(at - 1.2, at + 1.2)
       (() => {
         const card = document.querySelector(#{card.to_json})

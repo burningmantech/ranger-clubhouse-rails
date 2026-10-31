@@ -4,8 +4,11 @@ import {reveal} from "controllers/scrolling"
 // Connects to data-controller="scroll-to-element"
 //
 // Brings one element into view when the page renders, named by its id in
-// data-scroll-to-element-id-value, unless it is already wholly on screen,
-// where a scroll would only hide what sits above it.
+// data-scroll-to-element-id-value or by a selector in
+// data-scroll-to-element-selector-value, unless it is in view already, where
+// a scroll would only hide what sits above it. A selector follows an element
+// that is not fixed at render: the mailbox's ringed card, which the stepper
+// moves (common/messages/_thread).
 //
 // A page reached after a form submission cannot use "#id" for this: Turbo
 // takes the page to visit from the fetch response's URL, and a URL's fragment
@@ -23,7 +26,7 @@ import {reveal} from "controllers/scrolling"
 // (components/review-pane.css). How that one moves, and the page around it,
 // is controllers/scrolling's reveal.
 export default class extends Controller {
-    static values = {id: String, container: String}
+    static values = {id: String, selector: String, container: String}
 
     connect() {
         this.reveal = this.reveal.bind(this)
@@ -36,7 +39,7 @@ export default class extends Controller {
     }
 
     reveal() {
-        const target = document.getElementById(this.idValue)
+        const target = this.hasIdValue ? document.getElementById(this.idValue) : document.querySelector(this.selectorValue)
         if (target) {
             reveal(target, this.containerValue)
         }

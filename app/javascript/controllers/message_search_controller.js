@@ -12,11 +12,18 @@ import CallsignChips from "controllers/callsign_chips_controller"
 // suggestions leave out whoever is a chip already, so the address they are
 // fetched from names the chips, as the search's own does.
 //
-// The chips sit outside the list's frame and change before the search they run
-// is sent: one that fails (an error, the connection down) puts back the chips
-// the list on screen still answers to.
+// The field sits outside the list's frame and changes before the search it
+// runs is sent, so until that search settles it shows one the list does not
+// (searching). One that fails -- the connection down; an error's answer
+// replaces the page (application.js) -- sets the field back to the address,
+// which the list on screen still answers to. So does a page Turbo kept for
+// Back, taken as a search's answer arrived, with the field already showing it.
 export default class extends CallsignChips {
-    connect() {}
+    static values = {searching: Boolean}
+
+    connect() {
+        if (this.searchingValue) this.showAddress()
+    }
 
     disconnect() {}
 
@@ -29,37 +36,35 @@ export default class extends CallsignChips {
     }
 
     take({detail: {value, meta}}) {
-        this.keepChips()
         if (meta?.kind === "person") this.addChip(value)
         this.element.requestSubmit()
     }
 
     remove(event) {
-        this.keepChips()
         super.remove(event)
         this.element.requestSubmit()
     }
 
+    // turbo:submit-start
+    searching() {
+        this.searchingValue = true
+    }
+
     // turbo:submit-end. A search stopped for the next one (no success either
-    // way) leaves the chips kept for that one.
+    // way) leaves the field to that one.
     settle({detail: {success}}) {
         if (success === undefined) return
-        if (success === false && this.kept !== undefined) this.listTarget.innerHTML = this.kept
-        this.kept = undefined
+        if (success === false) this.showAddress()
+        this.searchingValue = false
     }
 
-    keepChips() {
-        this.kept ??= this.listTarget.innerHTML
-    }
-
-    // A press on the box around the text, not on a chip's button or the
-    // suggestions, puts the caret in the text, as one on the plain field the box
-    // stands in for did. The focus never leaves it, so an open list stays.
-    focus(event) {
-        if (event.target.closest("button, input, [role=listbox]")) return
-
-        event.preventDefault()
-        this.inputTarget.focus()
+    // The field as the address has it: its text, and its people as chips.
+    showAddress() {
+        const params = new URLSearchParams(window.location.search)
+        this.chipTargets.forEach((chip) => chip.remove())
+        params.getAll("with[]").forEach((callsign) => this.addChip(callsign))
+        this.inputTarget.value = params.get("q") ?? ""
+        this.searchingValue = false
     }
 
     // The autocomplete reads its address at each search.

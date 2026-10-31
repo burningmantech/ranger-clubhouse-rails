@@ -9,9 +9,11 @@
     card that stands for a search's hit, is ringed and brought into view by the
     marker, which names the pane as the scroller to move from lg. Both are
     drawn here alone: review_pane_controller keeps them through the cards'
-    read-state morphs, whose renders know no search. %>
+    read-state morphs, whose renders know no search. The marker finds the card
+    by its ring, which the stepper moves, so a morphing refresh of the page
+    brings back the one the reader stepped to. %>
 <% if landing %>
-  <div data-controller="scroll-to-element" data-scroll-to-element-id-value="<%= dom_id(landing, :card) %>"
+  <div data-controller="scroll-to-element" data-scroll-to-element-selector-value="#messages-thread article[data-landing]"
        data-scroll-to-element-container-value=".review-pane" hidden></div>
 <% end %>
 <% if message.has_expired? %>

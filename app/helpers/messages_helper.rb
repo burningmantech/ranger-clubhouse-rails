@@ -90,7 +90,7 @@ module MessagesHelper
   def message_search_marks(text, query)
     return text if query.blank?
 
-    mark_search_hits(text, message_search_pattern(query))
+    mark_search_hits(text, message_search_pattern(query, text.to_s))
   end
 
   # A list row's last line: the latest message in the thread; on a search's
@@ -101,9 +101,11 @@ module MessagesHelper
   def message_list_snippet(message, query)
     rows = message.thread_rows
     if query.present?
-      pattern = message_search_pattern(query)
-      match = message_search_pick(rows.select { |row| row.body_text.match?(pattern) }, query)
-      return mark_search_hits(excerpt(match.body_text, pattern, radius: 5, separator: " ", omission: "…"), pattern) if match
+      match = message_search_pick(rows.select { |row| row.body_text.match?(message_search_pattern(query, row.body_text)) }, query)
+      if match
+        snippet = excerpt(match.body_text, message_search_pattern(query, match.body_text), radius: 5, separator: " ", omission: "…")
+        return message_search_marks(snippet, query)
+      end
     end
     truncate(rows.last.body_text, length: 70)
   end
@@ -133,7 +135,7 @@ module MessagesHelper
       return html
     end
     runs, text = message_text_runs(fragment)
-    hits = text.to_enum(:scan, message_search_pattern(query)).map { Regexp.last_match.offset(0) }
+    hits = text.to_enum(:scan, message_search_pattern(query, text)).map { Regexp.last_match.offset(0) }
     return html if hits.empty?
 
     runs.each { |node, start| mark_text_run(node, start, hits) }
@@ -209,15 +211,31 @@ module MessagesHelper
 
   private
 
-  # Built once per render: every row of a search marks the same query.
-  def message_search_pattern(query)
-    (@message_search_patterns ||= {})[query] ||= /(#{PersonMessage.search_pattern(query)})/
+  # What the search for +query+ marks in +text+, built once per render and
+  # kind of text: every row of a search marks the same query. Text all in
+  # ASCII takes the plain pattern (PersonMessage.search_pattern).
+  def message_search_pattern(query, text)
+    ascii = text.ascii_only?
+    (@message_search_patterns ||= {})[[query, ascii]] ||= PersonMessage.search_pattern(query, ascii:)
   end
 
-  # The pattern holds one group, so split hands back each match at an odd index.
+  def message_search_word_patterns(query, text)
+    ascii = text.ascii_only?
+    (@message_search_word_patterns ||= {})[[query, ascii]] ||= PersonMessage.search_word_patterns(query, ascii:)
+  end
+
+  # +text+ with each match of +pattern+ marked, the text around them escaped
+  # (safe_join).
   def mark_search_hits(text, pattern)
-    parts = text.to_s.split(pattern)
-    safe_join(parts.each_with_index.map { |part, index| index.odd? ? tag.mark(part, class: SEARCH_HIT_CLASS) : part })
+    text = text.to_s
+    cursor = 0
+    pieces = text.to_enum(:scan, pattern).flat_map do
+      from, to = Regexp.last_match.offset(0)
+      piece = [text[cursor...from], tag.mark(text[from...to], class: SEARCH_HIT_CLASS)]
+      cursor = to
+      piece
+    end
+    safe_join(pieces << text[cursor..])
   end
 
   # Of the +rows+ holding a search's match, the one its hit stands for: the
@@ -225,8 +243,12 @@ module MessagesHelper
   # PersonMessage.search_for_person matched must (each word the start of one),
   # or else the first. One word alone matches anywhere it marks.
   def message_search_pick(rows, query)
-    words = PersonMessage.search_words(query).map { |word| /(?<![[:alnum:]_])#{PersonMessage.search_word_pattern(word)}/i }
-    rows.find { |row| words.all? { |word| word.match?(row.subject) || word.match?(row.body_text) } } || rows.first
+    rows.find do |row|
+      subject = row.subject.to_s
+      subjects = message_search_word_patterns(query, subject)
+      bodies = message_search_word_patterns(query, row.body_text)
+      subjects.zip(bodies).all? { |in_subject, in_body| in_subject.match?(subject) || in_body.match?(row.body_text) }
+    end || rows.first
   end
 
   # The text nodes under +node+ in reading order, each with where it starts in

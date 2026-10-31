@@ -161,6 +161,29 @@ class PersonMessageTest < ActiveSupport::TestCase
     assert_nil PersonMessage.search_pattern("c.f").match("cxf")
   end
 
+  # Only a Latin letter takes another's accent: a letter of another script with
+  # its own marks, a symbol and a mark on its own are matched as written, as
+  # before accents were folded, and a mark alone is never an empty pattern.
+  test "the search's pattern matches other scripts, symbols and lone marks as written" do
+    { "мой" => ["Это мой дом", "мой"], "ёлка" => ["Новая ёлка", "ёлка"], "καφές" => ["Ένας καφές", "καφές"],
+      "한국" => ["한국 사람", "한국"], "❤️" => ["I ❤️ it", "❤️"], "\u0301" => ["cafe\u0301", "\u0301"] }.each do |query, (text, found)|
+      assert_equal [found], text.scan(PersonMessage.search_pattern(query)), query
+    end
+    assert_equal ["が"], "かが".scan(PersonMessage.search_pattern("が"))
+    assert_empty "plain text".scan(PersonMessage.search_pattern("\u0301"))
+  end
+
+  # Text all in ASCII takes the plain pattern, which must find what the classes find there.
+  test "the search's plain pattern finds in ASCII text what its accent classes find" do
+    texts = ["Meet at the cafe", "CAFE society", "dirt_shift lead", "ca va?", "so naive", "Q-tip", "cafeteria"]
+    ["cafe", "café", "CAFÉ", "dirt shift", "ca va", "naïve", "q", "c.f"].each do |query|
+      texts.each do |text|
+        assert_equal text.scan(PersonMessage.search_pattern(query)), text.scan(PersonMessage.search_pattern(query, ascii: true)),
+                     "#{query} in #{text}"
+      end
+    end
+  end
+
   test "search matches the start of the other party's callsign" do
     assert_equal [@swap], search("alphan")
     # Compared as the compose form's lookup compares them: no case, accents or punctuation.

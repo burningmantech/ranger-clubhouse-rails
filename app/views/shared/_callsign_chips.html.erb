@@ -7,7 +7,7 @@
 <div class="<%= class_names("relative", box_class) %>"
      data-controller="callsign-chips"
      <%= tag.attributes(data: { callsign_chips_max_value: max }) %>
-     data-action="autocomplete.change->callsign-chips#add autocomplete.loadend->callsign-chips#loaded keydown->callsign-chips#keydown">
+     data-action="autocomplete.change->callsign-chips#add autocomplete.loadend->callsign-chips#loaded keydown->callsign-chips#keydown mousedown->callsign-chips#focus">
   <span id="<%= field_id %>_chips" class="contents" data-callsign-chips-target="list">
     <%= render partial: "shared/callsign_chip", collection: callsigns, as: :callsign, locals: { name: } %>
   </span>

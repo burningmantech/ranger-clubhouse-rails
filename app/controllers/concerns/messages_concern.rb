@@ -417,15 +417,20 @@ module MessagesConcern
   end
 
   # The search's chips (?with[]=), each the callsign it shows and the person it
-  # names: looked up as the compose form looks one up and shown as that
+  # names: looked up as the compose form looks one up, among the people the
+  # owner's threads name (PersonMessage.correspondents), and shown as that
   # person's callsign, so however an address spells someone, they are one chip.
-  # One naming nobody shows as typed, with no person, and the search finds
-  # nothing (PersonMessage.search_for_person).
+  # One naming nobody there shows as typed, with no person, and the search
+  # finds nothing (PersonMessage.search_for_person) -- as it would find nothing
+  # with anyone else, whose spelling a chip would otherwise give away.
   def search_chips
-    @search_chips ||= Array(params[:with].presence).grep(String).map { |callsign| callsign.strip.first(Person::CALLSIGN_MAX_LENGTH) }
-                                                   .compact_blank.uniq(&:downcase).first(MAX_SEARCH_WITH)
-                                                   .map { |callsign| Person.resolve_callsign(callsign).then { |person| [person&.callsign || callsign, person] } }
-                                                   .uniq(&:first)
+    @search_chips ||= begin
+      correspondents = PersonMessage.correspondents(message_owner.id)
+      Array(params[:with].presence).grep(String).map { |callsign| callsign.strip.first(Person::CALLSIGN_MAX_LENGTH) }
+                                   .compact_blank.uniq(&:downcase).first(MAX_SEARCH_WITH)
+                                   .map { |callsign| correspondents.resolve_callsign(callsign).then { |person| [person&.callsign || callsign, person] } }
+                                   .uniq(&:first)
+    end
   end
 
   # The callsigns the search field holds as chips: the search keeps to the

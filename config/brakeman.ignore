@@ -89,30 +89,6 @@
       "note": "ArtMentoring::Shifts#group is Array#find by key, not SQL GROUP BY."
     },
     {
-      "warning_type": "Denial of Service",
-      "warning_code": 76,
-      "fingerprint": "80d89c317a269bbc6dc45584ab617db62360f31083c019902981381b362d3e4c",
-      "check_name": "RegexDoS",
-      "message": "Model attribute used in regular expression",
-      "file": "app/helpers/messages_helper.rb",
-      "line": 154,
-      "link": "https://brakemanscanner.org/docs/warning_types/denial_of_service/",
-      "code": "/(#{PersonMessage.search_pattern(query)})/",
-      "render_path": null,
-      "location": {
-        "type": "method",
-        "class": "MessagesHelper",
-        "method": "message_search_pattern"
-      },
-      "user_input": "PersonMessage.search_pattern(query)",
-      "confidence": "Medium",
-      "cwe_id": [
-        20,
-        185
-      ],
-      "note": "PersonMessage.search_pattern escapes every word with Regexp.escape before building the pattern."
-    },
-    {
       "warning_type": "SQL Injection",
       "warning_code": 0,
       "fingerprint": "b553090559fa5203fac52e08fbac3c9c3b63b31d9310b01f8d8e9ccde0533aeb",

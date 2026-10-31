@@ -27,11 +27,13 @@ const activeSelector = "[aria-selected='true']"
 const SLOW_SEARCH_MS = 10_000
 
 // A floating list's height at most (.ac-results' 20rem), the gap it keeps from
-// its field and from the edge of what is on screen, and the least it is cut to:
-// a row and a group's header.
+// its field and from the edge of what is on screen, the least it is cut to
+// where there is room for it (a row and a group's header), and its margin from
+// the box it hangs from (.ac-results' 0.25rem).
 const LIST_MAX = 320
 const LIST_GAP = 16
 const LIST_FLOOR = 96
+const LIST_MARGIN = 4
 
 // A TypeError is what fetch, and a read of the body after it, reject with when
 // the network fails: no answer at all, or one cut off. Invalid JSON is a
@@ -246,8 +248,9 @@ export default class Autocomplete extends Controller {
         const selected = this.selectedOption
         // A free-text field sends its text at once, as a plain field would,
         // without waiting for the list: the list is emptied and the key left to
-        // the form. Only a row the reader picked below the first is taken, and
-        // only from a list that has caught up with the text.
+        // the form. Only a row the reader picked other than the text's own
+        // (this.lead) is taken, and only from a list that has caught up with
+        // the text.
         if (this.freeTextValue && (this.searching || !selected || selected === this.lead)) {
             this.hideAndRemoveOptions()
             return
@@ -1014,7 +1017,12 @@ export default class Autocomplete extends Controller {
     // =========================================================================
 
     open() {
-        if (this.resultsShown) return
+        if (this.resultsShown) {
+            // New rows in a list already open, maybe more of them than the side
+            // it was placed on has room for: placed again for their height.
+            if (!this.inlineValue) this.updatePlacement()
+            return
+        }
 
         // Shown before it is placed, so the placement reads the list's own height.
         this.resultsShown = true
@@ -1035,22 +1043,28 @@ export default class Autocomplete extends Controller {
     // Below the field, unless the list does not fit there and there is more room
     // above, and cut to the room on its side, where it scrolls. The room is the
     // part of the page on screen (visibleBounds), so an on-screen keyboard never
-    // hides the list.
+    // hides the list. It is measured from the box the list hangs from, whose
+    // edges .ac-results and .ac-results-above take: its offsetParent, the
+    // component itself, or the chips box around it (shared/_autocomplete's
+    // positioned: false), where chips can wrap the text to a lower line.
     updatePlacement() {
         const results = this.resultsTarget
-        const rect = this.inputTarget.getBoundingClientRect()
+        const box = results.offsetParent ?? this.inputTarget
+        const rect = box.getBoundingClientRect()
         const {top, bottom} = this.visibleBounds()
         // The room is measured as drawn, after any CSS zoom around the field (the
         // HQ shell's), and the list is sized in its own pixels, which the zoom
         // draws larger: the room is divided by it.
-        const zoom = this.inputTarget.offsetHeight ? rect.height / this.inputTarget.offsetHeight : 1
+        const zoom = box.offsetHeight ? rect.height / box.offsetHeight : 1
         const spaceBelow = (bottom - rect.bottom) / zoom
         const spaceAbove = (rect.top - top) / zoom
         const above = spaceBelow < Math.min(results.scrollHeight, LIST_MAX) && spaceAbove > spaceBelow
 
         results.classList.toggle("ac-results-above", above)
-        const room = Math.max((above ? spaceAbove : spaceBelow) - LIST_GAP, LIST_FLOOR)
-        results.style.maxHeight = `${Math.min(room, LIST_MAX)}px`
+        // The floor only where it fits: the list never runs past what is on screen.
+        const space = above ? spaceAbove : spaceBelow
+        const room = Math.max(space - LIST_GAP, Math.min(LIST_FLOOR, space - LIST_MARGIN))
+        results.style.maxHeight = `${Math.max(Math.min(room, LIST_MAX), 0)}px`
     }
 
     // What of the page is on screen, top and bottom, in the field's coordinates:

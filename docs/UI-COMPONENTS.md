@@ -962,7 +962,9 @@ Several callsigns in one input box, each a removable chip, over `shared/_autocom
   "Remove ‹callsign›". Existing tokens only.
 - `callsign_chips_controller` makes a chip from a suggestion taken (`autocomplete.change`) or from the text
   typed when Enter finds no suggestion to take, never twice for one callsign (no case), and never sends the
-  form on Enter. Removing a chip returns the focus to the input. The server checks every callsign on send.
+  form on Enter. Removing a chip returns the focus to the input, and a press anywhere in the box but a
+  button, a link or the suggestions puts the caret in the text (`#focus` on `mousedown`, which keeps the
+  focus, so an open list stays). The server checks every callsign on send.
 - The chips sit in `#<field id>_chips`, which a server choice is appended to: the messages page's Find
   Recipient modal (`MessagesConcern#select_callsign`) streams `shared/_callsign_chip` there, or replaces
   the list's one chip (`update`) on the relay, where the controller's cap does not run.
@@ -976,8 +978,9 @@ Several callsigns in one input box, each a removable chip, over `shared/_autocom
   the Stimulus identifier its target and remove action name, and the field passes `message-search`.
   `message_search_controller` extends `callsign_chips_controller` (the chips, their template, the
   case-blind dedupe, the max that drops the oldest, `chipValue`), less the rule that typed text becomes a
-  chip: its text is a search. It runs the search as a chip comes or goes, and puts the chips back if
-  that search fails (`turbo:submit-end`), since they sit outside the list's frame.
+  chip: its text is a search. It runs the search as a chip comes or goes; the field sits outside the
+  list's frame, so a search that fails (`turbo:submit-end`), and a page Turbo kept for Back mid-search,
+  set the field back to the address: its text, and its people as chips.
   `shared/_autocomplete` gained `type:`, `value:` and `maxlength:` for its input, and `free_text:` (see
   `docs/autocomplete-component.md`) for it.
 - Both fields pass `shared/_autocomplete` `positioned: false` and make their box `relative`, so the
@@ -1861,20 +1864,23 @@ the page when it connects. Only /me renders it: Person and HQ never mark a threa
 <div data-controller="scroll-to-element" data-scroll-to-element-id-value="group-7" hidden></div>
 ```
 
-Brings one element into view when the page renders, named by its id. Use it to put the reader back
-beside the record they just changed after an edit redirects them to a list or a parent page. An
-element already wholly on screen is left where it is: scrolling it to the top would only hide what
-sits above it. "On screen" is a hit test of its top and bottom edges, so an element clipped by a
-scroller, past the window's edge or under the navbar is not.
+Brings one element into view when the page renders, named by its id, or by a selector in
+`data-scroll-to-element-selector-value` for an element not fixed at render (the mailbox's ringed
+card, which the stepper moves). Use it to put the reader back beside the record they just changed
+after an edit redirects them to a list or a parent page. An element already in view is left where
+it is: scrolling it to the top would only hide what sits above it. In view is on screen, a hit test
+of its top and bottom edges, so an element clipped by a scroller, past the window's edge or under
+the navbar is not; and at least its `scroll-margin-top` below the top of what scrolls it, the room
+it keeps for something pinned there (the mailbox's stepper).
 
 **An element inside a scroller of its own** names that scroller as a selector in
 `data-scroll-to-element-container-value` (the mailbox's pane, `.review-pane`, which scrolls itself
 from lg up). While the container scrolls, it moves first, putting the element at its top less the
 element's `scroll-margin-top` -- measured past any CSS `zoom` on the way up (the HQ shell's), since
-`getBoundingClientRect` reads drawn pixels and `scrollTop` the container's own. The page then moves
-only if the element is still off screen, and only as far as it takes (`block: "nearest"`): the
-container itself is off screen, stacked under the list in the HQ window or starting too low for its
-foot to show. `scrollIntoView` alone would move every container around the element, the page under
+`getBoundingClientRect` reads drawn pixels and `scrollTop` the container's own. If the element is
+still off screen, the page then brings the container on screen, only as far as it takes
+(`block: "nearest"`): stacked under the list in the HQ window, or starting too low for its foot to
+show. A container wholly on screen stays put, so an element taller than it never drags the page. `scrollIntoView` alone would move every container around the element, the page under
 the pane too, carrying the list beside it away from the row the reader chose, and its
 `container: "nearest"` option is Chrome's alone. With no container named, or one that is not
 scrolling, the page scrolls the element to its top.
@@ -1897,7 +1903,8 @@ in the mailbox, where a search's hit opens its thread on the first message holdi
 (`app/views/common/messages/_thread.html.erb`).
 
 The scrolling itself is `app/javascript/controllers/scrolling.js`, a module of functions, not a
-controller: `reveal(target, container)` (all of the above), `onScreen`, `scrollWithin(scroller,
+controller: `reveal(target, container, {behavior})` (all of the above; `behavior: "auto"` moves at
+once, as a stepper's steps must), `onScreen`, `scrollWithin(scroller,
 target, {offset, behavior})` (a scroller moved until the target's top sits `offset` of its own
 pixels inside it, through any CSS zoom) and `scrollParent` (the nearest ancestor that scrolls, by
 behaviour: overflow-y auto or scroll with more in it than shows). `search_matches_controller`,
@@ -1922,9 +1929,12 @@ The mailbox's stepper (`common/messages/_messages_panel`), on a thread opened fr
 messages show a mark. Its stops are the cards holding a `mark.search-hit`, top to bottom; the
 current one is the card with `data-landing`. `#next` and `#previous` move that attribute (the
 card's ring) round past either end, rewrite the count and bring the card into view with
-`scrolling.js`'s `reveal`, the pane first from lg, as the landing does. `review_pane_controller`
-keeps `data-landing` and the marked bodies through the cards' read-state morphs, so the stops and
-the current one last while the thread is open.
+`scrolling.js`'s `reveal`, the pane first from lg, as the landing does but at once: a second step
+taken while a smooth scroll still ran would find its card passing through the screen and stay put.
+`review_pane_controller` keeps `data-landing` and the marked bodies through the cards' read-state
+morphs, and through a morphing refresh of the page, which draws the count anew at the landing:
+`#show` reads it again from the ring on `turbo:morph`, so the stops and the current one last while
+the thread is open.
 
 **Measuring it:** `window.scrollY` stays `0` in this application — `body` is `h-dvh` and the scroller
 is an inner `div.drawer-content`. Read `document.querySelector(".drawer-content").scrollTop` instead.

@@ -7,7 +7,15 @@
     }
 
     gtag('js', new Date());
-    // No page_view of its own, which would carry the whole address: the
-    // turbo:load handler in application.js sends every one, this page's included.
-    gtag('config', '<%= gtag %>', {send_page_view: false});
+    // No page_view of its own: the turbo:load handler in application.js sends
+    // every one, this page's included. Nor any address with its query, which
+    // can carry personal data, such as a mailbox search's text and callsigns:
+    // every hit the tag sends by itself, its engagement events included, takes
+    // the page and the one before it from here until that handler sets them
+    // anew, and would otherwise take the whole address and referrer.
+    gtag('config', '<%= gtag %>', {
+        send_page_view: false,
+        page_location: location.origin + location.pathname,
+        page_referrer: document.referrer.split(/[?#]/)[0]
+    });
 </script>

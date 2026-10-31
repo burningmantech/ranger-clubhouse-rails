@@ -75,6 +75,16 @@ export default class extends Controller {
         this.inputTarget.focus()
     }
 
+    // A press on the box around the text, not on a chip's button, a link or
+    // the suggestions, puts the caret in the text, as one on the plain field the
+    // box stands in for would. The focus never leaves it, so an open list stays.
+    focus(event) {
+        if (event.target.closest("a, button, input, [role=listbox]")) return
+
+        event.preventDefault()
+        this.inputTarget.focus()
+    }
+
     addChip(value) {
         const callsign = value.trim()
         this.inputTarget.value = ""

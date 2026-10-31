@@ -1464,8 +1464,8 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
 
     get me_message_path(swap, q: "thermos")
     assert_response :success
-    assert_select "#messages-thread [data-controller=scroll-to-element][hidden][data-scroll-to-element-id-value=?]" \
-                  "[data-scroll-to-element-container-value='.review-pane']", reply_id
+    assert_select "#messages-thread [data-controller=scroll-to-element][hidden][data-scroll-to-element-selector-value=?]" \
+                  "[data-scroll-to-element-container-value='.review-pane']", "#messages-thread article[data-landing]"
     assert_select "article[data-landing]", count: 1
     assert_select "#{reply_card}[data-landing] mark.search-hit", text: "thermos"
     assert_select "#{top_card} mark", count: 0
@@ -1679,8 +1679,6 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
 
     get me_messages_path(with: ["RANGER1"])
     assert_response :success
-    # Never kept for Back, which would pair the chips with the list before them.
-    assert_select "head meta[name='turbo-cache-control'][content='no-cache']"
     assert_select "form#messages-search [role=combobox][aria-label='Search Messages']"
     assert_select "form#messages-search [data-message-search-target=list] input[type=hidden][name='with[]'][value=RANGER1]"
     assert_select "form#messages-search button[aria-label='Remove RANGER1'][data-action='message-search#remove']"
@@ -1723,6 +1721,13 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     get me_messages_path(with: %w[ranger-1 NoSuchRanger])
     assert_select "[data-message-search-target=list] input[name='with[]'][value=NoSuchRanger]"
     assert_select "[role=status]", text: /No conversations with RANGER1 and NoSuchRanger in any folder/
+
+    # Review finding: a chip spelled the callsign of anyone at all as stored,
+    # which told whether that callsign existed. Only those the mailbox's
+    # threads name are looked up; anyone else stays as typed, and finds nothing.
+    get me_messages_path(with: %w[test-ranger])
+    assert_select "[data-message-search-target=list] input[name='with[]'][value=test-ranger]"
+    assert_select "[role=status]", text: /No conversations with test-ranger in any folder/
   end
 
   test "a hit's thread carries the chips to its back link, its lazy list and the toggles" do
@@ -1731,7 +1736,6 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
 
     get me_message_path(khaki, with: ["RANGER1"])
     assert_response :success
-    assert_select "head meta[name='turbo-cache-control'][content='no-cache']"
     assert_select "a[aria-label='Back to Messages'][href=?]", me_messages_path(with: ["RANGER1"])
     assert_select "form#messages-search input[name='with[]'][value=RANGER1]"
     assert_select "turbo-frame#messages-conversation-list[loading=lazy][src=?]",

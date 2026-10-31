@@ -594,6 +594,36 @@ class AutocompleteComponentTest < ApplicationSystemTestCase
     assert_operator list["top"], :>=, on_screen["top"], "The list ran past the top of what is on screen"
   end
 
+  # Review finding: the list was placed for its first answer only. A short one
+  # fits below, and the longer one after it (a Backspace) stayed there, cut
+  # short, though there was room above for it.
+  test "a list placed for a short answer moves above for a longer one" do
+    visit test_harness_autocomplete_path
+    page.execute_script(<<~JS)
+      const field = document.getElementById("test-placement-autocomplete-input")
+      document.getElementById("placement-fixture").insertAdjacentHTML("afterend", "<div style='height: 100vh'></div>")
+      field.scrollIntoView({block: "center"})
+      const rect = field.getBoundingClientRect()
+      const onScreen = {top: rect.top - 450, bottom: rect.bottom + 250}
+      const pageTop = window.scrollY + onScreen.top
+      Object.defineProperty(window, "visualViewport", {
+        configurable: true, value: {offsetTop: pageTop, pageTop, height: onScreen.bottom - onScreen.top}
+      })
+    JS
+    input = find("#test-placement-autocomplete-input")
+    results = "#test-placement-autocomplete-results"
+
+    # "TestR" is one person, a list that fits below.
+    input.fill_in with: "TestR"
+    assert_selector "#{results} [role='option']", count: 1, wait: 5
+    assert_operator page.evaluate_script("document.querySelector('#{results}').scrollHeight"), :<, 234
+    assert_no_selector "#{results}.ac-results-above"
+
+    input.send_keys(:backspace)
+    assert_selector "#{results} [role='option']", minimum: 2, wait: 5
+    assert_selector "#{results}.ac-results-above"
+  end
+
   # A CSS zoom around the field (the HQ shell's) draws the list larger than the
   # pixels it is sized in, so the room on screen is divided by it: sized in
   # drawn pixels, the list ran past what is on screen by the zoom's share.

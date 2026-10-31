@@ -267,10 +267,13 @@ Examples:
 
 ### Auto-Flip
 
-Placed as the list opens, and kept while it stays open (`updatePlacement`): below the input,
-unless the list does not fit there and there is more room above (`ac-results-above`). The list
-is then cut to the room on its side (an inline `max-height`, 20rem at most and 96px at least)
-and scrolls.
+Placed as the list opens, and again on each render while it stays open (`updatePlacement`), so a
+longer answer can take the roomier side: below the field, unless the list does not fit there and
+there is more room above (`ac-results-above`). The room is measured from the box the list hangs
+from (its `offsetParent`): the field, or with `positioned: false` the caller's box, whose chips can
+push the text a row down. The list is then cut to the room on its side (an inline `max-height`,
+20rem at most), keeping 16px from the screen's edge, and scrolls. Its floor of 96px applies only
+where it fits: short of room, it may come within 4px of the edge, never past it.
 
 The room is what is on screen (`visibleBounds`):
 
@@ -291,7 +294,8 @@ The list is `ac-results` (`components/autocomplete.css`, an `@utility`): absolut
 most with a thin scrollbar that stays visible. `ac-results-above` puts it over the field instead
 (`bottom: 100%`). `ac-results-inline` (the search dialog, `inline: true`) keeps it in the flow,
 and no placement runs. `positioned: false` hangs it from a box the caller positions around the
-component (a chips field's) and pins it to that box's left edge (`left-0`), so it spans the box.
+component (a chips field's) and pins it to that box's left edge (`left-0`), so it spans the box; the
+"Searching…" row (`ac-loading`) gets the same `left-0`, so it spans the box too, never past it.
 
 Inside it: rows are `ac-option`, the highlighted one `ac-option-active` (or the classes a host gives
 in `data-autocomplete-selected-class`), groups `ac-group` under an `ac-group-header`, the filter bar

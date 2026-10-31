@@ -752,7 +752,8 @@ raw-Tailwind color runs left in the system — don't copy the pattern into new c
 hit's subject and snippet), and the cards of the thread a hit opens (`#message_body_marks`), where
 the card the hit lands on is also ringed in the review pane's selection colour and brought into
 view: its `data-landing` attribute switches on `data-landing:ring-2 data-landing:ring-primary
-data-landing:scroll-my-4`, which every card carries, so the read-state morphs that redraw a card
+data-landing:scroll-mt-18 data-landing:scroll-mb-4` (the top margin clears the Match Stepper), which
+every card carries, so the read-state morphs that redraw a card
 with no search leave the ring where it was. Owner-approved 2026-10-18; the cards and the ring
 2026-10-29, as design B of `.scratch/messages-search/PRD.md`.
 
@@ -1612,8 +1613,9 @@ Stimulus controller of the page's own counts, moves and scrolls.
   one match, either button brings it back on screen.
 - **Pinned on its own row** over what it steps through (`sticky top-2`, right-aligned, on the
   surface's own `bg-base-100`), never in a header that scrolls away. A record it brings to the top
-  stops clear of it: the mailbox's landing card takes `scroll-mt-14` (the stepper's 8px inset, its
-  36px and a 12px gap).
+  stops clear of it: the mailbox's landing card takes `scroll-mt-18` (the pane's 16px padding, the
+  stepper's 8px inset, its 36px and a 12px gap), and one under the stepper counts as out of view, so
+  a step to it scrolls it clear. A step moves at once, never smoothly.
 - **Drawn only when there is a match**, at the one the page opens on: the server knows the count and
   the landing, so nothing appears or jumps once the page has scrolled.
 - **Accessibility**: a `role="group"` named by `label:`; the count is a polite `role="status"` a
@@ -2507,7 +2509,8 @@ the form must know is valid before submit.
 
 **Accessibility:** the label targets the input, whose `aria-label` is "Add a callsign" and whose
 `aria-describedby` names the help and error line. Each chip's remove button is 36px and labelled
-"Remove ‹callsign›"; removing returns the focus to the input. Enter makes a chip, never a submit.
+"Remove ‹callsign›"; removing returns the focus to the input. Enter makes a chip, never a submit. A
+press anywhere else in the box puts the caret in the text, as on a plain field.
 
 **Styling:** chips are `rounded-full border border-line bg-base-200 text-sm text-body`, so both
 themes come from the tokens. Full API: `docs/UI-COMPONENTS.md` > Callsign Chips Field.

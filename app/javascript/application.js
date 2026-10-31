@@ -41,6 +41,10 @@ Turbo.StreamActions.page_redirect = function () {
     Turbo.visit(this.getAttribute("url"), {frame: "_top", action: "advance"});
 };
 
+// The address analytics last heard of, without its query
+// (application/_google_analytics_code): the referrer of the next page view.
+let analyticsLocation = document.referrer.split(/[?#]/)[0];
+
 // Preserve messages list scroll position when opening and returning from a conversation
 const MESSAGES_SCROLL_KEY = "messages-list-scroll";
 document.addEventListener("turbo:before-visit", (event) => {
@@ -65,13 +69,14 @@ document.addEventListener("turbo:load", () => {
     // The first page's view too: the config sends none of its own
     // (application/_google_analytics_code). The address goes without its
     // query, as the request log keeps it (RequestLogger#path_for): a query can
-    // carry personal data, such as a mailbox search's text and callsigns.
+    // carry personal data, such as a mailbox search's text and callsigns. Set
+    // for every hit after it, not this one alone: the tag's own engagement
+    // events take the page from here, and the address otherwise.
     if (typeof gtag === 'function') {
-        gtag('event', 'page_view', {
-            page_location: window.location.origin + window.location.pathname,
-            page_path: window.location.pathname,
-            page_title: document.title
-        });
+        const page_location = window.location.origin + window.location.pathname;
+        gtag('set', {page_location, page_referrer: analyticsLocation});
+        gtag('event', 'page_view', {page_location, page_path: window.location.pathname, page_title: document.title});
+        analyticsLocation = page_location;
     }
 });
 

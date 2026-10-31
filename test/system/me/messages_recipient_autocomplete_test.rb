@@ -26,6 +26,28 @@ class Me::MessagesFindRecipientTest < ApplicationSystemTestCase
     on_a_phone { assert_selector "a", text: "Find Recipient" }
   end
 
+  # Review finding: the search box put the caret in its text on a press beside
+  # it, and this box did not: a press on a chip's name or the padding focused
+  # nothing, and closed an open list.
+  test "a press anywhere in the recipients box puts the caret in the text, and an open list stays" do
+    person(:echelon_ranger).update!(last_seen_at: 1.day.ago)
+    visit new_me_message_path
+    wait_for_controller("callsign-chips", "[data-controller~='callsign-chips']")
+    field = find("#message_form_callsigns")
+    field.send_keys "Custom"
+    find("[role=option]", text: @recipient.callsign, wait: 5).click
+    name = find("[data-callsign-chips-target=chip] span", text: @recipient.callsign)
+
+    name.click
+    assert_selector "#message_form_callsigns:focus"
+
+    field.send_keys "Echelon"
+    assert_selector "[role=option]", text: "EchelonTest", wait: 5
+    name.click
+    assert_selector "#message_form_callsigns:focus"
+    assert_selector "[role=option]", text: "EchelonTest"
+  end
+
   test "a suggestion taken or a callsign typed becomes a chip, and its button removes it" do
     third = person(:echelon_ranger)
     third.update!(last_seen_at: 1.day.ago)

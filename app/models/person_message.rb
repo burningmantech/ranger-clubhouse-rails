@@ -54,13 +54,15 @@ class PersonMessage < ApplicationRecord
   # The letters the search's columns compare without their accents
   # (utf8mb4_unicode_ci), so the database finds "Café" for "cafe" and "cafe" for
   # "café": each base letter with the accented forms Latin-1 and Latin Extended
-  # A, B and Additional make of it, and the marks after it in text written
-  # decomposed. search_word_pattern matches the same.
+  # A, B and Additional make of it, in both cases, and the marks after it in
+  # text written decomposed. Both cases are written out because a pattern built
+  # of them runs without /i, which costs Onigmo its fast search over a class
+  # holding letters beyond ASCII (search_letters).
   SEARCH_ACCENTED_LETTERS = [*0xC0..0x24F, *0x1E00..0x1EFF].map { |code| code.chr(Encoding::UTF_8) }
-                                                            .select { |char| char.downcase.length == 1 }
+                                                            .select { |char| char.downcase.length == 1 && char.upcase.length == 1 }
                                                             .group_by { |char| char.unicode_normalize(:nfd)[0].downcase }
                                                             .select { |base, _| base.match?(/\A[a-z]\z/) }
-                                                            .to_h { |base, chars| [base, "[#{base}#{chars.map(&:downcase).uniq.join}]\\p{Mn}*"] }
+                                                            .to_h { |base, chars| [base, "[#{[base, base.upcase, *chars.flat_map { |char| [char.downcase, char.upcase] }].uniq.join}]\\p{Mn}*"] }
                                                             .freeze
 
   # The most text a message may hold, its markup not counted, and the most
@@ -328,6 +330,15 @@ class PersonMessage < ApplicationRecord
     { people: counts.map { |id, count| [people.fetch(id), count] }, teams: teams.first(limit) }
   end
 
+  # The people the threads of +person_id+'s mailbox name
+  # (PersonMessageMember.named), the only ones a search's chip can find
+  # anything with. A chip is looked up among them alone (MessagesConcern#search_chips),
+  # so its spelling never tells whether a callsign names anyone else.
+  def self.correspondents(person_id)
+    threads = PersonMessageMember.where(person_id:).select(:person_message_id)
+    Person.where(id: PersonMessageMember.named.where(person_message_id: threads).select(:person_id))
+  end
+
   # The words of a query that the full-text index can match. InnoDB counts
   # '_' as part of a word, so "dirt_shift" is one word, found by its start
   # ("dirt", "dirt_shift") and never by "shift", the middle of a word.
@@ -336,19 +347,44 @@ class PersonMessage < ApplicationRecord
   end
 
   # What search_for_person matched, for marking it in the text: each word from
-  # the start of a word to its end, or the whole query where no word was left.
-  def self.search_pattern(query)
+  # the start of a word to its end, or the whole query where no word was left,
+  # its letters compared as the database compares them (search_letters). For
+  # text all in ASCII (+ascii+), which no accent can be in, the query's letters
+  # without their accents find the same as a plain string, which Onigmo
+  # searches for many times faster than for the classes.
+  def self.search_pattern(query, ascii: false)
     words = search_words(query)
-    return /#{search_word_pattern(query.to_s.strip)}/i if words.empty?
-
-    /(?<![[:alnum:]_])(?:#{words.map { |word| search_word_pattern(word) }.join("|")})[[:alnum:]_]*/i
+    source = if words.empty?
+               search_letters(query.to_s.strip, ascii:)
+             else
+               "(?<![[:alnum:]_])(?:#{words.map { |word| search_letters(word, ascii:) }.join("|")})[[:alnum:]_]*"
+             end
+    Regexp.new(source, ascii ? Regexp::IGNORECASE : 0)
   end
 
-  # +text+ as a pattern that compares its letters as the database does, with
-  # or without an accent (SEARCH_ACCENTED_LETTERS); anything else as it is.
-  def self.search_word_pattern(text)
-    text.unicode_normalize(:nfd).gsub(/\p{Mn}/, "").each_char.map { |char| SEARCH_ACCENTED_LETTERS[char.downcase] || Regexp.escape(char) }.join
+  # Each word of a search alone, as search_pattern finds it: where a word starts.
+  def self.search_word_patterns(query, ascii: false)
+    search_words(query).map { |word| Regexp.new("(?<![[:alnum:]_])#{search_letters(word, ascii:)}", ascii ? Regexp::IGNORECASE : 0) }
   end
+
+  # +text+ as a pattern's source. A Latin letter, accented or not, is its
+  # class (SEARCH_ACCENTED_LETTERS), or with +ascii+ its base letter alone.
+  # Anything else is matched as written, its case aside: a letter of another
+  # script with its own marks (й, が), a symbol, a mark on its own.
+  def self.search_letters(text, ascii:)
+    text.unicode_normalize(:nfc).each_char.map do |char|
+      base, *marks = char.unicode_normalize(:nfd).chars
+      letters = SEARCH_ACCENTED_LETTERS[base.downcase] if marks.all? { |mark| mark.match?(/\p{Mn}/) }
+      if letters
+        ascii ? Regexp.escape(base) : letters
+      elsif ascii || !char.match?(/\p{L}/)
+        Regexp.escape(char)
+      else
+        "(?i:#{Regexp.escape(char)})"
+      end
+    end.join
+  end
+  private_class_method :search_letters
 
   ##
   # Thread-tops with everything the list draws loaded, the thread that moved
