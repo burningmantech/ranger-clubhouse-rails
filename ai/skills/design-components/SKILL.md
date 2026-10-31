@@ -633,6 +633,22 @@ inside the form (multi-submit footers keep an explicit `button_row`).
 
 ---
 
+## Match Stepper
+
+**Helper**: `UiComponents::UiMatchStepperHelper` (`app/helpers/ui_components/ui_match_stepper_helper.rb`)
+
+"Match 2 of 3" with Previous and Next, joined: walking a search's matches one record at a time,
+round past either end. Markup alone; the named Stimulus controller answers `#previous`/`#next` and
+rewrites its `count` target. Pin it on its own row over what it steps through, not in a header
+that scrolls away. In use on the mailbox's pane (`common/messages/_messages_panel`,
+`search_matches_controller`). Rules: `docs/DESIGN-GUIDE.md` › Match Stepper.
+
+```erb
+<%= ui_match_stepper "search-matches", label: "Matches in this conversation", current: 1, total: 3 %>
+```
+
+---
+
 ## Navigation Dropdowns
 
 **Helper**: `NavigationHelper` (`app/helpers/navigation_helper.rb`)

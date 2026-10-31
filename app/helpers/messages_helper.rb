@@ -147,7 +147,13 @@ module MessagesHelper
   def message_search_landing(rows, bodies, query)
     return if query.blank?
 
-    message_search_pick(rows.zip(bodies).filter_map { |row, body| row if body.include?(SEARCH_HIT_MARK) }, query)
+    message_search_pick(message_search_matches(rows, bodies), query)
+  end
+
+  # The +rows+ whose +bodies+, as #message_body_marks drew them, show a mark:
+  # the stops of the stepper over the thread (search_matches_controller).
+  def message_search_matches(rows, bodies)
+    rows.zip(bodies).filter_map { |row, body| row if body.include?(SEARCH_HIT_MARK) }
   end
 
   # The Cadres and Delegations compose can send to, for its select.

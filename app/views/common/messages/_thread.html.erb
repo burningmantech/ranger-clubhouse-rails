@@ -1,18 +1,15 @@
-<%# locals: (message:, owner:, q:) %>
+<%# locals: (message:, owner:, rows:, bodies:, landing:) %>
 <%# What #messages-thread holds: the expiry notice and the cards, newest last.
     Mark Read and Mark Unread morph the cards one by one
     (MessagesConcern#card_streams), never the whole of it, whose morph would
     remove a card that landed live after their request loaded the thread.
 
-    Opened from a search (q), each body is drawn with the search's matches
-    marked, and the thread lands on the card that stands for the hit
-    (MessagesHelper#message_search_landing): ringed, and brought into view by
-    the marker, which names the pane as the scroller to move from lg. Both are
+    +rows+ are the thread's messages and +bodies+ their bodies as the pane
+    draws them, a search's matches marked (_messages_panel). +landing+, the
+    card that stands for a search's hit, is ringed and brought into view by the
+    marker, which names the pane as the scroller to move from lg. Both are
     drawn here alone: review_pane_controller keeps them through the cards'
     read-state morphs, whose renders know no search. %>
-<% rows = message.thread_rows %>
-<% bodies = rows.map { |row| message_body_marks(message_body(row), q) } %>
-<% landing = message_search_landing(rows, bodies, q) %>
 <% if landing %>
   <div data-controller="scroll-to-element" data-scroll-to-element-id-value="<%= dom_id(landing, :card) %>"
        data-scroll-to-element-container-value=".review-pane" hidden></div>

@@ -1,10 +1,31 @@
 <%# locals: (message:, folder:, reply_form:) %>
 <%# The pane's body: the thread's header with its controls, the messages as
     cards, newest last, then the reply form or the callout that stands in for
-    it. data-review-id is how review_pane_controller knows which row is open. %>
-<div data-review-id="<%= message.id %>">
+    it. data-review-id is how review_pane_controller knows which row is open.
+
+    Opened from a search, each card's body is drawn with the search's matches
+    marked, and the thread lands on the card that stands for the hit
+    (MessagesHelper#message_search_landing). The cards holding a match are what
+    the stepper over them walks (search_matches_controller). %>
+<% q = search_query %>
+<% rows = message.thread_rows %>
+<% bodies = rows.map { |row| message_body_marks(message_body(row), q) } %>
+<% landing = message_search_landing(rows, bodies, q) %>
+<%= tag.div data: { review_id: message.id, controller: ("search-matches" if landing) } do %>
   <%= turbo_frame_tag "messages-panel-header", class: "flex items-start gap-3 mb-3" do %>
     <%= render partial: "common/messages/messages_panel_header", locals: { message:, folder: } %>
+  <% end %>
+
+  <%# The stepper, on a row of its own over the messages and pinned 8px inside
+      the top of whatever scrolls them -- the pane from lg, the page below it --
+      so it is in reach however far down the reader goes. A card it lands on
+      keeps clear of it (_message_card's scroll margin). %>
+  <% if landing %>
+    <% matches = message_search_matches(rows, bodies) %>
+    <div class="sticky top-2 z-10 w-fit ms-auto mb-3 bg-base-100 rounded-field">
+      <%= ui_match_stepper "search-matches", label: "Matches in this conversation",
+                                             current: matches.index(landing) + 1, total: matches.size %>
+    </div>
   <% end %>
 
   <%# Replies land here live (PersonMessage#announce_reply), on the
@@ -19,7 +40,7 @@
   <%= tag.div id: "messages-thread", role: "log", aria: { label: "Conversation", live: "polite" },
               data: ({ controller: "thread-live",
                        thread_live_url_value: mark_read_message_path(message) } if live && mark_read_on_view?) do %>
-    <%= render partial: "common/messages/thread", locals: { message:, owner: message_owner, q: search_query } %>
+    <%= render partial: "common/messages/thread", locals: { message:, owner: message_owner, rows:, bodies:, landing: } %>
   <% end %>
 
   <div class="border-t border-line pt-3">
@@ -44,4 +65,4 @@
       <% end %>
     <% end %>
   </div>
-</div>
+<% end %>

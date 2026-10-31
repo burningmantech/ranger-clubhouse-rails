@@ -15,6 +15,9 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
   # The card a search's hit opened on (common/messages/_thread).
   LANDING = "#messages-thread article[data-landing]"
 
+  # The stepper over a hit's thread (common/messages/_messages_panel).
+  STEPPER = "[role=group][aria-label='Matches in this conversation']"
+
   # A chip in the search field, not the blank one its template holds.
   CHIP = "[data-message-search-target=list] [data-message-search-target=chip]"
 
@@ -462,8 +465,8 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
       document.querySelector("aside.review-pane").scrollTop = 0
       #{REVEAL_AGAIN}
     JS
-    # scroll-mt-4's 16px and the pane's 1px border, drawn 15% larger.
-    assert_eventually("the zoomed pane missed the match") { landed_below?(LANDING, "aside.review-pane", at: 18.55) }
+    # scroll-mt-14's 56px and the pane's 1px border, drawn 15% larger.
+    assert_eventually("the zoomed pane missed the match") { landed_below?(LANDING, "aside.review-pane", at: 64.55) }
   end
 
   # The pane keeps its scroll through a frame's swap, so the next thread opened
@@ -502,6 +505,44 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     assert_operator drawer_scroll_top, :>, 0
   end
 
+  # The stepper over a hit's thread (.scratch/messages-search/PRD.md, slice 2,
+  # as ruled 2026-10-30): one stop per message holding a match, round past
+  # either end, the ring going with it. It stays pinned in reach as the pane --
+  # or below lg the page -- scrolls under it, and a message it brings to the top
+  # stops clear of it. The last match sits too near the thread's foot to reach
+  # the top: it shows wherever the pane's end leaves it, still under the stepper.
+  test "the stepper walks a hit's matches a message at a time, round past either end, and stays in reach" do
+    long_thread(word_at: [3, 10, 17])
+    sign_in(@owner)
+    visit me_message_path(@thread, q: "thermos")
+    assert_selector STEPPER, text: "Match 1 of 3"
+    assert_selector LANDING, text: "(3)"
+
+    [["next", "Match 2 of 3", "(10)", true], ["next", "Match 3 of 3", "(17)", false],
+     ["next", "Match 1 of 3", "(3)", true], ["previous", "Match 3 of 3", "(17)", false]].each do |direction, count, body, at_top|
+      step_match(direction)
+      assert_selector STEPPER, text: count
+      assert_selector LANDING, text: body
+      assert_selector "#messages-thread article[data-landing]", count: 1
+      if at_top
+        assert_eventually("the pane never brought #{body} below the stepper") { landed_below?(LANDING, "aside.review-pane") }
+      else
+        assert_eventually("#{body} never came into the pane's view") { in_view_under_stepper?(LANDING, "aside.review-pane") }
+      end
+      assert_equal 24, pinned_below(STEPPER, "aside.review-pane").round, "the stepper left the top of the pane"
+    end
+    assert_equal 0, drawer_scroll_top
+
+    on_a_phone do
+      visit me_message_path(@thread, q: "thermos")
+      assert_selector STEPPER, text: "Match 1 of 3"
+      step_match("next")
+      assert_selector LANDING, text: "(10)"
+      assert_eventually("the page never brought the match below the stepper") { landed_below?(LANDING, ".drawer-content") }
+      assert_operator pinned_below(STEPPER, ".drawer-content"), :<, 56, "the stepper scrolled away with the page"
+    end
+  end
+
   # The cards' read-state morphs draw no search (MessagesConcern#card_streams):
   # the page keeps the marks and the ring _thread drew.
   test "Mark Unread and Mark Read leave the search's marks and ring as drawn" do
@@ -521,18 +562,47 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
 
   private
 
-  # Twenty replies in +thread+, the one at +word_at+ alone saying "thermos": a
-  # match far below the top of a pane that scrolls.
+  # Twenty replies in +thread+, those at +word_at+ alone saying "thermos",
+  # each with its place: matches far below the top of a pane that scrolls.
   def long_thread(thread = @thread, word_at: 10)
     20.times do |index|
-      body = index == word_at ? "Bring the thermos." : (["Reply #{index}."] * 6).join("\n")
+      body = Array(word_at).include?(index) ? "Bring the thermos. (#{index})" : (["Reply #{index}."] * 6).join("\n")
       send_message(@sender, @owner, thread.subject, body:, reply_to: thread)
     end
   end
 
-  # The card sits +at+ pixels -- scroll-my-4's 16 -- below the top of the
-  # scroller's view; false while it is not on the page yet.
-  def landed_below?(card, scroller, at: 16)
+  def step_match(direction)
+    find("#{STEPPER} button[aria-label='#{direction.capitalize} match']").click
+  end
+
+  # The card is wholly in +scroller+'s view and on screen, below the stepper.
+  def in_view_under_stepper?(card, scroller)
+    page.evaluate_script(<<~JS)
+      (() => {
+        const card = document.querySelector(#{card.to_json}).getBoundingClientRect()
+        const view = document.querySelector(#{scroller.to_json}).getBoundingClientRect()
+        const stepper = document.querySelector(#{STEPPER.to_json}).getBoundingClientRect()
+        return card.top >= stepper.bottom && card.bottom <= Math.min(view.bottom, window.innerHeight)
+      })()
+    JS
+  end
+
+  # How far +element+ sits below the top of +scroller+'s view: a pinned stepper
+  # stays there, whatever the scroll.
+  def pinned_below(element, scroller)
+    page.evaluate_script(<<~JS)
+      (() => {
+        const scroller = document.querySelector(#{scroller.to_json})
+        return document.querySelector(#{element.to_json}).getBoundingClientRect().top -
+          scroller.getBoundingClientRect().top - scroller.clientTop
+      })()
+    JS
+  end
+
+  # The card sits +at+ pixels -- scroll-mt-14's 56, clear of the stepper
+  # pinned over the cards -- below the top of the scroller's view; false while
+  # it is not on the page yet.
+  def landed_below?(card, scroller, at: 56)
     page.evaluate_script(<<~JS)&.between?(at - 1.2, at + 1.2)
       (() => {
         const card = document.querySelector(#{card.to_json})

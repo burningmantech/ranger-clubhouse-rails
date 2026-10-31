@@ -8,8 +8,10 @@
 
   `body` is the body as _thread draws it, a search's matches marked; a card
   rendered on its own -- a live reply, a read-state morph -- draws it plain.
-  `landing` makes this the card a search's hit opens on: data-landing, which
-  rings it and keeps it a margin inside the edge _thread scrolls it to.
+  `landing` makes this the card a search's hit opens on, or the stepper last
+  stepped to: data-landing, which rings it. Scrolled to the top of the pane or
+  the page, it stops clear of the stepper pinned there (_messages_panel):
+  that one's 8px inset and 36px height, and a 12px gap.
   review_pane_controller keeps the body (data-message-body; a body never
   changes once sent) and data-landing through a morph, so the card's own
   renders, which know no search, never take them away.
@@ -18,7 +20,7 @@
 <%# data-unread is how thread_live_controller knows a live card is someone else's, still unread. %>
 <article id="<%= dom_id(message, :card) %>"
          class="<%= class_names("rounded-lg border border-line p-3 mb-3",
-                                "data-landing:ring-2 data-landing:ring-primary data-landing:scroll-my-4", "bg-warning/10": unread) %>"
+                                "data-landing:ring-2 data-landing:ring-primary data-landing:scroll-mt-14 data-landing:scroll-mb-4", "bg-warning/10": unread) %>"
          <%= tag.attributes(data: { unread: (true if unread), landing: (true if landing) }) %>>
   <div class="flex flex-wrap items-baseline gap-x-2 mb-1 text-sm text-stone-subtle">
     <%# A row written as a team names the team; to the team's members alone

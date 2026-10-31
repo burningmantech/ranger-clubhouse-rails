@@ -1590,6 +1590,36 @@ Both helpers render native `<details>` / `<summary>` markup:
 <% end %>
 ```
 
+### Match Stepper
+
+**Helper**: `UiComponents::UiMatchStepperHelper` (`app/helpers/ui_components/ui_match_stepper_helper.rb`).
+Approved 2026-10-30 for the mailbox's search (slice 2 of `.scratch/messages-search/PRD.md`).
+
+"Match 2 of 3" between a Previous and a Next button, joined (`join`, secondary outline, 36px square
+icon buttons): how a reader walks a search's matches one at a time. The helper is the markup; a
+Stimulus controller of the page's own counts, moves and scrolls.
+
+```erb
+<div class="sticky top-2 z-10 w-fit ms-auto mb-3 bg-base-100 rounded-field">
+  <%= ui_match_stepper "search-matches", label: "Matches in this conversation", current: 1, total: 3 %>
+</div>
+```
+
+- **One stop per record holding a match**, not per highlighted word: the mailbox steps message to
+  message, and the ring that marks the current one is the landing ring a search already draws
+  (`data-landing:ring-2 ring-primary`). No new colour.
+- **Round past either end**, as a browser's Find does: Next on the last goes back to the first. With
+  one match, either button brings it back on screen.
+- **Pinned on its own row** over what it steps through (`sticky top-2`, right-aligned, on the
+  surface's own `bg-base-100`), never in a header that scrolls away. A record it brings to the top
+  stops clear of it: the mailbox's landing card takes `scroll-mt-14` (the stepper's 8px inset, its
+  36px and a 12px gap).
+- **Drawn only when there is a match**, at the one the page opens on: the server knows the count and
+  the landing, so nothing appears or jumps once the page has scrolled.
+- **Accessibility**: a `role="group"` named by `label:`; the count is a polite `role="status"` a
+  screen reader announces as it changes; the buttons are named "Previous match" and "Next match",
+  and keep focus, so Enter steps again.
+
 ### Tabs
 
 **Helper**: `TabsHelper` (`app/helpers/tabs_helper.rb`)
@@ -3960,6 +3990,7 @@ This section provides a condensed reference for common decisions. Use this for q
 | Badge with icon           | `ui_badge`       | `ui_badge "Done", :success, icon: "check"`              |
 | Stat display              | `ui_stat_box`    | `ui_stat_box "95%", "Complete", variant: :success`      |
 | Empty state               | `ui_empty_state` | `ui_empty_state "No items."`                            |
+| Walk a search's matches   | `ui_match_stepper` | `ui_match_stepper "search-matches", label:, current:, total:` |
 | Credit rate over time     | `credit_timeline_chart` | `credit_timeline_chart @timeline`               |
 | HQ shifts over a day      | `hq_forecast_gantt` | `hq_forecast_gantt @report, day`                    |
 

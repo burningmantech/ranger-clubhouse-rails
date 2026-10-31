@@ -1075,6 +1075,29 @@ disclosure is closed, keeping its value. The compose form's Cadre or Delegation 
 <% end %>
 ```
 
+### ui_match_stepper
+
+**File:** `app/helpers/ui_components/ui_match_stepper_helper.rb`
+
+```ruby
+ui_match_stepper(controller, label:, current:, total:)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `controller` | String | The Stimulus identifier the count target and the two buttons' actions name |
+| `label:` | String | The group's accessible name ("Matches in this conversation") |
+| `current:` | Integer | The match the page opens on, counted from 1 |
+| `total:` | Integer | How many there are |
+
+"Match 2 of 3" in a `join` between a Previous and a Next icon button (`chevron-up`,
+`chevron-down`, `btn-square`). The count is a `span` styled as the join's first item, a polite
+`role="status"` and the controller's `count` target; the buttons are `button_action`s named
+"Previous match" and "Next match", acting on `controller#previous` and `controller#next`. The
+controller rewrites the count as it steps. The rules (one stop per record, round past either end,
+pinned on its own row): `docs/DESIGN-GUIDE.md` › Match Stepper. In use on the mailbox's pane, with
+`search-matches` (below).
+
 ### ui_data_block
 
 **File:** `app/helpers/ui_components/ui_data_block_helper.rb`
@@ -1872,8 +1895,31 @@ The scrolling itself is `app/javascript/controllers/scrolling.js`, a module of f
 controller: `reveal(target, container)` (all of the above), `onScreen`, `scrollWithin(scroller,
 target, {offset, behavior})` (a scroller moved until the target's top sits `offset` of its own
 pixels inside it, through any CSS zoom) and `scrollParent` (the nearest ancestor that scrolls, by
-behaviour: overflow-y auto or scroll with more in it than shows). `hq_shift_controller` (a section
-brought under the pinned checklist) and `onboarding_controller` (the tour's scroller) use them too.
+behaviour: overflow-y auto or scroll with more in it than shows). `search_matches_controller`,
+`hq_shift_controller` (a section brought under the pinned checklist) and `onboarding_controller`
+(the tour's scroller) use them too.
+
+### search-matches (Stimulus)
+
+**File:** `app/javascript/controllers/search_matches_controller.js`
+
+```erb
+<%= tag.div data: { review_id: message.id, controller: ("search-matches" if landing) } do %>
+  …
+  <div class="sticky top-2 z-10 w-fit ms-auto mb-3 bg-base-100 rounded-field">
+    <%= ui_match_stepper "search-matches", label: "Matches in this conversation", current:, total: %>
+  </div>
+  <div id="messages-thread">…the cards…</div>
+<% end %>
+```
+
+The mailbox's stepper (`common/messages/_messages_panel`), on a thread opened from a search whose
+messages show a mark. Its stops are the cards holding a `mark.search-hit`, top to bottom; the
+current one is the card with `data-landing`. `#next` and `#previous` move that attribute (the
+card's ring) round past either end, rewrite the count and bring the card into view with
+`scrolling.js`'s `reveal`, the pane first from lg, as the landing does. `review_pane_controller`
+keeps `data-landing` and the marked bodies through the cards' read-state morphs, so the stops and
+the current one last while the thread is open.
 
 **Measuring it:** `window.scrollY` stays `0` in this application — `body` is `h-dvh` and the scroller
 is an inner `div.drawer-content`. Read `document.querySelector(".drawer-content").scrollTop` instead.

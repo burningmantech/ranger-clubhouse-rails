@@ -1453,6 +1453,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a hit's thread marks its matches and lands on the first message holding one" do
+    stepper = "[data-review-id][data-controller=search-matches] [role=group][aria-label='Matches in this conversation']"
     sign_in_as(person(:inactive_ranger))
     swap = person_message(:search_dirt_swap)
     reply_id = ActionView::RecordIdentifier.dom_id(person_message(:search_dirt_swap_reply), :card)
@@ -1466,6 +1467,9 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "article[data-landing]", count: 1
     assert_select "#{reply_card}[data-landing] mark.search-hit", text: "thermos"
     assert_select "#{top_card} mark", count: 0
+    assert_select "#{stepper} [role=status][data-search-matches-target=count]", text: "Match 1 of 1"
+    assert_select "#{stepper} button[aria-label='Next match'][data-action='search-matches#next']"
+    assert_select "#{stepper} button[aria-label='Previous match'][data-action='search-matches#previous']"
 
     # Only the top holds "dirt shift".
     get me_message_path(swap, q: "dirt shift")
@@ -1477,6 +1481,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "article mark.search-hit", count: 2
     assert_select "#{top_card}[data-landing]"
     assert_select "#{reply_card}[data-landing]", count: 0
+    assert_select stepper, text: "Match 1 of 2"
 
     # A hit on the subject or the callsign alone, or no search: no mark, ring or scroll.
     ["Thursday", "AlphaN", nil].each do |q|
@@ -1486,6 +1491,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
       assert_select "article mark", count: 0
       assert_select "article[data-landing]", count: 0
       assert_select "[data-controller=scroll-to-element]", count: 0
+      assert_select "[data-controller=search-matches], [aria-label='Matches in this conversation']", count: 0
     end
   end
 
@@ -1500,6 +1506,8 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "article##{ActionView::RecordIdentifier.dom_id(swap, :card)}:not([data-landing]) mark.search-hit", text: "shift"
     assert_select "article##{ActionView::RecordIdentifier.dom_id(person_message(:search_dirt_swap_reply), :card)}[data-landing] " \
                   "mark.search-hit", text: "thermos"
+    # The stepper opens at the hit, the second of the two messages it stops at.
+    assert_select "[aria-label='Matches in this conversation'] [role=status]", text: "Match 2 of 2"
   end
 
   test "a hit in a message written in the editor is marked in its text, never in its markup" do
