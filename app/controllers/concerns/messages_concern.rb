@@ -690,7 +690,7 @@ module MessagesConcern
   # morph, so the marks never follow another search and a live card never
   # gains any.
   def card_streams
-    [@message, *@message.replies].map do |card|
+    @message.thread_rows.map do |card|
       turbo_stream.replace(helpers.dom_id(card, :card), method: :morph, partial: "common/messages/message_card",
                                                         locals: { message: card, owner: message_owner })
     end

@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { driver } from "driver.js"
 import { patch } from "@rails/request.js"
+import { scrollParent } from "controllers/scrolling"
 
 // The first-sign-in tour (me/dashboard/_onboarding). Each step is a <template>
 // target: data-element names what it points at (none: a centered popover),
@@ -162,8 +163,6 @@ export default class extends Controller {
   // The nearest ancestor that scrolls. On /me that is the drawer's content
   // pane, not the window: the document there is viewport-high.
   scroller() {
-    let el = this.element.parentElement
-    while (el && !/auto|scroll/.test(getComputedStyle(el).overflowY)) el = el.parentElement
-    return el || document.scrollingElement
+    return scrollParent(this.element) || document.scrollingElement
   }
 }

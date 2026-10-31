@@ -1,4 +1,5 @@
 import {Controller} from "@hotwired/stimulus"
+import {reveal} from "controllers/scrolling"
 
 // Connects to data-controller="scroll-to-element"
 //
@@ -19,14 +20,8 @@ import {Controller} from "@hotwired/stimulus"
 //
 // data-scroll-to-element-container-value names, as a selector, an ancestor
 // that scrolls itself in some layouts: the mailbox's pane, from lg up
-// (components/review-pane.css). While it does, it moves first, putting the
-// element at its top less the element's scroll-margin-top; scrollIntoView
-// would move every container around the element too -- the page under the
-// pane, carrying the list beside it away from the row the reader chose -- and
-// its option to stop at the nearest (container: "nearest") is Chrome's alone.
-// The page then moves only if the element is still off screen, as little as
-// it can: when the container itself is -- stacked under the list in the HQ
-// window, or starting too low for its foot to show.
+// (components/review-pane.css). How that one moves, and the page around it,
+// is controllers/scrolling's reveal.
 export default class extends Controller {
     static values = {id: String, container: String}
 
@@ -42,34 +37,8 @@ export default class extends Controller {
 
     reveal() {
         const target = document.getElementById(this.idValue)
-        if (!target || this.onScreen(target)) {
-            return
+        if (target) {
+            reveal(target, this.containerValue)
         }
-
-        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
-        const container = this.containerValue && target.closest(this.containerValue)
-        if (container && ["auto", "scroll"].includes(getComputedStyle(container).overflowY)) {
-            // getBoundingClientRect measures what is drawn, after any CSS zoom
-            // on the way up (the HQ shell's, components/hq-window.css), but
-            // scrollTop counts the container's own pixels.
-            const box = container.getBoundingClientRect()
-            const zoom = container.offsetHeight ? box.height / container.offsetHeight : 1
-            container.scrollTop += (target.getBoundingClientRect().top - box.top) / zoom - container.clientTop -
-                parseFloat(getComputedStyle(target).scrollMarginTop)
-            if (!this.onScreen(target)) {
-                target.scrollIntoView({behavior, block: "nearest"})
-            }
-        } else {
-            target.scrollIntoView({behavior, block: "start"})
-        }
-    }
-
-    // Wholly on screen: the middle of its top and of its bottom edge hit-test to
-    // it, so it is neither clipped by a scroller, past the window's edge, nor
-    // under something drawn over it.
-    onScreen(element) {
-        const {left, right, top, bottom} = element.getBoundingClientRect()
-        const x = (left + right) / 2
-        return [top + 2, bottom - 2].every((y) => element.contains(document.elementFromPoint(x, y)))
     }
 }

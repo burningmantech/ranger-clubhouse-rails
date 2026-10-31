@@ -1863,8 +1863,17 @@ ordinary link visits.) Carry the id as a query parameter instead, and render thi
 ```
 
 It respects `prefers-reduced-motion`. In use on Survey Management
-(`app/views/communication/surveys/show.html.erb`), and in the mailbox, where a search's hit opens
-its thread on the first message holding a match (`app/views/common/messages/_thread.html.erb`).
+(`app/views/communication/surveys/show.html.erb`), on VC › BPGUID Lookup, where a refused link's
+notice streams into the slot above the results (`app/views/vc/bpguid/_link_refused.html.erb`), and
+in the mailbox, where a search's hit opens its thread on the first message holding a match
+(`app/views/common/messages/_thread.html.erb`).
+
+The scrolling itself is `app/javascript/controllers/scrolling.js`, a module of functions, not a
+controller: `reveal(target, container)` (all of the above), `onScreen`, `scrollWithin(scroller,
+target, {offset, behavior})` (a scroller moved until the target's top sits `offset` of its own
+pixels inside it, through any CSS zoom) and `scrollParent` (the nearest ancestor that scrolls, by
+behaviour: overflow-y auto or scroll with more in it than shows). `hq_shift_controller` (a section
+brought under the pinned checklist) and `onboarding_controller` (the tour's scroller) use them too.
 
 **Measuring it:** `window.scrollY` stays `0` in this application — `body` is `h-dvh` and the scroller
 is an inner `div.drawer-content`. Read `document.querySelector(".drawer-content").scrollTop` instead.

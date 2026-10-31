@@ -99,7 +99,7 @@ module MessagesHelper
   # for a hit on the subject or the other party's callsign alone. Both read the
   # text the search matched (body_text), never the editor's markup.
   def message_list_snippet(message, query)
-    rows = [message, *message.replies]
+    rows = message.thread_rows
     if query.present?
       pattern = message_search_pattern(query)
       match = message_search_pick(rows.select { |row| row.body_text.match?(pattern) }, query)

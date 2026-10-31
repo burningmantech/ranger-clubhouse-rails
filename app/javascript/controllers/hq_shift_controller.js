@@ -1,4 +1,5 @@
 import UnsavedChanges from "controllers/unsaved_changes_controller";
+import { scrollParent, scrollWithin } from "controllers/scrolling";
 
 // HQ Window shift page controller — port of the client state machine in
 // port/controllers/hq/shift.js + port/components/hq-timesheet-verification.js
@@ -353,7 +354,9 @@ export default class extends UnsavedChanges {
     // the pinned checklist overlays the top of it — so scroll the container by
     // hand and stop short by the checklist's height, or the section heading
     // lands underneath it. Upstream did the same by passing "todo-list" as
-    // scrollToAccordion's offset element.
+    // scrollToAccordion's offset element. The height as drawn: the checklist
+    // is inside the HQ shell's zoom (components/hq-window.css), the drawer
+    // outside it.
     openAndScroll(sectionId) {
         const section = document.getElementById(sectionId);
         if (!section) {
@@ -371,7 +374,7 @@ export default class extends UnsavedChanges {
         });
         section.open = true;
 
-        const scroller = this.scrollParent(section);
+        const scroller = scrollParent(section);
         const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const behavior = reduced ? "auto" : "smooth";
         if (!scroller) {
@@ -379,24 +382,8 @@ export default class extends UnsavedChanges {
             return;
         }
 
-        const pinned = document.getElementById("hq-todo-list")?.offsetHeight ?? 0;
-        const delta = section.getBoundingClientRect().top -
-            scroller.getBoundingClientRect().top - pinned;
-        scroller.scrollTo({ top: scroller.scrollTop + delta, behavior });
-    }
-
-    // The scrolling ancestor by behaviour, not by selector: the layout nests a
-    // plain <main> inside the overflow-y-auto drawer, so matching on tag or
-    // class picks the wrong element and every scroll silently does nothing.
-    scrollParent(el) {
-        for (let node = el.parentElement; node; node = node.parentElement) {
-            const overflowY = getComputedStyle(node).overflowY;
-            if ((overflowY === "auto" || overflowY === "scroll") &&
-                node.scrollHeight > node.clientHeight) {
-                return node;
-            }
-        }
-        return null;
+        const pinned = document.getElementById("hq-todo-list")?.getBoundingClientRect().height ?? 0;
+        scrollWithin(scroller, section, { offset: pinned, behavior });
     }
 
     // Focused directly rather than on the next animation frame: streams apply

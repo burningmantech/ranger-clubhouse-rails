@@ -9,7 +9,7 @@
   <%= hidden_field_tag :message_id, message.id %>
   <%# The newest card the thread shows (MessageReplyForm#shown_through); after a
       send, the one the page was drawn with. %>
-  <%= f.hidden_field :shown_through, value: reply_form.shown_through || [message, *message.replies].map(&:id).max %>
+  <%= f.hidden_field :shown_through, value: reply_form.shown_through || message.thread_rows.map(&:id).max %>
   <%# As a team the owner is on now (.scratch/team-messaging/PRD.md): the team's
       name on the card, the owner's callsign to the team's members alone. Absent
       where there is no such team. Their own name first, as the form's nil; the

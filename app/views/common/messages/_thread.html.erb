@@ -10,7 +10,7 @@
     the marker, which names the pane as the scroller to move from lg. Both are
     drawn here alone: review_pane_controller keeps them through the cards'
     read-state morphs, whose renders know no search. %>
-<% rows = [message, *message.replies] %>
+<% rows = message.thread_rows %>
 <% bodies = rows.map { |row| message_body_marks(message_body(row), q) } %>
 <% landing = message_search_landing(rows, bodies, q) %>
 <% if landing %>

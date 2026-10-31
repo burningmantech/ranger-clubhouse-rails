@@ -664,6 +664,10 @@ class PersonMessage < ApplicationRecord
     team_ids.map { |team_id| team_name(team_id) } + named.filter_map(&:person).map(&:callsign).sort_by(&:downcase)
   end
 
+  # The thread as its reader reads it: this message, then its replies, oldest
+  # first.
+  def thread_rows = [self, *replies]
+
   ##
   # Mark the entire thread as read for a person: their member row, through
   # the rows shown (PersonMessageMember#mark_read!). +through+ caps them at the
@@ -671,7 +675,7 @@ class PersonMessage < ApplicationRecord
   # ones it never did (a reply's author, MessagesConcern#create_reply).
   #
   def mark_thread_read!(user_id, through: nil)
-    rows = [self, *replies]
+    rows = thread_rows
     rows = rows.select { |row| row.id <= through } if through
     member(user_id).mark_read!(rows)
   end
@@ -687,7 +691,7 @@ class PersonMessage < ApplicationRecord
     if read
       mark_thread_read!(user_id)
     else
-      member(user_id).mark_unread_from!([self, *replies].reject { |row| row.sender?(user_id) }.max_by(&:id))
+      member(user_id).mark_unread_from!(thread_rows.reject { |row| row.sender?(user_id) }.max_by(&:id))
     end
     read
   end
@@ -719,7 +723,7 @@ class PersonMessage < ApplicationRecord
     return true if has_expired?
     return false if member(user_id)&.last_read_message_id.nil?
 
-    [self, *replies].all? { |row| row.read?(user_id) }
+    thread_rows.all? { |row| row.read?(user_id) }
   end
 
   def unread?(user_id)
