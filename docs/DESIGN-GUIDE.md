@@ -772,11 +772,12 @@ highlighter off every one — so a mark always carries the class.
 
 **Purpose:** a conversation's messages, drawn as a chat (`common/messages/_message_card`). The
 mailbox owner's own rows (`PersonMessage#sender?`) sit at the end of the thread in `bg-primary/15`;
-everyone else's sit at the start on `bg-base-300`, or `bg-warning/15` while unread, beside the "New"
-chip. Each bubble is `rounded-lg` with the corner nearest its author squared to `rounded-sm`, and is
+everyone else's sit at the start on `bg-base-300`, or `bg-warning/10` while unread, beside the "New"
+chip. The colours go on a wrapper around `[data-message-body]`, which read-state morphs never touch. Each bubble is `rounded-lg` with the corner nearest its author squared to `rounded-sm`, and is
 at most five-sixths of the pane wide. The name and time sit above the bubble, on its side.
 `#messages-thread` is a column with `gap-4`, so the cards carry no margin. The header is one row:
-avatar, name and subject, then ghost buttons that wrap under it on a phone. Owner-approved
+avatar, name and subject, then ghost toggles (the HQ loop's Next Unread stays outlined) that wrap
+under it on a phone, still at the end. Owner-approved
 2026-10-31 in `/impeccable live` ("two-sided bubbles", tint).
 
 #### DaisyUI Component Utilities

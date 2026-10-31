@@ -27,7 +27,9 @@
 <% end %>
 
 <%# Who and what on one row with the avatar, the controls at its end; on a
-    phone the controls wrap under it (basis-48). %>
+    phone the controls wrap under it (basis-48), still at the end (ms-auto).
+    The toggles are ghosts; the HQ loop's Next Unread and Back to Messages
+    keep the outline, as the control a shift manager reaches for each time. %>
 <div class="grow basis-48 min-w-0">
   <%# The other party, weighted like the list row this was opened from %>
   <div class="text-lg font-semibold text-heading">
@@ -42,7 +44,7 @@
     <% end %>
   </div>
 
-  <div class="text-stone-subtle">
+  <div class="text-body">
     <%= message.subject %>
     <% if is_archived %>
       <%= ui_badge "Archived", :secondary %>
@@ -50,7 +52,7 @@
   </div>
 </div>
 
-<div class="flex flex-wrap justify-end gap-1">
+<div class="ms-auto flex flex-wrap gap-1">
   <%# An expired message always reads as read (PersonMessage#read?), so the
       toggle would change nothing anyone sees. %>
   <% unless message.has_expired? %>
@@ -86,10 +88,10 @@
       page visit below lg); with none left, back to the list. %>
   <% unless mark_read_on_view? %>
     <% if (next_unread = next_unread_id(message)) %>
-      <%= button_link "Next Unread", :ghost, message_path(next_unread, folder:, **search_scope),
+      <%= button_link "Next Unread", :secondary, message_path(next_unread, folder:, **search_scope),
                       icon: "arrow-right", icon_type: :solid, data: { turbo_frame: "messages-pane" } %>
     <% else %>
-      <%= button_link "Back to Messages", :ghost, messages_path(folder:, **search_scope),
+      <%= button_link "Back to Messages", :secondary, messages_path(folder:, **search_scope),
                       icon: "arrow-left", icon_type: :solid, data: { turbo_frame: "_top" } %>
     <% end %>
   <% end %>

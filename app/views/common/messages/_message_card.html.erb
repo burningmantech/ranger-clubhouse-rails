@@ -19,9 +19,10 @@
 %>
 <% unread = message.unread?(owner.id) %>
 <%# A chat's two sides: the owner's own rows at the end, in a primary tint; everyone
-    else's at the start, on the deepest neutral -- or the warning tint while unread.
-    The corner nearest the author's side is squared off. Owner-approved 2026-10-31
-    (/impeccable live, "two-sided bubbles"). %>
+    else's at the start, on the deepest neutral -- or the warning tint while unread
+    (an author's own row never is: PersonMessage#read?). The corner nearest the
+    author's side is squared off. Owner-approved 2026-10-31 (/impeccable live,
+    "two-sided bubbles"). %>
 <% mine = message.sender?(owner.id) %>
 <%# data-unread is how thread_live_controller knows a live card is someone else's, still unread. %>
 <article id="<%= dom_id(message, :card) %>"
@@ -48,9 +49,16 @@
   <%# wrap-anywhere: a long URL is one unbreakable word that would push the card past the pane.
       The editor's HTML is sanitized (rich_text) and read with lexxy-content's
       rules; a plain body -- everything from before the editor -- keeps its
-      line breaks and has its addresses and numbers linked. %>
-  <div class="<%= class_names("px-3.5 py-2.5 rounded-lg text-body wrap-anywhere",
+      line breaks and has its addresses and numbers linked. The editor's last
+      paragraph keeps a 1rem margin below it (lexxy-content.css), which inside
+      a bubble is dead space: *:last:mb-0 takes it off.
+
+      The bubble's colours sit on a wrapper, not on the body: a read-state
+      morph never touches the body (review_pane_controller#keepBody), so a
+      tint there would stay amber after Mark Read. %>
+  <div class="<%= class_names("px-3.5 py-2.5 rounded-lg",
                               mine ? "bg-primary/15 rounded-se-sm" : "rounded-ss-sm",
-                              "bg-warning/15": !mine && unread, "bg-base-300": !mine && !unread,
-                              "lexxy-content": message.rich_text?) %>" data-message-body><%= body || message_body(message) %></div>
+                              "bg-warning/10": unread, "bg-base-300": !mine && !unread) %>">
+    <div class="<%= class_names("text-body wrap-anywhere *:last:mb-0", "lexxy-content": message.rich_text?) %>" data-message-body><%= body || message_body(message) %></div>
+  </div>
 </article>

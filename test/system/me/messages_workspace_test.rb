@@ -173,9 +173,12 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     click_on "Mark Unread"
     assert_selector "#{row(@thread)}[aria-current=true].messages-conversation-unread"
     assert_selector "#messages-folder-selector [role=tab][aria-selected=true]", text: "Unread"
+    # The cards morph with the read state, their bubbles' tint included.
+    assert_selector "#messages-thread article[data-unread] .bg-warning\\/10 > [data-message-body]"
 
     click_on "Mark Read"
     assert_selector "#messages-panel-header", text: "Mark Unread"
+    assert_no_selector "#messages-thread .bg-warning\\/10"
     assert_no_selector row(@thread)
     assert_selector row(@other)
     assert_selector "#messages-folder-selector [role=tab][aria-selected=true]", text: "Unread"
