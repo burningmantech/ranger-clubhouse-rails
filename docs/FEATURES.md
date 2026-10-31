@@ -3427,6 +3427,7 @@ Touches: `action_logs`, `person`, `slot`, `position`, `role`, `team`
 Verify: `test/controllers/admin/action_logs_controller_test.rb`, `test/models/action_log_test.rb`, `test/helpers/admin/action_logs_helper_test.rb`
 Trap: Unfiltered, `ActionLog.find_for_query` skips `count`: the total is last id minus first id plus one, with `:approximate_total` set; only a filtered query counts. The page itself is Pagy's countless mode (2026-10-26, SMS Management issue 16): `find_for_query` returns `{ action_logs:, pagy:, total:, approximate_total: }`, the pager reads the Pagy and `action_log_pager_summary` the total, and a callsign no one has runs the same query on `ActionLog.none` (the estimate is asked of the scope, so it finds none). One change from before: a filter with no matches on a hand-typed page past 1 now shows Previous, as an unknown callsign and any other page past the end already did.
 Trap: `user_agent` is the raw `User-Agent` header (`ActionLog.record` via `Current.user_agent`) — `Admin::ActionLogsHelper` must return plain strings for the view to escape, never `html_safe`.
+Trap: `page-visit` rows with no `person_id` are gone after 48 hours (`ExpireAnonymousPageVisitsJob`, 4am), so the page shows no older anonymous traffic; every other row is kept for good.
 Trap: a typed From or Until counts only when it names a whole date (`UiComponents::FilterBarHelper.filter_time`, which every admin log filter and the on-duty page read their times through); `Time.zone.parse` alone reads "26" as the 26th of this month, which this page did until 2026-10-25. A time it cannot read narrows nothing and draws no chip (`ActionLogFilterForm#query_params`).
 
 ### Background Jobs
@@ -3587,6 +3588,15 @@ Owner: `PersonMessage.expire_broadcasts!` (`app/models/person_message.rb`) — b
 Touches: `person_message` (w) (any Clubhouse 2 replies too — broadcasts take none now), `person_message_member` (w)
 Verify: `test/jobs/expire_broadcast_messages_job_test.rb`
 Trap: only RBS rows are swept — any other row with an `expires_at` (Clubhouse 2 data) stays, though `PersonMessage#has_expired?` hides it all the same.
+
+### Page visit expiry (ExpireAnonymousPageVisitsJob)
+Runs: `expire_anonymous_page_visits` 4am daily — production only, not GHD
+Job: `app/jobs/expire_anonymous_page_visits_job.rb`
+Owner: `ActionLog.expire_anonymous_page_visits` — deletes `page-visit` rows with no `person_id` older than `ActionLog::EXPIRE_PAGE_VISIT_HOURS` (48), as `DELETE ... LIMIT 10,000` with a 0.3s pause between batches
+Touches: `action_logs` (w)
+Verify: `test/jobs/expire_anonymous_page_visits_job_test.rb`
+Trap: the one exception to the 2026-10-29 ruling that no action log is deleted (narrowed 2026-10-31). Other rows with no `person_id` (`person-update`, `person-role-add`, `auth-failed` and the like) record what the system did, and they stay.
+Trap: "no person" is wider than signed out. `RequestLogger` reads `Current.person`, which is set only once a controller looked up the session, so a signed-in member's visit to a page that never asks, or to a path nothing answers, is expired too.
 
 ### Expired Handle Reservations (ExpireHandleReservationsJob)
 Runs: `expire_handle_reservations` 5am daily — production only, not GHD; mails the Volunteer Coordinators (`EmailAddresses::VOLUNTEER_COORDINATORS_TEAM`) only when something expired

@@ -3,6 +3,17 @@
 class ActionLog < ApplicationRecord
   PAGE_SIZE_DEFAULT = 50
 
+  # Page visits with no person (RequestLogger) are kept this long, then removed
+  # by ExpireAnonymousPageVisitsJob; no other production row is ever deleted.
+  # "No person" is wider than signed out: Current.person is set only once a
+  # controller looked up the session, so a signed-in member's visit to a page
+  # that never asks, or to a path nothing answers, has none either.
+  EXPIRE_PAGE_VISIT_HOURS = 48
+  EXPIRE_PAGE_VISIT_BATCH_SIZE = 10_000
+  # A breather between batches, so the first run's backlog does not hold up
+  # the inserts every request makes.
+  EXPIRE_PAGE_VISIT_PAUSE = 0.3
+
   belongs_to :person, optional: true
   belongs_to :target_person, class_name: "Person", optional: true
 
@@ -14,6 +25,24 @@ class ActionLog < ApplicationRecord
 
   class << self
     include Pagy::Method
+
+    # Remove page visits with no person older than EXPIRE_PAGE_VISIT_HOURS.
+    # Each batch is one DELETE ... LIMIT over the person_id/created_at index,
+    # rather than in_batches' id lookup ordered by the primary key.
+    #
+    # @return [Integer] how many rows were removed
+    def expire_anonymous_page_visits(batch_size: EXPIRE_PAGE_VISIT_BATCH_SIZE, pause: EXPIRE_PAGE_VISIT_PAUSE)
+      scope = where(person_id: nil, event: "page-visit").where("created_at <= ?", EXPIRE_PAGE_VISIT_HOURS.hours.ago)
+      total = 0
+      loop do
+        deleted = scope.limit(batch_size).delete_all
+        total += deleted
+        break if deleted < batch_size
+
+        sleep pause
+      end
+      total
+    end
 
     # Retrieve action log records based on the given query criteria: a page
     # of them, paged by Pagy's countless mode (a row past the page says whether
