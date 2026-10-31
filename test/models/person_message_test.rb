@@ -148,6 +148,19 @@ class PersonMessageTest < ActiveSupport::TestCase
     assert_nil PersonMessage.search_pattern("book stack").match("filed under gate_log_book.")
   end
 
+  # The columns compare letters without their accents (utf8mb4_unicode_ci), so
+  # the database finds "Café" for "cafe", and the marks follow it.
+  test "the search's pattern matches a word with or without its accents, as the database does" do
+    assert_equal "Café", PersonMessage.search_pattern("cafe").match("Meet at the Café.")[0]
+    assert_equal "cafe", PersonMessage.search_pattern("café").match("Meet at the cafe.")[0]
+    assert_equal "Cafe\u0301s", PersonMessage.search_pattern("CAFE").match("Two Cafe\u0301s.")[0]
+    assert_equal "Señora", PersonMessage.search_pattern("senor").match("La Señora")[0]
+    # A query of short words alone is matched whole, its letters the same way.
+    assert_equal "Ça va", PersonMessage.search_pattern("ca va").match("Ça va?")[0]
+    # Anything but a letter stays as typed: "c.f" is no pattern.
+    assert_nil PersonMessage.search_pattern("c.f").match("cxf")
+  end
+
   test "search matches the start of the other party's callsign" do
     assert_equal [@swap], search("alphan")
     # Compared as the compose form's lookup compares them: no case, accents or punctuation.

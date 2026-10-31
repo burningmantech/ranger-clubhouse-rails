@@ -225,7 +225,7 @@ module MessagesHelper
   # PersonMessage.search_for_person matched must (each word the start of one),
   # or else the first. One word alone matches anywhere it marks.
   def message_search_pick(rows, query)
-    words = PersonMessage.search_words(query).map { |word| /(?<![[:alnum:]_])#{Regexp.escape(word)}/i }
+    words = PersonMessage.search_words(query).map { |word| /(?<![[:alnum:]_])#{PersonMessage.search_word_pattern(word)}/i }
     rows.find { |row| words.all? { |word| word.match?(row.subject) || word.match?(row.body_text) } } || rows.first
   end
 

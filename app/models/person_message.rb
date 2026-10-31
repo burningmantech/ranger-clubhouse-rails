@@ -51,6 +51,18 @@ class PersonMessage < ApplicationRecord
   # words already. Never indexed, so search_for_person leaves them out.
   SEARCH_STOPWORDS = %w[about are com for from how that the this und was what when where who will with www].to_set.freeze
 
+  # The letters the search's columns compare without their accents
+  # (utf8mb4_unicode_ci), so the database finds "Café" for "cafe" and "cafe" for
+  # "café": each base letter with the accented forms Latin-1 and Latin Extended
+  # A, B and Additional make of it, and the marks after it in text written
+  # decomposed. search_word_pattern matches the same.
+  SEARCH_ACCENTED_LETTERS = [*0xC0..0x24F, *0x1E00..0x1EFF].map { |code| code.chr(Encoding::UTF_8) }
+                                                            .select { |char| char.downcase.length == 1 }
+                                                            .group_by { |char| char.unicode_normalize(:nfd)[0].downcase }
+                                                            .select { |base, _| base.match?(/\A[a-z]\z/) }
+                                                            .to_h { |base, chars| [base, "[#{base}#{chars.map(&:downcase).uniq.join}]\\p{Mn}*"] }
+                                                            .freeze
+
   # The most text a message may hold, its markup not counted, and the most
   # markup that may carry it (MessageTextValidator): the column holds 16MB.
   MAX_TEXT = 4000
@@ -327,9 +339,15 @@ class PersonMessage < ApplicationRecord
   # the start of a word to its end, or the whole query where no word was left.
   def self.search_pattern(query)
     words = search_words(query)
-    return /#{Regexp.escape(query.to_s.strip)}/i if words.empty?
+    return /#{search_word_pattern(query.to_s.strip)}/i if words.empty?
 
-    /(?<![[:alnum:]_])(?:#{words.map { |word| Regexp.escape(word) }.join("|")})[[:alnum:]_]*/i
+    /(?<![[:alnum:]_])(?:#{words.map { |word| search_word_pattern(word) }.join("|")})[[:alnum:]_]*/i
+  end
+
+  # +text+ as a pattern that compares its letters as the database does, with
+  # or without an accent (SEARCH_ACCENTED_LETTERS); anything else as it is.
+  def self.search_word_pattern(text)
+    text.unicode_normalize(:nfd).gsub(/\p{Mn}/, "").each_char.map { |char| SEARCH_ACCENTED_LETTERS[char.downcase] || Regexp.escape(char) }.join
   end
 
   ##

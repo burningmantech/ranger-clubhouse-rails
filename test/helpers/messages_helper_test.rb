@@ -76,6 +76,22 @@ class MessagesHelperTest < ActionView::TestCase
     assert_nil landing.call(nil)
   end
 
+  # The database finds "Café" for "cafe" (utf8mb4_unicode_ci): the marks, the
+  # landing and the list's snippet read the word the same way.
+  test "a search's marks, landing and snippet find a word with or without its accents" do
+    assert_equal %(Meet at the <mark class="search-hit">Café</mark>.), message_search_marks("Meet at the Café.", "cafe")
+
+    top = PersonMessage.new(subject: "Coffee", body: "Coffee at noon")
+    reply = PersonMessage.new(subject: "Coffee", body: "Meet at the café after")
+    rows = [top, reply]
+    bodies = rows.map { |row| message_body_marks(ERB::Util.html_escape(row.body_text), "CAFE") }
+    assert_includes bodies.last, %(<mark class="search-hit">café</mark>)
+    assert_equal reply, message_search_landing(rows, bodies, "CAFE")
+
+    top.replies = [reply]
+    assert_includes message_list_snippet(top, "cafe"), %(<mark class="search-hit">café</mark>)
+  end
+
   test "message_list_snippet quotes the message holding every word of the search" do
     swap = person_message(:search_dirt_swap)
     assert_equal %(Sure, I&#39;ll bring the <mark class="search-hit">thermos</mark>.), message_list_snippet(swap, "thermos shift")
