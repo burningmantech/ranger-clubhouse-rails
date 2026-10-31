@@ -380,9 +380,13 @@ class Person::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "#messages-thread article", count: 2
     assert_select "#messages-thread article .badge", text: "New", count: 1
-    assert_select "#messages-thread article[class*='bg-warning/10']", count: 1 do
+    assert_select "#messages-thread article[data-unread]", count: 1 do
       assert_select ".badge", text: "New"
-      assert_match "Their message", @selected.first.text
+      assert_select "[data-message-body][class*='bg-warning/15']", text: /Their message/
+    end
+    # The mailbox owner's own row sits at the end of the thread, in the primary tint.
+    assert_select "#messages-thread article.self-end", count: 1 do
+      assert_select "[data-message-body][class*='bg-primary/15']", text: /The person's reply/
     end
   end
 

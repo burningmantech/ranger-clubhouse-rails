@@ -1,6 +1,6 @@
 <%# locals: (message:, owner:, body: nil, landing: false) %>
 <%#
-  One message of a thread: who, when, and the body, stacked newest last
+  One message of a thread: who, when, and the body as a bubble, stacked newest last
   (ruling D3 of .scratch/messaging-rework/PRD.md). A row the owner has not read
   is tinted and chipped "New" -- the warning vocabulary every unread mark uses.
   `owner` is a local rather than the message_owner helper so a broadcast render
@@ -18,19 +18,25 @@
   renders, which know no search, never take them away.
 %>
 <% unread = message.unread?(owner.id) %>
+<%# A chat's two sides: the owner's own rows at the end, in a primary tint; everyone
+    else's at the start, on the deepest neutral -- or the warning tint while unread.
+    The corner nearest the author's side is squared off. Owner-approved 2026-10-31
+    (/impeccable live, "two-sided bubbles"). %>
+<% mine = message.sender?(owner.id) %>
 <%# data-unread is how thread_live_controller knows a live card is someone else's, still unread. %>
 <article id="<%= dom_id(message, :card) %>"
-         class="<%= class_names("rounded-lg border border-line p-3 mb-3",
-                                "data-landing:ring-2 data-landing:ring-primary data-landing:scroll-mt-18 data-landing:scroll-mb-4", "bg-warning/10": unread) %>"
+         class="<%= class_names("flex flex-col max-w-5/6 rounded-lg",
+                                "data-landing:ring-2 data-landing:ring-primary data-landing:scroll-mt-18 data-landing:scroll-mb-4",
+                                mine ? "self-end items-end" : "self-start items-start") %>"
          <%= tag.attributes(data: { unread: (true if unread), landing: (true if landing) }) %>>
-  <div class="flex flex-wrap items-baseline gap-x-2 mb-1 text-sm text-stone-subtle">
+  <div class="flex flex-wrap items-baseline gap-x-2 mx-2 mb-1 text-sm text-stone-subtle">
     <%# A row written as a team names the team; to the team's members alone
         (PersonMessage#reveals_author_to?) it names its author, as an individual
         row would, chipped with the team it was sent or replied as. An
         individual row by someone marked a team member who has since left the
         team says so to everyone (#former_team). %>
     <% revealed = message.reveals_author_to?(owner.id) %>
-    <span class="font-semibold text-base text-heading"><%= revealed ? message.author_callsign : message.sender_name %></span>
+    <span class="font-semibold text-heading"><%= revealed ? message.author_callsign : message.sender_name %></span>
     <% if revealed %>
       <%= ui_badge "#{message.reply_to_id ? "Replied" : "Sent"} as #{message.sender_name}", :secondary %>
     <% elsif (former = message.former_team) %>
@@ -43,5 +49,8 @@
       The editor's HTML is sanitized (rich_text) and read with lexxy-content's
       rules; a plain body -- everything from before the editor -- keeps its
       line breaks and has its addresses and numbers linked. %>
-  <div class="<%= class_names("text-body wrap-anywhere", "lexxy-content": message.rich_text?) %>" data-message-body><%= body || message_body(message) %></div>
+  <div class="<%= class_names("px-3.5 py-2.5 rounded-lg text-body wrap-anywhere",
+                              mine ? "bg-primary/15 rounded-se-sm" : "rounded-ss-sm",
+                              "bg-warning/15": !mine && unread, "bg-base-300": !mine && !unread,
+                              "lexxy-content": message.rich_text?) %>" data-message-body><%= body || message_body(message) %></div>
 </article>

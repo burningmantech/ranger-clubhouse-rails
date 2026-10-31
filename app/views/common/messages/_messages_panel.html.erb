@@ -12,7 +12,7 @@
 <% bodies = rows.map { |row| message_body_marks(message_body(row), q) } %>
 <% landing = message_search_landing(rows, bodies, q) %>
 <%= tag.div data: { review_id: message.id, controller: ("search-matches" if landing) } do %>
-  <%= turbo_frame_tag "messages-panel-header", class: "flex items-start gap-3 mb-3" do %>
+  <%= turbo_frame_tag "messages-panel-header", class: "flex flex-wrap items-center gap-3 pb-3 mb-3 border-b border-line/25" do %>
     <%= render partial: "common/messages/messages_panel_header", locals: { message:, folder: } %>
   <% end %>
 
@@ -37,13 +37,14 @@
       walk-up takes no reply, so it listens for none. %>
   <% live = message.accepts_replies? %>
   <%= turbo_stream_from message_owner, message, channel: MailboxStreamsChannel if live %>
-  <%= tag.div id: "messages-thread", role: "log", aria: { label: "Conversation", live: "polite" },
+  <%# A column, so each card can sit at its own side (_message_card). %>
+  <%= tag.div id: "messages-thread", class: "flex flex-col gap-4 pb-4", role: "log", aria: { label: "Conversation", live: "polite" },
               data: ({ controller: "thread-live",
                        thread_live_url_value: mark_read_message_path(message) } if live && mark_read_on_view?) do %>
     <%= render partial: "common/messages/thread", locals: { message:, owner: message_owner, rows:, bodies:, landing: } %>
   <% end %>
 
-  <div class="border-t border-line pt-3">
+  <div class="border-t border-line/25 pt-3">
     <%= turbo_frame_tag "messages-reply-form" do %>
       <% if message.accepts_replies? %>
         <%= render partial: "common/messages/reply_form", locals: { message:, reply_form: } %>

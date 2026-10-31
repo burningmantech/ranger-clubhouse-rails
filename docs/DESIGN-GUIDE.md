@@ -767,6 +767,18 @@ the line it sits in, so contrast is the line's own. It needs no `dark:` variant:
 re-resolves per theme. A bare `<mark>` shows nothing — `components/lexxy.css` takes the browser's
 highlighter off every one — so a mark always carries the class.
 
+
+#### Message Bubbles
+
+**Purpose:** a conversation's messages, drawn as a chat (`common/messages/_message_card`). The
+mailbox owner's own rows (`PersonMessage#sender?`) sit at the end of the thread in `bg-primary/15`;
+everyone else's sit at the start on `bg-base-300`, or `bg-warning/15` while unread, beside the "New"
+chip. Each bubble is `rounded-lg` with the corner nearest its author squared to `rounded-sm`, and is
+at most five-sixths of the pane wide. The name and time sit above the bubble, on its side.
+`#messages-thread` is a column with `gap-4`, so the cards carry no margin. The header is one row:
+avatar, name and subject, then ghost buttons that wrap under it on a phone. Owner-approved
+2026-10-31 in `/impeccable live` ("two-sided bubbles", tint).
+
 #### DaisyUI Component Utilities
 
 Custom utility classes that provide semantic aliases for DaisyUI-inspired component patterns. These utilities abstract
