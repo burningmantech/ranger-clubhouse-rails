@@ -378,6 +378,35 @@ class AutocompleteComponentTest < ApplicationSystemTestCase
     assert_no_selector "html[data-error-shown='true']", visible: :all
   end
 
+  # A free-text field's lead row is its text (the mailbox search): leaving the
+  # field leaves it, select-on-blur or not. Only a search's first row is that
+  # row, never a recent's: Enter takes a recent the reader moved to.
+  test "a free-text field's own row is never taken on leaving it, and a recent is taken by Enter" do
+    visit test_harness_autocomplete_path
+    count_changes("test-free-text-autocomplete")
+    input = find("#test-free-text-autocomplete-input")
+
+    input.fill_in with: "CustomGender"
+    assert_selector "#free-text-fixture [role='option'][aria-selected='true']", count: 1, wait: 5
+    find("#free-text-sink").click
+    assert_no_selector "#free-text-fixture [role='option']"
+    assert_equal [], page.evaluate_script("window.changes")
+    assert_equal "CustomGender", input.value
+
+    # Recents show on the empty field's focus, a fresh page's.
+    page.execute_script(<<~JS)
+      localStorage.setItem("ac-recents-test_free_text", JSON.stringify([{value: "7", label: "Recent Ranger"}]))
+    JS
+    visit test_harness_autocomplete_path
+    count_changes("test-free-text-autocomplete")
+    find("#test-free-text-autocomplete-input").click
+    assert_selector "#free-text-fixture [role='option']", text: "Recent Ranger", wait: 5
+    find("#test-free-text-autocomplete-input").send_keys(:arrow_down, :enter)
+    assert_equal ["Recent Ranger"], page.evaluate_script("window.changes")
+  ensure
+    page.execute_script("localStorage.removeItem('ac-recents-test_free_text')")
+  end
+
   test "select-on-blur commits the sole result when focus leaves the input" do
     visit test_harness_autocomplete_path
 
@@ -597,6 +626,14 @@ class AutocompleteComponentTest < ApplicationSystemTestCase
   end
 
   private
+
+  # Every autocomplete.change from the component +id+, by its text, in window.changes.
+  def count_changes(id)
+    page.execute_script(<<~JS)
+      window.changes = []
+      document.getElementById(#{id.to_json}).addEventListener("autocomplete.change", (event) => window.changes.push(event.detail.textValue))
+    JS
+  end
 
   # Keys and then a click, sent as one command, so the click lands inside the
   # debounce the keys started. The pointer's move is given no time: by default it

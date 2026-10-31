@@ -20,7 +20,9 @@
     <%= render partial: "shared/callsign_chip", collection: search_with, as: :callsign,
                locals: { name: "with[]", controller: "message-search" } %>
   </span>
+  <%# input_id: the component's ids, its text's included, are the same on every render. %>
   <%= render "shared/autocomplete", url: suggest_messages_path, name: "q", value: search_query, type: "search",
+                                    input_id: "messages-search-autocomplete",
                                     maxlength: 100, placeholder: "Search messages", aria_label: "Search Messages",
                                     form_field: true, free_text: true, positioned: false,
                                     wrapper_class: "flex-1 min-w-32",

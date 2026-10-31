@@ -85,6 +85,27 @@
     <input type="text" id="blur-sink" class="mt-4 border border-line rounded p-2" />
   </div>
 
+  <%# Free-text variant, with select-on-blur and recents: the first row of a
+      search's results is the text's own (free_text), which nothing takes but
+      a reader's pick; a recent is no such row. %>
+  <%# Bare markup: the variants above already show how the page looks. %>
+  <div id="free-text-fixture">
+    <h2>Free Text Variant</h2>
+    <%# Above the field, where its list cannot cover it %>
+    <input type="text" id="free-text-sink" />
+    <%= render "shared/autocomplete",
+      url: autocomplete_search_path,
+      mode: "person_manage",
+      name: "q",
+      input_id: "test-free-text-autocomplete",
+      placeholder: "Search (free text)...",
+      form_field: true,
+      free_text: true,
+      select_on_blur: true,
+      recents_key: "test_free_text",
+      aria_label: "Search with free text" %>
+  </div>
+
   <%# Placement variant - pushed to bottom of viewport to test above-placement %>
   <div style="min-height: 90vh;"></div>
   <div class="max-w-lg mx-auto p-8" id="placement-fixture">

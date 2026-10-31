@@ -5,7 +5,8 @@ import {Controller} from "@hotwired/stimulus"
 // becomes a chip carrying the value the form sends; its button removes it.
 // The server checks every callsign on send, so a typed one is taken as typed.
 // With a max (the HQ window's relay names one sender), a new chip past it
-// replaces the oldest.
+// replaces the oldest. The mailbox search's chips are these, less the typed
+// text (message_search_controller extends this one).
 //
 // Text never made a chip is never dropped unseen (review finding 5): the
 // lookup input has no name, so the form's submit makes it a chip first, and the
@@ -32,8 +33,8 @@ export default class extends Controller {
     // A Find Recipient choice is streamed in (MessagesConcern#select_callsign),
     // past addChip, so one already chipped goes here.
     chipTargetConnected(chip) {
-        const callsign = this.valueOf(chip).toLowerCase()
-        if (this.chipTargets.some(other => other !== chip && this.valueOf(other).toLowerCase() === callsign)) chip.remove()
+        const callsign = this.chipValue(chip).toLowerCase()
+        if (this.chipTargets.some(other => other !== chip && this.chipValue(other).toLowerCase() === callsign)) chip.remove()
     }
 
     // On the field, so the autocomplete's own Enter (taking a suggestion) has
@@ -70,24 +71,27 @@ export default class extends Controller {
     }
 
     remove(event) {
-        event.currentTarget.closest("[data-callsign-chips-target='chip']").remove()
+        this.chipTargets.find((chip) => chip.contains(event.currentTarget))?.remove()
         this.inputTarget.focus()
     }
 
     addChip(value) {
         const callsign = value.trim()
         this.inputTarget.value = ""
-        if (!callsign || this.chipTargets.some(chip => this.valueOf(chip).toLowerCase() === callsign.toLowerCase())) return
+        if (!callsign || this.chipTargets.some(chip => this.chipValue(chip).toLowerCase() === callsign.toLowerCase())) return
 
         const chip = this.templateTarget.content.firstElementChild.cloneNode(true)
         chip.querySelector("span").textContent = callsign
         chip.querySelector("input").value = callsign
         chip.querySelector("button").setAttribute("aria-label", `Remove ${callsign}`)
-        if (this.hasMaxValue) this.chipTargets.slice(0, this.chipTargets.length - this.maxValue + 1).forEach(old => old.remove())
+        const over = this.chipTargets.length + 1 - this.maxValue
+        if (this.hasMaxValue && over > 0) this.chipTargets.slice(0, over).forEach(old => old.remove())
         this.listTarget.append(chip)
     }
 
-    valueOf(chip) {
+    // Not valueOf: that name is JavaScript's own, called with no argument
+    // wherever the controller is turned into a primitive.
+    chipValue(chip) {
         return chip.querySelector("input").value
     }
 }

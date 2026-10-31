@@ -38,7 +38,7 @@
       <%= ui_form nil, messages_path, method: :get, id: "messages-search", class: "mb-2", html: { role: "search" },
                   data: { turbo_frame: "messages-conversation-list", turbo_action: "advance",
                           controller: "message-search", message_search_max_value: MessagesConcern::MAX_SEARCH_WITH,
-                          action: "autocomplete.change->message-search#take" } do %>
+                          action: "autocomplete.change->message-search#take turbo:submit-end->message-search#settle" } do %>
         <%= render partial: "common/messages/search_field" %>
       <% end %>
       <%# One folder tab row at every width: all four tabs fit at 375px, and a

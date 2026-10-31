@@ -406,7 +406,8 @@ module MessagesConcern
     request.format.html? && turbo_frame_request_id == "messages-conversation-list"
   end
 
-  # What the mailbox is searched for (?q=), or nil for a folder's list. Carried
+  # What the mailbox is searched for (?q=), or nil for none: a folder's list,
+  # or a search by chips alone (#searching? tells the two apart). Carried
   # like the folder -- by a hit's link, the pane's toggles and the thread page's
   # lazy list -- so the list column keeps showing the hits through each of them.
   def search_query

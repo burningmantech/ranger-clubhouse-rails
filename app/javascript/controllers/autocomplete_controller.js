@@ -60,9 +60,10 @@ export default class Autocomplete extends Controller {
         formField: Boolean,
         inline: Boolean,
         selectOnBlur: Boolean,
-        // The text is itself a choice (the mailbox search): the first row
-        // stands for it and arrives highlighted, and Enter sends the form with
-        // the text unless the reader picked another row (onEnterKeydown).
+        // The text is itself a choice (the mailbox search): the first row of a
+        // search's results stands for it (this.lead) and arrives highlighted,
+        // and Enter sends the form with the text unless the reader picked
+        // another row (onEnterKeydown). Tab and select-on-blur never take it.
         freeText: Boolean,
         url: String,
         minLength: {type: Number, default: 2},
@@ -84,6 +85,7 @@ export default class Autocomplete extends Controller {
         this.activeFilters = {}
         this.searching = false
         this.pendingEnter = false
+        this.lead = null
 
         if (!this.inputTarget.hasAttribute("autocomplete")) this.inputTarget.setAttribute("autocomplete", "off")
         this.inputTarget.setAttribute("spellcheck", "false")
@@ -237,8 +239,7 @@ export default class Autocomplete extends Controller {
         // text, and takes a row the reader moved to. Nor is a row taken before
         // the list has caught up with the text: see onEnterKeydown.
         const selected = this.selectedOption
-        const lead = this.freeTextValue && selected === this.options[0]
-        if (selected && !this.searching && this.formField && !lead) this.commit(selected)
+        if (selected && !this.searching && this.formField && selected !== this.lead) this.commit(selected)
     }
 
     onEnterKeydown = (event) => {
@@ -247,7 +248,7 @@ export default class Autocomplete extends Controller {
         // without waiting for the list: the list is emptied and the key left to
         // the form. Only a row the reader picked below the first is taken, and
         // only from a list that has caught up with the text.
-        if (this.freeTextValue && (this.searching || !selected || selected === this.options[0])) {
+        if (this.freeTextValue && (this.searching || !selected || selected === this.lead)) {
             this.hideAndRemoveOptions()
             return
         }
@@ -300,7 +301,7 @@ export default class Autocomplete extends Controller {
         if (this.selectOnBlurValue && this.resultsShown && !this.searching) {
             const options = this.options
             const target = this.selectedOption || (options.length === 1 ? options[0] : null)
-            if (target) this.commit(target)
+            if (target && target !== this.lead) this.commit(target)
         }
 
         // Empty the list, as Escape does, and drop a search still in flight. A
@@ -362,8 +363,9 @@ export default class Autocomplete extends Controller {
         }
 
         // Metadata writeback for JSON mode
+        const meta = this.metaOf(selected)
         if (this.responseTypeValue === "json") {
-            this.writebackMetadata(selected)
+            this.writebackMetadata(meta)
         }
 
         // Save to recents
@@ -383,28 +385,28 @@ export default class Autocomplete extends Controller {
             this.element.dispatchEvent(
                 new CustomEvent("autocomplete.change", {
                     bubbles: true,
-                    detail: {value, textValue, selected}
+                    detail: {value, textValue, selected, meta}
                 })
             )
         }
     }
 
-    writebackMetadata(selected) {
-        if (!this.metaMappingValue) return
+    // A row's meta, as its JSON result gave it (data-autocomplete-meta), or
+    // null: the change event carries it, for a host that acts on a row's kind.
+    metaOf(selected) {
+        try {
+            return JSON.parse(selected.getAttribute("data-autocomplete-meta"))
+        } catch {
+            return null
+        }
+    }
+
+    writebackMetadata(meta) {
+        if (!this.metaMappingValue || !meta) return
 
         let mapping
         try {
             mapping = JSON.parse(this.metaMappingValue)
-        } catch {
-            return
-        }
-
-        const metaStr = selected.getAttribute("data-autocomplete-meta")
-        if (!metaStr) return
-
-        let meta
-        try {
-            meta = JSON.parse(metaStr)
         } catch {
             return
         }
@@ -554,6 +556,7 @@ export default class Autocomplete extends Controller {
         this.debouncedInputChange.cancel()
         this.searching = false
         this.pendingEnter = false
+        this.lead = null
         this.close()
         this.resultsTarget.innerHTML = ""
     }
@@ -747,6 +750,7 @@ export default class Autocomplete extends Controller {
         // above the field can reach past the top of the page's scroller, which
         // scrollIntoView would move.
         const opts = this.options
+        this.lead = this.freeTextValue ? opts[0] : null
         if (opts.length && (opts.length === 1 || this.freeTextValue) && !this.pendingEnter) {
             this.select(opts[0], {scroll: false})
             this.resultsTarget.scrollTop = 0
@@ -947,10 +951,13 @@ export default class Autocomplete extends Controller {
     // Recents (localStorage)
     // =========================================================================
 
+    // A recent is no search's result, so a free-text field's lead row is none
+    // of them.
     showRecents() {
         const recents = this.getRecents()
         if (recents.length === 0) return
 
+        this.lead = null
         this.resultsTarget.innerHTML = ""
         const fragment = document.createDocumentFragment()
 

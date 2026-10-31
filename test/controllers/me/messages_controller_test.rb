@@ -1363,6 +1363,8 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "form[role=search][method=get][data-turbo-frame=messages-conversation-list][data-turbo-action=advance] " \
                   "input[type=search][name=q][value=?][aria-label=?]", "dirt shift", "Search Messages"
+    # The same ids on every render, not a random one each time.
+    assert_select "#messages-search-autocomplete[data-controller=autocomplete] input#messages-search-autocomplete-input[name=q]"
     assert_select "[role=tablist]", count: 0
     assert_select "#messages-conversation-list [role=status]", text: /2 conversations match “dirt shift” in every folder/
     assert_select "#messages-conversation-list a[data-turbo-frame=_top][href=?]", me_messages_path, text: /Clear Search/

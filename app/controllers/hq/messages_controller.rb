@@ -21,14 +21,15 @@ class Hq::MessagesController < ApplicationController
   include MessagesConcern
   include MessageDirectionConcern
 
-  # Actions that only ever answer turbo-streams or redirect, plus the two that
-  # answer a fragment as well as the page (below). Letting the shell loader run
-  # on them would silently eat the operator's once-per-person entry warning
-  # modal (load_hq_shell consumes session[:hq_warned_person_id]).
-  # :create keeps the shell — it re-renders :new on a validation error.
-  skip_before_action :load_hq_shell,
-                     only: %i[index show find_recipient search_callsigns suggest_callsigns select_callsign suggest
-                              toggle_read toggle_archive create_reply]
+  # Every action but the pages answers turbo-streams, JSON or a redirect, and
+  # :index and :show answer a fragment as well as the page (below). Letting the
+  # shell loader run on those would silently eat the operator's once-per-person
+  # entry warning modal (load_hq_shell consumes session[:hq_warned_person_id]),
+  # so it is skipped for all of them, and a new action of MessagesConcern's gets
+  # no shell unless it is named here: a page left out fails loudly (no
+  # @banners), where an answer let in ate the warning unseen. :create keeps the
+  # shell -- it re-renders :new on a validation error.
+  skip_before_action :load_hq_shell, except: %i[new create]
 
   # :index answers the shell page, the folder-switch turbo-stream (the folder
   # tabs carry data-turbo-stream) and the thread page's lazy list frame; :show

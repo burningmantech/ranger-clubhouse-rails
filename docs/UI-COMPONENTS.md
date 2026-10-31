@@ -974,7 +974,10 @@ Several callsigns in one input box, each a removable chip, over `shared/_autocom
 - The mailbox search field (`common/messages/_search_field`, 2026-10-30) holds its people as these chips
   too, under its own controller: `shared/_callsign_chip` takes `controller:` (default `callsign-chips`),
   the Stimulus identifier its target and remove action name, and the field passes `message-search`.
-  Its text is a search, never a chip, which is why it does not reuse `callsign_chips_controller`.
+  `message_search_controller` extends `callsign_chips_controller` (the chips, their template, the
+  case-blind dedupe, the max that drops the oldest, `chipValue`), less the rule that typed text becomes a
+  chip: its text is a search. It runs the search as a chip comes or goes, and puts the chips back if
+  that search fails (`turbo:submit-end`), since they sit outside the list's frame.
   `shared/_autocomplete` gained `type:`, `value:` and `maxlength:` for its input, and `free_text:` (see
   `docs/autocomplete-component.md`) for it.
 - Both fields pass `shared/_autocomplete` `positioned: false` and make their box `relative`, so the

@@ -282,6 +282,47 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     assert_selector "[role=status]", text: "2 conversations with RANGER1 in every folder"
   end
 
+  # The chips sit outside the list's frame and change before the search they
+  # run is sent: one that fails puts back the chips the list still answers to.
+  test "a chip removed for a search that fails comes back, over the list it answers to" do
+    sign_in(person(:inactive_ranger))
+    visit me_messages_path(with: ["RANGER1"])
+    assert_selector CHIP, text: "RANGER1"
+    assert_selector "[role=status]", text: "with RANGER1"
+    wait_for_controller "message-search", "form#messages-search"
+
+    page.driver.browser.execute_cdp("Network.enable")
+    page.driver.browser.execute_cdp("Network.setBlockedURLs", urls: ["*/me/messages?*"])
+    find("#{CHIP} button[aria-label='Remove RANGER1']").click
+    assert_selector CHIP, text: "RANGER1"
+    assert_selector "[role=status]", text: "with RANGER1"
+    assert_selector "#{CHIP} input[type=hidden][name='with[]'][value=RANGER1]", visible: :all
+  ensure
+    page.driver.browser.execute_cdp("Network.disable")
+  end
+
+  # Shared with compose (callsign_chips_controller#addChip): nothing goes until
+  # the max is reached, then the oldest. Compose takes one chip and the search
+  # three, so the max is set higher here, where the sum once went wrong.
+  test "a chip past the max replaces the oldest, and none goes before it" do
+    sign_in(@owner)
+    visit me_messages_path
+    wait_for_controller "message-search", "form#messages-search"
+    add_chips = lambda do |*callsigns|
+      page.execute_script(<<~JS)
+        const form = document.querySelector("form#messages-search")
+        form.dataset.messageSearchMaxValue = "4"
+        const chips = window.Stimulus.getControllerForElementAndIdentifier(form, "message-search");
+        #{callsigns.to_json}.forEach((callsign) => chips.addChip(callsign))
+      JS
+    end
+
+    add_chips.call("One", "Two", "Three", "Four")
+    assert_equal %w[One Two Three Four], all(CHIP).map(&:text)
+    add_chips.call("Five")
+    assert_equal %w[Two Three Four Five], all(CHIP).map(&:text)
+  end
+
   # Review finding: Back restored the chips a search had just set, over the list from before it.
   test "Back from a search shows the mailbox as it was, without the search's chips" do
     sign_in(person(:inactive_ranger))
