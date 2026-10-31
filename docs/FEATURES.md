@@ -3580,6 +3580,14 @@ Touches: `motd` (w), `person_motd` (w)
 Verify: `test/jobs/expire_announcements_job_test.rb`, `test/models/motd_test.rb`
 Trap: `Motd.retrieve_announcements_for_person` ignores `expires_at`, so an expired announcement stays on /me until this job deletes it, which never happens in development or on GHD.
 
+### Broadcast message expiry (ExpireBroadcastMessagesJob)
+Runs: `expire_broadcast_messages` 3:45am daily — production only, not GHD
+Job: `app/jobs/expire_broadcast_messages_job.rb`
+Owner: `ExpireBroadcastMessagesJob` — destroys `sender_type: "rbs"` rows with `expires_at` passed, one at a time
+Touches: `person_message` (w) (the replies go too), `person_message_member` (w)
+Verify: `test/jobs/expire_broadcast_messages_job_test.rb`
+Trap: only RBS rows are swept — any other row with an `expires_at` (Clubhouse 2 data) stays, though `PersonMessage#has_expired?` hides it all the same.
+
 ### Expired Handle Reservations (ExpireHandleReservationsJob)
 Runs: `expire_handle_reservations` 5am daily — production only, not GHD; mails the Volunteer Coordinators (`EmailAddresses::VOLUNTEER_COORDINATORS_TEAM`) only when something expired
 Job: `app/jobs/expire_handle_reservations_job.rb`

@@ -34,6 +34,9 @@ production:
   cleanup_mail_log:
     class: CleanupMailLogJob
     schedule: at 3:30am every day
+  expire_broadcast_messages:
+    class: ExpireBroadcastMessagesJob
+    schedule: at 3:45am every day
   expire_oauth_codes:
     class: ExpireOauthCodesJob
     schedule: every 5 minutes
