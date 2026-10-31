@@ -1439,6 +1439,7 @@ Touches: `person` (w), `person_on_site` (w), `person_asset` (w), `action_logs` (
 Verify: `test/controllers/hq/site_registration_controller_test.rb`, `test/models/person_on_site_test.rb`, `test/models/person_asset_test.rb`
 Trap: `radio_check` (`allowed_event_radio?`) and the `assets_outcome` override read the shell's `@event_info`/`@person_event` — keep `load_hq_shell` on its stream actions or they raise on nil.
 Trap: `Person#log_on_site_change` (`after_save`) writes `person_on_site` history — flip `on_site` with `save(validate: false)` as `mark_on_site`/`Hq::ShiftManageController#mark_off_site` do, never `update_column`/`update_all`.
+Trap: the wizard's `<dialog>` sits inside `.hq-shell`, so it takes the shell's zoom (`components/hq-window.css`: ×1.15 from 1800px wide, ×1.35 from 2400px), and daisyUI's `modal-box` cap (`100vh - 5em`) is drawn that much larger: a box taller than the window divided by the zoom runs off screen, and at its cap the box's foot, where a step's buttons sit, lands 51px below a 1080px window at ×1.15 and 222px below a 1440px one at ×1.35. Measured 2026-10-30, nothing comes near it: the tallest step, Verify Camp Information, is 360px against about 940 at 1920×1080 and 1070 at 2560×1440 (the radios step grows with each asset checked out); the other dialogs inside the shell -- the warning modals, no radios, the inline correction -- are shorter, and the rest open in the layout's `modal` frame, outside the zoom. So no rule caps it; a taller dialog inside the shell needs its height divided by `var(--zoom, 1)`, as `components/review-pane.css` does.
 
 ### HQ › Schedule / Sign Ups
 Reach it: `GET /hq/:person_id/schedule` → HQ sidebar › HQ Window › Schedule / Sign Ups; remove `DELETE /hq/:person_id/schedule/:slot_id`; who else `GET /hq/:person_id/schedule/:slot_id/signups`; hours `GET /hq/:person_id/schedule/signup-summary`; calendar `GET /hq/:person_id/schedule/export`
@@ -2353,7 +2354,7 @@ Gate: `ADMIN`
 Controller: `app/controllers/people/bulk_lookup_controller.rb` (`index`, `lookup`)
 Owner: `BulkLookupReport` (`app/lib/reports/bulk_lookup_report.rb`)
 Touches: `person`
-Verify: `test/controllers/people/bulk_lookup_controller_test.rb`, `test/lib/people_menu_test.rb`
+Verify: `test/controllers/people/bulk_lookup_controller_test.rb`, `test/lib/people_menu_test.rb`, `test/system/scroll_to_top_test.rb`
 Trap: Results exist only as the POST's response — export buttons (`people/bulk_lookup/_export_form`) re-POST the pasted `lines` with a `subset` (other subsets 400, a refused list 422); never make an export a GET link.
 Trap: `BulkLookupReport.matches_for` groups on `callsign_normalized.downcase` and `email.downcase` (stored case varies); a line matching two people lands in `ambiguous`, exported with the not-found CSV, never a guess.
 

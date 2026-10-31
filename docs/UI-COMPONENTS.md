@@ -1757,7 +1757,7 @@ turbo_response(streams)
 <div data-controller="scroll-to-top" hidden></div>
 ```
 
-Scrolls the window to the top when the element renders. Required at the top of every results page rendered at 422 from a POST — Turbo keeps the submitting page's scroll position on form-submission renders, landing the reader at the old submit button instead of the summary. Do **not** add it to form re-renders with validation errors; preserved scroll is correct there. Assert it in the controller test with `assert_select "[data-controller=scroll-to-top]"`.
+Scrolls the page to its top when the element renders. Required at the top of every results page rendered at 422 from a POST — Turbo morphs a form-submission render into the page (the layout's `turbo_refreshes_with method: :morph`; a submission clears Turbo's current visit, so its render counts as a refresh), which keeps the page's scroller where it was, landing the reader at the old submit button instead of the summary. It scrolls that scroller, `div.drawer-content` or, without a sidebar, `<main>` (`scrollParent`, `controllers/scrolling.js`), since `body` is `h-dvh` and the window never scrolls; until 2026-10-30 it called `window.scrollTo` and did nothing (`test/system/scroll_to_top_test.rb`, on Bulk Lookup). Do **not** add it to form re-renders with validation errors; preserved scroll is correct there. Assert it in the controller test with `assert_select "[data-controller=scroll-to-top]"`.
 
 ### review-pane (Stimulus)
 

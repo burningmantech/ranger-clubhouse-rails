@@ -679,7 +679,7 @@ For toast notifications and flash messages delivered via Turbo Streams, use the 
 
 House pattern for POST results a GET cannot re-derive (export ledgers, maintenance run results): render the results view directly from the POST with `status: :unprocessable_entity` — Turbo silently drops a 200 form response.
 
-Turbo keeps the submitting page's scroll position on form-submission renders, so the reader lands wherever the submit button was instead of at the summary. Start every 422 results view with the scroll-to-top marker:
+Turbo keeps the submitting page's scroll position on form-submission renders (it morphs them into the page, keeping its scroller, `.drawer-content`), so the reader lands wherever the submit button was instead of at the summary. Start every 422 results view with the scroll-to-top marker, which scrolls that scroller to its top:
 
 ```erb
 <div data-controller="scroll-to-top" hidden></div>
