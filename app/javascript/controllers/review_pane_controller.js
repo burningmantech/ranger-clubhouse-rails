@@ -21,9 +21,9 @@ import {Controller} from "@hotwired/stimulus"
 // of the current address would render (#fit).
 //
 // It re-syncs on connect, which a full load, a redirect back from a note form
-// and a Back restore of a cached snapshot all give, and brings the line into
-// view there: the layout scrolls an inner element whose position neither a
-// page load nor a snapshot restore keeps.
+// and a Back restore of a cached snapshot all give, and brings the line -- or
+// the mailbox's pane, under its list -- into view there: the layout scrolls an
+// inner element whose position neither a page load nor a snapshot restore keeps.
 export default class extends Controller {
     static targets = ["pane", "line", "list"]
     static values = {park: {type: Boolean, default: true}}
@@ -83,8 +83,14 @@ export default class extends Controller {
         }
 
         this.revealOnArrival = false
+        this.showOpen()
+    }
+
+    // Under the list the pane comes on screen, as for a line's click; beside
+    // it, the open line comes into view.
+    showOpen() {
         if (!this.bringPaneOnScreen()) {
-            this.lineTargets.find((line) => line.dataset.reviewId === this.currentId)?.closest("li").scrollIntoView({block: "nearest"})
+            this.selectedLine?.closest("li").scrollIntoView({block: "nearest"})
         }
     }
 
@@ -173,15 +179,16 @@ export default class extends Controller {
     }
 
     // A review list scrolls its line to the top, where a pane parked under it
-    // below lg is on screen too. The mailbox only brings an out-of-view row into
-    // view: its hero and folder tabs sit above the list, and a lazily loaded
-    // list is placed as it arrives (arrived).
+    // below lg is on screen too. The mailbox only brings what is out of view
+    // into view (showOpen): its hero and folder tabs sit above the list. A
+    // lazily loaded list is placed as it arrives (arrived); one a Back restored
+    // with the page is here already, and the page starts at its top again.
     reveal() {
         const line = this.selectedLine
         if (this.parkValue) {
             line?.closest("li").scrollIntoView({block: "start"})
         } else if (line) {
-            line.closest("li").scrollIntoView({block: "nearest"})
+            this.showOpen()
         } else {
             this.revealOnArrival = this.currentId !== undefined
         }

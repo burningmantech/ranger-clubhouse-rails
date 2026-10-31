@@ -778,17 +778,6 @@ class SearchBarHotkeyTest < ApplicationSystemTestCase
     JS
   end
 
-  # Wait until the debounce the last keys started has run out, so that a search
-  # it was going to start has started. The timer is on the page's own clock, set
-  # after those keys and for longer than the dialog's 300ms, so it cannot fire first.
-  def wait_out_debounce
-    page.execute_script(<<~JS)
-      delete document.documentElement.dataset.debounceOver
-      setTimeout(() => { document.documentElement.dataset.debounceOver = "true" }, 320)
-    JS
-    assert_selector "html[data-debounce-over='true']", visible: :all
-  end
-
   # Dispatch a keyboard event via JavaScript to avoid Chrome intercepting browser shortcuts
   def dispatch_hotkey(key, ctrl: false, meta: false)
     page.execute_script(<<~JS, key, ctrl, meta)

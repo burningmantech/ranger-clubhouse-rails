@@ -128,12 +128,13 @@ class Hq::MessagesNextUnreadTest < ApplicationSystemTestCase
     page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
   end
 
-  # A thread's address loaded whole -- a reload, or Back, since the mailbox is
-  # never cached -- under the list: the list loads after the page, and pushed
-  # the thread below the fold as it arrived, so the pane comes back on screen,
-  # as for a row's click. Beside the pane the open row comes into view. The
-  # thread is made first, so it sorts below the twenty after it.
-  test "a thread loaded whole ends on screen under the list once the list arrives, and beside it its row does" do
+  # A thread's address loaded whole -- a reload -- under the list: the list
+  # loads after the page, and pushed the thread below the fold as it arrived, so
+  # the pane comes back on screen, as for a row's click. Beside the pane the open
+  # row comes into view. Back restores the page Turbo kept, list and all, but not
+  # how far it was scrolled (the layout scrolls an inner element), and the same
+  # comes into view. The thread is made first, so it sorts below the twenty after it.
+  test "a thread loaded whole or brought back ends on screen under the list, and beside it its row does" do
     bottom = deliver("Bottom thread", 3.days.ago)
     20.times { |n| deliver("Thread #{n}", (n + 2).hours.ago) }
     sign_in(@operator)
@@ -142,19 +143,17 @@ class Hq::MessagesNextUnreadTest < ApplicationSystemTestCase
                                                                              mobile: false)
       visit hq_message_path(@ranger, bottom)
       within("dialog[open]") { click_on "Close" } if page.has_css?("dialog[open]", wait: 2)
-      assert_selector "a.review-line[aria-current=true][data-review-id='#{bottom.id}']"
+      row = "a.review-line[aria-current=true][data-review-id='#{bottom.id}']"
+      assert_selector row
+      shown = stacked ? "aside.review-pane" : row
+      assert_on_screen shown, "at #{width}px #{stacked ? "the thread" : "its row"} stayed off screen"
 
-      shown = stacked ? "aside.review-pane" : "a.review-line[data-review-id='#{bottom.id}']"
-      # Within a pixel: scrollIntoView lands on a whole pixel, the rows on fractions of one.
-      assert_eventually("at #{width}px #{stacked ? "the thread" : "its row"} stayed off screen") do
-        page.evaluate_script(<<~JS)
-          (() => {
-            const {top, bottom} = document.querySelector(#{shown.to_json}).getBoundingClientRect()
-            return top >= document.querySelector(".drawer-content").getBoundingClientRect().top - 1 &&
-              bottom <= window.innerHeight + 1
-          })()
-        JS
-      end
+      # The mark is in the page Turbo keeps as it leaves, and in no page it fetches.
+      page.execute_script("document.body.dataset.kept = 'true'; Turbo.visit(#{hq_messages_path(@ranger).to_json})")
+      assert_current_path hq_messages_path(@ranger), ignore_query: true
+      page.go_back
+      assert_selector "body[data-kept] #{row}"
+      assert_on_screen shown, "at #{width}px #{stacked ? "the thread" : "its row"} stayed off screen after Back"
     end
   ensure
     page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
@@ -193,6 +192,19 @@ class Hq::MessagesNextUnreadTest < ApplicationSystemTestCase
   end
 
   private
+
+  # Within a pixel: scrollIntoView lands on a whole pixel, the rows on fractions of one.
+  def assert_on_screen(selector, message)
+    assert_eventually(message) do
+      page.evaluate_script(<<~JS)
+        (() => {
+          const {top, bottom} = document.querySelector(#{selector.to_json}).getBoundingClientRect()
+          return top >= document.querySelector(".drawer-content").getBoundingClientRect().top - 1 &&
+            bottom <= window.innerHeight + 1
+        })()
+      JS
+    end
+  end
 
   def deliver(subject, created_at, body: "#{subject}?")
     PersonMessage.create!(person: @ranger, sender_person: person(:retired_ranger), creator_person: person(:retired_ranger),

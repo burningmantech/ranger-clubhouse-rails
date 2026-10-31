@@ -324,7 +324,7 @@ class PersonMessage < ApplicationRecord
       tops = where(id: threads)
       team_ids = teams.map(&:id)
       used = tops.where(sender_team_id: team_ids).or(tops.where(recipient_team_id: team_ids))
-                 .pluck(:sender_team_id, :recipient_team_id).flatten
+                 .distinct.pluck(:sender_team_id, :recipient_team_id).flatten.to_set
       teams = teams.select { |team| used.include?(team.id) }
     end
     { people: counts.map { |id, count| [people.fetch(id), count] }, teams: teams.first(limit) }
