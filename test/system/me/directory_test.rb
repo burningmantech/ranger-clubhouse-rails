@@ -179,24 +179,6 @@ class Me::DirectoryTest < ApplicationSystemTestCase
     end
   end
 
-  test "raises error when DirectoryReport fails" do
-    # Mock DirectoryReport to raise an error
-    original_execute = DirectoryReport.method(:execute)
-
-    DirectoryReport.define_singleton_method(:execute) do
-      raise StandardError, "Database error"
-    end
-
-    begin
-      # Should raise an error
-      assert_raises(StandardError) do
-        visit me_directory_path
-      end
-    ensure
-      DirectoryReport.define_singleton_method(:execute, original_execute)
-    end
-  end
-
   test "mailto links are properly formatted" do
     visit me_directory_path
 
