@@ -17,8 +17,9 @@
   the frame and run as it renders: what reading the thread changed outside the
   pane (MessagesConcern#read_state_streams).
 %>
-<%# review-pane (components/review-pane.css) caps the height from lg up so a long thread scrolls inside. %>
-<aside class="<%= class_names("review-pane box box-default p-4 lg:flex-1 lg:min-w-0 lg:sticky lg:top-4 lg:self-start",
+<%# review-pane (components/review-pane.css) caps the height from lg up so a long thread scrolls inside;
+    scroll-my-4 keeps a gap when review_pane_controller brings it on screen from under the list. %>
+<aside class="<%= class_names("review-pane box box-default p-4 scroll-my-4 lg:flex-1 lg:min-w-0 lg:sticky lg:top-4 lg:self-start",
                               "hidden lg:block": message.nil?) %>"
        aria-label="Conversation" data-review-pane-target="pane">
   <%= turbo_frame_tag "messages-pane", target: "_top", disabled: true, data: { turbo_action: "advance" } do %>

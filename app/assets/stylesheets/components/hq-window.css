@@ -112,8 +112,14 @@
  * screen only — a print run must never inherit this.
  */
 @media screen and (width >= 112.5rem) {
+    /*
+     * --zoom tells what is drawn inside: every length there is drawn larger,
+     * the viewport's own (100dvh) included, so a height capped to the screen
+     * divides by it (components/review-pane.css).
+     */
     .hq-shell {
-        zoom: 1.15;
+        --zoom: 1.15;
+        zoom: var(--zoom);
     }
 
     /*
@@ -166,7 +172,8 @@
 @media screen and (width >= 150rem) {
     .hq-shell,
     [data-sidebar-theme-value="hq"] {
-        zoom: 1.35;
+        --zoom: 1.35;
+        zoom: var(--zoom);
     }
 }
 

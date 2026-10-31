@@ -85,8 +85,9 @@ export default class extends Controller {
     // The pane keeps its scroll through the swap, which would open the new
     // record wherever the last was left -- a long way down after the mailbox
     // landed a search's match (scroll_to_element_controller). So it is put back
-    // to the top as the content is swapped, before the new content's
-    // controllers connect and a landing scrolls it again.
+    // to the top as the content is swapped, and brought on screen where it sits
+    // under the list (bringPaneOnScreen), before the new content's controllers
+    // connect and a landing scrolls it again.
     beforeRender(event) {
         if (event.target === this.frame) {
             this.select(this.shownId(event.detail.newFrame))
@@ -94,8 +95,24 @@ export default class extends Controller {
             event.detail.render = (currentElement, newElement) => {
                 const rendered = render(currentElement, newElement)
                 this.paneTarget.scrollTop = 0
+                this.bringPaneOnScreen()
                 return rendered
             }
+        }
+    }
+
+    // Under the list, where the HQ window's narrow mailbox stacks the two
+    // (components/hq-window.css), a record opened from a line would load below
+    // the fold with nothing to say it had: the page moves as little as brings
+    // the pane on screen. Beside the list the pane is sticky and on screen
+    // already, and a parking workspace places its own (place).
+    bringPaneOnScreen() {
+        if (this.parkValue || !this.hasListTarget || this.currentId === undefined) {
+            return
+        }
+
+        if (this.paneTarget.getBoundingClientRect().top >= this.listTarget.getBoundingClientRect().bottom) {
+            this.paneTarget.scrollIntoView({block: "nearest"})
         }
     }
 

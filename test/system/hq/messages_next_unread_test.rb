@@ -6,7 +6,8 @@ require "application_system_test_case"
 # the operator hands over a person's unread messages one after another, and
 # looking never marks one read. At the window's width the next thread loads into
 # the pane like a row's link, and the list's mark follows it; with none left the
-# button leads back to the list.
+# button leads back to the list. And where the pane sits in the window: under the
+# list on the tablet, capped to the screen at the shared display's zoom.
 class Hq::MessagesNextUnreadTest < ApplicationSystemTestCase
   include TimesheetAdminTestHelper # ensure_role / grant_role
 
@@ -87,10 +88,81 @@ class Hq::MessagesNextUnreadTest < ApplicationSystemTestCase
     page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
   end
 
+  # The HQ check: under the list a row's thread opened below the fold, with
+  # nothing to say it had; only a search's hit scrolled there. Beside the list
+  # the pane is on screen already, and a row's click moves nothing.
+  test "a row's thread is brought on screen where the pane sits under the list, and nothing moves beside it" do
+    20.times { |n| deliver("Thread #{n}", (n + 2).hours.ago) }
+    sign_in(@operator)
+    { 1180 => true, 1440 => false }.each do |width, stacked|
+      page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride", width:, height: 820, deviceScaleFactor: 1,
+                                                                             mobile: false)
+      visit hq_messages_path(@ranger)
+      within("dialog[open]") { click_on "Close" } if page.has_css?("dialog[open]", wait: 2)
+      wait_for_controller "review-pane", REVIEW_PANE
+      assert_selector "turbo-frame#messages-pane:not([disabled])", visible: :all
+      before = page.evaluate_script("document.querySelector('.drawer-content').scrollTop")
+
+      # The list's first row, on screen: the driver scrolls to a row it clicks.
+      row = first("a.review-line")
+      id = row["data-review-id"]
+      row.click
+      assert_selector "aside.review-pane [data-review-id='#{id}']"
+      pane = page.evaluate_script(<<~JS)
+        (() => {
+          const rect = document.querySelector("aside.review-pane").getBoundingClientRect()
+          return {top: rect.top, bottom: rect.bottom, screen: window.innerHeight,
+                  scroll: document.querySelector(".drawer-content").scrollTop}
+        })()
+      JS
+
+      if stacked
+        assert_operator pane["top"], :>=, 0, "at #{width}px the pane went above the screen"
+        assert_operator pane["bottom"], :<=, pane["screen"], "at #{width}px the thread opened below the fold"
+      else
+        assert_equal before, pane["scroll"], "at #{width}px a row's click moved the page"
+      end
+    end
+  ensure
+    page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
+  end
+
+  # The HQ check: the pane's cap, the screen less the navbar and its offsets,
+  # was drawn 15% taller at the shared display's zoom, so a long thread's pane
+  # ran past the bottom of the screen while the list beside it scrolled on.
+  test "at the shared display's zoom a long thread's pane ends on the screen" do
+    20.times { |n| deliver("Thread #{n}", (n + 2).hours.ago) }
+    long = deliver("Long thread", 1.day.ago, body: (1..80).map { |n| "Line #{n}" }.join("\n"))
+    sign_in(@operator)
+    page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride", width: 1920, height: 1080, deviceScaleFactor: 1,
+                                                                           mobile: false)
+    visit hq_message_path(@ranger, long)
+    within("dialog[open]") { click_on "Close" } if page.has_css?("dialog[open]", wait: 2)
+    wait_for_controller "review-pane", REVIEW_PANE
+
+    # Halfway down the list, where the pane is stuck at the top of the screen.
+    pane = page.evaluate_script(<<~JS)
+      (() => {
+        const drawer = document.querySelector(".drawer-content")
+        drawer.scrollTop = drawer.scrollHeight / 2
+        const pane = document.querySelector("aside.review-pane")
+        return {zoom: getComputedStyle(document.querySelector(".hq-shell")).zoom,
+                capped: pane.scrollHeight > pane.clientHeight,
+                bottom: pane.getBoundingClientRect().bottom, screen: window.innerHeight}
+      })()
+    JS
+
+    assert_equal "1.15", pane["zoom"]
+    assert pane["capped"], "the thread must outgrow the pane, or this proves nothing"
+    assert_operator pane["bottom"], :<=, pane["screen"]
+  ensure
+    page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
+  end
+
   private
 
-  def deliver(subject, created_at)
+  def deliver(subject, created_at, body: "#{subject}?")
     PersonMessage.create!(person: @ranger, sender_person: person(:retired_ranger), creator_person: person(:retired_ranger),
-                          sender_type: PersonMessage::SENDER_TYPE_PERSON, subject:, body: "#{subject}?", created_at:)
+                          sender_type: PersonMessage::SENDER_TYPE_PERSON, subject:, body:, created_at:)
   end
 end

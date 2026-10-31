@@ -11,7 +11,11 @@
  * the pane scrolls inside itself and the list beside it scrolls on its own.
  *
  * The ceiling is the viewport less the navbar (64px, which the layout's
- * drawer comment pins), the pane's top-4 and the same again below it.
+ * drawer comment pins), the pane's top-4 and the same again below it. Under
+ * the HQ shell's zoom (--zoom, components/hq-window.css) every length inside
+ * is drawn larger, 100dvh included, but the navbar outside it is not: so the
+ * viewport less the navbar is divided by the zoom, and the pane's own 2rem,
+ * drawn with it, is not.
  *
  * lg only, the same bound as the `lg:` utilities beside it: below the fold
  * the pane sits under the selected line and takes its natural height.
@@ -20,7 +24,7 @@
 @media (width >= theme(--breakpoint-lg)) {
     @layer components {
         .review-pane {
-            max-height: calc(100dvh - 6rem);
+            max-height: calc((100dvh - 4rem) / var(--zoom, 1) - 2rem);
             overflow-y: auto;
         }
     }

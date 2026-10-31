@@ -565,6 +565,37 @@ class AutocompleteComponentTest < ApplicationSystemTestCase
     assert_operator list["top"], :>=, on_screen["top"], "The list ran past the top of what is on screen"
   end
 
+  # A CSS zoom around the field (the HQ shell's) draws the list larger than the
+  # pixels it is sized in, so the room on screen is divided by it: sized in
+  # drawn pixels, the list ran past what is on screen by the zoom's share.
+  test "under a CSS zoom the list still keeps to what is on screen" do
+    visit test_harness_autocomplete_path
+    page.execute_script(<<~JS)
+      const fixture = document.getElementById("placement-fixture")
+      fixture.style.zoom = "1.5"
+      fixture.insertAdjacentHTML("afterend", "<div style='height: 100vh'></div>")
+      const field = document.getElementById("test-placement-autocomplete-input")
+      field.scrollIntoView({block: "center"})
+      const rect = field.getBoundingClientRect()
+      window.onScreen = {top: rect.top - 200, bottom: rect.bottom + 40}
+      const pageTop = window.scrollY + onScreen.top
+      Object.defineProperty(window, "visualViewport", {
+        configurable: true, value: {offsetTop: pageTop, pageTop, height: onScreen.bottom - onScreen.top}
+      })
+    JS
+
+    find("#test-placement-autocomplete-input").fill_in with: "Test"
+    assert_selector "#test-placement-autocomplete-results [role='option']", minimum: 1, wait: 5
+
+    list, field, on_screen = page.evaluate_script(<<~JS)
+      [document.getElementById("test-placement-autocomplete-results").getBoundingClientRect().toJSON(),
+       document.getElementById("test-placement-autocomplete-input").getBoundingClientRect().toJSON(),
+       window.onScreen]
+    JS
+    assert_operator list["bottom"], :<=, field["top"], "The list went below the field, under the keyboard"
+    assert_operator list["top"], :>=, on_screen["top"], "The zoomed list ran past the top of what is on screen"
+  end
+
   private
 
   # Keys and then a click, sent as one command, so the click lands inside the

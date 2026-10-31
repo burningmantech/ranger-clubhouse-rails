@@ -1033,8 +1033,12 @@ export default class Autocomplete extends Controller {
         const results = this.resultsTarget
         const rect = this.inputTarget.getBoundingClientRect()
         const {top, bottom} = this.visibleBounds()
-        const spaceBelow = bottom - rect.bottom
-        const spaceAbove = rect.top - top
+        // The room is measured as drawn, after any CSS zoom around the field (the
+        // HQ shell's), and the list is sized in its own pixels, which the zoom
+        // draws larger: the room is divided by it.
+        const zoom = this.inputTarget.offsetHeight ? rect.height / this.inputTarget.offsetHeight : 1
+        const spaceBelow = (bottom - rect.bottom) / zoom
+        const spaceAbove = (rect.top - top) / zoom
         const above = spaceBelow < Math.min(results.scrollHeight, LIST_MAX) && spaceAbove > spaceBelow
 
         results.classList.toggle("ac-results-above", above)
