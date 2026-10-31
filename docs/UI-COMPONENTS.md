@@ -1786,7 +1786,9 @@ mailbox, `common/messages/_workspace`). The pane then stays put. Its frame is re
 and the controller enables it from `lg` up only -- Turbo hands a link to a frame only while the frame
 is enabled -- so below `lg`, and before the controller loads, a line's link is an ordinary page
 visit. On connect it only brings an out-of-view line into view (`block: "nearest"`), since a header
-sits above that list, or the line as it arrives in a lazily loaded list. When the viewport crosses
+sits above that list. A lazily loaded list (the thread page's) is placed on its first `turbo:frame-load`:
+where the pane sits under the list (the HQ window's tablet layout) the pane comes back on screen, since
+the list pushed it down as it loaded, and beside the list the open line comes into view. When the viewport crosses
 `lg` it sets the pane and the `list` target's `hidden lg:block` to what a load of the current
 address would render, so a record opened in the frame stays on screen once the viewport narrows.
 

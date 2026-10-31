@@ -7,7 +7,8 @@ require "application_system_test_case"
 # looking never marks one read. At the window's width the next thread loads into
 # the pane like a row's link, and the list's mark follows it; with none left the
 # button leads back to the list. And where the pane sits in the window: under the
-# list on the tablet, capped to the screen at the shared display's zoom.
+# list on the tablet, brought on screen there when a row or a whole load opens a
+# thread, and capped to the screen at the shared display's zoom.
 class Hq::MessagesNextUnreadTest < ApplicationSystemTestCase
   include TimesheetAdminTestHelper # ensure_role / grant_role
 
@@ -121,6 +122,38 @@ class Hq::MessagesNextUnreadTest < ApplicationSystemTestCase
         assert_operator pane["bottom"], :<=, pane["screen"], "at #{width}px the thread opened below the fold"
       else
         assert_equal before, pane["scroll"], "at #{width}px a row's click moved the page"
+      end
+    end
+  ensure
+    page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
+  end
+
+  # A thread's address loaded whole -- a reload, or Back, since the mailbox is
+  # never cached -- under the list: the list loads after the page, and pushed
+  # the thread below the fold as it arrived, so the pane comes back on screen,
+  # as for a row's click. Beside the pane the open row comes into view. The
+  # thread is made first, so it sorts below the twenty after it.
+  test "a thread loaded whole ends on screen under the list once the list arrives, and beside it its row does" do
+    bottom = deliver("Bottom thread", 3.days.ago)
+    20.times { |n| deliver("Thread #{n}", (n + 2).hours.ago) }
+    sign_in(@operator)
+    { 1180 => true, 1440 => false }.each do |width, stacked|
+      page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride", width:, height: 820, deviceScaleFactor: 1,
+                                                                             mobile: false)
+      visit hq_message_path(@ranger, bottom)
+      within("dialog[open]") { click_on "Close" } if page.has_css?("dialog[open]", wait: 2)
+      assert_selector "a.review-line[aria-current=true][data-review-id='#{bottom.id}']"
+
+      shown = stacked ? "aside.review-pane" : "a.review-line[data-review-id='#{bottom.id}']"
+      # Within a pixel: scrollIntoView lands on a whole pixel, the rows on fractions of one.
+      assert_eventually("at #{width}px #{stacked ? "the thread" : "its row"} stayed off screen") do
+        page.evaluate_script(<<~JS)
+          (() => {
+            const {top, bottom} = document.querySelector(#{shown.to_json}).getBoundingClientRect()
+            return top >= document.querySelector(".drawer-content").getBoundingClientRect().top - 1 &&
+              bottom <= window.innerHeight + 1
+          })()
+        JS
       end
     end
   ensure

@@ -38,8 +38,10 @@ export default class extends Controller {
         this.beforeRender = this.beforeRender.bind(this)
         this.keepAttribute = this.keepAttribute.bind(this)
         this.keepBody = this.keepBody.bind(this)
+        this.arrived = this.arrived.bind(this)
         this.desktop.addEventListener("change", this.place)
         this.element.addEventListener("turbo:before-frame-render", this.beforeRender)
+        this.element.addEventListener("turbo:frame-load", this.arrived)
         this.element.addEventListener("turbo:before-morph-attribute", this.keepAttribute)
         this.element.addEventListener("turbo:before-morph-element", this.keepBody)
         document.addEventListener("turbo:load", this.place)
@@ -52,6 +54,7 @@ export default class extends Controller {
     disconnect() {
         this.desktop?.removeEventListener("change", this.place)
         this.element.removeEventListener("turbo:before-frame-render", this.beforeRender)
+        this.element.removeEventListener("turbo:frame-load", this.arrived)
         this.element.removeEventListener("turbo:before-morph-attribute", this.keepAttribute)
         this.element.removeEventListener("turbo:before-morph-element", this.keepBody)
         document.removeEventListener("turbo:load", this.place)
@@ -64,14 +67,24 @@ export default class extends Controller {
     // marks those. The shown id is kept rather than read from the pane each
     // time, which cost two whole-workspace queries per line.
     lineTargetConnected(line) {
-        if (this.currentId === undefined) {
+        if (this.currentId !== undefined) {
+            this.mark(line, this.currentId)
+        }
+    }
+
+    // The thread page's list, loaded lazily after connect (reveal): where it
+    // sits over the pane it has just pushed the record down, below the fold on
+    // a tablet (and Safari keeps no scroll anchor to hold it), so the pane comes
+    // back on screen, as for a line's click; beside the pane, the open line
+    // comes into view. Its first load alone, whether or not it lists the record.
+    arrived(event) {
+        if (!this.revealOnArrival || !this.listTarget.contains(event.target)) {
             return
         }
 
-        this.mark(line, this.currentId)
-        if (this.revealOnArrival && line.dataset.reviewId === this.currentId) {
-            this.revealOnArrival = false
-            line.closest("li").scrollIntoView({block: "nearest"})
+        this.revealOnArrival = false
+        if (!this.bringPaneOnScreen()) {
+            this.lineTargets.find((line) => line.dataset.reviewId === this.currentId)?.closest("li").scrollIntoView({block: "nearest"})
         }
     }
 
@@ -105,15 +118,18 @@ export default class extends Controller {
     // (components/hq-window.css), a record opened from a line would load below
     // the fold with nothing to say it had: the page moves as little as brings
     // the pane on screen. Beside the list the pane is sticky and on screen
-    // already, and a parking workspace places its own (place).
+    // already, and a parking workspace places its own (place). Whether the
+    // pane is under the list.
     bringPaneOnScreen() {
         if (this.parkValue || !this.hasListTarget || this.currentId === undefined) {
-            return
+            return false
         }
 
-        if (this.paneTarget.getBoundingClientRect().top >= this.listTarget.getBoundingClientRect().bottom) {
+        const under = this.paneTarget.getBoundingClientRect().top >= this.listTarget.getBoundingClientRect().bottom
+        if (under) {
             this.paneTarget.scrollIntoView({block: "nearest"})
         }
+        return under
     }
 
     // A line or a card morphed in place stays the same node, so
@@ -159,7 +175,7 @@ export default class extends Controller {
     // A review list scrolls its line to the top, where a pane parked under it
     // below lg is on screen too. The mailbox only brings an out-of-view row into
     // view: its hero and folder tabs sit above the list, and a lazily loaded
-    // list brings its row in as it arrives.
+    // list is placed as it arrives (arrived).
     reveal() {
         const line = this.selectedLine
         if (this.parkValue) {
