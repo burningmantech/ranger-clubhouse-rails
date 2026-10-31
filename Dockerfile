@@ -3,7 +3,7 @@
 
 # This Dockerfile is designed for production, not development. Use with docker-compose.yml or build'n'run by hand:
 # docker build -t clubhouse3 .
-# docker run -d -p 3000:3000 -e RAILS_MASTER_KEY=<value from config/master.key> --name clubhouse3 clubhouse3
+# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name clubhouse3 clubhouse3
 
 # For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
 
@@ -19,9 +19,10 @@ WORKDIR /app
 # Install base packages. Docker Hub stops rebuilding a Ruby patch tag once a newer
 # patch ships, so its Debian packages go stale: upgrade them here. A cached layer
 # keeps the old ones, so build with --no-cache to pick up new fixes.
+# nginx fronts Puma in the final stage (bin/docker-server, docker/nginx/); libcap2-bin is for setcap below.
 RUN apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive apt-get upgrade -y && \
-    apt-get install --no-install-recommends -y curl default-mysql-client libjemalloc2 libvips && \
+    apt-get install --no-install-recommends -y curl default-mysql-client libcap2-bin libjemalloc2 libvips nginx && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment
@@ -74,14 +75,19 @@ COPY --from=build /app /app
 
 # Run and own only the runtime files as a non-root user for security.
 # log/, storage/ and tmp/pids/ are gitignored, so they may be absent from the build context.
+# nginx needs its temp directories, the default error log it opens before reading -c, and the
+# capability to bind port 80 without root (Fargate grants no capabilities to a task, so the
+# binary carries it; glibc then ignores LD_PRELOAD for it, which only Puma needs).
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --shell /bin/bash && \
     mkdir -p log storage tmp/pids && \
-    chown -R rails:rails db log storage tmp
+    chown -R rails:rails db log storage tmp /var/lib/nginx /var/log/nginx && \
+    setcap cap_net_bind_service=+ep /usr/sbin/nginx
 USER 1000:1000
 
 # Entrypoint enables jemalloc. It does not run migrations; see docker-compose.yml.
 ENTRYPOINT ["/app/bin/docker-entrypoint"]
 
-EXPOSE 3000
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+# nginx (docker/nginx/) listens here and proxies to Puma on a socket; bin/docker-server runs both.
+EXPOSE 80
+CMD ["bin/docker-server"]

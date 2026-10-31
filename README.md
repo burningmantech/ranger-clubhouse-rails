@@ -33,6 +33,10 @@ Deploys happen only through GitHub Actions (`.github/workflows/`):
    promotes the exact image staging runs, by digest, migrates, and rolls the production service.
    Only the accounts listed in its `Check user` step may run it.
 
+The image runs nginx in front of Puma (`docker/nginx/`, started together by `bin/docker-server`): it
+refuses probes and overwrites the forwarded headers before Rails sees a request, and
+`docker/nginx/check.sh`, which CI runs inside the built image, proves each rule.
+
 The task definitions live in AWS and hold the environment; a deploy changes only the image, so
 **rolling back** is pointing the service at the previous task-definition revision:
 

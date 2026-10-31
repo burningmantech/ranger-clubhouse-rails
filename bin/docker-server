@@ -1,0 +1,17 @@
+#!/bin/bash
+# nginx in front of Puma, in one container: the shape of the Clubhouse 2 API image, which ran
+# nginx and Octane under supervisord. ECS stops the task with SIGTERM: Puma gets it, and its
+# 30 s Solid Queue drain (production.rb), so the task definition's stopTimeout stays above that;
+# nginx gets QUIT, which finishes the requests in flight (docker/nginx/nginx.conf caps that
+# wait). When either exits, so does the container, and ECS replaces the task. The migrate task
+# overrides the command and never runs this.
+nginx= puma= stopping=
+stop() { stopping=1; [ -n "$nginx" ] && kill -QUIT "$nginx"; [ -n "$puma" ] && kill -TERM "$puma"; } 2>/dev/null
+trap stop TERM INT
+nginx -c /app/docker/nginx/nginx.conf & nginx=$!
+bundle exec puma -C config/puma.rb -b unix:///tmp/puma.sock & puma=$!
+[ -n "$stopping" ] && stop        # a stop that arrived while they were starting
+wait -n $nginx $puma; status=$?
+[ -n "$stopping" ] || stop        # one of them exited on its own: take the other down, once
+wait
+exit $status

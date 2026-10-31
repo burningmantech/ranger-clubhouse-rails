@@ -127,7 +127,8 @@ See `docs/UI-COMPONENTS.md` for complete API reference and `docs/DESIGN-GUIDE.md
   read-only included -- no `docker --context remote-server` (not `ps`, `logs` or `inspect` either), no `ssh` to its
   host, no requests to `clubhouse3.dev` to check something
 - Deploying, migrating and verifying there are the maintainer's job -- never an agent's, a plan step's or an issue's
-- Take deploy facts from the repo (`docker-compose.yml`, `Dockerfile`, `bin/docker-entrypoint`) and call them
+- Take deploy facts from the repo (`docker-compose.yml`, `Dockerfile`, `bin/docker-entrypoint`,
+  `bin/docker-server`, `docker/nginx/`) and call them
   unverified on beta
 
 ### Staging and Production on AWS

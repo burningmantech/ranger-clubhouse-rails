@@ -105,20 +105,16 @@ Rails.application.configure do
 
   # Enable DNS rebinding protection and other `Host` header attacks, on a server that
   # names its address. Rails builds request.host, and every *_url, from X-Forwarded-Host
-  # when it is present; beta's nginx overwrites a client's, the AWS load balancer doesn't.
+  # when it is present; the nginx in front of Puma (docker/nginx/, and the beta's) overwrites
+  # a client's, and this is the backstop behind it.
   if (host = ENV["RANGER_CLUBHOUSE_HOST"].presence)
     config.hosts << host
     # The load balancer's health check sends the task's own IP as Host.
     config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
   end
 
-  # Cloudflare's IPv4 edge addresses (https://www.cloudflare.com/ips-v4; the IPv4 half of
-  # beta/nginx/01-cloudflare.conf). Behind Cloudflare and the IPv4-only AWS load balancer,
-  # X-Forwarded-For ends with the edge address, so trusting these ranges is what makes
-  # request.remote_ip the visitor: sessions, the request log and rate_limit key on it.
-  config.action_dispatch.trusted_proxies = ActionDispatch::RemoteIp::TRUSTED_PROXIES + %w[
-    173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18
-    108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17
-    162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22
-  ].map { IPAddr.new(_1) }
+  # request.remote_ip (sessions, the request log, rate_limit) is the visitor because the nginx in
+  # front of Puma sets X-Forwarded-For to the one address Cloudflare names, from a loopback peer
+  # the default trusted proxies cover. Nothing upstream is trusted here: whatever the AWS load
+  # balancer does to X-Forwarded-For (preserve it, or append its peer), nginx overwrites it.
 end

@@ -10,7 +10,7 @@
   "containerDefinitions": [{
     "name": "web",
     "image": "407444941814.dkr.ecr.us-west-2.amazonaws.com/clubhouse3:latest",
-    "portMappings": [{"containerPort": 3000, "protocol": "tcp"}],
+    "portMappings": [{"containerPort": 80, "protocol": "tcp"}],
     "stopTimeout": 45,
     "linuxParameters": {"initProcessEnabled": true},
     "environment": [

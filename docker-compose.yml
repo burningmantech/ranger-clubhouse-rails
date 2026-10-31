@@ -39,6 +39,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    # The image's own nginx (bin/docker-server) is for AWS, behind Cloudflare; here the nginx
+    # service below does TLS from beta/, so Puma runs alone on 3000 as before.
+    command: ["bundle", "exec", "puma", "-C", "config/puma.rb"]
     restart: unless-stopped
     # Longer than Solid Queue's shutdown_timeout (30 s, config/environments/production.rb), so a broadcast
     # email job finishes its SES call before Docker's kill: Docker's default is 10 s.

@@ -191,6 +191,14 @@ jobs:
           # attestation manifest list buildx would otherwise attach.
           provenance: false
 
+      # nginx -t as the image's user proves nginx.conf and everything it includes; check.sh
+      # runs the filters against an echo server standing in for Puma, so every one still
+      # refuses what it should and every real route still gets through (docker/nginx/).
+      - name: Check the nginx config
+        run: |
+          docker run --rm --entrypoint nginx "ranger-clubhouse-rails:${{ github.sha }}" -t -c /app/docker/nginx/nginx.conf
+          docker run --rm --entrypoint /app/docker/nginx/check.sh "ranger-clubhouse-rails:${{ github.sha }}"
+
       # The deploy job of the same run will push this image, so it never has
       # to be built twice.
       - name: Save Docker image
