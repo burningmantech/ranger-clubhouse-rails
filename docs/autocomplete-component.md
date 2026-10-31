@@ -226,12 +226,12 @@ Examples:
 | **Enter** | No selection, 1 result | Auto-select the single result |
 | **Enter** | Global search dialog, the option has no page to open | Commit nothing (see Global search dialog) |
 | **Enter** | No selection, multiple results | No action |
-| **Enter** | Free text (`free_text`), the first row or none highlighted, or a search in progress | Empty the list and leave the key to the form, which sends the text at once |
+| **Enter** | Free text (`free_text`), the text's own row or none highlighted, or a search in progress | Empty the list and leave the key to the form, which sends the text at once |
 | **Escape** | Results open | Close results dropdown; the key goes no further |
 | **Escape** | Results not up yet | Call off the search still to come and an Enter waiting for it; the key is left to the page (a dialog closes on it) |
 | Any key | Kept by an input method (`keyCode` 229) | No action |
 | **Tab** | Form field, option selected, no search in progress | Commit selection, close results, move focus to next field |
-| **Tab** | Search in progress, no selection, a free-text field's first row, or the global search dialog | Commit nothing; focus moves as in the two rows below |
+| **Tab** | Search in progress, no selection, a free-text field's own row, or the global search dialog | Commit nothing; focus moves as in the two rows below |
 | **Tab** | Nothing committed, filter chips shown | Move focus to the first filter chip; results stay open |
 | **Tab** | Nothing committed, no filter chips | Close results, move focus to next field |
 | **Enter** / **Space** | Filter chip focused | Apply that filter and return focus to the input |
@@ -250,9 +250,10 @@ Examples:
 - **Enter key handling**: If search is in progress when Enter is pressed, waits for results and auto-selects if only one result, ignoring any row still highlighted from the previous query. An Enter pressed on text too short to search is not kept. An Enter still waiting is forgotten on a dismissal (next), or when the text drops below the minimum length
 - **Dismissal ends the search**: Escape, focus leaving the component, a result being chosen and the controller disconnecting drop the search in flight, call off the one still in its debounce, and forget an Enter waiting for either. No search follows until the text changes again
 - **Input methods**: A keydown reported with `keyCode` 229 is a key the input method kept for itself, such as the Enter that confirms a composition or the arrows that pick a candidate, and is ignored. The test is `keyCode`, not `isComposing`: Safari reports that Enter with `isComposing` false, and a phone keyboard composes every word as it is typed, so its plain Enter (13) has to work mid-word
-- **Tab key**: In a form field (a hidden value field, or submit-on-select), commits the selection if an option is selected and no search is in progress. A free-text field's first row is its text, highlighted on arrival, so Tab leaves it as it leaves the text, and takes a row the reader moved to. In the global search dialog Tab commits nothing, whatever is highlighted: it only moves the focus, which keeps the filter chips reachable while an option is highlighted, as a lone result is on arrival
+- **Tab key**: In a form field (a hidden value field, or submit-on-select), commits the selection if an option is selected and no search is in progress. A free-text field's own row (the first row of a search's results, never a recent: `lead`) is its text, highlighted on arrival, so Tab leaves it as it leaves the text, and takes a row the reader moved to. In the global search dialog Tab commits nothing, whatever is highlighted: it only moves the focus, which keeps the filter chips reachable while an option is highlighted, as a lone result is on arrival
+- **An Enter before the suggestions, two ways**: The recipients field (`shared/_callsign_chips`) wants a real callsign, so the component holds the Enter (`pendingEnter`) and takes a sole suggestion as it lands; with none or several, `callsign_chips_controller` makes the typed text a chip once the search lands (`autocomplete.loadend`), and the server takes or refuses it. The mailbox search (`free_text`) takes any text, so its Enter sends the form at once and the suggestions are dropped: waiting would turn a sole person into a chip and search for something other than what was typed. The difference is deliberate; neither field's Enter should be made the other's
 - **Click on the results that hits no option**: A click on the filter bar's background, a group header or a message hands focus back to the input
-- **Focus leaving the component**: The results are cleared, as Escape clears them, when focus moves anywhere outside the input and its results, and a search still in flight is dropped. Switching windows or tabs does not count, because focus has not moved. Nothing is committed unless `select_on_blur` is set, and then only the highlighted option or a sole result, and never while a search is in progress, when those rows belong to the previous text
+- **Focus leaving the component**: The results are cleared, as Escape clears them, when focus moves anywhere outside the input and its results, and a search still in flight is dropped. Switching windows or tabs does not count, because focus has not moved. Nothing is committed unless `select_on_blur` is set, and then only the highlighted option or a sole result, and never while a search is in progress, when those rows belong to the previous text, nor a free-text field's own row, which is its text
 - **Global search dialog**: Does not set `select_on_blur`. A result opens only on Enter or a click, as in Clubhouse 2. A result with no page to open (a fleet or team vehicle has no owner) is not committed by Enter or a click, nor by an Enter that waited for its search: the dialog has no field for a value to go into. The text typed and the results stay as they are, that option is highlighted and focus stays in the input
 
 ## 6. Placement Rules
@@ -283,33 +284,20 @@ The room is what is on screen (`visibleBounds`):
 The system tests stub `window.visualViewport` to put a keyboard on screen
 (`test/system/autocomplete_component_test.rb`, `test/system/me/messages_workspace_test.rb`).
 
-### Z-Index Layering
+### Classes and Layering
 
-- **Inline autocomplete**: `z-index: 9500` (high but below modals)
-- **Modal search bar**: Uses modal's z-index layer (typically `z-index: 10000+`)
-- **Fixed positioning**: Used for global search bar to ensure visibility
+The list is `ac-results` (`components/autocomplete.css`, an `@utility`): absolute under the field
+(`top: 100%`, a 0.25rem gap), `z-50`, `bg-base-100` with a border and `shadow-lg`, 20rem tall at
+most with a thin scrollbar that stays visible. `ac-results-above` puts it over the field instead
+(`bottom: 100%`). `ac-results-inline` (the search dialog, `inline: true`) keeps it in the flow,
+and no placement runs. `positioned: false` hangs it from a box the caller positions around the
+component (a chips field's) and pins it to that box's left edge (`left-0`), so it spans the box.
 
-### CSS Classes
-
-```css
-.autocomplete-results-box-dropdown {
-  position: absolute;
-  z-index: 9500;
-  box-shadow: 0 1px 5px 0 rgb(50 50 50 / 50%);
-  max-height: 20em;
-  overflow-y: auto;
-  background-color: #fafafa;
-  margin-top: 0.25rem;
-  border: 2px solid #ececec;
-  border-radius: 5px;
-}
-
-/* Flipped above input */
-.autocomplete-results-box-dropdown.flipped {
-  margin-top: 0;
-  margin-bottom: 0.25rem;
-}
-```
+Inside it: rows are `ac-option`, the highlighted one `ac-option-active` (or the classes a host gives
+in `data-autocomplete-selected-class`), groups `ac-group` under an `ac-group-header`, the filter bar
+`ac-filter-bar` with its `ac-filter-chip` buttons (`ac-filter-chip-active`, `ac-filter-count`), and
+the states `ac-searching`, `ac-loading`, `ac-empty`, `ac-error` and `ac-keyboard-help`. The search
+dialog's list sits in the dialog's own top layer, above everything on the page.
 
 ## 7. Filter Rules
 
@@ -373,7 +361,7 @@ The caller provides a mapping hash when initializing the autocomplete:
 autocomplete_field(
   :person_id,
   mode: "person_manage",
-  metadata_mapping: {
+  meta_mapping: {
     "id" => "person_id_hidden",
     "status" => "person_status_hidden",
     "callsign" => "person_callsign_hidden"
@@ -440,6 +428,18 @@ document.getElementById('person_status_hidden').addEventListener('change', (even
 - **UI updates**: Trigger display changes based on metadata (e.g., show/hide sections)
 - **Analytics**: Track selection metadata for reporting
 
+### The Change Event
+
+A form field with no hidden target (`form_field: true`) learns of a choice from
+`autocomplete.change`, dispatched on the component and bubbling, with
+`detail: {value, textValue, selected, meta}`: the row's value, its label, the row itself, and its
+`meta` as the JSON result gave it (null for a row with none, such as a recent). A host acts on the
+kind of row from `meta`, never by reading the row's attributes: the mailbox search turns a
+`kind: "person"` row into a chip (`message_search_controller#take`). The component also dispatches
+`autocomplete.loadstart`, `autocomplete.load`, `autocomplete.loadend` (every search's end, a failed
+or a superseded one included), `autocomplete.error` (cancelable, `detail: {error, kind}`: "offline",
+"expired" or "failed"), `autocomplete.open` and `autocomplete.close`.
+
 ## 9. Stimulus Controller Values
 
 The autocomplete Stimulus controller accepts the following data values:
@@ -449,24 +449,30 @@ The autocomplete Stimulus controller accepts the following data values:
 | Value | Type | Default | Description |
 |-------|------|---------|-------------|
 | `url` | String | required | API endpoint URL for fetching results |
-| `mode` | String | required | Search mode identifier (e.g., "person_manage") |
+| `mode` | String | "" | Search mode identifier (e.g., "person_manage") |
+| `responseType` | String | "html" | "json" for the unified JSON response (every caller of `shared/_autocomplete` and `autocomplete_field`) |
 | `minLength` | Number | 2 | Minimum query length before searching |
 | `delay` | Number | 300 | Debounce delay in milliseconds |
 | `queryParam` | String | "q" | Query parameter name for the search string |
 | `limit` | Number | 5 | Maximum number of results to request |
 | `submitOnSelect` | Boolean | false | Auto-submit form after selection |
-| `freeText` | Boolean | false | The text is itself a choice (the mailbox search, `free_text: true` on `shared/_autocomplete`): the first row stands for it and arrives highlighted, Enter sends the form with the text without waiting for the list unless the reader picked a row below the first, and Tab takes only a row the reader moved to. A held Enter (`pendingEnter`) commits only a sole result, so without this a person among the suggestions swallowed the Enter |
 | `formField` | Boolean | false | A form field with no hidden target: a selection fills the input and dispatches `autocomplete.change` (the callsign chips field, `form_field: true` on `shared/_autocomplete`) |
+| `freeText` | Boolean | false | The text is itself a choice (the mailbox search, `free_text: true` on `shared/_autocomplete`): the first row of a search's results stands for it (`lead`; a recent never does) and arrives highlighted, Enter sends the form with the text without waiting for the list unless the reader picked another row, and neither Tab nor `select_on_blur` takes the text's own row. A held Enter (`pendingEnter`) commits only a sole result, so without this a person among the suggestions swallowed the Enter |
 
 ### Optional Values
 
 | Value | Type | Default | Description |
 |-------|------|---------|-------------|
-| `metadataMapping` | Object | null | JSON object mapping metadata keys to field IDs |
-| `placeholder` | String | "Search..." | Input placeholder text |
-| `emptyText` | String | "No results found" | Message when no results |
-| `renderBelow` | Boolean | true | Whether to render dropdown below input |
-| `autoFlip` | Boolean | true | Auto-flip dropdown when insufficient space |
+| `metaMapping` | String (JSON) | "" | Meta keys to the ids of the fields they fill (section 8) |
+| `inline` | Boolean | false | Results in the flow (the search dialog): no floating list, no placement |
+| `selectOnBlur` | Boolean | false | Commit the highlighted or sole result when focus leaves the component |
+| `recentsKey` | String | "" | Keep the last choices in `localStorage` under this key and show them on an empty field's focus |
+| `maxRecents` | Number | 5 | How many recents are kept |
+| `ready` | Boolean | false | Set by the controller once connected (tests wait on it) |
+
+The placeholder, the empty message and the placement are not values: the placeholder is the
+input's own attribute (`placeholder:` on the partial), the empty and error states are drawn by the
+controller, and the list is placed by `updatePlacement` (section 6).
 
 ### Example HTML
 
@@ -478,7 +484,8 @@ The autocomplete Stimulus controller accepts the following data values:
   data-autocomplete-min-length-value="2"
   data-autocomplete-delay-value="300"
   data-autocomplete-limit-value="10"
-  data-autocomplete-metadata-mapping-value='{"id":"person_id","status":"person_status"}'
+  data-autocomplete-response-type-value="json"
+  data-autocomplete-meta-mapping-value='{"id":"person_id","status":"person_status"}'
 >
   <input
     type="search"
@@ -504,7 +511,7 @@ The controller uses the following CSS class values (customizable):
 
 | Class Value | Default | Purpose |
 |-------------|---------|---------|
-| `selected` | "autocomplete-option-selected" | Applied to keyboard-selected option |
+| `selected` | "ac-option-active" | Applied to keyboard-selected option |
 
 Example:
 
@@ -519,64 +526,36 @@ Example:
 
 ### Shared Partial
 
-The `shared/_autocomplete.html.erb` partial provides the complete HTML structure:
+`shared/_autocomplete.html.erb` draws the component: the `data-controller="autocomplete"` wrapper
+(a `combobox` that owns the list), the text input, an optional hidden value field, the loading
+line, the `ac-results` list and an optional keyboard-help footer. Its locals are strict:
 
-```erb
-<%# app/views/shared/_autocomplete.html.erb %>
-
-<div
-  class="autocomplete-wrapper <%= wrapper_class %>"
-  data-controller="autocomplete"
-  data-autocomplete-url-value="<%= url %>"
-  data-autocomplete-mode-value="<%= mode %>"
-  data-autocomplete-min-length-value="<%= min_length || 2 %>"
-  data-autocomplete-delay-value="<%= delay || 300 %>"
-  data-autocomplete-limit-value="<%= limit || 5 %>"
-  <%= "data-autocomplete-metadata-mapping-value='#{metadata_mapping.to_json}'" if metadata_mapping %>
-  <%= "data-autocomplete-submit-on-select-value='true'" if submit_on_select %>
-  aria-expanded="false"
->
-  <%= label_tag label_for, label_text, class: "form-label" if label_text %>
-
-  <div class="autocomplete-input-wrapper">
-    <%= text_field_tag(
-      field_name,
-      field_value,
-      class: "form-control autocomplete-input",
-      placeholder: placeholder || "Search...",
-      autocomplete: "off",
-      spellcheck: false,
-      data: { autocomplete_target: "input" },
-      aria: {
-        autocomplete: "list",
-        controls: "#{field_name}_results",
-        owns: "#{field_name}_results"
-      }
-    ) %>
-
-    <%= hidden_field_tag(
-      hidden_field_name,
-      hidden_field_value,
-      data: { autocomplete_target: "hidden" }
-    ) if hidden_field_name %>
-  </div>
-
-  <div
-    id="<%= field_name %>_results"
-    class="autocomplete-results-box autocomplete-results-box-dropdown"
-    data-autocomplete-target="results"
-    role="listbox"
-    hidden
-  >
-    <!-- Results populated by Stimulus controller -->
-  </div>
-
-  <%= content_tag(:p, help_text, class: "form-help-text") if help_text %>
-
-  <!-- Screen reader live region -->
-  <div role="status" aria-live="polite" aria-atomic="true" class="sr-only" data-autocomplete-target="announcer"></div>
-</div>
-```
+| Local | Default | Description |
+|-------|---------|-------------|
+| `url:` | required | The endpoint (JSON) |
+| `mode:` | nil | Search mode identifier |
+| `name:` | nil | The text input's name; nil sends nothing |
+| `value:` | nil | The text's starting value |
+| `type:` | "text" | The input's type ("search" in the mailbox) |
+| `maxlength:` | nil | The input's maxlength |
+| `input_id:` | random | The wrapper's id, and the base of the list's (`-results`) and the input's (`-input`): pass one wherever the ids should be the same on every render |
+| `field_id:` | nil | The input's own id, for a `<label for>` that names it |
+| `aria_label:` | "Search" | The input's and the wrapper's name; nil when a label names the input |
+| `describedby:`, `invalid:` | nil, false | The input's help or error line, and `aria-invalid` |
+| `placeholder:` | "Search..." | The input's placeholder |
+| `hidden_field_name:`, `hidden_field_id:` | nil | A hidden field the choice's value goes into |
+| `form_field:` | false | No hidden field: a choice fills the input and dispatches `autocomplete.change` |
+| `free_text:` | false | The text is itself a choice (`freeText`) |
+| `submit_on_select:` | false | Send the form on a choice |
+| `select_on_blur:` | false | Commit the highlighted or sole result on leaving (`selectOnBlur`) |
+| `recents_key:` | nil | Keep recents (`recentsKey`) |
+| `meta_mapping:` | nil | Meta keys to field ids (section 8) |
+| `min_length:`, `limit:`, `delay:` | 2, 5, 300 | As the values |
+| `inline:` | false | Results in the flow (the search dialog) |
+| `positioned:` | true | false hangs the list from the caller's box (a chips field) |
+| `wrapper_class:`, `input_class:`, `results_class:` | nil | Classes for the wrapper, the input and the list |
+| `input_data:` | nil | `data-` attributes for the input (a host's target) |
+| `autofocus:`, `keyboard_help:` | false | Focus on load; show the keyboard footer |
 
 ### Form Builder Method
 
@@ -590,7 +569,7 @@ ui_form(@schedule, schedule_path(@schedule)) do |f|
     label: "Select Person",
     mode: "person_manage",
     url: autocomplete_search_path,
-    metadata_mapping: {
+    meta_mapping: {
       "id" => "person_id",
       "status" => "person_status",
       "callsign" => "person_callsign"
@@ -609,11 +588,12 @@ def autocomplete_field(attribute, options = {})
   #   label: "Label text" (default: humanized attribute)
   #   mode: "search_mode" (required)
   #   url: "/path/to/endpoint" (required)
-  #   metadata_mapping: { "meta_key" => "field_id" } (optional)
+  #   meta_mapping: { "meta_key" => "field_id" } (optional)
   #   min_length: 2 (default: 2)
-  #   delay: 300 (default: 300)
   #   limit: 5 (default: 5)
   #   submit_on_select: false (default: false)
+  #   recents_key: "key" (optional)
+  #   display_attribute: :callsign (optional: the text shown for the record's current value)
   #   placeholder: "Search..." (optional)
   #   help_text: "Help text" (optional)
   #   wrapper_class: "custom-class" (optional)
@@ -629,39 +609,16 @@ For views that need autocomplete without a form builder:
 
 ```erb
 <%= render "shared/autocomplete",
-  field_name: "person_search",
-  label_text: "Find Person",
-  label_for: "person_search",
-  mode: "person_manage",
   url: autocomplete_search_path,
-  min_length: 2,
-  limit: 10,
+  mode: "person_manage",
+  input_id: "person-search",
   placeholder: "Type to search...",
+  limit: 10,
   hidden_field_name: "person_id",
-  metadata_mapping: { "id" => "person_id", "status" => "person_status" }
-%>
+  meta_mapping: { "id" => "person_id", "status" => "person_status" } %>
 ```
 
-### Required Partial Local Variables
-
-| Variable | Type | Required | Description |
-|----------|------|----------|-------------|
-| `field_name` | String | Yes | Input field name attribute |
-| `mode` | String | Yes | Search mode identifier |
-| `url` | String | Yes | Autocomplete endpoint URL |
-| `label_for` | String | No | Label for attribute (if `label_text` present) |
-| `label_text` | String | No | Label text to display |
-| `placeholder` | String | No | Input placeholder |
-| `hidden_field_name` | String | No | Name for hidden value field |
-| `field_value` | String | No | Initial input value |
-| `hidden_field_value` | String | No | Initial hidden value |
-| `min_length` | Integer | No | Min query length (default: 2) |
-| `delay` | Integer | No | Debounce ms (default: 300) |
-| `limit` | Integer | No | Max results (default: 5) |
-| `submit_on_select` | Boolean | No | Auto-submit form (default: false) |
-| `metadata_mapping` | Hash | No | Metadata to field ID mapping |
-| `help_text` | String | No | Help text below input |
-| `wrapper_class` | String | No | Additional wrapper classes |
+The locals are in the table above (Shared Partial).
 
 ## Examples
 
@@ -686,7 +643,7 @@ f.autocomplete_field(
   label: "Select Ranger",
   mode: "person_manage",
   url: autocomplete_search_path,
-  metadata_mapping: {
+  meta_mapping: {
     "id" => "schedule_person_id",
     "status" => "schedule_person_status",
     "callsign" => "schedule_person_callsign"
@@ -747,13 +704,10 @@ test "autocomplete selection populates hidden field" do
   fill_in "Select Ranger", with: "Happy"
 
   # Wait for results
-  assert_selector ".autocomplete-results-box [role='option']"
+  assert_selector ".ac-results [role='option']"
 
-  # Press arrow down to select first result
-  find("input[name='person_search']").send_keys(:arrow_down)
-
-  # Press enter to select
-  find("input[name='person_search']").send_keys(:enter)
+  # Press arrow down to select first result, then Enter to take it
+  find_field("Select Ranger").send_keys(:arrow_down, :enter)
 
   # Verify hidden field populated
   assert_equal "123", find("input[name='person_id']", visible: false).value
