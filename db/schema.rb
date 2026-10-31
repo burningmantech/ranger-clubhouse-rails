@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_000017) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_31_000001) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -726,6 +726,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_000017) do
     t.column "message_type", "enum('normal','contact','mentor')", default: "normal", null: false
     t.column "sender_type", "enum('person','team','rbs','other')", default: "person"
     t.boolean "group", default: false, null: false
+    t.index ["expires_at"], name: "index_person_message_on_expires_at"
     t.index ["person_id", "created_at"], name: "person_message_person_id_created_at_index"
     t.index ["reply_to_id"], name: "index_person_message_on_reply_to_id"
     t.index ["sender_person_id", "created_at"], name: "person_message_sender_person_id_created_at_index"

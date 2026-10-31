@@ -173,6 +173,22 @@ class PersonMessage < ApplicationRecord
   end
 
   ##
+  # Delete the broadcasts past their expiry, the rows #has_expired? already
+  # hides (ExpireBroadcastMessagesJob, nightly). A broadcast takes no reply
+  # (#accepts_replies?), but a Clubhouse 2 one may hold some: they go before
+  # their top for the reply_to_id key, and the member rows before both.
+  #
+  def self.expire_broadcasts!
+    ids = where(sender_type: SENDER_TYPE_RBS, expires_at: ..Current.time).ids
+    thread = where(id: ids).or(where(reply_to_id: ids))
+    transaction do
+      PersonMessageMember.where(person_message_id: thread.select(:id)).delete_all
+      where(reply_to_id: ids).delete_all
+      where(id: ids).delete_all
+    end
+  end
+
+  ##
   # The threads a person is a member of and has not read, as a subquery:
   # never read at all, or holding a row someone else wrote after the newest
   # one they read (last_read_message_id, ruling D2). A broadcast, walk-up or

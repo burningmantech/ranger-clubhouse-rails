@@ -3583,8 +3583,8 @@ Trap: `Motd.retrieve_announcements_for_person` ignores `expires_at`, so an expir
 ### Broadcast message expiry (ExpireBroadcastMessagesJob)
 Runs: `expire_broadcast_messages` 3:45am daily — production only, not GHD
 Job: `app/jobs/expire_broadcast_messages_job.rb`
-Owner: `ExpireBroadcastMessagesJob` — destroys `sender_type: "rbs"` rows with `expires_at` passed, one at a time
-Touches: `person_message` (w) (the replies go too), `person_message_member` (w)
+Owner: `PersonMessage.expire_broadcasts!` (`app/models/person_message.rb`) — bulk-deletes `sender_type: "rbs"` rows with `expires_at` passed, found through the `expires_at` index
+Touches: `person_message` (w) (any Clubhouse 2 replies too — broadcasts take none now), `person_message_member` (w)
 Verify: `test/jobs/expire_broadcast_messages_job_test.rb`
 Trap: only RBS rows are swept — any other row with an `expires_at` (Clubhouse 2 data) stays, though `PersonMessage#has_expired?` hides it all the same.
 
