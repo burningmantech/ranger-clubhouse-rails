@@ -71,7 +71,7 @@ class Me::TeamDocumentsControllerTest < ActionDispatch::IntegrationTest
     get me_operational_summary_path
 
     assert_response :success
-    assert_select "a[href=?]", me_team_document_path(@team), text: /View Team Document/
+    assert_select "a[href=?]", me_team_document_path(@team), text: /#{@team.title} document/
     assert_select "a[href=?]", me_team_document_path(teams(:council_cadre)), count: 0
   end
 

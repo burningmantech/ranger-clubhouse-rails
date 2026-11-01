@@ -15,22 +15,27 @@
     <% if @membership.teams.empty? %>
       <%= ui_empty_state "You are not a member of any Ranger team.", icon: "people-group", icon_type: :solid %>
     <% else %>
-      <div class="grid grid-cols-2 lg:grid-cols-3 gap-1 mb-4">
+      <ul class="columns-2 lg:columns-3 gap-4 space-y-1">
         <% @membership.teams.each do |team| %>
-          <div>
+          <li class="break-inside-avoid">
             <%= team.title %>
             <% if team.is_manager %>
               <%= ui_badge "manager", :success, size: "xs" %>
             <% end %>
-            <% if @team_documents.key?(team.resource_tag) %>
-              <div class="mt-1">
-                <%= button_link "View Team Document", :secondary, me_team_document_path(team),
-                                icon: "file-lines", icon_type: :solid %>
-              </div>
-            <% end %>
-          </div>
+          </li>
         <% end %>
-      </div>
+      </ul>
+      <% documented = @membership.teams.select { |team| @team_documents.key?(team.resource_tag) } %>
+      <% if documented.any? %>
+        <div class="flex flex-wrap items-center gap-2 mt-3 px-3 py-2 rounded-box bg-base-200">
+          <span class="text-sm text-stone-subtle me-1">Team documents</span>
+          <% documented.each do |team| %>
+            <%= button_link nil, :secondary, me_team_document_path(team), icon: "file-lines", icon_type: :solid do %>
+              <%= team.title %><span class="sr-only"> document</span>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
     <% end %>
 
     <div class="font-semibold text-heading mb-2 mt-4">
@@ -39,9 +44,9 @@
     <% if @membership.positions.empty? %>
       <%= ui_empty_state "You have no positions granted at this moment.", icon: "user-shield", icon_type: :solid %>
     <% else %>
-      <div class="grid grid-cols-2 lg:grid-cols-3 gap-1">
+      <div class="columns-2 lg:columns-3 gap-1 space-y-1">
         <% @membership.positions.each do |position| %>
-          <div><%= position.title %></div>
+          <div class="break-inside-avoid"><%= position.title %></div>
         <% end %>
       </div>
     <% end %>
