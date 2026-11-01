@@ -32,6 +32,11 @@
       <dd>
         Posts with no one scheduled show a dash, so the gaps are as easy to find as the cover.
       </dd>
+      <dt>What does the shading mean?</dt>
+      <dd>
+        A shaded cell is a gap: a dash, or a 0 on a headcount post. A post that is empty
+        all day has its heading shaded too.
+      </dd>
     </dl>
   <% end %>
 <% end %>
@@ -47,16 +52,16 @@
                # dropped, which sent the reader the current year's default report
                # whatever was on screen.
                actions: (export_csv_link(scheduling_shift_coverage_path(@index_params.except(:day)
-                                                                       .merge(format: :csv)),
+                                                                                     .merge(format: :csv)),
                                          "Export All to CSV") if @report.any?),
                url: scheduling_shift_coverage_path do |f| %>
   <%# The year rides the filter form -- a GET form replaces the whole query
       string, so without this every Apply would bounce back to the current year. %>
   <%= hidden_field_tag :year, @year %>
-  <%= f.select :type, @type_options, label: "Shift Type",
-               selected: @type, width: "w-full", wrapper_class: "flex-1" %>
-  <%= f.select :day, shift_coverage_day_options(@report), label: "Day",
-               selected: @day, width: "w-full", wrapper_class: "flex-1" %>
+  <%= form_row do %>
+    <%= f.select :type, @type_options, label: "Shift Type", selected: @type %>
+    <%= f.select :day, shift_coverage_day_options(@report), label: "Day", selected: @day %>
+  <% end %>
   <%= button_row do %>
     <%= f.submit "Apply Filters" %>
   <% end %>
@@ -72,8 +77,8 @@
                    caption: "#{day.label} coverage by post" do |t| %>
         <%= t.header do %>
           <%= t.heading "Period", class: "shift-coverage-period" %>
-          <% @report.columns.each do |post| %>
-            <%= t.heading post.title %>
+          <% @report.columns.each_with_index do |post, index| %>
+            <%= t.heading post.title, class: shift_coverage_heading_class(day, index) %>
           <% end %>
         <% end %>
         <%= t.body do %>

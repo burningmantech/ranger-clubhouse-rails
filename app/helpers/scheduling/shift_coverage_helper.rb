@@ -4,6 +4,12 @@
 # the whole app, so a bare `cell` or `period_time` would answer for every other
 # page too.
 module Scheduling::ShiftCoverageHelper
+  # A gap on the grid is shaded as well as dashed, so a run of them reads as
+  # one block from across a 17-column table. The dash or the 0 still says it
+  # on its own; the shade only makes it findable. Grid only: on the folded
+  # card the vacant line already names the gaps.
+  GAP_CLASS = "lg:bg-warning/15"
+
   # An empty post keeps its dash on the grid, where a column of them is how a
   # gap is spotted, and drops out of the folded card, where the vacant line
   # below says the same thing in one line instead of fifteen.
@@ -12,7 +18,13 @@ module Scheduling::ShiftCoverageHelper
   # agree about which posts fold away and at what width, and apart they drift
   # into either saying it twice or not at all.
   def shift_coverage_cell_class(cell)
-    "hidden lg:table-cell" if cell.vacant?
+    class_names("hidden lg:table-cell": cell.vacant?, GAP_CLASS => shift_coverage_gap?(cell))
+  end
+
+  # A post no one covers for the whole day is shaded in its heading too, so
+  # the empty column is named once instead of read off four shaded cells.
+  def shift_coverage_heading_class(day, index)
+    GAP_CLASS if day.periods.all? { |period| shift_coverage_gap?(period.cells[index]) }
   end
 
   # Posts no one is covering, named once under the row's hours -- the other
@@ -69,13 +81,18 @@ module Scheduling::ShiftCoverageHelper
 
   private
 
-  # The people sharing a shift window. The hours go unsaid only when there is
-  # one window and it covers the whole row -- then the row already states them.
-  # Any other case prints them, because a cell that says only "Nobooty" when
+  # A headcount of zero is as empty as a dash, even though it is never vacant.
+  def shift_coverage_gap?(cell) = cell.vacant? || (cell.count? && cell.count.zero?)
+
+  # The people sharing a shift window, one to a line: a column is as wide as
+  # its longest callsign rather than its longest run of them.
+  #
+  # The hours go unsaid only when there is one window and it covers the whole
+  # row -- then the row already states them. Any other case prints them, because a cell that says only "Nobooty" when
   # Nobooty comes on at 17:00 of a 12:00-18:00 row reads as covered when it is
   # not, and a cell holding two windows needs them to tell the two apart.
   def shift_coverage_window(cell, group, index)
-    people = safe_join(group.people.map { |person| shift_coverage_person(person) }, ", ")
+    people = safe_join(group.people.map { |person| shift_coverage_person(person) })
     return people if cell.groups.one? && group.fills_period
 
     tag.div(class: index.zero? ? nil : "mt-2") do
@@ -96,11 +113,11 @@ module Scheduling::ShiftCoverageHelper
     # paths to throw away.
     path = person_path(signup.person_id) if can_view_person_page?
     name = person_display_link(signup, signup.person_id, path:)
-    return tag.span(name, class: "whitespace-nowrap") if signup.tag.blank?
+    return tag.div(name, class: "whitespace-nowrap") if signup.tag.blank?
 
     # Which position the callsign is on is part of the answer, so it stays at
     # the size of the rest of the cell.
-    tag.span(class: "whitespace-nowrap") do
+    tag.div(class: "whitespace-nowrap") do
       safe_join([name, tag.span("(#{signup.tag})", class: "text-stone-subtle")], " ")
     end
   end

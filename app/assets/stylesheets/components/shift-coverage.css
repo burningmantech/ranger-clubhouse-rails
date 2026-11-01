@@ -35,6 +35,16 @@
     .shift-coverage-grid tbody th.shift-coverage-period {
         @apply border-e border-base-300;
     }
+
+    /*
+     * A rule between posts, so a column reads down the day without the eye
+     * drifting into its neighbour. The first post is skipped: the frozen
+     * hours column already draws that line.
+     */
+    .shift-coverage-grid td + td,
+    .shift-coverage-grid thead th + th + th {
+        @apply border-s border-base-300;
+    }
 }
 
 /*
