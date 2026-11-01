@@ -163,7 +163,6 @@ class PositionCredit < ApplicationRecord
     end
 
     # Drops a year's cached credits so the next lookup reads the database.
-    # Exact key only -- the production cache store has no delete_matched.
     def flush_year_cache(year)
       cache_store.delete(cache_key_for(year))
     end

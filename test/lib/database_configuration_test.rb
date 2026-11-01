@@ -15,7 +15,7 @@ class DatabaseConfigurationTest < ActiveSupport::TestCase
     with_env("SCHEMA" => nil) do
       configs = ActiveRecord::Base.configurations.configs_for(env_name: "production", include_hidden: true)
 
-      assert_equal %w[primary cache queue cable], configs.map(&:name)
+      assert_equal %w[primary queue cable], configs.map(&:name)
       configs.each do |db_config|
         assert_nil ActiveRecord::Tasks::DatabaseTasks.schema_dump_path(db_config), db_config.name
       end
@@ -32,7 +32,7 @@ class DatabaseConfigurationTest < ActiveSupport::TestCase
     end
   end
 
-  # Solid Cable, Solid Queue and Solid Cache connect through their own configs,
+  # Solid Cable and Solid Queue connect through their own configs,
   # which point at their environment's primary database. Seen by the db tasks,
   # they would make one database count as several: development would dump the
   # whole schema to a file per config and load each into the same database, and
@@ -42,11 +42,11 @@ class DatabaseConfigurationTest < ActiveSupport::TestCase
   end
 
   test "production's db tasks see one database, through primary" do
-    assert_db_tasks_see_primary_alone "production", %w[cache queue cable]
+    assert_db_tasks_see_primary_alone "production", %w[queue cable]
   end
 
   test "training's db tasks see one database, through primary" do
-    assert_db_tasks_see_primary_alone "training", %w[cache queue cable]
+    assert_db_tasks_see_primary_alone "training", %w[queue cable]
   end
 
   private

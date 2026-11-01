@@ -2,8 +2,8 @@
 
 require "test_helper"
 
-# RoleManager caches a person's role set indefinitely (config/cache.yml sets no
-# max_age), and ApplicationController re-reads it on every request. Any grant or
+# RoleManager caches a person's role set with no expiry (production's Redis
+# evicts only when full), and ApplicationController re-reads it on every request. Any grant or
 # revoke that feeds that set must purge it, or a revoked permission survives
 # until something else flushes the cache.
 #

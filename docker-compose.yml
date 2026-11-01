@@ -54,6 +54,8 @@ services:
       - TZ=America/Phoenix
       # Read by both config/puma.rb (threads) and config/database.yml (pool); their defaults differ (8 vs 5).
       - RAILS_MAX_THREADS=8
+      # Rails.cache (config/environments/production.rb): the redis service below.
+      - REDIS_URL=redis://redis:6379/0
       # Passkey sign-in (app/lib/passkeys.rb): the https address people type to reach this server, with no
       # trailing slash. Unset keeps passkeys off. A passkey only signs in at the address it was made on, so
       # this must be the same address the off-playa Clubhouse uses, certificate and all.
@@ -78,6 +80,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   # Web server load balancer/frontend
   nginx:
@@ -101,6 +105,13 @@ services:
     ports:
       - "10025:1025"
       - "8025:8025"   # web UI for reading caught mail
+
+  # Rails.cache: 128 MB, least-recently-used eviction of any key, nothing on disk. No published
+  # port, but anything on the ranger network can reach it; it holds nothing but cache rows.
+  redis:
+    image: redis:8.10-alpine
+    command: ["redis-server", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru", "--save", ""]
+    restart: unless-stopped
 
   # Database Service for the Clubhouse and IMS
   db:

@@ -109,8 +109,7 @@ class Admin::PermissionsController < ApplicationController
 
   # Every change here alters what roles a person resolves to, and those are
   # cached per person. Clearing the whole cache rather than matching a prefix
-  # follows the position and team role writers: solid_cache has no
-  # delete_matched.
+  # follows the position and team role writers (RoleManager.purge_all says why).
   def purge_role_cache
     RoleManager.purge_all
   end

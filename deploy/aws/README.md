@@ -5,7 +5,7 @@ database of its own. ECS Fargate (arm64) in us-west-2, account 407444941814, beh
 Load Balancer that only Cloudflare can reach; RDS MariaDB 12.3 over TLS; S3 for Active Storage; SES
 for mail.
 
-The task's port 80 is nginx (`docker/nginx/`), started beside Puma by `bin/docker-server`: it refuses
+The task's port 80 is nginx (`docker/nginx/`), started by `bin/docker-server` beside Puma and the `redis-server` that holds `Rails.cache` (128 MB, least-recently-used eviction, loopback only, nothing on disk): it refuses
 probes and overwrites the forwarded headers before Rails sees a request. `docker/nginx/check.sh` checks its
 rules, and CI runs it inside the built image. The service registers container port 80 with its target group (switched 2026-10-31 with
 `aws ecs update-service --load-balancers ...,containerPort=80` on the same call as the new revision; the task

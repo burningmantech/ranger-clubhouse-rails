@@ -67,9 +67,9 @@ class TwilioStatus
   end
 
   # The lock for a cold read: a token only this request knows, written only
-  # where no lock is, then read back. Solid Cache's add-only write can answer
-  # true to two requests at once, swallowing the deadlock between them, and
-  # only one token stays. The token, or nil when another request holds it.
+  # where no lock is, then read back: Redis's add-only write is atomic, but a
+  # store whose write can answer true to two requests at once (Solid Cache's
+  # did) leaves only one token. The token, or nil when another request holds it.
   def self.take_lock(lock)
     owner = SecureRandom.hex(8)
     owner if Rails.cache.write(lock, owner, unless_exist: true, expires_in: LOCK_FOR) && shared_read(lock) == owner

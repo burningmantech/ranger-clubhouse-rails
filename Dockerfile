@@ -19,10 +19,11 @@ WORKDIR /app
 # Install base packages. Docker Hub stops rebuilding a Ruby patch tag once a newer
 # patch ships, so its Debian packages go stale: upgrade them here. A cached layer
 # keeps the old ones, so build with --no-cache to pick up new fixes.
-# nginx fronts Puma in the final stage (bin/docker-server, docker/nginx/); libcap2-bin is for setcap below.
+# nginx fronts Puma, and redis-server holds Rails.cache, in the final stage (bin/docker-server,
+# docker/nginx/); libcap2-bin is for setcap below.
 RUN apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive apt-get upgrade -y && \
-    apt-get install --no-install-recommends -y curl default-mysql-client libcap2-bin libjemalloc2 libvips nginx && \
+    apt-get install --no-install-recommends -y curl default-mysql-client libcap2-bin libjemalloc2 libvips nginx redis-server && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment
@@ -88,6 +89,7 @@ USER 1000:1000
 # Entrypoint enables jemalloc. It does not run migrations; see docker-compose.yml.
 ENTRYPOINT ["/app/bin/docker-entrypoint"]
 
-# nginx (docker/nginx/) listens here and proxies to Puma on a socket; bin/docker-server runs both.
+# nginx (docker/nginx/) listens here and proxies to Puma on a socket; bin/docker-server runs both,
+# and the redis-server behind Rails.cache.
 EXPOSE 80
 CMD ["bin/docker-server"]

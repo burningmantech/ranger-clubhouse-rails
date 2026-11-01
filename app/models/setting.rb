@@ -671,7 +671,7 @@ class Setting < ApplicationRecord
   # read of which must see the latest save -- whether broadcast email may go
   # out. A cached copy can lag: a reader that fetched the row just before a
   # save committed writes the old value back after the save has cleared it,
-  # and solid_cache keeps it for weeks.
+  # and the cache keeps it until it is evicted.
   def self.fresh_value(name)
     stored_or_default(find_by(name:), DESCRIPTIONS.fetch(name), false)
   end
@@ -716,7 +716,7 @@ class Setting < ApplicationRecord
   end
 
   # In production, job workers read settings from the same shared cache as the
-  # web server (solid_cache), so deleting the key is all a worker needs to see
+  # web server (the Redis beside Puma), so deleting the key is all a worker needs to see
   # the new value -- no restart.
   def clear_cache
     cache_delete(name)

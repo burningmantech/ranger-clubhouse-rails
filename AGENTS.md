@@ -120,7 +120,7 @@ See `docs/UI-COMPONENTS.md` for complete API reference and `docs/DESIGN-GUIDE.md
   (`tmp/storage-<n>`); `PARALLEL_WORKERS=1` runs serially. Anything a test writes outside the database
   at a fixed name needs the same per-worker split (`parallelize_setup` in `test/test_helper.rb`)
 - Worktrees share those databases: run one `bin/rails test` at a time on this machine
-- Cache stores differ by env: test uses `null_store` (cache code silently no-ops in tests), dev uses `memory_store`, prod uses `solid_cache` (no `delete_matched` support)
+- Cache stores differ by env: test uses `null_store` (cache code silently no-ops in tests), dev uses `memory_store`, prod uses `redis_cache_store` (a Redis beside Puma: compose's `redis` service, or `redis-server` inside the AWS image under `bin/docker-server`; 128 MB, LRU, and `Rails.cache.clear` flushes it whole)
 
 ### The Beta Server
 - The beta at `clubhouse3.dev` is live and serves real members. Never touch it: no command of any kind against it,

@@ -290,30 +290,24 @@ class TwilioStatusTest < ActiveSupport::TestCase
     assert_equal TwilioStatus::LOCK_FOR.to_i, TwilioStatus.wait_limit
   end
 
-  # Solid Cache with its rows in a Hash: production's store, its local cache
-  # included, without the database.
-  class RowlessSolidCache < SolidCache::Store
-    def initialize(...)
-      super
+  # The Redis commands production's store sends, over a Hash: the server's
+  # stand-in under the real store, its local cache included. An add-only set
+  # is atomic, as Redis's is; expiry is not modelled.
+  class HashRedis
+    def initialize
       @rows = {}
-      @rows_lock = Mutex.new
+      @lock = Mutex.new
     end
 
-    private
+    def get(key) = @lock.synchronize { @rows[key] }
+    def unlink(*keys) = @lock.synchronize { keys.count { |key| !@rows.delete(key).nil? } }
 
-    def entry_read(key) = @rows_lock.synchronize { @rows[key] }
-    def entry_delete(key) = @rows_lock.synchronize { !@rows.delete(key).nil? }
+    def set(key, value, nx: false, px: nil)
+      @lock.synchronize do
+        next false if nx && @rows.key?(key)
 
-    def entry_write(key, payload)
-      @rows_lock.synchronize { @rows[key] = payload }
-      true
-    end
-
-    def entry_lock_and_write(key)
-      @rows_lock.synchronize do
-        value = yield @rows[key]
-        @rows[key] = value if value
-        value
+        @rows[key] = value
+        true
       end
     end
   end
@@ -325,7 +319,7 @@ class TwilioStatusTest < ActiveSupport::TestCase
     first = stuck_client(started, release)
     second = FakeTwilioClient.new
 
-    with_cache_store(RowlessSolidCache.new) do |store|
+    with_cache_store(ActiveSupport::Cache::RedisCacheStore.new(redis: HashRedis.new, pool: false)) do |store|
       with_clients(first, second) do
         # Each runs as a request does, in a local cache of its own, which
         # keeps the waiter's first miss for the rest of it.
@@ -431,7 +425,7 @@ class TwilioStatusTest < ActiveSupport::TestCase
   end
 
   # A memory store whose add-only write answers true though the key is there,
-  # as Solid Cache does when it swallows a deadlock between two such writes.
+  # as Solid Cache did when it swallowed a deadlock between two such writes.
   class SwallowingStore < ActiveSupport::Cache::MemoryStore
     def write(name, value, options = nil)
       options&.dig(:unless_exist) && exist?(name) ? true : super

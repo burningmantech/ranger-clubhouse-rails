@@ -128,7 +128,7 @@ class GroundHogDay
 
       # The file drops only the tables it holds, so a table added since it was
       # made would keep its rows from one day to the next. Every table is dropped
-      # first, bar the queue and cache tables this job and the server run on.
+      # first, bar the queue and cable tables this job and the server run on.
       connection = ActiveRecord::Base.connection
       connection.disable_referential_integrity do
         connection.tables.grep_v(/\Asolid_/).each { connection.drop_table(it) }

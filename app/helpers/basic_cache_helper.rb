@@ -24,9 +24,5 @@ module BasicCacheHelper
     def cache_delete(key)
       Rails.cache.delete(key)
     end
-
-    def cache_delete_matched(key)
-      Rails.cache.delete_matched(key)
-    end
   end
 end

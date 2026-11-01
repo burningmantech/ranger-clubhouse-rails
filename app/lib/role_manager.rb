@@ -51,9 +51,9 @@ class RoleManager
     end
 
     # Flush every person's cached role set. This clears the whole cache rather
-    # than matching CACHE_KEY_PREFIX: solid_cache (production) does not
-    # implement delete_matched, so the pattern form raised NotImplementedError.
-    # Same trade-off the position/team role writers already make.
+    # than matching CACHE_KEY_PREFIX: on production's Redis that is one FLUSHDB,
+    # where a pattern is a scan of every key. Same trade-off the position/team
+    # role writers already make.
     def purge_all
       Rails.cache.clear
     end

@@ -66,7 +66,7 @@ production:
     # Production never loads db/schema.rb. A production database with no schema_migrations table is a
     # restore from Clubhouse 2, which the migrations build on, and loading the file into it would drop
     # every table it defines and create it again empty (force: :cascade). Without this line, db:migrate and
-    # db:prepare load it in exactly that case. cache, queue and cable inherit this line through the merge below.
+    # db:prepare load it in exactly that case. queue and cable inherit this line through the merge below.
     # A SCHEMA environment variable overrides it, so production never sets one.
     schema_dump: false
     <% if ENV["RANGER_DB_SSL_CA"].present? %>
@@ -76,9 +76,6 @@ production:
     sslca: <%= ENV["RANGER_DB_SSL_CA"] %>
     ssl_mode: verify_identity
     <% end %>
-  cache:
-    <<: *primary_production
-    database_tasks: false
   queue:
     <<: *primary_production
     database_tasks: false
@@ -93,9 +90,6 @@ training:
     database: <%= ENV["RANGER_DB_CLONE_FROM_DATABASE_NAME"] %>
     username: <%= ENV["RANGER_DB_CLONE_FROM_USER_NAME"] %>
     password: <%= ENV["RANGER_DB_CLONE_FROM_PASSWORD"] %>
-  cache:
-    <<: *primary_training
-    database_tasks: false
   queue:
     <<: *primary_training
     database_tasks: false

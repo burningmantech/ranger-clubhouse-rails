@@ -1,17 +1,22 @@
 #!/bin/bash
-# nginx in front of Puma, in one container: the shape of the Clubhouse 2 API image, which ran
-# nginx and Octane under supervisord. ECS stops the task with SIGTERM: Puma gets it, and its
-# 30 s Solid Queue drain (production.rb), so the task definition's stopTimeout stays above that;
-# nginx gets QUIT, which finishes the requests in flight (docker/nginx/nginx.conf caps that
-# wait). When either exits, so does the container, and ECS replaces the task. The migrate task
-# overrides the command and never runs this.
-nginx= puma= stopping=
+# nginx in front of Puma, and the Redis that holds Rails.cache, in one container: the shape of
+# the Clubhouse 2 API image, which ran nginx and Octane under supervisord. ECS stops the task
+# with SIGTERM: Puma gets it, and its 30 s Solid Queue drain (production.rb), so the task
+# definition's stopTimeout stays above that; nginx gets QUIT, which finishes the requests in
+# flight (docker/nginx/nginx.conf caps that wait); Redis goes once Puma is gone, so the drain's
+# cache calls still find it. When any of them exits, so does the container, and ECS replaces the
+# task. The migrate task overrides the command and never runs this. Redis holds 128 MB, evicts
+# the least recently used key of any kind, writes nothing to disk and listens on loopback only
+# (config/environments/production.rb reads it there).
+redis= nginx= puma= stopping=
 stop() { stopping=1; [ -n "$nginx" ] && kill -QUIT "$nginx"; [ -n "$puma" ] && kill -TERM "$puma"; } 2>/dev/null
 trap stop TERM INT
+redis-server --bind 127.0.0.1 --maxmemory 128mb --maxmemory-policy allkeys-lru --save "" & redis=$!
 nginx -c /app/docker/nginx/nginx.conf & nginx=$!
 bundle exec puma -C config/puma.rb -b unix:///tmp/puma.sock & puma=$!
 [ -n "$stopping" ] && stop        # a stop that arrived while they were starting
-wait -n $nginx $puma; status=$?
-[ -n "$stopping" ] || stop        # one of them exited on its own: take the other down, once
-wait
+wait -n $redis $nginx $puma; status=$?
+[ -n "$stopping" ] || stop        # one of them exited on its own: take the others down, once
+wait $nginx $puma 2>/dev/null
+{ kill -TERM "$redis"; wait "$redis"; } 2>/dev/null
 exit $status

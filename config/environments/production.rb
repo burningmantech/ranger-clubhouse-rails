@@ -47,8 +47,11 @@ Rails.application.configure do
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
-  # Replace the default in-process memory cache store with a durable alternative.
-  config.cache_store = :solid_cache_store
+  # Rails.cache is the Redis beside Puma: the compose `redis` service, or the redis-server that
+  # bin/docker-server starts in the AWS image: 128 MB, least-recently-used eviction, nothing on
+  # disk. While Redis is down the store logs and answers a miss, a second per call, so Redis
+  # starts first.
+  config.cache_store = :redis_cache_store, { url: ENV.fetch("REDIS_URL", "redis://127.0.0.1:6379/0") }
 
   # Replace the default in-process and non-durable queuing backend for Active Job.
   config.active_job.queue_adapter = :solid_queue
