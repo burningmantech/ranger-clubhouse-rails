@@ -18,7 +18,7 @@
 <% end %>
 <% if message.has_expired? %>
   <%= ui_callout_box :error do %>
-    <strong>This message has expired.</strong> The information in it is no longer current.
+    <strong class="block mb-0.5">This message has expired.</strong> The information in it is no longer current.
   <% end %>
 <% elsif message.expires_at.present? %>
   <%= ui_callout_box :warning, icon: "clock", icon_type: :regular, role: "status" do %>

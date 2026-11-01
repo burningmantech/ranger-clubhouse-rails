@@ -25,7 +25,7 @@ module UiComponents
       box_class = accent ? "box-accent #{styling[:box_type]}" : "box #{BOX_TYPES.dig(type, :box)}"
 
       padding_class = "p-2"
-      layout_class = accent ? "flex items-start gap-2" : "flex flex-row gap-2"
+      layout_class = "flex items-start gap-2"
 
       options[:class] = "#{padding_class} mb-2 #{box_class} #{options[:class]} #{layout_class}".squish
       options[:role] ||= "alert"
@@ -41,7 +41,15 @@ module UiComponents
       end
 
       content_tag :div, options do
-        icon_html = hide_icon ? "".html_safe : content_tag(:div, fa_icon(icon, icon_type), class: "text-lg")
+        # One body line tall, so the icon centres on the first line whether the
+        # text wraps or not. With a title the first line is the heading: its
+        # size (text-base) and its my-1, which pushes it down 4px.
+        icon_html = if hide_icon
+                      "".html_safe
+                    else
+                      content_tag(:div, fa_icon(icon, icon_type, class: "text-lg leading-none"),
+                                  class: class_names("flex items-center h-lh shrink-0", "mt-1 text-base": title.present?))
+                    end
         body_html = if title.present?
                       content_tag(:div) do
                         content_tag(heading_tag, title, class: "my-1 heading-title") +
