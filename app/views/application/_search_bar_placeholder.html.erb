@@ -37,7 +37,7 @@
 %>
 <div data-controller="search-bar"
      data-search-bar-autocomplete-outlet="#search-bar-autocomplete"
-     data-action="keydown.ctrl+k@document->search-bar#hotkey keydown.meta+k@document->search-bar#hotkey"
+     data-action="keydown.<%= kbd_modifier_filter %>+k@document->search-bar#hotkey"
      data-search-bar-enabled-value="<%= enabled %>"
      data-search-bar-default-mode-value="<%= default_mode %>"
      data-search-bar-onduty-default-value="<%= onduty_default %>"

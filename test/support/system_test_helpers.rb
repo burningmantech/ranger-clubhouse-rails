@@ -112,6 +112,24 @@ module SystemTestHelpers
     page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
   end
 
+  # What the browser claims to run on. The devtools protocol sets the
+  # User-Agent, navigator.platform and the client hints together, where
+  # --user-agent would leave the last two reporting the host.
+  PLATFORMS = {
+    linux: { userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome Safari/537.36",
+             platform: "Linux x86_64",
+             userAgentMetadata: { platform: "Linux", platformVersion: "", architecture: "x86", model: "", mobile: false } },
+    mac: { userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome Safari/537.36",
+           platform: "MacIntel",
+           userAgentMetadata: { platform: "macOS", platformVersion: "", architecture: "arm", model: "", mobile: false } }
+  }.freeze
+
+  # Lasts until the next call; ApplicationSystemTestCase sets :linux before
+  # every test.
+  def emulate_platform(name)
+    page.driver.browser.execute_cdp("Emulation.setUserAgentOverride", **PLATFORMS.fetch(name))
+  end
+
   # Find a section by its heading and perform actions within it
   # Usage: within_section("Name & Contact") { click_link "Edit" }
   #

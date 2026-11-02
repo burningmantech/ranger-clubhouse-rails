@@ -64,17 +64,29 @@ class SearchBarHotkeyTest < ApplicationSystemTestCase
     assert_no_selector "[data-search-bar-target='dialog'][open]"
   end
 
-  test "Cmd+K opens search bar modal" do
+  test "Cmd+K does nothing off a Mac" do
+    visit test_harness_search_bar_path
+    dispatch_hotkey("k", ctrl: true)
+    assert_selector "[data-search-bar-target='dialog'][open]", wait: 2
+
+    # Were Cmd+K bound, it would toggle the open dialog closed.
+    dispatch_hotkey("k", meta: true)
+    assert_selector "[data-search-bar-target='dialog'][open]"
+  end
+
+  test "on a Mac, Cmd+K toggles the search bar and Ctrl+K does nothing" do
+    emulate_platform(:mac)
     visit test_harness_search_bar_path
 
-    # Modal should be hidden initially
-    assert_no_selector "[data-search-bar-target='dialog'][open]"
-
-    # Dispatch Cmd+K via JS (macOS style)
     dispatch_hotkey("k", meta: true)
-
-    # Modal should be visible
     assert_selector "[data-search-bar-target='dialog'][open]", wait: 2
+
+    # Were Ctrl+K bound, it would toggle the open dialog closed.
+    dispatch_hotkey("k", ctrl: true)
+    assert_selector "[data-search-bar-target='dialog'][open]"
+
+    dispatch_hotkey("k", meta: true)
+    assert_no_selector "[data-search-bar-target='dialog'][open]", wait: 2
   end
 
   test "search input receives focus when modal opens" do

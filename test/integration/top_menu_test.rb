@@ -149,16 +149,20 @@ class TopMenuTest < ActionDispatch::IntegrationTest
     assert_select "#{expired}[data-mega-menu-url-param=?]", me_root_path
   end
 
-  test "keyboard hints follow the client platform" do
+  test "keyboard hints and hotkeys follow the client platform" do
     sign_in_as(person(:active_ranger))
 
     get me_root_url, headers: { "HTTP_USER_AGENT" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)" }
     assert_select "nav.navbar kbd", text: "⌘⇧K"
     assert_select "nav.navbar [aria-label=?]", "Menu (Cmd+Shift+K)"
+    assert_select "nav.navbar[data-action=?]", "keydown.meta+shift+k@document->mega-menu#hotkey"
+    assert_select "[data-controller='search-bar'][data-action=?]", "keydown.meta+k@document->search-bar#hotkey"
 
     get me_root_url, headers: { "HTTP_USER_AGENT" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
     assert_select "nav.navbar kbd", text: "⌃⇧K"
     assert_select "nav.navbar [aria-label=?]", "Menu (Ctrl+Shift+K)"
+    assert_select "nav.navbar[data-action=?]", "keydown.ctrl+shift+k@document->mega-menu#hotkey"
+    assert_select "[data-controller='search-bar'][data-action=?]", "keydown.ctrl+k@document->search-bar#hotkey"
   end
 
   # The unread envelope (application/_navbar_messages). A mailbox user always

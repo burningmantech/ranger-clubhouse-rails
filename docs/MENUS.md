@@ -414,8 +414,9 @@ it. `test/lib/mega_menu_test.rb` also pins the premise: `Menus::MY_CLUBHOUSE`
 holds exactly `Menus::ME`'s sections.
 
 The menu opens on **Favorites** (`MegaMenu::DEFAULT_PANEL`), from either grip
-trigger or from **Ctrl+Shift+K / Cmd+Shift+K** (the unshifted chord belongs to
-the global search bar). Closing it by any route, or picking a panel
+trigger or from **Cmd+Shift+K** on a Mac, **Ctrl+Shift+K** elsewhere (each
+platform gets only its own chord, `NavbarHelper#kbd_modifier_filter`; the
+unshifted chord belongs to the global search bar). Closing it by any route, or picking a panel
 (`mega_menu_controller#show`), clears the filter box: a star's re-render would
 otherwise re-apply the stale filter and snap back to the results. A panel
 picked from inside a panel it hides (a Favorites shortcut, the phone Categories

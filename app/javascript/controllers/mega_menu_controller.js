@@ -35,7 +35,8 @@ export default class extends Dialog {
     }
   }
 
-  // Ctrl+Shift+K / Cmd+Shift+K reaches the inherited hotkey by data-action.
+  // Cmd+Shift+K on a Mac, Ctrl+Shift+K elsewhere, reaches the inherited hotkey
+  // by data-action; the server binds only the platform's chord.
   // The unshifted chord belongs to the search bar; Stimulus 3.2 matches all
   // four modifier flags exactly, so the two cannot both fire.
 

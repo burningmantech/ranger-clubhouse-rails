@@ -15,12 +15,30 @@ class MegaMenuHotkeyTest < ApplicationSystemTestCase
     sign_in(@person)
   end
 
-  test "Ctrl+Shift+K opens the mega menu and Cmd+Shift+K toggles it closed" do
+  test "Ctrl+Shift+K toggles the mega menu and Cmd+Shift+K does nothing off a Mac" do
     visit me_root_path
-    assert_no_selector MEGA
 
     dispatch_hotkey(ctrl: true)
     assert_selector MEGA, wait: 2
+
+    # Were Cmd+Shift+K bound, it would toggle the open menu closed.
+    dispatch_hotkey(meta: true)
+    assert_selector MEGA
+
+    dispatch_hotkey(ctrl: true)
+    assert_no_selector MEGA, wait: 2
+  end
+
+  test "on a Mac, Cmd+Shift+K toggles the mega menu and Ctrl+Shift+K does nothing" do
+    emulate_platform(:mac)
+    visit me_root_path
+
+    dispatch_hotkey(meta: true)
+    assert_selector MEGA, wait: 2
+
+    # Were Ctrl+Shift+K bound, it would toggle the open menu closed.
+    dispatch_hotkey(ctrl: true)
+    assert_selector MEGA
 
     dispatch_hotkey(meta: true)
     assert_no_selector MEGA, wait: 2

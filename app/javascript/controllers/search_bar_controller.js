@@ -1,14 +1,15 @@
 /*
  * Search Bar Controller (Stimulus)
  *
- * Global search dialog with Ctrl+K / Cmd+K hotkey. A native <dialog> on the
- * dialog base, which owns opening, closing and the backdrop click; this adds
- * the hotkey, the enabled gate, the search modes, and saying when a search
- * fails. Permission-gated via server-rendered data attribute.
+ * Global search dialog with a Cmd+K (Mac) or Ctrl+K (elsewhere) hotkey; the
+ * server binds only the platform's chord (kbd_modifier_filter). A native
+ * <dialog> on the dialog base, which owns opening, closing and the backdrop
+ * click; this adds the hotkey, the enabled gate, the search modes, and saying
+ * when a search fails. Permission-gated via server-rendered data attribute.
  *
  * Usage:
  *   <div data-controller="search-bar"
- *        data-action="keydown.ctrl+k@document->search-bar#hotkey keydown.meta+k@document->search-bar#hotkey"
+ *        data-action="keydown.<%= kbd_modifier_filter %>+k@document->search-bar#hotkey"
  *        data-search-bar-enabled-value="true">
  *     <button data-action="search-bar#open">Search</button>
  *     <dialog data-search-bar-target="dialog" data-action="click->search-bar#backdropClose">...</dialog>

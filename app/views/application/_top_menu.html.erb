@@ -6,7 +6,7 @@
 <% mega_menu = mega_menu_offered? %>
 <%= tag.nav class: "navbar bg-chrome/80 sticky top-0 z-50",
             data: { controller: token_list("theme", "mega-menu": mega_menu),
-                    action: ("keydown.ctrl+shift+k@document->mega-menu#hotkey keydown.meta+shift+k@document->mega-menu#hotkey" if mega_menu) } do %>
+                    action: ("keydown.#{kbd_modifier_filter}+shift+k@document->mega-menu#hotkey" if mega_menu) } do %>
   <%# The phone bar is one line and has no width to spare, so below lg its
       three parts are laid out by what is in them rather than by daisyUI's
       50% / auto / 50%: each end is as wide as its controls (w-auto), and the

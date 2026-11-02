@@ -87,6 +87,15 @@ module NavbarHelper
     mac_client? ? "Cmd" : "Ctrl"
   end
 
+  # Stimulus key-filter modifier for a hotkey's data-action, so each platform
+  # answers only its own chord. On a Mac, Ctrl+K belongs to the text field it
+  # is typed in (delete to end of line).
+  #
+  # @return [String] "meta" on Mac, "ctrl" elsewhere
+  def kbd_modifier_filter
+    mac_client? ? "meta" : "ctrl"
+  end
+
   # Mac also covers iPadOS Safari, which reports itself as a Macintosh.
   def mac_client?
     request.user_agent.to_s.include?("Mac")
