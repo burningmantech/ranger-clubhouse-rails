@@ -28,7 +28,7 @@ gem "solid_queue"
 gem "solid_cable"
 
 # Rails.cache in production: the Redis beside Puma (config/environments/production.rb)
-gem "redis", "~> 5.4"
+gem "redis", "~> 6.0"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
