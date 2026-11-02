@@ -25,7 +25,10 @@ Dir[Rails.root.join("test/support/**/*.rb")].each { |f| require f }
 
 # Message wording lives in the database, so a mailer cannot render without it.
 # There is no fixture for it: the templates the Clubhouse ships are the ones the
-# tests should be reading, and loading them again is safe.
+# tests should be reading, and loading them again is safe. Every checkout shares
+# the test databases, so wording another checkout loaded for a message this one
+# does not have goes first, or MailTemplateCoverageTest finds it left over.
+MailTemplate.where.not(tag: MailTemplateSeeds.files.map { |path| MailTemplateSeeds.tag_for(path) }).delete_all
 MailTemplateSeeds.load!
 
 module ActiveSupport
@@ -41,6 +44,7 @@ module ActiveSupport
     # names (photos/<file>, exports/<file>), so workers sharing tmp/storage
     # overwrite and read each other's files.
     parallelize_setup do |worker|
+      MailTemplate.where.not(tag: MailTemplateSeeds.files.map { |path| MailTemplateSeeds.tag_for(path) }).delete_all
       MailTemplateSeeds.load!
       ActiveStorage::Blob.service.root = "#{ActiveStorage::Blob.service.root}-#{worker}"
     end

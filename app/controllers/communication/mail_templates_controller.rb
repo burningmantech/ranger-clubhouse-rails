@@ -12,6 +12,9 @@ class Communication::MailTemplatesController < ApplicationController
   authorize_role [Role::ADMIN, Role::VC]
 
   before_action :set_mail_template, only: [:edit, :update]
+  before_action :refuse_unless_may_edit, only: [:edit, :update]
+
+  helper_method :may_edit?
 
   def index
     @mail_templates = MailTemplate.find_all.to_a
@@ -39,6 +42,20 @@ class Communication::MailTemplatesController < ApplicationController
 
   def set_mail_template
     @mail_template = MailTemplate.find(params.expect!(:id))
+  end
+
+  # A message whose email carries what the mail log keeps out is the Admins' to
+  # edit: anyone who can edit it could send that out with every email, say in an
+  # image's address, and the mail log would never show it.
+  def may_edit?(mail_template)
+    !mail_template.withheld_from_mail_log? || has_role?(Role::ADMIN)
+  end
+
+  def refuse_unless_may_edit
+    return if may_edit?(@mail_template)
+
+    redirect_to communication_mail_templates_path,
+                error: "Ask an Admin to edit #{@mail_template.tag}: its email carries a sign-in link or someone's private words, so only Admins may change it."
   end
 
   def mail_template_params

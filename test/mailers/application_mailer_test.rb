@@ -253,6 +253,26 @@ class ApplicationMailerTest < ActionMailer::TestCase
     assert_logged_without_body(mail, sender: @vc)
   end
 
+  # Review finding: an Admin or VC could rewrite a withheld message's subject to
+  # print what the log leaves out, and the log keeps every subject.
+  test "a withheld message's subject cannot print what the log leaves out" do
+    MailTemplate.find_by!(tag: "password_reset_mailer/notify").update!(subject: "Reset {{ reset_url }}")
+
+    mail = PasswordResetMailer.notify(person: @person, reset_token: "reset-secret").deliver_now
+
+    assert_equal "Reset", mail.subject
+    assert_equal "Reset", logged_row(mail).subject
+  end
+
+  test "a bug report is logged under its reporter, without its text" do
+    BugReportMailer.with(sender_id: @person.id)
+                   .notify(callsign: @person.callsign, email: @person.email, browser: nil, page: nil,
+                           description: "Something private").deliver_later
+    perform_enqueued_jobs
+
+    assert_logged_without_body(ActionMailer::Base.deliveries.last, sender: @person, person: nil)
+  end
+
   # --- links ---
 
   # Every message can name this Clubhouse, on the host the mailer is set to.
@@ -277,9 +297,10 @@ class ApplicationMailerTest < ActionMailer::TestCase
   end
 
   # Everything about the email but its text: the body column keeps its NULL.
-  def assert_logged_without_body(mail, sender:)
+  # A list address has no person.
+  def assert_logged_without_body(mail, sender:, person: @person)
     row = logged_row(mail)
-    assert_equal [mail.subject, sender&.id, @person.id, @person.email],
+    assert_equal [mail.subject, sender&.id, person&.id, mail.to.sole],
                  [row.subject, row.sender_id, row.person_id, row.to_email]
     assert row.body_withheld?
     assert_nil MailLog.where(id: row.id).pick(:body)

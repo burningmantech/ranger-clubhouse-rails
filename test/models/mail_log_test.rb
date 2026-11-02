@@ -218,8 +218,8 @@ class MailLogTest < ActiveSupport::TestCase
     assert_equal application.id, row.prospective_application_id
   end
 
-  # The five mailers whose email carries a sign-in secret or a private message
-  # keep everything but the text: the column keeps its NULL.
+  # A mailer whose email the log's readers may not see keeps everything but
+  # the text: the column keeps its NULL.
   test "a withheld body is left out of the row and nothing else is" do
     row, = MailLog.record_delivery(sent_message(to: [@person.email]), sender_id: @sender.id, withhold_body: true)
 

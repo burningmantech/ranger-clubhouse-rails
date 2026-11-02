@@ -4,6 +4,7 @@ class ContactMailer < ApplicationMailer
   # The email carries what one person wrote to another, so the mail log keeps
   # no copy of it.
   self.withhold_body_from_mail_log = true
+  self.subject_values = %i[message_subject]
 
   def send_message(sender_person:, person:, message_subject:, contact_message:)
     liquid_assigns.merge!(

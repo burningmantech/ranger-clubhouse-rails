@@ -39,8 +39,12 @@
               <%= person_display_link(template.person_update, template.person_update_id) %>
             <% end %>
             <%= t.cell do %>
-              <%= edit_link edit_communication_mail_template_path(template), "Edit",
-                            aria: { label: "Edit the #{template.tag} template" } %>
+              <% if may_edit?(template) %>
+                <%= edit_link edit_communication_mail_template_path(template), "Edit",
+                              aria: { label: "Edit the #{template.tag} template" } %>
+              <% else %>
+                Admins only
+              <% end %>
             <% end %>
           <% end %>
         <% end %>

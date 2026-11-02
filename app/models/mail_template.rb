@@ -79,6 +79,15 @@ class MailTemplate < ApplicationRecord
     tag.to_s.start_with?(SHARED_TAG_PREFIX)
   end
 
+  # Whether this message's email carries what the mail log keeps out -- a
+  # sign-in link, a password, someone's private words -- because its mailer
+  # withholds its text there. The tag names the mailer:
+  # "password_reset_mailer/notify" is PasswordResetMailer's.
+  def withheld_from_mail_log?
+    mailer = tag.to_s.rpartition("/").first.camelize.safe_constantize
+    mailer.respond_to?(:withhold_body_from_mail_log) && mailer.withhold_body_from_mail_log
+  end
+
   private
 
   # A template that does not parse would send nothing at all, so the mistake is

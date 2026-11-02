@@ -1,0 +1,26 @@
+description: "Tells the Tech Cadre someone filed a bug report"
+
+subject: "[Clubhouse] Bug report from {{ person.callsign }}"
+
+body: |
+  <p>
+    {{ person.callsign }} filed a bug report.
+  </p>
+
+  <p>
+    Email: <a href="mailto:{{ person.email }}">{{ person.email }}</a><br>
+    Browser: {{ browser | default: "—" }}<br>
+    Page: {{ page | default: "—" }}
+  </p>
+
+  <hr>
+
+  {{ description }}
+
+  <hr>
+
+  <p>
+    Every report is on the <a href="{{ log_url }}">Bug Reports</a> page in the Clubhouse.
+  </p>
+
+  {% render "shared/mailer/bot_sign_off" %}

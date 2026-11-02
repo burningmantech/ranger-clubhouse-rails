@@ -4,6 +4,7 @@ class ClubhouseNewMessageMailer < ApplicationMailer
   # The email carries a private Clubhouse message, so the mail log keeps no
   # copy of it.
   self.withhold_body_from_mail_log = true
+  self.subject_values = %i[message_subject message_group]
 
   # to: the test address while broadcast email is tested (Rbs.message_notify).
   # A group message, one conversation everyone in it sees, comes .with(group:

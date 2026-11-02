@@ -99,6 +99,38 @@ class BugReportsControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta Time.current, report.created_at, 1.minute
   end
 
+  # Queued, so the job that sends it has nobody signed in: the reporter
+  # travels with it, for the mail log.
+  test "a report is emailed to the Tech Cadre in the reporter's name" do
+    sign_in_as(@reporter)
+
+    assert_enqueued_email_with BugReportMailer, :notify,
+                               params: { sender_id: @reporter.id },
+                               args: ->(args) {
+                                 args.first[:callsign] == @reporter.callsign &&
+                                   args.first[:description] == "The Save button does nothing."
+                               } do
+      post bug_reports_path, params: { bug_report: { description: "The Save button does nothing." } }
+    end
+  end
+
+  # Review finding: a mail queue that refused the email turned a saved report
+  # into an error page, and the person filed it again.
+  test "a report the mail queue cannot take is still saved and the dialog still closes" do
+    sign_in_as(@reporter)
+    original = BugReportMailer.method(:with)
+    BugReportMailer.define_singleton_method(:with) { |**| raise ActiveRecord::ConnectionTimeoutError, "the queue did not answer" }
+
+    assert_difference -> { BugReport.count }, 1 do
+      post bug_reports_path, params: { bug_report: { description: "The Save button does nothing." } }
+    end
+
+    assert_response :success
+    assert_includes response.body, "Bug report sent"
+  ensure
+    BugReportMailer.define_singleton_method(:with, original)
+  end
+
   test "a report filed with no referer still saves" do
     sign_in_as(@reporter)
 

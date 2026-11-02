@@ -48,4 +48,14 @@ class MailTemplateTest < ActiveSupport::TestCase
     assert_equal "<p>Hello {{ name }}</p>", template.source_for(:html)
     assert_nil template.source_for(:text)
   end
+
+  # Only an Admin may edit these (Communication::MailTemplatesController). The tag
+  # names the mailer, so a renamed mailer would drop out of the rule unnoticed.
+  test "the messages whose email the mail log withholds are told apart by their tag" do
+    withheld = MailTemplate.all.select(&:withheld_from_mail_log?).map(&:tag).sort
+
+    assert_equal %w[bug_report_mailer/notify clubhouse_new_message_mailer/notify contact_mailer/send_message
+                    online_course_reset_password_mailer/notify password_reset_mailer/notify welcome_mailer/notify],
+                 withheld
+  end
 end

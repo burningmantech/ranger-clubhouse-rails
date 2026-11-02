@@ -10,12 +10,20 @@ class ApplicationMailer < ActionMailer::Base
   layout "mailer"
 
   # Whether this mailer's mail log rows go without the email's text. A mailer
-  # whose email carries a live sign-in secret or someone's private message
-  # sets it true: any VC can open any person's Mail Log. Its rows still say
+  # whose email carries a live sign-in secret, someone's private message, or
+  # anything else the log's readers may not see sets it true: any VC can open
+  # any person's Mail Log, and any Admin every row. Its rows still say
   # who sent it, to whom, when, the subject and the outcome. No instance
   # reader or predicate, since Action Mailer takes any public method here for
   # an email it can send.
   class_attribute :withhold_body_from_mail_log, default: false, instance_accessor: false, instance_predicate: false
+
+  # What the subject may read when the log goes without the text: the values
+  # named here, plus the Clubhouse's own addresses. The log keeps every subject,
+  # and an Admin can rewrite one at Communication › Email Templates, so it sees
+  # nothing else -- not a reset link, not someone's words. A name it asks for
+  # that is not here prints nothing.
+  class_attribute :subject_values, default: [].freeze, instance_accessor: false, instance_predicate: false
 
   before_action :set_sender_id
   after_action :hold_mail_on_training_server
@@ -54,13 +62,21 @@ class ApplicationMailer < ActionMailer::Base
   end
 
   # The subject kept with this message's template, filled in from the same values
-  # as the body. Falls back to the wording passed in when the template carries no
-  # subject of its own.
+  # as the body -- or, for a mailer that keeps its text out of the log, only the
+  # ones subject_values names. Falls back to the wording passed in when the
+  # template carries no subject of its own.
   def liquid_subject(fallback = nil)
     source = MailTemplate.find_by(tag: "#{mailer_name}/#{action_name}")&.subject
     return fallback if source.blank?
 
-    MailTemplateRenderer.render(source, liquid_assigns, escape_html: false).strip
+    MailTemplateRenderer.render(source, subject_assigns, escape_html: false).strip
+  end
+
+  # The values the subject is filled in from: see subject_values.
+  def subject_assigns
+    return liquid_assigns unless self.class.withhold_body_from_mail_log
+
+    liquid_assigns.slice(:logo_url, :clubhouse_url, *self.class.subject_values)
   end
 
   # Who sent this email, for its mail log rows. A queued email is built again

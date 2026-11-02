@@ -43,4 +43,14 @@ class BugReport < ApplicationRecord
       count
     end
   end
+
+  # The browser in a few words -- "Chrome 126 · Mac OS X 10.15.7" -- for where
+  # the whole user agent will not fit. Nil when the browser sent none.
+  def browser
+    return if user_agent.blank?
+
+    agent = UserAgents.parse(user_agent)
+    name = [agent.family, agent.version&.major].compact.join(" ")
+    "#{name} · #{agent.os}"
+  end
 end

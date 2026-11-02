@@ -51,7 +51,7 @@ class MailLog < ApplicationRecord
     # no person. All the addresses are looked up in one query.
     #
     # withhold_body leaves the body out, so the column keeps its NULL: the
-    # mailers whose email carries a sign-in secret or a private message
+    # mailers whose email the log's readers may not see
     # (ApplicationMailer.withhold_body_from_mail_log). See #body_withheld?.
     #
     # Mail sent through SES (the :ses_mail delivery method, SesMailDelivery,

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "user_agent_parser"
-
 class Person::SessionsController < ApplicationController
   layout "person"
 
@@ -24,7 +22,7 @@ class Person::SessionsController < ApplicationController
   private
 
   def user_agent_format(ua)
-    parsed = UserAgentParser.parse(ua)
+    parsed = UserAgents.parse(ua)
     "#{parsed.os} #{parsed}"
   end
 end

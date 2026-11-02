@@ -3,8 +3,8 @@
     navigation. Images still load, so opening a message can tell its sender it
     was read. %>
 <%= turbo_frame_tag "mail-log-body-frame-#{@mail.id}" do %>
-  <%# A row whose text was never kept: a sign-in link or a private message the
-      log leaves out (MailLog#body_withheld?). The words name no mailer, since
+  <%# A row whose text was never kept: an email the log's readers may not see,
+      such as a sign-in link (MailLog#body_withheld?). The words name no mailer, since
       an older row can have no text for a reason nobody recorded. %>
   <% if @mail.body_withheld? %>
     <%= ui_empty_state "The text of this email isn't kept, so it can't be shown.",

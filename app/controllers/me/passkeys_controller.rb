@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "user_agent_parser"
-
 # A person's own passkeys: the phones, laptops, password managers and security
 # keys that sign them in without a password.
 #
@@ -63,7 +61,7 @@ class Me::PasskeysController < ApplicationController
   # "Chrome on Mac OS X": where the person is sitting, which is most often
   # what they are about to save the passkey on.
   def suggested_nickname
-    agent = UserAgentParser.parse(request.user_agent.to_s)
+    agent = UserAgents.parse(request.user_agent.to_s)
     "#{agent.family} on #{agent.os.family}".first(PersonPasskey::NICKNAME_LIMIT)
   end
 end

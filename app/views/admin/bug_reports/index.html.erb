@@ -40,7 +40,7 @@
             <%= t.cell class: "align-middle max-w-xs" do %>
               <div class="<%= log_text_class("truncate") %>"><%= row.description %></div>
             <% end %>
-            <%= t.cell bug_report_browser(row), class: log_text_class("align-middle") %>
+            <%= t.cell row.browser || "-", class: log_text_class("align-middle") %>
           <% end %>
 
           <%# Below the fold each row becomes its own card, so the opened detail

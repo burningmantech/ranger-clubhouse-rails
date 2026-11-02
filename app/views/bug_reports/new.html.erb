@@ -12,7 +12,7 @@
     <%= ui_form(@bug_report, bug_reports_path) do |f| %>
       <%= f.text_area :description, label: "What went wrong?", rows: 6,
                       required: true, autofocus: true, maxlength: BugReport::DESCRIPTION_LIMIT,
-                      help_text: "Say what you were doing and what happened instead. The page you are on, your browser, and your IP address are sent with the report." %>
+                      help_text: "Say what you were doing and what happened instead. The Tech Cadre gets it by email, with your callsign, email address, the page you are on and your browser. Your IP address is kept with the report." %>
       <%= modal_form_footer f, submit: "Send Bug Report" %>
     <% end %>
   <% end %>
