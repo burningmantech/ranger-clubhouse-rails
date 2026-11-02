@@ -4,10 +4,10 @@
     one from the field's template, filling the label, the value and the button's
     label; a Find Recipient choice is streamed in as one. `controller` is the one
     that owns the chips: the mailbox search field's own (common/messages/_search_field). %>
-<span class="inline-flex min-h-9 items-center gap-1 rounded-full border border-line bg-base-200 ps-3 pe-1 text-sm text-body"
-      <%= tag.attributes(data: { "#{controller}-target": "chip" }) %>>
+<%= tag.span class: "inline-flex min-h-9 items-center gap-1 rounded-full border border-line bg-base-200 ps-3 pe-1 text-sm text-body",
+             data: { "#{controller}-target": "chip" } do %>
   <span><%= callsign %></span>
   <%= hidden_field_tag name, callsign, id: nil %>
   <%= button_action nil, :ghost, icon: "xmark", icon_type: :solid, class: "btn-square btn-circle",
                     aria: { label: "Remove #{callsign}" }, data: { action: "#{controller}#remove" } %>
-</span>
+<% end %>

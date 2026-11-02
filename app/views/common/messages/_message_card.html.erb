@@ -25,11 +25,11 @@
     "two-sided bubbles"). %>
 <% mine = message.sender?(owner.id) %>
 <%# data-unread is how thread_live_controller knows a live card is someone else's, still unread. %>
-<article id="<%= dom_id(message, :card) %>"
-         class="<%= class_names("flex flex-col max-w-5/6 rounded-lg",
-                                "data-landing:ring-2 data-landing:ring-primary data-landing:scroll-mt-18 data-landing:scroll-mb-4",
-                                mine ? "self-end items-end" : "self-start items-start") %>"
-         <%= tag.attributes(data: { unread: (true if unread), landing: (true if landing) }) %>>
+<%= tag.article id: dom_id(message, :card),
+                class: class_names("flex flex-col max-w-5/6 rounded-lg",
+                                   "data-landing:ring-2 data-landing:ring-primary data-landing:scroll-mt-18 data-landing:scroll-mb-4",
+                                   mine ? "self-end items-end" : "self-start items-start"),
+                data: { unread: (true if unread), landing: (true if landing) } do %>
   <div class="flex flex-wrap items-baseline gap-x-2 mx-2 mb-1 text-sm text-stone-subtle">
     <%# A row written as a team names the team; to the team's members alone
         (PersonMessage#reveals_author_to?) it names its author, as an individual
@@ -61,4 +61,4 @@
                               "bg-warning/10": unread, "bg-base-300": !mine && !unread) %>">
     <div class="<%= class_names("text-body wrap-anywhere *:last:mb-0", "lexxy-content": message.rich_text?) %>" data-message-body><%= body || message_body(message) %></div>
   </div>
-</article>
+<% end %>
