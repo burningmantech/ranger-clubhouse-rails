@@ -100,14 +100,10 @@
         <div class="join hidden lg:inline-flex" role="radiogroup" aria-labelledby="search-mode-label">
           <% mode_options.each do |opt| %>
             <label class="join-item btn btn-sm min-h-9 has-[:checked]:bg-primary has-[:checked]:text-primary-content has-[:checked]:border-primary has-[:checked]:hover:bg-primary">
-              <input type="radio"
-                     name="search-mode-radio"
-                     class="sr-only"
-                     value="<%= opt[:value] %>"
-                     <%= "checked" if opt[:value] == default_mode %>
-                     data-search-bar-target="modeInput"
-                     data-action="change->search-bar#modeChange"
-                     aria-label="<%= opt[:label] %>">
+              <%= tag.input type: "radio", name: "search-mode-radio", class: "sr-only", value: opt[:value],
+                            checked: opt[:value] == default_mode,
+                            data: { search_bar_target: "modeInput", action: "change->search-bar#modeChange" },
+                            aria: { label: opt[:label] } %>
               <span><%= opt[:label] %></span>
             </label>
           <% end %>
@@ -118,12 +114,7 @@
                 aria-labelledby="search-mode-label"
                 data-search-bar-target="modeSelect"
                 data-action="change->search-bar#modeChange">
-          <% mode_options.each do |opt| %>
-            <option value="<%= opt[:value] %>"
-                    <%= "selected" if opt[:value] == default_mode %>>
-              <%= opt[:label] %>
-            </option>
-          <% end %>
+          <%= options_for_select(mode_options.map { |opt| [opt[:label], opt[:value]] }, default_mode) %>
         </select>
       </div>
     <% end %>

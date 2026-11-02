@@ -70,11 +70,8 @@
           <% else %>
             <input type="hidden" name="alerts[<%= field_idx %>][use_sms]" value="0">
             <label class="inline-flex items-center min-h-9 cursor-pointer">
-              <input type="checkbox"
-                     name="alerts[<%= field_idx %>][use_sms]"
-                     value="1"
-                     <%= "checked" if alert.use_sms %>
-                     class="<%= AppFormBuilder::CHECKBOX_CLASSES %>">
+              <%= tag.input type: "checkbox", name: "alerts[#{field_idx}][use_sms]", value: "1", checked: alert.use_sms,
+                            class: AppFormBuilder::CHECKBOX_CLASSES %>
               <span class="ms-2 text-base text-heading select-none leading-tight">SMS</span>
             </label>
           <% end %>
@@ -92,11 +89,8 @@
           <% else %>
             <input type="hidden" name="alerts[<%= field_idx %>][use_email]" value="0">
             <label class="inline-flex items-center min-h-9 cursor-pointer">
-              <input type="checkbox"
-                     name="alerts[<%= field_idx %>][use_email]"
-                     value="1"
-                     <%= "checked" if alert.use_email %>
-                     class="<%= AppFormBuilder::CHECKBOX_CLASSES %>">
+              <%= tag.input type: "checkbox", name: "alerts[#{field_idx}][use_email]", value: "1", checked: alert.use_email,
+                            class: AppFormBuilder::CHECKBOX_CLASSES %>
               <span class="ms-2 text-base text-heading select-none">Email</span>
             </label>
           <% end %>
