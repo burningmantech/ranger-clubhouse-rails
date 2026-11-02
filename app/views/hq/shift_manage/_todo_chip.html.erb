@@ -26,13 +26,9 @@
     icon_class = "fa-regular fa-circle"
   end
 %>
-<div class="inline-flex items-center gap-2 me-4 text-base <%= chip_class %>"
-     data-hq-shift-target="todo"
-     data-task="<%= todo.task %>"
-     data-completed="<%= todo.completed %>"
-     data-ignore="<%= todo.ignore %>"
-     data-blink="<%= todo.blink %>"
-     <% if ask_if_done %>data-ask-if-done="true"<% end %>>
+<%= tag.div class: class_names("inline-flex items-center gap-2 me-4 text-base", chip_class),
+            data: { hq_shift_target: "todo", task: todo.task, completed: todo.completed, ignore: todo.ignore,
+                    blink: todo.blink, ask_if_done: (true if ask_if_done) } do %>
   <i class="<%= icon_class %>" aria-hidden="true"></i>
   <span><%= todo.label %></span>
-</div>
+<% end %>

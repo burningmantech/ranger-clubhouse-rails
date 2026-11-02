@@ -68,13 +68,11 @@
     camera (tab switching + selfie capture) is layered on only for the self-service
     page, and hands a taken selfie to photo-upload as a camera:captured event -- or
     a capture that went wrong as camera:failed, for the error box. %>
-<div data-controller="<%= selfie_enabled? ? "camera photo-upload" : "photo-upload" %>"
-     <% if selfie_enabled? %>
-     data-action="camera:captured->photo-upload#capture camera:failed->photo-upload#failed"
-     <% end %>
-     data-photo-upload-create-url-value="<%= profile_photos_path %>"
-     data-photo-upload-max-file-size-value="<%= PersonPhoto::MAX_FILE_SIZE %>"
-     data-photo-upload-type-error-value="<%= PhotoUploadConcern::PHOTO_TYPE_ERROR %>">
+<%= tag.div data: { controller: selfie_enabled? ? "camera photo-upload" : "photo-upload",
+                    action: ("camera:captured->photo-upload#capture camera:failed->photo-upload#failed" if selfie_enabled?),
+                    photo_upload_create_url_value: profile_photos_path,
+                    photo_upload_max_file_size_value: PersonPhoto::MAX_FILE_SIZE,
+                    photo_upload_type_error_value: PhotoUploadConcern::PHOTO_TYPE_ERROR } do %>
 
   <%# Error Display (shared between upload and camera, hidden by default) %>
   <div class="mb-4" data-photo-upload-target="error" hidden>
@@ -112,9 +110,9 @@
   <% end %>
 
   <%# ===== Upload File Panel ===== %>
-  <div id="panel-upload"
-       <% if selfie_enabled? %> role="tabpanel" aria-labelledby="tab-upload" data-camera-target="uploadPanel"
-       <% end %>>
+  <%= tag.div id: "panel-upload", role: ("tabpanel" if selfie_enabled?),
+              aria: { labelledby: ("tab-upload" if selfie_enabled?) },
+              data: { camera_target: ("uploadPanel" if selfie_enabled?) } do %>
     <%= ui_section "Photo Upload" do %>
 
       <!-- Upload Form -->
@@ -202,7 +200,7 @@
         <div class="mt-2 text-stone-muted">Converting to JPEG and uploading…</div>
       </div>
     <% end %>
-  </div>
+  <% end %>
 
   <%# ===== Camera Selfie Panel (self-service only) ===== %>
   <% if selfie_enabled? %>
@@ -305,4 +303,4 @@
       <% end %>
     </div>
   <% end %>
-</div>
+<% end %>

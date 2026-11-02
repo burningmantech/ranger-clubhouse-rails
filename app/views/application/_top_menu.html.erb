@@ -4,9 +4,9 @@
     hotkey either -- the controller would also look for the dialog before
     every Turbo cache. %>
 <% mega_menu = mega_menu_offered? %>
-<nav class="navbar bg-chrome/80 sticky top-0 z-50" data-controller="theme<%= " mega-menu" if mega_menu %>"
-     <% if mega_menu %>data-action="keydown.ctrl+shift+k@document->mega-menu#hotkey keydown.meta+shift+k@document->mega-menu#hotkey"
-<% end %>>
+<%= tag.nav class: "navbar bg-chrome/80 sticky top-0 z-50",
+            data: { controller: token_list("theme", "mega-menu": mega_menu),
+                    action: ("keydown.ctrl+shift+k@document->mega-menu#hotkey keydown.meta+shift+k@document->mega-menu#hotkey" if mega_menu) } do %>
   <%# The phone bar is one line and has no width to spare, so below lg its
       three parts are laid out by what is in them rather than by daisyUI's
       50% / auto / 50%: each end is as wide as its controls (w-auto), and the
@@ -115,4 +115,4 @@
   </div>
 
   <%= render "application/mega_menu" if mega_menu %>
-</nav>
+<% end %>
