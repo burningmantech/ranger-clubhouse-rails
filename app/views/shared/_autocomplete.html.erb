@@ -13,53 +13,34 @@
   results_id = "#{wrapper_id}-results"
   input_field_id = field_id || "#{wrapper_id}-input"
 %>
-<div id="<%= wrapper_id %>"
-     data-controller="autocomplete"
-     data-autocomplete-url-value="<%= url %>"
-     data-autocomplete-response-type-value="json"
-     data-autocomplete-min-length-value="<%= min_length %>"
-     data-autocomplete-delay-value="<%= delay %>"
-     data-autocomplete-limit-value="<%= limit %>"
-     <% if mode.present? %>data-autocomplete-mode-value="<%= mode %>"<% end %>
-     <% if meta_mapping.present? %>data-autocomplete-meta-mapping-value="<%= meta_mapping.to_json %>"<% end %>
-     <% if submit_on_select %>data-autocomplete-submit-on-select-value="true"<% end %>
-     <% if form_field %>data-autocomplete-form-field-value="true"<% end %>
-     <% if inline %>data-autocomplete-inline-value="true"<% end %>
-     <% if select_on_blur %>data-autocomplete-select-on-blur-value="true"<% end %>
-     <% if free_text %>data-autocomplete-free-text-value="true"<% end %>
-     <% if recents_key.present? %>data-autocomplete-recents-key-value="<%= recents_key %>"<% end %>
-     role="combobox"
-     aria-expanded="false"
-     aria-haspopup="listbox"
-     aria-owns="<%= results_id %>"
-     <% if aria_label %>aria-label="<%= aria_label %>"<% end %>
-     class="<%= class_names(wrapper_class, relative: positioned) %>">
+<%# A nil leaves its attribute out, but inside data: and aria: a false prints "false": hence (true if …) and .presence. %>
+<%= tag.div id: wrapper_id, role: "combobox", class: class_names(wrapper_class, relative: positioned),
+            aria: { expanded: "false", haspopup: "listbox", owns: results_id, label: aria_label.presence },
+            data: { controller: "autocomplete",
+                    autocomplete_url_value: url,
+                    autocomplete_response_type_value: "json",
+                    autocomplete_min_length_value: min_length,
+                    autocomplete_delay_value: delay,
+                    autocomplete_limit_value: limit,
+                    autocomplete_mode_value: mode.presence,
+                    autocomplete_meta_mapping_value: (meta_mapping.to_json if meta_mapping.present?),
+                    autocomplete_submit_on_select_value: (true if submit_on_select),
+                    autocomplete_form_field_value: (true if form_field),
+                    autocomplete_inline_value: (true if inline),
+                    autocomplete_select_on_blur_value: (true if select_on_blur),
+                    autocomplete_free_text_value: (true if free_text),
+                    autocomplete_recents_key_value: recents_key.presence } do %>
 
-  <input type="<%= type %>"
-         id="<%= input_field_id %>"
-         <% if name.present? %>name="<%= name %>"<% end %>
-         <% unless value.nil? %>value="<%= value %>"<% end %>
-         <% if maxlength %>maxlength="<%= maxlength %>"<% end %>
-         data-autocomplete-target="input"
-         <% (input_data || {}).each do |key, data_value| %>data-<%= key %>="<%= data_value %>" <% end %>
-         placeholder="<%= placeholder %>"
-         autocomplete="off"
-         spellcheck="false"
-         autocorrect="off"
-         autocapitalize="off"
-         aria-autocomplete="list"
-         aria-controls="<%= results_id %>"
-         <% if aria_label %>aria-label="<%= aria_label %>"<% end %>
-         <% if describedby %>aria-describedby="<%= describedby %>"<% end %>
-         <% if invalid %>aria-invalid="true"<% end %>
-         <% if autofocus %>autofocus<% end %>
-         class="<%= input_class || "#{AppFormBuilder::INPUT_CLASSES} w-full" %>" />
+  <%= tag.input type:, id: input_field_id, name: name.presence, value:, maxlength:, autofocus:, placeholder:,
+                autocomplete: "off", spellcheck: "false", autocorrect: "off", autocapitalize: "off",
+                class: input_class || "#{AppFormBuilder::INPUT_CLASSES} w-full",
+                aria: { autocomplete: "list", controls: results_id, label: aria_label.presence,
+                        describedby: describedby.presence, invalid: (true if invalid) },
+                data: { autocomplete_target: "input", **input_data.to_h } %>
 
   <% if hidden_field_name.present? %>
-    <input type="hidden"
-           name="<%= hidden_field_name %>"
-           <% if hidden_field_id.present? %>id="<%= hidden_field_id %>"<% end %>
-           data-autocomplete-target="hidden" />
+    <%= tag.input type: "hidden", name: hidden_field_name, id: hidden_field_id.presence,
+                  data: { autocomplete_target: "hidden" } %>
   <% end %>
 
   <%# Loading indicator. Pinned left as the list is where it hangs from the caller's box (positioned: false):
@@ -91,4 +72,4 @@
       <span><kbd>esc</kbd> close</span>
     </div>
   <% end %>
-</div>
+<% end %>
