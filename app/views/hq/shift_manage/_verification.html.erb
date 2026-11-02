@@ -10,23 +10,23 @@
   listed = entries.map(&:id).join(",")
   unreviewed = entries.count(&:verification_required?)
 %>
-<div data-hq-shift-target="reviewNotice" <%= "hidden" if unreviewed.zero? %>>
+<%= tag.div data: { hq_shift_target: "reviewNotice" }, hidden: unreviewed.zero? do %>
   <%= ui_callout_box :warning, accent: true, title: "Timesheet Entry Review Needed",
                      icon: "hand-point-right" do %>
     Review every timesheet entry before you start a shift and after you end one. During a
     rush such as the Burn Night check-in, use <em>Skip Review</em> instead.
   <% end %>
-</div>
+<% end %>
 
 <%# The "a different entry" actions used to sit here, above everything. They act
     on entries other than the current shift, so opening the section with them put
     the rarest paths first — they now render below the current shift in
     hq/shift_manage/_other_entries. %>
 <% if entries.any? %>
-  <div class="mb-3" data-hq-shift-target="skipAllRow" <%= "hidden" if unreviewed.zero? %>>
+  <%= tag.div class: "mb-3", data: { hq_shift_target: "skipAllRow" }, hidden: unreviewed.zero? do %>
     <%= button_action "Skip Review for All Entries", :secondary,
                       data: { action: "hq-shift#skipAll" } %>
-  </div>
+  <% end %>
   <%= ui_table striped: false, responsive: false do |t| %>
     <%= t.header do %>
       <%= t.heading "Time" %>

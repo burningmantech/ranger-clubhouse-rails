@@ -25,16 +25,15 @@
       whole checklist, but a tired operator with a line waiting should not have
       to parse it to learn what to do — the controller keeps this in step with
       every checklist transition. %>
-  <div class="text-lg font-semibold text-heading mb-1" data-hq-shift-target="nextAction"
-       <%= "hidden" if open_count.zero? %>>
+  <%= tag.div class: "text-lg font-semibold text-heading mb-1", data: { hq_shift_target: "nextAction" },
+              hidden: open_count.zero? do %>
     <%= fa_icon "arrow-right", :solid, end: 2, class: "text-primary" %>Next:
     <span data-hq-shift-target="nextActionLabel"><%= open_todos.first&.label %></span>
-  </div>
+  <% end %>
   <div class="flex flex-wrap items-center">
-    <div class="shrink-0 me-2 font-medium" data-hq-shift-target="todoCount"
-         <%= "hidden" if open_count.zero? %>>
+    <%= tag.div class: "shrink-0 me-2 font-medium", data: { hq_shift_target: "todoCount" }, hidden: open_count.zero? do %>
       <%= pluralize(open_count, "suggested task") %>:
-    </div>
+    <% end %>
     <div class="flex flex-wrap items-center gap-y-1" data-hq-shift-target="todoList">
       <%# next_up marks the one chip the "Next:" line above is naming. Compared
           by identity, not value: two Todo structs with the same fields are ==,
@@ -56,10 +55,9 @@
       <%= on_duty_entry.position.title %>.
     </div>
   <% end %>
-  <div class="text-success text-lg mt-2" data-hq-shift-target="allDone"
-       <%= "hidden" if open_count.positive? %>>
+  <%= tag.div class: "text-success text-lg mt-2", data: { hq_shift_target: "allDone" }, hidden: open_count.positive? do %>
     <%= fa_icon "check", :solid, end: 2 %>All suggested tasks are complete.
-  </div>
+  <% end %>
   <template data-hq-shift-target="todoTemplate">
     <div class="inline-flex items-center gap-2 me-4 text-base"
          data-hq-shift-target="todo" data-task="" data-completed="false"

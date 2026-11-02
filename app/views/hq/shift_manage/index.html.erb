@@ -92,10 +92,10 @@
     <% elsif shift_person.can_work? %>
       <%# Start Shift stays withheld until every unverified entry is
           verified, pending, or skipped — the hq-shift controller reveals it. %>
-      <div data-hq-shift-target="startPanel"
-           <%= "hidden" if @timesheets_to_review.any?(&:verification_required?) %>>
+      <%= tag.div data: { hq_shift_target: "startPanel" },
+                  hidden: @timesheets_to_review.any?(&:verification_required?) do %>
         <%= render "common/shift_manage/start_shift" %>
-      </div>
+      <% end %>
     <% end %>
 
     <%= render "hq/shift_manage/other_entries", person: @person %>
