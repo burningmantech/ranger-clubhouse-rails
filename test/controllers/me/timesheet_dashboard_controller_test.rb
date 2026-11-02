@@ -35,6 +35,15 @@ class Me::TimesheetDashboardControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "every past-year entry card is labelled by its title" do
+    get me_timesheet_dashboard_url(year: 2023)
+    assert_response :success
+
+    cards = css_select("[aria-labelledby^='entry-']")
+    assert_equal 2, cards.size
+    cards.each { |card| assert_select "##{card["aria-labelledby"]}", count: 1 }
+  end
+
   test "echelon user can view timesheet dashboard" do
     sign_out
     echelon_person = person(:echelon_ranger)

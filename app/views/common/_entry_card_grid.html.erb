@@ -15,9 +15,7 @@
 <%# === DESKTOP LAYOUT (Row 1: Title | Description | Duration | Credits, Row 2: DateTime) === %>
 <%# Row 1: Title | Description | Duration | Credits %>
 <div class="flex items-baseline gap-2">
-  <div <%= "id=\"#{title_id}-desktop\"".html_safe if title_id %> class="font-semibold text-body leading-snug mb-1">
-    <%= title %>
-  </div>
+  <%= tag.div title, id: title_id, class: "font-semibold text-body leading-snug mb-1" %>
   <% if description %>
     <div class="text-base">
       &bullet;
