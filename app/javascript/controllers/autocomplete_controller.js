@@ -20,6 +20,7 @@
 
 import {Controller} from "@hotwired/stimulus"
 import {scrollBehavior} from "controllers/scrolling"
+import {read, write} from "controllers/storage"
 
 const optionSelector = "[role='option']:not([aria-disabled])"
 const activeSelector = "[aria-selected='true']"
@@ -992,7 +993,7 @@ export default class Autocomplete extends Controller {
     getRecents() {
         if (!this.recentsKeyValue) return []
         try {
-            return JSON.parse(localStorage.getItem(`ac-recents-${this.recentsKeyValue}`)) || []
+            return JSON.parse(read("localStorage", `ac-recents-${this.recentsKeyValue}`)) || []
         } catch {
             return []
         }
@@ -1005,11 +1006,7 @@ export default class Autocomplete extends Controller {
         recents = recents.filter(r => r.value !== item.value)
         recents.unshift(item)
         recents = recents.slice(0, this.maxRecentsValue)
-        try {
-            localStorage.setItem(key, JSON.stringify(recents))
-        } catch {
-            // localStorage full or unavailable
-        }
+        write("localStorage", key, JSON.stringify(recents))
     }
 
     // =========================================================================

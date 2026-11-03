@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { read, write, remove } from "controllers/storage"
 
 const STORAGE_KEY = "vc-stages-expand-all"
 
@@ -7,7 +8,7 @@ export default class extends Controller {
   static targets = ["stage", "toggle"]
 
   connect() {
-    if (localStorage.getItem(STORAGE_KEY) === "1") {
+    if (read("localStorage", STORAGE_KEY) === "1") {
       this.apply(true)
     }
     this.updateLabel()
@@ -17,9 +18,9 @@ export default class extends Controller {
     const expand = !this.allOpen()
     this.apply(expand)
     if (expand) {
-      localStorage.setItem(STORAGE_KEY, "1")
+      write("localStorage", STORAGE_KEY, "1")
     } else {
-      localStorage.removeItem(STORAGE_KEY)
+      remove("localStorage", STORAGE_KEY)
     }
     this.updateLabel()
   }

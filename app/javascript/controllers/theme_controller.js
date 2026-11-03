@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { read, write } from "controllers/storage"
 
 // Connects to data-controller="theme", on the navbar. Sets the theme on <html>
 // -- the `.dark` class the `dark:` variant keys on, and data-theme for
@@ -7,33 +8,20 @@ import { Controller } from "@hotwired/stimulus"
 // CSS from that class, so nothing here paints it.
 export default class extends Controller {
   connect() {
-    const savedTheme = localStorage.getItem('theme')
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const savedTheme = read("localStorage", "theme")
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
 
-    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-      this.enableDarkMode()
-    } else {
-      this.enableLightMode()
-    }
+    this.apply(savedTheme === "dark" || (!savedTheme && systemPrefersDark))
   }
 
   toggle() {
-    if (document.documentElement.classList.contains('dark')) {
-      this.enableLightMode()
-    } else {
-      this.enableDarkMode()
-    }
+    this.apply(!document.documentElement.classList.contains("dark"))
   }
 
-  enableDarkMode() {
-    document.documentElement.classList.add('dark')
-    document.documentElement.dataset.theme = 'dark'
-    localStorage.setItem('theme', 'dark')
-  }
-
-  enableLightMode() {
-    document.documentElement.classList.remove('dark')
-    document.documentElement.dataset.theme = 'light'
-    localStorage.setItem('theme', 'light')
+  // Dark or light, on the page and on file.
+  apply(dark) {
+    document.documentElement.classList.toggle("dark", dark)
+    document.documentElement.dataset.theme = dark ? "dark" : "light"
+    write("localStorage", "theme", dark ? "dark" : "light")
   }
 }

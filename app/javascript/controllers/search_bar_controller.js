@@ -18,6 +18,7 @@
 
 import Dialog from "controllers/dialog_controller"
 import {Turbo} from "@hotwired/turbo-rails"
+import {read, write, remove} from "controllers/storage"
 
 const SEARCH_MODE_KEY = "search-mode"
 
@@ -154,23 +155,16 @@ export default class SearchBar extends Dialog {
         const target = template.replace(":id", match[1])
         if (target === window.location.pathname) return
 
-        try {
-            window.sessionStorage.setItem(REOPEN_KEY, "1")
-        } catch (_e) {
-            // Best-effort: the dialog simply won't re-open after the visit.
-        }
+        // Best-effort: without it the dialog simply won't re-open after the visit.
+        write("sessionStorage", REOPEN_KEY, "1")
         Turbo.visit(target)
     }
 
     // Read-and-clear the "re-open after a mode-switch visit" flag.
     takeReopenFlag() {
-        try {
-            if (window.sessionStorage.getItem(REOPEN_KEY) === null) return false
-            window.sessionStorage.removeItem(REOPEN_KEY)
-            return true
-        } catch (_e) {
-            return false
-        }
+        if (read("sessionStorage", REOPEN_KEY) === null) return false
+        remove("sessionStorage", REOPEN_KEY)
+        return true
     }
 
     // Read the persisted mode, mapping a legacy "account" literal to
@@ -186,12 +180,7 @@ export default class SearchBar extends Dialog {
     restoreMode() {
         if (this.ondutyDefaultValue) return this.defaultModeValue
 
-        let saved = null
-        try {
-            saved = window.localStorage.getItem(SEARCH_MODE_KEY)
-        } catch (_e) {
-            // localStorage may be unavailable (private mode / blocked); fall back.
-        }
+        let saved = read("localStorage", SEARCH_MODE_KEY)
         if (saved === "account") saved = MODE_PERSON_MANAGE
         return this.isEnabledMode(saved) ? saved : MODE_PERSON_MANAGE
     }
@@ -210,13 +199,7 @@ export default class SearchBar extends Dialog {
     applyMode(mode, {persist}) {
         const next = this.isEnabledMode(mode) ? mode : MODE_PERSON_MANAGE
 
-        if (persist) {
-            try {
-                window.localStorage.setItem(SEARCH_MODE_KEY, next)
-            } catch (_e) {
-                // Best-effort persistence only.
-            }
-        }
+        if (persist) write("localStorage", SEARCH_MODE_KEY, next)
 
         this.syncModeControls(next)
         this.updateAutocompleteMode(next)
