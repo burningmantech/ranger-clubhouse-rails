@@ -24,6 +24,7 @@ Rails.application.configure do
   # Store uploaded files on the local file system unless the server names another
   # config/storage.yml service: AWS sets RANGER_CLUBHOUSE_STORAGE_SERVICE=amazon.
   config.active_storage.service = ENV.fetch("RANGER_CLUBHOUSE_STORAGE_SERVICE", "local")
+  config.active_storage.resolve_model_to_route = :rails_storage_proxy
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   config.assume_ssl = true
