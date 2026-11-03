@@ -25,9 +25,12 @@ module Clubhouse3
     config.autoload_lib(ignore: %w[assets tasks middleware])
 
     require_relative "../lib/middleware/request_logger"
+    require_relative "../lib/middleware/active_storage_cache_control"
+
     # Appended, so it runs closest to the application and can still read the
     # signed-in person off Current.
     config.middleware.use RequestLogger
+    config.middleware.insert_before ActionDispatch::Static, ActiveStorageCacheControl
 
     # Configuration for the application, engines, and railties goes here.
     #
