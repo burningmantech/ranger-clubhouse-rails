@@ -10,17 +10,17 @@
 # left_on, and an access document's change log by its record.
 class PruneAndAddIndexes < ActiveRecord::Migration[8.1]
   def change
-    remove_index :timesheet, column: :person_id, name: "person_id"
-    remove_index :timesheet, column: :position_id, name: "position_id"
-    remove_index :timesheet, column: :on_duty, name: "timesheet_on_duty_index"
-    remove_index :person_slot, column: :slot_id, name: "slot_id"
-    remove_index :person_asset, column: :person_id, name: "person_id"
-    remove_index :person_certification, column: :person_id, name: "person_certification_person_id_index"
-    remove_index :person_banner, column: :person_id, name: "person_banner_person_id_index"
-    remove_index :pod, column: :slot_id, name: "pod_slot_id_index"
-    remove_index :radio_log, column: :radio_id, name: "radio_id"
-    remove_index :position_credit, column: :start_year, name: "position_credit_start_year_index"
-    remove_index :action_logs, column: :id, name: "secondary_id_idx"
+    remove_index :timesheet, column: :person_id, name: "person_id", if_exists: true
+    remove_index :timesheet, column: :position_id, name: "position_id", if_exists: true
+    remove_index :timesheet, column: :on_duty, name: "timesheet_on_duty_index", if_exists: true
+    remove_index :person_slot, column: :slot_id, name: "slot_id", if_exists: true
+    remove_index :person_asset, column: :person_id, name: "person_id", if_exists: true
+    remove_index :person_certification, column: :person_id, name: "person_certification_person_id_index", if_exists: true
+    remove_index :person_banner, column: :person_id, name: "person_banner_person_id_index", if_exists: true
+    remove_index :pod, column: :slot_id, name: "pod_slot_id_index", if_exists: true
+    remove_index :radio_log, column: :radio_id, name: "radio_id", if_exists: true
+    remove_index :position_credit, column: :start_year, name: "position_credit_start_year_index", if_exists: true
+    remove_index :action_logs, column: :id, name: "secondary_id_idx", if_exists: true
 
     add_index :team_manager, [:person_id, :team_id], unique: true
     add_index :person_position_log, [:person_id, :left_on]

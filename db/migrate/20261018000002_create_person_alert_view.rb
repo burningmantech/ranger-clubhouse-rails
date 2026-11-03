@@ -8,10 +8,10 @@
 # Until 2026-10-19 this migration renamed the table; dev ran that version.
 class CreatePersonAlertView < ActiveRecord::Migration[8.1]
   def up
-    execute "CREATE VIEW person_alert AS SELECT * FROM alert_person"
+    rename_table :alert_person, :person_alert
   end
 
   def down
-    execute "DROP VIEW person_alert"
+    rename_table :person_alert, :alert_person
   end
 end

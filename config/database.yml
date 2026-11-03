@@ -69,6 +69,9 @@ production:
     # db:prepare load it in exactly that case. queue and cable inherit this line through the merge below.
     # A SCHEMA environment variable overrides it, so production never sets one.
     schema_dump: false
+    ssl: true
+    ssl_mode: :required
+    variables: { time_zone: "America/Phoenix" }
     <% if ENV["RANGER_DB_SSL_CA"].present? %>
     # RDS refuses unencrypted connections (require_secure_transport). AWS sets RANGER_DB_SSL_CA to the RDS
     # certificate bundle (config/rds-global-bundle.pem), and the connection checks the server's certificate

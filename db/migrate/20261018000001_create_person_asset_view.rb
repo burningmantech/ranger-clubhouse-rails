@@ -15,10 +15,10 @@
 # a table there and leaves it.
 class CreatePersonAssetView < ActiveRecord::Migration[8.1]
   def up
-    execute "CREATE VIEW person_asset AS SELECT * FROM asset_person"
+    rename_table :asset_person, :person_asset
   end
 
   def down
-    execute "DROP VIEW person_asset"
+    rename_table :person_asset, :asset_person
   end
 end
