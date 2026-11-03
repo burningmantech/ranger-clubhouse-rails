@@ -17,6 +17,12 @@
 <head>
   <title><%= content_for(:title) || "Ranger Secret Clubhouse" %></title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%# A fresh load, never a Turbo swap of the body: data-theme sits on the
+      <html> element, the one part of the page a Turbo visit keeps, so the
+      "Trainer's Report" button on a dark session page otherwise carried
+      data-theme="dark" in and printed the band headers as black bars
+      (layouts/photo_board does the same). %>
+  <meta name="turbo-visit-control" content="reload">
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
   <%# The proportional roman latin face is on the critical path for every page. The
