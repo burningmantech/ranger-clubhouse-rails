@@ -51,33 +51,18 @@ export default class extends Controller {
         stateField.disabled = false
         this.removeClearedStateField()
 
-        // Clear existing options
-        stateField.innerHTML = ""
-
-        // Add blank option first
-        const promptOption = document.createElement("option")
-        promptOption.value = ""
-        promptOption.textContent = "-"
-        stateField.appendChild(promptOption)
+        // The blank option first, then the country's
+        stateField.replaceChildren(new Option("-", ""))
 
         if (this.labelElement) {
             this.renameLabel(this.labels[countryCode] || "State")
             this.labelElement.classList.remove("opacity-60")
         }
 
-        // Add new options for the selected country
+        // The previous selection is kept where it exists among the new options
         const options = this.stateOptions[countryCode] || []
         options.forEach(option => {
-            const optionElement = document.createElement("option")
-            optionElement.value = option.value
-            optionElement.textContent = option.label
-
-            // Try to preserve the previous selection if it exists in new options
-            if (option.value === currentValue) {
-                optionElement.selected = true
-            }
-
-            stateField.appendChild(optionElement)
+            stateField.appendChild(new Option(option.label, option.value, false, option.value === currentValue))
         })
 
         // If the current value wasn't found in the new options, reset to first option
@@ -97,12 +82,8 @@ export default class extends Controller {
         // Disable the field
         stateField.disabled = true
 
-        // Clear options and add a disabled message
-        stateField.innerHTML = ""
-        const option = document.createElement("option")
-        option.value = ""
-        option.textContent = "-"
-        stateField.appendChild(option)
+        // Only the blank option
+        stateField.replaceChildren(new Option("-", ""))
 
         // Reset value
         stateField.value = ""

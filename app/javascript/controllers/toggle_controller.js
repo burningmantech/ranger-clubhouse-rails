@@ -8,14 +8,13 @@ export default class extends Controller {
     }
 
     connect() {
-        // Nothing to toggle without a target, and an empty id would make the
-        // lookup itself throw. Nothing is bound either, so a click on such an
-        // element stays harmless.
+        // Nothing to toggle without a target. Nothing is bound either, so a
+        // click on such an element stays harmless.
         if (!this.hasDomIdValue) return;
 
         this.toggleClick = this.toggleClick.bind(this);
         this.element.addEventListener("click", this.toggleClick);
-        this.targetElement = document.querySelector(`#${this.domIdValue}`)
+        this.targetElement = document.getElementById(this.domIdValue)
         // The trigger's own aria-expanded describes the target's starting
         // state, so reading it keeps one source of truth rather than guessing
         // from the target's class list. Callers that leave it off get the
@@ -38,29 +37,25 @@ export default class extends Controller {
     toggleClick(event) {
         event.preventDefault();
 
-        if (this.toggled) {
-            if (this.hasLabelValue && this.oldHTML !== null) {
-                this.element.innerHTML = this.oldHTML;
-            }
-            this.targetElement.classList.add("hidden");
-            this.targetElement.classList.add("hidden!");
-            this.targetElement.setAttribute("aria-hidden", "true");
-            this.element.setAttribute("aria-expanded", "false");
-        } else {
-            if (this.hasLabelValue) {
+        const open = !this.toggled;
+        if (this.hasLabelValue) {
+            if (open) {
                 this.oldHTML = this.element.innerHTML;
                 this.element.innerHTML = this.labelValue;
-            }
-            this.targetElement.classList.remove("hidden");
-            this.targetElement.classList.remove("hidden!");
-            this.targetElement.setAttribute("aria-hidden", "false");
-            this.element.setAttribute("aria-expanded", "true");
-
-            if (this.hasTurboSrcValue) {
-                this.targetElement.src = this.turboSrcValue;
+            } else if (this.oldHTML !== null) {
+                this.element.innerHTML = this.oldHTML;
             }
         }
+        // Both names, as the markup has them: hidden! outweighs a display
+        // utility such as flex on the target.
+        this.targetElement.classList.toggle("hidden", !open);
+        this.targetElement.classList.toggle("hidden!", !open);
+        this.targetElement.setAttribute("aria-hidden", String(!open));
+        this.element.setAttribute("aria-expanded", String(open));
+        if (open && this.hasTurboSrcValue) {
+            this.targetElement.src = this.turboSrcValue;
+        }
 
-        this.toggled = !this.toggled;
+        this.toggled = open;
     }
 }

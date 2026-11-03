@@ -19,6 +19,7 @@
  */
 
 import {Controller} from "@hotwired/stimulus"
+import {Turbo} from "@hotwired/turbo-rails"
 import {scrollBehavior} from "controllers/scrolling"
 import {read, write} from "controllers/storage"
 import {announce} from "controllers/live_region"
@@ -332,11 +333,7 @@ export default class Autocomplete extends Controller {
             // Emptied, not just closed: a search still out, or an Enter waiting
             // for it, would open a second result on top of this one.
             this.hideAndRemoveOptions()
-            if (window.Turbo) {
-                window.Turbo.visit(url)
-            } else {
-                window.location.assign(url)
-            }
+            Turbo.visit(url)
             return
         }
 

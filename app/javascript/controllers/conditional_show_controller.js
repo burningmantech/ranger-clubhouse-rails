@@ -10,7 +10,7 @@ export default class extends Controller {
     connect() {
         this._inputChanged = this.inputChanged.bind(this);
         this.element.addEventListener('change', this._inputChanged);
-        this.revealElement = document.querySelector(`#${this.idValue}`);
+        this.revealElement = document.getElementById(this.idValue);
     }
 
     disconnect() {
