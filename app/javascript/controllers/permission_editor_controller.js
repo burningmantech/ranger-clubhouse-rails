@@ -1,4 +1,5 @@
 import {Controller} from "@hotwired/stimulus"
+import {confirmChecked} from "controllers/confirm_checkbox"
 
 /**
  * Permission Editor Controller
@@ -25,11 +26,10 @@ export default class extends Controller {
     const cb = event.currentTarget
     if (!cb.checked || cb.dataset.granted !== "true") return
 
-    const ok = confirm(
+    confirmChecked(cb,
       `${cb.dataset.roleTitle} is already granted through a team membership and/or a position.\n\n` +
       "Grant it manually as well?"
     )
-    if (!ok) cb.checked = false
   }
 
   submit(event) {
