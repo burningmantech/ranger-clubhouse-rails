@@ -20,7 +20,6 @@
 
 import {Controller} from "@hotwired/stimulus"
 import {Turbo} from "@hotwired/turbo-rails"
-import {scrollBehavior} from "controllers/scrolling"
 import {local} from "controllers/storage"
 import {announce} from "controllers/live_region"
 
@@ -58,7 +57,7 @@ const debounce = (fn, delay = 10) => {
 }
 
 export default class Autocomplete extends Controller {
-    static targets = ["input", "hidden", "results", "empty", "loading", "filterBar", "keyboardHelp"]
+    static targets = ["input", "hidden", "results", "loading", "keyboardHelp"]
     static classes = ["selected"]
     static values = {
         ready: Boolean,
@@ -194,7 +193,11 @@ export default class Autocomplete extends Controller {
         const bar = this.resultsTarget.querySelector(".ac-filter-bar")
         this.resultsTarget.style.scrollPaddingTop = bar ? `${bar.offsetHeight}px` : ""
 
-        target.scrollIntoView({behavior: scrollBehavior(), block: "nearest"})
+        // Read here rather than taken from controllers/scrolling: this
+        // controller is on every signed-in page (the search dialog), and that
+        // module is 5 KB for one line.
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        target.scrollIntoView({behavior: reduced ? "auto" : "smooth", block: "nearest"})
     }
 
     // =========================================================================

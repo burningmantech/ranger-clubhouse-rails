@@ -167,21 +167,17 @@ export default class SearchBar extends Dialog {
         return true
     }
 
-    // Read the persisted mode, falling back to "person_manage" when the value
-    // isn't a currently-enabled mode -- a mode the viewer's permissions no
-    // longer unlock (a stale "hq"/"swag"/"timesheet"), or the legacy "account"
-    // literal -- so neither ever selects itself again.
+    // The persisted mode as saved. applyMode validates it: a mode the viewer's
+    // permissions no longer unlock (a stale "hq"/"swag"/"timesheet"), or the
+    // legacy "account" literal, falls back to "person_manage" there and never
+    // selects itself again.
     //
     // Onduty-driven default: when the viewer is on duty in an HQ Window or
     // mentor position, the server flags ondutyDefault and sets the default mode
     // to "hq" (SearchBarPolicy.default_mode) — auto-select it and ignore the
-    // persisted value, mirroring the Ember search-item-bar behavior. applyMode
-    // still validates the result against the enabled set.
+    // persisted value, mirroring the Ember search-item-bar behavior.
     restoreMode() {
-        if (this.ondutyDefaultValue) return this.defaultModeValue
-
-        const saved = local.read(SEARCH_MODE_KEY)
-        return this.isEnabledMode(saved) ? saved : MODE_PERSON_MANAGE
+        return this.ondutyDefaultValue ? this.defaultModeValue : local.read(SEARCH_MODE_KEY)
     }
 
     isEnabledMode(mode) {

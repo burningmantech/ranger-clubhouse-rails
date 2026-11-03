@@ -8,13 +8,13 @@ export default class extends Controller {
     }
 
     connect() {
-        // Nothing to toggle without a target. Nothing is bound either, so a
-        // click on such an element stays harmless.
-        if (!this.hasDomIdValue) return;
+        // Nothing to toggle without a target on the page. Nothing is bound
+        // either, so a click on such an element stays harmless.
+        this.targetElement = this.hasDomIdValue ? document.getElementById(this.domIdValue) : null
+        if (!this.targetElement) return;
 
         this.toggleClick = this.toggleClick.bind(this);
         this.element.addEventListener("click", this.toggleClick);
-        this.targetElement = document.getElementById(this.domIdValue)
         // The trigger's own aria-expanded is the one record of the target's
         // state, read rather than guessed from the target's class list.
         // Callers that leave it off get the collapsed default stamped on,

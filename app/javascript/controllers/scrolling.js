@@ -1,9 +1,8 @@
 // Bringing an element into view where something other than the window scrolls
 // it. Here that is most of the time: body is h-dvh and the page scrolls in
 // div.drawer-content (layouts/application), and the mailbox's pane scrolls
-// itself from lg up (components/review-pane.css). Shared by the controllers
-// that scroll to something: scroll_to_element, search_matches, hq_shift,
-// onboarding and autocomplete.
+// itself from lg up (components/review-pane.css). Shared by every controller
+// that scrolls to something.
 
 // The nearest ancestor that scrolls: overflow-y auto or scroll, with more in it
 // than shows. Found by behaviour, not by selector: the layout nests a plain

@@ -17,6 +17,6 @@ export default class extends Controller {
     }
 
     inputChanged() {
-        this.revealElement.classList.toggle("hidden", this.element.value !== this.revealValue);
+        this.revealElement?.classList.toggle("hidden", this.element.value !== this.revealValue);
     }
 }
