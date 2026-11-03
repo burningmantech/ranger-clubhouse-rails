@@ -8,25 +8,28 @@ export default class extends Controller {
     }
 
     connect() {
-        // Nothing to toggle without a target, and an empty id would make the
-        // lookup itself throw. Nothing is bound either, so a click on such an
-        // element stays harmless.
-        if (!this.hasDomIdValue) return;
+        // Nothing to toggle without a target on the page. Nothing is bound
+        // either, so a click on such an element stays harmless.
+        this.targetElement = this.hasDomIdValue ? document.getElementById(this.domIdValue) : null
+        if (!this.targetElement) return;
 
         this.toggleClick = this.toggleClick.bind(this);
         this.element.addEventListener("click", this.toggleClick);
-        this.targetElement = document.querySelector(`#${this.domIdValue}`)
-        // The trigger's own aria-expanded describes the target's starting
-        // state, so reading it keeps one source of truth rather than guessing
-        // from the target's class list. Callers that leave it off get the
-        // collapsed default stamped on, which is what screen readers need to
-        // announce the control as a disclosure before it is ever clicked.
-        this.toggled = this.element.getAttribute("aria-expanded") === "true";
-        this.element.setAttribute("aria-expanded", this.toggled ? "true" : "false");
+        // The trigger's own aria-expanded is the one record of the target's
+        // state, read rather than guessed from the target's class list.
+        // Callers that leave it off get the collapsed default stamped on,
+        // which is what screen readers need to announce the control as a
+        // disclosure before it is ever clicked.
+        this.element.setAttribute("aria-expanded", String(this.expanded));
         // Remembered now rather than on the first click: a restored page can
         // hand back a control that is already expanded, and collapsing it has
         // to put a real label back instead of an empty one.
-        this.oldHTML = this.toggled ? null : this.element.innerHTML;
+        this.oldHTML = this.expanded ? null : this.element.innerHTML;
+    }
+
+    // Whether the target is showing, as the trigger says.
+    get expanded() {
+        return this.element.getAttribute("aria-expanded") === "true";
     }
 
     disconnect() {
@@ -38,29 +41,23 @@ export default class extends Controller {
     toggleClick(event) {
         event.preventDefault();
 
-        if (this.toggled) {
-            if (this.hasLabelValue && this.oldHTML !== null) {
-                this.element.innerHTML = this.oldHTML;
-            }
-            this.targetElement.classList.add("hidden");
-            this.targetElement.classList.add("hidden!");
-            this.targetElement.setAttribute("aria-hidden", "true");
-            this.element.setAttribute("aria-expanded", "false");
-        } else {
-            if (this.hasLabelValue) {
+        const open = !this.expanded;
+        if (this.hasLabelValue) {
+            if (open) {
                 this.oldHTML = this.element.innerHTML;
                 this.element.innerHTML = this.labelValue;
-            }
-            this.targetElement.classList.remove("hidden");
-            this.targetElement.classList.remove("hidden!");
-            this.targetElement.setAttribute("aria-hidden", "false");
-            this.element.setAttribute("aria-expanded", "true");
-
-            if (this.hasTurboSrcValue) {
-                this.targetElement.src = this.turboSrcValue;
+            } else if (this.oldHTML !== null) {
+                this.element.innerHTML = this.oldHTML;
             }
         }
-
-        this.toggled = !this.toggled;
+        // Both names, as the markup has them: hidden! outweighs a display
+        // utility such as flex on the target.
+        this.targetElement.classList.toggle("hidden", !open);
+        this.targetElement.classList.toggle("hidden!", !open);
+        this.targetElement.setAttribute("aria-hidden", String(!open));
+        this.element.setAttribute("aria-expanded", String(open));
+        if (open && this.hasTurboSrcValue) {
+            this.targetElement.src = this.turboSrcValue;
+        }
     }
 }

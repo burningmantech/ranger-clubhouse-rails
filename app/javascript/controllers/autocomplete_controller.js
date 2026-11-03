@@ -19,6 +19,9 @@
  */
 
 import {Controller} from "@hotwired/stimulus"
+import {Turbo} from "@hotwired/turbo-rails"
+import {local} from "controllers/storage"
+import {announce} from "controllers/live_region"
 
 const optionSelector = "[role='option']:not([aria-disabled])"
 const activeSelector = "[aria-selected='true']"
@@ -54,7 +57,7 @@ const debounce = (fn, delay = 10) => {
 }
 
 export default class Autocomplete extends Controller {
-    static targets = ["input", "hidden", "results", "empty", "loading", "filterBar", "keyboardHelp"]
+    static targets = ["input", "hidden", "results", "loading", "keyboardHelp"]
     static classes = ["selected"]
     static values = {
         ready: Boolean,
@@ -129,6 +132,7 @@ export default class Autocomplete extends Controller {
         this.pendingEnter = false
         this.cancelPendingRequest()
         this.debouncedInputChange?.cancel()
+        this.line?.remove()
         this.element.removeEventListener("focusout", this.onFocusOut)
 
         if (this.hasInputTarget) {
@@ -189,8 +193,11 @@ export default class Autocomplete extends Controller {
         const bar = this.resultsTarget.querySelector(".ac-filter-bar")
         this.resultsTarget.style.scrollPaddingTop = bar ? `${bar.offsetHeight}px` : ""
 
-        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        target.scrollIntoView({behavior: prefersReducedMotion ? "auto" : "smooth", block: "nearest"})
+        // Read here rather than taken from controllers/scrolling: this
+        // controller is on every signed-in page (the search dialog), and that
+        // module is 5 KB for one line.
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        target.scrollIntoView({behavior: reduced ? "auto" : "smooth", block: "nearest"})
     }
 
     // =========================================================================
@@ -330,11 +337,7 @@ export default class Autocomplete extends Controller {
             // Emptied, not just closed: a search still out, or an Enter waiting
             // for it, would open a second result on top of this one.
             this.hideAndRemoveOptions()
-            if (window.Turbo) {
-                window.Turbo.visit(url)
-            } else {
-                window.location.assign(url)
-            }
+            Turbo.visit(url)
             return
         }
 
@@ -759,8 +762,8 @@ export default class Autocomplete extends Controller {
             this.resultsTarget.scrollTop = 0
         }
 
-        // Announce result count to screen readers
-        this.announceResults(items.length)
+        // Screen readers are told the count through the layout's live region
+        this.line = announce(`${items.length} result${items.length === 1 ? "" : "s"} available`, this.line)
     }
 
     renderFilters(filters) {
@@ -936,20 +939,6 @@ export default class Autocomplete extends Controller {
         this.open()
     }
 
-    announceResults(count) {
-        let announcer = document.getElementById("ac-live-region")
-        if (!announcer) {
-            announcer = document.createElement("div")
-            announcer.id = "ac-live-region"
-            announcer.setAttribute("role", "status")
-            announcer.setAttribute("aria-live", "polite")
-            announcer.setAttribute("aria-atomic", "true")
-            announcer.className = "sr-only"
-            document.body.appendChild(announcer)
-        }
-        announcer.textContent = `${count} result${count === 1 ? "" : "s"} available`
-    }
-
     // =========================================================================
     // Recents (localStorage)
     // =========================================================================
@@ -992,7 +981,7 @@ export default class Autocomplete extends Controller {
     getRecents() {
         if (!this.recentsKeyValue) return []
         try {
-            return JSON.parse(localStorage.getItem(`ac-recents-${this.recentsKeyValue}`)) || []
+            return JSON.parse(local.read(`ac-recents-${this.recentsKeyValue}`)) || []
         } catch {
             return []
         }
@@ -1005,11 +994,7 @@ export default class Autocomplete extends Controller {
         recents = recents.filter(r => r.value !== item.value)
         recents.unshift(item)
         recents = recents.slice(0, this.maxRecentsValue)
-        try {
-            localStorage.setItem(key, JSON.stringify(recents))
-        } catch {
-            // localStorage full or unavailable
-        }
+        local.write(key, JSON.stringify(recents))
     }
 
     // =========================================================================

@@ -60,6 +60,15 @@ class Person::PhotosControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to me_root_path
   end
 
+  # The upload page's request.js call asks for JSON; a refusal answers in kind
+  # rather than with a redirect whose flash the fetch would spend.
+  test "a refused JSON request is answered with the reason, not a redirect" do
+    sign_in_as(@em)
+    post person_photos_path(@target), as: :json
+    assert_response :forbidden
+    assert_includes response.parsed_body.keys, "error"
+  end
+
   private
 
   def ensure_role(id, title)

@@ -4,7 +4,6 @@ import {get} from "@rails/request.js"
 // Connects to data-controller="tabs"
 // Hybrid DaisyUI/Stimulus tabs implementation
 export default class extends Controller {
-    static targets = ["tab", "panel"]
     static values = {
         activeClasses: {type: String, default: ""},
         inactiveClasses: {type: String, default: ""}

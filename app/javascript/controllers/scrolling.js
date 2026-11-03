@@ -1,9 +1,8 @@
 // Bringing an element into view where something other than the window scrolls
 // it. Here that is most of the time: body is h-dvh and the page scrolls in
 // div.drawer-content (layouts/application), and the mailbox's pane scrolls
-// itself from lg up (components/review-pane.css). Shared by the controllers
-// that scroll to something: scroll_to_element, search_matches, hq_shift and
-// onboarding.
+// itself from lg up (components/review-pane.css). Shared by every controller
+// that scrolls to something.
 
 // The nearest ancestor that scrolls: overflow-y auto or scroll, with more in it
 // than shows. Found by behaviour, not by selector: the layout nests a plain
@@ -40,6 +39,11 @@ function below(scroller, target) {
     return (target.getBoundingClientRect().top - box.top) / zoom - scroller.clientTop
 }
 
+// How the page moves for a reader: smoothly, unless they asked for less motion.
+export function scrollBehavior() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+}
+
 // Brings +target+ into view, unless it is in view already, where a scroll
 // would only hide what sits above it: wholly on screen, and at least its
 // scroll-margin-top inside the top of what scrolls it -- the room it keeps
@@ -71,7 +75,7 @@ export function reveal(target, container, {behavior} = {}) {
         return
     }
 
-    behavior ??= window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+    behavior ??= scrollBehavior()
     if (inside) {
         scrollWithin(scroller, target, {offset: margin})
         if (!onScreen(target)) {

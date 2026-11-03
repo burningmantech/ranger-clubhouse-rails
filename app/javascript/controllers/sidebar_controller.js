@@ -10,12 +10,4 @@ export default class extends Controller {
       checkbox.checked = false
     }
   }
-
-  openDrawer(event) {
-    event.preventDefault()
-    const checkbox = document.getElementById("sidebar-drawer")
-    if (checkbox) {
-      checkbox.checked = true
-    }
-  }
 }

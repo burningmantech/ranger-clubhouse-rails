@@ -1,5 +1,5 @@
 import UnsavedChanges from "controllers/unsaved_changes_controller";
-import { scrollParent, scrollWithin } from "controllers/scrolling";
+import { scrollParent, scrollWithin, scrollBehavior } from "controllers/scrolling";
 
 // HQ Window shift page controller — port of the client state machine in
 // port/controllers/hq/shift.js + port/components/hq-timesheet-verification.js
@@ -375,8 +375,7 @@ export default class extends UnsavedChanges {
         section.open = true;
 
         const scroller = scrollParent(section);
-        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        const behavior = reduced ? "auto" : "smooth";
+        const behavior = scrollBehavior();
         if (!scroller) {
             section.scrollIntoView({ behavior, block: "start" });
             return;

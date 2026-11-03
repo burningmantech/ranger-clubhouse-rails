@@ -1906,10 +1906,11 @@ The scrolling itself is `app/javascript/controllers/scrolling.js`, a module of f
 controller: `reveal(target, container, {behavior})` (all of the above; `behavior: "auto"` moves at
 once, as a stepper's steps must), `onScreen`, `scrollWithin(scroller,
 target, {offset, behavior})` (a scroller moved until the target's top sits `offset` of its own
-pixels inside it, through any CSS zoom) and `scrollParent` (the nearest ancestor that scrolls, by
-behaviour: overflow-y auto or scroll with more in it than shows). `search_matches_controller`,
-`hq_shift_controller` (a section brought under the pinned checklist) and `onboarding_controller`
-(the tour's scroller) use them too.
+pixels inside it, through any CSS zoom), `scrollParent` (the nearest ancestor that scrolls, by
+behaviour: overflow-y auto or scroll with more in it than shows) and `scrollBehavior()` (`"smooth"`,
+or `"auto"` for a reader who asked for less motion). Every other controller that scrolls to
+something imports from it; the one exception is the autocomplete, on every signed-in page, which
+reads the media query itself rather than fetch this module for one line.
 
 ### search-matches (Stimulus)
 

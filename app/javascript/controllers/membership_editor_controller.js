@@ -1,4 +1,5 @@
 import {Controller} from "@hotwired/stimulus"
+import {confirmChecked} from "controllers/confirm_checkbox"
 
 /**
  * Membership Editor Controller
@@ -31,10 +32,11 @@ export default class extends Controller {
     }
 
     if (checkbox.checked) {
-      this._selectAllMemberPositions(card)
-      this._deselectOnTeamJoin(card)
+      this._check(card, "[data-position-category='all_members']", true)
+      this._check(card, "[data-deselect-on-join='true']", false)
     } else {
-      this._deselectNonPublicPositions(card)
+      this._check(card, "[data-position-category='all_members']", false)
+      this._check(card, "[data-position-category='optional']", false)
     }
   }
 
@@ -51,16 +53,13 @@ export default class extends Controller {
     const teamTitle = card.dataset.teamTitle
 
     if (checkbox.checked && teamType !== "team") {
-      const confirmed = confirm(
+      confirmChecked(checkbox,
         `The Clubhouse Team "${teamTitle}" is a ${teamType}.\n\n` +
         "It is recommended cadre / delegation members are NOT assigned as Clubhouse Managers " +
         "for their cadre/delegation, only their team. Otherwise, they may be given the ability " +
         "to mint new cadre/delegation members without approval from Council first, and " +
         "unintentional privilege escalation may result.\n\nMake them a Clubhouse Manager anyway?"
       )
-      if (!confirmed) {
-        checkbox.checked = false
-      }
     }
   }
 
@@ -90,46 +89,19 @@ export default class extends Controller {
    * @returns {boolean} true if confirmed
    */
   _confirmDangerous(checkbox, entityType, title, permissions) {
-    const confirmed = confirm(
+    return confirmChecked(checkbox,
       `The ${entityType} "${title}" has the permission(s) ${permissions} associated.\n\n` +
       "Normally, such permission grants require approval from Council and the Tech Team first.\n\n" +
       `Grant this ${entityType} anyway?`
     )
-
-    if (!confirmed) {
-      checkbox.checked = false
-      return false
-    }
-    return true
   }
 
   /**
-   * When a team is selected, auto-check all "all_members" category positions.
+   * Ticks or unticks every position checkbox under +selector+ in the card:
+   * a joined team's all-members positions on, its deselect-on-join ones off;
+   * a left team's all-members and optional positions off.
    */
-  _selectAllMemberPositions(card) {
-    card.querySelectorAll("[data-position-category='all_members'] input[type='checkbox']").forEach(cb => {
-      cb.checked = true
-    })
-  }
-
-  /**
-   * When a team is selected, deselect positions flagged for deselection on join.
-   */
-  _deselectOnTeamJoin(card) {
-    card.querySelectorAll("[data-deselect-on-join='true'] input[type='checkbox']").forEach(cb => {
-      cb.checked = false
-    })
-  }
-
-  /**
-   * When a team is deselected, uncheck all non-public positions.
-   */
-  _deselectNonPublicPositions(card) {
-    card.querySelectorAll("[data-position-category='all_members'] input[type='checkbox']").forEach(cb => {
-      cb.checked = false
-    })
-    card.querySelectorAll("[data-position-category='optional'] input[type='checkbox']").forEach(cb => {
-      cb.checked = false
-    })
+  _check(card, selector, checked) {
+    card.querySelectorAll(`${selector} input[type='checkbox']`).forEach((box) => (box.checked = checked))
   }
 }

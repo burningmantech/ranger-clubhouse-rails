@@ -131,14 +131,9 @@ export default class extends Controller {
       this.cameraSelectWrapperTarget.hidden = devices.length < 2
       if (devices.length < 2) return
 
-      this.cameraSelectTarget.innerHTML = ""
-      devices.forEach((device, index) => {
-        const option = document.createElement("option")
-        option.value = device.deviceId
-        option.textContent = device.label || `Camera ${index + 1}`
-        option.selected = device.deviceId === this.currentDeviceId
-        this.cameraSelectTarget.appendChild(option)
-      })
+      this.cameraSelectTarget.replaceChildren(...devices.map((device, index) =>
+        new Option(device.label || `Camera ${index + 1}`, device.deviceId, false, device.deviceId === this.currentDeviceId)
+      ))
     } catch (error) {
       console.error("Failed to enumerate cameras:", error)
     }

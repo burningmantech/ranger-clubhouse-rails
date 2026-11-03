@@ -88,6 +88,10 @@
                  bg-base-100 text-base-content rounded-xl shadow-2xl border border-line overflow-hidden
                  backdrop:bg-base-content/40 backdrop:backdrop-blur-sm"
           aria-label="Search">
+    <%# Where a screen reader is told what the search found: everything outside
+        an open modal dialog is inert, the layout's #live-region included
+        (controllers/live_region.js). %>
+    <div class="sr-only" aria-live="polite" data-live-region></div>
     <%# Mode switcher. Rendered only when more than one mode exists (the hq
         mode is present only for viewers with the HQ Window Interface enabled;
         the policy only emits selectable modes). DaisyUI join+radio segmented
