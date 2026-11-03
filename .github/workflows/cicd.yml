@@ -18,14 +18,9 @@ defaults:
 
 
 env:
-  APPLICATION: "ranger-clubhouse-rails"
-  AWS_DEPLOY_ROLE: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ranger-gha-deploy"
-  AWS_ECR_IMAGE_NAME: "/rangers/ranger-clubhouse-rails"
-  AWS_ECS_CLUSTER: rangers
-  AWS_ECS_CONTAINER_NAME: ranger-clubhouse-rails
-  AWS_ECS_SERVICE_STAGING: ranger-clubhouse-rails-staging-fg
-  AWS_ECS_TASK_DEFINITION_ARN_STAGING: "arn:aws:ecs:us-west-2:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/ranger-clubhouse-rails-staging-fg"
-  AWS_ECS_TASK_DEFINITION_FAMILY_STAGING: ranger-clubhouse-rails-staging-fg
+  AWS_ECR_IMAGE_NAME: "/rangers/${{ vars.PROJECT_ID }}"
+  AWS_ECS_CLUSTER: "rangers"
+  AWS_ECS_CONTAINER_NAME: "${{ vars.PROJECT_ID }}"
   AWS_REGION: us-west-2
   # Production runs on Phoenix time, and so do the tests: datetimes are stored
   # as the process's local wall clock (config.active_record.default_timezone).
@@ -190,7 +185,7 @@ jobs:
           context: .
           platforms: linux/arm64
           load: true
-          tags: "${{ env.APPLICATION }}:${{ github.sha }}"
+          tags: "${{ vars.PROJECT_ID }}:${{ github.sha }}"
           cache-from: type=gha
           cache-to: type=gha,mode=max
           # `load: true` exports to the local Docker daemon, which can't take the
@@ -202,13 +197,13 @@ jobs:
       # refuses what it should and every real route still gets through (docker/nginx/).
       - name: Check the nginx config
         run: |
-          docker run --rm --entrypoint nginx "${{ env.APPLICATION }}:${{ github.sha }}" -t -c /app/docker/nginx/nginx.conf
-          docker run --rm --entrypoint /app/docker/nginx/check.sh "${{ env.APPLICATION }}:${{ github.sha }}"
+          docker run --rm --entrypoint nginx "${{ vars.PROJECT_ID }}:${{ github.sha }}" -t -c /app/docker/nginx/nginx.conf
+          docker run --rm --entrypoint /app/docker/nginx/check.sh "${{ vars.PROJECT_ID }}:${{ github.sha }}"
 
       # The deploy job of the same run will push this image, so it never has
       # to be built twice.
       - name: Save Docker image
-        run: docker image save "${{ env.APPLICATION }}:${{ github.sha }}" | gzip -9 > docker_image.tgz
+        run: docker image save "${{ vars.PROJECT_ID }}:${{ github.sha }}" | gzip -9 > docker_image.tgz
 
       - name: Upload Docker image artifacts
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -250,9 +245,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ env.AWS_DEPLOY_ROLE }}
-          role-session-name: ranger-gha-${{ github.repository_id }}-${{ github.job }}-${{ github.run_id }}
+          aws-region: "${{ env.AWS_REGION }}"
+          role-to-assume: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ranger-gha-deploy"
+          role-session-name: "ranger-gha-${{ github.repository_id }}-${{ github.job }}-${{ github.run_id }}"
 
       - name: Login to AWS ECR
         id: aws-login-ecr
@@ -263,7 +258,7 @@ jobs:
           image_repository="${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}"
           docker login
           # Push SHA tag
-          docker tag "${{ env.APPLICATION }}:${{ github.sha }}" "${image_repository}:${{ github.sha }}"
+          docker tag "${{ vars.PROJECT_ID }}:${{ github.sha }}" "${image_repository}:${{ github.sha }}"
           docker push "${image_repository}:${{ github.sha }}"
           # Push staging rollback tag
           if docker pull "${image_repository}:staging"; then
@@ -284,8 +279,8 @@ jobs:
         id: new-task-definition
         uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1.9.1
         with:
-          task-definition-arn: "${{ env.AWS_ECS_TASK_DEFINITION_ARN_STAGING }}"
-          task-definition-family: "${{ env.AWS_ECS_TASK_DEFINITION_FAMILY_STAGING }}"
+          task-definition-arn: "arn:aws:ecs:us-west-2:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/${{ vars.PROJECT_ID }}-staging-fg"
+          task-definition-family: "${{ vars.PROJECT_ID }}-staging-fg"
           container-name: "${{ env.AWS_ECS_CONTAINER_NAME }}"
           image: "${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}:${{ github.sha }}"
           environment-variables: |
@@ -307,7 +302,7 @@ jobs:
         timeout-minutes: 12
         with:
           task-definition: "${{ steps.new-task-definition.outputs.task-definition }}"
-          service: "${{ env.AWS_ECS_SERVICE_STAGING }}"
+          service: "${{ vars.PROJECT_ID }}-staging-fg"
           cluster: "${{ env.AWS_ECS_CLUSTER }}"
           wait-for-service-stability: true
           wait-for-minutes: 10

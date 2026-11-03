@@ -1,143 +1,141 @@
 # Docs: https://docs.github.com/en/actions
-#
-# Promote the image staging runs to production, by hand, from the Actions tab.
-# Slice 5 of .scratch/github-cicd/PRD.md, written before the AWS side exists:
-# the steps that touch AWS are commented out below, and the job fails at once
-# with a note until they are uncommented. Modeled on burningmantech/ranger-ims-go.
+
 
 name: Deploy to production
 run-name: Deploy to production by @${{ github.actor }}
 
-permissions:
-  contents: read
-
 on: workflow_dispatch
+
 
 defaults:
   run:
     shell: bash
 
+
+env:
+  AWS_ECR_IMAGE_NAME: "/rangers/${{ vars.PROJECT_ID }}"
+  AWS_ECS_CLUSTER: "rangers"
+  AWS_ECS_CONTAINER_NAME: "${{ vars.PROJECT_ID }}"
+  AWS_REGION: "us-west-2"
+
 jobs:
 
   push-to-production:
-    name: Deploy to production
 
     runs-on: ubuntu-latest
-    timeout-minutes: 30
 
     permissions:
       id-token: write
-      contents: read
-
-    env:
-      AWS_REGION: us-west-2
-      AWS_DEPLOY_ROLE: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ranger-gha-deploy"
-      AWS_ECR_IMAGE_NAME: /rangers/ranger-clubhouse-rails
-      AWS_ECS_CLUSTER: rangers
-      AWS_ECS_CONTAINER_NAME: ranger-clubhouse
-      AWS_ECS_SERVICE: ranger-clubhouse-production-fg
-      AWS_ECS_TASK_DEFINITION_FAMILY: ranger-clubhouse-production-fg
 
     steps:
-      - name: Harden Runner
+
+      - name: Harden CI
         uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            *.amazonaws.com:443
+            *.docker.io:443
 
-      # Only these accounts deploy production. Add a login to the list to let
-      # someone in; a run by anyone else stops here.
       - name: Check user
-        if: ${{ ! contains('["mikeburg"]', github.actor) }}
-        run: |
-          echo "::error::${{ github.actor }} is not on the production deploy list." >&2
-          exit 1
+        if: ${{ ! contains('["wsanchez", "mikeburg", "srabraham"]', github.actor) }}
+        run: false
 
-      # Remove this step when the AWS steps below are uncommented.
-      - name: Not wired up yet
-        run: |
-          echo "::error::Production deploys are not set up yet: the AWS steps in this workflow are commented out." >&2
-          exit 1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ranger-gha-deploy"
+          role-session-name: ranger-gha-${{ github.repository_id }}-${{ github.job }}-${{ github.run_id }}
 
-      # Uncomment from here once the ECR repository rangers/ranger-clubhouse-rails,
-      # the service and task definition family ranger-clubhouse-production-fg on
-      # cluster rangers, the deploy role's trust for refs/heads/main and its
-      # RunTask permissions, and the repository secret AWS_ACCOUNT_ID exist.
-      #
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
-      #   with:
-      #     aws-region: ${{ env.AWS_REGION }}
-      #     role-to-assume: ${{ env.AWS_DEPLOY_ROLE }}
-      #     role-session-name: ranger-gha-${{ github.repository_id }}-${{ github.job }}-${{ github.run_id }}
-      #
-      # - name: Login to AWS ECR
-      #   id: ecr
-      #   uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
-      #
-      # # Production runs exactly the image staging runs: the task definition
-      # # names it by digest, so a later :staging push cannot change what a
-      # # revision means. :production_rollback is the image before this one.
-      # - name: Promote the staging image
-      #   id: image
-      #   run: |
-      #     repository="${{ steps.ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}"
-      #     docker pull "${repository}:staging"
-      #     if docker pull "${repository}:production"; then
-      #       docker tag "${repository}:production" "${repository}:production_rollback"
-      #       docker push "${repository}:production_rollback"
-      #     fi
-      #     docker tag "${repository}:staging" "${repository}:production"
-      #     docker push "${repository}:production"
-      #     digest=$(docker inspect --format '{{index .RepoDigests 0}}' "${repository}:staging")
-      #     echo "ref=${digest}" >> "${GITHUB_OUTPUT}"
-      #
-      # - name: Render the task definition with the promoted image
-      #   id: render
-      #   uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1.9.1
-      #   with:
-      #     task-definition-family: ${{ env.AWS_ECS_TASK_DEFINITION_FAMILY }}
-      #     container-name: ${{ env.AWS_ECS_CONTAINER_NAME }}
-      #     image: ${{ steps.image.outputs.ref }}
-      #     environment-variables: |
-      #       GHA_ACTOR=${{ github.actor }}
-      #       GHA_RUN_ID=${{ github.run_id }}
-      #
-      # - name: Register the task definition
-      #   id: register
-      #   run: |
-      #     jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy, .deregisteredAt)' \
-      #       "${{ steps.render.outputs.task-definition }}" > task-definition.json
-      #     arn=$(aws ecs register-task-definition --cli-input-json file://task-definition.json \
-      #       --query taskDefinition.taskDefinitionArn --output text)
-      #     echo "arn=${arn}" >> "${GITHUB_OUTPUT}"
-      #
-      # # A failed migration leaves the service on its revision.
-      # - name: Migrate the database
-      #   run: |
-      #     network=$(aws ecs describe-services --cluster "${AWS_ECS_CLUSTER}" --services "${AWS_ECS_SERVICE}" \
-      #       --query 'services[0].networkConfiguration' --output json)
-      #     task=$(aws ecs run-task --cluster "${AWS_ECS_CLUSTER}" --launch-type FARGATE \
-      #       --task-definition "${{ steps.register.outputs.arn }}" --network-configuration "${network}" \
-      #       --started-by gha-migrate \
-      #       --overrides "{\"containerOverrides\":[{\"name\":\"${AWS_ECS_CONTAINER_NAME}\",\"command\":[\"bin/rails\",\"db:migrate\"]}]}" \
-      #       --query 'tasks[0].taskArn' --output text)
-      #     aws ecs wait tasks-stopped --cluster "${AWS_ECS_CLUSTER}" --tasks "${task}"
-      #     code=$(aws ecs describe-tasks --cluster "${AWS_ECS_CLUSTER}" --tasks "${task}" \
-      #       --query 'tasks[0].containers[0].exitCode' --output text)
-      #     group=$(jq -r '.containerDefinitions[0].logConfiguration.options["awslogs-group"]' task-definition.json)
-      #     prefix=$(jq -r '.containerDefinitions[0].logConfiguration.options["awslogs-stream-prefix"]' task-definition.json)
-      #     aws logs get-log-events --log-group-name "${group}" \
-      #       --log-stream-name "${prefix}/${AWS_ECS_CONTAINER_NAME}/${task##*/}" \
-      #       --query 'events[].message' --output text || true
-      #     [ "${code}" = 0 ] || { echo "db:migrate exited ${code}; the service stays on its current revision." >&2; exit 1; }
-      #
-      # # The circuit breaker rolls a failed deployment back, and the service
-      # # then settles on the old revision: that counts as a failure here.
-      # - name: Roll the service
-      #   run: |
-      #     aws ecs update-service --cluster "${AWS_ECS_CLUSTER}" --service "${AWS_ECS_SERVICE}" \
-      #       --task-definition "${{ steps.register.outputs.arn }}" > /dev/null
-      #     aws ecs wait services-stable --cluster "${AWS_ECS_CLUSTER}" --services "${AWS_ECS_SERVICE}"
-      #     running=$(aws ecs describe-services --cluster "${AWS_ECS_CLUSTER}" --services "${AWS_ECS_SERVICE}" \
-      #       --query 'services[0].taskDefinition' --output text)
-      #     [ "${running}" = "${{ steps.register.outputs.arn }}" ] || { echo "The deployment was rolled back to ${running##*/}." >&2; exit 1; }
+      - name: Login to AWS ECR
+        id: aws-login-ecr
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
+
+      - name: Push docker image to Amazon ECR
+        run: |
+          image_repository="${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}"
+          docker login
+          # Push SHA tag
+          docker pull "${image_repository}:staging"
+          docker tag "${image_repository}:staging" "${image_repository}:${{ github.sha }}"
+          docker push "${image_repository}:${{ github.sha }}"
+          # Push production rollback tag
+          if docker pull "${image_repository}:production"; then
+            echo "Pushing rollback tag for production"
+            docker tag "${image_repository}:production" "${image_repository}:production_rollback"
+            docker push "${image_repository}:production_rollback"
+          fi
+          # Push production tag
+          echo "Pushing production tag"
+          docker tag "${image_repository}:staging" "${image_repository}:production"
+          docker push "${image_repository}:production"
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date "+%Y-%m-%dT%H:%M:%S")" >> "${GITHUB_OUTPUT}"
+
+      - name: Fetch and update current task definition
+        id: new-task-definition
+        uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1.9.1
+        with:
+          task-definition-arn: "arn:aws:ecs:us-west-2:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/${{ vars.PROJECT_ID }}-production-fg"
+          task-definition-family: "${{ vars.PROJECT_ID }}-production-fg"
+          container-name: "${{ env.AWS_ECS_CONTAINER_NAME }}"
+          image: "${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}:${{ github.sha }}"
+          environment-variables: |
+            GHA_ACTOR_ID=${{ github.actor_id }}
+            GHA_ACTOR=${{ github.actor }}
+            GHA_EVENT_NAME=${{ github.event_name }}
+            GHA_JOB=${{ github.job }}
+            GHA_REF=${{ github.ref }}
+            GHA_RUN_ATTEMPT=${{ github.run_attempt }}
+            GHA_RUN_ID=${{ github.run_id }}
+            GHA_RUN_NUMBER=${{ github.run_number }}
+            GHA_TRIGGERING_ACTOR=${{ github.triggering_actor }}
+            GHA_WORKFLOW=${{ github.workflow }}
+            GIT_SHA=${{ github.sha }}
+            TASK_UPDATED=${{ steps.date.outputs.date }}
+
+      - name: Update task definition and ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@a00d4d57ac0de1a99b39fe469f3d898d38717c2b # v2.6.4
+        timeout-minutes: 12
+        with:
+          task-definition: "${{ steps.new-task-definition.outputs.task-definition }}"
+          service: "${{ vars.PROJECT_ID }}-production-fg"
+          cluster: "${{ env.AWS_ECS_CLUSTER }}"
+          wait-for-service-stability: true
+          wait-for-minutes: 10
+
+      - name: Fetch and update current task definition for training
+        id: new-task-definition-training
+        uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1.9.1
+        with:
+          task-definition-arn: "arn:aws:ecs:us-west-2:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/${{ vars.PROJECT_ID }}-training-fg"
+          task-definition-family: "${{ vars.PROJECT_ID }}-training-fg"
+          container-name: "${{ env.AWS_ECS_CONTAINER_NAME }}"
+          image: "${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}:${{ github.sha }}"
+          environment-variables: |
+            GHA_ACTOR_ID=${{ github.actor_id }}
+            GHA_ACTOR=${{ github.actor }}
+            GHA_EVENT_NAME=${{ github.event_name }}
+            GHA_JOB=${{ github.job }}
+            GHA_REF=${{ github.ref }}
+            GHA_RUN_ATTEMPT=${{ github.run_attempt }}
+            GHA_RUN_ID=${{ github.run_id }}
+            GHA_RUN_NUMBER=${{ github.run_number }}
+            GHA_TRIGGERING_ACTOR=${{ github.triggering_actor }}
+            GHA_WORKFLOW=${{ github.workflow }}
+            GIT_SHA=${{ github.sha }}
+            TASK_UPDATED=${{ steps.date.outputs.date }}
+
+      - name: Update task definition and ECS service for training
+        uses: aws-actions/amazon-ecs-deploy-task-definition@a00d4d57ac0de1a99b39fe469f3d898d38717c2b # v2.6.4
+        timeout-minutes: 12
+        with:
+          task-definition: "${{ steps.new-task-definition-training.outputs.task-definition }}"
+          service: "${{ vars.PROJECT_ID }}-training-fg"
+          cluster: "${{ env.AWS_ECS_CLUSTER }}"
+          wait-for-service-stability: true
+          wait-for-minutes: 10
