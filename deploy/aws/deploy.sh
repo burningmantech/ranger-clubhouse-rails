@@ -2,9 +2,10 @@
 # Deploy Clubhouse 3 to AWS (amazon.clubhouse3.dev): build the image, push it to ECR,
 # register task-definition.json with that image, run the migrations, roll the service.
 #
-#   deploy/aws/deploy.sh [--no-cache]
+#   [AWS_PROFILE=name] deploy/aws/deploy.sh [--no-cache]
 #
-# Needs Docker Desktop and the aws CLI on account 407444941814. Arguments go to
+# Needs Docker Desktop and an aws CLI profile on account 407444941814: mburg
+# unless AWS_PROFILE names another. Arguments go to
 # docker build: --no-cache rebuilds every layer, which is how the apt-get upgrade
 # in the Dockerfile picks up new Debian fixes. A failed migration leaves the
 # service on its current revision.
@@ -12,7 +13,7 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
 ACCOUNT=407444941814
-export AWS_REGION=us-west-2 AWS_PAGER=""
+export AWS_PROFILE=${AWS_PROFILE:-mburg} AWS_REGION=us-west-2 AWS_PAGER=""
 CLUSTER=clubhouse3
 SERVICE=clubhouse3-web
 LOG_GROUP=/ecs/clubhouse3

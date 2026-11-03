@@ -30,6 +30,7 @@
     ],
     "secrets": [
       {"name": "RAILS_MASTER_KEY", "valueFrom": "arn:aws:ssm:us-west-2:407444941814:parameter/clubhouse3/RAILS_MASTER_KEY"},
+      {"name": "SECRET_KEY_BASE", "valueFrom": "arn:aws:ssm:us-west-2:407444941814:parameter/clubhouse3/SECRET_KEY_BASE"},
       {"name": "RANGER_DB_PASSWORD", "valueFrom": "arn:aws:ssm:us-west-2:407444941814:parameter/clubhouse3/RANGER_DB_PASSWORD"}
     ],
     "logConfiguration": {"logDriver": "awslogs", "options": {
