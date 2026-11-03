@@ -16,4 +16,3 @@ class ActiveStorageCacheControl
     [status, headers, response]
   end
 end
-
