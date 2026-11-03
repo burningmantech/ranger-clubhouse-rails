@@ -146,9 +146,14 @@ class ApplicationController < ActionController::Base
     not_authorized_redirect
   end
 
-  def not_authorized_redirect(message = nil)
-    flash[:error] = message || "You are not authorized to view the page."
-    redirect_to me_root_path
+  # A fetch asking for JSON (request.js's responseKind: "json") is refused in
+  # kind: following a redirect would spend the flash on a page the fetch then
+  # throws away, and controllers/requests.js shows the error it is given.
+  def not_authorized_redirect(message = nil, to: me_root_path)
+    message ||= "You are not authorized to view the page."
+    return render json: { error: message }, status: :forbidden if request.format.json?
+
+    redirect_to to, error: message
   end
 
   def status_authorization_allowed?
