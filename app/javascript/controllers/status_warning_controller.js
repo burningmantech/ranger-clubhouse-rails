@@ -35,11 +35,7 @@ export default class extends Controller {
         }
 
         this.allowSubmit = true
-        if (event.submitter) {
-            this.element.requestSubmit(event.submitter)
-        } else {
-            this.element.requestSubmit()
-        }
+        this.element.requestSubmit(event.submitter)
     }
 
     get statusField() {

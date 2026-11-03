@@ -5,6 +5,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { Turbo } from "@hotwired/turbo-rails"
 import { patch } from "@rails/request.js"
+import { readJson } from "controllers/requests"
 import "cropperjs"
 
 export default class extends Controller {
@@ -263,19 +264,8 @@ export default class extends Controller {
         body: { cropping: { scale_x, skew_x, skew_y, scale_y, translate_x, translate_y } },
         responseKind: "json"
       })
-
-      // A session that has run out answers with the sign-in page: go there.
-      if (response.redirected) {
-        Turbo.visit(response.response.url)
-        return
-      }
-      if (!response.ok) {
-        const result = await response.json.catch(() => ({}))
-        throw new Error(result.error || "Failed to save")
-      }
-
-      const result = await response.json
-      Turbo.visit(result.redirect_url)
+      const result = await readJson(response, "Failed to save")
+      if (result) Turbo.visit(result.redirect_url)
     } catch (error) {
       alert(`Error: ${error.message}`)
       this.setSubmitState(false, "Save Crop Data")

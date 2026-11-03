@@ -61,7 +61,7 @@ module AuthorizeHelper
     gate = self.class.role_gates.fetch(name)
     return true if gate.permits?(authorization_context)
 
-    redirect_to send(gate.deny_to), error: deny_message_for(gate)
+    not_authorized_redirect(deny_message_for(gate), to: send(gate.deny_to))
     false
   end
 
@@ -69,7 +69,7 @@ module AuthorizeHelper
     gate = self.class.year_gate
     return true if gate.satisfied?(authorization_context)
 
-    redirect_to send(gate.deny_to), error: deny_message_for(gate)
+    not_authorized_redirect(deny_message_for(gate), to: send(gate.deny_to))
     false
   end
 

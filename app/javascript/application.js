@@ -1,6 +1,7 @@
 // Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
 import "@hotwired/turbo-rails"
 import "controllers";
+import { session } from "controllers/storage"
 
 // Some controls build themselves in the page rather than arriving with the HTML
 // the server sent: the rich text editor writes its own toolbar and holds the
@@ -50,15 +51,15 @@ const MESSAGES_SCROLL_KEY = "messages-list-scroll";
 document.addEventListener("turbo:before-visit", (event) => {
     if (/\/me\/messages\/\d+/.test(event.detail.url)) {
         const container = document.querySelector(".drawer-content");
-        if (container) sessionStorage.setItem(MESSAGES_SCROLL_KEY, container.scrollTop);
+        if (container) session.write(MESSAGES_SCROLL_KEY, container.scrollTop);
     }
 });
 
 document.addEventListener("turbo:load", () => {
     if (window.location.pathname === "/me/messages") {
-        const saved = sessionStorage.getItem(MESSAGES_SCROLL_KEY);
+        const saved = session.read(MESSAGES_SCROLL_KEY);
         if (saved !== null) {
-            sessionStorage.removeItem(MESSAGES_SCROLL_KEY);
+            session.remove(MESSAGES_SCROLL_KEY);
             requestAnimationFrame(() => {
                 const container = document.querySelector(".drawer-content");
                 if (container) container.scrollTop = parseInt(saved, 10);
@@ -130,4 +131,11 @@ document.addEventListener("click", ({target}) => {
     document.querySelectorAll("details.dropdown[open]").forEach((menu) => {
         if (!menu.contains(target) || target.closest("a")) menu.open = false;
     });
+});
+
+// A live region's lines are heard as they land and have no place in the copy
+// of the page Turbo keeps for Back: restored, a line would be stale and
+// owned by no one (controllers/live_region.js).
+document.addEventListener("turbo:before-cache", () => {
+    document.querySelectorAll("#live-region, [data-live-region]").forEach((region) => region.replaceChildren());
 });

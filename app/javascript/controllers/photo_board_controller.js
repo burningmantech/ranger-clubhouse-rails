@@ -1,4 +1,5 @@
 import Kiosk from "controllers/kiosk_controller";
+import { scrollBehavior } from "controllers/scrolling";
 
 // Runs the wall display when no one is there to run it. The timed reload is
 // the kiosk base's; this adds the walk down the groups, so each one reaches
@@ -46,9 +47,9 @@ export default class extends Kiosk {
         if (this.groupIndex === 0) {
             // Back to the very top, so the heading is on screen for the start
             // of each pass.
-            window.scrollTo({top: 0, behavior: "smooth"});
+            window.scrollTo({top: 0, behavior: scrollBehavior()});
         } else {
-            this.groupTargets[this.groupIndex].scrollIntoView({behavior: "smooth", block: "start"});
+            this.groupTargets[this.groupIndex].scrollIntoView({behavior: scrollBehavior(), block: "start"});
         }
     }
 

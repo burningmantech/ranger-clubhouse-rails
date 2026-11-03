@@ -16,7 +16,7 @@
   <%= render "banners", application: @application, related_applications: @related_applications %>
 </div>
 
-<div class="lg:grid lg:grid-cols-[1fr_20rem] lg:gap-4 lg:items-start mt-3" data-controller="vc-stages">
+<div class="lg:grid lg:grid-cols-[1fr_20rem] lg:gap-4 lg:items-start mt-3">
   <div class="min-w-0">
     <% review.stages.each do |stage| %>
       <%= render layout: "stage_card", locals: { stage:, review: } do %>

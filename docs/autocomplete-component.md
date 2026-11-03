@@ -195,25 +195,19 @@ The autocomplete component follows WCAG 2.1 Level AA standards with comprehensiv
 
 - **Minimum 36px touch targets** (WCAG 2.5.8) for all interactive elements
 - **Visible focus rings** (WCAG 2.4.7) with 2px brand-colored outline
-- **Screen reader announcements** for result count changes using live regions
+- **Screen reader announcements** for result count changes, one line in the layout's `#live-region` (`controllers/live_region.js`)
 - **Clear error states** with error icons and color (not relying on color alone)
 - **Keyboard-only operation** without requiring mouse interaction
 - **Reduced motion support** via `prefers-reduced-motion` media query
 
 ### Live Region Announcements
 
-The component announces search status changes to screen readers:
-
-```html
-<div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
-  <!-- Dynamically updated by controller -->
-</div>
-```
-
-Examples:
-- "Searching..."
-- "3 results found"
-- "No results found"
+When results render, the controller adds one line, "3 results available" (or "1 result
+available"), to a live region through `controllers/live_region.js`: the `aria-live="polite"` node
+inside an open modal dialog where there is one (the search bar's), else the layout's
+`#live-region`. Everything outside a modal dialog is inert, so a region out there is never read.
+The "Searching…" row, the empty text and the failure message are `role="status"` and
+`role="alert"` nodes inside the list itself.
 
 ## 5. Keyboard Map
 

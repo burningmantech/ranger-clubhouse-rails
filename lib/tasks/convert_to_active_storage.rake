@@ -42,6 +42,7 @@ namespace :photos do
         filename: filename,
         content_type: "image/jpeg",
       )
+      attachment.analyze
       attachment.save!
     end
 

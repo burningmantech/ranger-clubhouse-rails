@@ -18,6 +18,7 @@
 
 import Dialog from "controllers/dialog_controller"
 import {Turbo} from "@hotwired/turbo-rails"
+import {local, session} from "controllers/storage"
 
 const SEARCH_MODE_KEY = "search-mode"
 
@@ -154,46 +155,29 @@ export default class SearchBar extends Dialog {
         const target = template.replace(":id", match[1])
         if (target === window.location.pathname) return
 
-        try {
-            window.sessionStorage.setItem(REOPEN_KEY, "1")
-        } catch (_e) {
-            // Best-effort: the dialog simply won't re-open after the visit.
-        }
+        // Best-effort: without it the dialog simply won't re-open after the visit.
+        session.write(REOPEN_KEY, "1")
         Turbo.visit(target)
     }
 
     // Read-and-clear the "re-open after a mode-switch visit" flag.
     takeReopenFlag() {
-        try {
-            if (window.sessionStorage.getItem(REOPEN_KEY) === null) return false
-            window.sessionStorage.removeItem(REOPEN_KEY)
-            return true
-        } catch (_e) {
-            return false
-        }
+        if (session.read(REOPEN_KEY) === null) return false
+        session.remove(REOPEN_KEY)
+        return true
     }
 
-    // Read the persisted mode, mapping a legacy "account" literal to
-    // "person_manage" and falling back to "person_manage" when the value isn't a
-    // currently-enabled mode -- a mode the viewer's permissions no longer unlock
-    // (a stale "hq"/"swag"/"timesheet") never selects itself again.
+    // The persisted mode as saved. applyMode validates it: a mode the viewer's
+    // permissions no longer unlock (a stale "hq"/"swag"/"timesheet"), or the
+    // legacy "account" literal, falls back to "person_manage" there and never
+    // selects itself again.
     //
     // Onduty-driven default: when the viewer is on duty in an HQ Window or
     // mentor position, the server flags ondutyDefault and sets the default mode
     // to "hq" (SearchBarPolicy.default_mode) — auto-select it and ignore the
-    // persisted value, mirroring the Ember search-item-bar behavior. applyMode
-    // still validates the result against the enabled set.
+    // persisted value, mirroring the Ember search-item-bar behavior.
     restoreMode() {
-        if (this.ondutyDefaultValue) return this.defaultModeValue
-
-        let saved = null
-        try {
-            saved = window.localStorage.getItem(SEARCH_MODE_KEY)
-        } catch (_e) {
-            // localStorage may be unavailable (private mode / blocked); fall back.
-        }
-        if (saved === "account") saved = MODE_PERSON_MANAGE
-        return this.isEnabledMode(saved) ? saved : MODE_PERSON_MANAGE
+        return this.ondutyDefaultValue ? this.defaultModeValue : local.read(SEARCH_MODE_KEY)
     }
 
     isEnabledMode(mode) {
@@ -210,13 +194,7 @@ export default class SearchBar extends Dialog {
     applyMode(mode, {persist}) {
         const next = this.isEnabledMode(mode) ? mode : MODE_PERSON_MANAGE
 
-        if (persist) {
-            try {
-                window.localStorage.setItem(SEARCH_MODE_KEY, next)
-            } catch (_e) {
-                // Best-effort persistence only.
-            }
-        }
+        if (persist) local.write(SEARCH_MODE_KEY, next)
 
         this.syncModeControls(next)
         this.updateAutocompleteMode(next)
