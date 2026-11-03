@@ -13,6 +13,8 @@ class ApplicationController < ActionController::Base
   before_action :authorization_status_gatekeeper
   before_action :authorization_role_gatekeeper
   before_action :build_menu_items
+  before_action :set_cloudflare_header
+
   after_action :track_page_visit
 
   # The earliest params[:year] setup_year will honour. 1998 matches the year
@@ -269,5 +271,9 @@ class ApplicationController < ActionController::Base
     return @is_team_manager if defined?(@is_team_manager)
 
     @is_team_manager = TeamManager.manager_of_any?(Current.person_id)
+  end
+
+  def set_cloudflare_header
+    response.headers["CDN-Cache-Control"] = "max-age=0, no-store"
   end
 end
