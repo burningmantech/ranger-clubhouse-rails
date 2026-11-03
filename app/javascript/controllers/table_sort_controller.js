@@ -25,12 +25,6 @@ const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "bas
 export default class extends Controller {
     static targets = [ "status" ]
 
-    // The sentence sits in the layout's region, outside this element, so it
-    // goes when the table does.
-    disconnect() {
-        this.line?.remove()
-    }
-
     sort({ currentTarget }) {
         const th = currentTarget.closest("th")
         const table = th.closest("table")
