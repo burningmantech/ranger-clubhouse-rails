@@ -10,6 +10,7 @@
 
 import { Controller } from "@hotwired/stimulus"
 import { post } from "@rails/request.js"
+import { readJson } from "controllers/requests"
 
 // What each ceremony asks of the browser.
 const CEREMONIES = {
@@ -70,21 +71,17 @@ export default class extends Controller {
     }
   }
 
-  // The options for the ceremony, or nothing once the reason has been shown.
+  // The options for the ceremony, or nothing once the reason has been shown,
+  // or the sign-in page is on its way (readJson).
   async fetchOptions() {
     const response = await post(this.optionsUrlValue, { body: new FormData(this.form), responseKind: "json" })
 
-    // A session that ended while the page sat open answers with the sign-in page.
-    if (response.redirected) {
-      window.location.href = response.response.url
+    try {
+      return await readJson(response, MESSAGES[this.ceremonyValue].fallback)
+    } catch (error) {
+      this.showError(error.message)
       return null
     }
-
-    const data = await response.json.catch(() => ({}))
-    if (response.ok) return data
-
-    this.showError(data.error || MESSAGES[this.ceremonyValue].fallback)
-    return null
   }
 
   showError(message) {

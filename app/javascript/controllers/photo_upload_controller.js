@@ -6,6 +6,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { Turbo } from "@hotwired/turbo-rails"
 import { post } from "@rails/request.js"
+import { readJson } from "controllers/requests"
 
 export default class extends Controller {
   static targets = ["submitForm", "fileInput", "submitButton", "errorMessage", "error", "loading", "uploadForm", "dropzone", "fileInfo", "fileName", "fileSize", "preview", "previewFallback", "previewNote"]
@@ -76,19 +77,8 @@ export default class extends Controller {
 
       // The server converts to JPEG and stores it; the answer names the crop page.
       const response = await post(this.createUrlValue, { body, responseKind: "json" })
-
-      // A session that has run out answers with the sign-in page: go there.
-      if (response.redirected) {
-        Turbo.visit(response.response.url)
-        return
-      }
-      if (!response.ok) {
-        const data = await response.json.catch(() => ({}))
-        throw new Error(data.error || "Upload failed")
-      }
-
-      const data = await response.json
-      Turbo.visit(data.crop_url)
+      const data = await readJson(response, "Upload failed")
+      if (data) Turbo.visit(data.crop_url)
     } catch (error) {
       this.setBusy(false)
       this.showError(error.message)
