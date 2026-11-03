@@ -20,10 +20,13 @@ class AutocompleteControllerTest < ActionDispatch::IntegrationTest
     assert_nil session[:return_to_after_authenticating]
   end
 
+  # The search bar asks for JSON, so a refusal answers in kind (403 with the
+  # reason) rather than with a redirect whose flash the fetch would spend.
   test "requires event management" do
     sign_in_as(person(:auditor_ranger))
     get autocomplete_search_url, params: { q: "TestRanger", mode: "person_manage" }, as: :json
-    assert_redirected_to me_root_path
+    assert_response :forbidden
+    assert_includes response.parsed_body.keys, "error"
   end
 
   test "event management on playa is allowed while the on-playa setting is on" do
