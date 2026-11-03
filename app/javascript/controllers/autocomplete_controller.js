@@ -21,6 +21,7 @@
 import {Controller} from "@hotwired/stimulus"
 import {scrollBehavior} from "controllers/scrolling"
 import {read, write} from "controllers/storage"
+import {announce} from "controllers/live_region"
 
 const optionSelector = "[role='option']:not([aria-disabled])"
 const activeSelector = "[aria-selected='true']"
@@ -937,18 +938,9 @@ export default class Autocomplete extends Controller {
         this.open()
     }
 
+    // Screen readers are told through the layout's live region.
     announceResults(count) {
-        let announcer = document.getElementById("ac-live-region")
-        if (!announcer) {
-            announcer = document.createElement("div")
-            announcer.id = "ac-live-region"
-            announcer.setAttribute("role", "status")
-            announcer.setAttribute("aria-live", "polite")
-            announcer.setAttribute("aria-atomic", "true")
-            announcer.className = "sr-only"
-            document.body.appendChild(announcer)
-        }
-        announcer.textContent = `${count} result${count === 1 ? "" : "s"} available`
+        announce(`${count} result${count === 1 ? "" : "s"} available`)
     }
 
     // =========================================================================

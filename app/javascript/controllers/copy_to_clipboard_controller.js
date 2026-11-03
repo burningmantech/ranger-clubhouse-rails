@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { announce } from "controllers/live_region"
 
 // How long the tip stays up.
 const TIP_MS = 2000
@@ -54,13 +55,11 @@ export default class extends Controller {
         tip.textContent = "Copied"
         tip.setAttribute("aria-hidden", "true")
 
-        const line = document.createElement("div")
-        line.textContent = tip.textContent
+        const line = announce(tip.textContent)
 
         this.shown = [ tip, line ]
         this.timer = setTimeout(() => this.#hideTip(), TIP_MS)
 
-        document.getElementById("live-region")?.append(line)
         this.element.append(tip)
         if (ANCHORED) {
             tip.setAttribute("popover", "manual")

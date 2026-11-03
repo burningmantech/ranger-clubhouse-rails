@@ -195,7 +195,7 @@ The autocomplete component follows WCAG 2.1 Level AA standards with comprehensiv
 
 - **Minimum 36px touch targets** (WCAG 2.5.8) for all interactive elements
 - **Visible focus rings** (WCAG 2.4.7) with 2px brand-colored outline
-- **Screen reader announcements** for result count changes using live regions
+- **Screen reader announcements** for result count changes, one line in the layout's `#live-region` (`controllers/live_region.js`)
 - **Clear error states** with error icons and color (not relying on color alone)
 - **Keyboard-only operation** without requiring mouse interaction
 - **Reduced motion support** via `prefers-reduced-motion` media query

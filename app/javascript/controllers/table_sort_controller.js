@@ -11,6 +11,7 @@
 // are sorted by, and the sentence is read out through #live-region, because
 // screen readers do not announce a change of aria-sort.
 import { Controller } from "@hotwired/stimulus"
+import { announce } from "controllers/live_region"
 
 // Whole class names, so Tailwind sees each one.
 const ICONS = {
@@ -58,8 +59,8 @@ export default class extends Controller {
 
         const sentence = `Sorted by ${currentTarget.textContent.trim()}, ${direction}.`
         if (this.hasStatusTarget) this.statusTarget.textContent = sentence
-        const line = document.createElement("div")
-        line.textContent = sentence
-        document.getElementById("live-region")?.replaceChildren(line)
+        // One sentence up at a time, without touching anyone else's line.
+        this.line?.remove()
+        this.line = announce(sentence)
     }
 }
