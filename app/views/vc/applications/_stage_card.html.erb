@@ -8,7 +8,6 @@
 <% end %>
 <%= ui_accordion summary, unstyled: true, open: review.open?(stage),
                  id: "stage-#{stage.key}", class: "box box-default vc-stage",
-                 summary_class: "vc-stage-summary", content_class: "vc-stage-body",
-                 data: { vc_stages_target: "stage" } do %>
+                 summary_class: "vc-stage-summary", content_class: "vc-stage-body" do %>
   <%= yield %>
 <% end %>
