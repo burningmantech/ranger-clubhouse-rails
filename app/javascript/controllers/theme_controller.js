@@ -20,8 +20,9 @@ export default class extends Controller {
 
   // Dark or light, on the page and on file.
   apply(dark) {
+    const theme = dark ? "dark" : "light"
     document.documentElement.classList.toggle("dark", dark)
-    document.documentElement.dataset.theme = dark ? "dark" : "light"
-    write("localStorage", "theme", dark ? "dark" : "light")
+    document.documentElement.dataset.theme = theme
+    write("localStorage", "theme", theme)
   }
 }

@@ -1,7 +1,6 @@
 import {Controller} from "@hotwired/stimulus";
 
 export default class extends Controller {
-    static targets = ["dependent"];
     static values = {
         id: String,
         reveal: String
@@ -18,10 +17,6 @@ export default class extends Controller {
     }
 
     inputChanged() {
-        if (this.element.value === this.revealValue) { // Example condition
-            this.revealElement.classList.remove('hidden')
-        } else {
-            this.revealElement.classList.add('hidden');
-        }
+        this.revealElement.classList.toggle("hidden", this.element.value !== this.revealValue);
     }
 }

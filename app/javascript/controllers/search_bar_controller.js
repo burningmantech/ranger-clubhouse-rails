@@ -167,10 +167,10 @@ export default class SearchBar extends Dialog {
         return true
     }
 
-    // Read the persisted mode, mapping a legacy "account" literal to
-    // "person_manage" and falling back to "person_manage" when the value isn't a
-    // currently-enabled mode -- a mode the viewer's permissions no longer unlock
-    // (a stale "hq"/"swag"/"timesheet") never selects itself again.
+    // Read the persisted mode, falling back to "person_manage" when the value
+    // isn't a currently-enabled mode -- a mode the viewer's permissions no
+    // longer unlock (a stale "hq"/"swag"/"timesheet"), or the legacy "account"
+    // literal -- so neither ever selects itself again.
     //
     // Onduty-driven default: when the viewer is on duty in an HQ Window or
     // mentor position, the server flags ondutyDefault and sets the default mode
@@ -180,8 +180,7 @@ export default class SearchBar extends Dialog {
     restoreMode() {
         if (this.ondutyDefaultValue) return this.defaultModeValue
 
-        let saved = read("localStorage", SEARCH_MODE_KEY)
-        if (saved === "account") saved = MODE_PERSON_MANAGE
+        const saved = read("localStorage", SEARCH_MODE_KEY)
         return this.isEnabledMode(saved) ? saved : MODE_PERSON_MANAGE
     }
 

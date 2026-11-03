@@ -36,7 +36,7 @@ export default class extends Controller {
     // The smooth scrolls are the tour's only motion; driver's own fade and
     // cutout glide stay off, as the design guide keeps motion to its approved
     // set.
-    this.smooth = scrollBehavior() === "smooth"
+    this.behavior = scrollBehavior()
     this.driver = driver({
       steps: this.stepTargets.flatMap((template) => this.step(template)),
       showProgress: true,
@@ -88,7 +88,7 @@ export default class extends Controller {
     const target = step?.element
     if (!target || this.inView(target)) return move()
 
-    target.scrollIntoView({ behavior: this.smooth ? "smooth" : "auto", block: "center" })
+    target.scrollIntoView({ behavior: this.behavior, block: "center" })
     this.afterScroll(() => { if (this.driver) move() })
   }
 
@@ -105,7 +105,7 @@ export default class extends Controller {
       this.cancelWait()
       callback()
     }
-    const timer = setTimeout(settle, this.smooth ? 700 : 0)
+    const timer = setTimeout(settle, this.behavior === "smooth" ? 700 : 0)
     pane.addEventListener("scrollend", settle)
     this.pending = () => {
       clearTimeout(timer)
@@ -151,7 +151,7 @@ export default class extends Controller {
     this.driver.destroy()
     this.driver = null
     if (reason === "done") {
-      this.scroller().scrollTo({ top: 0, behavior: this.smooth ? "smooth" : "auto" })
+      this.scroller().scrollTo({ top: 0, behavior: this.behavior })
       document.getElementById("toast-container")?.append(this.toastTarget.content.cloneNode(true))
     }
     // driver would hand focus back to a popover button that is gone.

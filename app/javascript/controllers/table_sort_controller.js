@@ -65,8 +65,6 @@ export default class extends Controller {
 
         const sentence = `Sorted by ${currentTarget.textContent.trim()}, ${direction}.`
         if (this.hasStatusTarget) this.statusTarget.textContent = sentence
-        // One sentence up at a time, without touching anyone else's line.
-        this.line?.remove()
-        this.line = announce(sentence)
+        this.line = announce(sentence, this.line)
     }
 }

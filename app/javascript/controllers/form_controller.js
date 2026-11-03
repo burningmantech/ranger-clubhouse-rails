@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus";
+import { scrollBehavior } from "controllers/scrolling";
 
 export default class extends Controller {
     connect() {
@@ -22,7 +23,7 @@ export default class extends Controller {
 
         if (summary) {
             summary.focus();
-            summary.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            summary.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
             return;
         }
 
@@ -32,7 +33,7 @@ export default class extends Controller {
 
         if (firstError) {
             firstError.focus();
-            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
         }
     }
 }

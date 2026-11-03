@@ -133,6 +133,7 @@ export default class Autocomplete extends Controller {
         this.pendingEnter = false
         this.cancelPendingRequest()
         this.debouncedInputChange?.cancel()
+        this.line?.remove()
         this.element.removeEventListener("focusout", this.onFocusOut)
 
         if (this.hasInputTarget) {
@@ -758,8 +759,8 @@ export default class Autocomplete extends Controller {
             this.resultsTarget.scrollTop = 0
         }
 
-        // Announce result count to screen readers
-        this.announceResults(items.length)
+        // Screen readers are told the count through the layout's live region
+        this.line = announce(`${items.length} result${items.length === 1 ? "" : "s"} available`, this.line)
     }
 
     renderFilters(filters) {
@@ -933,11 +934,6 @@ export default class Autocomplete extends Controller {
         errorEl.textContent = "Search failed. Please try again."
         this.resultsTarget.appendChild(errorEl)
         this.open()
-    }
-
-    // Screen readers are told through the layout's live region.
-    announceResults(count) {
-        announce(`${count} result${count === 1 ? "" : "s"} available`)
     }
 
     // =========================================================================

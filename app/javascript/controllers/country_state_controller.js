@@ -51,24 +51,18 @@ export default class extends Controller {
         stateField.disabled = false
         this.removeClearedStateField()
 
-        // The blank option first, then the country's
-        stateField.replaceChildren(new Option("-", ""))
-
         if (this.labelElement) {
             this.renameLabel(this.labels[countryCode] || "State")
             this.labelElement.classList.remove("opacity-60")
         }
 
-        // The previous selection is kept where it exists among the new options
-        const options = this.stateOptions[countryCode] || []
-        options.forEach(option => {
-            stateField.appendChild(new Option(option.label, option.value, false, option.value === currentValue))
-        })
-
-        // If the current value wasn't found in the new options, reset to first option
-        if (currentValue && !options.find(opt => opt.value === currentValue)) {
-            stateField.value = ""
-        }
+        // The blank option first, then the country's, with the previous selection
+        // kept where it exists among them; the blank one is selected otherwise.
+        stateField.replaceChildren(
+            new Option("-", ""),
+            ...this.stateOptions[countryCode].map((option) =>
+                new Option(option.label, option.value, false, option.value === currentValue))
+        )
     }
 
     /**
@@ -84,9 +78,6 @@ export default class extends Controller {
 
         // Only the blank option
         stateField.replaceChildren(new Option("-", ""))
-
-        // Reset value
-        stateField.value = ""
 
         this.addClearedStateField()
     }
