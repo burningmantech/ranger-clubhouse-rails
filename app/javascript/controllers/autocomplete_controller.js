@@ -19,6 +19,7 @@
  */
 
 import {Controller} from "@hotwired/stimulus"
+import {scrollBehavior} from "controllers/scrolling"
 
 const optionSelector = "[role='option']:not([aria-disabled])"
 const activeSelector = "[aria-selected='true']"
@@ -189,8 +190,7 @@ export default class Autocomplete extends Controller {
         const bar = this.resultsTarget.querySelector(".ac-filter-bar")
         this.resultsTarget.style.scrollPaddingTop = bar ? `${bar.offsetHeight}px` : ""
 
-        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        target.scrollIntoView({behavior: prefersReducedMotion ? "auto" : "smooth", block: "nearest"})
+        target.scrollIntoView({behavior: scrollBehavior(), block: "nearest"})
     }
 
     // =========================================================================

@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { driver } from "driver.js"
 import { patch } from "@rails/request.js"
-import { scrollParent } from "controllers/scrolling"
+import { scrollParent, scrollBehavior } from "controllers/scrolling"
 
 // The first-sign-in tour (me/dashboard/_onboarding). Each step is a <template>
 // target: data-element names what it points at (none: a centered popover),
@@ -36,7 +36,7 @@ export default class extends Controller {
     // The smooth scrolls are the tour's only motion; driver's own fade and
     // cutout glide stay off, as the design guide keeps motion to its approved
     // set.
-    this.smooth = !matchMedia("(prefers-reduced-motion: reduce)").matches
+    this.smooth = scrollBehavior() === "smooth"
     this.driver = driver({
       steps: this.stepTargets.flatMap((template) => this.step(template)),
       showProgress: true,
