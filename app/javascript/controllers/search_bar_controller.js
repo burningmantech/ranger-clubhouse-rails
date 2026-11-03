@@ -18,7 +18,7 @@
 
 import Dialog from "controllers/dialog_controller"
 import {Turbo} from "@hotwired/turbo-rails"
-import {read, write, remove} from "controllers/storage"
+import {local, session} from "controllers/storage"
 
 const SEARCH_MODE_KEY = "search-mode"
 
@@ -156,14 +156,14 @@ export default class SearchBar extends Dialog {
         if (target === window.location.pathname) return
 
         // Best-effort: without it the dialog simply won't re-open after the visit.
-        write("sessionStorage", REOPEN_KEY, "1")
+        session.write(REOPEN_KEY, "1")
         Turbo.visit(target)
     }
 
     // Read-and-clear the "re-open after a mode-switch visit" flag.
     takeReopenFlag() {
-        if (read("sessionStorage", REOPEN_KEY) === null) return false
-        remove("sessionStorage", REOPEN_KEY)
+        if (session.read(REOPEN_KEY) === null) return false
+        session.remove(REOPEN_KEY)
         return true
     }
 
@@ -180,7 +180,7 @@ export default class SearchBar extends Dialog {
     restoreMode() {
         if (this.ondutyDefaultValue) return this.defaultModeValue
 
-        const saved = read("localStorage", SEARCH_MODE_KEY)
+        const saved = local.read(SEARCH_MODE_KEY)
         return this.isEnabledMode(saved) ? saved : MODE_PERSON_MANAGE
     }
 
@@ -198,7 +198,7 @@ export default class SearchBar extends Dialog {
     applyMode(mode, {persist}) {
         const next = this.isEnabledMode(mode) ? mode : MODE_PERSON_MANAGE
 
-        if (persist) write("localStorage", SEARCH_MODE_KEY, next)
+        if (persist) local.write(SEARCH_MODE_KEY, next)
 
         this.syncModeControls(next)
         this.updateAutocompleteMode(next)

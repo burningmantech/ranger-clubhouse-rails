@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { read, write } from "controllers/storage"
+import { local } from "controllers/storage"
 
 // Connects to data-controller="theme", on the navbar. Sets the theme on <html>
 // -- the `.dark` class the `dark:` variant keys on, and data-theme for
@@ -8,7 +8,7 @@ import { read, write } from "controllers/storage"
 // CSS from that class, so nothing here paints it.
 export default class extends Controller {
   connect() {
-    const savedTheme = read("localStorage", "theme")
+    const savedTheme = local.read("theme")
     const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
 
     this.apply(savedTheme === "dark" || (!savedTheme && systemPrefersDark))
@@ -23,6 +23,6 @@ export default class extends Controller {
     const theme = dark ? "dark" : "light"
     document.documentElement.classList.toggle("dark", dark)
     document.documentElement.dataset.theme = theme
-    write("localStorage", "theme", theme)
+    local.write("theme", theme)
   }
 }

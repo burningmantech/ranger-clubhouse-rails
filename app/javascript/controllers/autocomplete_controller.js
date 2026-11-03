@@ -21,7 +21,7 @@
 import {Controller} from "@hotwired/stimulus"
 import {Turbo} from "@hotwired/turbo-rails"
 import {scrollBehavior} from "controllers/scrolling"
-import {read, write} from "controllers/storage"
+import {local} from "controllers/storage"
 import {announce} from "controllers/live_region"
 
 const optionSelector = "[role='option']:not([aria-disabled])"
@@ -978,7 +978,7 @@ export default class Autocomplete extends Controller {
     getRecents() {
         if (!this.recentsKeyValue) return []
         try {
-            return JSON.parse(read("localStorage", `ac-recents-${this.recentsKeyValue}`)) || []
+            return JSON.parse(local.read(`ac-recents-${this.recentsKeyValue}`)) || []
         } catch {
             return []
         }
@@ -991,7 +991,7 @@ export default class Autocomplete extends Controller {
         recents = recents.filter(r => r.value !== item.value)
         recents.unshift(item)
         recents = recents.slice(0, this.maxRecentsValue)
-        write("localStorage", key, JSON.stringify(recents))
+        local.write(key, JSON.stringify(recents))
     }
 
     // =========================================================================
