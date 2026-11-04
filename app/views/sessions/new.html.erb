@@ -1,28 +1,4 @@
 <% content_for :title, "Ranger Secret Clubhouse" %>
-<%# The beta notice is a fact about the service, not part of the door: one line
-    with the two things a tester must know, and the rest behind the chevron.
-    It used to be a card of four questions, taller than the form on a phone. %>
-<%= ui_disclosure safe_join([fa_icon("flask", :solid, class: "text-warning", end: 2),
-                             tag.strong("Clubhouse 3 Beta."),
-                             " Nothing here reaches production. No email or SMS is sent."]),
-                  variant: :card, class: "login-beta mb-4",
-                  summary_class: "login-beta-summary", content_class: "login-beta-body" do %>
-  <dl class="instruction-list">
-    <dt>Does anything here reach production?</dt>
-    <dd>No. Any change you make here does not update the production server.</dd>
-    <dt>Will an email be sent?</dt>
-    <dd>No. Any action that sends an email has been disabled, including resetting your password.</dd>
-    <dt>Will a text message be sent?</dt>
-    <dd>No. Any action that sends an SMS or text message has been disabled.</dd>
-    <%# A passkey belongs to the address it was made on, and this is not the
-        address the real Clubhouse answers at. %>
-    <% if Passkeys.enabled?(request) %>
-      <dt>Does a passkey carry over?</dt>
-      <dd>No. A passkey added on this beta signs in to this beta only. You will add it again on the real Clubhouse.</dd>
-    <% end %>
-  </dl>
-<% end %>
-
 <%# The Rangers' mark, faint across the whole page behind the door. Fixed, so it
     fits the viewport rather than the narrow column, and decoration only: the
     footer names the organisation in words. %>
