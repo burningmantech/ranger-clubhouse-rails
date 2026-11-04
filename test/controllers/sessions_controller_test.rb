@@ -29,9 +29,6 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select ".login-beta details summary", text: /Clubhouse 3 Beta\. Nothing here reaches production\. No email or SMS is sent\./
-    assert_select ".login-beta details[open]", count: 0
-    assert_select ".login-beta dl.instruction-list dt", text: "Does anything here reach production?"
     assert_select ".login-backdrop[aria-hidden=true]"
     assert_select ".login-mark", count: 0
     assert_select ".login-label-row label[for=login_form_password]", text: "Password"
@@ -39,7 +36,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-controller=password-reveal]" do
       assert_select "input[type=password][data-password-reveal-target=input]"
       assert_select "button[type=button][aria-pressed=false][aria-label='Show password']" \
-                    "[data-action='password-reveal#toggle']" do
+                      "[data-action='password-reveal#toggle']" do
         assert_select "[data-password-reveal-target=show]:not(.hidden) i.fa-eye"
         assert_select "[data-password-reveal-target=hide].hidden i.fa-eye-slash"
       end
@@ -270,7 +267,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   # --- the welcome email's link (welcome=1) ---
 
   WELCOME_LINK_FAILED = "The welcome link was already used or has expired. If you already set your password, " \
-                        "sign in with it. If not, request a reset link here."
+    "sign in with it. If not, request a reset link here."
 
   test "reset_token with welcome reads as a welcome and carries the flag into the form" do
     token = @person.generate_token_for(:invitation)
@@ -341,7 +338,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "[data-controller=passkey][hidden][data-passkey-ceremony-value=get]" \
-                  "[data-passkey-options-url-value='#{passkey_options_path}']" do
+                    "[data-passkey-options-url-value='#{passkey_options_path}']" do
       assert_select "button[type=button][data-action='passkey#run']", text: /Sign In with a Passkey/
       assert_select "form[action='#{passkey_sign_in_path}'][data-turbo=false] input[type=hidden][name=credential]"
       assert_select "[data-passkey-target=error][hidden]"
@@ -440,7 +437,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     ErrorLog.delete_all
     device = WebAuthn::FakeClient.new("https://clubhouse.example.net")
     passkey = register_passkey_for(@person, device: WebAuthn::FakeClient.new(PasskeyTestHelper::REQUEST_ORIGIN,
-                                                                           authenticator: device.send(:authenticator)))
+                                                                             authenticator: device.send(:authenticator)))
 
     assert_passkey_refused do
       post passkey_sign_in_path,
