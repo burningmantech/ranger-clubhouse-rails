@@ -278,6 +278,37 @@ class Me::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_response :no_content
     assert_equal Time.zone.local(2026, 4, 16, 12, 0, 0), ranger.reload.on_boarded_at
   end
+
+  # The announcements card (me/dashboard/_announcements_section): each unread
+  # announcement is a row that links to it and wears a Read Announcement button,
+  # with its status in words and no aria-label over its text; a read one leaves
+  # the card and the count.
+  test "dashboard lists each unread announcement as a Read Announcement row and drops a read one" do
+    ranger = person(:active_ranger)
+    bulletin = motd(:ranger_announcement)
+    card = "[aria-label='Clubhouse Announcements']"
+    sign_in_as(ranger)
+    get me_root_path
+
+    assert_response :success
+    rows = css_select("#{card} a[href*='#motd_']")
+    assert_equal 2, rows.size, "both ranger announcements are unread for the fixtures"
+    rows.each do |row|
+      assert_match(/Unread|Expired/, row.text)
+      assert_match(/Read Announcement/, row.text)
+      assert_nil row["aria-label"], "the row's text is its accessible name"
+    end
+    assert_select "#{card} [aria-label='2 unread']"
+    assert_select "#{card} a", text: /more announcements/, count: 0
+
+    PersonMotd.create!(person_id: ranger.id, motd_id: bulletin.id, read_at: Time.current)
+    get me_root_path
+
+    assert_response :success
+    assert_select "#{card} a[href$='#motd_#{bulletin.id}']", count: 0
+    assert_select "#{card} a[href*='#motd_']", count: 1
+    assert_select "#{card} [aria-label='1 unread']"
+  end
 end
 
 # Contract test for the in-memory adapter — the test-only sibling of
