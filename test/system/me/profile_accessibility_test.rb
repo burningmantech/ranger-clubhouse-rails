@@ -151,7 +151,7 @@ class Me::ProfileAccessibilityTest < ApplicationSystemTestCase
     visit me_edit_profile_section_path("emergency-contact")
 
     textarea = find("textarea[name='person[emergency_contact]']")
-    assert_equal "200", textarea["maxlength"]
+    assert_equal "2000", textarea["maxlength"]
   end
 
   test "gender and pronouns sections have clear labels" do

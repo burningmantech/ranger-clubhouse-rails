@@ -20,7 +20,7 @@ default: &default
 development:
   primary: &primary_development
     <<: *default
-    database: rangers-ch3
+    database: rangers
   cable:
     <<: *primary_development
     database_tasks: false

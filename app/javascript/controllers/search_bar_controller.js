@@ -71,8 +71,10 @@ export default class SearchBar extends Dialog {
         this.applyMode(this.restoreMode(), {persist: !this.ondutyDefaultValue})
 
         // A mode switch on a person/hq page navigates; re-open the dialog here so
-        // the switch feels like a view change, not a dismissal.
-        if (this.takeReopenFlag()) {
+        // the switch feels like a view change, not a dismissal. Turbo renders a
+        // cached page as a preview first, with controllers of its own: the flag
+        // is left for the page proper.
+        if (!document.documentElement.hasAttribute("data-turbo-preview") && this.takeReopenFlag()) {
             this.open()
         }
     }

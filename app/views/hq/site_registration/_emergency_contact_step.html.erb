@@ -13,7 +13,11 @@
   </p>
   <%= ui_form(person, hq_site_registration_emergency_contact_path(person),
               method: :patch, data: { turbo_frame: "_top" }) do |f| %>
-    <%= f.text_area :emergency_contact, label: "Emergency Contact Information:", rows: 6 %>
+    <%= f.text_area :emergency_contact, label: "Emergency Contact Information:",
+                    rows: 6,
+                    maxlength: 2000,
+                    data: input_counter_data
+    %>
     <%= button_row do %>
       <%= f.submit "Save & Next" %>
       <%= button_action "Previous Step", :secondary, icon: "arrow-left", icon_type: :solid,
