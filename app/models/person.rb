@@ -269,6 +269,7 @@ class Person < ApplicationRecord
   validates :country, presence: true, length: { maximum: 191 }, unless: :only_basic_pii_required?
 
   validates :camp_location, length: { maximum: 200 }
+  validates :emergency_contact, length: { maximum: 2000 }
 
   validates :callsign_pronounce, length: { maximum: 20 }
 
