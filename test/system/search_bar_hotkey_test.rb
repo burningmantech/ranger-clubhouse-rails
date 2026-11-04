@@ -623,7 +623,8 @@ class SearchBarHotkeyTest < ApplicationSystemTestCase
     select_mode("person_manage")
 
     assert_current_path person_path(target)
-    assert_selector "[data-search-bar-target='dialog'][open]", wait: 2
+    # Turbo previews the cached page first: the dialog must be open on the page proper.
+    assert_selector "html:not([data-turbo-preview]) [data-search-bar-target='dialog'][open]", wait: 2
   end
 
   test "switching modes off a person page only changes the search mode" do
