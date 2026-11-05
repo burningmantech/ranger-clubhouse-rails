@@ -2549,8 +2549,8 @@ class RbsTest < ActiveSupport::TestCase
   end
 
   test "a new-message text says when the message is a group one" do
-    assert_match(/\AYou have a new Ranger Clubhouse msg from HQ\. Subject: Hello/, Rbs.send(:notify_text, "HQ", "Hello"))
-    assert_match(/\AYou have a new Ranger Clubhouse group msg from Green Dot Cadre\. Subject: Hello/,
+    assert_match(/\AClubhouse msg frm HQ\. Subj: Hello/, Rbs.send(:notify_text, "HQ", "Hello"))
+    assert_match(/\AClubhouse grp msg frm Green Dot Cadre\. Subj: Hello/,
                  Rbs.send(:notify_text, "Green Dot Cadre", "Hello", group: true))
   end
 
