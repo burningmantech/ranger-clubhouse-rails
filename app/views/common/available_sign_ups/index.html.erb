@@ -13,7 +13,8 @@
     <% @positions.each do |position| %>
       <% no_signups_allowed = prevent_training_signup?(position.id) %>
       <%= ui_drill_down_row sign_ups_position_path_builder.call(position.id, year: @year), position.title,
-                            meta: pluralize(position.slot_count, "shift"),
+                            figures: (@shift_counts.fetch(position.id).zip(%w[upcoming past]) if @split_shifts),
+                            meta: (pluralize(position.slot_count, "shift") unless @split_shifts),
                             badges: (if position.sign_ups.positive?
                                        ui_badge pluralize(position.sign_ups, "sign-up"), :success, size: "base"
                                      end) do %>

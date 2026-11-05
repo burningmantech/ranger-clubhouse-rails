@@ -12,6 +12,10 @@ class Hq::AvailableSignUpsControllerTest < ActionDispatch::IntegrationTest
   include TimesheetAdminTestHelper
 
   setup do
+    # Mid-year, so the relative slot dates below never leave Current.year
+    # (2.days.from_now on 30 December lands in next year's begins_year and
+    # drops out of every current-year query). TimeHelpers travels back itself.
+    travel_to Time.zone.local(Current.year, 6, 15, 12, 0)
     Rails.cache.clear
     Current.reset
 
@@ -86,6 +90,34 @@ class Hq::AvailableSignUpsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{hq_scheduling_sign_ups_position_path(@subject, @position.id)}']"
     assert_select "a[href='#{person_scheduling_sign_ups_position_path(@subject, position_id: @position.id)}']",
                   false, "the HQ sign-ups list must not link out to the person namespace"
+  end
+
+  # Each row splits the position's shifts the way its page does (:start_time):
+  # a shift under way has closed for sign-up, so it is past; the setup's shift
+  # is still ahead, so the split shows.
+  test "index splits each position's shift count into upcoming and past" do
+    create_slot(@position, begins: 1.hour.ago) # under way: begun, not ended
+
+    get hq_scheduling_sign_ups_path(@subject)
+
+    assert_response :success
+    assert_select "a[href='#{hq_scheduling_sign_ups_position_path(@subject, @position.id)}']" do
+      assert_select ".tabular-nums > span:first-child", text: "1 upcoming"
+      assert_select ".tabular-nums > span:last-child", text: "1 past"
+      assert_select "span.text-stone-subtle", text: /shift/, count: 0
+    end
+  end
+
+  test "index keeps the plain shift count once nothing is left to sign up for" do
+    travel_to Time.zone.local(Current.year, 6, 20, 12, 0) # past the setup's shift
+
+    get hq_scheduling_sign_ups_path(@subject)
+
+    assert_response :success
+    assert_select "a[href='#{hq_scheduling_sign_ups_position_path(@subject, @position.id)}']" do
+      assert_select ".tabular-nums", count: 0
+      assert_select "span.text-stone-subtle", text: "1 shift"
+    end
   end
 
   test "show renders the position shifts with hq scoped links" do

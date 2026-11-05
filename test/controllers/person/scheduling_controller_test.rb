@@ -71,7 +71,11 @@ class Person::SchedulingControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "a[href='#{person_scheduling_path(@target)}'].active", text: /Schedule/
-    assert_select "a[href='#{person_scheduling_sign_ups_position_path(@target, position_id: @position.id, year: @past_year)}']"
+    # A past year has nothing left to sign up for: the row keeps its plain count, no ledger.
+    assert_select "a[href='#{person_scheduling_sign_ups_position_path(@target, position_id: @position.id, year: @past_year)}']" do
+      assert_select "span.text-stone-subtle", text: "1 shift"
+      assert_select ".tabular-nums", count: 0
+    end
 
     get person_scheduling_sign_ups_position_path(@target, position_id: @position.id, year: @past_year)
 

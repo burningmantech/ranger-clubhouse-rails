@@ -338,7 +338,9 @@ No filter bar, no table. Just the categories and how big each one is.
 - **Drop the category column** from the level-2 table. Every row has the same value.
 - **Level 1 gets no filter bar.** Filters narrow rows, and there are no rows here.
 - **Counts on level 1 are plain text**, not stat boxes: one `text-lg` summary line, plus
-  `meta:` on each row. Constrain the row list to `lg:w-3/4`.
+  `meta:` on each row — or `figures:` when the count splits into what is still owed and
+  what is done (Available Sign-Ups' upcoming/past), never both. Constrain the row list to
+  `lg:w-3/4`.
 - **Badge only the exception count** on a row (`N expired`, `N inactive`), `size: "base"`,
   and omit it entirely at zero. A badge on every row is noise.
 - **Level-2 totals describe the category, not the filtered view** — `filter_bar count:`
