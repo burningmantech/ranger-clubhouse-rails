@@ -108,15 +108,17 @@ class Hq::AvailableSignUpsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "index keeps the plain shift count once nothing is left to sign up for" do
+  # Once the year's shifts have all started the split still shows, zeros
+  # included: the owner chose "0 upcoming" over hiding the figure (2026-11-05).
+  test "index shows 0 upcoming once the year's shifts have all started" do
     travel_to Time.zone.local(Current.year, 6, 20, 12, 0) # past the setup's shift
 
     get hq_scheduling_sign_ups_path(@subject)
 
     assert_response :success
     assert_select "a[href='#{hq_scheduling_sign_ups_position_path(@subject, @position.id)}']" do
-      assert_select ".tabular-nums", count: 0
-      assert_select "span.text-stone-subtle", text: "1 shift"
+      assert_select ".tabular-nums > span:first-child", text: "0 upcoming"
+      assert_select ".tabular-nums > span:last-child", text: "1 past"
     end
   end
 
