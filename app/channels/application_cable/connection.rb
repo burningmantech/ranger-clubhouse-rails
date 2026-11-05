@@ -1,17 +1,18 @@
 module ApplicationCable
   class Connection < ActionCable::Connection::Base
-    identified_by :current_user
+    # The session as well as the person, so that ending one sign-in closes the
+    # sockets of that sign-in alone (Session#close_cable_connections).
+    identified_by :current_user, :current_session
 
     def connect
       set_current_user || reject_unauthorized_connection
     end
 
     private
-      # As Authentication#find_session_by_cookie does: with no cookie there is
-      # nothing to look up (session_id is NOT NULL since 2026-10-29).
+      # The sign-in a page request would find (Session.signed_in).
       def set_current_user
-        session_id = cookies.signed[:session_id]
-        self.current_user = Session.find_by(session_id:)&.person if session_id
+        self.current_session = Session.signed_in(cookies.signed[:session_id])
+        self.current_user = current_session&.person
       end
   end
 end

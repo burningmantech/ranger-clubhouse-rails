@@ -6,24 +6,15 @@ require "application_system_test_case"
 # connection, the stream the layout subscribes to, PersonMessage's after-commit
 # broadcast and the replace of #navbar-messages.
 #
-# Tests run Action Cable on its test adapter, which records broadcasts and
-# delivers none, so this swaps in the in-process async adapter, the way
-# ActionCable::TestHelper swaps in the test one. Capybara's server runs in this
-# process, so a broadcast made here reaches the browser.
+# Capybara's server runs in this process, and Action Cable's test adapter
+# delivers what it records (it is the async adapter underneath), so a broadcast
+# made here reaches the browser.
 class Me::LiveMessageArrivalTest < ApplicationSystemTestCase
   include RichTextEditorTestHelper
 
   setup do
     @ranger = person(:active_ranger)
     @sender = person(:ranger_with_custom_gender)
-    @cable = ActionCable.server
-    @recorded = @cable.pubsub
-    @cable.instance_variable_set(:@pubsub, ActionCable::SubscriptionAdapter::Async.new(@cable))
-  end
-
-  teardown do
-    @cable.pubsub.shutdown
-    @cable.instance_variable_set(:@pubsub, @recorded)
   end
 
   test "a new message puts the envelope on the recipient's navbar without a reload" do

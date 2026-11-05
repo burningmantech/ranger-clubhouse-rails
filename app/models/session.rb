@@ -13,13 +13,18 @@ class Session < ApplicationRecord
 
   belongs_to :person
 
-  # A cable connection is identified once, when its socket opens, and nothing
-  # reads the session again after that: a tab left open on a live page would
-  # go on receiving under a session that has ended -- signed out, revoked at
-  # Person › Login Sessions, or ended for a locked account. Closing the
-  # person's connections makes each one reconnect, which a device whose own
-  # session still stands does at once and a browser without one is refused.
-  after_destroy_commit -> { ActionCable.server.remote_connections.where(current_user: person).disconnect }
+  after_destroy_commit :close_cable_connections
+
+  # The sign-in a signed session_id cookie names, or nil with no cookie
+  # (session_id is NOT NULL since 2026-10-29). Page requests
+  # (Authentication#find_session_by_cookie) and cable connections both find a
+  # sign-in here, so the cable never refuses one a page accepts.
+  #
+  # @param session_id [String, nil] cookies.signed[:session_id]
+  # @return [Session, nil]
+  def self.signed_in(session_id)
+    find_by(session_id:) if session_id
+  end
 
   # Remove the Rack session store's rows whose data has not changed in ANONYMOUS_IDLE_DAYS.
   #
@@ -28,5 +33,22 @@ class Session < ApplicationRecord
     where(person_id: nil).where("updated_at < ?", days.days.ago)
                          .in_batches(of: EXPIRE_BATCH_SIZE)
                          .sum(&:delete_all)
+  end
+
+  private
+
+  # A cable connection is identified once, when its socket opens, and nothing
+  # reads the session again after that, so a tab left on a live page would go on
+  # receiving under a sign-in that has ended: signed out, revoked at Person ›
+  # Login Sessions, or ended at a locked account's next request. This sign-in's
+  # sockets, every window of its browser, close for good, and
+  # session_watch_controller.js takes each page to the sign-in page. The
+  # person's other sign-ins reconnect, which re-runs each channel's
+  # subscribe-time gates there: a role removed before a revoke takes effect on
+  # every device.
+  def close_cable_connections
+    connections = ActionCable.server.remote_connections
+    connections.where(current_user: person, current_session: self).disconnect(reconnect: false)
+    person.sessions.find_each { |other| connections.where(current_user: person, current_session: other).disconnect }
   end
 end
