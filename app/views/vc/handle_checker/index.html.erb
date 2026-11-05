@@ -98,8 +98,8 @@
   <% else %>
     <%# The ordering rule, out of the hero and onto the results it orders. %>
     <p class="mb-3">Conflicts are listed most serious first.</p>
-    <%# Cards sit side by side and wrap, as the Ember original did. Without
-        flex-wrap a few results push the page into horizontal scrolling. %>
+    <%# Results sit side by side and wrap, as the Ember original did; each
+        result sets its own width in _result. %>
     <div class="flex flex-row flex-wrap items-start gap-4">
       <% @results.each do |name, conflicts| %>
         <%= render "result", name: name, conflicts: conflicts %>

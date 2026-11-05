@@ -1,27 +1,47 @@
-<%# One checked handle and the conflicts found for it, one conflict per line. %>
-<%= ui_accent_card name,
-                   variant: handle_checker_result_variant(conflicts),
-                   icon: handle_checker_result_icon(conflicts),
-                   icon_type: :solid,
-                   heading_level: :h3 do %>
-  <p class="text-base text-body">
+<%# One checked handle and the conflicts found for it, most serious first.
+    grow/basis-xl: results sit side by side from 36rem each and wrap, as the
+    Ember original did; min-w-0 lets a wide table scroll inside its own box
+    instead of pushing the page sideways. %>
+<article class="grow basis-xl min-w-0">
+  <%= ui_subheading name %>
+  <p class="mb-3">
     <%= handle_checker_result_summary(conflicts) %>
+    <% if (note = handle_checker_overflow_note(conflicts)) %>
+      <span class="text-sm text-stone-muted"><%= note %></span>
+    <% end %>
   </p>
 
-  <ul class="mt-3 flex flex-col gap-2">
-    <% handle_checker_shown_conflicts(conflicts).each do |conflict| %>
-      <li class="text-base text-body">
-        <%= handle_checker_conflict_line(conflict) %>
-        <% if conflict.conflicting_handle&.reason.present? %>
-          <span class="block text-sm text-stone-muted">
-            Reason: <%= conflict.conflicting_handle.reason %>
-          </span>
+  <% if conflicts.any? %>
+    <%# Not responsive: a card per conflict would be a hundred labelled cards for
+        one handle, and the rule cell spans its run of rows, which per-row cards
+        cannot show. On a phone the ledger scrolls inside its own box. %>
+    <%= ui_table full_width: true, responsive: false, caption: "Conflicts for #{name}" do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Conflict" %>
+        <%= t.heading "Handle Type" %>
+        <%= t.heading "Priority" %>
+        <%= t.heading "Rule" %>
+      <% end %>
+      <%= t.body do %>
+        <% handle_checker_rule_runs(conflicts).each do |conflict, rowspan| %>
+          <%= t.row do %>
+            <%= t.cell do %>
+              <%= handle_checker_description(conflict) %>
+              <% if conflict.conflicting_handle&.reason.present? %>
+                <span class="block text-sm text-stone-muted">
+                  Reason: <%= conflict.conflicting_handle.reason %>
+                </span>
+              <% end %>
+            <% end %>
+            <%= t.cell handle_checker_type_badges(conflict.conflicting_handle) %>
+            <%= t.cell handle_checker_priority_text(conflict.priority) %>
+            <% if rowspan %>
+              <%= t.cell handle_checker_rule_name(conflict.rule_id), rowspan:,
+                         class: "text-sm text-stone-muted border-s border-base-300" %>
+            <% end %>
+          <% end %>
         <% end %>
-      </li>
+      <% end %>
     <% end %>
-  </ul>
-
-  <% if (note = handle_checker_overflow_note(conflicts)) %>
-    <p class="mt-3 text-sm text-stone-muted"><%= note %></p>
   <% end %>
-<% end %>
+</article>
