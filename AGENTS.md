@@ -33,6 +33,13 @@ bin/rails test test/models/person_test.rb
 # Run a specific test by line number
 bin/rails test test/models/person_test.rb:42
 
+# System tests (headless Chrome); CI runs them in their own job with 4 workers
+bin/rails test:system
+
+# Fresh checkout or worktree: npm install once (daisyUI is a Tailwind plugin in node_modules). The full suite and
+# test:system build the CSS through test:prepare; a single-file test run or a server does not, so build it first
+npm install && bin/rails tailwindcss:build
+
 # Lint with RuboCop
 bin/rubocop
 
@@ -43,12 +50,29 @@ ruby bin/css_lint.rb --strict   # non-zero exit on any regression
 # Security scan
 bin/brakeman
 
+# Importmap audit (the fourth CI lint gate)
+bin/importmap audit
+
 # Rails console
 bin/rails console
 
 # Database migrations
 bin/rails db:migrate
 ```
+
+## Development Environment
+
+- Dev database: `rangers` on 127.0.0.1, credentials in `config/database.yml`, no env file needed. It holds
+  real member data: its rows are read-only for agents (migrations are expected); exercise write paths in the test DB
+- Sign in without a password: `GET /sign-in-as?callsign=<Callsign>` (development only; the landing page's
+  "Development: Sign-In As" field submits the same request). Never set or change a password on a dev account
+- The dev server runs Solid Queue inside Puma (`config/puma.rb`, `plugin :solid_queue`), so it performs
+  queued jobs, mail included. Development mail goes to an SMTP sink on localhost:1025 and nothing leaves the
+  machine; with no sink running the mail jobs fail. Leave failed dev jobs alone, and keep ad-hoc servers short
+- Development logs to STDOUT: there is no `log/development.log` to tail
+- Browser preview servers are in `.claude/launch.json`: `clubhouse3` (:3010), `clubhouse3-alt` (:3210 or the
+  next free port), `clubhouse3-sf-mock` (:3211, `SF_MOCK_DATA=1`)
+- Never `source` an `env*.sh` at the repo root: they hold live credentials, and are gitignored for that reason
 
 ## Architecture
 
@@ -65,6 +89,10 @@ Look a feature up in `docs/FEATURES.md` before exploring the code. For every pag
 - `app/helpers/ui_components/` - Custom UI component helpers (hero_panel, ui_section, ui_card, etc.)
 - `app/javascript/controllers/` - Stimulus controllers
 - `app/presenters/` - Presenter objects
+- `app/services/` - Alerts and autocomplete services; `app/validators/` - custom validators
+- `ai/skills/` - The project skills (`.claude/skills` is a symlink to it); edit them there
+
+`docs/codebase-map.md` has "where to change X" recipes; `docs/MENUS.md` documents the menu system.
 
 ### Authentication & Authorization
 - `ApplicationController` includes `Authentication` concern
@@ -90,14 +118,22 @@ See `docs/UI-COMPONENTS.md` for complete API reference and `docs/DESIGN-GUIDE.md
 - ActiveRecord joins/where instead of raw SQL joins
 - Singular database table names (not plural)
 - Confirm with user before installing new gems or packages
-- Start new `.rb` files with `# frozen_string_literal: true` and a blank line (97.8% of files have it; the gap is pre-convention core files)
+- Start new `.rb` files with `# frozen_string_literal: true` and a blank line (nearly every file has it; the gap is pre-convention core files)
 - Strong params: Rails 8 `params.expect(x: [...])` for a form's scope, `params.expect(:x)` for one required value — no `require`/`required` call remains. A nested list of hashes needs `[[...]]` (single brackets silently drop its rows), and `expect` answers 400 when nothing permitted is left
 - Optional scopes (`filter[...]`) read through `ApplicationController#scoped_params`, which returns `{}` for a bare value (`?filter=x`) instead of raising. Never on a form where an empty list clears data — use `expect` there
 
-### Linting Gaps
-`bin/rubocop` enforces **layout only** — `.rubocop.yml` disables every department and re-enables ~30 `Layout/*` cops by hand. String quoting, hash syntax, and `frozen_string_literal` are **not machine-checked**; match them by hand.
+### Time
+- `config.time_zone` is America/Phoenix with `active_record.default_timezone = :local`: datetimes are stored
+  as the process's wall clock. CI, docker-compose and the ECS task definitions set `TZ=America/Phoenix`; a dev
+  laptop usually does not, so code must not depend on the two agreeing
+- Year windows go through `where_year` / `where_years` (`config/initializers/active_record_extensions.rb`,
+  on relations: `Model.all.where_year`, not `Model.where_year`), never a `Time.zone.local(year)` range, which
+  lands in the wrong hour on any machine not on Phoenix time (an hour early on a Pacific laptop)
 
-- `.erb` is excluded entirely (no ERB parser, no `erb_lint`) — never pass `.erb` paths as explicit CLI args, RuboCop lints explicit args past `Exclude` and dies parsing ERB tags
+### Linting Gaps
+`bin/rubocop` enforces **layout only** — `.rubocop.yml` disables every department and re-enables ~30 `Layout/*` cops (plus three `Lint/*`) by hand. String quoting, hash syntax, and `frozen_string_literal` are **not machine-checked**; match them by hand.
+
+- `.erb` is excluded from RuboCop — never pass `.erb` paths as explicit CLI args, RuboCop lints explicit args past `Exclude` and dies parsing ERB tags. The `herb` gem is the only ERB parser: `bundle exec herb analyze app/views` parses every template, and nothing in CI runs it (`herb actionview check` needs a `.herb.yml` with `framework: actionview`)
 - `standard` is in the Gemfile but unused — no `.standard.yml`, and `bin/rubocop` runs RuboCop
 
 ### When Translating Laravel/PHP Code
@@ -137,6 +173,7 @@ See `docs/UI-COMPONENTS.md` for complete API reference and `docs/DESIGN-GUIDE.md
   when an allow-listed person runs it. Never dispatch, re-run or cancel those workflows
 - Never change the AWS services, task definitions or databases from a session: the task definition in AWS holds the
   environment, and a deploy swaps only the image. Read-only `aws` inventory is fine
+- `deploy/aws/` (the hand-run `amazon.clubhouse3.dev` stack) and `beta/` are the maintainer's as well
 
 ## Skills Reference
 

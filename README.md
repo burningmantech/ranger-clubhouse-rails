@@ -7,7 +7,7 @@ Hotwire, Tailwind CSS 4 and daisyUI 5. It replaces Clubhouse 2 (`ranger-clubhous
 ## Development
 
 ```bash
-bin/setup        # gems, npm packages, database
+bin/setup        # gems and database, then starts bin/dev (--skip-server to stop short)
 bin/dev          # Rails on :3000 plus the Tailwind watcher
 bin/rails test   # the suite; bin/rails test:all adds the system tests (headless Chrome)
 bin/rubocop && bin/brakeman && ruby bin/css_lint.rb --strict && bin/importmap audit
@@ -26,12 +26,13 @@ Deploys happen only through GitHub Actions (`.github/workflows/`):
 
 1. **Every pull request** runs Lint, Tests, System tests and Build Docker image. `main` takes nothing
    but a pull request with those four checks green, with no bypass.
-2. **A merge to `main`** runs them again, pushes the image to ECR as `:<sha>` and `:staging`, migrates
-   the staging database with a one-off task, and rolls the staging service (`deploy-staging` in
-   `cicd.yml`). Check your change at the staging hostname.
+2. **A merge to `main`** runs them again, pushes the image to ECR as `:<sha>` and `:staging`, and rolls
+   the staging service (`deploy-staging` in `cicd.yml`). Check your change at the staging hostname.
 3. **Deploy to production** is a workflow you run by hand from the Actions tab (`deploy.yml`). It
-   promotes the exact image staging runs, by digest, migrates, and rolls the production service.
-   Only the accounts listed in its `Check user` step may run it.
+   promotes the exact image staging runs, by digest, and rolls the production service. Only the
+   accounts listed in its `Check user` step may run it.
+
+Neither workflow runs database migrations.
 
 The image runs nginx in front of Puma (`docker/nginx/`, started together by `bin/docker-server`): it
 refuses probes and overwrites the forwarded headers before Rails sees a request, and
@@ -47,6 +48,3 @@ aws ecs update-service --cluster rangers --service ranger-clubhouse-production-f
 Each service's database is reachable only from inside the VPC: run a one-off task in the cluster
 and port-forward through Session Manager. The beta at `clubhouse3.dev` and the deployment under
 `deploy/aws/` are separate from all of this and are deployed by hand.
-
-The deploy jobs are commented out in both workflows until the AWS resources exist; the checklist
-is in the project's issue tracker (`.scratch/github-cicd/PRD.md`).
