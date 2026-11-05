@@ -1760,7 +1760,7 @@ class Rbs
     # -----------------------------------------------------------------------
 
     def notify_text(from, subject, group: false)
-      opening = "You have a new Ranger Clubhouse #{"group " if group}msg from #{from}. Subject: "
+      opening = "Clubhouse #{"grp " if group}msg frm #{from}. Subj: "
       room = SMS_LIMIT - (opening.length + 3)
 
       "#{opening}#{subject.to_s[0, [room, 0].max]}  #{SMS_SUFFIX}"
