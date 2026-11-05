@@ -42,7 +42,7 @@ production:
     schedule: at 4am every day
   expire_oauth_codes:
     class: ExpireOauthCodesJob
-    schedule: every 5 minutes
+    schedule: every 30 minutes
   expire_handle_reservations:
     class: ExpireHandleReservationsJob
     schedule: at 5am every day
