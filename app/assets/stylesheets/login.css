@@ -108,18 +108,29 @@
 
 /* The Rangers' mark, drawn once across the page behind the door. The SVG is
    black, so it is a mask filled with a wash of the page's amber rather than an
-   <img>, and it follows the theme. Fixed to the viewport below the bar and
-   sized to fit it (contain), so it is as large as the screen allows on a
-   laptop and on a phone alike. z-index -1 puts it under everything in flow;
-   <main> paints its own background (base.css), so it is made a stacking
+   <img>, and it follows the theme. Its box is the area below the bar, whatever
+   the bar's height: the layout's wrapper around <main> is made its containing
+   block, so nothing here restates the bar's 4rem. That wrapper is not the
+   scroll container -- <main> is -- and a box positioned against an ancestor of
+   a scroller is neither scrolled nor clipped by it, so the mark stays put
+   while a phone scrolls the door. z-index -1 puts it under everything in
+   flow; <main> paints its own background (base.css), so it is made a stacking
    context, which is what keeps the backdrop above that background. */
+:has(> main .login-backdrop) {
+    position: relative;
+}
+
 main:has(.login-backdrop) {
     isolation: isolate;
 }
 
+/* The whole mark, fitted to the box (contain) and centred: as tall as the box
+   on a laptop, as wide as it on a phone. The mark is square and the box is
+   not, so filling the box would mean cropping a band off the mark or
+   stretching it, and the whole mark was chosen over both (2026-11-04). */
 .login-backdrop {
-    position: fixed;
-    inset: 4rem 0 0;
+    position: absolute;
+    inset: 0;
     z-index: -1;
     pointer-events: none;
     background: color-mix(in oklch, var(--color-warning) 20%, transparent);
