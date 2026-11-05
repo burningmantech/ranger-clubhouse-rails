@@ -12,7 +12,7 @@
         <%= button_to sign_me_agreement_path(@agreement.tag),
                       method: :patch,
                       class: button_classes({}, :primary), form: { data: { turbo_stream: true } } do %>
-          <%= fa_icon "pencil", :solid, { end: 2 } %>Sign Agreement
+          <%= fa_icon "pencil", :solid, { end: 2 } %> I Agree / Sign Agreement
         <% end %>
         <%= back_to "Agreements", me_agreements_path %>
       </div>
