@@ -12,9 +12,12 @@
   <div class="lg:w-3/4">
     <% @positions.each do |position| %>
       <% no_signups_allowed = prevent_training_signup?(position.id) %>
+      <%# The present year splits the count, zeros included: after the season every row reads
+          "0 upcoming", which the owner chose over hiding the figure (2026-11-05). A past year is
+          all past and keeps the plain count. %>
       <%= ui_drill_down_row sign_ups_position_path_builder.call(position.id, year: @year), position.title,
-                            figures: (@shift_counts.fetch(position.id).zip(%w[upcoming past]) if @split_shifts),
-                            meta: (pluralize(position.slot_count, "shift") unless @split_shifts),
+                            figures: (@shift_counts.fetch(position.id, [0, 0]).zip(%w[upcoming past]) if @is_current_year),
+                            meta: (pluralize(position.slot_count, "shift") unless @is_current_year),
                             badges: (if position.sign_ups.positive?
                                        ui_badge pluralize(position.sign_ups, "sign-up"), :success, size: "base"
                                      end) do %>
