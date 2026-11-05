@@ -589,6 +589,19 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/This account has been disabled/, flash[:alert])
   end
 
+  # --- DELETE /logout ---
+
+  test "logout ends this browser's sign-in alone" do
+    post root_path, params: { login_form: { email: @person.email, password: "password" } }
+    other_device = @person.sessions.create!(session_id: SecureRandom.hex(32))
+
+    assert_difference -> { Session.where(person_id: @person.id).count }, -1 do
+      delete logout_path
+    end
+    assert_redirected_to root_path
+    assert Session.exists?(other_device.id)
+  end
+
   # --- coming back after signing in (Authentication#returnable_request?) ---
 
   test "a page asked for while signed out is where signing in returns to" do

@@ -74,6 +74,10 @@ export default class extends Controller {
     }
 
     handleTurboBeforeVisit(event) {
+        // A page whose sign-in has ended leaves without asking: nothing on it
+        // can be saved now (session_watch_controller.js).
+        if (document.documentElement.hasAttribute("data-signed-out")) return;
+
         const guard = this.guard();
         if (!guard) return;
 

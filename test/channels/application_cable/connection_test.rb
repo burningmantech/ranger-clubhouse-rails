@@ -13,12 +13,13 @@ module ApplicationCable
       @session = @person.sessions.create!(session_id: SecureRandom.hex(32))
     end
 
-    test "connects as the person whose session the signed cookie names" do
+    test "connects as the person and the session the signed cookie names" do
       cookies.signed[:session_id] = @session.session_id
 
       connect
 
       assert_equal @person, connection.current_user
+      assert_equal @session, connection.current_session
     end
 
     test "rejects a socket with no session cookie" do

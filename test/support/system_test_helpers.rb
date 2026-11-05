@@ -36,32 +36,24 @@ module SystemTestHelpers
     # tour's own test clears this again.
     person.update_column(:on_boarded_at, Time.current) if person.on_boarded_at.nil?
 
-    # Integration tests override cookie lookup via ApplicationController.test_session.
-    # Set the same hook here so mixed controller/system runs stay authenticated.
-    ApplicationController.test_session = session if ApplicationController.respond_to?(:test_session=)
-
-    # Sign the cookie value using Rails' message verifier (same as cookies.signed)
-    # Rails uses "signed cookie" as the default purpose for signed cookies
-    signed_value = Rails.application.message_verifier("signed cookie").generate(session.session_id)
-
-    # Set up authentication by creating a signed session cookie
-    cookies = Capybara.current_session.driver.browser.manage
-    cookies.add_cookie(
-      name: "session_id",
-      value: signed_value,
-      path: "/",
-      httponly: true
-    )
+    use_session_cookie(session)
   end
 
-  # Signs out the current user
-  def sign_out
-    Current.session&.destroy
-    Current.session = nil
-    ApplicationController.test_session = nil if ApplicationController.respond_to?(:test_session=)
+  # Hands the browser a signed session_id cookie for the session, signed as
+  # cookies.signed does ("signed cookie" is Rails' purpose for them). Pages and
+  # the cable connection both go by it. Parking the session for
+  # AuthenticationTestHelper as well kept pages signed in past a sign-out the
+  # socket heard, and the page bounced between / and /me.
+  def use_session_cookie(session)
+    signed_value = Rails.application.message_verifier("signed cookie").generate(session.session_id)
+    Capybara.current_session.driver.browser.manage.add_cookie(name: "session_id", value: signed_value, path: "/", httponly: true)
+  end
 
-    cookies = Capybara.current_session.driver.browser.manage
-    cookies.delete_cookie("session_id")
+  # Drops the browser's session cookie, as a lost cookie would. The sessions
+  # row stays, and so does the open socket's sign-in: the mega menu's and search
+  # bar's "You've Been Signed Out" cases.
+  def sign_out
+    Capybara.current_session.driver.browser.manage.delete_cookie("session_id")
   end
 
   # Poll a block until it returns truthy or Capybara's default wait elapses:

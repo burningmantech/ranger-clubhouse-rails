@@ -65,6 +65,10 @@
 <% else %>
   <%= render "application/public_menu" %>
 <% end %>
+<%# The edge of a sign-in (session_watch_controller.js): a signed-in page names
+    the sign-in it was drawn under and leaves for the sign-in page once that
+    ends elsewhere; a signed-out page clears what an ended one left behind. %>
+<%= tag.div hidden: true, data: { controller: "session-watch", session_watch_session_value: Current.session&.id } %>
 <% if content_for? :sidebar %>
   <%# grid-rows-1 clamps the drawer's single grid row to the drawer height;
       otherwise the row auto-sizes to the 100dvh drawer-side and pushes the

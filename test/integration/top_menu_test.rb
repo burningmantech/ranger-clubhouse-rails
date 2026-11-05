@@ -204,20 +204,24 @@ class TopMenuTest < ActionDispatch::IntegrationTest
   end
 
   # Live updates (application layout): every signed-in page listens on the
-  # viewer's own stream; a page anyone can see listens on none.
-  test "a signed-in page listens on the viewer's own stream, and the sign-in page on none" do
+  # viewer's own stream and for the end of the sign-in it was drawn under
+  # (session_watch_controller.js); a page anyone can see listens for neither,
+  # and only clears what an ended sign-in left behind.
+  test "a signed-in page listens on the viewer's own stream and for its sign-in ending, and the sign-in page for neither" do
     ranger = person(:active_ranger)
-    sign_in_as(ranger)
+    session = sign_in_as(ranger)
     get me_root_url
 
     assert_select "turbo-cable-stream-source[channel=?][signed-stream-name=?]", "Turbo::StreamsChannel",
                   Turbo::StreamsChannel.signed_stream_name(ranger), count: 1
+    assert_select "[data-controller~='session-watch'][data-session-watch-session-value=?]", session.id.to_s, count: 1
 
     sign_out
     get root_url
 
     assert_response :success
     assert_select "turbo-cable-stream-source", count: 0
+    assert_select "[data-controller~='session-watch']:not([data-session-watch-session-value])", count: 1
   end
 
   # The door pages (application/_public_menu): no one is signed in, so the bar

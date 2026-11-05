@@ -5,8 +5,7 @@ require "application_system_test_case"
 # A reply that lands in a thread moves its row and the Unread count in every
 # list showing that mailbox (PersonMessage#announce_to_recipient), here a
 # manager's Person › Messages, which reads the person's mail without marking
-# it read. It swaps in the in-process async cable adapter, as
-# test/system/me/live_message_arrival_test.rb explains.
+# it read.
 class Person::LiveMessageListTest < ApplicationSystemTestCase
   include TimesheetAdminTestHelper # ensure_role / grant_role
 
@@ -16,14 +15,9 @@ class Person::LiveMessageListTest < ApplicationSystemTestCase
     @sender = person(:ranger_with_custom_gender)
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     grant_role(@manager, Role::EVENT_MANAGEMENT)
-    @cable = ActionCable.server
-    @recorded = @cable.pubsub
-    @cable.instance_variable_set(:@pubsub, ActionCable::SubscriptionAdapter::Async.new(@cable))
   end
 
   teardown do
-    @cable.pubsub.shutdown
-    @cable.instance_variable_set(:@pubsub, @recorded)
     Current.reset
   end
 
