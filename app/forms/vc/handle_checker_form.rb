@@ -19,7 +19,7 @@ class Vc::HandleCheckerForm
   # Conflicts shown per checked handle. The eye rhyme rules can match
   # thousands of handles at once; conflicts sort most serious first, so the
   # cap only ever hides the least interesting ones.
-  MAX_CONFLICTS = 50
+  MAX_CONFLICTS = 100
 
   attribute :handle, :string, default: ""
   attribute :include_vintage, :boolean, default: true

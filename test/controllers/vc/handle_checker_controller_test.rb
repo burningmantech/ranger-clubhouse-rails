@@ -86,8 +86,8 @@ class Vc::HandleCheckerControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "#{@ranger.callsign} is already in use", page_text
-    assert_match "high priority", page_text
-    assert_match "• Substring", page_text
+    assert_select "td span.text-error", text: "high"
+    assert_select "td", text: "Substring"
   end
 
   test "checking a handle links to the conflicting person" do
@@ -96,6 +96,17 @@ class Vc::HandleCheckerControllerTest < ActionDispatch::IntegrationTest
     get vc_handle_checker_path, params: check_params(handle: @ranger.callsign)
 
     assert_match person_path(@ranger), response.body
+  end
+
+  test "a conflict with no handle has no type and its rule spans its rows" do
+    sign_in_as(@admin)
+
+    get vc_handle_checker_path, params: check_params(handle: "Ab", rule_ids: ["min-length"])
+
+    assert_response :success
+    assert_match "might be too short", page_text
+    assert_select "td", text: "—"
+    assert_select "td[rowspan]", text: "Minimum length"
   end
 
   test "a handle with no conflicts reports as clear" do

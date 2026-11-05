@@ -3,16 +3,6 @@
 module Vc::HandleCheckerHelper
   RULE_NAMES = HandleChecker.rule_options.to_h.freeze
 
-  # Icon and accent card variant per priority. Conflicts sort most serious
-  # first, so the first one sets the tone for the whole card. Pairing an icon
-  # with every variant keeps severity off color alone.
-  STYLES = {
-    nil => ["circle-check", :success],
-    HandleChecker::PRIORITY_HIGH => ["triangle-exclamation", :error],
-    HandleChecker::PRIORITY_MEDIUM => ["circle-exclamation", :warning],
-    HandleChecker::PRIORITY_LOW => ["circle-info", :warning]
-  }.freeze
-
   PRIORITY_CLASSES = {
     HandleChecker::PRIORITY_HIGH => "text-error font-semibold",
     HandleChecker::PRIORITY_MEDIUM => "text-warning",
@@ -31,10 +21,6 @@ module Vc::HandleCheckerHelper
     entity_types.map { |type| [type, handle_checker_type_label(type)] }
   end
 
-  def handle_checker_result_icon(conflicts) = handle_checker_styles(conflicts).first
-
-  def handle_checker_result_variant(conflicts) = handle_checker_styles(conflicts).last
-
   def handle_checker_result_summary(conflicts)
     return "No conflicts found." if conflicts.empty?
 
@@ -43,32 +29,27 @@ module Vc::HandleCheckerHelper
     high.zero? ? "#{counted}." : "#{counted}, #{number_with_delimiter(high)} of them serious."
   end
 
-  # Conflicts are capped per card because the eye rhyme rules can match
+  # Conflicts are capped per result because the eye rhyme rules can match
   # thousands of handles at once. Sorted most serious first, so the cap only
   # ever hides the least interesting ones.
   def handle_checker_shown_conflicts(conflicts) = conflicts.first(Vc::HandleCheckerForm::MAX_CONFLICTS)
 
+  # Shown right after the summary's count, so it does not repeat it.
   def handle_checker_overflow_note(conflicts)
     shown = handle_checker_shown_conflicts(conflicts).size
     return if conflicts.size <= shown
 
-    "Showing the #{shown} most serious of #{number_with_delimiter(conflicts.size)} conflicts. " \
-      "Switch off a rule above to narrow this down."
+    "Showing the #{shown} most serious. Switch off a rule above to narrow this down."
   end
 
-  # A whole conflict on one line, e.g.
-  #   may sound like Hubcap [active ranger] high priority - double metaphone
-  # The conflicting name is a link when it belongs to a person.
-  def handle_checker_conflict_line(conflict)
-    handle = conflict.conflicting_handle
-
-    safe_join([
-                handle_checker_description(conflict),
-                (handle_checker_type_badge(handle) if handle),
-                (ui_badge("Vintage", :error, size: "sm") if handle&.vintage),
-                handle_checker_priority_text(conflict.priority),
-                handle_checker_rule_note(conflict.rule_id)
-              ].compact, " ")
+  # The shown conflicts, each paired with the rowspan of the rule cell that
+  # starts on its row: the length of its run of consecutive rows sharing a
+  # rule, or nil when the row continues the run above it. Conflicts sort by
+  # priority and then by rule, so a rule's rows already sit together.
+  def handle_checker_rule_runs(conflicts)
+    handle_checker_shown_conflicts(conflicts)
+      .chunk_while { |earlier, later| earlier.rule_id == later.rule_id }
+      .flat_map { |run| run.each_with_index.map { |conflict, index| [conflict, (run.size if index.zero?)] } }
   end
 
   # The description with its segments rendered: the conflicting handle's name
@@ -88,20 +69,19 @@ module Vc::HandleCheckerHelper
             class: "link font-semibold", target: "_blank", rel: "noopener"
   end
 
-  def handle_checker_type_badge(handle)
-    ui_badge handle_checker_type_label(handle.entity_type), :secondary, size: "sm"
+  # The conflicting handle's type, and Vintage when it is one. A rule about
+  # the proposed handle itself has no handle to type.
+  def handle_checker_type_badges(handle)
+    return value_or_dash(nil) unless handle
+
+    safe_join([
+                ui_badge(handle_checker_type_label(handle.entity_type), :secondary, size: "sm"),
+                (ui_badge("Vintage", :error, size: "sm") if handle.vintage)
+              ].compact, " ")
   end
 
   # Spelled out rather than shown by color alone.
   def handle_checker_priority_text(priority)
-    tag.span("#{priority} priority", class: PRIORITY_CLASSES.fetch(priority, "text-stone-muted"))
+    tag.span(priority, class: PRIORITY_CLASSES.fetch(priority, "text-stone-muted"))
   end
-
-  def handle_checker_rule_note(rule_id)
-    tag.span("• #{handle_checker_rule_name(rule_id)}", class: "text-stone-muted")
-  end
-
-  private
-
-  def handle_checker_styles(conflicts) = STYLES.fetch(conflicts.first&.priority, STYLES[HandleChecker::PRIORITY_MEDIUM])
 end
