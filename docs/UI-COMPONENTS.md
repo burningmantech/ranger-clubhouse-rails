@@ -694,6 +694,7 @@ ui_drill_down_row(url, title, options = {}, &block)
 | `url` | String | required | Destination for the row link |
 | `title` | String | required | Headline text (raises `ArgumentError` if blank) |
 | `meta:` | String | `nil` | Secondary segment after the title, e.g. `pluralize(count, "slot")` |
+| `figures:` | Array | `nil` | `[[count, label], ...]` set as a ledger beside the headline; Integer counts, never with `meta:` — see below |
 | `badges:` | String/Array | `nil` | Rendered `ui_badge` markup; nils are ignored so a conditional badge needs no `if` |
 | `blocked:` | Boolean | `false` | Renders a row that cannot be followed — see below |
 | `icon:` | String | `"arrow-right"` | FontAwesome icon for the chevron (defaults to `"ban"` when blocked) |
@@ -706,10 +707,22 @@ The headline reads "Title • meta • badge", each segment optional and separat
 Pass badges already rendered so each caller keeps its own variant and icon; give them
 `size: "base"` so they sit correctly in the `text-lg` headline.
 
+`figures:` is for a count that splits: the pairs render as a ledger beside the headline
+("0 upcoming" then "3 past", no separator), each numeral in a fixed right-aligned cell so the
+figures line up down the list, and a zero set lighter so the eye lands on what is still owed.
+The ledger drops under the headline only when the two no longer fit on one line — a wrapping
+flex row with a 16rem headline floor, no breakpoint. Counts are Integers and labels present;
+passing `meta:` as well raises, since one count belongs in the headline (Available Sign-Ups,
+2026-11-05).
+
 ```erb
 <%= ui_drill_down_row scheduling_slots_position_path(position.id, year: @year), position.title,
                       meta: pluralize(@slot_counts[position.id], "slot"),
                       badges: (ui_badge("#{inactive} inactive", :warning, size: "base") if inactive.positive?) %>
+
+<%# Split count as a ledger on the right %>
+<%= ui_drill_down_row path, position.title,
+                      figures: [[upcoming, "upcoming"], [position.slot_count - upcoming, "past"]] %>
 
 <%# Blocked row, with the reason underneath %>
 <%= ui_drill_down_row path, position.title, meta: pluralize(count, "shift"),

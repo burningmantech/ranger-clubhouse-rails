@@ -141,11 +141,14 @@ module Scheduling::Query
   # @param cutoff  [Symbol] :start_time or :end_time
   # @return [Array(Array<ScheduleEntry>, Array<ScheduleEntry>)] [upcoming, past]
   def partition_by_time(entries, cutoff:)
+    # One clock reading for the whole list, compared as instants: has_started /
+    # has_ended would re-read Current.time and re-zone the slot for every entry.
+    now = Current.time
     case cutoff
     when :start_time
-      entries.partition { |entry| !entry.slot.has_started }
+      entries.partition { |entry| entry.slot.begins >= now } # !has_started
     when :end_time
-      entries.partition { |entry| !entry.slot.has_ended }
+      entries.partition { |entry| entry.slot.ends > now } # !has_ended
     else
       raise ArgumentError, "unknown cutoff #{cutoff.inspect} (expected :start_time or :end_time)"
     end

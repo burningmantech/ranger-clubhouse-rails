@@ -185,13 +185,15 @@ class Scheduling::QueryTest < ActiveSupport::TestCase
 
   # --- partition_by_time: intentional cutoff divergence ---
 
-  # Lightweight doubles: partition_by_time only reads entry.slot.has_started /
-  # entry.slot.has_ended, so we avoid DB/Current.time and pin the predicates directly.
-  SlotDouble = Struct.new(:has_started, :has_ended)
+  # Lightweight doubles: partition_by_time reads one clock and each slot's
+  # begins / ends as instants, so the doubles carry times either side of now.
+  SlotDouble = Struct.new(:begins, :ends)
   EntryDouble = Struct.new(:slot)
 
   def build_entry(started:, ended:)
-    EntryDouble.new(SlotDouble.new(started, ended))
+    now = Time.current
+    EntryDouble.new(SlotDouble.new(started ? now - 1.hour : now + 1.hour,
+                                   ended ? now - 1.minute : now + 2.hours))
   end
 
   test "partition_by_time :start_time puts in-progress slot in past" do

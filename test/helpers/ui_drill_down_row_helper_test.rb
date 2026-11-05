@@ -62,6 +62,40 @@ class UiDrillDownRowHelperTest < ActionView::TestCase
     assert_select "span.my-1", count: 1
   end
 
+  # Figures sit beside the headline as a ledger in a wrapping row: numerals in a
+  # fixed right-aligned cell so they line up down the list, and a zero recedes.
+  test "ui_drill_down_row renders figures as a ledger beside the headline, muting a zero" do
+    render inline: <<~ERB
+      <%= ui_drill_down_row "/x", "Dirt", figures: [[0, "upcoming"], [3, "past"]] %>
+    ERB
+
+    assert_select "a > div.flex-wrap > div.grow + div.tabular-nums", count: 1
+    assert_select "a > div.flex-wrap + div.text-xl", count: 1
+    assert_select "div.tabular-nums > span", count: 2
+    # Inline spans again: without the joining space a screen reader hears "0upcoming".
+    assert_select "div.tabular-nums > span:first-child", text: "0 upcoming"
+    assert_select "div.tabular-nums > span:first-child > span.min-w-9.text-right.text-stone-subtle", text: "0"
+    assert_select "div.tabular-nums > span:last-child > span.min-w-9.text-right.font-semibold", text: "3"
+    assert_select "span.my-1", count: 0
+  end
+
+  test "ui_drill_down_row ignores a nil figure" do
+    render inline: <<~ERB
+      <%= ui_drill_down_row "/x", "Dirt", figures: [[2, "upcoming"], nil] %>
+    ERB
+
+    assert_select "div.tabular-nums > span", count: 1
+  end
+
+  # A flat pair, a non-Integer count or a blank label would 500 the whole index
+  # from inside the render; and one count belongs in the headline, not two.
+  test "ui_drill_down_row refuses malformed figures and figures beside meta" do
+    assert_raises(ArgumentError) { ui_drill_down_row("/x", "Dirt", figures: [3, "past"]) }
+    assert_raises(ArgumentError) { ui_drill_down_row("/x", "Dirt", figures: [["3", "past"]]) }
+    assert_raises(ArgumentError) { ui_drill_down_row("/x", "Dirt", figures: [[3, ""]]) }
+    assert_raises(ArgumentError) { ui_drill_down_row("/x", "Dirt", meta: "3 shifts", figures: [[3, "past"]]) }
+  end
+
   test "ui_drill_down_row takes a custom icon and passes attributes to the link" do
     render inline: <<~ERB
       <%= ui_drill_down_row "/x", "Elsewhere", icon: "ban", class: "mt-4",

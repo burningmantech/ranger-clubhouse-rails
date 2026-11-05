@@ -19,6 +19,14 @@ module AvailableSignUpsConcern
 
   def index
     @entries, @positions = Scheduling::Query.find_for_query(@person.id, @year, no_credits: true)
+    # Each row splits its shifts the way the position's page does: sign-up
+    # closes at slot start, so a shift under way is past (:start_time).
+    @shift_counts = @entries.group_by(&:position_id).transform_values do |entries|
+      Scheduling::Query.partition_by_time(entries, cutoff: :start_time).map(&:size)
+    end
+    # The split says something only while a shift can still be signed up for;
+    # after the year's last one, and in a past year, rows keep the plain count.
+    @split_shifts = @shift_counts.values.any? { |upcoming, _past| upcoming.positive? }
   end
 
   def show

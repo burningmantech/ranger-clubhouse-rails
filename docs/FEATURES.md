@@ -890,6 +890,7 @@ Verify: `test/controllers/me/available_sign_ups_controller_test.rb`, `test/contr
 Trap: `Scheduling::ActiveRecordSlotStore#insert_signup` checks capacity against the denormalized `slot.signed_up`, which a bare `PersonSlot.create!` never increments — create sign-ups (tests too) through `Scheduling::Signup.add`.
 Trap: A trainer-bound slot's capacity is `Scheduling::Query::ScheduleEntry#max_effective` (trainer sign-ups × `slot.max`, from `Scheduling::SlotCapacity#effective_max`), which the card, Add button and `Signup.add` use — never gate on raw `slot.max`.
 Trap: `show` prints the position's sign-up page header by `@person`'s status (`Position#scheduling_header_for`, rendered through `rich_text` in `common/available_sign_ups/show`): Rangers and Echelon get `ranger_scheduling_header`, applicants (Prospective or Alpha) `applicant_scheduling_header`, every other status nothing. Present year only: a past year's page shows no header (ruled 2026-10-22).
+Trap: the index row splits each position's shifts into upcoming and past (`ui_drill_down_row figures:`, `@shift_counts`) with `Scheduling::Query.partition_by_time(cutoff: :start_time)` -- a shift under way is past, matching `show` -- only while some position still has an upcoming shift (`@split_shifts`); after the year's last shift has started, and in a past year, rows keep the plain shift count (accepted in live mode 2026-11-05). Person and HQ render the same view.
 
 ### Me › Qualifications
 Reach it: `GET /me/schedule/qualifications` → linked from Me › Schedule / Sign-Ups; `GET /me/timesheet/qualifications` → linked from Me › Timesheet
@@ -1405,6 +1406,7 @@ Verify: `test/controllers/person/scheduling_controller_test.rb`, `test/controlle
 Trap: In the present year `retrieve_permission_and_recommendation` redirects every action to the schedule on an unmet `Scheduling::Permission` requirement, even for an admin, and `create` never forces (`Scheduling::Signup.add(@person, @slot, false)`).
 Trap: `destroy` forces (`Scheduling::Signup.remove(@person, @slot, true)`), so an admin, or a Trainer/Mentor on an in-person training/Alpha slot (`can_force_schedule_change`), removes started or ended shifts unconfirmed, unlike `ScheduleConcern#destroy`.
 Trap: `show` prints the position's sign-up page header by the subject's status (`Position#scheduling_header_for`, see Me › Available Sign-Ups): an operator sees what the member sees.
+Trap: the index row's upcoming/past ledger follows Me › Available Sign-Ups -- plain shift count in a past year or once the year's last shift has started.
 
 ### Person › Work History
 Reach it: `GET /person/:person_id/work-history` → Person › Training & History › Work History; drill-downs `GET /person/:person_id/work-history/position-summary`, `GET /person/:person_id/work-history/position-all`, `GET /person/:person_id/work-history/entire-year`
@@ -1469,6 +1471,7 @@ Verify: `test/controllers/hq/available_sign_ups_controller_test.rb`, `test/lib/s
 Trap: `include HqConcern` must precede `AvailableSignUpsConcern` — reversed, `ensure_person_for_available_sign_ups` loads the operator, so `retrieve_permission_and_recommendation` and `setup_position` gate on the operator.
 Trap: `AvailableSignUpsConcern#destroy` calls `Scheduling::Signup.remove(@person, @slot, true)`, so an operator who can force (`ADMIN`, `Scheduling::Signup.can_force_schedule_change`) removes a started shift from a stale page — check `slot.has_started`.
 Trap: `show` prints the position's sign-up page header by the subject's status (`Position#scheduling_header_for`, see Me › Available Sign-Ups): an operator sees what the member sees.
+Trap: the index row's upcoming/past ledger follows Me › Available Sign-Ups; pinned to the present year, HQ shows it until the year's last shift has started, then the plain shift count (`test/controllers/hq/available_sign_ups_controller_test.rb` holds the split test).
 
 ### HQ › Qualifications
 Reach it: `GET /hq/:person_id/schedule/qualifications` → linked from HQ › Schedule / Sign Ups
