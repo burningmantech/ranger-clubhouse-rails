@@ -11,10 +11,11 @@ class RbsSandbox
     # The names of the sandboxed channels, for the notice a sender reads.
     # Email is held back by more than its sandbox -- the training server, and
     # anywhere sending to Rangers is not switched on and no test address is
-    # set -- so it is named from the same answer the delivery itself goes by.
+    # set -- and texts by staging as well as their sandbox, so each is named
+    # from the same answer the delivery itself goes by.
     def on(email_mode = Rbs.email_mode)
       {
-        "text messages" => Setting.get_value(Setting::BROADCAST_SMS_SANDBOX),
+        "text messages" => Rbs.sms_held?,
         "emails" => email_mode == :held,
         "Clubhouse messages" => Setting.get_value(Setting::BROADCAST_CLUBHOUSE_SANDBOX)
       }.filter_map { |label, held| label if held }

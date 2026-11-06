@@ -117,6 +117,14 @@ class Me::OnlineCourseControllerTest < ActionDispatch::IntegrationTest
     assert_empty calls
   end
 
+  test "a refused write sends the person back with the reason" do
+    stub_moodle(Moodle::WS_CREATE_USERS => Moodle::WriteRefusedError.new) { post me_online_course_path }
+
+    assert_redirected_to me_online_course_path
+    assert_match "never changed", flash[:error]
+    assert_nil enrollment
+  end
+
   private
 
   def enrollment

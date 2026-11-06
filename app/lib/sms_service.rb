@@ -66,6 +66,16 @@ class SmsService
     end
 
     #
+    # Staging runs on a copy of real accounts and has no test number to text
+    # instead, so nothing here asks Twilio to send from it.
+    #
+    # @raise [SmsException] on the staging server
+    #
+    def refuse_on_staging!
+      raise SmsException, "Texts never leave the staging server" if Current.is_staging?
+    end
+
+    #
     # Broadcast a message to a set of phone numbers.
     #
     # @param phone_numbers [Array<String>] list of phone numbers to send to
@@ -74,6 +84,7 @@ class SmsService
     # @raise [SmsException] if Twilio experienced an error
     #
     def broadcast(phone_numbers, message)
+      refuse_on_staging!
       account_sid, auth_token = get_tokens
 
       service_ids = TwilioAccount.settings[:service_ids]
@@ -154,6 +165,7 @@ class SmsService
     # @raise [SmsException] if Twilio refused it
     #
     def text_through(twilio, service_id, phone_number, message, receipt_for: nil)
+      refuse_on_staging!
       address = receipt_for && receipt_address
       request = { messaging_service_sid: service_id, to: normalize_phone(phone_number), body: message,
                   validity_period: VALIDITY_PERIOD, status_callback: (address && "#{address}?message=#{receipt_for}") }

@@ -9,6 +9,7 @@
 #     RANGER_DB_HOST_NAME=db, RANGER_DB_DATABASE_NAME, RANGER_DB_USER_NAME,
 #     RANGER_DB_PASSWORD                                                        # config/database.yml
 #     RAILS_MASTER_KEY                                                          # contents of config/master.key
+#     RANGER_CLUBHOUSE_ENVIRONMENT=Production                                   # config/recurring.yml runs its tasks only here
 #   ses.env (gitignored too) holds the Amazon SES keys for broadcast email (app/lib/rbs.rb), and for all other
 #   mail too once RANGER_CLUBHOUSE_SES_MAIL_LIVE is on (app/lib/ses_mail_delivery.rb). They are kept out of
 #   database.env because the db service reads that file as well and has no use for them:

@@ -4,6 +4,7 @@ require "test_helper"
 
 class ApplicationMailerTest < ActionMailer::TestCase
   include SesTestHelper
+  include EnvTestHelper
 
   setup do
     @person = person(:active_ranger)
@@ -26,6 +27,18 @@ class ApplicationMailerTest < ActionMailer::TestCase
     mail = ExpiredHandleReservationsMailer.notify(handles: [])
 
     assert mail.perform_deliveries
+  end
+
+  # Staging runs on a copy of real accounts too. Its mail goes to the one test
+  # inbox when RANGER_CLUBHOUSE_MAIL_TEST_ADDRESS names it, and otherwise nowhere.
+  test "mail is held back on staging unless a test inbox takes it" do
+    with_env("RANGER_CLUBHOUSE_ENVIRONMENT" => "Staging") do
+      assert_not ExpiredHandleReservationsMailer.notify(handles: []).perform_deliveries
+
+      with_env(MailTestAddressInterceptor::ADDRESS_VAR => "inbox@example.com") do
+        assert ExpiredHandleReservationsMailer.notify(handles: []).perform_deliveries
+      end
+    end
   end
 
   # Settings keep an email list one address per line. Left whole, the list went

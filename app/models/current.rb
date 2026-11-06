@@ -16,23 +16,29 @@ class Current < ActiveSupport::CurrentAttributes
     rescue ArgumentError
       nil
     end
-    @deployment = ENV["RANGER_CLUBHOUSE_ENVIRONMENT"] || "Development"
+  end
+
+  # Which deployment this server is: Production, Staging, Training or, with no
+  # label, Development. The server's, not the request's, so it is read from the
+  # environment each time, which also lets a test set it.
+  def deployment
+    ENV["RANGER_CLUBHOUSE_ENVIRONMENT"] || "Development"
   end
 
   def is_production?
-    @deployment == "Production"
+    deployment == "Production"
   end
 
   def is_staging?
-    @deployment == "Staging"
+    deployment == "Staging"
   end
 
   def is_development?
-    @deployment == "Development"
+    deployment == "Development"
   end
 
   def is_training?
-    @deployment == "Training"
+    deployment == "Training"
   end
 
   # The variable being set at all is what marks the training server, whether or
@@ -40,6 +46,13 @@ class Current < ActiveSupport::CurrentAttributes
   # one: mail is held back there, and so are the actions it is not allowed.
   def is_ghd_server?
     @groundhog_day_time.present? || ENV["RANGER_CLUBHOUSE_GROUNDHOG_DAY_TIME"].present?
+  end
+
+  # Whether this server runs on a copy of the real accounts -- the training
+  # server, and staging -- so nothing it does may change another service's
+  # records or reach a member.
+  def copy_of_real_accounts?
+    is_ghd_server? || is_staging?
   end
 
   def has_role?(role)

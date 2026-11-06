@@ -647,6 +647,23 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes fake.asked, :messaging_update
   end
 
+  test "staging is not allowed the change either, and says so" do
+    configure_twilio
+    fake = FakeTwilioClient.new
+
+    sign_in_as(@tech_ninja)
+
+    with_env("RANGER_CLUBHOUSE_ENVIRONMENT" => "Staging") do
+      with_fake_twilio(fake) do
+        patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
+      end
+    end
+
+    assert_redirected_to admin_sms_management_twilio_path(refresh: 1)
+    assert_match "staging server cannot change", flash[:error]
+    assert_not_includes fake.asked, :messaging_update
+  end
+
   test "the training server asks Twilio nothing for the log or the export, and offers no export" do
     configure_twilio
     fake = FakeTwilioClient.new(texts: [FakeTwilioClient.text])

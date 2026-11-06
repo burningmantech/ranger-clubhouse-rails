@@ -2,9 +2,12 @@
 #
 # Times are read in the application's time zone (America/Phoenix).
 #
-# The training server runs on a copy of the real database, so everything that
-# sends mail, talks to another service, or deletes records is held back there.
-# It reloads its own copy each morning instead.
+# Only the deployment that calls itself Production (RANGER_CLUBHOUSE_ENVIRONMENT,
+# the check Clubhouse 2's scheduler made) runs the tasks that send mail, talk to
+# another service, or delete records. Staging runs on a copy of the real database
+# and would email the same people at the same minute; the training server runs
+# on a copy too, and reloads it each morning instead. Everywhere else only the
+# queue's own housekeeping runs.
 # Only the tasks that touch nothing outside this machine. The rest are left out
 # on purpose: the dev database is a copy of the real one, so they would email
 # real addresses, talk to the live learning site, or delete records from the
@@ -24,7 +27,7 @@ production:
   reload_training_database:
     command: "GroundHogDay.reload_training_database!"
     schedule: at 4am every day
-<% else %>
+<% elsif ENV["RANGER_CLUBHOUSE_ENVIRONMENT"] == "Production" %>
   clear_failed_tasks:
     class: ClearFailedTasksJob
     schedule: at 4am every day

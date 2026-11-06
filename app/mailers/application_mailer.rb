@@ -27,6 +27,7 @@ class ApplicationMailer < ActionMailer::Base
 
   before_action :set_sender_id
   after_action :hold_mail_on_training_server
+  after_action :hold_mail_on_staging
   after_deliver :record_mail_log
 
   default from: -> { EmailAddresses::DO_NOT_REPLY }
@@ -107,6 +108,13 @@ class ApplicationMailer < ActionMailer::Base
   # they simply never leave the building.
   def hold_mail_on_training_server
     message.perform_deliveries = false if Current.is_ghd_server?
+  end
+
+  # Staging runs on a copy of real accounts too. Its mail goes to the one test
+  # inbox while RANGER_CLUBHOUSE_MAIL_TEST_ADDRESS names one, and otherwise
+  # nowhere, so a variable left unset cannot reach a member.
+  def hold_mail_on_staging
+    message.perform_deliveries = false if Current.is_staging? && !MailTestAddressInterceptor.redirecting?
   end
 
   # From address helpers - return email address strings

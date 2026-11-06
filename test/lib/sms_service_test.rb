@@ -73,6 +73,19 @@ class SmsServiceTest < ActiveSupport::TestCase
     assert_empty fake.notifications, "never through Notify"
   end
 
+  test "no text leaves the staging server, and Twilio is not asked" do
+    configure_twilio
+    fake = FakeTwilioClient.new
+
+    with_env("RANGER_CLUBHOUSE_ENVIRONMENT" => "Staging") do
+      error = assert_raises(SmsException) { with_fake_twilio(fake) { SmsService.send_text("+14155550101", "Muster at HQ") } }
+      assert_match(/staging/, error.message)
+      assert_raises(SmsException) { with_fake_twilio(fake) { SmsService.broadcast(["+14155550101"], "Muster at HQ") } }
+    end
+
+    assert_empty fake.asked
+  end
+
   test "a single text Twilio refused raises an SmsException, the refusal kept as its cause" do
     configure_twilio
     fake = FakeTwilioClient.new(errors: { message_create: FakeTwilioClient.refusal(21610, "Attempt to send to unsubscribed recipient") })
