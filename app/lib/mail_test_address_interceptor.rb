@@ -50,6 +50,11 @@ class MailTestAddressInterceptor
                                 "not #{address.inspect}"
     end
 
+    # Whether every email is going to the test inbox instead of its recipients.
+    def redirecting?
+      test_address.present?
+    end
+
     private
 
     def test_address

@@ -207,6 +207,19 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
     assert_match(/maintenance/i, flash[:error])
   end
 
+  test "a refused Moodle write surfaces its reason as an error flash" do
+    @target.update!(lms_id: 8_675_309)
+    grant_role(@trainer, Role::TRAINER)
+    sign_in_as(@trainer)
+
+    stub_moodle_request_web_service(Moodle::WriteRefusedError) do
+      post person_training_sync_path(@target, year: Current.year)
+    end
+
+    assert_redirected_to person_training_path(@target, year: Current.year)
+    assert_match "never changed", flash[:error]
+  end
+
   private
 
   def ensure_role(id, title)

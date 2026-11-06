@@ -151,6 +151,8 @@ class Person::TrainingController < ApplicationController
   # reset password). Redirects back to the page with an error flash.
   def with_moodle_rescue
     yield
+  rescue Moodle::WriteRefusedError => e
+    redirect_index(error: e.message)
   rescue Moodle::DownForMaintenanceError
     redirect_index(error: "Moodle is down for maintenance. Please try again later.")
   rescue Moodle::ConnectFailureError, RuntimeError

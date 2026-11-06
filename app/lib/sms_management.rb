@@ -13,8 +13,8 @@ module SmsManagement
   module_function
 
   # Whether this server may change where Twilio sends incoming texts: any but
-  # the training server, which holds the same live credentials.
-  def incoming_changes_allowed? = !Current.is_ghd_server?
+  # the training server and staging, which hold the same live credentials.
+  def incoming_changes_allowed? = !Current.copy_of_real_accounts?
 
   # Why Twilio cannot post incoming texts to url, or nil when it can: it posts
   # them from the internet, so the address must be https on a public name. A
@@ -50,7 +50,7 @@ module SmsManagement
   # may have made. nil while the settings to ask with are missing.
   def point_incoming_texts(url)
     unless incoming_changes_allowed?
-      return { changed: [], error: "the training server cannot change where Twilio sends incoming texts" }
+      return { changed: [], error: "the training or staging server cannot change where Twilio sends incoming texts" }
     end
 
     client = TwilioAccount.client or return

@@ -1125,6 +1125,32 @@ class RbsTest < ActiveSupport::TestCase
     Current.groundhog_day_time = nil
   end
 
+  test "staging never emails Rangers: held, or to the test address only" do
+    sandbox_off(Setting::BROADCAST_MAIL_SANDBOX)
+
+    with_env("RANGER_CLUBHOUSE_ENVIRONMENT" => "Staging") do
+      assert_equal :held, Rbs.email_mode
+
+      set_test_address("test+?@example.com")
+
+      assert_equal :test, Rbs.email_mode
+    end
+  end
+
+  test "staging holds texts as the text sandbox does, with no Twilio call" do
+    sandbox_off(Setting::BROADCAST_SMS_SANDBOX)
+    configure_twilio
+    fake = FakeTwilioClient.new
+
+    with_env("RANGER_CLUBHOUSE_ENVIRONMENT" => "Staging") do
+      assert Rbs.send(:sms_held?)
+      assert_equal [Broadcast::STATUS_SENT, nil],
+                   with_fake_twilio(fake) { Rbs.send(:notify_by_text, "+14155550101", "Hello", nil) }
+    end
+
+    assert_empty fake.asked
+  end
+
   test "email held back is recorded as sent and never reaches SES" do
     person = listening("Listener")
     sandbox_off(Setting::BROADCAST_MAIL_SANDBOX)

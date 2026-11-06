@@ -696,7 +696,7 @@ class Rbs
     #
     # :held - recorded as sent and delivered to no one: the sandbox, the
     #   training server, and anywhere sending to Rangers is not switched on
-    #   and no test address is set
+    #   (staging never is) and no test address is set
     # :test - delivered through SES to the test address, never to a Ranger,
     #   in any environment
     # :misconfigured - a test address is set but cannot be used, so nothing
@@ -713,9 +713,16 @@ class Rbs
       return (test_address(pattern, 1) ? :test : :misconfigured) if pattern.present?
 
       # A config.x setting nobody set reads as an empty set of options, which
-      # counts as true. Only a real true sends to Rangers.
-      (Rails.configuration.x.rbs_email_rangers == true) ? :live : :held
+      # counts as true. Only a real true sends to Rangers, and never from
+      # staging, which runs on a copy of their accounts.
+      (Rails.configuration.x.rbs_email_rangers == true && !Current.is_staging?) ? :live : :held
     end
+
+    # Whether broadcast texts and alerts are held: on staging, which runs on a
+    # copy of real accounts with no test number to text instead, and under the
+    # text sandbox, read past the cache like the email sandbox so a send sees
+    # the latest save.
+    def sms_held? = Current.is_staging? || Setting.fresh_value(Setting::BROADCAST_SMS_SANDBOX)
 
     #
     # The mode a queued job may send in: never less safe than the one it was
@@ -1150,10 +1157,6 @@ class Rbs
     def sms_body(message)
       "#{SMS_PREFIX}#{message}#{SMS_SUFFIX}"
     end
-
-    # Whether the text sandbox holds broadcast texts. Read past the cache, like
-    # the email sandbox: a send must see the latest save.
-    def sms_held? = Setting.fresh_value(Setting::BROADCAST_SMS_SANDBOX)
 
     # The Messaging Service, and a client for each thread, asked for once a
     # run. Settings no text can be sent with would fail every text the same
@@ -1771,7 +1774,7 @@ class Rbs
     # none of. A text Twilio may have taken without answering is
     # send-unconfirmed, so it is never sent again.
     def notify_by_text(phone_number, sms_message, row_id)
-      return [Broadcast::STATUS_SENT, nil] if Setting.get_value(Setting::BROADCAST_SMS_SANDBOX)
+      return [Broadcast::STATUS_SENT, nil] if sms_held?
 
       [Broadcast::STATUS_SENT, SmsService.send_text(phone_number, sms_message, receipt_for: row_id)]
     rescue => e

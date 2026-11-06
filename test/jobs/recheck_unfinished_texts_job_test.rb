@@ -4,18 +4,14 @@ require "test_helper"
 
 class RecheckUnfinishedTextsJobTest < ActiveJob::TestCase
   include FakeTwilioTestHelper
-  include EnvTestHelper
-
-  # config/recurring.yml as Solid Queue reads it, on a server with env set.
-  def recurring(env = {})
-    with_env(env) { YAML.safe_load(ERB.new(Rails.root.join("config/recurring.yml").read).result) }
-  end
+  include RecurringScheduleTestHelper
 
   test "it is scheduled daily in production, and neither in development nor on the training server" do
     assert_equal ["RecheckUnfinishedTextsJob", "at 6am every day"],
-                 recurring.dig("production", "recheck_unfinished_texts")&.values_at("class", "schedule")
-    assert_nil recurring.dig("development", "recheck_unfinished_texts")
-    assert_nil recurring("RANGER_CLUBHOUSE_GROUNDHOG_DAY_TIME" => "2025-08-30 12:00")
+                 recurring_schedule(environment: "Production")
+                   .dig("production", "recheck_unfinished_texts")&.values_at("class", "schedule")
+    assert_nil recurring_schedule.dig("development", "recheck_unfinished_texts")
+    assert_nil recurring_schedule(environment: "Production", ghd: "2025-08-30 12:00")
                .dig("production", "recheck_unfinished_texts")
   end
 

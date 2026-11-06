@@ -159,6 +159,12 @@ class Salesforce
   # @param fields [Hash] field name => new value
   # @return [Boolean]
   def obj_update(objname, objid, fields)
+    # A read is fine anywhere; a write would change the applicant's real record.
+    if Current.copy_of_real_accounts?
+      @error_message = "Salesforce records are never changed from the training or staging server"
+      return false
+    end
+
     uri = URI.parse("#{instance_url.chomp('/')}#{SOBJECT_PATH}/#{objname}/#{objid}")
     request = Net::HTTP::Patch.new(uri)
     request["Authorization"] = "Bearer #{@access_token}"

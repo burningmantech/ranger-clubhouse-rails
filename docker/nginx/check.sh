@@ -43,9 +43,9 @@ H=ranger-clubhouse.burningman.org
 B=http://127.0.0.1:18080
 fails=0
 # Every request comes "through Cloudflare" (its header names the visitor) for the real hostname,
-# unless a test sets HOST or NOCF.
+# unless a test sets HOST, CFIP or NOCF.
 req() {
-  local cf="CF-Connecting-IP: 203.0.113.7"; [ -n "${NOCF:-}" ] && cf="X-Not-Cloudflare: 1"
+  local cf="CF-Connecting-IP: ${CFIP:-203.0.113.7}"; [ -n "${NOCF:-}" ] && cf="X-Not-Cloudflare: 1"
   curl -sg --path-as-is --max-time 5 -A "$UA" -H "Host: ${HOST:-$H}" -H "$cf" "$@"
 }
 code() { req -o /dev/null -w '%{http_code}' "$@" 2>/dev/null; }
@@ -141,6 +141,11 @@ expect 405 -X TRACE "$B/"
 expect 400 -A "curl/8.7.1" "$B/"
 expect 400 -A "sqlmap/1.8" "$B/"
 expect 400 -A "" "$B/"
+
+# --- refused netblocks: the visitor's address, on any path; the first address past the range passes
+CFIP=35.192.0.1 expect 400 "$B/me"
+CFIP=35.207.255.254 expect 400 "$B/up"
+CFIP=35.208.0.1 expect 200 "$B/me"
 
 # --- nothing the client says about itself reaches Rails: the visitor is Cloudflare's header, the rest is overwritten
 spoof=(-H "Forwarded: host=evil.example" -H "X-Forwarded-Host: evil.example" -H "X-Forwarded-For: 6.6.6.6, 7.7.7.7"

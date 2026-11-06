@@ -26,6 +26,8 @@ class Me::OnlineCourseController < ApplicationController
 
     Moodle.new.set_up_person(current_user, course)
     redirect_to course_site_url, allow_other_host: true
+  rescue Moodle::WriteRefusedError => e
+    back_to_page e.message
   rescue Moodle::DownForMaintenanceError, Moodle::ConnectFailureError
     back_to_page "The Online Course is down for maintenance. Try again later, " \
                  "and email #{EmailAddresses::TECH_CADRE} if it's still down tomorrow."

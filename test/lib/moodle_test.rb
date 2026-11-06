@@ -4,11 +4,12 @@ require "test_helper"
 require "ostruct"
 
 # Unit tests for the pure Moodle client helpers plus decode_response / warnings
-# handling. These never touch the network or DB: helpers run against lightweight
-# doubles, and the only DB-writing collaborator (ErrorLog) is stubbed on the
-# failure paths.
+# handling. These never touch the network: helpers run against lightweight
+# doubles, ErrorLog is stubbed on the failure paths, and only the write-refusal
+# test writes to the DB (the four Moodle settings it needs).
 class MoodleTest < ActiveSupport::TestCase
   include ErrorLogTestHelper
+  include EnvTestHelper
 
   PersonDouble = Struct.new(:last_name, :desired_first_name, :callsign, :email, :id, keyword_init: true)
   ResponseDouble = Struct.new(:code, :body, keyword_init: true)
@@ -202,5 +203,31 @@ class MoodleTest < ActiveSupport::TestCase
   test "build_query encodes a criteria array of hashes" do
     query = Moodle.build_query({ "criteria" => [{ "key" => "email", "value" => "a@b.co" }] })
     assert_equal "criteria%5B0%5D%5Bkey%5D=email&criteria%5B0%5D%5Bvalue%5D=a%40b.co", query
+  end
+
+  # ---- writes from a copy of the real accounts ----
+
+  # The training server and staging run on copies of the real accounts, so a
+  # write would change a real person's learning-site account. Refused before
+  # any request: were it not, the domain below would fail to resolve instead.
+  test "a write is refused on the training server and on staging" do
+    create_moodle_settings
+    moodle = Moodle.new
+
+    { "RANGER_CLUBHOUSE_ENVIRONMENT" => "Staging", "RANGER_CLUBHOUSE_GROUNDHOG_DAY_TIME" => "2026-08-25 12:00" }
+      .each do |variable, value|
+      with_env(variable => value) do
+        error = assert_raises(Moodle::WriteRefusedError) { moodle.update_user({ "id" => 7, "idnumber" => 42 }) }
+        assert_match "never changed", error.message
+      end
+    end
+  end
+
+  private
+
+  def create_moodle_settings
+    { Setting::MOODLE_DOMAIN => "moodle.example", Setting::MOODLE_TOKEN => "token-never-shown",
+      Setting::MOODLE_SERVICE_NAME => "clubhouse", Setting::MOODLE_STUDENT_ROLE_ID => "5" }
+      .each { |name, value| Setting.find_or_initialize_by(name:).update!(value:) }
   end
 end

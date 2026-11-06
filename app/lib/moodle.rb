@@ -21,6 +21,14 @@ class Moodle
   # Raised when the Moodle host cannot be reached (DNS/TCP/TLS/timeout).
   class ConnectFailureError < StandardError; end
 
+  # Raised instead of changing anything on the learning site from a server that
+  # runs on a copy of the real accounts: the training server, and staging.
+  class WriteRefusedError < StandardError
+    def initialize(message = "Moodle accounts are never changed from the training or staging server")
+      super
+    end
+  end
+
   LOGIN_URL = "/login/token.php"
   WEB_SERVICE_URL = "/webservice/rest/server.php"
 
@@ -435,6 +443,9 @@ class Moodle
   # @param data [Hash] extra request parameters
   # @return [Object] decoded response
   def request_web_service(method, service, data = {})
+    # A read is fine anywhere; a write would change a real person's account.
+    raise WriteRefusedError if method != "GET" && Current.copy_of_real_accounts?
+
     query = {
       "wstoken" => token,
       "moodlewsrestformat" => "json",

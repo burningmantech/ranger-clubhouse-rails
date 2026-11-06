@@ -5,6 +5,7 @@ require "test_helper"
 # What a sender is told about the broadcast channels that deliver to no one.
 class RbsSandboxTest < ActiveSupport::TestCase
   include SesTestHelper
+  include EnvTestHelper
 
   setup do
     sandbox_off(Setting::BROADCAST_MAIL_SANDBOX)
@@ -14,6 +15,13 @@ class RbsSandboxTest < ActiveSupport::TestCase
     assert_not_includes RbsSandbox.on, "emails"
 
     with_rangers_emailed(false) { assert_includes RbsSandbox.on, "emails" }
+  end
+
+  test "staging names texts as held, as the text sandbox does" do
+    sandbox_off(Setting::BROADCAST_SMS_SANDBOX)
+
+    assert_not_includes RbsSandbox.on, "text messages"
+    with_env("RANGER_CLUBHOUSE_ENVIRONMENT" => "Staging") { assert_includes RbsSandbox.on, "text messages" }
   end
 
   test "the email sandbox is named as before" do

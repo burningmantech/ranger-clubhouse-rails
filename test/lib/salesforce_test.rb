@@ -8,6 +8,7 @@ require "ostruct"
 # a queue of response doubles, and ErrorLog is silenced on the failure paths.
 class SalesforceTest < ActiveSupport::TestCase
   include ErrorLogTestHelper
+  include EnvTestHelper
 
   ResponseDouble = Struct.new(:code, :body, keyword_init: true)
 
@@ -281,6 +282,19 @@ class SalesforceTest < ActiveSupport::TestCase
       assert_equal false, sf.obj_update("Ranger__c", "a01SF001", {})
       assert_match "Salesforce update failed: no route to host", sf.error_message
       assert_equal "salesforce-update-exception", calls.first[:args][1]
+    end
+  end
+
+  test "obj_update writes nothing from the training server or staging, and says why" do
+    sf = authed_connector(nil)
+    sf.define_singleton_method(:execute_request) { |_uri, _request| raise "Salesforce was asked" }
+
+    { "RANGER_CLUBHOUSE_ENVIRONMENT" => "Staging", "RANGER_CLUBHOUSE_GROUNDHOG_DAY_TIME" => "2026-08-25 12:00" }
+      .each do |variable, value|
+      with_env(variable => value) do
+        assert_equal false, sf.obj_update("Ranger__c", "a01SF001", { "CH_UID__c" => "42" })
+        assert_match "never changed", sf.error_message
+      end
     end
   end
 
