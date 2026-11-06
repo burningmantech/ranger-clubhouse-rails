@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   # Signing in is the Clubhouse's front door, so it sits at the root instead of
   # behind a /sessions prefix.
   root to: "sessions#new"
+
   # A client has no password form: its accounts are signed in elsewhere.
   post "/", to: "sessions#create", constraints: ->(_request) { !Sso.client? }
   # Signing in with a passkey, offered wherever the password form is and 404
@@ -12,6 +13,9 @@ Rails.application.routes.draw do
     post "passkey/options", to: "sessions#passkey_options", as: :passkey_options
     post "passkey", to: "sessions#passkey", as: :passkey_sign_in
   end
+  # handle legacy login path
+  get "login", to: redirect("/")
+
   delete "logout", to: "sessions#logout", as: :logout
   get "forgot", to: "sessions#forgot", as: :forgot
   post "reset-password", to: "sessions#reset_password", as: :reset_password
