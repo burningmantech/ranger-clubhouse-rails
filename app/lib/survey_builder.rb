@@ -43,12 +43,14 @@ class SurveyBuilder
   # Represents question data with responses or statistics
   class QuestionData
     attr_accessor :id, :type, :description, :responses, :slots,
-                  :mean, :variance, :distribution, :rating_count
+                  :mean, :variance, :distribution, :rating_count, :option_list
 
-    def initialize(id:, type:, description:)
+    # option_list: what a multiple-choice question offers, in its order.
+    def initialize(id:, type:, description:, option_list: [])
       @id = id
       @type = type
       @description = description
+      @option_list = option_list
       @responses = []
       @slots = []
     end
@@ -93,11 +95,12 @@ class SurveyBuilder
   # Represents a question response with optional statistics
   class QuestionResponse
     attr_accessor :description, :type, :responses,
-                  :mean, :variance, :distribution, :rating_count
+                  :mean, :variance, :distribution, :rating_count, :option_list
 
-    def initialize(description:, type:)
+    def initialize(description:, type:, option_list: [])
       @description = description
       @type = type
+      @option_list = option_list
       @responses = []
     end
   end
@@ -119,21 +122,6 @@ class SurveyBuilder
     def initialize(id:, callsign:)
       @id = id
       @callsign = callsign
-    end
-  end
-
-  # Represents a survey report result for a given survey
-  class SurveyReportResult
-    attr_reader :id, :year, :type, :title, :position_id, :position_title, :reports
-
-    def initialize(id:, year:, type:, title:, position_id:, position_title:, reports:)
-      @id = id
-      @year = year
-      @type = type
-      @title = title
-      @position_id = position_id
-      @position_title = position_title
-      @reports = reports
     end
   end
 
@@ -281,15 +269,15 @@ class SurveyBuilder
   # @param data [SurveyData, nil] preloaded survey data; built here when omitted
   # @return [Array<SurveyReport>]
   def self.build_survey_reports(survey, trainer_id = nil, include_person = false, data: nil)
-    data ||= load_survey_data(survey)
     trainer_id = trainer_id&.to_i
+    data ||= load_survey_data(survey, trainer_id:, include_person:)
 
     slots = data.slots
     survey_groups = data.groups
     questions_by_group_id = data.questions.group_by(&:survey_group_id)
 
-    # Reporting on one trainer is a filter over the same answers, not a
-    # different query -- see load_survey_data.
+    # Filtered here as well as in load_survey_data: a caller walking every
+    # trainer (all_trainers_report) passes the whole survey's answers.
     survey_answers = trainer_id ? data.answers.select { |a| a.trainer_id == trainer_id } : data.answers
     answers_by_question_id = survey_answers.group_by(&:survey_question_id)
 
@@ -330,26 +318,35 @@ class SurveyBuilder
       end
     end
 
-    # Add the main report on top if it has questions
-    reports.unshift(main_report) unless main_report.questions.empty?
+    # Add the main report on top if it holds anything. Ranked ratings alone
+    # count: a trainer-on-trainer survey's peers may rate without commenting,
+    # and upstream kept such a report too (its questions start as []).
+    reports.unshift(main_report) unless main_report.questions.empty? && main_report.summarized_ratings.empty?
 
     reports
   end
 
-  # Everything a survey's reports are built from. Reporting on a single
-  # trainer is a filter over these, not a different set of queries, so a
-  # caller that walks every trainer (all_trainers_report) loads this once
-  # instead of per trainer -- that loop cost 394 queries and 328ms on the 2026
-  # trainer-on-trainer survey's 54 trainers.
+  # Everything a survey's reports are built from. A caller that walks every
+  # trainer (all_trainers_report) loads this once and filters it per trainer,
+  # instead of loading per trainer -- that loop cost 394 queries and 328ms on
+  # the 2026 trainer-on-trainer survey's 54 trainers. A report on one trainer
+  # loads only the answers about them: a survey holds up to 5,000 answers.
   SurveyData = Struct.new(:slots, :groups, :questions, :answers, :people, keyword_init: true)
 
+  # Both choices must match the report built from the data: loaded for one
+  # trainer it holds no one else's answers, and loaded without include_person
+  # a report that names people reads each one with a query of its own. Neither
+  # has a default, so every caller says which it means.
+  #
   # @param survey [Survey]
+  # @param include_person [Boolean] preload who answered, for a report that may name them
+  # @param trainer_id [Integer, nil] load only the answers about this person
   # @return [SurveyData]
-  def self.load_survey_data(survey)
-    answers = SurveyAnswer.where(survey_id: survey.id)
-                          .where.not(response: "")
-                          .includes(:trainer, :person)
-                          .to_a
+  def self.load_survey_data(survey, include_person:, trainer_id: nil)
+    answers = SurveyAnswer.where(survey_id: survey.id).where.not(response: "")
+    answers = answers.where(trainer_id:) if trainer_id
+    answers = answers.includes(:person) if include_person
+    answers = answers.to_a
 
     trainer_ids = answers.filter_map { |answer| answer.trainer_id if answer.trainer_id&.positive? }.uniq
     people = if trainer_ids.empty?
@@ -441,7 +438,8 @@ class SurveyBuilder
         data = QuestionData.new(
           id: question.id,
           type: question.type,
-          description: question.description
+          description: question.description,
+          option_list: question.option_list
         )
         if is_alpha
           data.responses = alpha_responses
@@ -548,7 +546,8 @@ class SurveyBuilder
           data = QuestionData.new(
             id: question.id,
             type: question.type,
-            description: question.description
+            description: question.description,
+            option_list: question.option_list
           )
 
           if is_alpha
@@ -603,7 +602,8 @@ class SurveyBuilder
         end
       end
 
-      question_response = QuestionResponse.new(description: question.description, type: question.type)
+      question_response = QuestionResponse.new(description: question.description, type: question.type,
+                                               option_list: question.option_list)
       if is_rating
         compute_statistics(ratings, question_response)
       else
@@ -689,35 +689,24 @@ class SurveyBuilder
                  PersonReference.new(id: 0, callsign: answer.callsign)
                end
 
-      AnswerResult.new(answer: answer.response, person: person)
+      AnswerResult.new(answer: answer.response, person:)
     else
       AnswerResult.new(answer: answer.response)
     end
   end
 
-  # Report on a trainer for a given year
+  # How often each option of a multiple-choice question was picked, in the
+  # order the question offers them: { "Great" => 4, "OK" => 1 }. An answer no
+  # longer among them -- an option since reworded -- goes last, ties broken by
+  # its text so the order holds from one load to the next; an option nobody
+  # picked is left out.
   #
-  # @param trainer_id [Integer]
-  # @param year [Integer]
-  # @param type [String, nil]
-  # @return [Array<SurveyReportResult>]
-  def self.trainer_report_for_year(trainer_id, year, type)
-    surveys = Survey.find_all_for_trainer_year(trainer_id, year, type)
-
-    survey_reports = []
-    surveys.each do |survey|
-      survey_reports << SurveyReportResult.new(
-        id: survey.id,
-        year: survey.year,
-        type: survey.type,
-        title: survey.title,
-        position_id: survey.position_id,
-        position_title: survey.position.title,
-        reports: SurveyBuilder.build_survey_reports(survey, trainer_id, false)
-      )
-    end
-
-    survey_reports
+  # @param question [QuestionData, QuestionResponse]
+  # @return [Hash{String => Integer}]
+  def self.option_tally(question)
+    answers = question.try(:slots).presence&.flat_map(&:responses) || question.responses
+    order = question.option_list
+    answers.map(&:answer).tally.sort_by { |option, count| [order.index(option) || order.size, -count, option] }.to_h
   end
 
   # Report on all trainers who have feedback for a given survey
@@ -734,7 +723,7 @@ class SurveyBuilder
 
     # Loaded once and filtered per trainer; rebuilding it per trainer is what
     # made this report cost hundreds of queries.
-    data = load_survey_data(survey)
+    data = load_survey_data(survey, include_person: true)
 
     trainers = []
     found_trainers.each do |trainer|

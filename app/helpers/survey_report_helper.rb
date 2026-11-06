@@ -40,6 +40,13 @@ module SurveyReportHelper
     )
   end
 
+  # How often each option of a multiple-choice question was picked, in the
+  # order given: "Great ×4 · OK ×1". A no-break space holds each count to its
+  # option, while a long option still wraps between its own words.
+  def survey_tally(tally)
+    safe_join(tally.map { |option, picks| "#{option} ×#{picks}" }, tag.span(" · ", class: "text-stone-muted"))
+  end
+
   # Who gave an answer. Feedback is anonymous unless the respondent agreed to
   # share their name (SurveyBuilder.build_answer honors that flag), so the
   # absence of a person here is a deliberate state, not missing data.
@@ -85,7 +92,8 @@ module SurveyReportHelper
   # export walks them.
   def survey_comment_count(questions)
     (questions || []).sum do |question|
-      next 0 if question.type == SurveyQuestion::TYPE_RATING
+      # Multiple-choice picks are tallied, not counted as comments.
+      next 0 if [SurveyQuestion::TYPE_RATING, SurveyQuestion::TYPE_OPTIONS].include?(question.type)
 
       if question.respond_to?(:slots) && question.slots.present?
         question.slots.sum { |slot| slot.responses.size }

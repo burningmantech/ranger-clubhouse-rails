@@ -441,11 +441,12 @@ Trap: A review line loads only the pane's frame (`Turbo-Frame: uf-pane`, HTML on
 Trap: `Intake#display_group` counts a current UBERBONKED status as `:flagged`, as `IntakeHelper#intake_lead_kind` chips it — change one and the red chip lands in "Other potential Alphas".
 
 ### Survey feedback reports (SurveyReportingConcern)
-Used by: Training › Surveys (`Training::SurveysController`), Mentoring › Alpha Surveys (`Mentoring::SurveysController`)
+Used by: Training › Surveys (`Training::SurveysController`), Mentoring › Alpha Surveys (`Mentoring::SurveysController`); `SurveyBuilder` alone also feeds Me › Trainer/Mentor Feedback
 Owner: `SurveyBuilder` (`app/lib/survey_builder.rb`), `SurveyReportingConcern` (`app/controllers/concerns/survey_reporting_concern.rb`)
 Touches: `survey`, `survey_group`, `survey_question`, `survey_answer`, `slot`, `trainer_status`, `person`
 Verify: `test/controllers/training/surveys_controller_test.rb`, `test/controllers/mentoring/surveys_controller_test.rb`
 Trap: The host must define `load_survey` and `authorize_survey_report`, which the concern registers, in that order, as before_actions on `report`/`trainer` — a class-level `authorize_role` alone does not authorize one survey's feedback.
+Trap: A multiple-choice (`options`) question is tallied on the page (`common/surveys/_question`, `SurveyBuilder.option_tally`) and its picks are counted apart from comments (`count_totals`' `@choice_count`, `SurveyReportHelper#survey_comment_count`), as on Me › Trainer/Mentor Feedback; who picked what stays in the comments CSV, which still walks every non-rating answer.
 
 ### Model audit trail & year scoping (ApplicationRecord)
 Used by: every model with `self.audit_model = true` (`Person`, `PersonSlot`, `Provision`, `Bmid`, `Asset`, `PersonAsset`, `Document`, `MailTemplate`, `Role`, `Survey` and others), read back by Administration › System Logs › Action Logs; `where_year` / `where_years` behind the datetime `for_year` scopes (`Timesheet`, `TimesheetMissing`, `EventDate`, `BroadcastMessage`, `BmidExport`, `PersonOnlineCourse`); `BLANK_WHEN_EMPTY_RICH_TEXT` for rich-text columns
@@ -855,7 +856,18 @@ Verify: `test/controllers/me/surveys_controller_test.rb`, `test/helpers/me/surve
 Trap: `SurveyBuilder.retrieve_alpha_survey` raises `ArgumentError` (unrescued by `load_survey_data`: a 500) with no Alpha timesheet that year; `retrieve_mentoring_survey` never checks the asker, so anyone can answer any `slot_id`'s mentoring survey.
 Trap: `create` deletes old answers (`SurveyAnswer.delete_all_for_person_slot`/`delete_all_for_survey`) outside the transaction while `SurveyBuilder.retrieve_slot_survey_trainers` hides already-rated trainers, so a resubmit loses those ratings for good.
 
-### Me › Online Course
+### Me › Trainer/Mentor Feedback
+Reach it: `GET /me/feedback` (`year`) → My Clubhouse › Communication › Trainer/Mentor Feedback
+Gate: any signed-in person, and only their own feedback: no id in the URL, as upstream admits the subject alone (menu: a `proc:` on `TrainerFeedbackReport.any_for?`, the same scope the page lists)
+Controller: `app/controllers/me/feedback_controller.rb` (`index`)
+Owner: `TrainerFeedbackReport` (`app/lib/reports/trainer_feedback_report.rb`), `SurveyBuilder` (`app/lib/survey_builder.rb`)
+Touches: `survey`, `survey_group`, `survey_question`, `survey_answer`, `slot`, `person`
+Verify: `test/controllers/me/feedback_controller_test.rb`, `test/lib/reports/trainer_feedback_report_test.rb`
+Trap: EvTrap: Every answer is anonymous to the person it is about: the reports are built with `include_person` false, as upstream's `trainerReportForYear` built them, so `SurveyBuilder.build_answer` attaches no one, and the page renders `common/surveys/_answers` with `named: false` so no Anonymous line prints under each comment. That holds even for a fellow trainer who picked "Share my name with <trainer>" on the trainer-on-trainer form, the only place the Clubhouse asks; trainee, Alpha and mentee answers are stored as shareable without being asked. Answers are still grouped by session or shift, and the About card says one from a small session may point to its writer.
+Trap: `TrainerFeedbackReport.surveys` drives the years, the rows and the menu gate alike: answers with a non-blank response (`load_survey_data` drops blank ones; 3,184 exist), and every survey kind but mentor-for-mentees, whose answers assess the mentee (left out 2026-11-05, chosen by Claude, reversible; upstream showed them). With no `?year=` the page opens on the newest year that has rows, passing over one whose answers no report can place: deleting a session nullifies its answers' `slot_id`.
+Trap: A multiple-choice (`options`) question is tallied (`SurveyBuilder.option_tally`, in the order `option_list` gives, an answer no longer offered last and ties broken by text) in its own table, and its picks count in a Multiple-Choice Answers stat box, not as comments. A stat box or count with nothing in it is left out: the Alpha surveys since 2024 ask no rating questions about a mentor, so those years show no Ratings box. The admin report pages tally options the same way (Survey feedback reports, above).
+Trap: The year selector lists `TrainerFeedbackReport.years` alone, with `include_current_year: false`; `PageLayoutHelper#year_options` otherwise adds the current year, which may hold nothing to read.
+Trap: Not `Survey.find_all_for_trainer_year`, which without a type leaves out the Alpha survey (upstream linked it on a page of its own). `TrainerFeedbackReport.for_year` folds every report `SurveyBuilder` returns: a trainer-on-trainer survey files its answers in normal groups, so its ranked ratings are per session, and `build_survey_reports` keeps a main report that holds only ranked ratings (it used to drop it, unlike upstream). › Online Course
 Reach it: `GET /me/online-course` ← "Go To Online Course" in dashboard task "Read the Ranger Manual & Complete The Online Course", and `GET /me/online-course?art=1` ← "Go To Online Course" beside each ART with an online course in "Sign Up For & Attend Advanced Ranger Training (ART)"; set up and go `POST /me/online-course`
 Gate: any signed-in person, for their own account; `create` is refused on the Groundhog Day server (`prevent_if_ghd_server`)
 Controller: `app/controllers/me/online_course_controller.rb` (`index`, `create`)

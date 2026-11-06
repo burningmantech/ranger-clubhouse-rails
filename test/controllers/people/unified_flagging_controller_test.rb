@@ -269,15 +269,17 @@ class People::UnifiedFlaggingControllerTest < ActionDispatch::IntegrationTest
 
   # --- the jump list -------------------------------------------------------
 
-  # The links are plain fragments for the browser: a Turbo visit of the same
-  # URL refetched the whole roster and threw away any unapplied filter text.
+  # The links are plain fragments, which the browser follows rather than Turbo
+  # (application.js, turbo:click; test/system/me/feedback_test.rb): a Turbo
+  # visit of the same URL refetched the whole roster and threw away any
+  # unapplied filter text.
   test "the jump list offers every line shown, and nothing with one line" do
     sign_in_as(@admin)
 
     get people_unified_flagging_path
 
-    assert_select "a[href=?][data-turbo=false]", "#person-#{@flagged.id}", text: @flagged.callsign
-    assert_select "a[href=?][data-turbo=false]", "#person-#{@noted.id}", text: @noted.callsign
+    assert_select "a[href=?]", "#person-#{@flagged.id}", text: @flagged.callsign
+    assert_select "a[href=?]", "#person-#{@noted.id}", text: @noted.callsign
 
     get people_unified_flagging_path(q: @flagged.callsign)
 

@@ -347,10 +347,16 @@ module SurveyReportingConcern
   # cannot claim a number its CSV does not contain.
   def count_totals
     @comment_count = 0
+    @choice_count = 0
     session_ids = []
 
-    each_feedback_answer do |_trainer, slot_response, _question, _response|
-      @comment_count += 1
+    each_feedback_answer do |_trainer, slot_response, question, _response|
+      # A multiple-choice pick is not a comment: _question tallies those.
+      if question.type == SurveyQuestion::TYPE_OPTIONS
+        @choice_count += 1
+      else
+        @comment_count += 1
+      end
       session_ids << slot_response.slot_id if slot_response
     end
 

@@ -1,0 +1,80 @@
+<%# locals: (row:) %>
+<%# One survey's feedback about the reader, a TrainerFeedbackReport::Row: its
+    ratings in one table, its multiple-choice questions tallied in another,
+    then each comment question by session. No line says who wrote a comment --
+    every answer here is anonymous. %>
+<% counts = { "comment" => row.comment_count, "rating" => row.rating_count,
+              "multiple-choice answer" => row.choice_count, "session" => row.session_ids.size } %>
+<%= ui_section row.survey.title, id: "survey-#{row.survey.id}",
+               badge: survey_audience_label(row.survey), badge_color: :secondary do %>
+  <%# Only what the survey holds: the Alpha surveys since 2024 ask no rating
+      questions about a mentor, and carry no sessions. %>
+  <p class="text-stone-muted mb-3">
+    <%= counts.filter_map { |noun, count| pluralize(count, noun) if count.positive? }.join(" · ") %>
+  </p>
+
+  <% if row.ratings.any? %>
+    <%= ui_subheading "Ratings" %>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Question" %>
+        <%= t.heading "Avg Rating" %>
+        <%= t.heading "Std Dev" %>
+        <%= t.heading "Ratings" %>
+        <%= t.heading "Distribution" %>
+      <% end %>
+      <%= t.body do %>
+        <% row.ratings.each do |rating| %>
+          <%= t.row do %>
+            <%# whitespace-normal: a row header holds one line by default, and a
+                question is a sentence. A ranked session rides under it. %>
+            <%= t.row_header class: "whitespace-normal" do %>
+              <%= rating.description %>
+              <% if rating.slot_response %>
+                <div class="text-stone-muted">
+                  <%= render "common/surveys/session_label", slot_response: rating.slot_response %>
+                </div>
+              <% end %>
+            <% end %>
+            <%= t.cell do %><%= survey_rating_meter rating.stats.mean %><% end %>
+            <%= t.cell survey_std_dev(rating.stats.variance) %>
+            <%= t.cell rating.stats.rating_count %>
+            <%= t.cell do %><%= survey_distribution rating.stats.distribution %><% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if row.choices.any? %>
+    <%= ui_subheading "Multiple Choice" %>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Question" %>
+        <%= t.heading "Answers" %>
+      <% end %>
+      <%= t.body do %>
+        <% row.choices.each do |choice| %>
+          <%= t.row do %>
+            <%= t.row_header choice.description, class: "whitespace-normal" %>
+            <%= t.cell survey_tally(choice.tally) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% row.questions.each do |question| %>
+    <%= ui_subheading question.description %>
+    <div class="flex flex-col gap-4">
+      <% question.groups.each do |slot_response, answers| %>
+        <div>
+          <p class="text-stone-muted mb-2">
+            <% if slot_response %><%= render "common/surveys/session_label", slot_response: %> · <% end %><%= pluralize(answers.size, "comment") %>
+          </p>
+          <%= render "common/surveys/answers", answers:, named: false %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

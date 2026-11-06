@@ -1,0 +1,59 @@
+<% content_for :title, "Trainer/Mentor Feedback" %>
+
+<%= hero_panel icon: "square-poll-vertical", heading_level: :h1, id: "feedback-header" do |panel| %>
+  <% panel.title do %>Trainer/Mentor Feedback<% end %>
+  <% panel.description do %>
+    What trainees, mentees, Alphas, and fellow trainers said about your teaching and mentoring.
+  <% end %>
+  <% panel.back_to do %><%= back_to_dashboard %><% end %>
+  <%# Only the years someone left feedback in. The current year is not added
+      for its own sake: an empty year is nothing to visit. %>
+  <% panel.year_selector year: @year, years: @years, include_current_year: false if @year %>
+<% end %>
+
+<% if @rows.any? %>
+  <% comments = @rows.sum(&:comment_count) %>
+  <% ratings = @rows.sum(&:rating_count) %>
+  <% choices = @rows.sum(&:choice_count) %>
+  <%# A box only for what the year holds, as each survey's count line does: the
+      Alpha surveys since 2024 ask no rating questions about a mentor, and the
+      trainees' surveys none that are multiple choice. %>
+  <%= ui_stat_row id: "feedback-stats" do %>
+    <%= ui_stat_box comments.to_s, "Comments", icon: "comments", icon_type: :solid if comments.positive? %>
+    <%= ui_stat_box ratings.to_s, "Ratings", icon: "star", icon_type: :solid if ratings.positive? %>
+    <%= ui_stat_box choices.to_s, "Multiple-Choice Answers", icon: "list-check", icon_type: :solid if choices.positive? %>
+    <%= ui_stat_box @rows.size.to_s, "Surveys", icon: "square-poll-vertical", icon_type: :solid %>
+  <% end %>
+
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Who leaves feedback?</dt>
+      <dd>Trainees after a session you taught, fellow trainers after a session you taught together, mentees after a shift you mentored, and Alphas after their Alpha shift.</dd>
+      <dt>Are the answers anonymous?</dt>
+      <dd>Names are never shown here, whatever the person chose when they answered. Answers are grouped by the session or shift they came from, so one from a small session may still point to who wrote it.</dd>
+      <dt>Why is a survey missing?</dt>
+      <dd>A survey is listed once someone has answered a question about you. The Clubhouse has kept survey answers since 2012.</dd>
+    </dl>
+  <% end %>
+
+  <%# Jump links once the year holds more than one survey. A link to a place on
+      this page is the browser's to follow (application.js, turbo:click). %>
+  <% if @rows.size > 1 %>
+    <nav class="my-4" aria-label="<%= @year %> surveys">
+      <%= button_row do %>
+        <% @rows.each do |row| %>
+          <%= button_link row.survey.title, :secondary, "#survey-#{row.survey.id}" %>
+        <% end %>
+      <% end %>
+    </nav>
+  <% end %>
+
+  <%= render partial: "survey", collection: @rows, as: :row %>
+<% elsif @year %>
+  <%= ui_empty_state "No #{@year} feedback can be shown. Choose another year above.",
+                     icon: "clipboard-question", icon_type: :solid %>
+<% else %>
+  <%= ui_empty_state "No feedback yet. Trainees, mentees, Alphas, and fellow trainers answer a survey after a " \
+                     "session you taught or a shift you mentored, and their answers appear here.",
+                     icon: "clipboard-question", icon_type: :solid %>
+<% end %>

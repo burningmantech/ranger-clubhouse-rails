@@ -13,12 +13,11 @@
     <%= dropdown_menu letter, name: "dropdown-scroll-list",
                       data: { action: "toggle->dropdown-fit#fit" },
                       menu_class: "max-h-96 overflow-y-auto flex-nowrap left-(--dropdown-fit-shift)" do %>
-      <%# data-turbo=false: Turbo 8.0.23 has no same-page shortcut, so a
-          fragment link it handles is a full visit of the same URL -- the
-          page refetched and re-rendered, and any unapplied filter text
-          thrown away. The browser's own fragment navigation just scrolls. %>
+      <%# A link to a place on this same page is the browser's to follow
+          (application.js, turbo:click): it just scrolls, keeping any
+          unapplied filter text. %>
       <% links.each do |link| %>
-        <%= dropdown_item link.title, "##{link.id}", data: { turbo: false } %>
+        <%= dropdown_item link.title, "##{link.id}" %>
       <% end %>
     <% end %>
   <% end %>

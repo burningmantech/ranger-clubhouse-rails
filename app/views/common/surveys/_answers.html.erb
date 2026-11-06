@@ -1,9 +1,12 @@
+<%# locals: (answers:, named: true) %>
 <%# What people wrote. Each answer keeps its own indented block so a long
-    comment never runs into the next one. %>
+    comment never runs into the next one. named: false leaves out the line
+    saying who wrote it, for a page where every answer is anonymous to its
+    reader (Me › Trainer/Mentor Feedback). %>
 <ul class="flex flex-col gap-3 list-none ps-0">
   <% answers.each do |answer| %>
     <li class="border-s-2 border-base-300 ps-3">
-      <div class="mb-1"><%= survey_respondent answer.person %></div>
+      <% if named %><div class="mb-1"><%= survey_respondent answer.person %></div><% end %>
       <p class="whitespace-pre-line"><%= answer.answer %></p>
     </li>
   <% end %>
