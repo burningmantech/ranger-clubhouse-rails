@@ -1,6 +1,7 @@
-<%# One question's answers. A rating question reports its statistics; every
-    other kind lists what people wrote, grouped by the session they answered
-    after. A manual-review group holds its answers directly, with no session. %>
+<%# One question's answers. A rating question reports its statistics and a
+    multiple-choice one its tally; every other kind lists what people wrote,
+    grouped by the session they answered after. A manual-review group holds its
+    answers directly, with no session. %>
 <% if question.type == SurveyQuestion::TYPE_RATING %>
   <%= ui_table full_width: true do |t| %>
     <%= t.header do %>
@@ -17,6 +18,16 @@
         <%= t.cell do %><%= survey_distribution question.distribution %><% end %>
       <% end %>
     <% end %>
+  <% end %>
+<% elsif question.type == SurveyQuestion::TYPE_OPTIONS %>
+  <%# Picks, not comments: tallied in the order the question offers its options,
+      as Me › Trainer/Mentor Feedback shows them; the counts are in the tally.
+      Who picked what stays in the comments export. %>
+  <% tally = SurveyBuilder.option_tally(question) %>
+  <% if tally.any? %>
+    <p><%= survey_tally(tally) %></p>
+  <% else %>
+    <%= ui_empty_state "No one answered this question.", icon: "comment-slash", icon_type: :solid %>
   <% end %>
 <% elsif question.respond_to?(:slots) && question.slots.present? %>
   <div class="flex flex-col gap-6">

@@ -83,6 +83,10 @@ Rails.application.routes.draw do
 
     get "directory", to: "directory#index"
 
+    # What trainees, mentees, Alphas and fellow trainers said about the reader
+    # (upstream me/trainer-feedback), a year at a time.
+    get "feedback", to: "feedback#index"
+
     resources :messages, only: %w[index new create show] do
       get :find_recipient, on: :collection
       # The search field's suggestions (MessagesConcern#suggest).

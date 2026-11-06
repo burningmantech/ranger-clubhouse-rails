@@ -97,7 +97,15 @@ module Menus
         visible_if: { status: [:is_ranger?, :is_echelon?] } },
       { title: "Mentoring", path: :me_mentoring_path,
         description: "Your mentors, mentees, and mentoring status",
-        visible_if: { status: [:is_ranger?] } }
+        visible_if: { status: [:is_ranger?] } },
+      # Upstream's teacher.have_feedback: offered once anyone has said something
+      # about the person that the page lists. No role names who that is -- an
+      # ART's trainers hold a role composed per training, and a retired trainer
+      # keeps old feedback -- so the gate is the data, asked of the same scope
+      # the page reads, once, when the menu is built.
+      { title: "Trainer/Mentor Feedback", path: :me_feedback_path,
+        description: "What trainees, mentees, Alphas, and fellow trainers said about your teaching and mentoring",
+        visible_if: { proc: ->(context) { TrainerFeedbackReport.any_for?(context[:person].id) } } }
     ]
   }.freeze
 

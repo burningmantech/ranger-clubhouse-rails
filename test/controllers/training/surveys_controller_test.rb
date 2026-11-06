@@ -314,6 +314,24 @@ class Training::SurveysControllerTest < ActionDispatch::IntegrationTest
     assert_no_match(/Not this one's comment\./, response.body)
   end
 
+  test "the trainer page tallies a multiple-choice question and counts its picks apart from comments" do
+    built = build_survey(trainer_group: true)
+    trainer = person(:active_ranger)
+    on_time = SurveyQuestion.create!(survey_id: built.id, survey_group_id: built.trainer_group.id, sort_index: 3,
+                                     type: SurveyQuestion::TYPE_OPTIONS, description: "Kept to time?",
+                                     options: "Yes\nNo")
+    %w[No Yes Yes].each { |pick| answer(built, on_time, person(:auditor_ranger), pick, trainer:) }
+    answer(built, built.trainer_comment, person(:auditor_ranger), "Explained the radio well.", trainer:)
+
+    sign_in_as(@manager)
+    get training_survey_trainer_path("in-person", built.id, trainer.id)
+
+    assert_response :success
+    assert_select "p", text: /\AYes ×2 · No ×1\z/
+    assert_select "div", text: /\A1\s*Comments\z/
+    assert_select "div", text: /\A3\s*Multiple-Choice Answers\z/
+  end
+
   test "a trainer with no feedback gets an empty state, not an error" do
     built = build_survey(trainer_group: true)
 

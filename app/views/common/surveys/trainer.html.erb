@@ -11,10 +11,13 @@
   <% end %>
 <% end %>
 
-<% if @comment_count.positive? || @rating_count.positive? %>
+<% if @comment_count.positive? || @rating_count.positive? || @choice_count.positive? %>
   <%= ui_stat_row do %>
     <%= ui_stat_box @comment_count.to_s, "Comments", icon: "comments", icon_type: :solid %>
     <%= ui_stat_box @rating_count.to_s, "Ratings", icon: "star", icon_type: :solid %>
+    <% if @choice_count.positive? %>
+      <%= ui_stat_box @choice_count.to_s, "Multiple-Choice Answers", icon: "list-check", icon_type: :solid %>
+    <% end %>
     <% if @session_count.positive? %>
       <%= ui_stat_box @session_count.to_s, "Sessions", icon: "calendar", icon_type: :solid %>
     <% end %>

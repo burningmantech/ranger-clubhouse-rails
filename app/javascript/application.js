@@ -36,6 +36,19 @@ document.addEventListener("turbo:before-morph-element", (event) => {
 });
 
 
+// A link to a place on this same page (href="#faq") is the browser's to
+// follow: it scrolls there and keeps the page as it is. Turbo 8.0.23 has no
+// same-page shortcut, so it would fetch the page again and replace it,
+// throwing away whatever had been typed into it. Cancelling turbo:click hands
+// the click back to the browser, which every such link then gets for free.
+document.addEventListener("turbo:click", (event) => {
+    const url = new URL(event.detail.url);
+    const here = window.location;
+    if (url.hash && url.origin === here.origin && url.pathname === here.pathname && url.search === here.search) {
+        event.preventDefault();
+    }
+});
+
 history.scrollRestoration = "manual"; // Disable Chrome maintaining scroll position on page refresh
 
 Turbo.StreamActions.page_redirect = function () {
