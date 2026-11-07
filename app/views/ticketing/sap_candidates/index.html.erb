@@ -88,7 +88,7 @@
                     bold text with nothing to say it opens. %>
                 <%= ui_disclosure pluralize(row.schedule.size, "sign-up"),
                                   summary_class: "font-semibold text-heading" do %>
-                  <ul class="ms-4 list-disc">
+                  <ul class="list-disc ps-list-indent">
                     <% row.schedule.each do |signup| %>
                       <li class="mt-1">
                         <span class="font-semibold"><%= signup.begins_label %></span>

@@ -62,7 +62,7 @@
                                   class: AppFormBuilder::CHECKBOX_CLASSES %>
                 Force graduate <%= candidate.person.callsign %>
               </label>
-              <ul class="list-disc ms-5">
+              <ul class="list-disc ps-list-indent">
                 <% candidate.gaps.messages.each do |message| %>
                   <li><%= message %></li>
                 <% end %>

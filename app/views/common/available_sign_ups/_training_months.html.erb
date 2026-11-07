@@ -12,7 +12,7 @@
         <%= month %>
         <%= ui_badge pluralize(month_entries.size, "session"), :secondary %>
       <% end %>
-      <ul class="list-disc ms-5 space-y-1">
+      <ul class="list-disc ps-list-indent space-y-1">
         <% sessions.each do |description, count| %>
           <li><%= description %><%= " (#{pluralize count, "session"})" if count > 1 %></li>
         <% end %>

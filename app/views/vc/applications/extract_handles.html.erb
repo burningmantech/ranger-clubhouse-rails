@@ -4,7 +4,7 @@
   <% if @problem_handles.any? %>
     <%= ui_callout_box :error do %>
       <strong>Potentially problematic handles were flagged:</strong>
-      <ul class="list-disc ms-5">
+      <ul class="list-disc ps-list-indent">
         <% @problem_handles.each do |handle, problems| %>
           <li><strong><%= handle %></strong> &mdash; <%= Array(problems).join(" ") %></li>
         <% end %>

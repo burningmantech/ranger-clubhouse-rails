@@ -41,7 +41,7 @@
 <% if @skipped.any? %>
   <%= ui_callout_box :warning, accent: true, class: "my-4",
                      title: "#{pluralize(@skipped.size, 'Badge')} Left as They Are" do %>
-    <ul class="list-disc ms-5">
+    <ul class="list-disc ps-list-indent">
       <% @skipped.each do |skip| %>
         <li><%= skip.callsign %> &mdash; <%= skip.reason %></li>
       <% end %>

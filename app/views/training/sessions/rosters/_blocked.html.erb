@@ -24,7 +24,7 @@
   <% end %>
 
   <% if verdict.is_a?(Scheduling::Verdict::MissingRequirements) && verdict.requirements.present? %>
-    <ul class="list-disc ms-5 mb-3">
+    <ul class="list-disc ps-list-indent mb-3">
       <% verdict.requirements.each do |requirement| %>
         <li><%= Scheduling::REQUIREMENT_LABELS[requirement] || requirement %></li>
       <% end %>

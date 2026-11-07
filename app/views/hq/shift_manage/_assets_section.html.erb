@@ -24,7 +24,7 @@
   <% if radio_accounting.shift_radios.positive? ||
         radio_accounting.collect_at_shift_end.positive? ||
         radio_accounting.over_max.positive? %>
-    <ul class="list-disc ms-5 mb-2">
+    <ul class="list-disc ps-list-indent mb-2">
       <% if radio_accounting.shift_radios.positive? %>
         <li>
           Collect <%= pluralize(radio_accounting.shift_radios, "shift radio") %> at the end

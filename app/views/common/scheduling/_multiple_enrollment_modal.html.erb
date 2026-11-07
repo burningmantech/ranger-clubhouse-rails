@@ -11,7 +11,7 @@
   <%= m.title "Already Signed Up" %>
   <%= m.body do %>
     <p>Only one <%= only_one %> may be signed up for. <%= who %> already signed up for:</p>
-    <ul class="mb-2 list-disc ms-5 font-semibold">
+    <ul class="mb-2 list-disc ps-list-indent font-semibold">
       <% result.verdict.slots.each do |enrolled| %>
         <li><%= [enrolled.position.title, enrolled.description].compact_blank.join(" - ") %> <%= slot_shift_time(enrolled) %></li>
       <% end %>

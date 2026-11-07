@@ -12,7 +12,7 @@
 
     <dt class="font-bold text-heading">Linked <%= "Shift".pluralize(verdict.linked_slots.size) %></dt>
     <dd>
-      <ul class="list-disc pl-4 space-y-1">
+      <ul class="list-disc ps-list-indent space-y-1">
         <% verdict.linked_slots.each do |linked| %>
           <li><%= linked.slot.position.title %></li>
         <% end %>
