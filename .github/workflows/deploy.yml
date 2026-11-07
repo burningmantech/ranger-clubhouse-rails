@@ -6,6 +6,14 @@ run-name: Deploy to production by @${{ github.actor }}
 
 on: workflow_dispatch
 
+# Nothing here reads the repository: the job reads ECS, tags images in ECR and rolls the service.
+permissions: {}
+
+# One promotion at a time.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 
 defaults:
   run:
@@ -17,12 +25,15 @@ env:
   AWS_ECS_CLUSTER: "rangers"
   AWS_ECS_CONTAINER_NAME: "${{ vars.PROJECT_ID }}"
   AWS_REGION: "us-west-2"
+  # The GitHub accounts that may promote to production, as a JSON list. Grown on request.
+  DEPLOYERS: '["wsanchez", "mikeburg", "srabraham"]'
 
 jobs:
 
   push-to-production:
 
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     permissions:
       id-token: write
@@ -36,11 +47,14 @@ jobs:
           egress-policy: block
           allowed-endpoints: >
             *.amazonaws.com:443
-            *.docker.io:443
 
+      # fromJSON makes this a membership test rather than a substring one. A re-run keeps the
+      # original github.actor, so the account that pressed re-run is checked as well.
       - name: Check user
-        if: ${{ ! contains('["wsanchez", "mikeburg", "srabraham"]', github.actor) }}
-        run: false
+        if: ${{ !contains(fromJSON(env.DEPLOYERS), github.actor) || !contains(fromJSON(env.DEPLOYERS), github.triggering_actor) }}
+        run: |
+          echo "::error::Not on the production deploy list: ${GITHUB_ACTOR} (triggered by ${GITHUB_TRIGGERING_ACTOR})"
+          exit 1
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
@@ -53,28 +67,45 @@ jobs:
         id: aws-login-ecr
         uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
 
-      - name: Push docker image to Amazon ECR
+      - name: Name the ECR repository
+        run: echo "IMAGE_REPOSITORY=${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}" >> "${GITHUB_ENV}"
+
+      # Production runs what staging's last completed deployment runs. Its task definition is the
+      # record: the image, by digest since cicd.yml started pinning it, and the commit in GIT_SHA,
+      # both written by the render that rolled it. A tag could lag a roll or a manual rollback;
+      # the task definition cannot. Read it only through --query: it holds credentials.
+      - name: Resolve the image staging runs
+        id: staging
         run: |
-          image_repository="${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}"
-          docker login
-          # Push SHA tag
-          docker pull "${image_repository}:staging"
-          docker tag "${image_repository}:staging" "${image_repository}:${{ github.sha }}"
-          docker push "${image_repository}:${{ github.sha }}"
-          # Push production rollback tag
-          if docker pull "${image_repository}:production"; then
-            echo "Pushing rollback tag for production"
-            docker tag "${image_repository}:production" "${image_repository}:production_rollback"
-            docker push "${image_repository}:production_rollback"
+          deployment=$(aws ecs describe-services --cluster "${AWS_ECS_CLUSTER}" --services "${{ vars.PROJECT_ID }}-staging-fg" --query 'services[0].deployments[?status==`PRIMARY`]|[0].[rolloutState, taskDefinition]' --output text)
+          read -r state task_definition <<< "${deployment}"
+          if [[ "${state}" != "COMPLETED" ]]; then
+            echo "::error::Staging's deployment is ${state}; promote once it has completed"
+            exit 1
           fi
-          # Push production tag
-          echo "Pushing production tag"
-          docker tag "${image_repository}:staging" "${image_repository}:production"
-          docker push "${image_repository}:production"
+          container=$(aws ecs describe-task-definition --task-definition "${task_definition}" --query 'taskDefinition.containerDefinitions[?name==`${{ env.AWS_ECS_CONTAINER_NAME }}`]|[0].[image, environment[?name==`GIT_SHA`]|[0].value]' --output text)
+          read -r image git_sha <<< "${container}"
+          if [[ ! "${git_sha}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::${task_definition} carries no GIT_SHA, so cicd.yml did not register it"
+            exit 1
+          fi
+          # Revisions from before the digest pin name the image by tag.
+          if [[ "${image}" == *@sha256:* ]]; then
+            digest="${image##*@}"
+          else
+            digest=$(docker buildx imagetools inspect "${image}" --format '{{.Manifest.Digest}}')
+          fi
+          if [[ ! "${digest}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "::error::Could not resolve ${image} to a digest: ${digest}"
+            exit 1
+          fi
+          echo "digest=${digest}" >> "${GITHUB_OUTPUT}"
+          echo "git_sha=${git_sha}" >> "${GITHUB_OUTPUT}"
+          echo "Promoting commit ${git_sha}, image ${digest}, from ${task_definition##*/}" >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Get current date
         id: date
-        run: echo "date=$(date "+%Y-%m-%dT%H:%M:%S")" >> "${GITHUB_OUTPUT}"
+        run: echo "date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")" >> "${GITHUB_OUTPUT}"
 
       - name: Fetch and update current task definition
         id: new-task-definition
@@ -83,7 +114,7 @@ jobs:
           task-definition-arn: "arn:aws:ecs:us-west-2:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/${{ vars.PROJECT_ID }}-production-fg"
           task-definition-family: "${{ vars.PROJECT_ID }}-production-fg"
           container-name: "${{ env.AWS_ECS_CONTAINER_NAME }}"
-          image: "${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}:${{ github.sha }}"
+          image: "${{ env.IMAGE_REPOSITORY }}@${{ steps.staging.outputs.digest }}"
           environment-variables: |
             GHA_ACTOR_ID=${{ github.actor_id }}
             GHA_ACTOR=${{ github.actor }}
@@ -95,7 +126,7 @@ jobs:
             GHA_RUN_NUMBER=${{ github.run_number }}
             GHA_TRIGGERING_ACTOR=${{ github.triggering_actor }}
             GHA_WORKFLOW=${{ github.workflow }}
-            GIT_SHA=${{ github.sha }}
+            GIT_SHA=${{ steps.staging.outputs.git_sha }}
             TASK_UPDATED=${{ steps.date.outputs.date }}
 
       - name: Update task definition and ECS service
@@ -107,6 +138,13 @@ jobs:
           cluster: "${{ env.AWS_ECS_CLUSTER }}"
           wait-for-service-stability: true
           wait-for-minutes: 10
+          # The SDK's default backoff can give up after six polls, well inside the ten minutes.
+          wait-max-delay-seconds: 15
+
+      # :production is a pointer for people to the image the last production roll that stayed up
+      # put there; nothing deploys from it. Retagging in the registry moves no bytes.
+      - name: Move the production tag
+        run: docker buildx imagetools create --prefer-index=false --tag "${IMAGE_REPOSITORY}:production" "${IMAGE_REPOSITORY}@${{ steps.staging.outputs.digest }}"
 
 #      - name: Fetch and update current task definition for training
 #        id: new-task-definition-training
@@ -115,7 +153,7 @@ jobs:
 #          task-definition-arn: "arn:aws:ecs:us-west-2:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/${{ vars.PROJECT_ID }}-training-fg"
 #          task-definition-family: "${{ vars.PROJECT_ID }}-training-fg"
 #          container-name: "${{ env.AWS_ECS_CONTAINER_NAME }}"
-#          image: "${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}:${{ github.sha }}"
+#          image: "${{ env.IMAGE_REPOSITORY }}@${{ steps.staging.outputs.digest }}"
 #          environment-variables: |
 #            GHA_ACTOR_ID=${{ github.actor_id }}
 #            GHA_ACTOR=${{ github.actor }}
@@ -127,7 +165,7 @@ jobs:
 #            GHA_RUN_NUMBER=${{ github.run_number }}
 #            GHA_TRIGGERING_ACTOR=${{ github.triggering_actor }}
 #            GHA_WORKFLOW=${{ github.workflow }}
-#            GIT_SHA=${{ github.sha }}
+#            GIT_SHA=${{ steps.staging.outputs.git_sha }}
 #            TASK_UPDATED=${{ steps.date.outputs.date }}
 #
 #      - name: Update task definition and ECS service for training
@@ -139,3 +177,4 @@ jobs:
 #          cluster: "${{ env.AWS_ECS_CLUSTER }}"
 #          wait-for-service-stability: true
 #          wait-for-minutes: 10
+#          wait-max-delay-seconds: 15

@@ -11,6 +11,13 @@ on:
   pull_request:
     branches: ["main"]
 
+# A new push to a pull request cancels the run still going for its previous one (so does a re-run
+# of an older run of the same pull request, which then needs the newer run re-run). A push to
+# main gets a group of its own, so no main run is ever cancelled; deploy-staging queues itself.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
 
 defaults:
   run:
@@ -150,7 +157,7 @@ jobs:
 
       - name: Keep failed system-test screenshots
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: failure()
+        if: failure() && matrix.suite == 'system'
         with:
           name: screenshots
           path: tmp/screenshots
@@ -187,7 +194,9 @@ jobs:
           load: true
           tags: "${{ vars.PROJECT_ID }}:${{ github.sha }}"
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # Only main exports the layer cache. Exports from every pull request branch filled the
+          # repository's 10 GB, and eviction then took main's layers and the gem and npm caches.
+          cache-to: ${{ github.ref == 'refs/heads/main' && 'type=gha,mode=max' || '' }}
           # `load: true` exports to the local Docker daemon, which can't take the
           # attestation manifest list that buildx would otherwise attach.
           provenance: false
@@ -200,16 +209,22 @@ jobs:
           docker run --rm --entrypoint nginx "${{ vars.PROJECT_ID }}:${{ github.sha }}" -t -c /app/docker/nginx/nginx.conf
           docker run --rm --entrypoint /app/docker/nginx/check.sh "${{ vars.PROJECT_ID }}:${{ github.sha }}"
 
-      # The deploy job of the same run will push this image, so it never has
-      # to be built twice.
+      # The deploy job of the same run pushes this image, so it is never built twice. Only a
+      # main run has that job; it and a re-run of it are the artifact's only readers, so it
+      # lives as long as GitHub lets a run be re-run.
       - name: Save Docker image
-        run: docker image save "${{ vars.PROJECT_ID }}:${{ github.sha }}" | gzip -9 > docker_image.tgz
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: docker image save "${{ vars.PROJECT_ID }}:${{ github.sha }}" | zstd -z > docker_image.tgz
 
       - name: Upload Docker image artifacts
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docker
           path: docker_image.tgz
+          # Already compressed: the action's own deflate pass would be most of the upload step.
+          compression-level: 0
+          retention-days: 30
 
 
   deploy-staging:
@@ -222,17 +237,39 @@ jobs:
     timeout-minutes: 30
 
     permissions:
+      contents: read
       id-token: write
+
+    # One staging roll at a time, every run kept in the queue. GitHub orders the queue by when
+    # each job became ready, not by commit, so the first step is what keeps an older merge from
+    # rolling over a newer one.
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+      queue: max
 
     steps:
 
       - name: Harden Runner
         uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
+          disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
             *.amazonaws.com:443
-            *.docker.io:443
+            api.github.com:443
+
+      # A slower run for an older merge, or a re-run of one, would otherwise roll staging
+      # backwards. The run for main's tip rolls staging.
+      - name: Stop if main has moved on
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tip=$(gh api "repos/${GITHUB_REPOSITORY}/branches/main" --jq .commit.sha)
+          if [[ "${tip}" != "${GITHUB_SHA}" ]]; then
+            echo "::error::main is at ${tip}; this run built ${GITHUB_SHA}, and the run for the tip rolls staging"
+            exit 1
+          fi
 
       - name: Download Docker image artifacts
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -240,7 +277,7 @@ jobs:
           name: docker
 
       - name: Load Docker image
-        run: gzip --uncompress --stdout docker_image.tgz | docker image load
+        run: zstd -d -c docker_image.tgz | docker image load
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
@@ -253,27 +290,26 @@ jobs:
         id: aws-login-ecr
         uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
 
-      - name: Push docker image to Amazon ECR
+      - name: Name the ECR repository
+        run: echo "IMAGE_REPOSITORY=${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}" >> "${GITHUB_ENV}"
+
+      # The task definition gets the digest, not the tag, so a replacement task can never pull
+      # anything but this build.
+      - name: Push the image to Amazon ECR
+        id: push
         run: |
-          image_repository="${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}"
-          docker login
-          # Push SHA tag
-          docker tag "${{ vars.PROJECT_ID }}:${{ github.sha }}" "${image_repository}:${{ github.sha }}"
-          docker push "${image_repository}:${{ github.sha }}"
-          # Push staging rollback tag
-          if docker pull "${image_repository}:staging"; then
-            echo "Pushing rollback tag for staging"
-            docker tag "${image_repository}:staging" "${image_repository}:staging_rollback"
-            docker push "${image_repository}:staging_rollback"
+          docker tag "${{ vars.PROJECT_ID }}:${{ github.sha }}" "${IMAGE_REPOSITORY}:${{ github.sha }}"
+          docker push "${IMAGE_REPOSITORY}:${{ github.sha }}"
+          digest=$(docker buildx imagetools inspect "${IMAGE_REPOSITORY}:${{ github.sha }}" --format '{{.Manifest.Digest}}')
+          if [[ ! "${digest}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "::error::Could not read the pushed image's digest: ${digest}"
+            exit 1
           fi
-          # Push staging tag
-          echo "Pushing staging tag"
-          docker tag "${image_repository}:${{ github.sha }}" "${image_repository}:staging"
-          docker push "${image_repository}:staging"
+          echo "digest=${digest}" >> "${GITHUB_OUTPUT}"
 
       - name: Get current date
         id: date
-        run: echo "date=$(date "+%Y-%m-%dT%H:%M:%S")" >> "${GITHUB_OUTPUT}"
+        run: echo "date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")" >> "${GITHUB_OUTPUT}"
 
       - name: Fetch and update current task definition
         id: new-task-definition
@@ -282,7 +318,7 @@ jobs:
           task-definition-arn: "arn:aws:ecs:us-west-2:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/${{ vars.PROJECT_ID }}-staging-fg"
           task-definition-family: "${{ vars.PROJECT_ID }}-staging-fg"
           container-name: "${{ env.AWS_ECS_CONTAINER_NAME }}"
-          image: "${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}:${{ github.sha }}"
+          image: "${{ env.IMAGE_REPOSITORY }}@${{ steps.push.outputs.digest }}"
           environment-variables: |
             GHA_ACTOR_ID=${{ github.actor_id }}
             GHA_ACTOR=${{ github.actor }}
@@ -306,3 +342,11 @@ jobs:
           cluster: "${{ env.AWS_ECS_CLUSTER }}"
           wait-for-service-stability: true
           wait-for-minutes: 10
+          # The SDK's default backoff can give up after six polls, well inside the ten minutes.
+          wait-max-delay-seconds: 15
+
+      # :staging is a pointer for people to the image the last staging roll that stayed up put
+      # there; nothing deploys from it (deploy.yml reads the staging task definition). Retagging
+      # in the registry moves no bytes.
+      - name: Move the staging tag
+        run: docker buildx imagetools create --prefer-index=false --tag "${IMAGE_REPOSITORY}:staging" "${IMAGE_REPOSITORY}:${{ github.sha }}"
