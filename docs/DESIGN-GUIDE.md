@@ -901,7 +901,7 @@ error variants.
 <div class="sidebar-backdrop"></div>
 <aside class="sidebar-drawer">
   <%# Header row, below lg only: the title, and Close from button_action (see Sidebar > Drawer Header Row) %>
-  <div class="flex items-center justify-between h-16 shrink-0 ps-3 pe-2 border-b border-sidebar-divider lg:hidden">
+  <div class="flex items-center justify-between h-16 shrink-0 z-10 ps-3 pe-2 bg-chrome border-b border-sidebar-divider lg:hidden">
     <span id="sidebar-drawer-label" class="text-base font-semibold text-sidebar-content">Sidebar</span>
     <%= button_action "Close", :ghost, icon: "xmark", icon_type: :solid,
                       data: { action: "click->sidebar#closeDrawer" },
@@ -2051,7 +2051,7 @@ The sidebar is composed of several key components:
 <%# Drawer container %>
 <aside class="sidebar-drawer">
 <%# Header row (mobile only): title and Close %>
-  <div class="flex items-center justify-between h-16 shrink-0 ps-3 pe-2 border-b border-sidebar-divider lg:hidden">
+  <div class="flex items-center justify-between h-16 shrink-0 z-10 ps-3 pe-2 bg-chrome border-b border-sidebar-divider lg:hidden">
     <span id="sidebar-drawer-label" class="text-base font-semibold text-sidebar-content">Sidebar</span>
     <%= button_action "Close", :ghost, icon: "xmark", icon_type: :solid,
                       data: { action: "click->sidebar#closeDrawer" },
@@ -2074,6 +2074,9 @@ Below `lg` the drawer opens on a header row: the title "Sidebar" at the start, t
 - **64px** (`h-16`), the navbar's height, so Close sits on the line of the navbar icons still showing beside the
   drawer. Never a close control laid over the first section header.
 - **Below `lg` only** (`lg:hidden`): from `lg` the sidebar is always open and has nothing to close.
+- **Above the logo** (`z-10 bg-chrome`, as the menu area and its section titles have): in a drawer under about 225px
+  tall (heavy zoom) the logo pinned at the bottom reaches the row; without them it painted over Close and took its
+  clicks.
 - **Title**: `<span id="sidebar-drawer-label">` in `text-base font-semibold text-sidebar-content`. The id is what the
   aside's `aria-labelledby` names (`"#{id}-label"` in `sidebar_menu`), so the two move together.
 - **Close**: `button_action "Close", :ghost, icon: "xmark", icon_type: :solid`, a `btn-sm` (36px) with
@@ -2243,7 +2246,7 @@ Custom utility classes defined in `app/assets/stylesheets/components/sidebar.css
 |--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|
 | `sidebar-backdrop`       | `fixed inset-0 top-[64px] bg-gray-900/50 dark:bg-gray-900/80 z-30 hidden peer-checked:block lg:hidden`                                      | Semi-transparent overlay |
 | `sidebar-drawer`         | `fixed z-40 overflow-y-auto transition-transform top-[64px] h-[calc(100vh-64px)]`                                                           | Main drawer container    |
-| Drawer header row        | `flex items-center justify-between h-16 shrink-0 ps-3 pe-2 border-b border-sidebar-divider lg:hidden`                                       | Title and Close          |
+| Drawer header row        | `flex items-center justify-between h-16 shrink-0 z-10 ps-3 pe-2 bg-chrome border-b border-sidebar-divider lg:hidden`                        | Title and Close          |
 | `sidebar-nav-item`       | `block h-10 flex items-center p-3 text-sm transition-colors no-underline border-t border-sidebar-divider`                                   | Navigation link base     |
 | `sidebar-section-header` | `p-3 font-semibold uppercase tracking-wider overflow-hidden text-ellipsis`                                                                  | Section title styling    |
 | `sidebar-badge`          | `inline-flex items-center justify-center w-auto min-w-[1.125rem] h-4.5 ms-2 px-1.5 text-xs font-medium rounded-full`                        | Notification count badge |

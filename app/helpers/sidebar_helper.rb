@@ -76,8 +76,11 @@ module SidebarHelper
           # beside the drawer; from lg the sidebar is always open and has nothing to
           # close, so the row goes. No ink class on the button: sidebar.css sets the
           # rest ink and the focus ring, and leaves daisyUI's hover pill alone.
-          header = tag.div(class: "flex items-center justify-between h-16 shrink-0 ps-3 pe-2 " \
-                                  "border-b border-sidebar-divider lg:hidden") do
+          # z-10 and bg-chrome, as the menu area and its section titles have, keep the
+          # logo below the row: in a drawer under about 225px tall (heavy zoom) the
+          # logo reaches it, and without them it painted over Close and took its clicks.
+          header = tag.div(class: "flex items-center justify-between h-16 shrink-0 z-10 ps-3 pe-2 " \
+                                  "bg-chrome border-b border-sidebar-divider lg:hidden") do
             safe_join([tag.span("Sidebar", id: "#{id}-label", class: "text-base font-semibold text-sidebar-content"),
                        button_action("Close", :ghost, icon: "xmark", icon_type: :solid,
                                      data: { action: "click->sidebar#closeDrawer" },
