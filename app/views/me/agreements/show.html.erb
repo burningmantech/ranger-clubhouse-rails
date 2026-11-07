@@ -3,7 +3,11 @@
                back_to: ["Agreements", me_agreements_path] %>
 
 <%= ui_section @agreement.title do %>
-  <%= @document.body.html_safe %>
+  <%# lexxy-content carries the spacing and list markers a saved document needs,
+      as the bookmark and admin preview pages give it. %>
+  <div class="lexxy-content">
+    <%= @document.body.html_safe %>
+  </div>
   <div class="mt-4 <%= "text-success" if @agreement.signed %>">
     <% if @agreement.signed %>
       <%= fa_icon "check", :solid, { end: 2 } %> Agreement has been signed.
