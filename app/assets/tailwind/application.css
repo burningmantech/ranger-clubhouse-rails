@@ -180,6 +180,12 @@
     --text-base--line-height: 1.2;
     --text-lg: 1.1rem;
     --spacing-8xl: 90rem;
+    /* The one indent of a bulleted or numbered list: ps-list-indent beside
+       list-disc or list-decimal in a view, and the lexxy-content rule for rich
+       text. In em so the marker gutter scales with the list's own type (21.6px
+       at text-base, 24px at 1rem). The mail layout restates it as padding-left:
+       mail clients drop var() and logical properties. */
+    --spacing-list-indent: 1.5em;
 
     /* DaisyUI font size */
     --font-size: 0.9rem;
