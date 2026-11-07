@@ -61,7 +61,6 @@ class Swag < ApplicationRecord
   validates :title, presence: true
   validates :type, presence: true, inclusion: VALID_TYPES
   validates :shirt_type, inclusion: { in: VALID_SHIRT_TYPES, allow_blank: true }
-  validates :description, length: { maximum: 65535 }, allow_blank: true
 
   # Callbacks
   before_destroy :cleanup_person_shirt_references

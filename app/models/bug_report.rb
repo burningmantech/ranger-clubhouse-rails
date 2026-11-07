@@ -8,9 +8,6 @@ class BugReport < ApplicationRecord
 
   DESCRIPTION_LIMIT = 5_000
 
-  # The width of the url and user_agent columns.
-  STRING_LIMIT = 255
-
   # How many reports the log page shows. The log is emptied rather than paged.
   LIST_LIMIT = 200
 
@@ -18,7 +15,7 @@ class BugReport < ApplicationRecord
 
   # The database refuses a value longer than its column outright, and that
   # would lose the report over a header the person never sees.
-  normalizes :url, :user_agent, with: ->(value) { value.first(STRING_LIMIT) }
+  truncates_to_column :url, :user_agent, :ip
 
   # Whole sentences: the app prints a validation message as written, without
   # putting the field's name in front of it.

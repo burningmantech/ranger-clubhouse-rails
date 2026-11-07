@@ -2436,6 +2436,7 @@ All fields support these common options:
 | `hidden:`        | Boolean | Adds `hidden` class to wrapper                              |
 | `wrapper:`       | Boolean | Set to `false` to skip wrapper entirely                     |
 | `hide_label:`    | Boolean | Visually hide the label                                     |
+| `maxlength:`     | Integer | Defaults to what a model attribute can store (its own length rule, else its varchar column; none for a text column with no rule, a password or telephone field, or a form object); set it only for a smaller limit, `nil` for none |
 | `show_counter:`  | Boolean | Display character counter for fields with `maxlength`       |
 
 ### Field Types
@@ -2450,8 +2451,8 @@ All fields support these common options:
 <%= f.url_field :website, label: "Website" %>
 <%= f.search_field :query, label: "Search" %>
 
-<%# Text input with character counter %>
-<%= f.text_field :callsign, label: "Callsign", maxlength: 20, show_counter: true %>
+<%# Text input with character counter: the maxlength comes from the record %>
+<%= f.text_field :callsign, label: "Callsign", show_counter: true %>
 
 <%# Text input with responsive width %>
 <%= f.text_field :preferred_name, label: "Preferred Name", width: "w-full sm:w-48" %>

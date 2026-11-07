@@ -25,6 +25,49 @@ class ApplicationRecord < ActiveRecord::Base
 
   attr_accessor :audit_user_id, :audit_reason, :audit_is_new, :audit_changes
 
+  # A varchar or text column holds only so much, and under strict SQL mode a
+  # longer value is not cut short: MariaDB raises ActiveRecord::ValueTooLong,
+  # which reaches the reader as an error page. So every model refuses one first,
+  # as a message beside the field, measured as the column measures it:
+  # varchar(N) holds N characters; TEXT, MEDIUMTEXT and LONGTEXT hold that many
+  # bytes.
+  #
+  # It runs after the model's own validations and passes over a field they
+  # already refused, so the field gets one message rather than two; a rule that
+  # did not measure the value (allow_blank, if:) leaves it to the column.
+  # ActiveRecord counts an error added here, since valid? answers errors.empty?
+  # once the callbacks have run. Only a value being written is measured, since
+  # one read from the table already fits; a value composed later, in a
+  # before_save, is its model's to measure (AccessDocument#additional_comments_fit).
+  after_validation :values_fit_their_columns
+
+  # A value nobody typed, such as a browser's user agent or address, is cut to
+  # fit its column rather than refused: no one can shorten it, and the refusal
+  # would fail whatever save wrote it. Request headers arrive as binary, so the
+  # cut is made on the UTF-8 text and never splits a character; a text column is
+  # cut to its bytes.
+  def self.truncates_to_column(*names)
+    names.each do |name|
+      normalizes name, with: lambda { |value|
+        column = columns_hash[name.to_s]
+        text = value.dup.force_encoding(Encoding::UTF_8).scrub
+        column.type == :string ? text.first(column.limit) : text.truncate_bytes(column.limit, omission: "")
+      }
+    end
+  end
+
+  # The most characters a form field for the attribute should take: its own
+  # length rule's maximum, else a varchar column's width. nil for a text column,
+  # whose limit is in bytes, which no maxlength can express (AppFormBuilder).
+  def self.length_limit(name)
+    own_length_limit(name) || columns_hash[name.to_s].then { |column| column.limit if column&.type == :string }
+  end
+
+  # The whole-number maximum the attribute's own length rules set, or nil.
+  def self.own_length_limit(name)
+    validators_on(name).filter_map { |rule| rule.options.values_at(:maximum, :is).grep(Integer).first if rule.kind == :length }.min
+  end
+
   after_create :audit_create
   after_update :audit_update
   before_destroy :capture_audit_destroy_state
@@ -45,6 +88,39 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   private
+
+  def values_fit_their_columns
+    self.class.columns_hash.each do |name, column|
+      next unless column.limit && column.type.in?(%i[string text]) && attribute_changed?(name)
+      next if errors.include?(name)
+
+      # As it will be written: a serialized column's text, not its Hash.
+      value = read_attribute_for_database(name)
+      next unless value.is_a?(String)
+
+      # MariaDB trims spaces past the end of a column with only a note, so a
+      # value too long by trailing spaces alone still saves.
+      value = value.sub(/ +\z/, "") if value.end_with?(" ")
+      if column.type == :string
+        errors.add(name, :too_long, count: column.limit) if value.length > column.limit
+      elsif value.bytesize > column.limit
+        errors.add(name, :too_long_to_save)
+      end
+    end
+  end
+
+  # ActiveRecord's save answers false to any RecordInvalid raised inside it,
+  # including one from another record written in this one's callbacks (an
+  # audit row, a log entry, a note), and the form would come back with nothing
+  # on it to fix. So that record's complaint becomes this one's.
+  def create_or_update(...)
+    super
+  rescue ActiveRecord::RecordInvalid => e
+    raise if e.record.equal?(self)
+
+    e.record.errors.each { |error| errors.add(:base, error.full_message) }
+    raise ActiveRecord::RecordInvalid, self
+  end
 
   def audit_create
     return unless self.class.audit_model

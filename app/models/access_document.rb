@@ -94,6 +94,7 @@ class AccessDocument < ApplicationRecord
 
   # Virtual attribute for appending comments
   attribute :additional_comments, :string
+  validate :additional_comments_fit
 
   # Callbacks
   before_save :set_created_at_if_blank
@@ -476,11 +477,22 @@ class AccessDocument < ApplicationRecord
   end
 
   def prepend_additional_comments
+    self.comments = comments_with_additional if additional_comments.present?
+  end
+
+  # The note is prepended in before_save, after the column check has run
+  # (ApplicationRecord#values_fit_their_columns), so the room it will take
+  # alongside the comments already here is measured now.
+  def additional_comments_fit
     return if additional_comments.blank?
 
+    errors.add(:additional_comments, :too_long_to_save) if comments_with_additional.bytesize > self.class.columns_hash["comments"].limit
+  end
+
+  def comments_with_additional
     timestamp = Current.time.strftime("%-m/%-d/%y %-H:%M:%S")
     callsign = Current.person&.callsign || "(unknown)"
-    self.comments = "#{timestamp} #{callsign}: #{additional_comments}\n#{comments}"
+    "#{timestamp} #{callsign}: #{additional_comments}\n#{comments}"
   end
 
   def log_change_create

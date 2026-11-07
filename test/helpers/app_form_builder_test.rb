@@ -63,6 +63,60 @@ class AppFormBuilderTest < ActionView::TestCase
     assert_select "textarea.textarea"
   end
 
+  # ------------------------------------------------------------ maxlength
+
+  # ApplicationRecord.length_limit: a model's own length rule, else a varchar
+  # column's width. A text column's limit is bytes, so its field gets none, and
+  # a password's column holds a hash, so its width says nothing about the text.
+  test "a model attribute's field takes the most its record can store as its maxlength" do
+    render inline: <<~ERB, locals: { vehicle: Vehicle.new, person: Person.new }
+      <%= ui_form(vehicle, "/vehicles") do |f| %>
+        <%= f.text_field :vehicle_make, label: "Make", show_counter: true %>
+        <%= f.text_area :notes, label: "Notes" %>
+      <% end %>
+      <%= ui_form(person, "/people") do |f| %>
+        <%= f.text_field :callsign_pronounce, label: "Pronunciation" %>
+        <%= f.text_area :emergency_contact, label: "Emergency Contact" %>
+        <%= f.password_field :password, label: "Password" %>
+        <%= f.telephone_field :home_phone, label: "Phone" %>
+      <% end %>
+    ERB
+
+    assert_select "input[name='vehicle[vehicle_make]'][maxlength='191'][data-controller~='input-counter']"
+    # Rails would copy the limit into size, which widens an auto-width input.
+    assert_select "input[name='vehicle[vehicle_make]'][size]", count: 0
+    assert_select "textarea[name='vehicle[notes]']:not([maxlength])"
+    # The model's 20 rather than the column's 200; a text column's own rule counts too.
+    assert_select "input[name='person[callsign_pronounce]'][maxlength='20']"
+    assert_select "textarea[name='person[emergency_contact]'][maxlength='2000']"
+    assert_select "input[name='person[password]']:not([maxlength])"
+    # A phone is stored as the app reformats it, so its rule of 25 says nothing
+    # about what may be typed.
+    assert_select "input[name='person[home_phone]']:not([maxlength])"
+  end
+
+  test "a view's own maxlength wins over the record's, and nil leaves it off" do
+    render inline: <<~ERB, locals: { vehicle: Vehicle.new }
+      <%= ui_form(vehicle, "/vehicles") do |f| %>
+        <%= f.text_field :vehicle_year, label: "Year", maxlength: 4 %>
+        <%= f.text_field :vehicle_model, label: "Model", maxlength: nil %>
+      <% end %>
+    ERB
+
+    assert_select "input[name='vehicle[vehicle_year]'][maxlength='4']"
+    assert_select "input[name='vehicle[vehicle_model]']:not([maxlength])"
+  end
+
+  test "a form object's field has no maxlength unless the view gives one" do
+    render inline: <<~ERB, locals: { person: @person }
+      <%= ui_form(person, "/people") do |f| %>
+        <%= f.text_field :name, label: "Full Name" %>
+      <% end %>
+    ERB
+
+    assert_select "input[type=text]:not([maxlength])"
+  end
+
   # ------------------------------------------------------------ rich_text_area
 
   test "rich_text_area renders the editor as the field itself, holding what was saved" do

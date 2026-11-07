@@ -134,9 +134,10 @@ module TeamManagement
   end
 
   # Team carries no validations of its own, so everything the columns require
-  # is checked here -- an over-long string or a nil NOT NULL boolean would
-  # otherwise reach MariaDB and raise, turning a correctable form mistake into
-  # an error page with the reader's work lost.
+  # is checked here -- an over-long string would otherwise fail the save! in
+  # save (ApplicationRecord#values_fit_their_columns), and a nil NOT NULL
+  # boolean would reach MariaDB and raise, either one turning a correctable
+  # form mistake into an error page with the reader's work lost.
   #
   # desired_roles is nil unless the actor may change role grants.
   def valid?(team, desired_roles = nil)

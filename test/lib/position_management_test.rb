@@ -372,6 +372,18 @@ class PositionManagementTest < ActiveSupport::TestCase
     assert_equal 0, counts[:grant_count]
   end
 
+  # One message per field: the cap of 20 below its column, or the column's own
+  # once the paycode is past that too.
+  test "a paycode past its cap gets one message" do
+    @position.paycode = "P" * 21
+    assert_not PositionManagement.valid?(@position)
+    assert_equal ["Paycom employee code is too long (maximum is 20 characters)."], @position.errors[:paycode]
+
+    @position.paycode = "P" * 300
+    assert_not PositionManagement.valid?(@position)
+    assert_equal ["Paycom employee code is too long (maximum is 255 characters)."], @position.errors[:paycode]
+  end
+
   private
 
   def create_position(title: "ZZ Doomed Position", **attributes)

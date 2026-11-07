@@ -33,10 +33,8 @@ class SurveyGroup < ApplicationRecord
   validates :type, presence: true,
             inclusion: { in: TYPES, allow_blank: true,
                          message: "Group type must be one of the kinds this page offers" }
-  validates :description, allow_blank: true, length: { maximum: 65535 }
-  # The column holds 191 characters, so a longer one has to be refused here:
-  # MySQL raises rather than answering the form. Capped at 190 to match every
-  # other title in this family.
+  # Capped at 190, one under the column, to match every other title in this
+  # family.
   validates :report_title, allow_blank: true,
             length: { maximum: 190, message: "Report title is too long (190 characters at most)" }
   validates :report_title,

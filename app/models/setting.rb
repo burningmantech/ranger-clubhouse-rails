@@ -584,7 +584,6 @@ class Setting < ApplicationRecord
 
   # Validations
   validates :name, presence: true
-  validates :value, allow_nil: true, length: { maximum: 65535 }
   validate :check_value_type
   validate :check_test_address_pattern, if: -> { name == BROADCAST_MAIL_TEST_ADDRESS && value.present? }
 

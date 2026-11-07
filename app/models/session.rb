@@ -13,6 +13,8 @@ class Session < ApplicationRecord
 
   belongs_to :person
 
+  truncates_to_column :user_agent, :ip_address
+
   after_destroy_commit :close_cable_connections
 
   # The sign-in a signed session_id cookie names, or nil with no cookie

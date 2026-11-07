@@ -475,15 +475,35 @@ class ProspectiveClubhouseAccountFromApplicationTest < ActiveSupport::TestCase
     assert_equal ProspectiveApplication::STATUS_APPROVED, application.reload.status
   end
 
-  # Pins the column-limit gap: Person allows a 191-character city, the column
-  # holds 50, and a limit that is not a validation passes valid?. So the
-  # preview says ready, and the save fails as an SQL error for the Tech Cadre.
-  # A fix that moves the column limits into Person makes this invalid instead.
-  test "a value too long for its column previews ready and fails at commit" do
+  # The application holds 255 characters of city and the account 50. Person
+  # refuses the longer one itself (ApplicationRecord#values_fit_their_columns),
+  # so the preview reports what the commit would refuse, rather than the save
+  # failing as an SQL error for the Tech Cadre.
+  test "a value too long for the account's column is invalid at preview and at commit" do
     application = prospective_application(:approved_ready)
     application.update_columns(city: "x" * 51)
 
-    assert_equal Creator::STATUS_READY, execute.first.status
+    previewed = execute.first
+    assert_equal Creator::STATUS_INVALID, previewed.status
+    assert_equal ["City is too long (maximum is 50 characters)."], previewed.errors
+
+    results = nil
+    assert_no_difference "Person.count" do
+      silence_error_log do |calls|
+        results = execute(commit: true)
+        assert_empty calls
+      end
+    end
+
+    assert_equal Creator::STATUS_INVALID, results.first.status
+    assert_equal ProspectiveApplication::STATUS_APPROVED, application.reload.status
+  end
+
+  # A database error part way through the account (a callsign or email taken at
+  # the same moment, a lost connection) rolls it back, says so, and is logged.
+  test "a database error while saving the account rolls it back and is logged" do
+    original = PersonStatus.method(:record)
+    PersonStatus.define_singleton_method(:record) { |*| raise ActiveRecord::RecordNotUnique, "Duplicate entry" }
 
     results = nil
     assert_no_difference "Person.count" do
@@ -497,7 +517,9 @@ class ProspectiveClubhouseAccountFromApplicationTest < ActiveSupport::TestCase
     failed = results.first
     assert_equal Creator::STATUS_CREATE_FAILED, failed.status
     assert_match(/\ASQL Error:/, failed.errors.first)
-    assert_equal ProspectiveApplication::STATUS_APPROVED, application.reload.status
+    assert_equal ProspectiveApplication::STATUS_APPROVED, prospective_application(:approved_ready).reload.status
+  ensure
+    PersonStatus.define_singleton_method(:record, original)
   end
 
   # ---- welcome email ----

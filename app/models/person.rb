@@ -258,15 +258,13 @@ class Person < ApplicationRecord
   validates :home_phone, phone: { format: :e164, allow_blank: true, message: PHONE_MESSAGE }, if: :home_phone_changed?
   validates :alt_phone, phone: { format: :e164, allow_blank: true, message: PHONE_MESSAGE }, if: :alt_phone_changed?
 
-  # Conditional validations for address
-  validates :street1, presence: true, length: { maximum: 191 }, unless: :only_basic_pii_required?
-  validates :apt, presence: false, length: { maximum: 191 }, unless: :only_basic_pii_required?
-  validates :street2, presence: false, length: { maximum: 191 }, unless: :only_basic_pii_required?
-  validates :city, presence: true, length: { maximum: 191 }, unless: :only_basic_pii_required?
-  validates :state, length: { maximum: 191 }
+  # Conditional validations for address. How long each may be is its column's
+  # size (ApplicationRecord#values_fit_their_columns).
+  validates :street1, presence: true, unless: :only_basic_pii_required?
+  validates :city, presence: true, unless: :only_basic_pii_required?
   validates :state, presence: true, if: :state_required?
-  validates :zip, presence: true, length: { maximum: 191 }, unless: :only_basic_pii_required?
-  validates :country, presence: true, length: { maximum: 191 }, unless: :only_basic_pii_required?
+  validates :zip, presence: true, unless: :only_basic_pii_required?
+  validates :country, presence: true, unless: :only_basic_pii_required?
 
   validates :camp_location, length: { maximum: 200 }
   validates :emergency_contact, length: { maximum: 2000 }

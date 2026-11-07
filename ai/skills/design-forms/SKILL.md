@@ -83,6 +83,7 @@ All fields support these common options:
 | `wrapper_class:` | String | Custom classes for wrapper div |
 | `width:` | String | Custom width classes (e.g., `"w-32"` or `"w-full sm:w-48"`) |
 | `hidden:` | Boolean | Adds `hidden` class to wrapper |
+| `maxlength:` | Integer | Defaults to what a model attribute can store: its own length rule, else its varchar column. None for a text column with no rule, a password or telephone field, or a form object. Set it only for a smaller limit; `nil` leaves it off |
 | `show_counter:` | Boolean | Display character counter for fields with `maxlength` |
 | `label_position:` | Symbol | **For `collection_radio_buttons` only**: `:inline` (default, label beside radios) or `:stacked` (label on its own line above radios). Only applies with `:horizontal` or `:auto` layout. |
 
@@ -100,8 +101,8 @@ All fields support these common options:
 <%= f.url_field :website, label: "Website" %>
 <%= f.search_field :query, label: "Search" %>
 
-<%# Text input with character counter %>
-<%= f.text_field :callsign, label: "Callsign", maxlength: 20, show_counter: true %>
+<%# Text input with character counter: the maxlength comes from the record %>
+<%= f.text_field :callsign, label: "Callsign", show_counter: true %>
 
 <%# Text input with responsive width %>
 <%= f.text_field :preferred_name, label: "Preferred Name", width: "w-full sm:w-48" %>

@@ -49,6 +49,9 @@ en:
         one: "%{attribute} is too long (maximum is 1 character)."
         other: "%{attribute} is too long (maximum is %{count} characters)."
       password_too_long: "%{attribute} is too long."
+      # A text column's limit is in bytes, which a reader cannot count, so the
+      # message gives no number (ApplicationRecord#values_fit_their_columns).
+      too_long_to_save: "%{attribute} is too long to save. Shorten it and try again."
       too_short:
         one: "%{attribute} is too short (minimum is 1 character)."
         other: "%{attribute} is too short (minimum is %{count} characters)."
@@ -86,6 +89,12 @@ en:
         alt_phone: "Alternative phone"
         callsign_pronounce: "Pronunciation"
         gender_custom: "Gender"
+        pronouns_custom: "Pronouns"
+        bpguid: "BPGUID"
+        sfuid: "SFUID"
+        lms_id: "Moodle account ID"
+        lms_username: "Moodle username"
+        employee_id: "Paycom employee ID"
       person_fka:
         fka: "Former callsign"
       person_language:
@@ -103,6 +112,7 @@ en:
       position:
         min: "Minimum"
         max: "Maximum"
+        paycode: "Paycom employee code"
       event_date:
         event_start: "Event start"
         event_end: "Event end"
@@ -199,5 +209,21 @@ en:
               inclusion: "Choose whether the post shows a headcount or callsigns."
             shift_coverage_group:
               required: "Choose the shift type this post belongs to."
+        survey_question:
+          attributes:
+            description:
+              too_long_to_save: "The question is too long to save. Shorten it and try again."
+            options:
+              too_long_to_save: "There are too many choices to save. Remove some and try again."
+        # Written in the application's own save, holding the old and new text of
+        # each change (ApplicationRecord#create_or_update shows it on the form).
+        prospective_application_log:
+          attributes:
+            data:
+              too_long_to_save: "This change is too large to record. Shorten the longest answers and try again."
+        access_document:
+          attributes:
+            additional_comments:
+              too_long_to_save: "The comment is too long to save with the comments already on this document. Shorten it and try again."
 
 
