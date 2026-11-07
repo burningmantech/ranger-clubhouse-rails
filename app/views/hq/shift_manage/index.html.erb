@@ -131,7 +131,7 @@
                            icon: "hand" do %>
           Handle <%= pluralize(@off_site_pending.size, "item") %> before you mark this person
           off site:
-          <ul class="list-disc ps-list-indent my-2">
+          <ul class="list-bulleted my-2">
             <% @off_site_pending.each do |item| %>
               <li><%= item %></li>
             <% end %>

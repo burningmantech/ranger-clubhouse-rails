@@ -46,7 +46,7 @@
           Before being allowed to sign up for any shift (including In-Person Training sessions), the following issue(s)
           must be resolved:
         </p>
-        <ul class="list-disc ps-list-indent space-y-1 font-medium text-error">
+        <ul class="list-bulleted space-y-1 font-medium text-error">
           <% permission.requirements.each do |requirement| %>
             <li><%= Scheduling::REQUIREMENT_LABELS[requirement] || "Unknown status #{requirement}" %></li>
           <% end %>

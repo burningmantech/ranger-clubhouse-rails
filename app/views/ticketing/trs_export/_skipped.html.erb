@@ -6,7 +6,7 @@
 %>
 <% if skipped.any? %>
   <%= ui_callout_box :warning, accent: true, title: "#{pluralize(skipped.size, 'Selected Item')} Left Out" do %>
-    <ul class="list-disc ps-list-indent">
+    <ul class="list-bulleted">
       <% skipped.each do |skip| %>
         <li><%= skip.ref %> &mdash; <%= skip.reason %></li>
       <% end %>

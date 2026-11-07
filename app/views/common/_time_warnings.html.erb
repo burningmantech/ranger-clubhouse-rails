@@ -2,7 +2,7 @@
 <% if warnings && warnings.status == "out-of-range" %>
   <%= ui_callout_box :warning, icon: "hand" do %>
     <%= lead_in %>
-    <ul class="list-disc ps-list-indent mt-2 space-y-1">
+    <ul class="list-bulleted mt-2 space-y-1">
       <% { "On Duty" => [start_time, warnings.start_status],
            "Off Duty" => [finish_time, warnings.finished_status] }.each do |label, (time, status)| %>
         <% next if status == "success" || time.blank? %>

@@ -112,7 +112,7 @@
                     bold text with nothing to say it opens. %>
                 <%= ui_disclosure pluralize(row.trainings.size, "session"),
                                   summary_class: "font-semibold text-heading" do %>
-                  <ul class="list-disc ps-list-indent">
+                  <ul class="list-bulleted">
                     <% row.trainings.each do |session| %>
                       <li class="mt-1">
                         <%# The date stays on one line — the column is narrow enough

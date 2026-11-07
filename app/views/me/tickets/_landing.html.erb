@@ -110,7 +110,7 @@
 
     <% if @ticket_package.lsd_items.any? %>
       <%= ui_callout_box :secondary, icon: "ticket", accent: true, title: "Late Season Directed (LSD) Items Claimed" do %>
-        <ul class="list-disc ps-list-indent space-y-1">
+        <ul class="list-bulleted space-y-1">
           <% @ticket_package.lsd_items.each do |item| %>
             <li><%= item.type_label %> — must be paid for in advance.</li>
           <% end %>
@@ -131,7 +131,7 @@
       <% end %>
 
       <%= ui_section "What Happens Next", icon: "list-ol", icon_type: :solid do %>
-        <ol class="list-decimal ps-list-indent space-y-2 text-body">
+        <ol class="list-numbered space-y-2 text-body">
           <li>After the ticketing deadline, your claimed items are uploaded to Burning Man ticketing.</li>
           <li>You'll get an email with any next steps — including how to pay for and ship items.</li>
           <li><strong>Finish the Burning Man checkout promptly</strong> — even for free items — or they may be delayed.

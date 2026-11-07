@@ -6,7 +6,7 @@
   <% if warnings.any? %>
     <%= ui_callout_box :error, icon: "hand" do %>
       Please note the following:
-      <ul class="list-disc ps-list-indent mt-1">
+      <ul class="list-bulleted mt-1">
         <% warnings.each do |warning| %>
           <li><%= warning %></li>
         <% end %>

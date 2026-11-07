@@ -45,7 +45,7 @@
               The row inside each item is what flexes -- a flex <li> is not a
               list-item any more and drops its number. %>
           <%= content_tag group.type == Pod::TYPE_ALPHA ? :ol : :ul,
-                          class: "#{"list-decimal ps-list-indent" if group.type == Pod::TYPE_ALPHA} space-y-1".squish do %>
+                          class: "#{"list-numbered" if group.type == Pod::TYPE_ALPHA} space-y-1".squish do %>
             <% group.members.each do |member| %>
               <li class="marker:text-stone-muted marker:text-sm">
                 <span class="inline-flex flex-wrap items-center gap-2">

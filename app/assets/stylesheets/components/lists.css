@@ -1,0 +1,17 @@
+/*
+ * The two kinds of content list. Each is the marker plus the one list indent,
+ * --spacing-list-indent (application.css), so a view writes one class and
+ * nothing else for the inline-start side. Rich text gets the same indent from
+ * the lexxy-content rule in lexxy.css.
+ *
+ * A utility rather than the pair written out: 65 lists spell it, and the
+ * census (bin/css_census.rb) counts every identical spelling as a cluster, so
+ * the pair alone pushed the ratchet over its ceiling.
+ */
+@utility list-bulleted {
+    @apply list-disc ps-list-indent;
+}
+
+@utility list-numbered {
+    @apply list-decimal ps-list-indent;
+}

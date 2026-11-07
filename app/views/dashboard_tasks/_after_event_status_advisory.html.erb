@@ -2,7 +2,7 @@
 <% if facts.status == Person::INACTIVE %>
   <p class="text-warning font-semibold"><%= fa_icon "circle-info", :solid, class: "icon-warning" %> Status: <b>Inactive</b> (3+ events missed)</p>
   <p class="font-semibold mt-2">To reactivate:</p>
-  <ol class="list-decimal ps-list-indent mb-2">
+  <ol class="list-numbered mb-2">
     <li>Attend <b>full day</b> In-Person Training</li>
     <li>Walk a regular shift (Dirt, etc.)</li>
   </ol>
@@ -14,7 +14,7 @@
     <p class="text-warning font-semibold"><%= fa_icon "circle-info", :solid, class: "icon-warning" %> Status: <b>Retired</b> (5+ events missed)</p>
   <% end %>
   <p class="font-semibold mt-2">To return to active status:</p>
-  <ol class="list-decimal ps-list-indent mb-2">
+  <ol class="list-numbered mb-2">
     <li>Attend <b>full day</b> In-Person Training</li>
     <li>Walk a Cheetah Cub shift with Mentor</li>
   </ol>
