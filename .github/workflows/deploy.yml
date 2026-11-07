@@ -108,34 +108,34 @@ jobs:
           wait-for-service-stability: true
           wait-for-minutes: 10
 
-      - name: Fetch and update current task definition for training
-        id: new-task-definition-training
-        uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1.9.1
-        with:
-          task-definition-arn: "arn:aws:ecs:us-west-2:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/${{ vars.PROJECT_ID }}-training-fg"
-          task-definition-family: "${{ vars.PROJECT_ID }}-training-fg"
-          container-name: "${{ env.AWS_ECS_CONTAINER_NAME }}"
-          image: "${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}:${{ github.sha }}"
-          environment-variables: |
-            GHA_ACTOR_ID=${{ github.actor_id }}
-            GHA_ACTOR=${{ github.actor }}
-            GHA_EVENT_NAME=${{ github.event_name }}
-            GHA_JOB=${{ github.job }}
-            GHA_REF=${{ github.ref }}
-            GHA_RUN_ATTEMPT=${{ github.run_attempt }}
-            GHA_RUN_ID=${{ github.run_id }}
-            GHA_RUN_NUMBER=${{ github.run_number }}
-            GHA_TRIGGERING_ACTOR=${{ github.triggering_actor }}
-            GHA_WORKFLOW=${{ github.workflow }}
-            GIT_SHA=${{ github.sha }}
-            TASK_UPDATED=${{ steps.date.outputs.date }}
-
-      - name: Update task definition and ECS service for training
-        uses: aws-actions/amazon-ecs-deploy-task-definition@a00d4d57ac0de1a99b39fe469f3d898d38717c2b # v2.6.4
-        timeout-minutes: 12
-        with:
-          task-definition: "${{ steps.new-task-definition-training.outputs.task-definition }}"
-          service: "${{ vars.PROJECT_ID }}-training-fg"
-          cluster: "${{ env.AWS_ECS_CLUSTER }}"
-          wait-for-service-stability: true
-          wait-for-minutes: 10
+#      - name: Fetch and update current task definition for training
+#        id: new-task-definition-training
+#        uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1.9.1
+#        with:
+#          task-definition-arn: "arn:aws:ecs:us-west-2:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/${{ vars.PROJECT_ID }}-training-fg"
+#          task-definition-family: "${{ vars.PROJECT_ID }}-training-fg"
+#          container-name: "${{ env.AWS_ECS_CONTAINER_NAME }}"
+#          image: "${{ steps.aws-login-ecr.outputs.registry }}${{ env.AWS_ECR_IMAGE_NAME }}:${{ github.sha }}"
+#          environment-variables: |
+#            GHA_ACTOR_ID=${{ github.actor_id }}
+#            GHA_ACTOR=${{ github.actor }}
+#            GHA_EVENT_NAME=${{ github.event_name }}
+#            GHA_JOB=${{ github.job }}
+#            GHA_REF=${{ github.ref }}
+#            GHA_RUN_ATTEMPT=${{ github.run_attempt }}
+#            GHA_RUN_ID=${{ github.run_id }}
+#            GHA_RUN_NUMBER=${{ github.run_number }}
+#            GHA_TRIGGERING_ACTOR=${{ github.triggering_actor }}
+#            GHA_WORKFLOW=${{ github.workflow }}
+#            GIT_SHA=${{ github.sha }}
+#            TASK_UPDATED=${{ steps.date.outputs.date }}
+#
+#      - name: Update task definition and ECS service for training
+#        uses: aws-actions/amazon-ecs-deploy-task-definition@a00d4d57ac0de1a99b39fe469f3d898d38717c2b # v2.6.4
+#        timeout-minutes: 12
+#        with:
+#          task-definition: "${{ steps.new-task-definition-training.outputs.task-definition }}"
+#          service: "${{ vars.PROJECT_ID }}-training-fg"
+#          cluster: "${{ env.AWS_ECS_CLUSTER }}"
+#          wait-for-service-stability: true
+#          wait-for-minutes: 10
