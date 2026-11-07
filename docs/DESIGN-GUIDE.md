@@ -900,7 +900,13 @@ error variants.
 <%# Sidebar structure %>
 <div class="sidebar-backdrop"></div>
 <aside class="sidebar-drawer">
-  <button class="sidebar-close-btn">×</button>
+  <%# Header row, below lg only: the title, and Close from button_action (see Sidebar > Drawer Header Row) %>
+  <div class="flex items-center justify-between h-16 shrink-0 z-10 ps-3 pe-2 bg-chrome border-b border-sidebar-divider lg:hidden">
+    <span id="sidebar-drawer-label" class="text-base font-semibold text-sidebar-content">Sidebar</span>
+    <%= button_action "Close", :ghost, icon: "xmark", icon_type: :solid,
+                      data: { action: "click->sidebar#closeDrawer" },
+                      aria: { label: "Close sidebar" } %>
+  </div>
   <h6 class="sidebar-section-header">Section</h6>
   <a class="sidebar-nav-item">Link</a>
   <span class="sidebar-badge">5</span>
@@ -911,7 +917,6 @@ error variants.
 |--------------------------|-------------------------------------------|
 | `sidebar-backdrop`       | Semi-transparent overlay                  |
 | `sidebar-drawer`         | Main drawer container (fixed, transition) |
-| `sidebar-close-btn`      | Mobile close button                       |
 | `sidebar-nav-item`       | Navigation link item                      |
 | `sidebar-section-header` | Section title styling                     |
 | `sidebar-badge`          | Notification count badge                  |
@@ -2030,7 +2035,7 @@ The sidebar is composed of several key components:
 
 1. **Backdrop** - Semi-transparent overlay (mobile only)
 2. **Drawer** - Main sidebar container with navigation items
-3. **Close button** - X button for mobile (hidden on desktop)
+3. **Header row** - Title and Close button for mobile (hidden from `lg`)
 4. **Toggle button** - Hamburger menu button (placed in navbar)
 5. **Sections** - Titled groups of navigation items
 6. **Items** - Individual navigation links
@@ -2045,8 +2050,13 @@ The sidebar is composed of several key components:
 
 <%# Drawer container %>
 <aside class="sidebar-drawer">
-<%# Close button (mobile only) %>
-<button class="sidebar-close-btn">×</button>
+<%# Header row (mobile only): title and Close %>
+  <div class="flex items-center justify-between h-16 shrink-0 z-10 ps-3 pe-2 bg-chrome border-b border-sidebar-divider lg:hidden">
+    <span id="sidebar-drawer-label" class="text-base font-semibold text-sidebar-content">Sidebar</span>
+    <%= button_action "Close", :ghost, icon: "xmark", icon_type: :solid,
+                      data: { action: "click->sidebar#closeDrawer" },
+                      aria: { label: "Close sidebar" } %>
+  </div>
 
 <%# Section with header %>
   <div>
@@ -2056,6 +2066,26 @@ The sidebar is composed of several key components:
   </div>
 </aside>
 ```
+
+#### Drawer Header Row
+
+Below `lg` the drawer opens on a header row: the title "Sidebar" at the start, the Close button at the end.
+
+- **64px** (`h-16`), the navbar's height, so Close sits on the line of the navbar icons still showing beside the
+  drawer. Never a close control laid over the first section header.
+- **Below `lg` only** (`lg:hidden`): from `lg` the sidebar is always open and has nothing to close.
+- **Above the logo** (`z-10 bg-chrome`, as the menu area and its section titles have): in a drawer under about 225px
+  tall (heavy zoom) the logo pinned at the bottom reaches the row; without them it painted over Close and took its
+  clicks.
+- **Title**: `<span id="sidebar-drawer-label">` in `text-base font-semibold text-sidebar-content`. The id is what the
+  aside's `aria-labelledby` names (`"#{id}-label"` in `sidebar_menu`), so the two move together.
+- **Close**: `button_action "Close", :ghost, icon: "xmark", icon_type: :solid`, a `btn-sm` (36px) with
+  `aria-label="Close sidebar"` and `data-action="click->sidebar#closeDrawer"`. It is the labelled Close the mega menu
+  shows on a phone (`me/menu/_content`).
+- **No ink class on Close.** `sidebar.css` sets `--btn-rest-fg` and `outline-color` on `.drawer-side .btn-ghost`:
+  daisyUI 5.7 rests a ghost button in `base-content` and rings it in the same, dark on the black chrome in the light
+  theme. It sets `--btn-rest-fg` rather than `color` so daisyUI's hover pill is left alone, as `navbar.css` does for
+  the bar.
 
 #### Theme Variants
 
@@ -2190,14 +2220,14 @@ The sidebar uses a CSS-only toggle mechanism with progressive enhancement:
 
 - Drawer is hidden by default (`-translate-x-full`)
 - Backdrop appears when drawer is open
-- Close button (X) visible in top-right
+- Header row (title and Close) visible at the top of the drawer
 - Checkbox state controls visibility (`peer-checked:translate-x-0`)
 
 **Desktop (≥ 1024px):**
 
 - Drawer is always visible (`lg:translate-x-0`)
 - Backdrop is hidden (`lg:hidden`)
-- Close button is hidden (`lg:hidden`)
+- Header row is hidden (`lg:hidden`)
 - Toggle button is hidden (`lg:hidden`)
 
 **Positioning:**
@@ -2209,13 +2239,14 @@ The sidebar uses a CSS-only toggle mechanism with progressive enhancement:
 
 #### Utility Classes
 
-Custom utility classes defined in `app/assets/stylesheets/components/sidebar.css`:
+Custom utility classes defined in `app/assets/stylesheets/components/sidebar.css`, and the header row, whose classes
+`sidebar_menu` writes inline:
 
 | Utility                  | CSS Composition                                                                                                                             | Usage                    |
 |--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|
 | `sidebar-backdrop`       | `fixed inset-0 top-[64px] bg-gray-900/50 dark:bg-gray-900/80 z-30 hidden peer-checked:block lg:hidden`                                      | Semi-transparent overlay |
 | `sidebar-drawer`         | `fixed z-40 overflow-y-auto transition-transform top-[64px] h-[calc(100vh-64px)]`                                                           | Main drawer container    |
-| `sidebar-close-btn`      | `bg-transparent hover:bg-white/10 rounded-lg w-9 h-9 absolute top-2.5 end-2.5 flex items-center justify-center lg:hidden`                   | Close button (X)         |
+| Drawer header row        | `flex items-center justify-between h-16 shrink-0 z-10 ps-3 pe-2 bg-chrome border-b border-sidebar-divider lg:hidden`                        | Title and Close          |
 | `sidebar-nav-item`       | `block h-10 flex items-center p-3 text-sm transition-colors no-underline border-t border-sidebar-divider`                                   | Navigation link base     |
 | `sidebar-section-header` | `p-3 font-semibold uppercase tracking-wider overflow-hidden text-ellipsis`                                                                  | Section title styling    |
 | `sidebar-badge`          | `inline-flex items-center justify-center w-auto min-w-[1.125rem] h-4.5 ms-2 px-1.5 text-xs font-medium rounded-full`                        | Notification count badge |
@@ -2247,11 +2278,13 @@ The sidebar toggle button should be placed in the navbar/header:
 
 #### Accessibility Features
 
-- **ARIA labels**: Drawer has `aria-label="Sidebar navigation"` and `aria-labelledby`
+- **ARIA labels**: Drawer has `aria-label="Sidebar navigation"` and an `aria-labelledby` naming the header row's
+  title (`#sidebar-drawer-label`)
 - **ARIA expanded**: Toggle button indicates expand/collapse state
 - **Keyboard navigation**: Full keyboard support for all interactive elements
 - **Focus management**: Visible focus states with ring outline
-- **Screen reader text**: "Open sidebar" / "Close sidebar" labels
+- **Screen reader text**: "Open sidebar" on the navbar toggle, "Close sidebar" on the header row's Close button and
+  the overlay
 - **Role presentation**: Backdrop has `role="presentation"`
 
 #### When to Use

@@ -11,7 +11,6 @@ module SidebarHelper
   include MenuHelper
 
   # Sidebar utility class references
-  SIDEBAR_CLOSE_BTN = "sidebar-close-btn"
   SIDEBAR_NAV_ITEM = "sidebar-nav-item"
   SIDEBAR_SECTION_HEADER = "sidebar-section-header"
   SIDEBAR_BADGE = "sidebar-badge"
@@ -20,21 +19,18 @@ module SidebarHelper
   THEME_CONFIGS = {
     me: {
       text: "text-sidebar-content",
-      close_button: "text-sidebar-content",
       section_text: "text-sidebar-content",
       section_bg: "sidebar-group-title-default",
       item: "sidebar-link-default"
     },
     admin: {
       text: "text-sidebar-content",
-      close_button: "text-sidebar-content",
       section_text: "text-sidebar-content",
       section_bg: "sidebar-group-title-hq",
       item: "sidebar-link-hq"
     },
     hq: {
       text: "text-sidebar-content",
-      close_button: "text-sidebar-content",
       section_text: "",
       section_bg: "sidebar-group-title-default",
       item: "sidebar-link-default"
@@ -73,13 +69,22 @@ module SidebarHelper
                           "aria-label": "Sidebar navigation",
                           "aria-labelledby": "#{id}-label",
                           data: { controller: "sidebar stream-nav", sidebar_target: "drawer", sidebar_theme_value: theme }) do
-          # Close button for mobile
-          close_btn_color = theme_colors(theme)[:close_button]
-          close_button = tag.button(type: "button",
-                                    class: class_names(SIDEBAR_CLOSE_BTN, close_btn_color),
-                                    data: { action: "click->sidebar#closeDrawer" },
-                                    "aria-label": "Close sidebar") do
-            fa_icon :times, :solid
+          # Phone and tablet drawer header. The title names the landmark: the aside's
+          # aria-labelledby already points at this id, which nothing rendered before.
+          # Close is the mega menu's phone close (me/menu/_content). The row is the
+          # navbar's 64px so Close sits on the line of the navbar icons still showing
+          # beside the drawer; from lg the sidebar is always open and has nothing to
+          # close, so the row goes. No ink class on the button: sidebar.css sets the
+          # rest ink and the focus ring, and leaves daisyUI's hover pill alone.
+          # z-10 and bg-chrome, as the menu area and its section titles have, keep the
+          # logo below the row: in a drawer under about 225px tall (heavy zoom) the
+          # logo reaches it, and without them it painted over Close and took its clicks.
+          header = tag.div(class: "flex items-center justify-between h-16 shrink-0 z-10 ps-3 pe-2 " \
+                                  "bg-chrome border-b border-sidebar-divider lg:hidden") do
+            safe_join([tag.span("Sidebar", id: "#{id}-label", class: "text-base font-semibold text-sidebar-content"),
+                       button_action("Close", :ghost, icon: "xmark", icon_type: :solid,
+                                     data: { action: "click->sidebar#closeDrawer" },
+                                     aria: { label: "Close sidebar" })])
           end
 
           # Scrollable menu area; z-10 paints the links over the logo when
@@ -95,7 +100,7 @@ module SidebarHelper
                       class: "h-[140px] w-[140px] mx-auto mb-5 opacity-30")
           end
 
-          safe_join([close_button, menu_area, logo_area])
+          safe_join([header, menu_area, logo_area])
         end
 
         safe_join([overlay, aside])

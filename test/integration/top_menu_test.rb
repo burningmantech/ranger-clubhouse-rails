@@ -127,6 +127,28 @@ class TopMenuTest < ActionDispatch::IntegrationTest
     assert_select "nav.navbar .navbar-end details.lg\\:hidden > summary.btn-square.btn-sm"
   end
 
+  # The phone drawer opens on a header row (SidebarHelper#sidebar_menu): the title
+  # the aside's aria-labelledby names, and a labelled Close beside it. It replaced
+  # a bare icon that straddled the first section header, and an aria-labelledby
+  # that pointed at an id nothing rendered. The row's classes are its layout:
+  # first in the aside, so above the menu; lg:hidden, because from lg the sidebar
+  # is always open and Close would do nothing; z-10, so the logo pinned at the
+  # drawer's bottom cannot cover Close in a short drawer; btn-sm, the 36px floor.
+  # test/system/sidebar_drawer_test.rb clicks it.
+  test "the sidebar drawer has a header row with its title and a labelled Close button" do
+    sign_in_as(person(:active_ranger))
+    get me_root_url
+
+    assert_response :success
+    assert_select "aside#sidebar-drawer-content[aria-labelledby=sidebar-drawer-label]"
+    assert_select "aside#sidebar-drawer-content > div.h-16.z-10.lg\\:hidden:first-child" do
+      assert_select "span#sidebar-drawer-label", text: "Sidebar"
+      assert_select "button.btn-ghost.btn-sm[aria-label='Close sidebar'][data-action='click->sidebar#closeDrawer']",
+                    text: /Close/
+    end
+    assert_select ".sidebar-close-btn", count: 0
+  end
+
   # Keyboard hints follow the client platform: Mac gets the glyphs, everyone
   # else gets the modifiers spelled out.
   # Sign In Again reloads the page, but a page a form re-rendered sits at the

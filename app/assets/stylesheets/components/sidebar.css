@@ -4,11 +4,6 @@
  * See: https://daisyui.com/components/drawer/
  */
 
-/* Sidebar close button (mobile only) */
-@utility sidebar-close-btn {
-    @apply btn btn-ghost btn-sm btn-circle absolute top-2.5 end-2.5 lg:hidden z-20;
-}
-
 /* Sidebar navigation item base */
 @utility sidebar-nav-item {
     @apply block h-10 flex items-center p-3 text-sm transition-colors no-underline border-t border-sidebar-divider;
@@ -67,4 +62,16 @@
 .sidebar-nav-item.active {
     color: var(--color-sidebar-active);
     border-right: 5px solid var(--color-sidebar-active);
+}
+
+/*
+ * Ghost buttons on the sidebar's chrome, as navbar.css does for the bar: daisyUI 5.7
+ * rests a ghost button in base-content and rings it in base-content's outline, which is
+ * dark on black in the light theme (the close button's focus ring measured
+ * oklch(0.4 0.01 60) there on 2026-11-07). --btn-rest-fg rather than color, so the hover
+ * pill daisyUI paints (base-content on base-200) is left alone.
+ */
+.drawer-side .btn-ghost {
+    --btn-rest-fg: var(--color-sidebar-content);
+    outline-color: var(--color-sidebar-content);
 }
