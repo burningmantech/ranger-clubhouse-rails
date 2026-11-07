@@ -8,7 +8,7 @@
       <% if @pending_count > 0 %>
         <div class="inline-flex-center-gap-2 icon-warning">
           <%= fa_icon "pen-to-square", :solid %>
-          <span class="font-medium"><%= @pending_count %> action needed</span>
+          <span class="font-medium"><%= @pending_count %> available to sign</span>
         </div>
       <% elsif @signed_count == @total_count %>
         <div class="inline-flex-center-gap-2 icon-success">
