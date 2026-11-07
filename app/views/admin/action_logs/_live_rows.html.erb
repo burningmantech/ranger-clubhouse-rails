@@ -1,0 +1,25 @@
+<%# locals: (rows:) %>
+<%# Shared by the page and ActionLogLiveChannel, so a streamed row cannot
+    drift from the rows the page loaded with. The headings feed the fold's
+    data-labels and are the ones _live draws. The five summary columns only:
+    the Search mode has the detail row and the slot, position and team lines.
+    The people are ActionLog.newest_first's narrow preload: id and callsign. %>
+<%= ui_table_rows headings: action_log_headings, striped: false do |t| %>
+  <% rows.each do |row| %>
+    <%= t.row id: "action-log-live-#{row.id}", align: :middle do %>
+      <%= t.cell log_time_format(row.created_at), class: log_text_class("whitespace-nowrap") %>
+      <%= t.cell class: log_text_class do %>
+        <%= action_log_person_label(row.person_summary, row.person_id) %>
+      <% end %>
+      <%= t.cell class: log_text_class do %>
+        <%= action_log_person_label(row.target_person_summary, row.target_person_id) %>
+      <% end %>
+      <%= t.cell class: log_text_class(Admin::ActionLogsHelper::ACTION_LOG_EVENT_MAX_WIDTH) do %>
+        <%= log_truncated(row.event) %>
+      <% end %>
+      <%= t.cell class: log_text_class do %>
+        <%= action_log_message_cell(row) %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -16,11 +16,26 @@ class ActionLog < ApplicationRecord
 
   belongs_to :person, optional: true
   belongs_to :target_person, class_name: "Person", optional: true
+  # The same people with only what a callsign link reads, for the Live rows: a
+  # person row is wide (the years JSON, the emergency contact), and a page of
+  # Live rows names up to two hundred people.
+  belongs_to :person_summary, -> { select(:id, :callsign) },
+             class_name: "Person", foreign_key: :person_id, optional: true
+  belongs_to :target_person_summary, -> { select(:id, :callsign) },
+             class_name: "Person", foreign_key: :target_person_id, optional: true
 
   # JSON serialization for the data column
   serialize :data, coder: JSON
 
   truncates_to_column :user_agent, :ip
+
+  # The Live mode's reads (ActionLogLiveChannel), as RequestLog's. The id
+  # orders the rows: created_at keeps whole seconds, and rows arrive in bursts.
+  # page-visit rows are left out: RequestLogger writes one for every request,
+  # nine rows in ten, and Request Log › Live already shows each request. One
+  # hash in includes, so both columns' people load in one query.
+  scope :live, -> { where.not(event: "page-visit") }
+  scope :newest_first, -> { order(id: :desc).includes(person_summary: {}, target_person_summary: {}) }
 
   # Virtual attributes for associated records (populated during queries)
   attr_accessor :browser, :slot, :enrolled_slots, :positions, :position, :roles, :role, :team, :teams

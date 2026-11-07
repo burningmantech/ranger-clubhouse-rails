@@ -6,6 +6,10 @@ class Admin::ActionLogsHelperTest < ActionView::TestCase
   include Admin::ActionLogsHelper
   include UiComponents::UiDataBlockHelper
   include ButtonHelper
+  include LinkHelper
+  include TimesheetAdminTestHelper
+
+  teardown { Current.reset }
 
   test "action_log_pretty_data_block renders pretty printed json" do
     row = ActionLog.new(data: '{"alpha":1,"nested":{"beta":2}}')
@@ -29,14 +33,21 @@ class Admin::ActionLogsHelperTest < ActionView::TestCase
     assert_includes html, "Show More"
   end
 
-  test "action_log_person_label links people and falls back to deleted ids" do
+  test "action_log_person_label links people for readers of person pages and falls back to deleted ids" do
     person = person(:active_ranger)
+    admin = person(:auditor_ranger)
+    ensure_role(Role::ADMIN, "Admin")
+    grant_role(admin, Role::ADMIN)
+    Current.roles_manager = RoleManager.retrieve(admin)
 
     linked = action_log_person_label(person, person.id).to_s
 
     assert_includes linked, person_path(person)
     assert_includes linked, person.callsign
+    # The table link, with its touch floor (LinkHelper::TABLE_LINK_CLASSES).
+    assert_includes linked, "min-h-5"
     assert_equal "Deleted #123", action_log_person_label(nil, 123)
+    assert_equal "-", action_log_person_label(nil, nil)
   end
 
   test "action_log_metadata_items renders browser details as a summary" do

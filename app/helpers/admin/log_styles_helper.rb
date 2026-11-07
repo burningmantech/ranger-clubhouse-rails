@@ -2,7 +2,8 @@
 
 module Admin
   # Shared text styling for the five admin log tables, which had written the
-  # same two class strings out twenty-eight times between them.
+  # same two class strings out twenty-eight times between them, and the mode
+  # buttons of the two logs that can be watched live.
   module LogStylesHelper
     # The ink a log cell and the text inside it share. Alignment and wrapping
     # stay with the caller: a cell in the Clubhouse 1 log aligns to the top
@@ -26,5 +27,19 @@ module Admin
     # or error type would otherwise wrap two or three times and push the other
     # columns out of reach.
     def log_truncated(text) = tag.div(text, class: log_text_class("truncate"), title: text)
+
+    # One of the two mode buttons above a log that can be watched live (Request
+    # Log, Action Logs). The mode showing is the filled button and says so in
+    # its accessible name, as the Radio Checkout view buttons do
+    # (AssetManagement::RadioCheckoutHelper). Neither carries aria-current, and
+    # data-active-ignore keeps active_links_controller from adding one:
+    # Search's link has no query, so it would match on the path alone and both
+    # buttons would read as current on the Live page.
+    def log_mode_button(label, icon:, url:, current:)
+      label = safe_join([label, tag.span(" (current view)", class: "sr-only")]) if current
+
+      button_link label, current ? :primary : :secondary, url,
+                  { icon:, icon_type: :solid, data: { active_ignore: true } }
+    end
   end
 end

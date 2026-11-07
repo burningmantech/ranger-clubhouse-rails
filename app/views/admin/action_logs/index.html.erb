@@ -1,7 +1,18 @@
 <%= hero_panel icon: "scroll", heading_level: :h1, id: "admin-action-logs-header",
                title: "Action Logs",
-               description: "Review Action Log activity, inspect request metadata, and filter by people, time range, and event type." %>
+               description: "Search Action Log entries by person, time range, and event type, or watch new ones arrive." %>
 
+<%# Two ways to read the log: search what was recorded, or watch it arrive.
+    The mode showing is the filled button (log_mode_button). %>
+<% live = !@live_logs.nil? %>
+<%= button_row class: "my-4" do %>
+  <%= log_mode_button "Search", icon: "magnifying-glass", url: admin_action_logs_path, current: !live %>
+  <%= log_mode_button "Live", icon: "tower-broadcast", url: admin_action_logs_path(mode: "live"), current: live %>
+<% end %>
+
+<% if live %>
+  <%= render "admin/action_logs/live", logs: @live_logs %>
+<% else %>
 <%= filter_bar id: "action-log-filters",
                chips: action_log_filter_chips(@form),
                clear_url: admin_action_logs_path,
@@ -76,11 +87,9 @@
 
     <%= ui_table striped: false do |t| %>
       <%= t.header do %>
-        <%= t.heading "Timestamp" %>
-        <%= t.heading "User" %>
-        <%= t.heading "Target Person" %>
-        <%= t.heading "Event" %>
-        <%= t.heading "Message" %>
+        <% action_log_headings.each do |heading| %>
+          <%= t.heading heading %>
+        <% end %>
       <% end %>
       <%= t.body do %>
         <% @action_logs.each do |row| %>
@@ -164,4 +173,5 @@
       <%= pager %>
     </div>
   <% end %>
+<% end %>
 <% end %>

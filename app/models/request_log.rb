@@ -42,10 +42,9 @@ class RequestLog < ApplicationRecord
 
   belongs_to :person, optional: true
 
-  # The Live mode's reads. The id orders the rows, as find_for_query explains:
+  # The Live mode's read. The id orders the rows, as find_for_query explains:
   # the timestamp keeps whole seconds, and requests arrive in bursts.
   scope :newest_first, -> { order(id: :desc).includes(:person) }
-  scope :after_id, ->(id) { where(id: id.to_i.next..) }
 
   # The address the request came from. Rows written before the Clubhouse
   # answered its own requests hold the whole forwarded-for chain, and the

@@ -28,7 +28,7 @@
       <dt>When does a request appear?</dt>
       <dd>Within a few seconds of the Clubhouse answering it, at the top of the list.</dd>
       <dt>How many are kept?</dt>
-      <dd>The newest <%= request_log_live_cap %>. Older ones drop off the bottom, and the Search mode still has them.</dd>
+      <dd>The newest <%= request_log_live_cap %>. Older ones drop off the bottom, and the Search mode still has them. When more than <%= LiveLogChannel::BATCH_LIMIT %> arrive between two updates, the list starts again from the newest <%= LiveLogChannel::BATCH_LIMIT %>.</dd>
       <dt>Does the list update in a background tab?</dt>
       <dd>No. It stops while the tab is hidden and catches up when you return to it.</dd>
     </dl>

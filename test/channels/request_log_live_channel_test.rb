@@ -56,7 +56,7 @@ class RequestLogLiveChannelTest < ActionCable::Channel::TestCase
 
   test "the first tick leaves out the rows the page already shows" do
     shown = record("me/dashboard")
-    assert listens?(@admin, since: shown.id, shown: shown.id.to_s)
+    assert listens?(@admin, shown: shown.id.to_s)
 
     subscription.send(:push)
 
@@ -123,9 +123,9 @@ class RequestLogLiveChannelTest < ActionCable::Channel::TestCase
 
   private
 
-  def listens?(person, since: 0, shown: nil)
+  def listens?(person, shown: nil)
     stub_connection current_user: person
-    subscribe(signed_stream_name: Turbo::StreamsChannel.signed_stream_name("request-log"), since:, shown:)
+    subscribe(signed_stream_name: Turbo::StreamsChannel.signed_stream_name("request-log"), shown:)
     subscription.confirmed?
   end
 
