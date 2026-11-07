@@ -1,0 +1,53 @@
+<%# locals: (logs:) %>
+<%# Never restored from Turbo's cache: Back fetches the page again, rather than
+    showing a copy of an hour-old list whose feed would subscribe twice. %>
+<% turbo_exempts_page_from_cache %>
+
+<%= tag.div data: { controller: "live-log", live_log_cap_value: action_log_live_cap } do %>
+  <%# The feed's stream source, made from this template only while the tab is
+      showing (live_log_controller.js). The channel checks the viewer's roles
+      itself; the signed name is only what turbo_stream_from insists on. %>
+  <template data-live-log-target="source">
+    <%= turbo_stream_from "action-log", channel: ActionLogLiveChannel %>
+  </template>
+
+  <%# Shown by the controller when the feed has gone without a subscription for
+      longer than a reconnect takes: refused, or the connection lost. %>
+  <%= ui_callout_box :warning, hidden: true, data: { live_log_target: "stalled" } do %>
+    Live updates have stopped. Reload the page to start them again.
+  <% end %>
+
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>When does an entry appear?</dt>
+      <dd>Within a few seconds of the Clubhouse recording it, at the top of the list.</dd>
+      <dt>Which entries appear?</dt>
+      <dd>Every kind of Action Log entry except page visits, which the Request Log's Live mode shows.</dd>
+      <dt>How many are kept?</dt>
+      <dd>The newest <%= action_log_live_cap %>. Older ones drop off the bottom, and the Search mode still has them. When more than <%= LiveLogChannel::BATCH_LIMIT %> arrive between two updates, the list starts again from the newest <%= LiveLogChannel::BATCH_LIMIT %>.</dd>
+      <dt>Does the list update in a background tab?</dt>
+      <dd>No. It stops while the tab is hidden and catches up when you return to it.</dd>
+    </dl>
+  <% end %>
+
+  <%= ui_section "Live Action Log Entries", icon: "tower-broadcast", icon_type: :solid do %>
+    <%# The table gives way to this while it holds no rows; the controller swaps
+        them back as the first entry arrives. %>
+    <%= ui_empty_state "No Action Log entries have been recorded yet. Each one appears here as the Clubhouse records it.",
+                       icon: "scroll", icon_type: :solid,
+                       hidden: logs.any?, data: { live_log_target: "empty" } %>
+
+    <%= tag.div hidden: logs.empty?, data: { live_log_target: "table" } do %>
+      <%= ui_table striped: false do |t| %>
+        <%= t.header do %>
+          <% action_log_headings.each do |heading| %>
+            <%= t.heading heading %>
+          <% end %>
+        <% end %>
+        <%= t.body id: "action-log-live-rows", data: { live_log_target: "rows" } do %>
+          <%= render "admin/action_logs/live_rows", rows: logs %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -41,7 +41,7 @@ class Admin::RequestLogsController < ApplicationController
   # tick finds the page's own rows. Rendered from index so the mode toggle is
   # one page.
   def live
-    @live_logs = RequestLog.newest_first.limit(RequestLogLiveChannel::LOOKBACK).to_a
+    @live_logs = RequestLog.newest_first.limit(LiveLogChannel::LOOKBACK).to_a
     @logging_on = Setting.get_value(Setting::REQUEST_LOG_ENABLED)
     render :index
   end

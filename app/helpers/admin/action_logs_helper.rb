@@ -17,6 +17,14 @@ module Admin::ActionLogsHelper
   ACTION_LOG_EVENT_FILTER_LABELS =
     ActionLogFilterForm::EVENT_FILTER_OPTIONS.to_h { |label, value| [value, label] }.freeze
 
+  # The columns of both modes' tables, in order: the Search table and _live
+  # draw them, and _live_rows hands them to ui_table_rows for the fold's
+  # data-labels, so a column keeps its name when the mode changes.
+  ACTION_LOG_HEADINGS = %w[Timestamp User Target Event Message].freeze
+
+  # How many rows the Live mode keeps on the page before dropping the oldest.
+  ACTION_LOG_LIVE_CAP = 200
+
   # One filter_bar chip per active Action Log filter (fields plus each event
   # category); each URL drops that filter, keeps the rest, and resets paging.
   # path: and category_labels: let the Legacy Clubhouse 1 Log, whose search
@@ -40,12 +48,16 @@ module Admin::ActionLogsHelper
     field_chips + category_chips
   end
 
-  def action_log_person_label(person, person_id)
-    return "Deleted ##{person_id}" if person_id.present? && person.blank?
-    return "-" if person.blank?
+  # Methods rather than the constants: ERB cannot resolve an included module's
+  # constant unqualified.
+  def action_log_headings = ACTION_LOG_HEADINGS
 
-    link_to(person.callsign, person_path(person), class: "link")
-  end
+  def action_log_live_cap = ACTION_LOG_LIVE_CAP
+
+  # The callsign as every admin log draws it (LinkHelper#person_display_link):
+  # a table link for readers who can open person pages, plain text for the
+  # rest, "Deleted #id" for a person removed since, and "-" for none.
+  def action_log_person_label(person, person_id) = person_display_link(person, person_id, blank: "-")
 
   def action_log_toggle_label(timestamp, expanded: false)
     icon = expanded ? "chevron-up" : "chevron-down"

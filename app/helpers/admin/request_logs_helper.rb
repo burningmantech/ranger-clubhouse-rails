@@ -42,19 +42,6 @@ module Admin::RequestLogsHelper
 
   def request_log_live_cap = REQUEST_LOG_LIVE_CAP
 
-  # One of the two mode buttons above the log. The mode showing is the filled
-  # button and says so in its accessible name, as the Radio Checkout view
-  # buttons do (AssetManagement::RadioCheckoutHelper). Neither carries
-  # aria-current, and data-active-ignore keeps active_links_controller from
-  # adding one: Search's link has no query, so it would match on the path
-  # alone and both buttons would read as current on the Live page.
-  def request_log_mode_button(label, icon:, url:, current:)
-    label = safe_join([label, tag.span(" (current view)", class: "sr-only")]) if current
-
-    button_link label, current ? :primary : :secondary, url,
-                { icon:, icon_type: :solid, data: { active_ignore: true } }
-  end
-
   def request_log_person_label(row)
     person_display_link(row.person, row.person_id, blank: "-")
   end

@@ -6,6 +6,8 @@ class Admin::ActionLogsController < ApplicationController
   authorize_role Role::ADMIN
 
   def index
+    return live if params[:mode] == "live"
+
     @form = ActionLogFilterForm.new(filter_params)
 
     person_id = resolve_person_id(@form.person_callsign)
@@ -33,6 +35,15 @@ class Admin::ActionLogsController < ApplicationController
   end
 
   private
+
+  # The Live mode: the newest rows now, and ActionLogLiveChannel sends what
+  # arrives after them. As many as the channel looks back over, so its first
+  # tick finds the page's own rows. Rendered from index so the mode toggle is
+  # one page.
+  def live
+    @live_logs = ActionLog.live.newest_first.limit(LiveLogChannel::LOOKBACK).to_a
+    render :index
+  end
 
   def filter_params
     scoped_params(ActionLogFilterForm::PARAM_SCOPE, :person_callsign, :target_person_callsign, :start_time,

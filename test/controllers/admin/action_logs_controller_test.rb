@@ -7,7 +7,6 @@ class Admin::ActionLogsControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     Rails.cache.clear
-    ActionLog.delete_all
 
     @admin = person(:auditor_ranger)
     @non_admin = person(:active_ranger)
@@ -16,6 +15,8 @@ class Admin::ActionLogsControllerTest < ActionDispatch::IntegrationTest
 
     ensure_role(Role::ADMIN, "Admin")
     grant_role(@admin, Role::ADMIN)
+    # Creating a role logs a role-create row: start from an empty log.
+    ActionLog.delete_all
   end
 
   teardown do
@@ -194,6 +195,56 @@ class Admin::ActionLogsControllerTest < ActionDispatch::IntegrationTest
 
     get "#{admin_action_logs_path}?filter"
     assert_response :success
+  end
+
+  test "the index offers the Search and Live modes" do
+    sign_in_as(@admin)
+
+    get admin_action_logs_path
+
+    assert_response :success
+    # The showing mode says so in its name, and both buttons opt out of the
+    # page's active-links controller, which would mark both current.
+    assert_select "a[href=?][data-active-ignore]", admin_action_logs_path, text: /Search\s*\(current view\)/
+    assert_select "a[href=?][data-active-ignore]", admin_action_logs_path(mode: "live"), text: "Live"
+  end
+
+  test "live mode shows the newest rows but no page visit, and the feed's template" do
+    sign_in_as(@admin)
+    older = ActionLog.create!(event: "auth-login", person: @actor, message: "")
+    visit = ActionLog.create!(event: "page-visit", person: @actor, message: "me/dashboard")
+    newest = ActionLog.create!(event: "person-update", person: @actor, target_person: @target, message: "")
+
+    get admin_action_logs_path(mode: "live")
+
+    assert_response :success
+    assert_select "[data-controller=live-log][data-live-log-cap-value=?]",
+                  Admin::ActionLogsHelper::ACTION_LOG_LIVE_CAP.to_s do
+      # The stream source waits in a template until the tab is showing.
+      assert_select "template[data-live-log-target=source] turbo-cable-stream-source[channel=ActionLogLiveChannel]"
+      assert_select "tbody#action-log-live-rows[data-live-log-target=rows]" do
+        assert_select "tr#action-log-live-#{newest.id} a[href=?]", person_path(@target), text: @target.callsign
+        assert_select "tr#action-log-live-#{older.id}"
+        assert_select "tr#action-log-live-#{visit.id}", false
+      end
+      assert_select "[data-live-log-target=table]:not([hidden])"
+      assert_select "[data-live-log-target=empty][hidden]"
+      assert_select "[data-live-log-target=stalled][hidden]", text: /Live updates have stopped/
+    end
+    assert_select "meta[name=turbo-cache-control][content=no-cache]"
+    assert_select "a[href=?]", admin_action_logs_path(mode: "live"), text: /Live\s*\(current view\)/
+    assert_select "a[href=?][aria-current]", admin_action_logs_path(mode: "live"), false
+    assert_select "#action-log-filters", false
+  end
+
+  test "live mode with nothing recorded shows the empty state" do
+    sign_in_as(@admin)
+
+    get admin_action_logs_path(mode: "live")
+
+    assert_response :success
+    assert_select "[data-live-log-target=empty]:not([hidden])", text: /No Action Log entries have been recorded yet/
+    assert_select "[data-live-log-target=table][hidden]"
   end
 
   private

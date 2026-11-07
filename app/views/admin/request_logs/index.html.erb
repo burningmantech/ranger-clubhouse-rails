@@ -12,12 +12,11 @@
 <% retention_note = "Only the last #{pluralize(RequestLog::EXPIRE_DAYS_DEFAULT, "day")} are kept." %>
 
 <%# Two ways to read the log: search what was recorded, or watch it arrive.
-    The mode showing is the filled button (request_log_mode_button). %>
+    The mode showing is the filled button (log_mode_button). %>
 <% live = !@live_logs.nil? %>
 <%= button_row class: "my-4" do %>
-  <%= request_log_mode_button "Search", icon: "magnifying-glass", url: admin_request_logs_path, current: !live %>
-  <%= request_log_mode_button "Live", icon: "tower-broadcast", url: admin_request_logs_path(mode: "live"),
-                                      current: live %>
+  <%= log_mode_button "Search", icon: "magnifying-glass", url: admin_request_logs_path, current: !live %>
+  <%= log_mode_button "Live", icon: "tower-broadcast", url: admin_request_logs_path(mode: "live"), current: live %>
 <% end %>
 
 <% if live %>
