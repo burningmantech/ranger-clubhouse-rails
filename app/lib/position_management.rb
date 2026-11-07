@@ -8,15 +8,9 @@
 # translation. Each method notes what should move onto the model when it
 # reopens.
 module PositionManagement
-  # The column's width (widened from Clubhouse 2's 40 on 2026-10-29); Position
-  # validates the same number.
-  TITLE_MAX = 64
-  SHORT_TITLE_MAX = 6
-  # Column limits. Upstream validates neither, so a shorter cap here would
-  # reject rows the Laravel writers legitimately store.
-  CONTACT_EMAIL_MAX = 200
+  # A cap under its varchar(255) column, held by validate_lengths. The form's
+  # other fields take their maxlength from Position itself (AppFormBuilder).
   PAYCODE_MAX = 20
-  RESOURCE_TAG_MAX = 255
 
   DELETE_REASON = "Position deletion"
   SAVE_REASON = "Position record edit"
@@ -278,12 +272,14 @@ module PositionManagement
     Position::TEAM_CATEGORY_OPTIONAL
   ].freeze
 
+  # Only the cap under its column: position.valid? above holds every column to
+  # its own width (ApplicationRecord#values_fit_their_columns), and a paycode it
+  # already refused needs no second message.
   def validate_lengths(position)
-    { contact_email: CONTACT_EMAIL_MAX, paycode: PAYCODE_MAX,
-      resource_tag: RESOURCE_TAG_MAX }.each do |column, limit|
-      value = position[column]
-      position.errors.add(column, "must be #{limit} characters or fewer") if value.present? && value.length > limit
-    end
+    paycode = position.paycode
+    return if paycode.blank? || paycode.length <= PAYCODE_MAX || position.errors.include?(:paycode)
+
+    position.errors.add(:paycode, :too_long, count: PAYCODE_MAX)
   end
 
   # The three foreign keys the form offers are all `optional: true` and the

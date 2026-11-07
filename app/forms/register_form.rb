@@ -155,9 +155,6 @@ class RegisterForm
     # answer they collided on is not worth guessing at, so neither is named.
     errors.add(:base, "The account could not be created. Please try again.")
     false
-  rescue ActiveRecord::ValueTooLong
-    errors.add(:base, "One of the answers is longer than the Clubhouse can store. Please shorten it.")
-    false
   end
 
   # Auditor callsigns are handed out, never chosen, so one is built as soon as

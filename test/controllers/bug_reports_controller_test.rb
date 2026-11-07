@@ -94,7 +94,7 @@ class BugReportsControllerTest < ActionDispatch::IntegrationTest
     assert_equal @reporter.id, report.person_id
     assert_equal "/me/timesheet", report.url
     assert_equal "127.0.0.1", report.ip
-    assert_equal BugReport::STRING_LIMIT, report.user_agent.length
+    assert_equal BugReport.columns_hash["user_agent"].limit, report.user_agent.length
     assert report.user_agent.start_with?("Mozilla/5.0 x")
     assert_in_delta Time.current, report.created_at, 1.minute
   end

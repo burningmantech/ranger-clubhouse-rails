@@ -133,8 +133,6 @@ class Survey < ApplicationRecord
   # front of it, so each message says which field it is about.
   validates :title, presence: { message: "Title can't be blank" },
             length: { maximum: 190, message: "Title is too long (190 characters at most)" }
-  validates :prologue, allow_blank: true, length: { maximum: 65535 }
-  validates :epilogue, allow_blank: true, length: { maximum: 65535 }
   validate :validate_mentoring_position
   validate :validate_position_category
   validate :validate_one_survey_per_position_and_year

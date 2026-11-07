@@ -5,8 +5,7 @@
             @position.persisted? ? teams_positions_position_record_path(@position, **@return_params) : teams_positions_create_position_record_path(@return_params),
             method: @position.persisted? ? :patch : :post) do |f| %>
   <%= ui_section "Description", icon: "id-badge", icon_type: :solid do %>
-    <%= f.text_field :title, label: "Title", required: true,
-                     maxlength: PositionManagement::TITLE_MAX, show_counter: true,
+    <%= f.text_field :title, label: "Title", required: true, show_counter: true,
                      width: "w-full sm:w-96" %>
 
     <%= form_row do %>
@@ -18,14 +17,12 @@
                    { label: "Type", required: true, prompt: "Select a type",
                      help_text: "Type and team decide where the position appears; its attributes decide what it does." },
                    { class: "w-full sm:w-44" } %>
-      <%= f.text_field :short_title, label: "Short Title",
-                       maxlength: PositionManagement::SHORT_TITLE_MAX, show_counter: true,
+      <%= f.text_field :short_title, label: "Short Title", show_counter: true,
                        width: "w-full sm:w-32",
                        help_text: "Optional. Used where the full title will not fit, such as the schedule." %>
     <% end %>
 
     <%= f.text_field :resource_tag, label: "Trainer Resource Document Tag",
-                     maxlength: PositionManagement::RESOURCE_TAG_MAX,
                      width: "w-full sm:w-64",
                      help_text: "Only used by Training positions. Names the document shown on the trainer resource page." %>
   <% end %>
@@ -239,7 +236,6 @@
                     help_text: "Only while Event Management On Playa is active." %>
 
     <%= f.email_field :contact_email, label: "Contact Email",
-                      maxlength: PositionManagement::CONTACT_EMAIL_MAX,
                       width: "w-full sm:w-96",
                       help_text: "Optional. Receives the notifications above and the automatic sign-out notice." %>
   <% end %>

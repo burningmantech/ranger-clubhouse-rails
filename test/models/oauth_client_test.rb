@@ -66,17 +66,18 @@ class OauthClientTest < ActiveSupport::TestCase
     # Not the secret: a new client is given one before its rules are checked,
     # so the secret rule only ever has something to say on an existing client.
     assert_empty client.errors[:secret]
-    # Not the return address either -- the model stopped constraining it. See
-    # the note on the accepts_redirect_uri? test below for where the guard is.
+    # Not the return address either -- the model asks only that it fit its
+    # column. See the note on the accepts_redirect_uri? test below for where
+    # the guard is.
     assert_empty client.errors[:redirect_uri]
   end
 
   test "text longer than the column is refused rather than raising" do
     too_long = "x" * (OauthClient::TEXT_COLUMN_LIMIT + 1)
 
-    # No :redirect_uri -- it has no length rule any more, so the column is what
-    # would refuse an over-long one, by raising rather than by validating.
-    [:client_id, :description].each do |field|
+    # :redirect_uri has no length rule of its own; the column check
+    # (ApplicationRecord#values_fit_their_columns) refuses it all the same.
+    [:client_id, :description, :redirect_uri].each do |field|
       # A fresh copy each time, read back rather than taken from the fixture
       # accessor, which hands out the same object every call -- reusing it
       # carries the last field's error over and the check stops proving
@@ -121,8 +122,9 @@ class OauthClientTest < ActiveSupport::TestCase
 
   # The model used to refuse a return address that was not a full web address
   # without a fragment. That validation is commented out and the admin form no
-  # longer offers the field, so nothing checks the value on the way in -- this
-  # pins that, so the day it comes back a failure here says so.
+  # longer offers the field, so nothing checks its shape on the way in, only
+  # that it fits its column -- this pins that, so the day it comes back a
+  # failure here says so.
   #
   # It is not the security boundary and never was. accepts_redirect_uri? is,
   # and it is asked twice: sso_controller#authorize before a code is handed

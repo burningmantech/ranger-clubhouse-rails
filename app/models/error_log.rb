@@ -8,6 +8,8 @@ class ErrorLog < ApplicationRecord
   # JSON serialization for the data column
   serialize :data, coder: JSON
 
+  truncates_to_column :user_agent, :ip, :url
+
   # A pre-Rails legacy row can hold data that was never valid JSON, and the
   # coder above raises on every read of such a row -- not just the first.
   # Callers that just want to display whatever is there use this instead of

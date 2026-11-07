@@ -45,8 +45,7 @@
     </dl>
     <%= render "common/mailing_address_fields", f: f, address_required: address_required,
                                                state_required: person.state_required? %>
-    <%= f.telephone_field :home_phone, label: "Primary Phone", width: "w-full sm:w-44",
-                          maxlength: 25, required: true %>
+    <%= f.telephone_field :home_phone, label: "Primary Phone", width: "w-full sm:w-44", required: true %>
   <% end %>
 
   <%= ui_section "Password", icon: "key", icon_type: :solid do %>

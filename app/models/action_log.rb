@@ -20,6 +20,8 @@ class ActionLog < ApplicationRecord
   # JSON serialization for the data column
   serialize :data, coder: JSON
 
+  truncates_to_column :user_agent, :ip
+
   # Virtual attributes for associated records (populated during queries)
   attr_accessor :browser, :slot, :enrolled_slots, :positions, :position, :roles, :role, :team, :teams
 

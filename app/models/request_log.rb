@@ -8,6 +8,8 @@ class RequestLog < ApplicationRecord
   # The database fills in created_at, and there is no updated_at column.
   self.record_timestamps = false
 
+  truncates_to_column :ips
+
   PAGE_SIZE_DEFAULT = 50
   EXPIRE_DAYS_DEFAULT = 7
 

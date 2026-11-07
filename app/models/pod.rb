@@ -83,8 +83,7 @@ class Pod < ApplicationRecord
   validates :transport, inclusion: { in: TRANSPORTS, message: "A pod must be on foot, bike mobile, or in a vehicle." }
 
   # The same 34 the form's maxlength enforces. Client-side alone is not enough:
-  # the column is a varchar(255), and under strict SQL mode a longer posted
-  # location raises ValueTooLong, which is a 500 rather than the intended toast.
+  # the column is a varchar(255), so a crafted post would store a longer one.
   #
   # Only when the location is actually being written. This table is shared with
   # the still-live Laravel page, which has no length rule, so longer locations

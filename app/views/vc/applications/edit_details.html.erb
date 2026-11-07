@@ -40,8 +40,10 @@
     <%= f.text_area :why_volunteer, label: "Why Ranger?" %>
     <%= f.text_area :regional_experience, label: "Regional Experience" %>
     <%= f.text_field :regional_callsign, label: "Regional Callsign", width: "w-full sm:w-64" %>
-    <%= f.text_field :known_rangers, label: "Known Rangers" %>
-    <%= f.text_field :known_applicants, label: "Known Applicants" %>
+    <%# Lists are pasted in, and the browser drops a paste's tail at the
+        maxlength without a word, so these show their count. %>
+    <%= f.text_field :known_rangers, label: "Known Rangers", show_counter: true %>
+    <%= f.text_field :known_applicants, label: "Known Applicants", show_counter: true %>
   <% end %>
 
   <%= button_row do %>

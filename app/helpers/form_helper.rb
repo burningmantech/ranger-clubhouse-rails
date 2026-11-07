@@ -184,9 +184,17 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
   # TEXT-BASED INPUT FIELDS
   # =============================================================================
 
+  # Free text the record stores as typed, so held to what it can store
+  # (with_length_limit). A password is stored as a hash and a phone number as
+  # the app reformats it, so their columns say nothing about what may be typed;
+  # the other kinds are not free text.
+  LENGTH_LIMITED_FIELDS = %i[text_field email_field url_field search_field].freeze
+
   %i[text_field email_field password_field number_field url_field telephone_field
      search_field date_field time_field color_field].each do |field_type|
+    limited = LENGTH_LIMITED_FIELDS.include?(field_type)
     define_method(field_type) do |attribute, options = {}|
+      options = with_length_limit(attribute, options) if limited
       build_field(attribute, options) { |opts| super(attribute, opts) }
     end
   end
@@ -373,7 +381,7 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
 
   def text_area(attribute, options = {})
     options[:width] ||= TEXTAREA_DEFAULT_WIDTH
-    build_field(attribute, options.merge(field_type: :textarea)) { |opts| super(attribute, opts) }
+    build_field(attribute, with_length_limit(attribute, options).merge(field_type: :textarea)) { |opts| super(attribute, opts) }
   end
 
   # =============================================================================
@@ -675,6 +683,21 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
   # =============================================================================
   # FIELD BUILDING
   # =============================================================================
+
+  # A model attribute's field takes the most its record can store as its
+  # maxlength (ApplicationRecord.length_limit), unless the view gives one: a
+  # smaller limit of its own, or nil for none. A class that does not answer
+  # length_limit (every form object today) gets none, so its views set their own.
+  #
+  # Rails copies a maxlength into the input's size, which sets its width
+  # wherever the width is auto: a varchar(191) field drew 1,370px wide. So the
+  # limit comes without one, and the field keeps the width it had.
+  def with_length_limit(attribute, options)
+    return options if options.key?(:maxlength)
+
+    limit = object.class.try(:length_limit, attribute)
+    limit ? { size: nil }.merge(options, maxlength: limit) : options
+  end
 
   def build_field(attribute, options = {})
     field_type = options.delete(:field_type)

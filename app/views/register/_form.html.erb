@@ -98,9 +98,8 @@
     </dl>
     <%= form_row do %>
       <%= f.telephone_field :home_phone, label: "Primary Phone", width: "w-full sm:w-44",
-                            maxlength: 25, required: true, required_label: "", autocomplete: "tel" %>
-      <%= f.telephone_field :alt_phone, label: "Alternative Phone", width: "w-full sm:w-44",
-                            maxlength: 25 %>
+                            required: true, required_label: "", autocomplete: "tel" %>
+      <%= f.telephone_field :alt_phone, label: "Alternative Phone", width: "w-full sm:w-44" %>
     <% end %>
   <% end %>
 

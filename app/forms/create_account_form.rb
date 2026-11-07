@@ -61,8 +61,10 @@ class CreateAccountForm
     # settles it, and the loser is told rather than shown an error page.
     errors.add(:base, "That callsign or email address has just been taken. Please try again.")
     false
-  rescue ActiveRecord::ValueTooLong
-    errors.add(:base, "One of the values is longer than the Clubhouse can store. Please shorten it.")
+  rescue ActiveRecord::RecordInvalid => e
+    # A record written with the account refused a value; its complaint is on
+    # the record that failed (ApplicationRecord#create_or_update), so show it.
+    errors.merge!(e.record.errors)
     false
   end
 

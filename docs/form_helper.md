@@ -482,7 +482,8 @@ All field types support these common options:
 | `hide_label:` | Boolean | `false` | Visually hide the label (still accessible to screen readers) |
 | `icon:` | String | - | FontAwesome icon name for prefix icon |
 | `icon_type:` | Symbol | `:solid` | Icon style: `:solid` or `:regular` (Free styles only) |
-| `show_counter:` | Boolean | `false` | Show character counter (requires `maxlength` attribute) |
+| `maxlength:` | Integer, nil | the record's limit | A model attribute's text, email, url or search field, or textarea, takes the most its record can store: the model's own length rule on any column, else a varchar column's width (`ApplicationRecord.length_limit`). None for a text column with no rule of its own, a password or telephone field, or a class that does not answer `length_limit` (every form object today). Pass a smaller limit, or `nil` for none |
+| `show_counter:` | Boolean | `false` | Show character counter (needs a `maxlength`: the view's own, or the record's default above; without one, no counter shows) |
 | `replace_class:` | Boolean | `false` | Replace default styling classes entirely |
 | `label_position:` | Symbol | `:inline` | **For `collection_radio_buttons` only**: `:inline` (label beside radios) or `:stacked` (label on its own line above radios). Only applies to `:horizontal` and `:auto` layouts. |
 

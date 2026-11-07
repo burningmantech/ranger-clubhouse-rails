@@ -27,13 +27,10 @@ class SurveyQuestion < ApplicationRecord
   validates :survey_id, presence: true
   validates :survey_group_id, presence: true
   validates :sort_index, presence: true, numericality: { only_integer: true }
-  validates :description, presence: { message: "Question can't be blank" },
-            length: { maximum: 65535, message: "Question is too long" }
+  validates :description, presence: { message: "Question can't be blank" }
   validates :options,
             presence: { message: "Choices are needed for a question answered from a list" },
             if: -> { type == TYPE_OPTIONS }
-  validates :options, allow_blank: true,
-            length: { maximum: 65535, message: "There are too many choices to store" }
 
   # Attributes
   attribute :is_required, :boolean, default: false
