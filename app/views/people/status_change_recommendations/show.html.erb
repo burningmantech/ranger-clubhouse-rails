@@ -29,7 +29,7 @@
       problems and a single count would tell the reader none of them. %>
   <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid, accent: true, class: "my-4" do %>
     <strong><%= status_change_count(@unchanged.size) %> could not be changed.</strong>
-    <ul class="list-disc ms-6 mt-1">
+    <ul class="list-bulleted mt-1">
       <% @unchanged.each do |callsign, reason| %>
         <li><strong><%= callsign %></strong> — <%= reason %>.</li>
       <% end %>

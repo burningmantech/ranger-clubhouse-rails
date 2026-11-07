@@ -31,12 +31,12 @@
           attend an Alpha shift. You have no training sign-up this year.
         </p>
         <p class="mb-1"><strong>To fix this:</strong></p>
-        <ol class="list-decimal pl-5 space-y-1 mb-3">
+        <ol class="list-numbered space-y-1 mb-3">
           <li>Complete the <%= link_to "Online Course", me_online_course_path %>, if you haven't yet.</li>
           <li>Sign up for an In-Person Training session on your <%= link_to "Schedule", me_schedule_path %>.</li>
         </ol>
         <p class="mb-1"><strong>What a SAP does:</strong></p>
-        <ul class="list-disc pl-5 space-y-1">
+        <ul class="list-bulleted space-y-1">
           <li>
             <strong>Lets you enter early.</strong>
             On or any day after <%= mdy_format @ticketing_info.sap_alpha_default_date, full: true %> at 00:01, one minute after midnight.

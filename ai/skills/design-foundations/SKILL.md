@@ -247,6 +247,11 @@ Follow Tailwind spacing conventions consistently:
 - Button row gaps: `gap-2` or `gap-4`
 - Form field spacing: `mb-3` (the builder's wrapper)
 
+**Lists:** a bulleted list is `list-bulleted`, a numbered one `list-numbered`; never
+`list-disc`/`list-decimal` on their own, `ms-5`, `pl-4` or `list-inside`. Each utility is the
+marker plus `--spacing-list-indent` (1.5em), hung outside so wrapped lines align with the text.
+Guarded by `test/views/list_indent_test.rb`.
+
 ---
 
 ## Touch Targets

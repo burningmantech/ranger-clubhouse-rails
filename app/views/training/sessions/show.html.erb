@@ -20,7 +20,7 @@
 <% if @training_session.trainer_groups.empty? %>
   <%= ui_callout_box :error, title: "No Trainer Slots Were Found" do %>
     <p>To track who is teaching this session, each trainer position needs a slot where:</p>
-    <ul class="list-disc ms-5 mt-1">
+    <ul class="list-bulleted mt-1">
       <li>the slot's description matches this session's description exactly, and</li>
       <li>the slot begins within one hour of this session's start.</li>
     </ul>

@@ -1,14 +1,14 @@
 <%= hero_panel icon: "file-signature", heading_level: :h1, id: "agreements-header",
-               description: "Review and sign required agreements to complete your Ranger eligibility.",
+               description: "Review & sign required agreements to complete your Ranger eligibility.",
                back_to: :dashboard do |panel| %>
-  <% panel.title do %>Agreements<% end %>
+  <% panel.title do %>Agreements &amp; Team Documents<% end %>
   <% if @agreements.any? && @total_count > 1 %>
     <% panel.progress completed: @signed_count, total: @total_count, aria_label: "Agreement signing progress: #{@signed_count} of #{@total_count} signed" %>
     <% panel.progress_status do %>
       <% if @pending_count > 0 %>
         <div class="inline-flex-center-gap-2 icon-warning">
-          <%= fa_icon "pen-to-square", :solid, { class: "animate-pulse" } %>
-          <span class="font-medium"><%= @pending_count %> action needed</span>
+          <%= fa_icon "pen-to-square", :solid %>
+          <span class="font-medium"><%= @pending_count %> available to sign</span>
         </div>
       <% elsif @signed_count == @total_count %>
         <div class="inline-flex-center-gap-2 icon-success">

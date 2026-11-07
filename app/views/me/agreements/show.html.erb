@@ -1,21 +1,29 @@
 <%= hero_panel icon: "file-signature", heading_level: :h1, id: "review-sign-document-header",
-               title: "Review and Sign Document",
+               title: @agreement.title,
+               description: "Read the agreement and sign it below.",
                back_to: ["Agreements", me_agreements_path] %>
 
-<%= ui_section @agreement.title do %>
+<%# The document sits at page level, under the hero's h1, not inside a
+    ui_section: an agreement carries its own headings (the Personal Vehicle
+    Agreement opens with an h1), and lexxy-content sets an h1 at text-xl,
+    which would outweigh a section's text-lg title. lexxy-content carries the
+    spacing and list markers a saved document needs, as the bookmark and admin
+    preview pages give it. %>
+<div class="lexxy-content">
   <%= @document.body.html_safe %>
-  <div class="mt-4 <%= "text-success" if @agreement.signed %>">
-    <% if @agreement.signed %>
-      <%= fa_icon "check", :solid, { end: 2 } %> Agreement has been signed.
-    <% else %>
-      <div class="flex gap-4">
-        <%= button_to sign_me_agreement_path(@agreement.tag),
-                      method: :patch,
-                      class: button_classes({}, :primary), form: { data: { turbo_stream: true } } do %>
-          <%= fa_icon "pencil", :solid, { end: 2 } %> I Agree / Sign Agreement
-        <% end %>
-        <%= back_to "Agreements", me_agreements_path %>
-      </div>
-    <% end %>
-  </div>
-<% end %>
+</div>
+
+<div class="mt-4 <%= "text-success" if @agreement.signed %>">
+  <% if @agreement.signed %>
+    <%= fa_icon "check", :solid, { end: 2 } %> Agreement has been signed.
+  <% else %>
+    <div class="flex gap-4">
+      <%= button_to sign_me_agreement_path(@agreement.tag),
+                    method: :patch,
+                    class: button_classes({}, :primary), form: { data: { turbo_stream: true } } do %>
+        <%= fa_icon "pencil", :solid, { end: 2 } %> I Agree / Sign Agreement
+      <% end %>
+      <%= back_to "Agreements", me_agreements_path %>
+    </div>
+  <% end %>
+</div>

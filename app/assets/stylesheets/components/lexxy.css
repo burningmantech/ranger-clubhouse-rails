@@ -133,10 +133,12 @@ mark {
     @apply text-base font-semibold text-heading mt-3 mb-1;
 }
 
-/* Lexxy indents a list by 1.5 x the paragraph gap, which at this app's gap
-   leaves no room for the marker. */
+/* Lexxy indents a list by margin, 1.5 x the paragraph gap, which at this
+   app's gap leaves no room for the marker. Every list here indents by the
+   list-indent token instead, as padding, so a box behind a list covers the
+   marker gutter too. */
 .lexxy-content :is(ul, ol) {
-    @apply ms-0 ps-6;
+    @apply ms-0 ps-list-indent;
 }
 
 .lexxy-content li {

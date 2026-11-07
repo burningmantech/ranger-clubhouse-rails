@@ -17,7 +17,7 @@
 
   <% if pkg.lsd_items.any? %>
     <%= ui_callout_box :success, icon: "ticket", accent: true, title: "Late Season Directed (LSD) Items Claimed" do %>
-      <ul class="list-disc pl-4 space-y-1">
+      <ul class="list-bulleted space-y-1">
         <% pkg.lsd_items.each do |item| %>
           <li><%= item.type_label %></li>
         <% end %>
@@ -28,7 +28,7 @@
   <% if pkg.access_documents.any? %>
     <%= ui_callout_box :success, icon: "ticket", accent: true, title: "#{pluralize(pkg.access_documents.count, "Ticket")} Available" do %>
       <p class="mb-2"><strong>You qualified.</strong> Claim or bank once ticketing opens.</p>
-      <ul class="list-disc pl-4 space-y-1">
+      <ul class="list-bulleted space-y-1">
         <% pkg.access_documents.each do |ticket| %>
           <li><strong><%= ticket.type_label %></strong> — earned <%= ticket.source_year %>, expires September <%= ticket.expiry_date&.year %></li>
         <% end %>

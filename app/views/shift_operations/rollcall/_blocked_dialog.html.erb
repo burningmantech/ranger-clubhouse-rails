@@ -12,7 +12,7 @@
     <%= fa_icon "hand", :solid, end: 1 %>
     <%= callsign %> cannot be signed in for the following reason(s):
   </p>
-  <ul class="list-disc list-inside mb-3">
+  <ul class="list-bulleted mb-3">
     <% blockers.each do |blocker| %>
       <li><%= timesheet_blocker_label(blocker) %></li>
     <% end %>

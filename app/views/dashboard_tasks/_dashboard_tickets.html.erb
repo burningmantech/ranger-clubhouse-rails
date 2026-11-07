@@ -13,7 +13,7 @@
       not banked.</p>
   <% elsif tickets.claimed.present? %>
     <p><b><%= pluralize(tickets.claimed.length, "item") %> claimed:</b></p>
-    <ul class="list-disc list-inside text-base">
+    <ul class="list-bulleted">
       <% tickets.claimed.each do |item| %>
         <li>
           <% if item.type == AccessDocument::SAPSO %>
@@ -33,7 +33,7 @@
 
   <% if tickets.provision_items.present? %>
     <p class="mt-2"><b>Provisions:</b></p>
-    <ul class="list-disc list-inside text-base">
+    <ul class="list-bulleted">
       <% tickets.provision_items.each do |item| %>
         <li><%= item.type_label %></li>
       <% end %>

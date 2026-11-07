@@ -1,6 +1,6 @@
 <%# locals: (step:,facts:)%>
 <p class="text-error font-semibold"><%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %> Photo rejected:</p>
-<ul class="mb-2 list-disc list-inside">
+<ul class="mb-2 list-bulleted">
   <% facts.photo.rejections.each do |reason| %>
     <li><%= reason %></li>
   <% end %>
