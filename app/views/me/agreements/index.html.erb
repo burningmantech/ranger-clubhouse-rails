@@ -7,7 +7,7 @@
     <% panel.progress_status do %>
       <% if @pending_count > 0 %>
         <div class="inline-flex-center-gap-2 icon-warning">
-          <%= fa_icon "pen-to-square", :solid, { class: "animate-pulse" } %>
+          <%= fa_icon "pen-to-square", :solid %>
           <span class="font-medium"><%= @pending_count %> action needed</span>
         </div>
       <% elsif @signed_count == @total_count %>

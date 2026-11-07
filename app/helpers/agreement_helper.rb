@@ -21,7 +21,7 @@ module AgreementHelper
   # Badge configuration by status
   BADGES = {
     signed: { text: "signed", variant: :success, aria_label: "Status: Agreement signed" },
-    pending: { text: "action needed", variant: :warning, aria_label: "Status: Action needed" },
+    pending: { text: "available to sign", variant: :warning, aria_label: "Status: Available to sign" },
     not_available: { text: "coming soon", variant: :secondary, aria_label: "Status: Not available yet" }
   }.freeze
 
@@ -54,8 +54,7 @@ module AgreementHelper
     status = agreement_status(agreement)
     config = BADGES.fetch(status)
 
-    extra_class = status == :pending ? "animate-pulse" : ""
-    ui_badge(config[:text], config[:variant], size: "sm", class: extra_class, "aria-label": config[:aria_label])
+    ui_badge(config[:text], config[:variant], size: "sm", "aria-label": config[:aria_label])
   end
 
   def agreement_icon(agreement)
