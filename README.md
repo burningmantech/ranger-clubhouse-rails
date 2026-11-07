@@ -19,18 +19,20 @@ conventions, and `docs/FEATURES.md` maps every page to its route, owner, tables 
 ## Deployment
 
 Clubhouse 3 runs on AWS ECS Fargate in the `rangers` cluster, like the rest of the Ranger
-services, as `ranger-clubhouse-staging-fg` and `ranger-clubhouse-production-fg`. It takes over
+services, as `ranger-clubhouse-rails-staging-fg` and `ranger-clubhouse-rails-production-fg`. It takes over
 Clubhouse 2's hostnames; nothing changes in DNS.
 
 Deploys happen only through GitHub Actions (`.github/workflows/`):
 
 1. **Every pull request** runs Lint, Tests, System tests and Build Docker image. `main` takes nothing
    but a pull request with those four checks green, with no bypass.
-2. **A merge to `main`** runs them again, pushes the image to ECR as `:<sha>` and `:staging`, and rolls
-   the staging service (`deploy-staging` in `cicd.yml`). Check your change at the staging hostname.
+2. **A merge to `main`** runs them again, pushes the image to ECR as `:<sha>`, rolls the staging service
+   to it by digest (`deploy-staging` in `cicd.yml`) and, once the roll is stable, points `:staging` at it.
+   Check your change at the staging hostname.
 3. **Deploy to production** is a workflow you run by hand from the Actions tab (`deploy.yml`). It
-   promotes the exact image staging runs, by digest, and rolls the production service. Only the
-   accounts listed in its `Check user` step may run it.
+   reads the image and commit from the staging service's task definition, so it promotes exactly
+   what staging runs, by digest, and rolls the production service. Only the accounts in its
+   `DEPLOYERS` list at the top of the file may run or re-run it.
 
 Neither workflow runs database migrations.
 
@@ -42,8 +44,11 @@ The task definitions live in AWS and hold the environment; a deploy changes only
 **rolling back** is pointing the service at the previous task-definition revision:
 
 ```bash
-aws ecs update-service --cluster rangers --service ranger-clubhouse-production-fg --task-definition ranger-clubhouse-production-fg:<N>
+aws ecs update-service --cluster rangers --service ranger-clubhouse-rails-production-fg --task-definition ranger-clubhouse-rails-production-fg:<N>
 ```
+
+Production promotes whatever staging's completed deployment runs, so rolling staging back also
+changes what the next production deploy ships.
 
 Each service's database is reachable only from inside the VPC: run a one-off task in the cluster
 and port-forward through Session Manager. The beta at `clubhouse3.dev` and the deployment under
