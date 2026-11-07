@@ -7,7 +7,7 @@
     <div class="mb-1 font-semibold">
       <%= entry.slot.position.title %> <%= datetime_format entry.slot.begins, entry.slot.ends, tz: entry.slot.timezone, tz_abbr: entry.slot.timezone_abbr  %> overlaps with:
     </div>
-    <ul class="list-disc list-inside ms-5 mb-2">
+    <ul class="list-disc ps-list-indent mb-2">
       <% entry.overlapping_slots.each do |conflict| %>
         <li>
           <span class="me-2"><%= conflict.position.title %></span>

@@ -19,7 +19,7 @@
   <p>
     Before the shift can be signed up for, the following issue(s) must be fixed first:
   </p>
-  <ul class="list-disc list-inside ms-2">
+  <ul class="list-disc ps-list-indent">
     <% verdict.requirements.each do |req| %>
       <li><%= Scheduling::REQUIREMENT_LABELS[req].html_safe %></li>
     <% end %>

@@ -5,7 +5,7 @@
     <%= fa_icon "hand", :solid, end: 1 %>
     The <%= action_noun %> is blocked for the following reason(s):
   </p>
-  <ul class="list-disc list-inside mb-3">
+  <ul class="list-disc ps-list-indent mb-3">
     <% blockers.each do |blocker| %>
       <li><%= timesheet_blocker_label(blocker) %></li>
     <% end %>

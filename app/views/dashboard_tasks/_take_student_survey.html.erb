@@ -1,6 +1,6 @@
 <%# locals: (step:,facts:)%>
 <%= fa_icon "clipboard-list", :solid %> <b>Quick feedback on your training:</b>
-<ul class="list-disc list-inside space-y-2">
+<ul class="list-disc ps-list-indent space-y-2">
 <% facts.surveys.sessions.each do |survey| %>
   <li>
     <%= link_to me_surveys_path(slot_id: survey.id, type: survey.type) do %>

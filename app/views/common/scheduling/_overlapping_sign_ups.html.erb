@@ -13,7 +13,7 @@
     </p>
   <% elsif conflicts.many? %>
     <p class="mb-1"><strong>Overlaps with:</strong></p>
-    <ul class="list-disc list-inside ms-5">
+    <ul class="list-disc ps-list-indent">
       <% conflicts.each do |conflict| %>
         <li>
           <span class="me-2"><%= conflict.position.title %></span>

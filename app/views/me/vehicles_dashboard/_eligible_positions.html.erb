@@ -13,11 +13,13 @@
     To submit a <%= name %>, you must first sign up for one of the qualified positions listed below:
   </p>
 
-  <ul role="list" class="list-disc list-inside mb-6 space-y-1 bg-default p-4 rounded-lg" aria-label="List of qualifying positions">
-    <% positions.each do |position| %>
-      <li class="font-medium"><%= position.title %></li>
-    <% end %>
-  </ul>
+  <div class="mb-6 bg-default p-4 rounded-lg">
+    <ul role="list" class="list-disc ps-list-indent space-y-1" aria-label="List of qualifying positions">
+      <% positions.each do |position| %>
+        <li class="font-medium"><%= position.title %></li>
+      <% end %>
+    </ul>
+  </div>
 
   <%= ui_callout_box :info, accent: true, title: "Signing Up", icon: "calendar-check" do %>
     <p class="text-base text-warning mb-3">
