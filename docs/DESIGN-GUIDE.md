@@ -553,6 +553,18 @@ Follow Tailwind spacing conventions consistently:
 - Button row gaps: `gap-2` or `gap-4`
 - Form field spacing: `mb-3` (the builder's wrapper)
 
+**Lists:** a bulleted or numbered list indents by the `list-indent` spacing token
+(`--spacing-list-indent`, 1.5em, declared in `app/assets/tailwind/application.css`), written
+as `ps-list-indent` beside the marker class and nothing else:
+
+```erb
+<ul class="list-disc ps-list-indent space-y-1">
+```
+
+Never a numeric indent (`ms-5`, `pl-4`) and never `list-inside`: the marker hangs outside, so
+a wrapped line lines up with the text, and the gutter scales with the list's type size. Rich
+text (`lexxy-content`) indents by the same token. Guarded by `test/views/list_indent_test.rb`.
+
 ### Touch Targets
 
 **The floor is 36px — `min-h-9`.** `design-foundations` holds the canonical statement; this is the summary.

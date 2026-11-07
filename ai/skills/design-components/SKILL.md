@@ -725,6 +725,23 @@ Most of these have no regular glyph and draw only with `:solid`. Check
 
 ---
 
+## Lists
+
+A bulleted or numbered list in content is a plain `<ul>`/`<ol>` with the marker class and
+the indent token, nothing else for spacing on the inline-start side:
+
+```erb
+<ul class="list-disc ps-list-indent space-y-1">
+  <li>One shift per day.</li>
+</ul>
+```
+
+`ps-list-indent` is the one list indent (`design-foundations` > Spacing). Never `ms-5`, `pl-4`
+or `list-inside`. A list of rows (messages, conversations) is not a marker list and takes no
+indent; a Q&A list is `instruction-list` (above).
+
+---
+
 ## Related Skills
 
 - **design-rules**: Critical rules and approval workflows
