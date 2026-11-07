@@ -739,7 +739,7 @@ and its indent, nothing else for spacing on the inline-start side:
 `list-bulleted` and `list-numbered` carry the one list indent (`design-foundations` > Spacing).
 Never `list-disc` or `list-decimal` on their own, `ms-5`, `pl-4` or `list-inside`. A list of rows
 (messages, conversations) is not a marker list and takes no indent; a Q&A list is
-`instruction-list` (above).
+`instruction-list` (`design-content` > Q&A Style Content Pattern).
 
 ---
 
