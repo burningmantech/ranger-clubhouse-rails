@@ -81,6 +81,20 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal "15.42", qualification_done(item.new("15.42 credits", :credits))
     assert_equal "1", qualification_done(item.new("1 credit", :credits))
     assert_equal "0", qualification_done(item.new("zero credits", :credits))
+
+    # Zero reads in the unit it is counted in, never "0 min" beside "0 hr"
+    assert_equal "0 hr", qualification_amount("0 minutes")
+    assert_equal "0 credits", qualification_amount("zero credits")
+  end
+
+  test "the bars are green once earned, blue while the item can still be earned, grey once it cannot" do
+    item = Struct.new(:has_earned, :expected_to_earn, :closed)
+
+    assert_equal :success, qualification_bar_variant(item.new(true, true, true))
+    assert_equal :primary, qualification_bar_variant(item.new(false, false, false))
+    # On track ranks above closed, as the icon and the step text rank it
+    assert_equal :primary, qualification_bar_variant(item.new(false, true, true))
+    assert_equal :secondary, qualification_bar_variant(item.new(false, false, true))
   end
 
   test "the next step names the gap, when the hours must fall, and what else the same sign-ups earn" do

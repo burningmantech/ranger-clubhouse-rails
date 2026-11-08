@@ -60,7 +60,10 @@ class TicketsAndProvisionsProgress
                   :shortfall,
                   # True once the counter can no longer grow this year, so no
                   # sign-up can earn the item (see closed_counters)
-                  :closed
+                  :closed,
+                  # What the sign-ups still ahead add, taken from the totals as the
+                  # page prints them, formatted like them ("12 hours and 30 minutes")
+                  :scheduled
 
     def initialize(name:, measure:, value:, expected_total:, threshold:,
                    has_earned:, expected_to_earn:, needs_to_work:, needs_to_schedule:)
@@ -101,7 +104,10 @@ class TicketsAndProvisionsProgress
     credits = timesheet_summary.total_credits
     expected_credits = credits + remaining.total_credits
     hours = timesheet_summary.counted_duration
-    expected_hours = hours + remaining.total_duration
+    # Counted remaining time only, as hours is counted time on duty: a sign-up for a position
+    # whose hours don't count (training, On Call) earns no provision, so it is no part of the
+    # estimate. Clubhouse 2 adds total_duration here (owner's ruling, 2026-11-07).
+    expected_hours = hours + remaining.counted_duration
     pre_event_and_event_hours = timesheet_summary.pre_event_duration +
                                 timesheet_summary.event_duration
     expected_pre_event_and_event_hours = pre_event_and_event_hours +
@@ -214,10 +220,14 @@ class TicketsAndProvisionsProgress
     progress.projected_percentage = percent_of(expected_total, threshold_adjusted)
     progress.counter = counter
     progress.shortfall = (threshold_adjusted - expected_total) / (is_hours ? 3600.0 : 1)
+    # From the totals as printed -- hours floored to the minute, credits to two places --
+    # so on duty plus signed up always adds up to the total with sign-ups.
+    shown = ->(amount) { is_hours ? amount.to_i / 60 * 60 : ("%.2f" % amount.to_f).to_f }
+    progress.scheduled = shown.call(expected_total) - shown.call(value)
 
     @items[item] = progress
 
-    [:value, :expected_total, :needs_to_work, :needs_to_schedule].each do |key|
+    [:value, :expected_total, :needs_to_work, :needs_to_schedule, :scheduled].each do |key|
       value = progress.send(key)
       progress.send("#{key}=", is_hours ? hour_minute_words(value, full: true) : credit_format(value.to_f))
     end
@@ -225,10 +235,11 @@ class TicketsAndProvisionsProgress
 
   private
 
-  # Whole percent of the threshold, capped at 100. A zero threshold is already met.
+  # Whole percent of the threshold, rounded down so a row short of it never reads 100,
+  # and capped at 100. A zero threshold is already met.
   def percent_of(amount, threshold)
     return 100 unless threshold.positive?
 
-    [(amount.to_f / threshold * 100).round, 100].min
+    [(amount.to_f / threshold * 100).floor, 100].min
   end
 end
