@@ -36,12 +36,11 @@ class Admin::ActionLogsController < ApplicationController
 
   private
 
-  # The Live mode: the newest rows now, and ActionLogLiveChannel sends what
-  # arrives after them. As many as the channel looks back over, so its first
-  # tick finds the page's own rows. Rendered from index so the mode toggle is
-  # one page.
+  # The Live mode: the newest rows now, read as ActionLogLiveChannel reads
+  # them, and the channel sends what arrives after them. Rendered from index
+  # so the mode toggle is one page.
   def live
-    @live_logs = ActionLog.live.newest_first.limit(LiveLogChannel::LOOKBACK).to_a
+    @live_logs = ActionLogLiveChannel.opening_rows
     render :index
   end
 

@@ -36,12 +36,11 @@ class Admin::RequestLogsController < ApplicationController
 
   private
 
-  # The Live mode: the newest rows now, and RequestLogLiveChannel sends what
-  # arrives after them. As many as the channel looks back over, so its first
-  # tick finds the page's own rows. Rendered from index so the mode toggle is
-  # one page.
+  # The Live mode: the newest rows now, read as RequestLogLiveChannel reads
+  # them, and the channel sends what arrives after them. Rendered from index
+  # so the mode toggle is one page.
   def live
-    @live_logs = RequestLog.newest_first.limit(LiveLogChannel::LOOKBACK).to_a
+    @live_logs = RequestLogLiveChannel.opening_rows
     @logging_on = Setting.get_value(Setting::REQUEST_LOG_ENABLED)
     render :index
   end

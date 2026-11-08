@@ -23,7 +23,7 @@ class LiveLogChannelTest < ActionCable::Channel::TestCase
     assert_predicate subscription, :rejected?
   end
 
-  # A public subscribed would be one: calling it again resets the window and
+  # A public subscribed would be one: calling it again resets the cursor and
   # replaces the lock while a tick holds the old one.
   test "no live channel takes an action from its client" do
     assert_empty LiveLogChannel.action_methods
