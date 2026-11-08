@@ -501,7 +501,7 @@ one-sentence rule is guarded by `test/views/hero_description_test.rb`.
 <%= ui_progress_bar 60, :warning, label: "Loading…" %>
 <%= ui_progress_bar 80, label: true %>  <%# Show percentage %>
 <%= ui_progress_bar 90, size: :lg %>
-<%= ui_progress_bar 40, projected: 65 %>  <%# lighter bar behind: the total once pending sign-ups count %>
+<%= ui_progress_bar 65, bar_class: "progress-projected" %>  <%# striped: an estimate, not yet earned %>
 ```
 
 ---

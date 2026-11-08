@@ -25,11 +25,13 @@
 }
 
 /*
- * The projected segment of ui_progress_bar (projected:): where the total lands
- * once pending sign-ups count. The element carries the fill colour; the mask
- * cuts it into 45-degree stripes with the track showing between them, so it
- * reads as "not yet earned" by pattern rather than by a second, fainter hue --
- * one hue at 40% cleared 3:1 against neither the track nor the fill.
+ * A bar striped as an estimate, not yet earned: ui_progress_bar(..., bar_class:
+ * "progress-projected"), as the qualifications rows draw sign-ups under time on
+ * duty. The element carries the fill colour; the mask cuts it into 45-degree
+ * stripes with the track showing between them, so it reads as "not yet earned"
+ * by pattern rather than by a second, fainter hue -- one hue at 40% cleared 3:1
+ * against neither the track nor the fill. The mask cuts text inside the bar too,
+ * so a striped bar takes no label.
  */
 .progress-projected {
     mask-image: repeating-linear-gradient(-45deg, #000 0 4px, transparent 4px 8px);

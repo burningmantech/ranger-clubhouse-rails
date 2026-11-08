@@ -48,6 +48,12 @@ module ApplicationHelper
     closed: ["Not This Year", :secondary]
   }.freeze
 
+  # The rule the bars illustrate, said once at the top of each section.
+  QUALIFICATION_RULE = "Awards are based on time on duty. Sign-ups are estimates until rangered."
+
+  # A zero amount in the unit it is counted in, wherever the page prints one.
+  QUALIFICATION_ZEROS = { "0 minutes" => "0 hr", "zero credits" => "0 credits" }.freeze
+
   def setting(name)
     Setting.get_value(name)
   end
@@ -263,6 +269,18 @@ module ApplicationHelper
     end
   end
 
+  # The bars' colour, read in the icon's order: green once earned, blue while the item
+  # can still be earned (on track counts, even in a closed period), grey once it cannot.
+  def qualification_bar_variant(item)
+    if item.has_earned
+      :success
+    elsif item.expected_to_earn || !item.closed
+      :primary
+    else
+      :secondary
+    end
+  end
+
   def qualification_name(item) = QUALIFICATION_NAMES.fetch(item.name)
 
   # "Sign up for 18 hr more during Event Week to earn the Event Week Eat Pass and 1 more."
@@ -289,18 +307,23 @@ module ApplicationHelper
     ].compact.join(", ")
   end
 
-  # A qualifications page section with its verdict badge; no badge when the section
-  # holds no goals.
-  def qualification_section(title, state, &)
+  # A qualifications page section with its verdict badge and the rule line; neither
+  # when the section holds no goals.
+  def qualification_section(title, state, &block)
     label, color = QUALIFICATION_VERDICTS[state]
-    ui_section(title, badge: label, badge_color: color, html: { aria: { label: "#{title} Qualification" } }, &)
+    ui_section(title, badge: label, badge_color: color, html: { aria: { label: "#{title} Qualification" } }) do
+      safe_join([(tag.div(QUALIFICATION_RULE, class: "pb-2 text-base text-stone-subtle") if state), capture(&block)].compact)
+    end
   end
 
   # The progress lib hands amounts over as words ("117 hours and 42 minutes"; the
   # HQ page prints them as they are). Two items share a line here, and the long
   # form wraps the next step under the name: "117 hr 42 min", and no zero half.
   def qualification_amount(words)
-    words.to_s.delete_suffix(" and 0 minutes").sub(" and ", " ").gsub(/hours?/, "hr").gsub(/minutes?/, "min")
+    words = words.to_s
+    QUALIFICATION_ZEROS.fetch(words) do
+      words.delete_suffix(" and 0 minutes").sub(" and ", " ").gsub(/hours?/, "hr").gsub(/minutes?/, "min")
+    end
   end
 
   # The unit printed after a threshold, matching qualification_amount.
@@ -323,12 +346,9 @@ module ApplicationHelper
     end.join
   end
 
-  # "15.30 of 19.0 credits", "0 of 60 hr": the threshold printed beside it
+  # "15.30 of 19.00 credits", "0 of 60 hr": the threshold printed beside it
   # already names the unit, so the amount done says it only when the two differ.
   def qualification_done(item)
-    done = qualification_amount(item.value)
-    return "0" if ["0 min", "zero credits"].include?(done)
-
-    done.delete_suffix(" #{qualification_unit(item)}").delete_suffix(" credit")
+    qualification_amount(item.value).delete_suffix(" #{qualification_unit(item)}").delete_suffix(" credit")
   end
 end

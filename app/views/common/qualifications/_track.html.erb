@@ -1,0 +1,20 @@
+<%# locals: (label:, figure:, tail:, percentage:, variant:, aria_label:, lead: false, hatched: false) %>
+<%# One bar with its label and figure above it. lead: the on-duty fact, a size up and in heading weight
+    with only the goal stepping back, and the percentage printed in the bar; hatched: the sign-ups
+    estimate, striped (progress-projected) so it reads as "not yet" at any contrast.
+    Both bars are the :lg height so the pair lines up and the figure can be read in dust or glare.
+    The percentage prints only where it fits inside the fill: a two-digit label and its end padding
+    take about 32px, 13% of the bar on a 320px phone. Below that the figure above says it. A full bar
+    says it without a number, and white on the green fill fails contrast in dark mode. %>
+<div class="grid gap-1 text-stone-subtle">
+  <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-base tabular-nums <%= "font-semibold text-heading" if lead %>">
+    <span><%= label %></span>
+    <span><%= tag.span figure, class: ("text-lg" if lead) %> <%= tag.span tail, class: ("font-normal text-stone-subtle" if lead) %></span>
+  </div>
+  <%= ui_progress_bar percentage, variant,
+                      size: :lg,
+                      label: (true if lead && percentage.between?(13, 99)),
+                      bar_class: ("progress-projected" if hatched),
+                      class: "ring-1 ring-inset ring-base-content/35",
+                      aria: { label: aria_label } %>
+</div>

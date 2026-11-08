@@ -36,10 +36,10 @@ module UiComponents
     # Options:
     #   :size - size of the progress bar (:sm, :md, :lg, :xl) - default: :md (or :lg if label is present)
     #   :variant - color variant (:primary, :secondary, :success, :error, :warning) - default: :primary
-    #   :label - text to display inside the bar. If true, displays the percentage.
-    #   :projected - percentage for a second, lighter bar behind the main one: where the
-    #                total lands once something still pending counts (sign-ups not yet rangered)
-    #   :bar_class - additional CSS classes for the bar itself
+    #   :label - text to display inside the bar. If true, displays the percentage. It sits inside
+    #            the fill and is clipped when the fill is narrower than the text.
+    #   :bar_class - additional CSS classes for the bar itself; "progress-projected" stripes it
+    #                as an estimate, not yet earned (components/progress.css)
     #   :aria - hash of ARIA attributes (e.g. { label: "Downloading" })
     #   Other options are passed to the container div.
     #
@@ -48,7 +48,7 @@ module UiComponents
     #   ui_progress_bar(50, :success)
     #   ui_progress_bar(50, :warning, label: "Loading…")
     #   ui_progress_bar(50, variant: :error, size: :lg)
-    #   ui_progress_bar(40, projected: 65)
+    #   ui_progress_bar(65, bar_class: "progress-projected")
     def ui_progress_bar(percentage, variant_or_options = {}, options = {})
       if variant_or_options.is_a?(Symbol)
         variant = variant_or_options
@@ -61,7 +61,6 @@ module UiComponents
       percentage = percentage.to_i.clamp(0, 100)
 
       label = options.delete(:label)
-      projected = options.delete(:projected)
       # Default size to :lg if label is present, otherwise :md
       default_size = label ? :lg : :md
       size = options.delete(:size) || default_size
@@ -75,12 +74,11 @@ module UiComponents
       height_class = SIZE_CLASSES[size.to_sym] || SIZE_CLASSES[default_size]
 
       # Prepare container classes
-      container_classes = "#{PROGRESS_CONTAINER_BASE} relative #{height_class} #{container_custom_class}".squish
+      container_classes = "#{PROGRESS_CONTAINER_BASE} #{height_class} #{container_custom_class}".squish
 
       # Prepare bar classes
       variant_class = VARIANT_BG_CLASSES[variant.to_sym] || VARIANT_BG_CLASSES[:primary]
-      # relative: lifts the main bar above the absolutely positioned projected one
-      bar_classes = "#{PROGRESS_BAR_BASE} #{height_class} #{variant_class} #{"relative" if projected} #{bar_custom_class}".squish
+      bar_classes = "#{PROGRESS_BAR_BASE} #{height_class} #{variant_class} #{bar_custom_class}".squish
 
       # Label text styles
       label_text = nil
@@ -104,20 +102,9 @@ module UiComponents
       label_class = VARIANT_FG_CLASSES[variant.to_sym] || VARIANT_FG_CLASSES[:primary]
       label_html = label_text ? content_tag(:span, label_text, class: "text-xs #{label_class} font-medium leading-none pe-2") : nil
 
-      # Hatched, not tinted: stripes of the fill colour read as "not yet" next to
-      # the solid bar at any contrast, where one hue at 40% cleared 3:1 against
-      # neither the track nor the fill (components/progress.css).
-      projected_bar = if projected
-                        content_tag(:div, nil, class: "absolute inset-y-0 start-0 rounded-full progress-projected #{variant_class}",
-                                               style: "width: #{projected.to_i.clamp(0, 100)}%", aria: { hidden: true })
-                      end
-
       content_tag :div, options.merge(class: container_classes) do
-        safe_join([
-                    projected_bar,
-                    content_tag(:div, label_html, class: bar_classes, style: "width: #{percentage}%",
-                                                  role: "progressbar", aria: aria_attributes)
-                  ])
+        content_tag(:div, label_html, class: bar_classes, style: "width: #{percentage}%",
+                                      role: "progressbar", aria: aria_attributes)
       end
     end
   end

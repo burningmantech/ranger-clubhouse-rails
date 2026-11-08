@@ -752,14 +752,15 @@ ui_progress_bar(percentage, variant_or_options = {}, options = {})
 | `percentage` | Integer | required | Progress percentage (0-100) |
 | `variant` | Symbol | `:primary` | Color variant (`:primary`, `:secondary`, `:success`, `:error`, `:warning`) |
 | `size:` | Symbol | `:md` | Size variant (`:sm`, `:md`, `:lg`, `:xl`) |
-| `label:` | String/Boolean | `nil` | Label text or `true` for percentage |
-| `projected:` | Integer | `nil` | Percentage for a second, lighter bar behind the main one — where the total lands once something pending counts (sign-ups not yet rangered). Say the projected figure in text beside the bar; the lighter bar is hidden from screen readers |
-| `bar_class:` | String | `nil` | Additional classes for bar |
+| `label:` | String/Boolean | `nil` | Label text or `true` for percentage. It sits inside the fill and is clipped when the fill is narrower than the text, so print it only where it fits |
+| `bar_class:` | String | `nil` | Additional classes for bar. `"progress-projected"` stripes the bar as an estimate, not yet earned |
 | `aria:` | Hash | `{}` | ARIA attributes |
 
 ```erb
-<%# Qualifications: time on duty so far, with remaining sign-ups behind it %>
-<%= ui_progress_bar item.percentage, projected: item.projected_percentage, aria: { label: "#{name} progress" } %>
+<%# Qualifications (common/qualifications/_track): time on duty, then the sign-ups estimate striped under it %>
+<%= ui_progress_bar item.percentage, :primary, size: :lg, label: true, aria: { label: "#{name} on duty" } %>
+<%= ui_progress_bar item.projected_percentage, :primary, size: :lg, bar_class: "progress-projected",
+                    aria: { label: "#{name} with sign-ups, estimate" } %>
 ```
 
 ### credit_timeline_chart

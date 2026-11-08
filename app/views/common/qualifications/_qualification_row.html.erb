@@ -1,8 +1,10 @@
 <%# locals: (item:, description: nil, subtext: nil) %>
 <% name = qualification_name(item) %>
-<%# Settled: earned, or closed for the year with nothing on track -- the bar and the count are spent either way %>
+<%# Settled: earned, or closed for the year with nothing on track -- the name steps back and the estimate is spent either way %>
 <% settled = item.has_earned || (item.closed && !item.expected_to_earn) %>
-<div class="grid content-start gap-2 border-t border-base-300 py-3 first:border-t-0 first:pt-1" id="qual-<%= item.name %>-title">
+<% variant = qualification_bar_variant(item) %>
+<%# Every row keeps its top rule: the section's rule line (qualification_section) sits above the first one %>
+<div class="grid content-start gap-2 border-t border-base-300 py-4" id="qual-<%= item.name %>-title">
   <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
     <div class="flex items-baseline gap-2 <%= settled ? "font-medium text-stone-subtle" : "font-semibold text-heading" %>">
       <span class="w-5 shrink-0 text-center"><%= qualification_icon item %></span>
@@ -22,27 +24,27 @@
     </div>
   </div>
 
-  <%# An earned row keeps what the item gets you; the bar, the count and how to qualify are spent.
-      A closed row keeps the eligibility line too: it says why the row closed. %>
-  <% unless settled %>
-    <%= ui_progress_bar item.percentage, :primary,
-                        projected: item.projected_percentage,
-                        class: "ring-1 ring-inset ring-base-content/35",
-                        aria: { label: "#{name} progress" } %>
+  <%# Time on duty is what earns the award, so its bar leads every row, the earned and closed ones included %>
+  <%= render "common/qualifications/track", lead: true, label: "On Duty",
+             figure: qualification_done(item), tail: "of #{hq_threshold_display(item)} #{qualification_unit item}",
+             percentage: item.percentage, variant:, aria_label: "#{name} on duty" %>
 
-    <div class="flex flex-wrap justify-between gap-x-4 text-base text-stone-subtle tabular-nums">
-      <span><strong class="font-semibold text-heading"><%= qualification_done item %></strong> of <%= item.threshold %> <%= qualification_unit item %></span>
-      <% if item.expected_total != item.value %>
-        <span><%= qualification_amount item.expected_total %> with sign-ups</span>
-      <% end %>
-    </div>
+  <%# Sign-ups are an estimate until rangered: a hatched bar of its own, spent once the award is earned or
+      can no longer be earned this year (a closed counter takes no more hours, so no sign-up helps) %>
+  <% unless settled %>
+    <%= render "common/qualifications/track", hatched: true, label: "With Sign-Ups",
+               figure: qualification_amount(item.expected_total),
+               tail: "with #{qualification_amount item.scheduled} signed up, estimate",
+               percentage: item.projected_percentage, variant:, aria_label: "#{name} with sign-ups, estimate" %>
   <% end %>
 
-  <%# Divs, not <p>s: the base paragraph margin would leave rows with notes taller than rows without %>
+  <%# Divs, not <p>s: the base paragraph margin would leave rows with notes taller than rows without.
+      Eligibility shows on every row, earned ones included: it names the hours the On Duty figure counts,
+      which differ by row (Event Week only, or Pre-Event + Event Week + Post-Event). %>
   <% if description %>
     <div class="text-base text-stone-subtle"><%= description %></div>
   <% end %>
-  <% if subtext && !item.has_earned %>
+  <% if subtext %>
     <div class="text-base text-stone-subtle">Eligibility: <%= subtext %></div>
   <% end %>
 </div>
