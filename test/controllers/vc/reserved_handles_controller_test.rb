@@ -82,12 +82,14 @@ class Vc::ReservedHandlesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match @expiring.handle, response.body
     assert_no_match @khaki.handle, response.body
+    assert_select "#reserved-handle-#{@expiring.id}", text: /#{@expiring.expires_on.iso8601}.*Expired/m
 
     get vc_reserved_handles_path(status: "active")
 
     assert_response :success
     assert_match @khaki.handle, response.body
     assert_no_match @expiring.handle, response.body
+    assert_select "#reserved-handle-#{@khaki.id}", text: /never/
   end
 
   test "creates a reserved handle" do

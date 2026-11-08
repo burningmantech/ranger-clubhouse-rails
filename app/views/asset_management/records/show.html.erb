@@ -33,7 +33,7 @@
     <% list.row "Entity assignment", value_or_dash(@asset.entity_assignment) %>
     <% list.row "Asset group", value_or_dash(@asset.group_name) %>
     <% list.row "Order number", value_or_dash(@asset.order_number) %>
-    <% list.row "Expires on", expires_on_cell(@asset) %>
+    <% list.row "Expires on", expires_at_cell(@asset) %>
     <% list.row "Notes", value_or_dash(nl2br(@asset.notes)) %>
   <% end %>
 <% end %>

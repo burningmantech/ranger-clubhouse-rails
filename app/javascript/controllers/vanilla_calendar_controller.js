@@ -19,14 +19,20 @@ export default class extends Controller {
             this.useNativeDatetimeInput()
             return
         }
-        this.initializeCalendar()
+        // Back after a morph moved the field (see disconnect): it is still set up.
+        if (!this.calendar) this.initializeCalendar()
     }
 
     /**
-     * Clean up calendar instance when controller disconnects
-     * Prevents memory leaks and ensures proper cleanup during Turbo navigation
+     * Clean up the calendar once the field has left the page.
+     * A refused form comes back as a morph, and a field with an error is moved
+     * into its error wrapper, so Stimulus disconnects and reconnects it. The
+     * library's destroy would put back the copy of the field it took at init,
+     * with the old value and no error, so the calendar stays while the field is
+     * still on the page.
      */
     disconnect() {
+        if (this.element.isConnected) return
         this.destroyCalendar()
     }
 
@@ -48,8 +54,11 @@ export default class extends Controller {
             onChangeToInput: (calendar, event) => {
                 this.updateInputValue(calendar)
             },
-            // Attach close button handler after calendar shows
+            // Attach close button handler after calendar shows. The calendar sits in
+            // <body>, outside the form, so data-morph-skip keeps a morph from
+            // dropping it, which left the field opening nothing (application.js).
             onShow: (calendar) => {
+                calendar.context.mainElement.dataset.morphSkip = ""
                 this.attachCloseButtonHandler(calendar)
             }
         }
@@ -184,6 +193,12 @@ export default class extends Controller {
         if (match) {
             this.element.value = `${match[1]}T${match[2] || "00:00"}`
         }
+        // A morph would put back the server's type="text" and lose the picker.
+        this.element.addEventListener("turbo:before-morph-attribute", this.keepNativeType)
+    }
+
+    keepNativeType = (event) => {
+        if (event.detail.attributeName === "type") event.preventDefault()
     }
 
     /**

@@ -60,11 +60,11 @@
     <% end %>
 
     <%= form_row do %>
-      <%= f.date_field :expires_on,
-                       label: "Expires On",
-                       width: "w-full",
-                       wrapper_class: "flex-1",
-                       help_text: "Stops new checkouts after 23:59 on the selected date." %>
+      <%= f.datetime_field :expires_at,
+                           label: "Expires On",
+                           width: "w-full",
+                           wrapper_class: "flex-1",
+                           help_text: "Stops new checkouts from this date and time. Uses Clubhouse time, the same as shift times." %>
       <%= f.text_field :order_number,
                        label: "Order Number",
                        maxlength: 40,

@@ -6,7 +6,7 @@
 <%= modal_dialog id: "asset-expired-modal", title: "Force Checkout Required", frame: false do %>
   <p class="mb-3">
     Asset <strong><%= asset.barcode %></strong> expired on
-    <%= mdy_format(asset.expires_on) %>. The asset was NOT checked out.
+    <%= datetime_format(asset.expires_at, year: true) %>. The asset was NOT checked out.
   </p>
   <%= ui_callout_box :warning, title: "Authorization Needed" do %>
     Force the checkout only if you have authorization to issue expired equipment.

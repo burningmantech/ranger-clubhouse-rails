@@ -22,6 +22,11 @@ class AssetManagement::RecordsController < ApplicationController
 
   UNTYPED = AssetManagement::RecordsHelper::UNTYPED
 
+  # What the asset form posts. expires_on is the name a page loaded before
+  # 20261108000001 still sends (renamed_expiry).
+  ASSET_FIELDS = %i[type barcode description entity_assignment perm_assign group_name
+                    expires_at expires_on order_number notes].freeze
+
   def index
     load_years
     load_type_counts
@@ -168,7 +173,7 @@ class AssetManagement::RecordsController < ApplicationController
 
   def load_type_counts
     @type_counts = @year ? Asset.where(year: @year).group(:type).count : {}
-    @expired_counts = @year ? Asset.where(year: @year, expires_on: ..Current.today).group(:type).count : {}
+    @expired_counts = @year ? Asset.where(year: @year).expired.group(:type).count : {}
     @types = @type_counts.keys.sort_by { |type| AssetManagement::RecordsHelper::ASSET_TYPE_SORT.fetch(type, Float::INFINITY) }
     @total_records = @type_counts.values.sum
   end
@@ -207,28 +212,20 @@ class AssetManagement::RecordsController < ApplicationController
   end
 
   def create_asset_params
-    params.expect(asset: [:type,
-                          :barcode,
-                          :description,
-                          :entity_assignment,
-                          :perm_assign,
-                          :group_name,
-                          :expires_on,
-                          :order_number,
-                          :notes,
-                          :copies])
+    renamed_expiry(params.expect(asset: [*ASSET_FIELDS, :copies]))
   end
 
   def update_asset_params
-    params.expect(asset: [:type,
-                          :barcode,
-                          :description,
-                          :entity_assignment,
-                          :perm_assign,
-                          :group_name,
-                          :expires_on,
-                          :order_number,
-                          :notes])
+    renamed_expiry(params.expect(asset: ASSET_FIELDS))
+  end
+
+  # A New or Edit Asset page loaded before the expires_on column became
+  # expires_at still posts the old name. Read it as the new one, or the save
+  # would drop the date and still say it saved. Remove a release after the deploy.
+  def renamed_expiry(asset_params)
+    old_value = asset_params.delete(:expires_on)
+    asset_params[:expires_at] = old_value if old_value && !asset_params.key?(:expires_at)
+    asset_params
   end
 
   def create_success_message(form)
@@ -272,7 +269,7 @@ class AssetManagement::RecordsController < ApplicationController
         asset.group_name,
         asset.entity_assignment,
         asset.year,
-        asset.expires_on&.iso8601,
+        asset.expires_at&.strftime(DateTimeHelper::CSV_TIME),
         asset.has_expired? ? "Yes" : "No",
         asset.created_at&.iso8601,
         asset.notes

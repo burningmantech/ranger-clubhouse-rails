@@ -15,7 +15,9 @@ module AssetManagement
       attribute :entity_assignment, :string
       attribute :perm_assign, :boolean, default: false
       attribute :group_name, :string
-      attribute :expires_on, :date
+      # A string, not :datetime: the typed text is checked as typed (see
+      # expires_at_must_be_readable) and shown back as typed.
+      attribute :expires_at, :string
       attribute :order_number, :string
       attribute :notes, :string
       attribute :copies, :string
@@ -26,6 +28,7 @@ module AssetManagement
       validates :year, presence: true, numericality: { only_integer: true }
       validate :copies_must_be_a_positive_integer
       validate :barcode_must_include_a_numeric_segment, if: :multiple_copies_requested?
+      validate :expires_at_must_be_readable
 
       attr_reader :created_assets
 
@@ -116,11 +119,19 @@ module AssetManagement
           entity_assignment:,
           perm_assign:,
           group_name:,
-          expires_on:,
+          expires_at:,
           order_number:,
           notes:,
           year:
         }
+      end
+
+      # Asset checks this too, but only once the form's own checks pass: checked
+      # here, it is reported alongside them instead of on the next submit.
+      def expires_at_must_be_readable
+        return if Asset.readable_expiry?(expires_at)
+
+        errors.add(:expires_at, Asset::EXPIRES_AT_UNREADABLE)
       end
 
       def copies_must_be_a_positive_integer

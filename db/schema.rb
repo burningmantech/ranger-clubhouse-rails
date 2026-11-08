@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_01_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_08_000001) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -107,7 +107,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_190000) do
     t.string "group_name", limit: 25
     t.text "notes"
     t.integer "year", default: 0, null: false
-    t.date "expires_on"
+    t.datetime "expires_at", precision: nil
     t.string "order_number"
     t.string "entity_assignment"
     t.index ["order_number", "year"], name: "asset_order_number_year_index"

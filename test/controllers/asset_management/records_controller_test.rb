@@ -120,8 +120,8 @@ class AssetManagement::RecordsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "index badges the expired records for a type" do
-    create_asset(barcode: "RAD-100", expires_on: Current.today - 1)
-    create_asset(barcode: "RAD-101", expires_on: Current.today + 1)
+    create_asset(barcode: "RAD-100", expires_at: Current.time - 1.day)
+    create_asset(barcode: "RAD-101", expires_at: Current.time + 1.day)
 
     sign_in_as(@editor)
 
@@ -270,6 +270,62 @@ class AssetManagement::RecordsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to asset_management_records_type_path(Asset::TYPE_RADIO, year: Current.year)
     assert_equal %w[ITEM007 ITEM008 ITEM009], Asset.order(:barcode).pluck(:barcode)
+  end
+
+  test "an editor sets the expiry to a date and time and an unreadable one is refused" do
+    sign_in_as(@editor)
+
+    post asset_management_records_path, params: {
+      asset: { barcode: "ITEM007", type: Asset::TYPE_RADIO, expires_at: "2026-09-15 14:30" }
+    }
+
+    asset = Asset.find_by!(barcode: "ITEM007")
+    assert_equal Time.zone.local(2026, 9, 15, 14, 30), asset.expires_at
+
+    patch asset_management_record_path(asset), params: { asset: { expires_at: "soon" } }
+
+    assert_response :unprocessable_entity
+    assert_select "body", text: /The expiration is not a date and time we could read/
+    assert_equal Time.zone.local(2026, 9, 15, 14, 30), asset.reload.expires_at
+
+    patch asset_management_record_path(asset), params: { asset: { expires_at: "2026-09-16 08:00" } }
+
+    assert_redirected_to asset_management_record_path(asset, year: asset.year)
+    assert_equal Time.zone.local(2026, 9, 16, 8, 0), asset.reload.expires_at
+  end
+
+  test "a form loaded before the expires_at rename still sets the expiry" do
+    asset = create_asset(barcode: "RAD-100")
+    sign_in_as(@editor)
+
+    patch asset_management_record_path(asset), params: { asset: { expires_on: "2026-09-20" } }
+
+    assert_redirected_to asset_management_record_path(asset, year: asset.year)
+    assert_equal Time.zone.local(2026, 9, 20), asset.reload.expires_at
+  end
+
+  test "the expiry shows with its time, filters by its day and exports to csv" do
+    create_asset(barcode: "RAD-100", expires_at: Time.zone.local(2026, 9, 15, 14, 30))
+    create_asset(barcode: "RAD-101")
+    create_asset(barcode: "RAD-102", expires_at: Time.zone.local(2026, 4, 1, 9, 0))
+
+    sign_in_as(@event_manager)
+
+    get asset_management_records_type_path(Asset::TYPE_RADIO, year: Current.year)
+
+    assert_response :success
+    assert_select "body", text: /Tue Sep 15, 2026 @ 14:30/
+    assert_select "tr", text: /RAD-102.*Wed Apr 1, 2026 @ 09:00.*Expired/m
+    assert_select "option[value=?]", "2026-09-15"
+
+    get asset_management_records_type_path(Asset::TYPE_RADIO, year: Current.year, expire: "2026-09-15")
+
+    assert_select "body", text: /RAD-100/
+    assert_select "body", text: /RAD-101/, count: 0
+
+    get asset_management_records_type_path(Asset::TYPE_RADIO, year: Current.year, format: :csv)
+
+    assert_includes response.body, "2026-09-15 14:30"
   end
 
   test "the index csv exports the whole year" do

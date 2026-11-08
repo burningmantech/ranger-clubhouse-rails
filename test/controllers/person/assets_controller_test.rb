@@ -212,7 +212,7 @@ class Person::AssetsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "expired asset renders the force interstitial and can then be forced" do
-    asset = create_asset(barcode: "EXP-100", expires_on: Current.today)
+    asset = create_asset(barcode: "EXP-100", expires_at: Current.time)
 
     sign_in_as(@event_manager)
 
@@ -229,6 +229,7 @@ class Person::AssetsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/target="modal"/, response.body)
     assert_match "Force Checkout Required", response.body
     assert_match "EXP-100", response.body
+    assert_match "Thu Apr 16, 2026 @ 12:00", response.body
     assert_match "person_asset[force]", response.body
 
     assert_difference("PersonAsset.count", 1) do
@@ -264,7 +265,7 @@ class Person::AssetsControllerTest < ActionDispatch::IntegrationTest
 
   test "force does not override an entity assignment" do
     asset = create_asset(barcode: "ENT-200", entity_assignment: "Gerlach Patrol",
-                         expires_on: Current.today)
+                         expires_at: Current.time)
 
     sign_in_as(@event_manager)
 

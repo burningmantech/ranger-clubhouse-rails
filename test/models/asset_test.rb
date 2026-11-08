@@ -38,23 +38,25 @@ class AssetTest < ActiveSupport::TestCase
       description: "",
       entity_assignment: "",
       order_number: "",
-      expires_on: ""
+      expires_at: ""
     )
 
     assert_nil asset.group_name
     assert_nil asset.description
     assert_nil asset.entity_assignment
     assert_nil asset.order_number
-    assert_nil asset.expires_on
+    assert_nil asset.expires_at
   end
 
-  test "has_expired treats today as expired" do
-    expiring_today = create_asset(expires_on: Current.today)
-    future_asset = create_asset(expires_on: Current.today + 1.day)
-    no_expiry_asset = create_asset(expires_on: nil)
+  test "has_expired treats an expiry that has arrived as expired" do
+    expiring_now = create_asset(expires_at: Current.time)
+    expired_an_hour_ago = create_asset(expires_at: Current.time - 1.hour)
+    expiring_in_an_hour = create_asset(expires_at: Current.time + 1.hour)
+    no_expiry_asset = create_asset(expires_at: nil)
 
-    assert expiring_today.has_expired?
-    assert_not future_asset.has_expired?
+    assert expiring_now.has_expired?
+    assert expired_an_hour_ago.has_expired?
+    assert_not expiring_in_an_hour.has_expired?
     assert_not no_expiry_asset.has_expired?
   end
 
@@ -131,7 +133,7 @@ class AssetTest < ActiveSupport::TestCase
       group_name: nil,
       entity_assignment: nil,
       order_number: nil,
-      expires_on: nil
+      expires_at: nil
     )
     expired_asset = create_asset(
       barcode: "EXP-100",
@@ -139,7 +141,7 @@ class AssetTest < ActiveSupport::TestCase
       group_name: "Ops",
       entity_assignment: "Alpha",
       order_number: "PO-1",
-      expires_on: Current.today
+      expires_at: Current.time
     )
     future_asset = create_asset(
       barcode: "FUTURE-100",
@@ -147,7 +149,7 @@ class AssetTest < ActiveSupport::TestCase
       group_name: "Ops",
       entity_assignment: "Bravo",
       order_number: "PO-2",
-      expires_on: Current.today + 1.day
+      expires_at: Current.time + 1.day
     )
 
     assert_equal [blank_asset.id],
@@ -158,6 +160,33 @@ class AssetTest < ActiveSupport::TestCase
     assert_equal [expired_asset.id], Asset.find_for_query(expire: "expired").map(&:id)
     assert_equal [blank_asset.id, future_asset.id].sort, Asset.find_for_query(expire: "not-expired").map(&:id).sort
     assert_equal [future_asset.id], Asset.find_for_query(expire: (Current.today + 1.day).iso8601).map(&:id)
+  end
+
+  # December, when Pacific and Phoenix differ by an hour: a day taken on a
+  # Pacific host's own clock would start at 23:00 the night before.
+  test "find_for_query takes one whole day for an expiry date, in Clubhouse time" do
+    first = create_asset(expires_at: Time.zone.local(2026, 12, 1, 0, 0))
+    last = create_asset(expires_at: Time.zone.local(2026, 12, 1, 23, 59))
+    create_asset(expires_at: Time.zone.local(2026, 11, 30, 23, 59))
+    create_asset(expires_at: Time.zone.local(2026, 12, 2, 0, 0))
+    create_asset(expires_at: nil)
+
+    assert_equal [first.id, last.id].sort, Asset.find_for_query(expire: "2026-12-01").map(&:id).sort
+  end
+
+  test "a typed expiry must take the calendar's shape" do
+    ["soon", "15", "9/10/2026 14:30", "9/10/26 14:30", "2026-09-31 14:30", "20226-09-15 14:30",
+     "0999-09-15 14:30", "2026-09-15 14:30:45"].each do |typed|
+      asset = build_asset(expires_at: typed)
+
+      assert_not asset.valid?, "#{typed.inspect} was accepted"
+      assert_includes asset.errors[:expires_at],
+                      "The expiration is not a date and time we could read. Pick one from the calendar."
+    end
+
+    ["2026-09-15", "2026-09-15 14:30", "2026-09-15T14:30", "2026-09-15 14:30:00 -0700"].each do |typed|
+      assert build_asset(expires_at: typed).valid?, "#{typed.inspect} was refused"
+    end
   end
 
   test "find_for_query sorts barcodes naturally" do

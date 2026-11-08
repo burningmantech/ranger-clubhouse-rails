@@ -86,8 +86,7 @@ module AssetManagement::RecordsHelper
 
   def asset_expire_filter_options(records)
     date_options = Array(records)
-                   .map(&:expires_on)
-                   .compact
+                   .filter_map { |asset| asset.expires_at&.to_date }
                    .uniq
                    .sort
                    .map { |date| [date.iso8601, date.iso8601] }
