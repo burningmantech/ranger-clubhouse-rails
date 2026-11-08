@@ -8,6 +8,26 @@
 <% step = @qualifications.next_step %>
 <% all_earned = @qualifications.all_earned? %>
 <% closed_out = @qualifications.closed_out? %>
+
+<%# A notice, so its title stays a div (no heading_level).
+    text-base: the rows' secondary text size, so the card does not out-size what it caveats. %>
+<%= ui_accent_card "Important: Read Before Checking Your Progress", variant: :warning, icon: "circle-info",
+                   options: { id: "qualifications-important", class: "mb-4" } do %>
+  <ul class="list-bulleted space-y-2 text-base">
+    <li><strong>Hours are estimates:</strong> Sign-ups show potential hours. Actual earnings are based on time on duty.</li>
+    <% if @ineligible_duration.present? %>
+      <li>
+        <strong>Ineligible hours:</strong> <%= hour_minute_words @ineligible_duration %> of your volunteer hours do not
+        count toward provisions (e.g. training sessions).
+      </li>
+    <% end %>
+    <li><strong>Verification required:</strong> Final eligibility is confirmed after all timesheets are verified.</li>
+    <li class="text-error">
+      <strong>Non-transferable:</strong> Items cannot be sold or transferred. Attempting to do so results in revocation.
+    </li>
+  </ul>
+<% end %>
+
 <%# Green once every goal is earned, even while an upper tier still offers a step;
     neutral once nothing open is left to earn this year.
     Divs, not <p>s: the base paragraph margin would swallow mt-1 and pad the card unevenly. %>
@@ -34,48 +54,6 @@
                     class: "mt-3" %>
   <% end %>
 <% end %>
-
-<div class="mb-4 rounded-lg border border-warning/30 bg-warning/10">
-  <div class="p-3 font-medium flex items-center gap-2 text-warning">
-    <%= fa_icon "circle-info", :solid, class: "icon-warning" %>
-    Important: Read before checking your progress
-  </div>
-  <%# text-base: the rows' secondary text size, so the callout does not out-size what it caveats %>
-  <div class="grid p-4 pt-0 gap-x-6 gap-y-2 text-base text-stone-emphasis">
-    <div class="flex gap-2 basis-64 grow">
-      <span class="icon-warning mt-0.5">•</span>
-      <div>
-        <strong>Hours are estimates:</strong> Sign-ups show potential hours. Actual earnings are based on time on duty.
-      </div>
-    </div>
-
-    <% if @ineligible_duration.present? %>
-      <div class="flex gap-2 basis-64 grow">
-        <span class="icon-warning mt-0.5">•</span>
-        <div>
-          <strong>Ineligible hours:</strong> <%= hour_minute_words @ineligible_duration %> of your volunteer hours do
-          not
-          count toward provisions (e.g. training sessions).
-        </div>
-      </div>
-    <% end %>
-
-    <div class="flex gap-2 basis-64 grow">
-      <span class="icon-warning mt-0.5">•</span>
-      <div>
-        <strong>Verification required:</strong> Final eligibility is confirmed after all timesheets are verified.
-      </div>
-    </div>
-
-    <div class="flex gap-2 basis-64 grow text-error">
-      <span class="mt-0.5">•</span>
-      <div>
-        <strong>Non-transferable:</strong> Items cannot be sold or transferred. Attempting to do so results in
-        revocation.
-      </div>
-    </div>
-  </div>
-</div>
 
 <%# Each section's note closes it, under the rows it governs; its rule line opens it (qualification_section). %>
 <% note_class = "border-t border-base-300 pt-2 text-base text-stone-subtle" %>
