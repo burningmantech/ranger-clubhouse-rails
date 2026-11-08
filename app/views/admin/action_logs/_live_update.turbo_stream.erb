@@ -1,7 +1,9 @@
 <%# locals: (rows:, action:) %>
-<%# What ActionLogLiveChannel transmits: the rows newest first. A prepend puts
-    them on top of the list; an update, sent when more were waiting than one
-    tick carries, replaces the list with the newest rows. %>
+<%# What ActionLogLiveChannel transmits: the new rows newest first, then any
+    that committed late. A prepend puts them on top of the list, and
+    live_log_controller.js moves a late one down to its place; an update, sent
+    when more were waiting than one tick carries, replaces the list with the
+    newest rows. %>
 <%= turbo_stream.action action, "action-log-live-rows" do %>
   <%= render "admin/action_logs/live_rows", rows: %>
 <% end %>

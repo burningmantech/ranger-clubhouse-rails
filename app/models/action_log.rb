@@ -29,13 +29,14 @@ class ActionLog < ApplicationRecord
 
   truncates_to_column :user_agent, :ip
 
-  # The Live mode's reads (ActionLogLiveChannel), as RequestLog's. The id
+  # The Live mode's read (ActionLogLiveChannel), as RequestLog's. The id
   # orders the rows: created_at keeps whole seconds, and rows arrive in bursts.
-  # page-visit rows are left out: RequestLogger writes one for every request,
-  # nine rows in ten, and Request Log › Live already shows each request. One
-  # hash in includes, so both columns' people load in one query.
-  scope :live, -> { where.not(event: "page-visit") }
+  # One hash in includes, so both columns' people load in one query.
   scope :newest_first, -> { order(id: :desc).includes(person_summary: {}, target_person_summary: {}) }
+  # What a Live row shows (admin/action_logs/_live_rows) and no more: a page
+  # visit's user agent and address are most of its bytes, and an audit row's
+  # data can run long.
+  scope :live_columns, -> { select(:id, :created_at, :person_id, :target_person_id, :event, :message) }
 
   # Virtual attributes for associated records (populated during queries)
   attr_accessor :browser, :slot, :enrolled_slots, :positions, :position, :roles, :role, :team, :teams

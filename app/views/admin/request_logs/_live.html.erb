@@ -3,7 +3,8 @@
     showing a copy of an hour-old list whose feed would subscribe twice. %>
 <% turbo_exempts_page_from_cache %>
 
-<%= tag.div data: { controller: "live-log", live_log_cap_value: request_log_live_cap } do %>
+<%= tag.div data: { controller: "live-log", live_log_cap_value: request_log_live_cap,
+                    live_log_lookback_value: LiveLogChannel::LOOKBACK } do %>
   <%# The feed's stream source, made from this template only while the tab is
       showing (live_log_controller.js). The channel checks the viewer's roles
       itself; the signed name is only what turbo_stream_from insists on. %>

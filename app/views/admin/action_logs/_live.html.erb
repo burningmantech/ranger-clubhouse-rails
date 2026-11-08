@@ -3,7 +3,8 @@
     showing a copy of an hour-old list whose feed would subscribe twice. %>
 <% turbo_exempts_page_from_cache %>
 
-<%= tag.div data: { controller: "live-log", live_log_cap_value: action_log_live_cap } do %>
+<%= tag.div data: { controller: "live-log", live_log_cap_value: action_log_live_cap,
+                    live_log_lookback_value: LiveLogChannel::LOOKBACK } do %>
   <%# The feed's stream source, made from this template only while the tab is
       showing (live_log_controller.js). The channel checks the viewer's roles
       itself; the signed name is only what turbo_stream_from insists on. %>
@@ -21,10 +22,10 @@
     <dl class="instruction-list">
       <dt>When does an entry appear?</dt>
       <dd>Within a few seconds of the Clubhouse recording it, at the top of the list.</dd>
-      <dt>Which entries appear?</dt>
-      <dd>Every kind of Action Log entry except page visits, which the Request Log's Live mode shows.</dd>
+      <dt>Why does an entry sometimes appear below newer ones?</dt>
+      <dd>An entry made during a longer change, such as converting a group of Alphas, appears once the whole change is saved, in its place by when it was made. One from a change that takes longer than <%= LiveLogChannel::GAP_HORIZON.inspect %> does not appear here, but the Search mode has it.</dd>
       <dt>How many are kept?</dt>
-      <dd>The newest <%= action_log_live_cap %>. Older ones drop off the bottom, and the Search mode still has them. When more than <%= LiveLogChannel::BATCH_LIMIT %> arrive between two updates, the list starts again from the newest <%= LiveLogChannel::BATCH_LIMIT %>.</dd>
+      <dd>The newest <%= action_log_live_cap %>. Older ones drop off the bottom, and the Search mode still has them, except page visits with no user, which are deleted after <%= ActionLog::EXPIRE_PAGE_VISIT_HOURS %> hours. When more than <%= LiveLogChannel::BATCH_LIMIT %> arrive between two updates, the list starts again from the newest <%= LiveLogChannel::BATCH_LIMIT %>.</dd>
       <dt>Does the list update in a background tab?</dt>
       <dd>No. It stops while the tab is hidden and catches up when you return to it.</dd>
     </dl>
@@ -44,7 +45,7 @@
             <%= t.heading heading %>
           <% end %>
         <% end %>
-        <%= t.body id: "action-log-live-rows", data: { live_log_target: "rows" } do %>
+        <%= t.body id: "action-log-live-rows", class: log_text_class, data: { live_log_target: "rows" } do %>
           <%= render "admin/action_logs/live_rows", rows: logs %>
         <% end %>
       <% end %>

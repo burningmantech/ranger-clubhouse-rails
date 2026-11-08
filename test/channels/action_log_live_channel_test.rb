@@ -3,10 +3,11 @@
 require "test_helper"
 
 # The Live mode's feed for Action Logs: who may listen, that a tick sends the
-# new rows as a turbo-stream of the shared rows partial, that a page visit
-# never goes, and what this feed has that the Request Log's does not: rows
-# that commit late behind page visits, and a flood that must keep the filter.
-# The rest of LiveLogChannel is tested once, in RequestLogLiveChannelTest.
+# new rows, page visits among them, as a turbo-stream of the shared rows
+# partial, and what this feed adds to the Request Log's: audit rows that commit
+# late behind a stream of page visits, a flood through its own partial, and a
+# read of only the columns a row shows. The rest of LiveLogChannel is tested
+# once, in RequestLogLiveChannelTest.
 class ActionLogLiveChannelTest < ActionCable::Channel::TestCase
   include TimesheetAdminTestHelper
 
@@ -55,7 +56,7 @@ class ActionLogLiveChannelTest < ActionCable::Channel::TestCase
     assert_equal [false], closed.map { |options| options[:reconnect] }
   end
 
-  test "a tick prepends the new rows, newest first, and never a page visit" do
+  test "a tick prepends the new rows, page visits among them, newest first" do
     assert listens?(@admin)
     first = record("auth-login", person: @actor)
     visit = record("page-visit", person: @actor, message: "me/dashboard")
@@ -67,50 +68,61 @@ class ActionLogLiveChannelTest < ActionCable::Channel::TestCase
     html = transmissions.last
     assert_match 'action="prepend"', html
     assert_match 'target="action-log-live-rows"', html
-    assert_operator html.index(row_id(second.id)), :<, html.index(row_id(first.id))
-    assert_no_match row_id(visit.id), html
+    assert_equal [second, visit, first].map { |row| row_id(row.id) }, row_ids(html)
     assert_match @actor.callsign, html
     assert_match @target.callsign, html
   end
 
-  # An id handed out early and committed late: a newer row is sent meanwhile,
-  # with more than LOOKBACK page visits taking ids in between.
-  test "a row that commits late, behind page visits, still arrives" do
+  # An audit row's id is handed out inside its caller's transaction, while
+  # every request's page visit commits at once: more of them than the page
+  # opens with go out before the audit row commits.
+  test "an audit row that commits behind more page visits than LOOKBACK still arrives" do
     shown = record("auth-login", person: @actor)
     late = record("person-update", person: @actor)
     late.delete
-    page_visits(LiveLogChannel::LOOKBACK + 50)
-    assert listens?(@admin, shown: shown.id.to_s)
-    newer = record("auth-login", person: @target)
-    subscription.send(:push)
-    assert_match row_id(newer.id), transmissions.last
+    assert listens?(@admin, since: shown.id.to_s)
+    3.times do
+      page_visits(60)
+      subscription.send(:push)
+    end
 
     record("person-update", person: @actor, id: late.id)
     subscription.send(:push)
 
-    assert_equal 2, transmissions.size
-    assert_match row_id(late.id), transmissions.last
+    assert_equal 4, transmissions.size
+    assert_equal [row_id(late.id)], row_ids(transmissions.last)
   end
 
-  test "more waiting than one tick carries replaces the list with the newest rows, page visits left out" do
+  test "more waiting than one tick carries replaces the list with the newest rows" do
     assert listens?(@admin)
     limit = LiveLogChannel::BATCH_LIMIT
-    ActionLog.insert_all(Array.new(limit + 1) { |n| { event: "auth-login", message: "entry #{n}" } })
-    page_visits(5)
+    events = %w[page-visit auth-login]
+    ActionLog.insert_all(Array.new(limit + 1) { |n| { event: events[n % 2], message: "entry #{n}" } })
 
     subscription.send(:push)
 
     html = transmissions.last
     assert_match 'action="update"', html
-    assert_equal limit, html.scan('id="action-log-live-').size
-    ActionLog.where(event: "page-visit").pluck(:id).each { |id| assert_no_match row_id(id), html }
+    assert_match 'target="action-log-live-rows"', html
+    assert_equal limit, row_ids(html).size
+    assert_no_match row_id(ActionLog.minimum(:id)), html
+  end
+
+  test "the feed reads only what a Live row shows" do
+    record("page-visit", message: "me/dashboard", ip: "10.0.0.1", user_agent: "Mozilla/5.0")
+
+    row = ActionLogLiveChannel.feed.newest_first.first
+
+    assert_equal "me/dashboard", row.message
+    assert_not row.has_attribute?(:user_agent)
+    assert_not row.has_attribute?(:data)
   end
 
   private
 
-  def listens?(person, shown: nil)
+  def listens?(person, since: nil, gaps: nil)
     stub_connection current_user: person
-    subscribe(signed_stream_name: Turbo::StreamsChannel.signed_stream_name("action-log"), shown:)
+    subscribe(signed_stream_name: Turbo::StreamsChannel.signed_stream_name("action-log"), since:, gaps:)
     subscription.confirmed?
   end
 
@@ -123,4 +135,6 @@ class ActionLogLiveChannelTest < ActionCable::Channel::TestCase
   end
 
   def row_id(id) = %(id="action-log-live-#{id}")
+
+  def row_ids(html) = html.scan(/id="action-log-live-\d+"/)
 end

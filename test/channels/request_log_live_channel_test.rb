@@ -4,8 +4,9 @@ require "test_helper"
 
 # The Live mode's feed: who may listen, that each tick sends the rows it has
 # not sent yet as a turbo-stream of the shared rows partial, and the ways a
-# tick can go wrong -- a row that commits late, a flood, a render that fails,
-# a tick that overlaps the one before it.
+# tick can go wrong -- a row that commits late, an id looked for too long, a
+# flood of new rows or of late ones, a render that fails, a tick that overlaps
+# the one before it.
 class RequestLogLiveChannelTest < ActionCable::Channel::TestCase
   include TimesheetAdminTestHelper
 
@@ -56,7 +57,7 @@ class RequestLogLiveChannelTest < ActionCable::Channel::TestCase
 
   test "the first tick leaves out the rows the page already shows" do
     shown = record("me/dashboard")
-    assert listens?(@admin, shown: shown.id.to_s)
+    assert listens?(@admin, since: shown.id.to_s)
 
     subscription.send(:push)
 
@@ -79,6 +80,72 @@ class RequestLogLiveChannelTest < ActionCable::Channel::TestCase
     assert_equal 2, transmissions.size
     assert_match row_id(late.id), transmissions.last
     assert_no_match row_id(newer.id), transmissions.last
+  end
+
+  # Sent over several ticks, as a busy log sends them.
+  test "a row that commits after more than LOOKBACK newer rows were sent still arrives" do
+    shown = record("me/dashboard")
+    late = record("me/schedule")
+    late.delete
+    assert listens?(@admin, since: shown.id.to_s)
+    3.times do
+      RequestLog.insert_all(Array.new(60) { |n| row_attributes("me/page-#{n}") })
+      subscription.send(:push)
+    end
+
+    record("me/profile", id: late.id)
+    subscription.send(:push)
+
+    assert_equal 4, transmissions.size
+    assert_equal [row_id(late.id)], row_ids(transmissions.last)
+  end
+
+  test "an id passed over for longer than GAP_HORIZON is looked for no more" do
+    shown = record("me/dashboard")
+    late = record("me/schedule")
+    late.delete
+    assert listens?(@admin, since: shown.id.to_s)
+    record("me/profile")
+    channel = subscription
+    channel.send(:push)
+
+    later = channel.send(:clock) + LiveLogChannel::GAP_HORIZON.to_i + 1
+    channel.define_singleton_method(:clock) { later }
+    record("me/feedback", id: late.id)
+    channel.send(:push)
+
+    assert_equal 1, transmissions.size
+  end
+
+  test "the ids the page says it is missing are looked for" do
+    missing = record("me/dashboard")
+    shown = record("me/schedule")
+    missing.delete
+    assert listens?(@admin, since: shown.id.to_s, gaps: missing.id.to_s)
+
+    record("me/profile", id: missing.id)
+    subscription.send(:push)
+
+    assert_equal [row_id(missing.id)], row_ids(transmissions.last)
+  end
+
+  test "more late rows than one tick carries start the list again from the newest" do
+    shown = record("me/dashboard")
+    limit = LiveLogChannel::BATCH_LIMIT
+    RequestLog.insert_all(Array.new(limit + 1) { row_attributes("me/late") })
+    late_ids = RequestLog.where.not(id: shown.id).ids
+    RequestLog.where(id: late_ids).delete_all
+    assert listens?(@admin, since: shown.id.to_s)
+    newer = record("me/profile")
+    subscription.send(:push)
+
+    RequestLog.insert_all(late_ids.map { |id| row_attributes("me/late").merge(id:) })
+    subscription.send(:push)
+
+    html = transmissions.last
+    assert_match 'action="update"', html
+    assert_equal limit, row_ids(html).size
+    assert_match row_id(newer.id), html
   end
 
   test "more waiting than one tick carries replaces the list with the newest rows" do
@@ -123,9 +190,9 @@ class RequestLogLiveChannelTest < ActionCable::Channel::TestCase
 
   private
 
-  def listens?(person, shown: nil)
+  def listens?(person, since: nil, gaps: nil)
     stub_connection current_user: person
-    subscribe(signed_stream_name: Turbo::StreamsChannel.signed_stream_name("request-log"), shown:)
+    subscribe(signed_stream_name: Turbo::StreamsChannel.signed_stream_name("request-log"), since:, gaps:)
     subscription.confirmed?
   end
 
@@ -138,4 +205,6 @@ class RequestLogLiveChannelTest < ActionCable::Channel::TestCase
   end
 
   def row_id(id) = %(id="request-log-live-#{id}")
+
+  def row_ids(html) = html.scan(/id="request-log-live-\d+"/)
 end

@@ -209,7 +209,7 @@ class Admin::ActionLogsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?][data-active-ignore]", admin_action_logs_path(mode: "live"), text: "Live"
   end
 
-  test "live mode shows the newest rows but no page visit, and the feed's template" do
+  test "live mode opens on the newest rows, page visits among them, and the feed's template" do
     sign_in_as(@admin)
     older = ActionLog.create!(event: "auth-login", person: @actor, message: "")
     visit = ActionLog.create!(event: "page-visit", person: @actor, message: "me/dashboard")
@@ -218,19 +218,21 @@ class Admin::ActionLogsControllerTest < ActionDispatch::IntegrationTest
     get admin_action_logs_path(mode: "live")
 
     assert_response :success
-    assert_select "[data-controller=live-log][data-live-log-cap-value=?]",
-                  Admin::ActionLogsHelper::ACTION_LOG_LIVE_CAP.to_s do
+    assert_select "[data-controller=live-log][data-live-log-cap-value=?][data-live-log-lookback-value=?]",
+                  Admin::ActionLogsHelper::ACTION_LOG_LIVE_CAP.to_s, LiveLogChannel::LOOKBACK.to_s do
       # The stream source waits in a template until the tab is showing.
       assert_select "template[data-live-log-target=source] turbo-cable-stream-source[channel=ActionLogLiveChannel]"
       assert_select "tbody#action-log-live-rows[data-live-log-target=rows]" do
         assert_select "tr#action-log-live-#{newest.id} a[href=?]", person_path(@target), text: @target.callsign
-        assert_select "tr#action-log-live-#{older.id}"
-        assert_select "tr#action-log-live-#{visit.id}", false
+        assert_select "tr#action-log-live-#{visit.id}", text: %r{me/dashboard}
       end
       assert_select "[data-live-log-target=table]:not([hidden])"
       assert_select "[data-live-log-target=empty][hidden]"
       assert_select "[data-live-log-target=stalled][hidden]", text: /Live updates have stopped/
     end
+    # Newest first, the page visit in its place between the other two.
+    ids = css_select("tbody#action-log-live-rows tr").map { |row| row["id"] }
+    assert_equal [newest, visit, older].map { |row| "action-log-live-#{row.id}" }, ids
     assert_select "meta[name=turbo-cache-control][content=no-cache]"
     assert_select "a[href=?]", admin_action_logs_path(mode: "live"), text: /Live\s*\(current view\)/
     assert_select "a[href=?][aria-current]", admin_action_logs_path(mode: "live"), false
