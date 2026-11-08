@@ -66,6 +66,26 @@ class AssetManagement::Records::CreateFormTest < ActiveSupport::TestCase
     assert_equal ["DUP100"], Asset.order(:barcode).pluck(:barcode)
   end
 
+  test "an unreadable expiry is reported with the form's own errors" do
+    form = AssetManagement::Records::CreateForm.new(barcode: "RAD-100", copies: "0", expires_at: "soon")
+
+    assert_not form.save
+    assert_includes form.errors[:copies], "Copies must be a positive whole number."
+    assert_includes form.errors[:expires_at],
+                    "The expiration is not a date and time we could read. Pick one from the calendar."
+  end
+
+  test "an unreadable expiry fails the form" do
+    form = AssetManagement::Records::CreateForm.new(barcode: "RAD-100", expires_at: "soon")
+
+    assert_no_difference("Asset.count") do
+      assert_not form.save
+    end
+
+    assert_includes form.errors[:expires_at],
+                    "The expiration is not a date and time we could read. Pick one from the calendar."
+  end
+
   private
 
   def create_asset(**attributes)

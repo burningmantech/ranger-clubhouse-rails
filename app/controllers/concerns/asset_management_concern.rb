@@ -56,7 +56,9 @@ module AssetManagementConcern
                                     "#{asset.entity_assignment} and cannot be checked out.")
     end
 
-    if asset.has_expired? && checkout[:force] != "1"
+    # Read once: the guard and the record must agree even as the expiry passes.
+    expired = asset.has_expired?
+    if expired && checkout[:force] != "1"
       return render_asset_modal("expired_modal",
                                 asset:,
                                 attachment_id: checkout[:attachment_id].presence)
@@ -68,7 +70,7 @@ module AssetManagementConcern
       attachment_id: checkout[:attachment_id].presence,
       checked_out: Current.time,
       check_out_person_id: Current.person_id,
-      check_out_forced: asset.has_expired?
+      check_out_forced: expired
     )
 
     assets_outcome(:success, "Checked out #{asset.type} ##{asset.barcode}.", asset:)

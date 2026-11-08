@@ -8,6 +8,14 @@ class Asset < ApplicationRecord
   BLANK_FILTER_VALUE = "Blank"
   BARCODE_SEGMENT_PATTERN = /\A(.*?)(\d+)(\D*)\z/
 
+  # A typed expiry takes the calendar's shape: a date, a date and HH:MM
+  # ("2026-09-15 14:30", or "2026-09-15T14:30" from a phone), or the
+  # "2026-09-15 14:30:00 -0700" an edit page holds without JavaScript.
+  # Time.zone.parse guesses at anything else ("9/10/26" is the year 9), and
+  # MariaDB answers a five-digit year with a 500.
+  EXPIRES_AT_FORMAT = /\A(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::00(?: [+-]\d{4})?)?)?\z/
+  EXPIRES_AT_UNREADABLE = "The expiration is not a date and time we could read. Pick one from the calendar."
+
   TYPE_GEAR = "gear"
   TYPE_RADIO = "radio"
   TYPE_TEMP_ID = "temp-id"
@@ -35,6 +43,12 @@ class Asset < ApplicationRecord
   validates :description, length: { maximum: 64 }, allow_nil: true
   validates :type, presence: true
   validates :year, presence: true, numericality: { only_integer: true }
+  validate :expires_at_is_readable
+
+  # The same rule as #has_expired?, for a whole relation: an expiry that has
+  # arrived has expired, and no expiry never does.
+  scope :expired, -> { where(expires_at: ..Current.time) }
+  scope :not_expired, -> { where(expires_at: nil).or(where.not(expires_at: ..Current.time)) }
 
   before_validation :normalize_optional_fields
 
@@ -68,6 +82,20 @@ class Asset < ApplicationRecord
 
     alias_method :findForQuery, :find_for_query
     alias_method :findByBarcodeYear, :find_by_barcode_year
+
+    # Whether typed text is an expiry the form may store: blank, or the
+    # calendar's shape naming a real date and time in years the column holds.
+    # A time set in code is not typed and needs no check.
+    def readable_expiry?(value)
+      return true unless value.is_a?(String)
+      return true if value.blank?
+
+      match = EXPIRES_AT_FORMAT.match(value.strip)
+      return false unless match
+
+      year, month, day, hour, minute = match.captures.map(&:to_i)
+      year >= 1000 && Date.valid_date?(year, month, day) && hour < 24 && minute < 60
+    end
 
     private
 
@@ -106,15 +134,15 @@ class Asset < ApplicationRecord
     def apply_expire_filter(scope, value)
       return scope if value.blank? || value.to_s == "all"
 
-      expires_on = arel_table[:expires_on]
-
       case value.to_s
       when "expired"
-        scope.where(expires_on.lteq(Current.today))
+        scope.expired
       when "not-expired"
-        scope.where(expires_on.eq(nil).or(expires_on.gt(Current.today)))
+        scope.not_expired
       else
-        scope.where(expires_on: Date.iso8601(value.to_s))
+        # A whole day in Clubhouse time, the day each row prints, as the
+        # scheduling pages' day filters do.
+        scope.where(expires_at: Date.iso8601(value.to_s).all_day)
       end
     rescue ArgumentError
       scope.none
@@ -141,7 +169,7 @@ class Asset < ApplicationRecord
   end
 
   def has_expired?
-    expires_on.present? && expires_on <= Current.today
+    expires_at.present? && expires_at <= Current.time
   end
 
   private
@@ -151,6 +179,15 @@ class Asset < ApplicationRecord
     self.description = description.presence
     self.entity_assignment = entity_assignment.presence
     self.order_number = order_number.presence
-    self.expires_on = nil if expires_on_before_type_cast.blank?
+    self.expires_at = nil if expires_at_before_type_cast.blank?
+  end
+
+  # Text the column could not read lands as nil, the same as an empty box, and
+  # text it could read may still be a guess; the raw value tells them apart.
+  def expires_at_is_readable
+    raw = expires_at_before_type_cast
+    return if raw.blank? || (expires_at.present? && self.class.readable_expiry?(raw))
+
+    errors.add(:expires_at, EXPIRES_AT_UNREADABLE)
   end
 end

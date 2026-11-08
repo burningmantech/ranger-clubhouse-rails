@@ -112,15 +112,15 @@ module ApplicationHelper
 
   # Table cell for an expiring date: ISO date plus an "Expired" badge once
   # past, or the fallback when no expiry is set. Records must respond to
-  # #expires_on and #has_expired?.
-  def expires_on_cell(record, fallback: "—")
-    return fallback if record.expires_on.blank?
+  # #expires_on and #has_expired? (HandleReservation).
+  def expires_on_cell(record, fallback:)
+    expiry_cell(record.expires_on&.iso8601, record.has_expired?, fallback:)
+  end
 
-    tag.div(class: "flex flex-wrap items-center gap-2") do
-      parts = [tag.span(record.expires_on.iso8601)]
-      parts << ui_badge("Expired", :warning, icon: "triangle-exclamation", icon_type: :solid) if record.has_expired?
-      safe_join(parts)
-    end
+  # The same cell for a record that expires at a time of day (Asset), which
+  # must respond to #expires_at and #has_expired?.
+  def expires_at_cell(record)
+    expiry_cell(datetime_format(record.expires_at, year: true), record.has_expired?)
   end
 
   def photo_tag(photo, options = {})
@@ -350,5 +350,17 @@ module ApplicationHelper
   # already names the unit, so the amount done says it only when the two differ.
   def qualification_done(item)
     qualification_amount(item.value).delete_suffix(" #{qualification_unit(item)}").delete_suffix(" credit")
+  end
+
+  # The cell both expiry helpers draw: the text with an "Expired" badge beside
+  # it once past, or the fallback when there is no text.
+  def expiry_cell(text, expired, fallback: "—")
+    return fallback if text.blank?
+
+    tag.div(class: "flex flex-wrap items-center gap-2") do
+      parts = [text]
+      parts << ui_badge("Expired", :warning, icon: "triangle-exclamation", icon_type: :solid) if expired
+      safe_join(parts)
+    end
   end
 end

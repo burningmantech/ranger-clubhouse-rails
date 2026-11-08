@@ -95,7 +95,7 @@
           <%= t.cell value_or_dash(asset.entity_assignment) %>
           <%= t.cell value_or_dash(asset.group_name) %>
           <%= t.cell value_or_dash(asset.order_number) %>
-          <%= t.cell expires_on_cell(asset) %>
+          <%= t.cell expires_at_cell(asset) %>
           <%= t.cell right: true do %>
             <div class="flex flex-wrap justify-end gap-2">
               <%= button_link "Details", :secondary,
