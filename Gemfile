@@ -123,4 +123,4 @@ gem "naturally", "~> 2.3"
 gem "rails-hyperdrive", "~> 0.10.1", group: :development
 plugin "bundler-hyperdrive"
 
-gem "herb", "~> 0.11.1"
+gem "herb", "~> 0.11.2"
