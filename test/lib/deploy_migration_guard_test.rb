@@ -8,7 +8,8 @@ class DeployMigrationGuardTest < ActiveSupport::TestCase
   setup do
     @verbose_was = ActiveRecord::Migration.verbose
     ActiveRecord::Migration.verbose = false
-    @metadata = ActiveRecord::Base.connection_pool.internal_metadata
+    # Not @metadata: Minitest reports that one, and a parallel worker must marshal it to the parent.
+    @internal_metadata = ActiveRecord::Base.connection_pool.internal_metadata
   end
 
   teardown do
@@ -21,13 +22,13 @@ class DeployMigrationGuardTest < ActiveSupport::TestCase
     migration.migrate(:up)
 
     assert migration.ran
-    assert_equal "20261108000001", @metadata[DeployMigrationGuard::MARKER]
+    assert_equal "20261108000001", @internal_metadata[DeployMigrationGuard::MARKER]
     assert_equal DeployMigrationGuard::LOCK_WAIT_SECONDS,
       ActiveRecord::Base.lease_connection.select_value("SELECT @@SESSION.lock_wait_timeout").to_i
   end
 
   test "refuses a migration an earlier run started and never finished" do
-    @metadata[DeployMigrationGuard::MARKER] = "20261108000001"
+    @internal_metadata[DeployMigrationGuard::MARKER] = "20261108000001"
     migration = guarded_migration(20261108000001)
 
     error = assert_raises(DeployMigrationGuard::Interrupted) { migration.migrate(:up) }
@@ -36,16 +37,16 @@ class DeployMigrationGuardTest < ActiveSupport::TestCase
   end
 
   test "runs the next migration once the one before it finished" do
-    @metadata[DeployMigrationGuard::MARKER] = "20261108000001"
+    @internal_metadata[DeployMigrationGuard::MARKER] = "20261108000001"
     migration = guarded_migration(20261108000002)
     migration.migrate(:up)
 
     assert migration.ran
-    assert_equal "20261108000002", @metadata[DeployMigrationGuard::MARKER]
+    assert_equal "20261108000002", @internal_metadata[DeployMigrationGuard::MARKER]
   end
 
   test "leaves a rollback alone" do
-    @metadata[DeployMigrationGuard::MARKER] = "20261108000001"
+    @internal_metadata[DeployMigrationGuard::MARKER] = "20261108000001"
     migration = guarded_migration(20261108000001)
     migration.migrate(:down)
 
