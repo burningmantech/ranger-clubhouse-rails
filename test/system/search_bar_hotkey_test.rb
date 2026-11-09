@@ -716,7 +716,9 @@ class SearchBarHotkeyTest < ApplicationSystemTestCase
   test "focus returns to the trigger when the modal closes" do
     visit test_harness_search_bar_path
 
-    # Open via the trigger button so it is the previously-focused element.
+    # Open via the trigger button so it is the previously-focused element. A
+    # click before the controller connects opens nothing, like an early chord.
+    wait_for_controller("search-bar", "[data-controller~='search-bar']")
     trigger = find("[data-action='search-bar#open']")
     trigger.click
 
@@ -792,7 +794,11 @@ class SearchBarHotkeyTest < ApplicationSystemTestCase
   end
 
   # Dispatch a keyboard event via JavaScript to avoid Chrome intercepting browser shortcuts
+  # Controllers load lazily, so visit can return before the search bar's has
+  # connected, and a chord sent then reaches nothing: the dialog never opens,
+  # however long the test waits for it.
   def dispatch_hotkey(key, ctrl: false, meta: false)
+    wait_for_controller("search-bar", "[data-controller~='search-bar']")
     page.execute_script(<<~JS, key, ctrl, meta)
       const event = new KeyboardEvent("keydown", {
         key: arguments[0],

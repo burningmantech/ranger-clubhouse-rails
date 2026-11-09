@@ -61,6 +61,7 @@ class MegaMenuHotkeyTest < ApplicationSystemTestCase
     visit me_root_path
 
     # Search bar first, then the menu on top of it.
+    wait_for_controller("search-bar", "[data-controller~='search-bar']")
     page.execute_script(<<~JS)
       document.dispatchEvent(new KeyboardEvent("keydown",
         { key: "k", ctrlKey: true, bubbles: true, cancelable: true }))
@@ -112,7 +113,10 @@ class MegaMenuHotkeyTest < ApplicationSystemTestCase
     # A real press of the chord reports an uppercase "K"; Stimulus lowercases
     # both sides, and dispatching the lowercase form would pass while hiding
     # that.
+    # Controllers load lazily, and a chord sent before the menu's has connected
+    # reaches nothing.
     def dispatch_hotkey(ctrl: false, meta: false)
+      wait_for_controller("mega-menu", "[data-controller~='mega-menu']")
       page.execute_script(<<~JS, ctrl, meta)
         document.dispatchEvent(new KeyboardEvent("keydown", {
           key: "K",
