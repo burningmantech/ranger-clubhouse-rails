@@ -25,7 +25,8 @@
 # a database restored from Clubhouse 2. The cost: they no longer build a fresh, empty production database, and
 # db:schema:load loads nothing here, so a fresh database needs its schema loaded by hand.
 #
-# Restoring from Clubhouse 2, in this order:
+# Restoring from Clubhouse 2, in this order. On AWS, set the service's desired count to 0 first: every task
+# launch there migrates (README, Deployment).
 #   1. Start from an empty database: drop it and create it again.
 #   2. Load the dump.
 #   3. Run db:migrate (above). It runs every migration, from the first.

@@ -172,7 +172,8 @@ See `docs/UI-COMPONENTS.md` for complete API reference and `docs/DESIGN-GUIDE.md
   `.github/workflows/`: a merge to `main` rolls staging, and `deploy.yml` promotes staging's image to production
   when an allow-listed person runs it. Never dispatch, re-run or cancel those workflows
 - Never change the AWS services, task definitions or databases from a session: the task definition in AWS holds the
-  environment, and a deploy swaps only the image. Read-only `aws` inventory is fine
+  environment, and a deploy swaps only the image and rebuilds the `migrate` container from the web container.
+  Read-only `aws` inventory is fine
 - `deploy/aws/` (the hand-run `amazon.clubhouse3.dev` stack) and `beta/` are the maintainer's as well
 
 ## Skills Reference

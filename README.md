@@ -35,19 +35,36 @@ Deploys happen only through GitHub Actions (`.github/workflows/`):
    `DEPLOYERS` list at the top of the file may run or re-run it.
 
 Both workflows migrate the database inside the new task definition: a `migrate` container runs
-`bin/rails db:migrate` and the web container starts only once it exits cleanly. That happens on every
+`bin/rails deploy:migrate` and the web container starts only once it exits cleanly. That happens on every
 task launch, so with nothing pending it is a short boot and exit. A failed migration stops each new
 task before it serves; after three, the service rolls back and the deploy fails. The old tasks serve
 throughout, so a migration must still work beside the release before it: rename a table or column
 over two deploys, never one. The migration's output is the `ecs/migrate/<task id>` stream in the
 service's log group.
 
+`deploy:migrate` is `db:migrate` with three guards (`lib/deploy_migration_guard.rb`). MariaDB keeps
+whatever part of a failed migration ran, so a migration that started and never finished is not run
+again by the relaunches. A statement waits 30 seconds at most for a table lock, since an `ALTER`
+waiting behind an open transaction holds up every query on that table. A second runner waits for the
+first instead of failing. After a failed migration, repair the database by hand, delete the marker,
+then re-run the deploy:
+
+```sql
+DELETE FROM ar_internal_metadata WHERE `key` = 'deploy_migration_started';
+```
+
+**Restoring a database** on AWS, the Clubhouse 2 cutover included, starts with the service's desired
+count at 0, because any task launch migrates. Follow the order in `docker-compose.yml`, run its
+migration step as a one-off task with the command `bin/rails deploy:migrate`, and scale the service
+back up only once `BroadcastMailSandbox` is back on.
+
 The image runs nginx in front of Puma (`docker/nginx/`, started together by `bin/docker-server`): it
 refuses probes and overwrites the forwarded headers before Rails sees a request, and
 `docker/nginx/check.sh`, which CI runs inside the built image, proves each rule.
 
-The task definitions live in AWS and hold the environment; a deploy changes only the image, so
-**rolling back** is pointing the service at the previous task-definition revision:
+The task definitions live in AWS and hold the environment; a deploy changes only the image and
+rebuilds the `migrate` container from the web container, so **rolling back** is pointing the service
+at the previous task-definition revision:
 
 ```bash
 aws ecs update-service --cluster rangers --service ranger-clubhouse-rails-production-fg --task-definition ranger-clubhouse-rails-production-fg:<N>

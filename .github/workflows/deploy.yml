@@ -129,14 +129,16 @@ jobs:
             GIT_SHA=${{ steps.staging.outputs.git_sha }}
             TASK_UPDATED=${{ steps.date.outputs.date }}
 
-      # db:migrate runs inside the task: a `migrate` container, a copy of the web container with
-      # its command replaced, that the web container waits on (dependsOn SUCCESS). A failed
-      # migration stops the task before the web container starts, and the circuit breaker rolls
-      # the service back. The copy is rebuilt from the rendered web container on every roll: the
-      # render step edits only the web container and would leave the previous build's migrate
-      # container in place. No startTimeout: omitted, the wait lasts as long as the migration
-      # (the largest value ECS accepts is 120 s). The rendered file holds credentials, so nothing
-      # here prints it.
+      # db:migrate runs inside the task: a `migrate` container, a copy of the web container running
+      # bin/rails deploy:migrate (lib/deploy_migration_guard.rb), that the web container waits on
+      # (dependsOn SUCCESS). A failed migration stops the task before the web container starts, and
+      # the circuit breaker rolls the service back. The copy is rebuilt from the rendered web
+      # container on every roll, because the render step edits only the web container; for the same
+      # reason, deleting this step would leave the last build's migrate container in every later
+      # revision, migrating nothing new, so retiring it takes a roll that deletes the container and
+      # its dependsOn entry. No startTimeout: ECS gives up on a dependency only when one is set, and
+      # Fargate caps it at 120 s. The rendered file holds credentials, so nothing here prints it.
+      # test/lib/deploy_workflows_test.rb runs this step and checks both workflows carry it unchanged.
       - name: Add the migrate container
         id: with-migrate
         env:
@@ -146,24 +148,31 @@ jobs:
           jq --arg web "${AWS_ECS_CONTAINER_NAME}" '
             .containerDefinitions |= map(select(.name != "migrate"))
             | (.containerDefinitions[] | select(.name == $web)) as $web_def
+            | [$web_def.dependsOn // [] | .[] | select(.containerName != "migrate")] as $others
             | .containerDefinitions += [
                 $web_def
                 | del(.portMappings, .healthCheck, .dependsOn, .startTimeout, .stopTimeout, .cpu, .memory, .memoryReservation)
                 | .name = "migrate"
                 | .essential = false
-                | .command = ["bin/rails", "db:migrate"]
+                | .command = ["bin/rails", "deploy:migrate"]
+                | if $others == [] then . else .dependsOn = $others end
               ]
-            | (.containerDefinitions[] | select(.name == $web)).dependsOn = [{containerName: "migrate", condition: "SUCCESS"}]
+            | (.containerDefinitions[] | select(.name == $web)).dependsOn = $others + [{containerName: "migrate", condition: "SUCCESS"}]
           ' "${RENDERED}" > "${out}"
-          # Fails the step (exit 1, or 4 when a container is missing) unless both are as intended.
+          # An entryPoint on the web container would run in the migrate container too, so it stops
+          # the deploy for a person to decide.
           jq -e --arg web "${AWS_ECS_CONTAINER_NAME}" '
             def one(n): [.containerDefinitions[] | select(.name == n)] | select(length == 1) | .[0];
             (one("migrate") | .essential == false and .startTimeout == null and .portMappings == null
-              and .command == ["bin/rails", "db:migrate"])
+              and .entryPoint == null and .command == ["bin/rails", "deploy:migrate"]
+              and [.dependsOn[]? | select(.containerName == "migrate")] == [])
             and (one("migrate") | .image) == (one($web) | .image)
             and (one($web) | .essential == true
-              and .dependsOn == [{containerName: "migrate", condition: "SUCCESS"}])
-          ' "${out}" > /dev/null
+              and [.dependsOn[] | select(.containerName == "migrate")] == [{containerName: "migrate", condition: "SUCCESS"}])
+          ' "${out}" > /dev/null || {
+            echo "::error::The migrate container did not come out as this step's assertion expects"
+            exit 1
+          }
           echo "task-definition=${out}" >> "${GITHUB_OUTPUT}"
 
       - name: Update task definition and ECS service
@@ -183,6 +192,9 @@ jobs:
       - name: Move the production tag
         run: docker buildx imagetools create --prefer-index=false --tag "${IMAGE_REPOSITORY}:production" "${IMAGE_REPOSITORY}@${{ steps.staging.outputs.digest }}"
 
+#      # Training needs the "Add the migrate container" step above before this deploy is enabled,
+#      # and its config/database.yml entry needs schema_dump: false first: without it, db:migrate on
+#      # a database with no schema_migrations loads db/schema.rb, which drops every table it defines.
 #      - name: Fetch and update current task definition for training
 #        id: new-task-definition-training
 #        uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1.9.1
