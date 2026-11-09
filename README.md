@@ -34,7 +34,13 @@ Deploys happen only through GitHub Actions (`.github/workflows/`):
    what staging runs, by digest, and rolls the production service. Only the accounts in its
    `DEPLOYERS` list at the top of the file may run or re-run it.
 
-Neither workflow runs database migrations.
+Both workflows migrate the database inside the new task definition: a `migrate` container runs
+`bin/rails db:migrate` and the web container starts only once it exits cleanly. That happens on every
+task launch, so with nothing pending it is a short boot and exit. A failed migration stops each new
+task before it serves; after three, the service rolls back and the deploy fails. The old tasks serve
+throughout, so a migration must still work beside the release before it: rename a table or column
+over two deploys, never one. The migration's output is the `ecs/migrate/<task id>` stream in the
+service's log group.
 
 The image runs nginx in front of Puma (`docker/nginx/`, started together by `bin/docker-server`): it
 refuses probes and overwrites the forwarded headers before Rails sees a request, and
