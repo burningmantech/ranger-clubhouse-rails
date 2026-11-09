@@ -23,7 +23,11 @@ class Person::MessagesControllerTest < ActionDispatch::IntegrationTest
     ensure_role(Role::MENTOR, "Mentor")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     ensure_role(Role::EVENT_MANAGEMENT_ON_PLAYA, "Event Management On Playa")
+    ensure_role(Role::VC, "VC")
 
+    # Current#can_view_messages?: the mailbox opens to Event Management only
+    # while the on-playa setting is on. Admins and VCs are not held to it.
+    set_on_playa(true)
     grant_role(@manager, Role::EVENT_MANAGEMENT)
     sign_in_as(@manager)
     Current.person = @manager
@@ -50,13 +54,32 @@ class Person::MessagesControllerTest < ActionDispatch::IntegrationTest
 
   # --- Access control ---------------------------------------------------------
 
-  test "event management holder can view the mailbox" do
+  test "event management holder can view the mailbox while the on-playa setting is on" do
     get person_messages_path(@target)
     assert_response :success
   end
 
+  test "event management holder is sent back to the person while the on-playa setting is off" do
+    set_on_playa(false)
+
+    get person_messages_path(@target)
+    assert_redirected_to person_path(@target)
+    assert_match(/not authorized to view another's Clubhouse Messages/, flash[:error])
+  end
+
+  test "an admin or a VC holding event management can view the mailbox while the on-playa setting is off" do
+    set_on_playa(false)
+    { Role::ADMIN => person(:auditor_ranger), Role::VC => person(:retired_ranger) }.each do |role, holder|
+      grant_role(holder, Role::EVENT_MANAGEMENT)
+      grant_role(holder, role)
+      sign_in_as(holder)
+
+      get person_messages_path(@target)
+      assert_response :success
+    end
+  end
+
   test "event management on playa holder can view the mailbox while the on-playa setting is on" do
-    Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
     emop = person(:retired_ranger)
     grant_role(emop, Role::EVENT_MANAGEMENT_ON_PLAYA)
     sign_in_as(emop)
@@ -68,6 +91,7 @@ class Person::MessagesControllerTest < ActionDispatch::IntegrationTest
   # RoleManager drops the raw role off-season rather than let it past the gate
   # without the NDA check Event Management gets.
   test "event management on playa holder is denied off-season" do
+    set_on_playa(false)
     emop = person(:retired_ranger)
     grant_role(emop, Role::EVENT_MANAGEMENT_ON_PLAYA)
     sign_in_as(emop)
@@ -568,6 +592,10 @@ class Person::MessagesControllerTest < ActionDispatch::IntegrationTest
   def grant_role(person, role_id)
     PersonRole.find_or_create_by!(person_id: person.id, role_id: role_id)
     RoleManager.purge_person(person.id.to_s)
+  end
+
+  def set_on_playa(enabled)
+    Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: enabled.to_s)
   end
 
   def create_message(sender, recipient, subject, body, reply_to_id: nil)

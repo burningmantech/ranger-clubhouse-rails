@@ -18,6 +18,8 @@ class Person::MessagesController < ApplicationController
   authorize_role [Role::EVENT_MANAGEMENT, Role::EVENT_MANAGEMENT_ON_PLAYA],
                  message: "Event Management permission is required to view messages."
 
+  before_action :may_view_messages?
+
   private
 
   def message_owner
@@ -30,5 +32,11 @@ class Person::MessagesController < ApplicationController
 
   def messages_route_args
     [@person]
+  end
+
+  def may_view_messages?
+    return true if can_view_messages?
+    redirect_to person_path(@person), error: "You are not authorized to view another's Clubhouse Messages."
+    false
   end
 end

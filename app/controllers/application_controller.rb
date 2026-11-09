@@ -38,6 +38,7 @@ class ApplicationController < ActionController::Base
   helper_method :can_view_email?
   helper_method :can_view_emergency_contact?
   helper_method :can_view_emergency_contact_during_event?
+  helper_method :can_view_messages?
   helper_method :is_admin?
   helper_method :is_team_manager?
   helper_method :year_floor
@@ -124,6 +125,10 @@ class ApplicationController < ActionController::Base
 
   def can_view_emergency_contact_during_event?
     Current&.can_view_emergency_contact_during_event?
+  end
+
+  def can_view_messages?
+    Current&.can_view_messages?
   end
 
   def authorization_role_gatekeeper

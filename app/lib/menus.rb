@@ -1224,7 +1224,7 @@ module Menus
           { title: "Dashboard", path: :person_dashboard_path, active_prefix: true },
           { title: "Profile", path: :person_profile_path, active_prefix: true },
           { title: "Messages", path: :person_messages_path, active_prefix: true,
-            visible_if: { roles: [Role::EVENT_MANAGEMENT, Role::EVENT_MANAGEMENT_ON_PLAYA] } },
+            visible_if: { proc: ->(context) { Current.can_view_messages? } } },
           { title: "Schedule / Sign-Ups", path: :person_scheduling_path, active_prefix: true },
           { title: "Timesheets", path: :person_timesheets_path, active_prefix: true,
             visible_if: { roles: [Role::ADMIN, Role::EVENT_MANAGEMENT, Role::TIMESHEET_MANAGEMENT] } },

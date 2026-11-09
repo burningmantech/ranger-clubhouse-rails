@@ -88,6 +88,11 @@ class Current < ActiveSupport::CurrentAttributes
     has_role? [Role::EVENT_MANAGEMENT, Role::EVENT_MANAGEMENT_ON_PLAYA]
   end
 
+  def can_view_messages?
+    return true if has_role? [Role::ADMIN, Role::VC]
+    Setting.get_value(Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED) && has_role?([Role::EVENT_MANAGEMENT_ON_PLAYA, Role::EVENT_MANAGEMENT])
+  end
+
   def person_id
     person&.id
   end
