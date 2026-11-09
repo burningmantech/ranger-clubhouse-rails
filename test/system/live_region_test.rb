@@ -35,6 +35,8 @@ class LiveRegionTest < ApplicationSystemTestCase
     grant_role(@person, Role::EVENT_MANAGEMENT)
     visit test_harness_search_bar_path
 
+    # Controllers load lazily: a click before the search bar's connects opens nothing.
+    wait_for_controller("search-bar", "[data-controller~='search-bar']")
     execute_script("document.querySelector(\"[data-action='search-bar#open']\").click()")
     assert_selector "[data-search-bar-target='dialog'][open]", wait: 2
     find("[data-search-bar-target='input']").fill_in with: "Test"
