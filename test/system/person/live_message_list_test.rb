@@ -13,6 +13,9 @@ class Person::LiveMessageListTest < ApplicationSystemTestCase
     @manager = person(:echelon_ranger)
     @ranger = person(:active_ranger)
     @sender = person(:ranger_with_custom_gender)
+    # Current#can_view_messages?: a person's mailbox opens to Event Management
+    # only while the on-playa setting is on.
+    Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     grant_role(@manager, Role::EVENT_MANAGEMENT)
   end

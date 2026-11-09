@@ -95,6 +95,9 @@ class Me::MessagesFindRecipientTest < ApplicationSystemTestCase
   # The HQ window's relay (here Person's, "Send Message to") names its one
   # sender in the same field, capped at one chip.
   test "on the relay a second sender chosen replaces the first" do
+    # Current#can_view_messages?: a person's mailbox opens to Event Management
+    # only while the on-playa setting is on.
+    Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     grant_role(@person, Role::EVENT_MANAGEMENT)
     target = person(:plate_collision_ranger)
@@ -140,6 +143,7 @@ class Me::MessagesFindRecipientTest < ApplicationSystemTestCase
   end
 
   test "on the relay a sender still typed when the form is sent replaces the chip" do
+    Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     grant_role(@person, Role::EVENT_MANAGEMENT)
     target = person(:plate_collision_ranger)

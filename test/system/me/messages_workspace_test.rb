@@ -118,6 +118,9 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
   # is usually unread too: the selected tint must win over the unread one.
   test "on a person's mailbox the open unread row wears the selected tint, not the unread one" do
     manager = person(:echelon_ranger)
+    # Current#can_view_messages?: a person's mailbox opens to Event Management
+    # only while the on-playa setting is on.
+    Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     grant_role(manager, Role::EVENT_MANAGEMENT)
     sign_in(manager)
