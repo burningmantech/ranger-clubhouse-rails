@@ -8,5 +8,6 @@
              schedule_qualifications_path_builder: ->(**options) { person_scheduling_qualifications_path(@person, **options) },
              available_sign_ups_path_builder: ->(**options) { person_scheduling_sign_ups_path(@person, **options) },
              schedule_signups_path_builder: ->(slot, **options) { person_scheduling_signups_path(@person, slot_id: slot.id, **options) },
-             schedule_destroy_path_builder: ->(slot, **options) { person_scheduling_destroy_path(@person, slot_id: slot.id, **options) }
+             schedule_destroy_path_builder: ->(slot, **options) { person_scheduling_destroy_path(@person, slot_id: slot.id, **options) },
+             schedule_log_path_builder: ->(**options) { person_scheduling_log_path(@person, **options) }
            } %>

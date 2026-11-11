@@ -276,6 +276,51 @@ class Scheduling::SignupCharacterizationTest < ActiveSupport::TestCase
     assert_equal false, verdict.may_force
   end
 
+  # The person-slot-remove row says so when an admin forced the removal of a
+  # started shift; the Schedule Audit Log badges it After Shift Start.
+  test "(k) remove: a forced removal after the start is logged as forced, an ordinary one is not" do
+    grant_role(Role::ADMIN)
+    started = slot(
+      begins: Time.zone.local(@year, 4, 16, 8, 0, 0),
+      ends: Time.zone.local(@year, 4, 16, 16, 0, 0)
+    )
+    upcoming = slot
+    [started, upcoming].each { PersonSlot.create!(person_id: @person.id, slot_id: it.id) }
+
+    assert_instance_of Scheduling::Verdict::Removed, remove(started.reload, true).verdict
+    assert_instance_of Scheduling::Verdict::Removed, remove(upcoming.reload).verdict
+
+    logged = ActionLog.where(event: "person-slot-remove", target_person_id: @person.id)
+                      .to_h { [it.data["slot_id"], it.data["forced"]] }
+    assert_equal({ started.id => true, upcoming.id => nil }, logged)
+  end
+
+  # The writer spells its flags as Symbols, ScheduleLog::OVERRIDE_FLAGS as Strings;
+  # this runs one into the other, so a rename on either side fails here.
+  # trainer_forced needs a trainer's role and is not covered.
+  test "(m) the schedule audit log reads back the flags forced changes record" do
+    grant_role(Role::ADMIN)
+    started_full = slot(
+      max: 1, signed_up: 1,
+      begins: Time.zone.local(@year, 4, 16, 8, 0, 0),
+      ends: Time.zone.local(@year, 4, 16, 16, 0, 0)
+    )
+    add(started_full, true)
+    remove(started_full.reload, true)
+
+    stub_singleton(Agreements, :did_sign_document?) { |*_a, **_k| false }
+    add(slot(position: sandman_position), true)
+
+    alpha = alpha_position
+    PersonSlot.create!(person_id: @person.id, slot_id: slot(position: alpha).id)
+    add(slot(position: alpha, begins: Time.zone.local(@year, 8, 26, 10, 0, 0),
+             ends: Time.zone.local(@year, 8, 26, 16, 0, 0)), true)
+
+    overrides = ScheduleLog.retrieve(@person, @year).map { |entry| entry.changes.map(&:overrides) }
+    assert_equal [[%i[overcapacity after_start], [:after_start]], [[:unsigned_sandman_affidavit]], [[:multiple_enrollment]]],
+                 overrides
+  end
+
   private
 
   # Build (or reuse) a Sandman position the person holds, on the well-known id so the

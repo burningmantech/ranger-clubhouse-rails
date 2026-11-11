@@ -82,4 +82,14 @@ class Me::ScheduleControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "#schedule-gate[open]"
   end
+
+  # The schedule audit log is a Person page only.
+  test "index offers no audit log" do
+    sign_in_as(person(:active_ranger))
+
+    get me_schedule_url(year: Current.year - 1)
+
+    assert_response :success
+    assert_select "a", text: /Audit Log/, count: 0
+  end
 end

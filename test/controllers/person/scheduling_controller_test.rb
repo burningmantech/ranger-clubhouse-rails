@@ -4,6 +4,10 @@ require "test_helper"
 
 class Person::SchedulingControllerTest < ActionDispatch::IntegrationTest
   include AuthenticationTestHelper
+  include ReportCardTestHelper
+  include TrainingSlotTestHelper
+
+  SELF_QUESTION = "Who is “#{Person::SchedulingHelper::SCHEDULE_LOG_SELF}”?".freeze
 
   setup do
     Rails.cache.clear
@@ -30,6 +34,64 @@ class Person::SchedulingControllerTest < ActionDispatch::IntegrationTest
     assert_select "#schedule-header", text: /Schedule \/ Sign-Ups/
     assert_select "a[href='#{person_path(@target)}']", text: /#{@target.callsign}/
     assert_select "a[href='#{person_scheduling_sign_ups_path(@target, year: Current.year)}']"
+    # Once in the phone stack, once in the desktop rail.
+    assert_select "a[href=?]", person_scheduling_log_path(@target, year: Current.year), text: /Audit Log/, count: 2
+  end
+
+  test "audit log lists each shift with who signed the person up and who removed them" do
+    slot = create_slot(@position, begins: Time.zone.local(@past_year, 8, 25, 8), description: "Reno")
+    ActionLog.create!(event: "person-slot-add", message: "added", person_id: @target.id,
+                      target_person_id: @target.id, data: { "slot_id" => slot.id },
+                      created_at: Time.zone.local(@past_year, 6, 15, 12))
+    ActionLog.create!(event: "person-slot-remove", message: "position revoked", person_id: @viewer.id,
+                      target_person_id: @target.id, data: { "slot_id" => slot.id },
+                      created_at: Time.zone.local(@past_year, 7, 15, 12))
+    sign_in_as(@viewer)
+
+    get person_scheduling_log_path(@target, year: @past_year)
+
+    assert_response :success
+    assert_select "#schedule-log-header", text: /#{@past_year} Schedule Audit Log/
+    assert_select "a[href=?]", person_scheduling_path(@target, year: @past_year), text: /Schedule/
+    assert_report_card
+    assert_match(/made the change/, card_answer(SELF_QUESTION))
+    assert_select "tbody tr", count: 1 do
+      assert_select "th", text: /#{@position.title}\s+Reno/
+      assert_select ".badge", text: /Removed/
+      assert_select "td", text: /by\s+self/
+      assert_select "td a[href=?]", person_path(@viewer), text: @viewer.callsign
+      assert_select "td", text: /Position revoked/
+    end
+  end
+
+  # The schedule page links here from years before the log began.
+  test "audit log keeps its year and its card's rules on a year with no changes" do
+    sign_in_as(@viewer)
+    year = ScheduleLog::FIRST_YEAR - 1
+
+    get person_scheduling_log_path(@target, year:)
+
+    assert_response :success
+    assert_select "option[value=?][selected=selected]", year.to_s
+    assert_report_card
+    assert_match(/year it was made in/, card_answer("Which year is a change listed under?"))
+    assert_no_card_question(SELF_QUESTION)
+    assert_select "table", count: 0
+    assert_includes response.body, "This log starts in #{ScheduleLog::FIRST_YEAR}."
+  end
+
+  # Rows are picked by the year of the change, so a shift of another year says so.
+  test "audit log prints the year of a shift from another year" do
+    slot = create_slot(@position, begins: Time.zone.local(Current.year, 1, 10, 9))
+    ActionLog.create!(event: "person-slot-add", message: "added", person_id: @target.id,
+                      target_person_id: @target.id, data: { "slot_id" => slot.id },
+                      created_at: Time.zone.local(@past_year, 11, 15, 12))
+    sign_in_as(@viewer)
+
+    get person_scheduling_log_path(@target, year: @past_year)
+
+    assert_response :success
+    assert_select "tbody td", text: /Jan 10, #{Current.year} @ 09:00/
   end
 
   test "signup summary page renders shared template for person namespace" do

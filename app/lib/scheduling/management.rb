@@ -37,8 +37,8 @@ module Scheduling::Management
     Scheduling::Signup.send(:create_signup, person_id, slot, force: force)
   end
 
-  def delete_signup(person_id, slot, reason: nil, forced: false)
-    Scheduling::Signup.send(:delete_signup, person_id, slot, reason: reason, forced: forced)
+  def delete_signup(person_id, slot, reason: nil, after_start: false)
+    Scheduling::Signup.send(:delete_signup, person_id, slot, reason: reason, after_start: after_start)
   end
 
   def compute_signups(slot, result, force)

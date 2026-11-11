@@ -1,0 +1,100 @@
+<%= hero_panel icon: "clock-rotate-left", heading_level: :h1, id: "schedule-log-header",
+               title: "#{@year} Schedule Audit Log",
+               description: "Every shift #{@person.callsign} was signed up for or removed from in #{@year}, and who made each change.",
+               back_to: ["Schedule", person_scheduling_path(@person, year: @year)] do |panel| %>
+  <%# The requested year joins the list itself: the hero passes year_options no
+      :year, so its own guard never adds one, and the schedule page links here
+      from years before the log began. %>
+  <% panel.year_selector year: @year, years: [*ScheduleLog::FIRST_YEAR..current_year, @year].uniq %>
+<% end %>
+
+<%# Where the log starts: the card says it, and so does the empty state, where it
+    may be the whole reason nothing is listed. The first two pairs say what
+    belongs on the list, so an empty year keeps them; the rest explain rows and
+    wait for them. %>
+<% log_start = "This log starts in #{ScheduleLog::FIRST_YEAR}." %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>How far back does this go?</dt>
+    <dd><%= log_start %></dd>
+    <dt>Which year is a change listed under?</dt>
+    <dd>The year it was made in, which is nearly always the year of the shift. A shift in another year shows its year.</dd>
+    <% if @entries.any? %>
+      <dt>Who is “<%= Person::SchedulingHelper::SCHEDULE_LOG_SELF %>”?</dt>
+      <dd><%= @person.callsign %> made the change. Any other callsign is the person who was signed in when it was made.</dd>
+    <% end %>
+    <% if @entries.any?(&:overrides?) %>
+      <dt>What do the badges on a change mean?</dt>
+      <dd>
+        The change set a rule aside.
+        <ul class="mt-1 space-y-1">
+          <% Person::SchedulingHelper::SCHEDULE_LOG_OVERRIDES.each do |override, (_label, meaning)| %>
+            <li><%= schedule_log_override_badge override %> <%= meaning %></li>
+          <% end %>
+        </ul>
+      </dd>
+    <% end %>
+    <% if @entries.any?(&:deleted?) %>
+      <dt>Why does a shift have only a number?</dt>
+      <dd>The shift was deleted from the schedule after the change was made, and the log keeps only its number.</dd>
+    <% end %>
+  </dl>
+<% end %>
+
+<% if @entries.any? %>
+  <% signed_up = @entries.count(&:signed_up) %>
+  <p class="my-3 text-body">
+    <%= pluralize @entries.size, "shift" %>: <%= signed_up %> signed up, <%= @entries.size - signed_up %> removed.
+  </p>
+
+  <%= ui_table full_width: true, striped: true do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Shift" %>
+      <%= t.heading "Time" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "Added / By" %>
+      <%= t.heading "Removed / By" %>
+    <% end %>
+    <%= t.body do %>
+      <% @entries.each do |entry| %>
+        <% slot = entry.slot %>
+        <%= t.row align: :top do %>
+          <%= t.row_header do %>
+            <% if slot %>
+              <%= slot.position_title %>
+              <% if slot.description.present? %>
+                <div class="font-normal"><%= slot.description %></div>
+              <% end %>
+            <% else %>
+              <span class="text-stone-muted">Deleted shift #<%= entry.slot_id %></span>
+            <% end %>
+          <% end %>
+          <%= t.cell do %>
+            <% if slot %>
+              <%# Rows are picked by the year of the change, so a shift of another year says so. %>
+              <%= slot_shift_time(slot, year: slot.begins.year != @year) %>
+              <div class="text-stone-muted"><%= hour_minute_words(slot.duration) %></div>
+            <% else %>
+              —
+            <% end %>
+          <% end %>
+          <%= t.cell do %>
+            <% if entry.signed_up %>
+              <%= ui_badge "Signed Up", :success, icon: "circle-check" %>
+            <% else %>
+              <%= ui_badge "Removed", :secondary, icon: "circle-minus" %>
+            <% end %>
+          <% end %>
+          <%= t.cell render("log_changes", changes: entry.sign_ups) %>
+          <%= t.cell render("log_changes", changes: entry.removals) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_section do %>
+    <%= ui_empty_state "No sign-up changes are recorded for #{@person.callsign} in #{@year}. #{log_start}",
+                       icon: "clock-rotate-left", icon_type: :solid %>
+  <% end %>
+<% end %>

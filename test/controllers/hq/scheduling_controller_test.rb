@@ -117,6 +117,8 @@ class Hq::SchedulingControllerTest < ActionDispatch::IntegrationTest
     # The actions themselves must survive the fold, not vanish with the rail.
     assert_select "a[href='#{hq_scheduling_sign_ups_path(@subject, year: Current.year)}']"
     assert_select "a[href='#{hq_scheduling_export_path(@subject, format: :ics)}']"
+    # The schedule audit log is a Person page only.
+    assert_select "a", text: /Audit Log/, count: 0
     if @subject.can_work?
       assert_select "a[href='#{hq_scheduling_qualifications_path(@subject, year: Current.year)}']"
       assert_select "a[href='#{hq_scheduling_signup_summary_path(@subject, year: Current.year)}']"

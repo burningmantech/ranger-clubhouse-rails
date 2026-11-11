@@ -28,7 +28,7 @@ Paths are relative to the repository root. To find a feature, grep this file for
 - [My Clubhouse: schedule, tickets, timesheet & vehicles](#my-clubhouse-schedule-tickets-timesheet--vehicles) (9)
 - [Person Manage: account & identity](#person-manage-account--identity) (15)
 - [Person Manage: communication, membership & training](#person-manage-communication-membership--training) (14)
-- [Person Manage: event records](#person-manage-event-records) (15)
+- [Person Manage: event records](#person-manage-event-records) (16)
 - [HQ Window](#hq-window) (12)
 - [Training: sessions](#training-sessions) (9)
 - [Training: reports & follow-up](#training-reports--follow-up) (11)
@@ -130,6 +130,7 @@ Touches: `person_slot` (w), `slot` (w), `action_logs` (w), `person` (w), `person
 Verify: `test/lib/scheduling/signup_characterization_test.rb`, `test/lib/scheduling/capacity_characterization_test.rb`, `test/lib/scheduling/signup_bulk_characterization_test.rb`, `test/lib/scheduling/verdict_test.rb`, `test/controllers/me/available_sign_ups_controller_test.rb`
 Trap: `slot.signed_up` is a counter only `Scheduling::ActiveRecordSlotStore` maintains — a direct `PersonSlot.create!` (tests too) leaves it stale; reports count `person_slot` rows instead.
 Trap: `can_force_schedule_change` reads the actor's roles (`Current.has_role?`), not the subject's: Admin anywhere, Mentor on Alpha slots, the composed ART trainer role on ART slots; In-Person Training: Trainer force-adds, Trainer or Training Seasonal force-removes.
+Trap: Person › Schedule Audit Log badges the `data` flags of the `person-slot-add` / `person-slot-remove` rows; renaming or adding one is covered under that entry.
 
 ### Schedule queries (Scheduling::Query, Permission, Summaries)
 Used by: `ScheduleConcern` and `AvailableSignUpsConcern` (Me/Person/HQ › Schedule / Sign-Ups), `Me::ScheduleController`, `Milestones`, `ShiftManageConcern` and `Hq::ShiftManageController` (starting slots), `Infrastructure::SmsController` (next shift), `Timesheet`, `TicketsAndProvisionsProgress`, `BurnWeekendShiftRecommendation`
@@ -1401,7 +1402,7 @@ Trap: `update` resets a request to pending whenever `additional_notes` arrives w
 Trap: A bare `Timesheet.create` skips the position check, note copy, `CREATED`/`VIA_MISSING_ENTRY` log and present-year un-confirm — approve-and-create must go through `TimesheetMissingReview.save_and_maybe_create_entry` (one transaction).
 
 ### Person › Schedule / Sign-Ups
-Reach it: `GET /person/:person_id/schedule` → Person › Essentials › Schedule / Sign-Ups; remove `DELETE /person/:person_id/schedule/:slot_id`; who's signed up `GET /person/:person_id/schedule/:slot_id/signups`; summary `GET /person/:person_id/schedule/signup-summary`; qualifications `GET /person/:person_id/schedule/qualifications`; calendar `GET /person/:person_id/schedule/export`
+Reach it: `GET /person/:person_id/schedule` → Person › Essentials › Schedule / Sign-Ups; remove `DELETE /person/:person_id/schedule/:slot_id`; who's signed up `GET /person/:person_id/schedule/:slot_id/signups`; summary `GET /person/:person_id/schedule/signup-summary`; qualifications `GET /person/:person_id/schedule/qualifications`; calendar `GET /person/:person_id/schedule/export`; audit log `GET /person/:person_id/schedule/log` (Person › Schedule Audit Log)
 Gate: `PersonConcern::VIEW_ROLES` only; no write gate, so any viewer can remove a sign-up — `SHIFT_MANAGEMENT` included on purpose (ruled 2026-10-10), though Clubhouse 2's `SchedulePolicy` admits only `EVENT_MANAGEMENT`, `ADMIN`, `VC`, `TRAINER`, `MENTOR`
 Controller: `app/controllers/person/scheduling_controller.rb` (`index`, `signups`, `destroy`, `signup_summary`, `qualifications`, `export`), actions in `app/controllers/concerns/schedule_concern.rb` and `app/controllers/concerns/qualifications_concern.rb`
 Owner: `Scheduling::Query` (`app/lib/scheduling/query.rb`), `Scheduling::Signup` (`app/lib/scheduling/signup.rb`), `Scheduling::Summaries` (`app/lib/scheduling/summaries.rb`)
@@ -1421,6 +1422,22 @@ Trap: In the present year `retrieve_permission_and_recommendation` redirects eve
 Trap: `destroy` forces (`Scheduling::Signup.remove(@person, @slot, true)`), so an admin, or a Trainer/Mentor on an in-person training/Alpha slot (`can_force_schedule_change`), removes started or ended shifts unconfirmed, unlike `ScheduleConcern#destroy`.
 Trap: `show` prints the position's sign-up page header by the subject's status (`Position#scheduling_header_for`, see Me › Available Sign-Ups): an operator sees what the member sees.
 Trap: the index row's upcoming/past ledger follows Me › Available Sign-Ups -- present year only; a past year keeps the plain shift count.
+
+### Person › Schedule Audit Log
+Reach it: `GET /person/:person_id/schedule/log` → the Audit Log button on Person › Schedule / Sign-Ups, from the `schedule_log_path_builder:` local only `app/views/person/scheduling/index.html.erb` passes, so Me and HQ show no button
+Gate: `PersonConcern::VIEW_ROLES` only; read-only
+Controller: `app/controllers/person/scheduling_controller.rb` (`log`), view `app/views/person/scheduling/log.html.erb`
+Owner: `ScheduleLog` (`app/lib/schedule_log.rb`), reading the `person-slot-add` / `person-slot-remove` rows; the badges and reason wording in `Person::SchedulingHelper` (`app/helpers/person/scheduling_helper.rb`)
+Touches: `action_logs`, `slot`, `position`, `person_slot`, `person`
+Verify: `test/lib/schedule_log_test.rb`, `test/helpers/person/scheduling_helper_test.rb`, `test/controllers/person/scheduling_controller_test.rb`
+Trap: A year holds the changes made in it (`where_year("created_at", year)`), as Clubhouse 2's did, not the shifts of that year; the page's card says so, and a shift of another year prints with its year (`slot_shift_time(slot, year:)`).
+Trap: Rows group by `ActionLog.slot_id_from_data`, never `data["slot_id"]`: 2019's and 2021's ids are Strings (one 2024 row too), and one shift would split in two. Signed Up / Removed reads `person_slot`, not the last change.
+Trap: A removal after the shift began is logged `forced` (the After Shift Start badge): `Scheduling::Signup.decide_remove` reads `slot.has_started` once for its gate and passes it to `delete_signup` as `after_start:`, which writes Clubhouse 2's `forced` key. This app's removals logged before that fix (2026-11-10) lack it.
+Trap: Deleting a shift or its position logs no removal: `Slot has_many :person_slot, dependent: :destroy` writes only `person-slot-delete` audit rows, which the page does not read, and `PersonSlot.delete_for_slot` (Clubhouse 2's per-sign-up "slot deletion" writer) has no caller. Such a shift shows "Deleted shift #N", Removed, and "—" under Removed / By; "Shift deleted" appears only on Clubhouse 2's rows. Left as is by the owner's ruling (2026-11-10).
+Trap: The After Shift Start flags (`started` on an add, `forced` on a removal) come from `Slot#has_started`, whose `begins_adjusted` converts the stored wall clock with `in_time_zone(slot.timezone)` instead of re-stamping it, so slots outside Pacific time, and Pacific slots from November to March, start at the wrong instant (also noted in `Training::CapacityController`). Left as is by the owner's ruling (2026-11-10).
+Trap: A renamed or new flag in `Scheduling::Signup`'s `log_data` (or `delete_signup`'s `forced`) shows no badge until it has a `ScheduleLog::OVERRIDE_FLAGS` entry, and that entry's override a `Person::SchedulingHelper::SCHEDULE_LOG_OVERRIDES` badge. `signup_characterization_test.rb` "(m)" runs the writer into the reader for five of the six flags (not `trainer_forced`); the helper test pins the second pairing.
+Trap: `ScheduleLog::FIRST_YEAR` (2019) is where `action_logs` starts. `legacy_log` holds Clubhouse 1's sign-up changes under the same event names, but it is not a reliable source of truth (owner's ruling, 2026-11-10): never read it here, which is why the page says "This log starts in 2019".
+Trap: The read rides `action_logs_target_person_id_event_created_at_index`. Without it MariaDB scans every row aimed at the person that year, mostly page visits (the request logger names the person of every `/person/:id` page): 1,887 rows for 31 for the busiest person of 2025.
 
 ### Person › Work History
 Reach it: `GET /person/:person_id/work-history` → Person › Training & History › Work History; drill-downs `GET /person/:person_id/work-history/position-summary`, `GET /person/:person_id/work-history/position-all`, `GET /person/:person_id/work-history/entire-year`
