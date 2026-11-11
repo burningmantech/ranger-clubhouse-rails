@@ -1,0 +1,31 @@
+<%# locals: (changes:) %>
+<%# Oldest first. "self" is muted so a change anyone else made stands out. %>
+<% if changes.empty? %>
+  —
+<% else %>
+  <div class="space-y-2">
+    <% changes.each do |change| %>
+      <div>
+        <%= datetime_format change.at %>
+        <div>
+          by
+          <% if change.by_self %>
+            <span class="text-stone-muted"><%= Person::SchedulingHelper::SCHEDULE_LOG_SELF %></span>
+          <% else %>
+            <%= person_display_link change.actor, change.actor_id %>
+          <% end %>
+        </div>
+        <% if change.overrides.any? %>
+          <div class="mt-1">
+            <% change.overrides.each do |override| %>
+              <%= schedule_log_override_badge override %>
+            <% end %>
+          </div>
+        <% end %>
+        <% if change.reason %>
+          <div class="text-stone-muted"><%= schedule_log_reason change.reason %></div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

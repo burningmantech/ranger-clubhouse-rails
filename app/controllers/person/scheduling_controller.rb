@@ -9,6 +9,12 @@ class Person::SchedulingController < ApplicationController
 
   before_action :set_back_to, only: [:qualifications]
 
+  # Here rather than in ScheduleConcern, which Me and HQ include: the audit
+  # log is a Person page only.
+  def log
+    @entries = ScheduleLog.retrieve(@person, @year)
+  end
+
   private
 
   def schedule_redirect_path(**options)

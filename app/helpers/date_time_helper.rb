@@ -88,8 +88,10 @@ module DateTimeHelper
   # the shift was created on, with nothing to say which is meant -- so every
   # slot page passes tz/tz_abbr, and passes them from here rather than each
   # spelling the same call.
-  def slot_shift_time(slot)
-    datetime_format(slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr)
+  # year: for a shift listed among another year's, such as a log of the year the
+  # change was made.
+  def slot_shift_time(slot, year: false)
+    datetime_format(slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr, year:)
   end
 
   # A timestamp on another zone's clock, dated unless year: false: a training

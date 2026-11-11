@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_08_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -60,6 +60,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_08_000001) do
     t.index ["person_id", "created_at"], name: "action_logs_person_id_created_at_index"
     t.index ["person_id", "event", "created_at"], name: "action_logs_person_id_event_created_at_index"
     t.index ["target_person_id", "created_at"], name: "action_logs_target_person_id_created_at_index"
+    t.index ["target_person_id", "event", "created_at"], name: "action_logs_target_person_id_event_created_at_index"
   end
 
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|

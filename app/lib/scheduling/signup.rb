@@ -232,12 +232,17 @@ module Scheduling
     def decide_remove(person, slot, want_to_force)
       can_force, _ = can_force_schedule_change(slot, false)
       confirm_force = can_force ? want_to_force : false
+      # Read once: a second reading could cross the start and log an unforced
+      # removal as made after it.
+      started = slot.has_started
 
-      if slot.has_started && !confirm_force
+      if started && !confirm_force
         return Scheduling::Verdict::OutsideWindow.new(ended: slot.has_ended, may_force: can_force)
       end
 
-      case (status = delete_signup(person.id, slot))
+      # Past the gate above, a started shift means the removal was forced. It is
+      # logged as Clubhouse 2's were; the Schedule Audit Log badges it.
+      case (status = delete_signup(person.id, slot, after_start: started))
       when Scheduling::STATUS_SUCCESS
         Scheduling::Verdict::Removed.new
       when Scheduling::STATUS_MISSING_SIGNUP
@@ -265,7 +270,9 @@ module Scheduling
     # Internal delete entry point shared with Scheduling::Signup::Bulk. Runs the locked
     # store delete and -- on success only -- the same post-success orchestration
     # (parent/child recompute, empty-slot alerts, audit log) in the same order as before.
-    def delete_signup(person_id, slot, reason: nil, forced: false)
+    # after_start: the shift had begun, so the caller had to force the removal. It is
+    # never whether the caller asked to force: rosters always ask, before a start too.
+    def delete_signup(person_id, slot, reason: nil, after_start: false)
       status = slot_store.delete_signup(person_id, slot, reason: reason)
 
       if status == Scheduling::STATUS_SUCCESS
@@ -275,7 +282,8 @@ module Scheduling
         # shift drop report both key on it, and a row without one groups under nil
         # and is invisible to both. Every other writer of this event records it.
         data = { slot_id: slot.id }
-        data[:forced] = true if forced
+        # Clubhouse 2's key, kept so its rows and these read alike.
+        data[:forced] = true if after_start
         ActionLog.record(Current.person, "person-slot-remove", reason, data, person_id)
       end
 

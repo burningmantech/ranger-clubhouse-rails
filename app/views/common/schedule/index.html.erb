@@ -1,4 +1,4 @@
-<%# locals: (back_link:, description_text:, schedule_path_builder:, schedule_export_path_builder:, schedule_signup_summary_path_builder:, schedule_qualifications_path_builder:, available_sign_ups_path_builder:, schedule_signups_path_builder:, schedule_destroy_path_builder:, show_year_selector: true, sidebar_actions: true) %>
+<%# locals: (back_link:, description_text:, schedule_path_builder:, schedule_export_path_builder:, schedule_signup_summary_path_builder:, schedule_qualifications_path_builder:, available_sign_ups_path_builder:, schedule_signups_path_builder:, schedule_destroy_path_builder:, show_year_selector: true, sidebar_actions: true, schedule_log_path_builder: nil) %>
 <%# sidebar_actions: false folds the scheduling actions into the main column at
     every width instead of parking them in a desktop side rail. The HQ layout
     already wraps its children in a right-hand person/summary column, so keeping
@@ -88,6 +88,15 @@
                         title: "Calendar Export Warning",
                         method: :get
                       ) %>
+      <%# Inside the export button's wrapper, so it follows the same phone fold.
+          text-base alone: py-3 on its siblings changes nothing, .btn's height is fixed. %>
+      <% if schedule_log_path_builder %>
+        <div class="mt-3">
+          <%= button_link "Audit Log", :secondary, schedule_log_path_builder.call(year: @year),
+                          icon: "clock-rotate-left", icon_type: :solid,
+                          full_width: true, class: "text-base" %>
+        </div>
+      <% end %>
     </div>
 
     <div class="flex flex-col md:flex-row md:gap-6">
@@ -145,6 +154,10 @@
                                 title: "Calendar Export Warning",
                                 method: :get
                               ) %>
+            <% end %>
+            <% if schedule_log_path_builder %>
+              <%= button_link "Audit Log", :secondary, schedule_log_path_builder.call(year: @year),
+                              icon: "clock-rotate-left", icon_type: :solid, class: "w-full" %>
             <% end %>
             <% unless training_preview %>
               <%= action_box(

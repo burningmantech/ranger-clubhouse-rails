@@ -1686,6 +1686,7 @@ Rails.application.routes.draw do
       get "schedule/export", to: "scheduling#export", as: :scheduling_export, constraints: { format: :ics }
       get "schedule/signup-summary", to: "scheduling#signup_summary", as: :scheduling_signup_summary
       get "schedule/qualifications", to: "scheduling#qualifications", as: :scheduling_qualifications
+      get "schedule/log", to: "scheduling#log", as: :scheduling_log
       get "schedule/:slot_id/signups", to: "scheduling#signups", as: :scheduling_signups
       delete "schedule/:slot_id", to: "scheduling#destroy", as: :scheduling_destroy
 
