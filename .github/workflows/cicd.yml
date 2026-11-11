@@ -28,7 +28,11 @@ env:
   AWS_ECR_IMAGE_NAME: "/rangers/${{ vars.PROJECT_ID }}"
   AWS_ECS_CLUSTER: "rangers"
   AWS_ECS_CONTAINER_NAME: "${{ vars.PROJECT_ID }}"
+  # The staging service, and the task-definition family of the same name.
+  AWS_ECS_SERVICE: "${{ vars.PROJECT_ID }}-staging-fg"
   AWS_REGION: us-west-2
+  # The image as the build job tags it, before the deploy job pushes it to ECR.
+  LOCAL_IMAGE: "${{ vars.PROJECT_ID }}:${{ github.sha }}"
   # Production runs on Phoenix time, and so do the tests: datetimes are stored
   # as the process's local wall clock (config.active_record.default_timezone).
   TZ: America/Phoenix
@@ -192,7 +196,7 @@ jobs:
           context: .
           platforms: linux/arm64
           load: true
-          tags: "${{ vars.PROJECT_ID }}:${{ github.sha }}"
+          tags: "${{ env.LOCAL_IMAGE }}"
           cache-from: type=gha
           # Only main exports the layer cache. Exports from every pull request branch filled the
           # repository's 10 GB, and eviction then took main's layers and the gem and npm caches.
@@ -206,22 +210,22 @@ jobs:
       # refuses what it should and every real route still gets through (docker/nginx/).
       - name: Check the nginx config
         run: |
-          docker run --rm --entrypoint nginx "${{ vars.PROJECT_ID }}:${{ github.sha }}" -t -c /app/docker/nginx/nginx.conf
-          docker run --rm --entrypoint /app/docker/nginx/check.sh "${{ vars.PROJECT_ID }}:${{ github.sha }}"
+          docker run --rm --entrypoint nginx "${LOCAL_IMAGE}" -t -c /app/docker/nginx/nginx.conf
+          docker run --rm --entrypoint /app/docker/nginx/check.sh "${LOCAL_IMAGE}"
 
       # The deploy job of the same run pushes this image, so it is never built twice. Only a
       # main run has that job; it and a re-run of it are the artifact's only readers, so it
       # lives as long as GitHub lets a run be re-run.
       - name: Save Docker image
         if: ${{ github.ref == 'refs/heads/main' }}
-        run: docker image save "${{ vars.PROJECT_ID }}:${{ github.sha }}" | zstd -z > docker_image.tgz
+        run: docker image save "${LOCAL_IMAGE}" | zstd -T0 > docker_image.tar.zst
 
       - name: Upload Docker image artifacts
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docker
-          path: docker_image.tgz
+          path: docker_image.tar.zst
           # Already compressed: the action's own deflate pass would be most of the upload step.
           compression-level: 0
           retention-days: 30
@@ -277,7 +281,7 @@ jobs:
           name: docker
 
       - name: Load Docker image
-        run: zstd -d -c docker_image.tgz | docker image load
+        run: zstd -d -c docker_image.tar.zst | docker image load
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
@@ -298,9 +302,10 @@ jobs:
       - name: Push the image to Amazon ECR
         id: push
         run: |
-          docker tag "${{ vars.PROJECT_ID }}:${{ github.sha }}" "${IMAGE_REPOSITORY}:${{ github.sha }}"
-          docker push "${IMAGE_REPOSITORY}:${{ github.sha }}"
-          digest=$(docker buildx imagetools inspect "${IMAGE_REPOSITORY}:${{ github.sha }}" --format '{{.Manifest.Digest}}')
+          remote="${IMAGE_REPOSITORY}:${GITHUB_SHA}"
+          docker tag "${LOCAL_IMAGE}" "${remote}"
+          docker push "${remote}"
+          digest=$(docker buildx imagetools inspect "${remote}" --format '{{.Manifest.Digest}}')
           if [[ ! "${digest}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
             echo "::error::Could not read the pushed image's digest: ${digest}"
             exit 1
@@ -311,12 +316,12 @@ jobs:
         id: date
         run: echo "date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")" >> "${GITHUB_OUTPUT}"
 
+      # Given the family alone, the action renders from its latest revision.
       - name: Fetch and update current task definition
         id: new-task-definition
         uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1.9.1
         with:
-          task-definition-arn: "arn:aws:ecs:us-west-2:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/${{ vars.PROJECT_ID }}-staging-fg"
-          task-definition-family: "${{ vars.PROJECT_ID }}-staging-fg"
+          task-definition-family: "${{ env.AWS_ECS_SERVICE }}"
           container-name: "${{ env.AWS_ECS_CONTAINER_NAME }}"
           image: "${{ env.IMAGE_REPOSITORY }}@${{ steps.push.outputs.digest }}"
           environment-variables: |
@@ -384,7 +389,7 @@ jobs:
         timeout-minutes: 12
         with:
           task-definition: "${{ steps.with-migrate.outputs.task-definition }}"
-          service: "${{ vars.PROJECT_ID }}-staging-fg"
+          service: "${{ env.AWS_ECS_SERVICE }}"
           cluster: "${{ env.AWS_ECS_CLUSTER }}"
           wait-for-service-stability: true
           wait-for-minutes: 10
@@ -395,4 +400,4 @@ jobs:
       # there; nothing deploys from it (deploy.yml reads the staging task definition). Retagging
       # in the registry moves no bytes.
       - name: Move the staging tag
-        run: docker buildx imagetools create --prefer-index=false --tag "${IMAGE_REPOSITORY}:staging" "${IMAGE_REPOSITORY}:${{ github.sha }}"
+        run: docker buildx imagetools create --prefer-index=false --tag "${IMAGE_REPOSITORY}:staging" "${IMAGE_REPOSITORY}:${GITHUB_SHA}"

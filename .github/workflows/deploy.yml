@@ -24,6 +24,8 @@ env:
   AWS_ECR_IMAGE_NAME: "/rangers/${{ vars.PROJECT_ID }}"
   AWS_ECS_CLUSTER: "rangers"
   AWS_ECS_CONTAINER_NAME: "${{ vars.PROJECT_ID }}"
+  # The production service, and the task-definition family of the same name.
+  AWS_ECS_SERVICE: "${{ vars.PROJECT_ID }}-production-fg"
   AWS_REGION: "us-west-2"
   # The GitHub accounts that may promote to production, as a JSON list. Grown on request.
   DEPLOYERS: '["wsanchez", "mikeburg", "srabraham"]'
@@ -107,12 +109,12 @@ jobs:
         id: date
         run: echo "date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")" >> "${GITHUB_OUTPUT}"
 
+      # Given the family alone, the action renders from its latest revision.
       - name: Fetch and update current task definition
         id: new-task-definition
         uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1.9.1
         with:
-          task-definition-arn: "arn:aws:ecs:us-west-2:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/${{ vars.PROJECT_ID }}-production-fg"
-          task-definition-family: "${{ vars.PROJECT_ID }}-production-fg"
+          task-definition-family: "${{ env.AWS_ECS_SERVICE }}"
           container-name: "${{ env.AWS_ECS_CONTAINER_NAME }}"
           image: "${{ env.IMAGE_REPOSITORY }}@${{ steps.staging.outputs.digest }}"
           environment-variables: |
@@ -180,7 +182,7 @@ jobs:
         timeout-minutes: 12
         with:
           task-definition: "${{ steps.with-migrate.outputs.task-definition }}"
-          service: "${{ vars.PROJECT_ID }}-production-fg"
+          service: "${{ env.AWS_ECS_SERVICE }}"
           cluster: "${{ env.AWS_ECS_CLUSTER }}"
           wait-for-service-stability: true
           wait-for-minutes: 10
@@ -192,38 +194,7 @@ jobs:
       - name: Move the production tag
         run: docker buildx imagetools create --prefer-index=false --tag "${IMAGE_REPOSITORY}:production" "${IMAGE_REPOSITORY}@${{ steps.staging.outputs.digest }}"
 
-#      # Training needs the "Add the migrate container" step above before this deploy is enabled,
-#      # and its config/database.yml entry needs schema_dump: false first: without it, db:migrate on
-#      # a database with no schema_migrations loads db/schema.rb, which drops every table it defines.
-#      - name: Fetch and update current task definition for training
-#        id: new-task-definition-training
-#        uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1.9.1
-#        with:
-#          task-definition-arn: "arn:aws:ecs:us-west-2:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/${{ vars.PROJECT_ID }}-training-fg"
-#          task-definition-family: "${{ vars.PROJECT_ID }}-training-fg"
-#          container-name: "${{ env.AWS_ECS_CONTAINER_NAME }}"
-#          image: "${{ env.IMAGE_REPOSITORY }}@${{ steps.staging.outputs.digest }}"
-#          environment-variables: |
-#            GHA_ACTOR_ID=${{ github.actor_id }}
-#            GHA_ACTOR=${{ github.actor }}
-#            GHA_EVENT_NAME=${{ github.event_name }}
-#            GHA_JOB=${{ github.job }}
-#            GHA_REF=${{ github.ref }}
-#            GHA_RUN_ATTEMPT=${{ github.run_attempt }}
-#            GHA_RUN_ID=${{ github.run_id }}
-#            GHA_RUN_NUMBER=${{ github.run_number }}
-#            GHA_TRIGGERING_ACTOR=${{ github.triggering_actor }}
-#            GHA_WORKFLOW=${{ github.workflow }}
-#            GIT_SHA=${{ steps.staging.outputs.git_sha }}
-#            TASK_UPDATED=${{ steps.date.outputs.date }}
-#
-#      - name: Update task definition and ECS service for training
-#        uses: aws-actions/amazon-ecs-deploy-task-definition@a00d4d57ac0de1a99b39fe469f3d898d38717c2b # v2.6.4
-#        timeout-minutes: 12
-#        with:
-#          task-definition: "${{ steps.new-task-definition-training.outputs.task-definition }}"
-#          service: "${{ vars.PROJECT_ID }}-training-fg"
-#          cluster: "${{ env.AWS_ECS_CLUSTER }}"
-#          wait-for-service-stability: true
-#          wait-for-minutes: 10
-#          wait-max-delay-seconds: 15
+      # A training deploy (a "${{ vars.PROJECT_ID }}-training-fg" service) would repeat the render,
+      # migrate, and deploy steps above. Its config/database.yml entry needs schema_dump: false first:
+      # without it, db:migrate on a database with no schema_migrations loads db/schema.rb, which drops
+      # every table it defines.
