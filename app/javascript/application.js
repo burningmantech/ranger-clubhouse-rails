@@ -152,3 +152,10 @@ document.addEventListener("click", ({target}) => {
 document.addEventListener("turbo:before-cache", () => {
     document.querySelectorAll("#live-region, [data-live-region]").forEach((region) => region.replaceChildren());
 });
+
+// The year selector holds the year it was just changed to when Turbo copies
+// the page it is leaving, and the copy keeps a select's live choice. Back would
+// show that year over the old year's page and export, so put the page's own back.
+document.addEventListener("turbo:before-cache", () => {
+    document.querySelectorAll("#year-selector, #year-selector-compact").forEach((select) => select.form.reset());
+});
