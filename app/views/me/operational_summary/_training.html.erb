@@ -62,6 +62,7 @@
               <% if art.slot %>
                 <%= datetime_format art.slot.begins, tz: art.slot.timezone %> (<%= art.slot.timezone_abbr %>)<br>
                 <%= art.slot.description %>
+                <%= slot_virtual_venue_badge(art.slot) %>
                 <% if art.is_trainer %>
                   <br><%= ui_badge "Teaching", :primary, size: "xs" %>
                 <% end %>

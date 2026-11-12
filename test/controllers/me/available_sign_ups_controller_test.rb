@@ -270,6 +270,24 @@ class Me::AvailableSignUpsControllerTest < ActionDispatch::IntegrationTest
     assert_match "No Walk-Ins", response.body
   end
 
+  # Volunteers see the venue only when it is virtual.
+  test "show badges a virtual shift and no other venue" do
+    stub_training_entries(allowed: true)
+    @upcoming_slot.update!(venue: Slot::VENUE_VIRTUAL)
+    @later_slot.update!(venue: Slot::VENUE_MULTISITE)
+    @past_slot.update!(venue: Slot::VENUE_NON_EVENT)
+
+    get me_available_sign_up_position_path(@position.id)
+
+    assert_response :success
+    assert_select ".badge", text: "Virtual / Online", count: 1
+    assert_select "#slot_#{@upcoming_slot.id} .badge", text: "Virtual / Online"
+    # Parsed text, not response.body: the body escapes "Playa & Surrounding Area".
+    Slot::VENUE_LABELS.except(Slot::VENUE_VIRTUAL).each_value do |label|
+      assert_select "body", { text: /#{Regexp.escape(label)}/, count: 0 }, label
+    end
+  end
+
   test "show renders the full shift cards for a past year without the online course" do
     stub_training_entries(allowed: false)
 
@@ -366,10 +384,10 @@ class Me::AvailableSignUpsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as_holder(@person)
 
     @upcoming_slot = create_slot(@position, begins: 40.days.from_now, description: "Reno - Second Half")
-    later_slot = create_slot(@position, begins: 41.days.from_now, description: "Berkeley - Full Day")
+    @later_slot = create_slot(@position, begins: 41.days.from_now, description: "Berkeley - Full Day")
     @past_slot = create_slot(@position, begins: 40.days.ago, description: "Oakland - Full Day")
     earlier_slot = create_slot(@position, begins: 41.days.ago, description: "Oakland - Full Day")
-    entries = [earlier_slot, @past_slot, @upcoming_slot, later_slot].map do |slot|
+    entries = [earlier_slot, @past_slot, @upcoming_slot, @later_slot].map do |slot|
       Scheduling::Query::ScheduleEntry.new.tap do |entry|
         entry.slot = slot
         entry.position = @position

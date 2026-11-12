@@ -23,7 +23,7 @@ class Scheduling::SlotCopiesControllerTest < ActionDispatch::IntegrationTest
     @position = positions(:training_lead)
     @other_position = positions(:ood_position)
 
-    @dawn_slot = create_slot(description: "Dawn patrol", url: "Meet at Tokyo",
+    @dawn_slot = create_slot(description: "Dawn patrol", url: "Meet at Tokyo", venue: Slot::VENUE_MULTISITE,
                              begins: "2025-08-26 06:00", ends: "2025-08-26 12:00")
     @dusk_slot = create_slot(description: "Dusk patrol",
                              begins: "2025-08-26 18:00", ends: "2025-08-27 00:00")
@@ -162,6 +162,7 @@ class Scheduling::SlotCopiesControllerTest < ActionDispatch::IntegrationTest
     assert_equal @dawn_slot.ends + 371.days + 1.hour + 30.minutes, copy.ends
     assert_equal "Dawn patrol", copy.description
     assert_equal "Meet at Tokyo", copy.url
+    assert_equal Slot::VENUE_MULTISITE, copy.venue
     assert_equal 10, copy.max
     assert copy.active
     assert_nil copy.trainer_slot_id

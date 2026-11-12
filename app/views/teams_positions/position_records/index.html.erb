@@ -72,30 +72,22 @@
       <% @positions.each do |position| %>
         <%= t.row id: "position-#{position.id}" do %>
           <%= t.row_header do %>
-            <div class="flex items-start gap-2">
-              <% if position.active %>
-                <%= fa_icon "circle-check", :solid, class: "icon-success mt-1" %>
-              <% else %>
-                <%= fa_icon "circle-xmark", :solid, class: "icon-error mt-1" %>
-              <% end %>
-              <div>
-                <div class="font-semibold text-heading"><%= position.title %></div>
-                <div class="text-stone-muted">
-                  <%= position_record_type_label(position.type) %>
-                  <%
-                  %>
-                  <% if position.short_title.present? %> · <%= position.short_title %>
-                  <% end %>
-                  <%
-                  %>
-                </div>
-                <% unless position.active %>
-                  <div class="mt-1">
-                    <%= ui_badge "Inactive", :warning, size: "sm", class: "whitespace-nowrap" %>
-                  </div>
+            <%= record_title position.title, active: position.active do %>
+              <div class="text-stone-muted">
+                <%= position_record_type_label(position.type) %>
+                <%
+                %>
+                <% if position.short_title.present? %> · <%= position.short_title %>
                 <% end %>
+                <%
+                %>
               </div>
-            </div>
+              <% unless position.active %>
+                <div class="mt-1">
+                  <%= ui_badge "Inactive", :warning, size: "sm", class: "whitespace-nowrap" %>
+                </div>
+              <% end %>
+            <% end %>
           <% end %>
 
           <%= t.cell do %>

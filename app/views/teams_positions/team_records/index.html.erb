@@ -66,23 +66,15 @@
       <% @teams.each do |team| %>
         <%= t.row id: "team-#{team.id}" do %>
           <%= t.row_header do %>
-            <div class="flex items-start gap-2">
-              <% if team.active %>
-                <%= fa_icon "circle-check", :solid, class: "icon-success mt-1" %>
-              <% else %>
-                <%= fa_icon "circle-xmark", :solid, class: "icon-error mt-1" %>
-              <% end %>
-              <div>
-                <div class="font-semibold text-heading"><%= team.title %></div>
-                <div class="flex flex-wrap gap-1 mt-1">
-                  <%= ui_badge team_record_type_label(team.type), :secondary, size: "sm",
-                               class: "whitespace-nowrap" %>
-                  <% unless team.active %>
-                    <%= ui_badge "Inactive", :warning, size: "sm", class: "whitespace-nowrap" %>
-                  <% end %>
-                </div>
+            <%= record_title team.title, active: team.active do %>
+              <div class="flex flex-wrap gap-1 mt-1">
+                <%= ui_badge team_record_type_label(team.type), :secondary, size: "sm",
+                             class: "whitespace-nowrap" %>
+                <% unless team.active %>
+                  <%= ui_badge "Inactive", :warning, size: "sm", class: "whitespace-nowrap" %>
+                <% end %>
               </div>
-            </div>
+            <% end %>
           <% end %>
 
           <%= t.cell { value_list(@roles_by_team[team.id]) } %>

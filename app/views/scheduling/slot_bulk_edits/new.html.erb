@@ -9,6 +9,43 @@
   <% end %>
 <% end %>
 
+<%# Above the bulk-edit form, as on Copy Slots: filter_bar renders a form of its
+    own, and a form inside another ends the outer one at its </form>, which left
+    Save Selected Slots outside any form and made Apply Filters post the edit. %>
+<% if @total_count.positive? %>
+  <%= filter_bar id: "bulk-edit-slot-filters",
+                 chips: slot_bulk_edit_filter_chips(@position, @year, @filter),
+                 clear_url: scheduling_new_slot_bulk_edit_path(@position.id, year: @year),
+                 count: "Showing #{@slots.size} of #{@total_count} slots",
+                 url: scheduling_new_slot_bulk_edit_path(@position.id), scope: :filter do |f| %>
+    <%= hidden_field_tag :year, @year %>
+    <%= form_row do %>
+      <%= f.select :active,
+                   options_for_select([["All slots", ""], %w[Active active], %w[Inactive inactive]],
+                                      @filter[:active]),
+                   { label: "Status", width: "w-full sm:w-44" } %>
+      <%= f.select :description,
+                   options_for_select([["All descriptions", ""]] + @description_options,
+                                      @filter[:description]),
+                   { label: "Description", width: "w-full sm:w-64" } %>
+      <%= f.select :date,
+                   options_for_select([["All dates", ""]] + @date_options.map { |date| [wday_month_day_format(date), date.iso8601] },
+                                      @filter[:date]),
+                   { label: "Date", width: "w-full sm:w-44" } %>
+      <%= f.select :time,
+                   options_for_select([["All times", ""]] + @time_options.map { |time| [time, time] },
+                                      @filter[:time]),
+                   { label: "Time", width: "w-full sm:w-40" } %>
+      <%= f.select :datetime,
+                   options_for_select([["Any start", ""]] + @datetime_options.map { |dt| [dt.strftime(DateTimeHelper::MONTH_DAY_TIME), dt.iso8601] },
+                                      @filter[:datetime]),
+                   { label: "Date/Time", width: "w-full sm:w-56" } %>
+    <% end %>
+    <%= button_row do %>
+      <%= f.submit "Apply Filters", variant: :secondary %>
+    <% end %>
+  <% end %>
+<% end %>
 
 <% if @slots.any? %>
   <%= ui_form nil, scheduling_slot_bulk_edits_path(@position.id, year: @year, filter: @filter.presence),
@@ -24,6 +61,10 @@
                                       params[:new_position_id]),
                    { label: "Position", width: "w-full sm:w-72",
                      help_text: "Moving slots to another position carries their sign-ups along." } %>
+      <%= f.select :venue,
+                   options_for_select([["(keep current venue)", ""]] + slot_venue_choices,
+                                      params[:venue]),
+                   { label: "Venue", width: "w-full sm:w-64" } %>
       <%= form_row do %>
         <%= f.text_field :description, label: "Description", value: params[:description],
                          maxlength: 40, show_counter: true, width: "w-full sm:w-64" %>
@@ -35,40 +76,6 @@
 
 
     <%= ui_section "Select Slots to Update", icon: "list-check", icon_type: :solid do %>
-      <% if @total_count.positive? %>
-        <%= filter_bar id: "bulk-edit-slot-filters",
-                       chips: slot_bulk_edit_filter_chips(@position, @year, @filter),
-                       clear_url: scheduling_new_slot_bulk_edit_path(@position.id, year: @year),
-                       count: "Showing #{@slots.size} of #{@total_count} slots",
-                       url: scheduling_new_slot_bulk_edit_path(@position.id), scope: :filter do |f| %>
-          <%= hidden_field_tag :year, @year %>
-          <%= form_row do %>
-            <%= f.select :active,
-                         options_for_select([["All slots", ""], %w[Active active], %w[Inactive inactive]],
-                                            @filter[:active]),
-                         { label: "Status", width: "w-full sm:w-44" } %>
-            <%= f.select :description,
-                         options_for_select([["All descriptions", ""]] + @description_options,
-                                            @filter[:description]),
-                         { label: "Description", width: "w-full sm:w-64" } %>
-            <%= f.select :date,
-                         options_for_select([["All dates", ""]] + @date_options.map { |date| [wday_month_day_format(date), date.iso8601] },
-                                            @filter[:date]),
-                         { label: "Date", width: "w-full sm:w-44" } %>
-            <%= f.select :time,
-                         options_for_select([["All times", ""]] + @time_options.map { |time| [time, time] },
-                                            @filter[:time]),
-                         { label: "Time", width: "w-full sm:w-40" } %>
-            <%= f.select :datetime,
-                         options_for_select([["Any start", ""]] + @datetime_options.map { |dt| [dt.strftime(DateTimeHelper::MONTH_DAY_TIME), dt.iso8601] },
-                                            @filter[:datetime]),
-                         { label: "Date/Time", width: "w-full sm:w-56" } %>
-          <% end %>
-          <%= button_row do %>
-            <%= f.submit "Apply Filters", variant: :secondary %>
-          <% end %>
-        <% end %>
-      <% end %>
       <%= bulk_select do %>
         <%= ui_table do |t| %>
           <%= t.header do %>
@@ -77,6 +84,7 @@
             <% end %>
             <%= t.heading "ID", right: true %>
             <%= t.heading "Time" %>
+            <%= t.heading "Venue" %>
             <%= t.heading "Max", right: true %>
             <%= t.heading "Sign-Ups", right: true %>
             <%= t.heading "Description" %>
@@ -92,6 +100,7 @@
                 <% end %>
                 <%= t.cell slot.id, right: true %>
                 <%= t.cell datetime_format(slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr) %>
+                <%= t.cell slot.venue_label %>
                 <%= t.cell slot.max, right: true %>
                 <%= t.cell slot.signed_up, right: true %>
                 <%= t.cell do %>

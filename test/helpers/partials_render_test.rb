@@ -158,4 +158,39 @@ class PartialsRenderTest < ActionView::TestCase
 
     assert_select "p", text: /callsign order\.\s+All 251 receive the broadcast\./
   end
+
+  # One ART row per session, a virtual one and an Event Season one, as
+  # Training.retrieve_education hands them to both ART tables.
+  ArtRow = Struct.new(:position_title, :has_online_course, :status, :slot, :is_trainer)
+
+  def art_rows
+    [Slot::VENUE_VIRTUAL, Slot::VENUE_EVENT_SEASON].map do |venue|
+      slot = Slot.new(begins: Time.zone.local(2026, 8, 25, 10), ends: Time.zone.local(2026, 8, 25, 12),
+                      timezone: "America/Los_Angeles", timezone_abbr: "PDT", description: "Session #{venue}", venue:)
+      ArtRow.new("Green Dot", false, Training::PENDING, slot, false)
+    end
+  end
+
+  # Volunteers see a slot's venue only when it is virtual: beside the
+  # description under When/Where, a virtual session is badged and no other is.
+  test "the dashboard ARTs card badges only a virtual session" do
+    render partial: "dashboard_tasks/dashboard_arts",
+           locals: { step: nil, facts: Struct.new(:art_trainings).new(art_rows) }
+
+    assert_select ".badge", text: "Virtual / Online", count: 1
+    assert_select "td:has(.badge-secondary)", text: /Session virtual/
+  end
+
+  test "the Operational Summary's ART table badges only a virtual session" do
+    @person_event = Struct.new(:online_course_passed, :training, :art_trainings).new(true, nil, art_rows)
+    @person = Struct.new(:ranger) do
+      def is_ranger? = ranger
+      def is_applicant? = false
+    end.new(true)
+
+    render partial: "me/operational_summary/training"
+
+    assert_select ".badge", text: "Virtual / Online", count: 1
+    assert_select "td:has(.badge-secondary)", text: /Session virtual/
+  end
 end

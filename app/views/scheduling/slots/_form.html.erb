@@ -20,6 +20,9 @@
       <%= f.datetime_field :ends, label: "Ending Time", required: true %>
       <%= f.select :timezone, slot_timezone_choices(@slot), { label: "Timezone", width: "w-full sm:w-56" } %>
     <% end %>
+    <%= f.select :venue, slot_venue_choices,
+                 { label: "Venue", width: "w-full sm:w-64",
+                   help_text: "Where the shift takes place. Volunteers see it only when it is Virtual / Online." } %>
   <% end %>
 
   <%= f.fieldset "Shift Information", icon: "file-lines", icon_type: :solid do %>
