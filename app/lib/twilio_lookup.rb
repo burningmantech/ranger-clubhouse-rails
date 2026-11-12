@@ -14,7 +14,7 @@ module TwilioLookup
 
   # The number to look up for what was typed -- a callsign's number on file,
   # or a phone number -- or why there is none: [number, problem]. A callsign
-  # comes first, as on Clubhouse 1 Log: some are made only of digits ("4748").
+  # comes first, as on Legacy Clubhouse 1 Log: some are made only of digits ("4748").
   def number_for(typed)
     typed = typed.to_s.strip
     return [nil, "Enter a phone number or a callsign."] unless typed.match?(/[[:alnum:]]/)

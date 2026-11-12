@@ -29,7 +29,7 @@ class LegacyLogFilterForm
     "person-message-%,contact-log-%" => "Messages",
     "broadcast-%,person-alert-%,alert-%" => "Broadcasts",
     "person-mentor-%,trainee-status-%" => "Mentoring",
-    "position-%,role-%,xfield-%,xgroup-%,xoption-%,bmid-%,radio-eligible-%" => "Configuration",
+    "position-%,role-%,bmid-%,radio-eligible-%" => "Configuration",
     LegacyLog::UNKNOWN => "Unknown"
   }.freeze
 

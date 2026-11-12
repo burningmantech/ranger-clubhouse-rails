@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_12_000002) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -328,21 +328,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.string "event", limit: 191, null: false
     t.text "data", size: :long
     t.datetime "created_at", precision: nil, null: false
+    t.string "ip", limit: 191
+    t.string "user_agent", limit: 191
     t.index ["created_at", "id"], name: "index_legacy_log_on_created_at_and_id"
     t.index ["event"], name: "index_legacy_log_on_event"
     t.index ["log_id"], name: "index_legacy_log_on_log_id", unique: true
     t.index ["person_id", "created_at"], name: "index_legacy_log_on_person_id_and_created_at"
+    t.index ["person_id", "event", "created_at"], name: "index_legacy_log_on_person_id_and_event_and_created_at"
     t.index ["target_person_id", "created_at"], name: "index_legacy_log_on_target_person_id_and_created_at"
-  end
-
-  create_table "log", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", comment: "logs certain actions", force: :cascade do |t|
-    t.bigint "user_person_id", comment: "person_id of user making change", unsigned: true
-    t.bigint "current_person_id", comment: "person_id of person affected by change (if any)", unsigned: true
-    t.timestamp "occurred", default: -> { "current_timestamp()" }, null: false, comment: "time log entry created"
-    t.string "event", limit: 500, null: false, comment: "summary of what was done"
-    t.index ["current_person_id"], name: "current_person_id"
-    t.index ["occurred"], name: "occurred"
-    t.index ["user_person_id"], name: "user_person_id"
+    t.index ["target_person_id", "event", "created_at"], name: "index_legacy_log_on_target_person_id_and_event_and_created_at"
   end
 
   create_table "mail_log", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|

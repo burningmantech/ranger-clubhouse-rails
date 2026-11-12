@@ -67,8 +67,8 @@ class ActionLog < ApplicationRecord
     # another follows), and the total the pager names beside it -- counted, or
     # estimated from the ids when nothing filters a table of millions of rows.
     #
-    # LegacyLog.find_for_query is this query over the converted Clubhouse 1
-    # log, without lastday, redact_data and the enrichment; keep the two in step.
+    # LegacyLog, a subclass on its own table, runs this same query over the
+    # converted Clubhouse 1 log.
     #
     # @return [Hash] { action_logs:, pagy:, total:, approximate_total: }
     def find_for_query(query = {}, redact_data: false, **query_kwargs)
@@ -140,8 +140,10 @@ class ActionLog < ApplicationRecord
       end
 
       total = calculate_total(scope, all_records)
-      # Nothing to fetch: the same page, with no query for its rows.
-      scope = scope.none if total.zero?
+      # Nothing to fetch on a page past the last row -- a stale or hand-typed
+      # page number would otherwise walk an offset of millions for nothing. The
+      # estimate is never below the true count, so this never hides a row.
+      scope = scope.none if total <= ([page, 1].max - 1) * page_size
 
       # Results sort 'asc' or 'desc'
       sort_order = (sort == "asc") ? :asc : :desc

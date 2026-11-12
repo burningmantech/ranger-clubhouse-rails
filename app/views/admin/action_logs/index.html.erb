@@ -57,9 +57,11 @@
                     variant: :card,
                     open: @form.event_filters.any?,
                     subtitle: @form.event_filters.any? ? "#{@form.event_filters.count} selected" : "Show event filter options" do %>
-    <%# EVENT_FILTER_OPTIONS reads [label, value]; the grid takes [value, label]. %>
+    <%# EVENT_FILTER_OPTIONS reads [label, value]; the grid takes [value, label].
+        PARAM_SCOPE, not the form object's own name: these boxes stand outside
+        the form builder, and the controller reads the search under filter[...]. %>
     <%= render "common/checkbox_grid",
-               name: "#{ActionLogFilterForm.model_name.param_key}[event_filters][]",
+               name: "#{ActionLogFilterForm::PARAM_SCOPE}[event_filters][]",
                options: ActionLogFilterForm::EVENT_FILTER_OPTIONS.map(&:reverse),
                selected: @form.event_filters,
                id_prefix: "action-log-event",
@@ -85,89 +87,7 @@
       <%= pager %>
     </div>
 
-    <%= ui_table striped: false do |t| %>
-      <%= t.header do %>
-        <% action_log_headings.each do |heading| %>
-          <%= t.heading heading %>
-        <% end %>
-      <% end %>
-      <%= t.body do %>
-        <% @action_logs.each do |row| %>
-          <% detail_dom_id = "action-log-detail-#{row.id}" %>
-          <% timestamp = log_time_format(row.created_at) %>
-          <% collapsed_toggle_label = action_log_toggle_label(timestamp) %>
-          <% expanded_toggle_label = action_log_toggle_label(timestamp, expanded: true) %>
-          <% inline_metadata_lines = action_log_inline_metadata_lines(row) %>
-          <%= t.row class: class_names("align-middle", "border-b-0": inline_metadata_lines.any?) do %>
-            <%= t.cell class: "align-top" do %>
-              <%= button_action collapsed_toggle_label, :ghost, controller: "toggle",
-                                size: "sm",
-                                class: "justify-start px-1 text-left normal-case",
-                                aria: { controls: detail_dom_id, expanded: false },
-                                data: {
-                                  toggle_dom_id_value: detail_dom_id,
-                                  toggle_label_value: expanded_toggle_label
-                                } %>
-            <% end %>
-            <%= t.cell class: log_text_class("align-middle") do %>
-              <%= action_log_person_label(row.person, row.person_id) %>
-            <% end %>
-            <%= t.cell class: log_text_class("align-middle") do %>
-              <%= action_log_person_label(row.target_person, row.target_person_id) %>
-            <% end %>
-            <%= t.cell class: class_names("align-middle text-sm leading-snug", Admin::ActionLogsHelper::ACTION_LOG_EVENT_MAX_WIDTH) do %>
-              <%= log_truncated(row.event) %>
-            <% end %>
-            <%= t.cell class: log_text_class("align-middle") do %>
-              <%= action_log_message_cell(row) %>
-            <% end %>
-          <% end %>
-
-          <% if inline_metadata_lines.any? %>
-            <%= t.row do %>
-              <%= t.cell colspan: 5, class: "pt-0" do %>
-                <div class="action-log-inline-metadata space-y-1 text-sm leading-snug text-stone-muted">
-                  <% inline_metadata_lines.each do |line| %>
-                    <div><%= line %></div>
-                  <% end %>
-                </div>
-              <% end %>
-            <% end %>
-          <% end %>
-
-          <%= t.detail_row id: detail_dom_id do %>
-            <div class="space-y-4 py-2">
-              <div>
-                <div class="<%= log_heading_class %>">Metadata</div>
-                <%= ui_label_value label_width: "6rem" do |list| %>
-                  <% action_log_metadata_items(row).each do |label, value| %>
-                    <%= list.row label do %>
-                      <%= value %>
-                    <% end %>
-                  <% end %>
-                <% end %>
-              </div>
-
-              <div>
-                <div class="<%= log_heading_class %>">Data</div>
-                <%= action_log_pretty_data_block(row) %>
-              </div>
-
-              <% if action_log_roles(row).any? %>
-                <div>
-                  <div class="<%= log_heading_class %>">Roles</div>
-                  <div class="space-y-1">
-                    <% action_log_roles(row).each do |role| %>
-                      <div class="text-base text-body">Role #<%= role.id %> · <%= role.title %></div>
-                    <% end %>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          <% end %>
-        <% end %>
-      <% end %>
-    <% end %>
+    <%= render "admin/action_logs/table", rows: @action_logs %>
 
     <div class="mt-4">
       <%= pager %>

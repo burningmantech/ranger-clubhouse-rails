@@ -61,7 +61,10 @@ module ClubhouseDatabaseTasks
   # A copy taken before MergePersonMessageArchives ran still keeps messages in a
   # table per year as well, so the prefix is matched rather than the one table named.
   def skipped_logs(config)
-    %w[legacy_log log mail_log] + DatabaseDump.tables_like(config, "person_message%")
+    # `log` only where a copy still has it: DropLog removed it from the schema,
+    # and mysqldump stops at a table it is told to dump and cannot find.
+    %w[legacy_log mail_log] + DatabaseDump.tables_like(config, "log") +
+      DatabaseDump.tables_like(config, "person_message%")
   end
 
   # Six in the evening on the Saturday of last year's burn.

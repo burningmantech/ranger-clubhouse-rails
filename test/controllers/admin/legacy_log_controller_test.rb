@@ -84,7 +84,8 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "a[href=?]", person_path(@actor), text: @actor.callsign
     assert_select "a[href=?]", person_path(@subject), text: @subject.callsign
-    assert_select "th", text: "Details"
+    assert_select "th", text: "Message", count: 0
+    assert_select "th", text: "Event"
     assert_select "button[data-controller='toggle'][data-toggle-dom-id-value=?]", "legacy-log-detail-#{row.id}", count: 1
     assert_select "tr#legacy-log-detail-#{row.id}.hidden", count: 1
     assert_select "tr#legacy-log-detail-#{row.id}" do
@@ -94,28 +95,27 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
       assert_select "dt", text: "Session Person", count: 0
       assert_select "dt", text: "Truncated", count: 0
     end
-    assert_select "[data-controller='read-more']", count: 0
     assert_match "=person.status=alpha@id=1", response.body
   end
 
-  test "a converted row's details come from its data" do
+  test "a converted row names the slot its data holds" do
+    slot = Slot.create!(position: positions(:mentor_lead), begins: Time.zone.local(2015, 8, 30, 9), ends: Time.zone.local(2015, 8, 30, 11),
+                        description: "Legacy shift", max: 5, signed_up: 0, active: true)
     create_legacy_log(event: "person-slot-add", person: @actor, target: @subject,
-           data: { "columns" => "personid,slotid",
-                   "values" => "5,386", "slot_id" => 386 })
+                      data: { "slot_id" => slot.id })
 
     sign_in_as(@admin)
 
     get admin_legacy_log_path
 
     assert_response :success
-    assert_match "personid=5, slotid=386", response.body
-    assert_select "pre", text: /"slot_id": 386/
+    assert_select "pre", text: /"slot_id": #{slot.id}/
+    assert_select ".action-log-inline-metadata", text: /Slot:\s*##{slot.id}/
   end
 
   test "the session person and the truncation note appear when the data carries them" do
     row = create_legacy_log(event: "person-update", person: @actor, target: @subject,
-                 data: { "set" => "status=alpha", "where" => "id=#{@subject.id}",
-                         "session_person_id" => @actor.id, "truncated" => true })
+                 legacy: { "session_person_id" => @actor.id, "truncated" => true })
 
     sign_in_as(@admin)
 
@@ -128,17 +128,6 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
       assert_select "dt", text: "Truncated"
       assert_select "dd", text: /cut this statement short/
     end
-  end
-
-  test "a long detail line folds behind Show More" do
-    create_legacy_log(statement: "=person.#{"x" * 80}@id=1")
-
-    sign_in_as(@admin)
-
-    get admin_legacy_log_path
-
-    assert_response :success
-    assert_select "[data-controller='read-more']", count: 1
   end
 
   test "a person id naming no one reads as deleted rather than as a blank" do
@@ -239,7 +228,7 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
 
   test "a chosen category reaches the search, and draws a chip" do
     create_legacy_log(event: "unknown", statement: "=person.status=raw@id=1")
-    create_legacy_log(event: "person-update", data: { "set" => "status=alpha", "where" => "id=1" })
+    create_legacy_log(event: "person-update", statement: "=person.status=alpha@id=1")
 
     sign_in_as(@admin)
 
@@ -247,7 +236,7 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "=person.status=raw@id=1", response.body
-    assert_no_match "status=alpha where id=1", response.body
+    assert_no_match "=person.status=alpha@id=1", response.body
     assert_select "a[aria-label^='Remove filter: Category: Unknown']"
   end
 
@@ -259,7 +248,9 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "input[type=checkbox][name=?][value=?]", "filter[event_filters][]", "unknown"
     assert_select "input[type=checkbox][name=?][value=?]", "filter[event_filters][]", "person-slot-%"
-    assert_select "input[type=checkbox][value=?]", "person-xfield-%", count: 0
+    assert_select "input[type=checkbox][value*=?]", "xfield", count: 0
+    assert_select "input[type=checkbox][value*=?]", "xgroup", count: 0
+    assert_select "input[type=checkbox][value*=?]", "xoption", count: 0
   end
 
   test "a category no one offers is ignored rather than matching nothing" do
@@ -275,8 +266,8 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
 
   test "a category and an event name combine as either matching" do
     create_legacy_log(event: "unknown", statement: "=person.status=raw@id=1")
-    create_legacy_log(event: "person-update", data: { "set" => "status=alpha", "where" => "id=1" })
-    create_legacy_log(event: "slot-create", data: { "set" => "max=15" })
+    create_legacy_log(event: "person-update", statement: "=person.status=alpha@id=1")
+    create_legacy_log(event: "slot-create", statement: "=slot.max=15@id=1")
 
     sign_in_as(@admin)
 
@@ -284,7 +275,7 @@ class Admin::LegacyLogControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "=person.status=raw@id=1", response.body
-    assert_match "status=alpha where id=1", response.body
+    assert_match "=person.status=alpha@id=1", response.body
     assert_no_match "max=15", response.body
   end
 

@@ -19,7 +19,7 @@ class Admin::LegacyLogController < ApplicationController
       events: @form.events,
       page: @form.page
     )
-    @legacy_logs = @result[:legacy_logs]
+    @legacy_logs = @result[:action_logs]
     @pagy = @result[:pagy]
   end
 
@@ -32,7 +32,7 @@ class Admin::LegacyLogController < ApplicationController
 
   # The log names people by id, and some no longer have a record, so a bare
   # number is taken as the id itself -- after the callsign, because a callsign
-  # made only of digits is real (Admin::Clubhouse1LogController says why). A
+  # made only of digits is real. A
   # callsign no one holds falls back to an id no one holds, so it finds nothing
   # rather than everything: the conversion stores the log's 0 as NULL.
   def resolve_person_id(callsign)
