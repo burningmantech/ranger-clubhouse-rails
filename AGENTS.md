@@ -38,7 +38,8 @@ bin/rails test:system
 
 # Fresh checkout or worktree: npm install once (daisyUI is a Tailwind plugin in node_modules). The full suite and
 # test:system build the CSS through test:prepare; a single-file test run or a server does not, so build it first
-npm install && bin/rails tailwindcss:build
+# tmp/ is gitignored: the launch.json servers that write tmp/pids/*.pid die on boot without the directory
+npm install && bin/rails tailwindcss:build && mkdir -p tmp/pids
 
 # Lint with RuboCop
 bin/rubocop
@@ -73,6 +74,9 @@ bin/rails db:migrate
 - Browser preview servers are in `.claude/launch.json`: `clubhouse3` (:3010), `clubhouse3-alt` (:3210 or the
   next free port), `clubhouse3-sf-mock` (:3211, `SF_MOCK_DATA=1`)
 - Never `source` an `env*.sh` at the repo root: they hold live credentials, and are gitignored for that reason
+- Ruby is pinned in `mise.toml`. A non-interactive shell may not activate it: if `ruby -v` differs from the
+  pin, run app commands as `mise exec -- bin/rails ...`
+- `port/` and `.scratch/` are untracked: they exist only in the main checkout, never in a worktree
 
 ## Architecture
 
@@ -141,7 +145,8 @@ See `docs/UI-COMPONENTS.md` for complete API reference and `docs/DESIGN-GUIDE.md
 - Source files staged for translation live in `port/` (untracked)
 - Do not modify existing ActiveRecord models during translation
 - Assume any required model methods will be added later. Flag these.
-- Clubhouse 2 (`burningmantech/ranger-clubhouse-api` and `ranger-clubhouse-web`, checked out at `../clubhouse2/`) is a
+- Clubhouse 2 (`burningmantech/ranger-clubhouse-api` and `ranger-clubhouse-web`, checked out beside the main
+  checkout at `../clubhouse2/`) is a
   retired code base: read it as the source of behavior, but do not update it -- no edits, branches, commits, migrations
   or test runs -- unless explicitly told to. It will not run against this app's database schema.
 
@@ -197,7 +202,7 @@ Invoke the appropriate skill(s) BEFORE starting work.
 Before writing or modifying ANY file matching these paths, you MUST invoke the corresponding design skill(s) FIRST. 
 
 Before changing anything, list every file you'll need and read them in one pass. Then make all edits, 
-then run the tests once.This is a blocking requirement — do not skip it for "small" changes.
+then run the tests once. This is a blocking requirement — do not skip it for "small" changes.
 
 ### Skill Dispatch Rules (mandatory)
 
