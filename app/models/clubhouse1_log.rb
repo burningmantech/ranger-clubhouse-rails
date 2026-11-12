@@ -8,10 +8,6 @@
 class Clubhouse1Log < ApplicationRecord
   self.table_name = "log"
 
-  # Named, not looked up: the conversion's test reads a temporary table, whose
-  # key the schema lookup cannot see.
-  self.primary_key = "id"
-
   # The database fills in `occurred`, and there are no created_at/updated_at
   # columns.
   self.record_timestamps = false
