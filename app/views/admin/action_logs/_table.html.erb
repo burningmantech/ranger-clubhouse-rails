@@ -1,0 +1,86 @@
+<%# locals: (rows:, legacy: false) %>
+<%# The results table of Action Logs and, with legacy: true, of the Legacy
+    Clubhouse 1 Log (LegacyLog is ActionLog on its own table): the same
+    columns, inline slot, position and team lines, and detail row. Two things
+    differ: legacy_log has no message, so no Message column, and the Metadata
+    list is what the first Clubhouse kept, not a request's address and browser. %>
+<% headings = legacy ? action_log_headings - ["Message"] : action_log_headings %>
+<%= ui_table striped: false do |t| %>
+  <%= t.header do %>
+    <% headings.each do |heading| %>
+      <%= t.heading heading %>
+    <% end %>
+  <% end %>
+  <%= t.body do %>
+    <% rows.each do |row| %>
+      <% detail_dom_id = "#{row.model_name.param_key.dasherize}-detail-#{row.id}" %>
+      <% timestamp = log_time_format(row.created_at) %>
+      <% inline_metadata_lines = action_log_inline_metadata_lines(row) %>
+      <%= t.row class: class_names("align-middle", "border-b-0": inline_metadata_lines.any?) do %>
+        <%= t.cell class: "align-top" do %>
+          <%= t.detail_row_toggle timestamp, id: detail_dom_id, describing: legacy ? "Clubhouse 1 entry" : "Action Log entry" %>
+        <% end %>
+        <%# person_display_link: a Tech Ninja reads the legacy page but not the
+            person pages, so they get the callsign without a link that would
+            bounce them to /me. %>
+        <%= t.cell class: log_text_class("align-middle") do %>
+          <%= action_log_person_label(row.person, row.person_id) %>
+        <% end %>
+        <%= t.cell class: log_text_class("align-middle") do %>
+          <%= action_log_person_label(row.target_person, row.target_person_id) %>
+        <% end %>
+        <%= t.cell class: log_text_class("align-middle", Admin::ActionLogsHelper::ACTION_LOG_EVENT_MAX_WIDTH) do %>
+          <%= log_truncated(row.event) %>
+        <% end %>
+        <% unless legacy %>
+          <%= t.cell class: log_text_class("align-middle") do %>
+            <%= action_log_message_cell(row) %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <% if inline_metadata_lines.any? %>
+        <%= t.row do %>
+          <%= t.cell colspan: headings.size, class: "pt-0" do %>
+            <div class="action-log-inline-metadata space-y-1 text-sm leading-snug text-stone-muted">
+              <% inline_metadata_lines.each do |line| %>
+                <div><%= line %></div>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%= t.detail_row id: detail_dom_id, label: timestamp do %>
+        <div class="space-y-4 py-2">
+          <div>
+            <div class="<%= log_heading_class %>">Metadata</div>
+            <%= ui_label_value label_width: legacy ? "10rem" : "6rem" do |list| %>
+              <% (legacy ? legacy_log_detail_items(row) : action_log_metadata_items(row)).each do |label, value| %>
+                <%= list.row label do %>
+                  <%= value %>
+                <% end %>
+              <% end %>
+            <% end %>
+          </div>
+
+          <div>
+            <div class="<%= log_heading_class %>">Data</div>
+            <%= action_log_pretty_data_block(row) %>
+          </div>
+
+          <% if action_log_roles(row).any? %>
+            <div>
+              <div class="<%= log_heading_class %>">Roles</div>
+              <div class="space-y-1">
+                <% action_log_roles(row).each do |role| %>
+                  <div class="text-base text-body">Role #<%= role.id %> · <%= role.title %></div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

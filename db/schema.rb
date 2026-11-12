@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_12_000002) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -63,7 +63,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["target_person_id", "event", "created_at"], name: "action_logs_target_person_id_event_created_at_index"
   end
 
-  create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "active_storage_attachments", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
     t.bigint "record_id", null: false
@@ -73,7 +73,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
   end
 
-  create_table "active_storage_blobs", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "active_storage_blobs", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.string "key", null: false
     t.string "filename", null: false
     t.string "content_type"
@@ -85,7 +85,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
-  create_table "active_storage_variant_records", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "active_storage_variant_records", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
@@ -156,7 +156,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.check_constraint "json_valid(`person_ids`)", name: "person_ids"
   end
 
-  create_table "bmid_title", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "bmid_title", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.string "title", limit: 64, null: false
     t.integer "title_line", limit: 2, null: false
     t.integer "sort_index", limit: 2, null: false
@@ -201,7 +201,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["person_id"], name: "person_id"
   end
 
-  create_table "bug_report", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "bug_report", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.text "description", null: false
     t.string "url"
@@ -257,7 +257,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["source_person_id"], name: "email_history_source_person_id_index"
   end
 
-  create_table "email_suppression", charset: "utf8mb4", collation: "utf8mb4_general_ci", comment: "addresses that bounced for good or reported Clubhouse email as spam", force: :cascade do |t|
+  create_table "email_suppression", charset: "latin1", collation: "latin1_swedish_ci", comment: "addresses that bounced for good or reported Clubhouse email as spam", force: :cascade do |t|
     t.string "email", null: false
     t.column "reason", "enum('bounce','complaint')", null: false
     t.string "sub_type", comment: "the latest report's bounceSubType or complaintSubType"
@@ -326,23 +326,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.integer "person_id", unsigned: true
     t.integer "target_person_id", unsigned: true
     t.string "event", limit: 191, null: false
+    t.text "message", null: false
     t.text "data", size: :long
     t.datetime "created_at", precision: nil, null: false
+    t.string "ip", limit: 191
+    t.string "user_agent", limit: 191
     t.index ["created_at", "id"], name: "index_legacy_log_on_created_at_and_id"
     t.index ["event"], name: "index_legacy_log_on_event"
     t.index ["log_id"], name: "index_legacy_log_on_log_id", unique: true
     t.index ["person_id", "created_at"], name: "index_legacy_log_on_person_id_and_created_at"
+    t.index ["person_id", "event", "created_at"], name: "index_legacy_log_on_person_id_and_event_and_created_at"
     t.index ["target_person_id", "created_at"], name: "index_legacy_log_on_target_person_id_and_created_at"
-  end
-
-  create_table "log", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", comment: "logs certain actions", force: :cascade do |t|
-    t.bigint "user_person_id", comment: "person_id of user making change", unsigned: true
-    t.bigint "current_person_id", comment: "person_id of person affected by change (if any)", unsigned: true
-    t.timestamp "occurred", default: -> { "current_timestamp()" }, null: false, comment: "time log entry created"
-    t.string "event", limit: 500, null: false, comment: "summary of what was done"
-    t.index ["current_person_id"], name: "current_person_id"
-    t.index ["occurred"], name: "occurred"
-    t.index ["user_person_id"], name: "user_person_id"
+    t.index ["target_person_id", "event", "created_at"], name: "index_legacy_log_on_target_person_id_and_event_and_created_at"
   end
 
   create_table "mail_log", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -367,7 +362,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["sender_id", "created_at"], name: "mail_log_sender_id_created_at_index"
   end
 
-  create_table "mail_template", charset: "utf8mb4", collation: "utf8mb4_general_ci", comment: "wording of the messages the Clubhouse sends", force: :cascade do |t|
+  create_table "mail_template", charset: "latin1", collation: "latin1_swedish_ci", comment: "wording of the messages the Clubhouse sends", force: :cascade do |t|
     t.string "tag", limit: 191, null: false, comment: "which message this is the wording for, e.g. welcome_mailer/notify"
     t.string "description", limit: 191, null: false, comment: "what the message is for"
     t.string "subject", limit: 500, comment: "subject line; empty for a shared piece"
@@ -379,6 +374,44 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["tag"], name: "index_mail_template_on_tag", unique: true
+  end
+
+  create_table "mailing_list", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.string "google_group_id", null: false
+    t.string "email", null: false
+    t.string "name", null: false
+    t.bigint "team_id", unsigned: true
+    t.datetime "synced_at", precision: nil
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["google_group_id"], name: "index_mailing_list_on_google_group_id", unique: true
+    t.index ["team_id"], name: "index_mailing_list_on_team_id"
+  end
+
+  create_table "mailing_list_member", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.bigint "mailing_list_id", null: false, unsigned: true
+    t.string "google_member_id", null: false
+    t.string "email", null: false
+    t.string "alias_email"
+    t.bigint "person_id"
+    t.boolean "is_special", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["mailing_list_id", "google_member_id"], name: "index_mailing_list_member_on_list_and_member", unique: true
+    t.index ["person_id"], name: "index_mailing_list_member_on_person_id"
+  end
+
+  create_table "mailing_list_member_log", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.bigint "mailing_list_id", null: false, unsigned: true
+    t.bigint "person_id", null: false
+    t.string "event", null: false
+    t.string "email", null: false
+    t.string "old_email"
+    t.string "reason", null: false
+    t.bigint "actor_id"
+    t.datetime "created_at", precision: nil, null: false
+    t.index ["mailing_list_id", "created_at"], name: "index_mailing_list_member_log_on_list_and_created_at"
+    t.index ["person_id", "created_at"], name: "index_mailing_list_member_log_on_person_id_and_created_at"
   end
 
   create_table "manual_review", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
@@ -440,7 +473,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["position_id", "year", "course_for"], name: "online_course_position_id_year_course_for_unique", unique: true
   end
 
-  create_table "outbound_links", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "outbound_links", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.string "url", limit: 1024, null: false
     t.string "url_type", null: false
     t.integer "person_id"
@@ -630,7 +663,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["year", "mvr_eligible"], name: "person_event_year_mvr_eligible_index"
   end
 
-  create_table "person_favorite", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "person_favorite", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.string "path", limit: 191, null: false
     t.datetime "created_at", null: false
@@ -737,7 +770,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.check_constraint "`sender_type` <> 'team' or `sender_team_id` is not null", name: "person_message_team_sender_named"
   end
 
-  create_table "person_message_member", id: :integer, charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "person_message_member", id: :integer, charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.integer "person_message_id", null: false
     t.bigint "person_id", null: false
     t.boolean "archived", default: false, null: false
@@ -756,7 +789,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["motd_id"], name: "fk_rails_e0ba5f229e"
   end
 
-  create_table "person_on_site", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "person_on_site", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.bigint "creator_person_id"
     t.column "action", "enum('on-site','off-site')", null: false
@@ -779,14 +812,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["position_id"], name: "fk_rails_f2050905cc"
   end
 
-  create_table "person_page_visit", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "person_page_visit", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.string "path", limit: 191, null: false
     t.datetime "visited_at", null: false
     t.index ["person_id", "path"], name: "index_person_page_visit_on_person_id_and_path", unique: true
   end
 
-  create_table "person_passkey", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "person_passkey", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.bigint "added_by_person_id"
     t.string "external_id", limit: 1364, null: false, collation: "ascii_bin"
@@ -829,7 +862,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.text "cropping", size: :long, default: "{}", null: false, collation: "utf8mb4_bin"
     t.index ["person_id"], name: "person_photo_person_id_index"
     t.check_constraint "json_valid(`cropping`)", name: "cropping"
-    t.check_constraint "json_valid(`reject_reasons`)", name: "reject_reasons_json"
+    t.check_constraint "json_valid(`reject_reasons`)", name: "reject_reasons"
   end
 
   create_table "person_pod", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -1163,7 +1196,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.boolean "new_user_eligible", default: false, null: false
   end
 
-  create_table "sessions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "sessions", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.string "session_id", null: false
     t.string "ip_address"
     t.string "user_agent"
@@ -1183,7 +1216,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["name"], name: "setting_name_unique", unique: true
   end
 
-  create_table "shift_coverage_group", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "shift_coverage_group", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.string "slug", null: false
     t.string "title", null: false
     t.text "base_position_ids", size: :long, null: false, collation: "utf8mb4_bin"
@@ -1192,7 +1225,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.check_constraint "json_valid(`base_position_ids`)", name: "base_position_ids"
   end
 
-  create_table "shift_coverage_position", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "shift_coverage_position", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.string "title", null: false
     t.text "position_ids", size: :long, null: false, collation: "utf8mb4_bin"
     t.boolean "count_only", default: false, null: false
@@ -1223,6 +1256,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.integer "ends_time", default: 0, null: false
     t.bigint "parent_signup_slot_id", unsigned: true
     t.boolean "did_notify", default: false, null: false
+    t.column "venue", "enum('event-season','non-event','multisite','virtual')", default: "event-season", null: false
     t.index ["begins"], name: "begins"
     t.index ["begins_year", "position_id"], name: "slot_begins_year_position_id_index"
     t.index ["parent_signup_slot_id"], name: "slot_parent_signup_slot_id_index"
@@ -1231,7 +1265,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["trainer_slot_id"], name: "fk_rails_65977306a3"
   end
 
-  create_table "solid_cable_messages", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_cable_messages", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.binary "channel", limit: 1024, null: false
     t.binary "payload", size: :long, null: false
     t.datetime "created_at", null: false
@@ -1241,7 +1275,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["created_at"], name: "index_solid_cable_messages_on_created_at"
   end
 
-  create_table "solid_queue_batch_executions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_queue_batch_executions", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.bigint "job_id", null: false
     t.bigint "batch_id", null: false
     t.datetime "created_at", null: false
@@ -1249,7 +1283,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["job_id"], name: "index_solid_queue_batch_executions_on_job_id", unique: true
   end
 
-  create_table "solid_queue_batches", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_queue_batches", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.string "active_job_batch_id"
     t.string "description"
     t.text "on_finish"
@@ -1268,7 +1302,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["finished_at"], name: "index_solid_queue_batches_on_finished_at"
   end
 
-  create_table "solid_queue_blocked_executions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_queue_blocked_executions", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.bigint "job_id", null: false
     t.string "queue_name", null: false
     t.integer "priority", default: 0, null: false
@@ -1280,7 +1314,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["job_id"], name: "index_solid_queue_blocked_executions_on_job_id", unique: true
   end
 
-  create_table "solid_queue_claimed_executions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_queue_claimed_executions", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.bigint "job_id", null: false
     t.bigint "process_id"
     t.datetime "created_at", null: false
@@ -1288,14 +1322,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["process_id", "job_id"], name: "index_solid_queue_claimed_executions_on_process_id_and_job_id"
   end
 
-  create_table "solid_queue_failed_executions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_queue_failed_executions", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.bigint "job_id", null: false
     t.text "error"
     t.datetime "created_at", null: false
     t.index ["job_id"], name: "index_solid_queue_failed_executions_on_job_id", unique: true
   end
 
-  create_table "solid_queue_jobs", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_queue_jobs", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.string "queue_name", null: false
     t.string "class_name", null: false
     t.text "arguments"
@@ -1315,13 +1349,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["scheduled_at", "finished_at"], name: "index_solid_queue_jobs_for_alerting"
   end
 
-  create_table "solid_queue_pauses", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_queue_pauses", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.string "queue_name", null: false
     t.datetime "created_at", null: false
     t.index ["queue_name"], name: "index_solid_queue_pauses_on_queue_name", unique: true
   end
 
-  create_table "solid_queue_processes", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_queue_processes", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.string "kind", null: false
     t.datetime "last_heartbeat_at", null: false
     t.bigint "supervisor_id"
@@ -1335,7 +1369,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["supervisor_id"], name: "index_solid_queue_processes_on_supervisor_id"
   end
 
-  create_table "solid_queue_ready_executions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_queue_ready_executions", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.bigint "job_id", null: false
     t.string "queue_name", null: false
     t.integer "priority", default: 0, null: false
@@ -1345,7 +1379,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["queue_name", "priority", "job_id"], name: "index_solid_queue_poll_by_queue"
   end
 
-  create_table "solid_queue_recurring_executions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_queue_recurring_executions", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.bigint "job_id", null: false
     t.string "task_key", null: false
     t.datetime "run_at", null: false
@@ -1354,7 +1388,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["task_key", "run_at"], name: "index_solid_queue_recurring_executions_on_task_key_and_run_at", unique: true
   end
 
-  create_table "solid_queue_recurring_tasks", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_queue_recurring_tasks", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.string "key", null: false
     t.string "schedule", null: false
     t.string "command", limit: 2048
@@ -1370,7 +1404,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["static"], name: "index_solid_queue_recurring_tasks_on_static"
   end
 
-  create_table "solid_queue_scheduled_executions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_queue_scheduled_executions", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.bigint "job_id", null: false
     t.string "queue_name", null: false
     t.integer "priority", default: 0, null: false
@@ -1380,7 +1414,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
     t.index ["scheduled_at", "priority", "job_id"], name: "index_solid_queue_dispatch_all"
   end
 
-  create_table "solid_queue_semaphores", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+  create_table "solid_queue_semaphores", charset: "latin1", collation: "latin1_swedish_ci", force: :cascade do |t|
     t.string "key", null: false
     t.integer "value", default: 1, null: false
     t.datetime "expires_at", null: false
@@ -1643,6 +1677,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
   add_foreign_key "broadcast", "alert"
   add_foreign_key "broadcast_message", "broadcast"
   add_foreign_key "email_history", "person"
+  add_foreign_key "mailing_list", "team", on_delete: :nullify
+  add_foreign_key "mailing_list_member", "mailing_list", on_delete: :cascade
+  add_foreign_key "mailing_list_member", "person", on_delete: :nullify
   add_foreign_key "oauth_code", "oauth_client"
   add_foreign_key "oauth_code", "person"
   add_foreign_key "online_course", "position"

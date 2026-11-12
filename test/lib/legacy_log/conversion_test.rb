@@ -7,11 +7,26 @@ class LegacyLog::ConversionTest < ActiveSupport::TestCase
   OCCURRED = Time.zone.parse("2015-06-01 12:00:00")
   UNREADABLE = "=traineestatus.passed=0,notes=@id=LIMIT1"
 
+  # `log` is not in the schema (DropLog); the conversion runs where the
+  # maintainer restored it. A temporary table stands in: it belongs to this
+  # connection alone, and creating one does not commit the test's transaction.
   setup do
-    Clubhouse1Log.delete_all
+    connection = ActiveRecord::Base.connection
+    connection.create_table :log, temporary: true do |t|
+      t.bigint :user_person_id, unsigned: true
+      t.bigint :current_person_id, unsigned: true
+      t.timestamp :occurred, null: false
+      t.string :event, limit: 500, null: false
+    end
+    Clubhouse1Log.reset_column_information
     LegacyLog.delete_all
     @actor = person(:active_ranger)
     @subject = person(:auditor_ranger)
+  end
+
+  teardown do
+    ActiveRecord::Base.connection.drop_table :log, temporary: true
+    Clubhouse1Log.reset_column_information
   end
 
   # @return [Integer] the new log row's id
@@ -33,7 +48,9 @@ class LegacyLog::ConversionTest < ActiveSupport::TestCase
     assert_equal "person-slot-add", row.event
     assert_equal @actor.id, row.person_id
     assert_equal @subject.id, row.target_person_id
-    assert_equal 386, row.data["slot_id"]
+    assert_equal({ "slot_id" => 386, "legacy" => { "event" => "+personslot(personid,slotid)(#{@subject.id},386)", "log_id" => kept } }, row.data)
+    assert_nil row.ip
+    assert_nil row.user_agent
     assert_equal OCCURRED, row.created_at
     assert_equal 1, conversion.counts[:converted]
     assert_equal 0, conversion.counts[:unknown]
@@ -47,7 +64,7 @@ class LegacyLog::ConversionTest < ActiveSupport::TestCase
 
     row = LegacyLog.find_by!(log_id: kept)
     assert_equal "unknown", row.event
-    assert_equal({ "event" => UNREADABLE, "log_id" => kept, "target_source" => "session" }, row.data)
+    assert_equal({ "legacy" => { "event" => UNREADABLE, "log_id" => kept, "target_source" => "session" } }, row.data)
     assert_equal @subject.id, row.target_person_id
     assert_equal 1, conversion.counts[:unknown]
   end
@@ -62,19 +79,26 @@ class LegacyLog::ConversionTest < ActiveSupport::TestCase
     assert_match "Targets differing from the session's person: 1", conversion.report
   end
 
-  test "skips events, diagnostics, session purges and custom-field values, and counts each" do
+  test "skips events, diagnostics, session purges and custom fields, and counts each" do
     log("#login rangers")
     log("!DB SQL error")
     log("-sessions@expires<NOW()")
     log("+personxfield(personid,xfieldid,val,phonetic)(687,1,,)ONDUPLICATEKEY=val=,phonetic=")
+    log("=xfield.label=Shoe size@id=3")
+    log("=xgroup.name=Sizes@id=1")
+    log("+xoption(xfieldid,val)(3,Large)")
+    # One the grammar cannot read is skipped all the same, never kept as unknown.
+    log("-xoption@id=LIMIT1")
     log("=person.status=alpha@id=1")
 
     conversion = run_conversion
 
     assert_equal 1, LegacyLog.count
-    assert_equal({ read: 5, events: 1, diagnostics: 1, sessions: 1, custom_fields: 1, converted: 1 },
+    assert_equal({ read: 9, events: 1, diagnostics: 1, sessions: 1, custom_fields: 5, converted: 1 },
                  conversion.counts.slice(:read, :events, :diagnostics, :sessions, :custom_fields, :converted))
-    assert_match "Skipped: 1 events (#), 1 diagnostics (!), 1 sessions (sessions), 1 custom_fields (personxfield)",
+    assert_equal 0, conversion.counts[:unknown]
+    assert_match "Skipped: 1 events (#), 1 diagnostics (!), 1 sessions (sessions), " \
+                 "5 custom_fields (personxfield, xfield, xgroup, xoption)",
                  conversion.report
   end
 

@@ -39,14 +39,16 @@ class LegacyLog::ConverterTest < ActiveSupport::TestCase
 
     assert_equal 7, row[:person_id]
     assert_equal 687, row[:target_person_id]
-    assert_equal 9, row[:data]["session_person_id"]
+    assert_equal 9, row[:data]["legacy"]["session_person_id"]
     assert_equal OCCURRED, row[:created_at]
   end
 
   test "the session's person is kept only when it differs from the target" do
-    assert_nil convert("=person.status=alpha@id=9", session: 9)[:data]["session_person_id"]
-    assert_equal 9, convert("=person.onsite=0@onsite!=0", session: 9)[:data]["session_person_id"]
-    assert_nil convert("=person.onsite=0@onsite!=0", session: 0)[:data]["session_person_id"]
+    session_of = ->(statement, session) { convert(statement, session:)[:data]["legacy"]["session_person_id"] }
+
+    assert_nil session_of.call("=person.status=alpha@id=9", 9)
+    assert_equal 9, session_of.call("=person.onsite=0@onsite!=0", 9)
+    assert_nil session_of.call("=person.onsite=0@onsite!=0", 0)
   end
 
   test "a person named as zero or NULL is no one" do
@@ -60,29 +62,52 @@ class LegacyLog::ConverterTest < ActiveSupport::TestCase
     assert_equal 9, convert("+contactlog(senderpersonid,recipientpersonid,type)(5,9,mentor)")[:target_person_id]
   end
 
-  test "data carries the statement and its ids under the keys the Action Logs page reads" do
-    data = convert("=slot.max=15@id=212&positionid=9")[:data]
+  test "an update's data is the new values and its ids, under today's column names" do
+    row = convert("=timesheet.offduty=2015-08-30,positionid=9@id=212&personid=5", session: 5)
 
-    assert_equal({ "event" => "=slot.max=15@id=212&positionid=9", "log_id" => 42, "table" => "slot",
-                   "operation" => "update", "set" => "max=15", "where" => "id=212&positionid=9",
-                   "id" => 212, "position_id" => 9, "session_person_id" => 9 }, data)
-
-    data = convert("+timesheetlog.action=signon,personid=1265,createpersonid=1287,timesheetid=35666")[:data]
-
-    assert_equal 1287, data["createpersonid"]
-    assert_equal 35666, data["timesheetid"]
-    assert_nil data["personid"]
-    assert_equal "action=signon,personid=1265,createpersonid=1287,timesheetid=35666", data["set"]
-    assert_nil data["truncated"]
+    assert_equal({ "off_duty" => "2015-08-30", "position_id" => 9, "id" => 212, "person_id" => 5,
+                   "legacy" => { "event" => "=timesheet.offduty=2015-08-30,positionid=9@id=212&personid=5",
+                                 "log_id" => 42 } }, row[:data])
   end
 
-  test "a cut statement says so, and keeps what it still names" do
+  test "an insert's data pairs its columns with its values" do
+    row = convert("+timesheet(personid,positionid,onduty)(5,9,NOW())")
+
+    assert_equal({ "person_id" => 5, "position_id" => 9, "on_duty" => "NOW()" }, row[:data].except("legacy"))
+  end
+
+  test "an insert whose value holds a comma pairs nothing, and keeps the ids it can trust" do
+    row = convert("+personmessage(personid,subject)(5,Hey,there)")
+
+    assert_equal({ "person_id" => 5 }, row[:data].except("legacy"))
+  end
+
+  test "a delete's data is the ids its conditions name" do
+    row = convert("-timesheet@id=212")
+
+    assert_equal({ "id" => 212 }, row[:data].except("legacy"))
+  end
+
+  test "a sign-up and a grant keep what action_logs keeps: the slot id, or a list of one" do
+    assert_equal({ "slot_id" => 386 }, convert("+personslot(personid,slotid)(687,386)")[:data].except("legacy"))
+    assert_equal({ "slot_id" => 15 }, convert("-personslot@personid=687&slotid=15")[:data].except("legacy"))
+    assert_equal({ "position_ids" => [26] }, convert("+personposition(1,26)")[:data].except("legacy"))
+    assert_equal({ "role_ids" => [101] }, convert("-personrole@personid=202&roleid=101")[:data].except("legacy"))
+  end
+
+  test "a column Clubhouse 3 no longer has keeps its Classic name" do
+    data = convert("=person.oldbarcode=77,status=alpha@id=5")[:data]
+
+    assert_equal({ "oldbarcode" => "77", "status" => "alpha", "id" => 5 }, data.except("legacy"))
+  end
+
+  test "a cut statement says so, pairs nothing, and keeps what it still names" do
     head = "+accessdocumentchanges(tablename,recordid,operation,changes)(accessdocument,170152,modify,[["
     data = convert("#{head}#{"x" * (499 - head.length)}+")[:data]
 
-    assert data["truncated"]
-    assert_equal 170152, data["recordid"]
-    assert_equal "tablename,recordid,operation,changes", data["columns"]
+    assert data["legacy"]["truncated"]
+    assert_equal 170152, data["record_id"]
+    assert_nil data["operation"]
   end
 
   test "an unknown row keeps the raw event and the session's person" do
@@ -90,17 +115,20 @@ class LegacyLog::ConverterTest < ActiveSupport::TestCase
 
     assert_equal "unknown", row[:event]
     assert_equal 9, row[:target_person_id]
-    assert_equal({ "event" => "=traineestatus.passed=0,notes=@id=LIMIT1", "log_id" => 42,
-                   "target_source" => "session" }, row[:data])
+    assert_equal({ "legacy" => { "event" => "=traineestatus.passed=0,notes=@id=LIMIT1", "log_id" => 42,
+                                 "target_source" => "session" } }, row[:data])
   end
 
-  test "skips events, diagnostics, session purges and custom-field values" do
+  test "skips events, diagnostics, session purges and custom fields" do
     assert_equal :events, LegacyLog::Converter.skip_reason("#login rangers")
     assert_equal :diagnostics, LegacyLog::Converter.skip_reason("!DB SQL error")
     assert_equal :sessions, LegacyLog::Converter.skip_reason("-sessions@expires<NOW()")
     assert_equal :custom_fields, LegacyLog::Converter.skip_reason("+personxfield(personid,xfieldid,val)(687,1,)")
     assert_equal :custom_fields, LegacyLog::Converter.skip_reason("=personxfield.val=x@personid=1&xfieldid=2")
     assert_equal :custom_fields, LegacyLog::Converter.skip_reason("-personxfield@personid=1")
+    assert_equal :custom_fields, LegacyLog::Converter.skip_reason("=xfield.label=Shoe size@id=3")
+    assert_equal :custom_fields, LegacyLog::Converter.skip_reason("+xgroup(name)(Sizes)")
+    assert_equal :custom_fields, LegacyLog::Converter.skip_reason("-xoption@id=4")
     assert_nil LegacyLog::Converter.skip_reason("+personslot(personid,slotid)(687,386)")
   end
 end
