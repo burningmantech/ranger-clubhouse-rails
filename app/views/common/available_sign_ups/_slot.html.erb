@@ -90,6 +90,7 @@
     status_indicator:
   } do %>
     <%= datetime_format slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr %>
+    <%= slot_virtual_venue_badge(slot) %>
   <% end %>
 
   <% if signed_up && has_overlap %>

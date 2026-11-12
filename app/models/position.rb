@@ -83,6 +83,7 @@ class Position < ApplicationRecord
 
   DPW_RANGER = 105
   NVO_RANGER = 168
+  DPW_RANGER_LONG = 250
 
   DEEP_FREEZE = 38
 

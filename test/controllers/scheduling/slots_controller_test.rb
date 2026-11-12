@@ -113,6 +113,19 @@ class Scheduling::SlotsControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /Child: ##{child_slot.id}/
   end
 
+  # Each row reads as Position Records reads: the time is the record's name,
+  # with the description and id beneath it, and the venue among its attributes.
+  test "position page lays each slot out as a record with its venue" do
+    slot = create_slot(venue: Slot::VENUE_MULTISITE)
+
+    get scheduling_slots_position_path(@position.id)
+
+    assert_select "#slot-#{slot.id} th[scope=row]", text: /Morning · ##{slot.id}/
+    # The short label shows; its hint rides in the title.
+    assert_select "#slot-#{slot.id} td span[title=?]", slot.venue_label, text: slot.venue_short_label
+    assert_select "#slot-#{slot.id} a[href=?]", scheduling_edit_slot_path(slot, year: 2026), text: "Edit Slot"
+  end
+
   test "unknown position redirects back to the index" do
     get scheduling_slots_position_path(999_999)
 
@@ -133,6 +146,40 @@ class Scheduling::SlotsControllerTest < ActionDispatch::IntegrationTest
     assert slot.active
     assert_redirected_to scheduling_slots_position_path(@position.id, year: 2026, anchor: "slot-#{slot.id}")
     assert_equal "Slot created.", flash[:success]
+  end
+
+  test "creates a slot with a venue, defaulting to event season" do
+    post scheduling_slots_path, params: {
+      slot: { position_id: @position.id, description: "Zoom", begins: "2026-08-27 18:00",
+              ends: "2026-08-27 20:00", max: 5, venue: Slot::VENUE_VIRTUAL }
+    }
+    assert_equal Slot::VENUE_VIRTUAL, Slot.order(:id).last.venue
+
+    get scheduling_new_slot_path
+
+    assert_select "select[name='slot[venue]'] option[selected][value=?]", Slot::VENUE_EVENT_SEASON
+  end
+
+  test "new preselects multisite for a DPW/NVO position" do
+    get scheduling_new_slot_path(position_id: Position::NVO_RANGER)
+
+    assert_select "select[name='slot[venue]'] option[selected][value=?]", Slot::VENUE_MULTISITE
+
+    get scheduling_new_slot_path(position_id: @position.id)
+
+    assert_select "select[name='slot[venue]'] option[selected][value=?]", Slot::VENUE_EVENT_SEASON
+  end
+
+  test "create with an unknown venue re-renders the form" do
+    assert_no_difference "Slot.count" do
+      post scheduling_slots_path, params: {
+        slot: { position_id: @position.id, description: "Somewhere", begins: "2026-08-27 18:00",
+                ends: "2026-08-27 20:00", max: 5, venue: "moon" }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "body", text: /Pick a venue from the list/
   end
 
   test "create failure re-renders the form with errors" do
@@ -180,12 +227,13 @@ class Scheduling::SlotsControllerTest < ActionDispatch::IntegrationTest
         save_as_new: "1",
         slot: { position_id: @child_position.id, description: "Cloned", begins: "2026-08-25 06:45",
                 ends: "2026-08-25 12:00", timezone: "America/Los_Angeles", max: 10,
-                trainer_slot_id: trainer_slot.id }
+                venue: Slot::VENUE_NON_EVENT, trainer_slot_id: trainer_slot.id }
       }
     end
 
     clone = Slot.order(:id).last
     assert_equal "Cloned", clone.description
+    assert_equal Slot::VENUE_NON_EVENT, clone.venue
     assert_nil clone.trainer_slot_id
     assert_equal "Original", slot.reload.description
     assert_redirected_to scheduling_edit_slot_path(clone, year: 2026)
@@ -288,7 +336,7 @@ class Scheduling::SlotsControllerTest < ActionDispatch::IntegrationTest
 
   test "repeat duplicates a slot without links" do
     trainer_slot = create_slot(position: @parent_position)
-    slot = create_slot(position: @child_position, trainer_slot_id: trainer_slot.id)
+    slot = create_slot(position: @child_position, trainer_slot_id: trainer_slot.id, venue: Slot::VENUE_VIRTUAL)
 
     assert_difference "Slot.count", 1 do
       post scheduling_repeat_slot_path(slot)
@@ -297,6 +345,7 @@ class Scheduling::SlotsControllerTest < ActionDispatch::IntegrationTest
     copy = Slot.order(:id).last
     assert_equal slot.begins, copy.begins
     assert_equal slot.description, copy.description
+    assert_equal Slot::VENUE_VIRTUAL, copy.venue
     assert_nil copy.trainer_slot_id
     assert_equal "The slot has been repeated.", flash[:success]
   end

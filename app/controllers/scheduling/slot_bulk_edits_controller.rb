@@ -65,7 +65,7 @@ class Scheduling::SlotBulkEditsController < ApplicationController
   end
 
   # Filter params live under filter[...] so they never collide with the
-  # top-level description/max/url fields applied to the selected slots.
+  # top-level fields applied to the selected slots.
   def filter_params
     scoped_params(:filter, :active, :description, :date, :time, :datetime).to_h.compact_blank
   end
@@ -94,7 +94,7 @@ class Scheduling::SlotBulkEditsController < ApplicationController
 
   # The fields to apply to every selected slot; blank fields are skipped.
   def column_params
-    columns = params.permit(:description, :max, :url).to_h.compact_blank
+    columns = params.permit(:description, :max, :url, :venue).to_h.compact_blank
     columns["position_id"] = params[:new_position_id] if params[:new_position_id].present?
     columns
   end

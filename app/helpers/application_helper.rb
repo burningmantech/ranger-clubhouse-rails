@@ -102,6 +102,22 @@ module ApplicationHelper
   # A table cell holding several values: one per line, or a dash when there are
   # none. Used where a row carries a short list -- role grants, attribute
   # labels -- that a run-on sentence would make unscannable.
+  # A record's row header, as Team Records, Position Records and the slots page
+  # show one: a check (active) or a cross (inactive) beside the record's name,
+  # with whatever describes it -- a subline, badges -- from the block beneath.
+  def record_title(title, active:, &block)
+    icon = if active
+             fa_icon("circle-check", :solid, class: "icon-success mt-1")
+           else
+             fa_icon("circle-xmark", :solid, class: "icon-error mt-1")
+           end
+    details = capture(&block) if block
+
+    tag.div(class: "flex items-start gap-2") do
+      safe_join([icon, tag.div(safe_join([tag.div(title, class: "font-semibold text-heading"), details].compact))])
+    end
+  end
+
   def value_list(items)
     return value_or_dash(nil) if items.blank?
 
@@ -217,6 +233,13 @@ module ApplicationHelper
       "Note: The #{is_training ? "time spent in this training does" : "on duty hours volunteered in this position do"} not qualify for provisions (meals, showers, clothing, or an event radio).
         This applies to provisions only and does not affect any credit earnings or ticket eligibility."
     end
+  end
+
+  # Volunteers see a slot's venue only when it is virtual. Each page puts it
+  # after the shift's time or description, never in a card's title row, where
+  # it crowded out the description on a phone.
+  def slot_virtual_venue_badge(slot)
+    ui_badge slot.venue_label, :secondary, icon: "laptop" if slot.virtual?
   end
 
   def back_to(label, url, options = {})

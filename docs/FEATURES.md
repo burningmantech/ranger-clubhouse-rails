@@ -119,7 +119,7 @@ Trap: Radio eligibility (`Provision.retrieve_usable_for_person_ids`), `event_per
 Used by: Me › Clubhouse Dashboard (`Me::DashboardController`), Person › Dashboard (`Person::DashboardController`)
 Owner: `Dashboard` (`app/lib/dashboard.rb`), `DashboardTask` + `DashboardTasks::*` (`app/lib/dashboard_task.rb`, `app/lib/dashboard_tasks.rb`, `app/lib/dashboard_tasks/`), `Milestones` → `DashboardFacts` (`app/lib/milestones.rb`, `app/lib/dashboard_facts.rb`)
 Touches: `person_event`, `person_slot`, `slot`, `position`, `person_position`, `timesheet`, `person_photo`, `survey`, `trainee_status`, `person_online_course`, `access_document`, `provision`, `bmid`, `vehicle`, `document`, `event_dates`, `setting`
-Verify: `test/lib/dashboard_test.rb`, `test/lib/dashboard_tasks/partial_coverage_test.rb`, `test/controllers/me/dashboard_controller_test.rb`, `test/controllers/person/dashboard_controller_test.rb`, `test/lib/dashboard_facts_test.rb`
+Verify: `test/lib/dashboard_test.rb`, `test/lib/dashboard_tasks/partial_coverage_test.rb`, `test/controllers/me/dashboard_controller_test.rb`, `test/controllers/person/dashboard_controller_test.rb`, `test/lib/dashboard_facts_test.rb`, `test/helpers/partials_render_test.rb` (the ARTs card's virtual badge)
 Trap: A task's `partial:` (`app/views/dashboard_tasks/_<name>.html.erb`) is checked only by `test/lib/dashboard_tasks/partial_coverage_test.rb`; unit tests never render — render-test with a `DashboardFactsFactory` archetype (bonked, past-prospective: no groups).
 Trap: `period` / `skip_period` apply only on the ranger/echelon path (`Dashboard#process_step_group`), inert on applicant and auditor groups; a new task runs only once listed in `RANGER_STEPS`, `ECHELON_STEPS`, `APPLICANT_TASK_GROUPS` or the auditor step lists.
 
@@ -146,6 +146,7 @@ Owner: `ScheduleConcern` (`app/controllers/concerns/schedule_concern.rb`), `Avai
 Touches: `person_slot` (w), `slot` (w), `action_logs` (w), `position`, `person_position`, `position_credit`
 Verify: `test/controllers/me/schedule_controller_test.rb`, `test/controllers/me/available_sign_ups_controller_test.rb`, `test/controllers/person/scheduling_controller_test.rb`, `test/controllers/hq/scheduling_controller_test.rb`, `test/controllers/hq/available_sign_ups_controller_test.rb`
 Trap: Both concerns set `@person ||= current_user` — Person and HQ controllers must include `PersonConcern` / `HqConcern` first, or the operator is scheduled instead of the subject.
+Trap: Volunteers see a slot's venue only when it is virtual: a "Virtual / Online" badge (`ApplicationHelper#slot_virtual_venue_badge`) inline after the shift time on the sign-up card (`common/available_sign_ups/_slot`) and the signed-up row (`common/schedule/_signed_up_row`), and after the description in both ART "When/Where" tables (`dashboard_tasks/_dashboard_arts`, `me/operational_summary/_training`) -- never in a card's title row, where `common/_entry_card_grid`'s `badges:` slot does not wrap and spilled past the card at 375px; the other three venues print nothing (owner's ruling, 2026-11-11). The training preview, sign-up emails, the calendar export and the SMS NEXT reply show no venue.
 Trap: `ScheduleConcern#destroy` reports a failed removal under the `success:` flash ("The shift could not removed.") — a failure test must not expect `flash[:error]`.
 
 ### Event qualifications (TicketsAndProvisionsProgress)
@@ -825,7 +826,7 @@ Gate: every status except AUDITOR, BONKED and UBERBONKED (`authorize_status exce
 Controller: `app/controllers/me/operational_summary_controller.rb` (`index`)
 Owner: `PersonEventInfo` (`app/lib/person_event_info.rb`), `Membership` (`app/lib/membership.rb`), `MealInfo` (`app/lib/meal_info.rb`)
 Touches: `person_position`, `position`, `person_team`, `team`, `team_manager`, `person_certification`, `certification`, `trainee_status`, `trainer_status`, `slot`, `person_slot`, `provision`, `bmid`, `access_document`, `person_online_course`, `vehicle`, `person_event`, `event_dates`, `timesheet`, `setting`, `document`
-Verify: `test/controllers/me/team_documents_controller_test.rb` (the Teams & Positions document links)
+Verify: `test/controllers/me/team_documents_controller_test.rb` (the Teams & Positions document links), `test/helpers/partials_render_test.rb` (the ART table's virtual badge)
 Trap: `PersonEventInfo.find_for_person_year` assumes `Position::TRAINING` is among the person's training positions: with none it `Position.find`s that row (unfixtured; tests must create it), and with only an ART one `delete_at(nil)` raises TypeError.
 
 ### Me › Team Document
@@ -893,6 +894,7 @@ Touches: `person_slot` (w), `slot` (w), `person` (w), `action_logs` (w), `positi
 Verify: `test/controllers/me/schedule_controller_test.rb`, `test/system/me/schedule_signups_card_test.rb`, `test/lib/scheduling/query_test.rb`, `test/lib/scheduling/signup_characterization_test.rb`, `test/controllers/person/scheduling_controller_test.rb`
 Trap: My Schedule calls `Scheduling::Query.partition_by_time(..., cutoff: :end_time)`, Available Sign-Ups `cutoff: :start_time`, so a shift under way is upcoming on one and past on the other — deliberate; keep them different.
 Trap: `ScheduleConcern#destroy` reports a refused removal as a `success:` flash ("The shift could not removed.") — check the `Scheduling::Signup.remove` verdict (`Scheduling::Verdict::Removed`), not the flash key.
+Trap: The page lists only the selected year's sign-ups (`begins_year`), so a test that dates its slots by an offset from today (`30.days.from_now`) drops them across New Year: pin the clock with `travel_to` a date inside the year. A slot's venue shows only as the virtual badge -- see Schedule / Sign-Ups pages above.
 
 ### Me › Available Sign-Ups
 Reach it: `GET /me/schedule/sign-ups` → linked from Me › Schedule / Sign-Ups; position `GET /me/schedule/sign-ups/position/:position_id`; sign up `POST /me/schedule/sign-ups/position/:position_id/slot/:slot_id`; remove `DELETE /me/schedule/sign-ups/position/:position_id/slot/:slot_id`
@@ -902,6 +904,7 @@ Owner: `Scheduling::Signup` (`app/lib/scheduling/signup.rb`; not `Scheduling::Ma
 Touches: `person_slot` (w), `slot` (w), `person` (w), `action_logs` (w), `position`, `person_position`, `position_credit`, `person_event`, `person_online_course`, `timesheet`, `setting`
 Verify: `test/controllers/me/available_sign_ups_controller_test.rb`, `test/controllers/hq/available_sign_ups_controller_test.rb`, `test/system/me/available_signups_shared_partials_test.rb`, `test/lib/scheduling/signup_characterization_test.rb`, `test/lib/scheduling/permission_test.rb`
 Trap: `Scheduling::ActiveRecordSlotStore#insert_signup` checks capacity against the denormalized `slot.signed_up`, which a bare `PersonSlot.create!` never increments — create sign-ups (tests too) through `Scheduling::Signup.add`.
+Trap: A slot's venue shows on the cards only as the virtual badge -- see Schedule / Sign-Ups pages above.
 Trap: A trainer-bound slot's capacity is `Scheduling::Query::ScheduleEntry#max_effective` (trainer sign-ups × `slot.max`, from `Scheduling::SlotCapacity#effective_max`), which the card, Add button and `Signup.add` use — never gate on raw `slot.max`.
 Trap: `show` prints the position's sign-up page header by `@person`'s status (`Position#scheduling_header_for`, rendered through `rich_text` in `common/available_sign_ups/show`): Rangers and Echelon get `ranger_scheduling_header`, applicants (Prospective or Alpha) `applicant_scheduling_header`, every other status nothing. Present year only: a past year's page shows no header (ruled 2026-10-22).
 Trap: the index row splits each position's shifts into upcoming and past (`ui_drill_down_row figures:`, `@shift_counts`) with `Scheduling::Query.partition_by_time(cutoff: :start_time)` -- a shift under way is past, matching `show` -- in the present year, zeros included (after the season's last shift every row reads 0 upcoming: the owner's call over hiding the figure, 2026-11-05); a past year keeps the plain shift count. Person and HQ render the same view.
@@ -2004,6 +2007,8 @@ Touches: `slot` (w), `position`, `position_credit`, `event_dates`, `person_slot`
 Verify: `test/controllers/scheduling/slots_controller_test.rb`, `test/models/role_cache_invalidation_test.rb`
 Trap: `update_all` skips Slot's `after_commit :purge_training_role_caches` (only on `active`/`begins_year`/`position_id` changes) — bulk writes must call `Slot.purge_training_role_caches(ids)`, as `set_active_all` does, or RoleManager goes stale.
 Trap: `setup_year` maps later years to the present, so a next-year slot saves (`compute_time_fields` sets `begins_year` from `begins`) but the `slot_position_path` redirect to `year: slot.begins_year` shows a list without it until the year rolls over.
+Trap: `slot.venue` is a MariaDB enum (`Slot::VENUE_LABELS`) under strict mode: a value outside the list that skips `Slot`'s inclusion validation (`update_all`, `insert_all`) is a 500. Nothing re-derives it after `20261111000001_add_venue_to_slot.rb` classified the existing slots: `new` preselects multisite for `Slot::MULTISITE_POSITION_IDS` and Event Season otherwise, so a new training slot stays Event Season until an admin picks Off-Season or Virtual.
+Trap: `CLONE_ATTRS` (Repeat, Save as New) is `Scheduling::SlotCopier::COPY_ATTRS` plus `begins`, `ends` and `active`: a slot column that should survive duplication goes into `COPY_ATTRS`, and `attributes.slice` silently drops one left out of it.
 
 ### Copy Slots
 Reach it: `GET /scheduling/slots/copy` → Slots (Copy Slots), position's slots page (Bulk Copy); preview/commit `POST /scheduling/slots/copy` (`preview` re-renders only)
@@ -2014,6 +2019,7 @@ Touches: `slot` (w), `position`
 Verify: `test/controllers/scheduling/slot_copies_controller_test.rb`
 Trap: `SlotCopier.default_delta_days` shifts the viewed year's Labor Day to `Current.year`'s, so copying while viewing the present year shifts 0 days, duplicating the slots in place — the page only warns.
 Trap: `SlotCopier.copyable_slots` drops slots with a nonzero `training_id`, a `trainer_slot_id` or a `trainee_slot_id` even when posted, and `COPY_ATTRS` never carries trainer or parent links to the copies.
+Trap: The page has no venue override, so a copy moved to another position (`new_position_id`) keeps its source's venue; change it afterwards in Bulk Edit Slots.
 
 ### Bulk Edit Slots
 Reach it: `GET /scheduling/slots/position/:position_id/bulk-edit` → position's slots page (Bulk Edit); commit `POST /scheduling/slots/position/:position_id/bulk-edit`
@@ -2023,6 +2029,7 @@ Owner: `Slot` (`app/models/slot.rb`); inline in controller: `Slot#update!` per s
 Touches: `slot` (w), `position`, `trainee_status`, `trainer_status`
 Verify: `test/controllers/scheduling/slot_bulk_edits_controller_test.rb`
 Trap: `column_params` drops blank fields (`compact_blank`), so bulk edit can set but never clear description or Additional Information (`url`) — clear `url` per slot on the edit form, where description is required.
+Trap: `filter_bar` renders a GET form of its own, so it sits above the bulk-edit `ui_form`, as on Copy Slots. Nested inside (until 2026-11-11), the browser ended the POST form at the filter's `</form>`: Save Selected Slots belonged to no form and Apply Filters posted the edit. Integration tests post directly and never saw it; `new keeps the filter form out of the bulk-edit form` now checks the markup.
 
 ### Position Credits
 Reach it: `GET /scheduling/position-credits` → Scheduling › Scheduling Administration › Position Credits; drill-down `GET /scheduling/position-credits/position/:position_id` (both also `.csv`); form `GET /scheduling/position-credits/new`, `POST /scheduling/position-credits`, `GET /scheduling/position-credits/:id/edit`, `PATCH /scheduling/position-credits/:id`; delete `DELETE /scheduling/position-credits/:id`; bulk delete `DELETE /scheduling/position-credits/position/:position_id/bulk-delete`
