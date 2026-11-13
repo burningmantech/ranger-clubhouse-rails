@@ -1,0 +1,342 @@
+V || R12903 || COMPLIANT || A11Y-01 || - || 105 || intake_training_status_text pairs text-error/text-warning with an icon and a word; "trained" is uncoloured, so no state rests on colour alone.
+V || R12904 || COMPLIANT || BADGE-01 || - || 97 || Rank, training, bonk, note and mentee chips all render through ui_badge from frozen variant tables.
+V || R00211 || UNCOVERED || - || - || 140 || Middle dot used as a text separator in plain-text rank and note summaries, not an icon; no rule on separator glyphs.
+V || R12905 || UNCOVERED || - || - || 210 || ambiguous BADGE-01: mentee_status_badge returns the plain string "no alpha sign-up" in one branch and ui_badge in the others; rule does not say whether one state of a badge set may be text.
+V || R12902 || COMPLIANT || BADGE-01 || - || 59 || mentor_result_badge is ui_badge with variant from MENTOR_STATUS and an icon per result.
+V || R00246 || COMPLIANT || TYPE-03 || - || 97 || text-sm on a short secondary note standing in for the Send Message control; secondary content, not body text.
+V || R12900 || UNCOVERED || - || - || 97 || no_contact_allowed is a muted italic span in place of a button; no rule on italic notes.
+V || R12901 || UNCOVERED || - || - || 101 || mentor_card_row and mentor_tally_row are layout-only helpers emitting "flex flex-wrap gap-2" (one with mb-3); no rule on flex-wrap row wrappers.
+V || R12906 || UNCOVERED || - || - || 45 || Slot label built as a String with a literal <br> and marked html_safe; no rule on multi-line label markup.
+V || M0210 || COMPLIANT || COPY-08 || - || 44 || pattern=typography strftime sits in a helper and uses DateTimeHelper::MONTH_DAY_TIME (24-hour, unpadded day), not in a view.
+V || R12907 || UNCOVERED || - || - || 78 || Two-line slot label via safe_join with "<br>" then html_safe; strip_tags reuses it for option text. No rule on label markup.
+V || R00255 || UNCOVERED || - || - || 32 || " · " joins candidate note parts as a text separator, not an icon.
+V || R12847 || COMPLIANT || BADGE-01 || - || 16 || RESULT_BADGES triples rendered through ui_badge with icon and word.
+V || R12773 || COMPLIANT || A11Y-01 || - || 153 || Sign-up state as coloured word plus icon; walked carries no colour; state never rests on colour alone.
+V || R12774 || COMPLIANT || BADGE-01 || - || 146 || Signup and verdict chips are ui_badge with variant and icon from a frozen table.
+V || R12749 || COMPLIANT || EMPTY-01 || - || 16 || Both empty cases (no Alphas, filters matched nothing) use ui_empty_state.
+V || R12743 || COMPLIANT || HELP-02 || - || 31 || Card disclosure with class my-4, as the guide's own example; under the stat row, above the filter bar.
+V || R05267 || COMPLIANT || LIST-01 || - || 32 || dl.instruction-list Q&A inside the How This Page Works card; not a data table.
+V || R12744 || COMPLIANT || LIST-01 || - || 32 || FAQ as dl.instruction-list inside the card disclosure, the documented pattern.
+V || R12745 || UNCOVERED || - || - || 78 || Bulk-select toolbar: flex justify-between div with bulk_select_all on the left and a button_row on the right; bulk selection has no rule.
+V || M0258 || COMPLIANT || COPY-10 || - || 81 || pattern=buttons "submit" is the Stimulus target name; the label "Print Selected" is specific.
+V || R12746 || UNCOVERED || - || - || 147 || ambiguous BTN-04: the same primary "Print Selected" submit appears above and below a long table; rule does not say whether one action may repeat.
+V || R12747 || DIVERGENT || EMPTY-02 || low || 111 || An empty value prints "—"; Training and Mentor Shift cells print muted "None" instead (111, 120).
+V || R12748 || COMPLIANT || A11Y-01 || - || 129 || Issues shown as error text with ban icon plus the issue words; no issues as success text with check icon and "None".
+V || M0259 || COMPLIANT || COPY-10 || - || 147 || pattern=buttons "submit" is the Stimulus target name; the label "Print Selected" is specific.
+V || M0380 || DIVERGENT || HERO-01 || low || 16 || pattern=navigation Every page's header is a hero_panel; this print view opens with a print:hidden back link and hint instead, like every print sheet in the area.
+V || R12750 || DIVERGENT || HERO-04 || low || 17 || Back navigation lives in the hero panel; print view puts back_to in a print:hidden div with a hint, an inline copy of alpha_schedule/_print_screen_nav.
+V || R12751 || UNCOVERED || - || - || 29 || Paper form built entirely from acceptance-* CSS classes and pinned to data-theme light; print sheets as components have no rule.
+V || R12752 || UNCOVERED || - || - || 45 || Label/value rows (acceptance-line, -label, -value) and blank fill-in rules as &nbsp; divs; label/value displays have no rule.
+V || R12753 || UNCOVERED || - || - || 55 || Raw <small>, <i> and <b> for pronouns, "(Pronouns not stated)", "No notes given." and legend terms; no rule on inline emphasis tags.
+V || R05276 || UNCOVERED || - || - || 84 || &nbsp; fills blank fill-in cells and rules; not an icon or a glyph standing for one.
+V || R12759 || UNCOVERED || - || - || 112 || Headshot via photo_tag, else a box with fa_icon user, <br> and "No approved photo"; photos have no rule.
+V || R12756 || DIVERGENT || EMPTY-01 || low || 211 || Empty states use ui_empty_state; notes boxes print plain "None", "No VC notes", "No notes given.", "No prior mentor notes" (148, 211, 242, 255).
+V || M0465 || UNCOVERED || - || - || 165 || pattern=tables-lists ambiguous TABLE-01: the blank mentor sign-off grid on a print form is not a data table; rule does not say whether it must be ui_table.
+V || R05309 || UNCOVERED || - || - || 165 || ambiguous TABLE-01: blank signature grid of fill-in rules with a colspan legend row; rule does not say whether a blank form grid must be ui_table.
+V || R12760 || UNCOVERED || - || - || 165 || ambiguous TABLE-01: raw table.acceptance-signoff is a blank signature grid, not data; rule does not settle blank form grids.
+V || R12754 || COMPLIANT || ICON-01 || - || 198 || Printed tick boxes drawn with fa_icon "square" :regular.
+V || R05278 || COMPLIANT || BADGE-01 || - || 214 || intake_rank_badge builds through ui_badge.
+V || R12755 || UNCOVERED || - || - || 216 || ambiguous SPACE-02: note lines are divs prefixed by a literal &mdash;; rule names list classes but not whether dash-prefixed lines must be a list.
+V || R12757 || UNCOVERED || - || - || 227 || ambiguous EMPTY-01: Training Notes box has no empty branch; with no passed trainings the box prints empty under its band.
+V || R12758 || COMPLIANT || A11Y-01 || - || 235 || Feedback state carried by words and icons ("feedback delivered" vs bell + "FEEDBACK NOT DELIVERED"), not colour alone.
+V || R12851 || COMPLIANT || ALERT-01 || - || 33 || No-bonks confirmation step is a warning ui_callout_box with title; hidden confirmed field and relabelled submit follow.
+V || R12848 || COMPLIANT || ALERT-01 || - || 33 || title: is a documented ui_callout_box option.
+V || R12849 || DIVERGENT || FORM-06 || medium || 41 || Errors show through the builder with ui_form's summary on top; the form passes no_error_summary and hand-writes an error callout "Nothing Was Recorded" with a row count.
+V || R12852 || UNCOVERED || - || - || 53 || Inline links inside callouts styled "underline font-semibold" while the convert page uses "link link-primary"; plain links have no rule.
+V || R12853 || COMPLIANT || ALERT-01 || - || 99 || class: "my-4" on ui_callout_box is a margin only and breaks no rule.
+V || R12854 || DIVERGENT || BTN-07 || medium || 152 || Buttons sit in a button_row; "Mark Selected as Passed" and "Print This Sheet" sit in a hand-made "flex flex-wrap items-center gap-2" div.
+V || M0260 || COMPLIANT || COPY-10 || - || 155 || pattern=buttons "submit" is the Stimulus target; the label "Mark Selected as Passed" is specific.
+V || R12855 || DIVERGENT || FORM-01 || medium || 172 || Forms use builder fields; the pod shift picker is a raw select_tag borrowing SELECT_CLASSES, aria-label only, beside f.submit in a flex div.
+V || M0303 || DIVERGENT || FORM-01 || medium || 172 || pattern=forms Fields come from AppFormBuilder; pod_slot_id is select_tag with SELECT_CLASSES inside a ui_form.
+V || R12857 || DIVERGENT || TYPE-02 || high || 211 || text-xs never for content a reader needs; prior years' results and mentors print as "block text-xs text-stone-muted", built from interpolated <br> strings.
+V || R05349 || DIVERGENT || TYPE-02 || high || 211 || text-xs never for content a reader needs; the Prior results line under each callsign is text-xs.
+V || R12861 || DIVERGENT || EMPTY-02 || low || 221 || An empty value prints "—"; no shift sign-up prints muted "None".
+V || R12858 || COMPLIANT || A11Y-01 || - || 234 || Checked-in state is words: slot label, warning-coloured "Checked in, shift unclear", or a "no" badge; colour never alone.
+V || R12856 || DIVERGENT || FORM-01 || medium || 249 || Forms use builder fields; each row's three mentor selects and result select are raw select_tag with SELECT_CLASSES, aria labels and explicit ids.
+V || M0304 || DIVERGENT || FORM-01 || medium || 249 || pattern=forms Per-row mentor select is select_tag with SELECT_CLASSES, not a builder field.
+V || M0305 || DIVERGENT || FORM-01 || medium || 258 || pattern=forms Per-row result select is select_tag with SELECT_CLASSES, not a builder field.
+V || R12850 || DIVERGENT || FORM-06 || medium || 270 || A field error is a role=alert message under the field; row errors are an extra error-tinted table row with a "text-error font-semibold" span and icon, no role=alert.
+V || R12859 || COMPLIANT || COLOR-05 || - || 284 || Overflow warning pairs text-warning words with a status icon taking icon-warning.
+V || R05332 || COMPLIANT || COLOR-05 || - || 284 || icon-warning is the documented status-icon utility for a warning icon.
+V || R12860 || UNCOVERED || - || - || 300 || Busy label "Recording…" via data-turbo-submits-with on both save submits; loading states have no rule.
+V || R12862 || COMPLIANT || BTN-07 || - || 305 || f.submit and cancel_link share one button_row.
+V || M0381 || DIVERGENT || HERO-01 || low || 9 || pattern=navigation Every page's header is a hero_panel; this print view opens with a print:hidden back link and hint, like every print sheet in the area.
+V || R12863 || DIVERGENT || HERO-04 || low || 10 || Back navigation lives in the hero panel; print view puts back_to in a print:hidden div, an inline copy of the shared print-nav block.
+V || R05355 || UNCOVERED || - || - || 22 || ambiguous TYPE-04: sheet title is h1 "text-2xl font-semibold"; the rule styles h2 to h4 and says nothing of h1.
+V || R12864 || UNCOVERED || - || - || 22 || ambiguous TYPE-04: raw h1 with its own size and weight on a print sheet; the rule does not give h1 a style.
+V || R12865 || COMPLIANT || EMPTY-01 || - || 28 || Empty print sheet uses ui_empty_state.
+V || M0496 || COMPLIANT || TABLE-02 || - || 30 || pattern=tables-lists responsive: false on a print sheet, a listed case.
+V || R12866 || COMPLIANT || TABLE-01 || - || 30 || Paper table is ui_table with responsive: false, the print form; the other sheets' raw tables are the departures.
+V || R12867 || COMPLIANT || EMPTY-02 || - || 47 || Empty cells print "—" (entity at 47, literal at 55).
+V || R12873 || COMPLIANT || ALERT-01 || - || 26 || class: "mb-4" on ui_callout_box is a margin only.
+V || R12872 || COMPLIANT || LAYOUT-02 || - || 33 || Card grid is "grid grid-cols-1 lg:grid-cols-2 gap-4" with an xl:grid-cols-3 refinement, the documented grid form.
+V || R12874 || COMPLIANT || CARD-01 || - || 10 || Padding set at the call site through ui_card_body and ui_card_footer class:, as CARD-01 says.
+V || R05383 || COMPLIANT || TYPE-04 || - || 14 || h2 takes heading-section; text-heading and grow add colour and flex, no size or weight.
+V || R12875 || COMPLIANT || TYPE-04 || - || 14 || h2 heading-section and h3 heading-title, with colour and flex utilities only.
+V || R12876 || DIVERGENT || FORM-10 || low || 24 || A sub-group divider is "mt-4 pt-3 border-t border-line"; pod groups use "border-t border-base-300 pt-2 mt-2" with first: resets.
+V || R05384 || COMPLIANT || TYPE-04 || - || 26 || h3 takes heading-title; text-heading is colour only.
+V || M0081 || COMPLIANT || BADGE-01 || - || 29 || pattern=other size: "xs" is on ui_badge, a documented badge size; BTN-03 governs buttons.
+V || R12877 || COMPLIANT || BADGE-01 || - || 29 || ui_badge size: "xs" (count, Lead, Bonked, On duty) is a documented badge size.
+V || R12880 || DIVERGENT || EMPTY-01 || low || 41 || An empty state uses ui_empty_state; an empty group prints p "text-sm text-stone-muted" "No GROUP yet."
+V || R05388 || DIVERGENT || TYPE-03 || medium || 41 || text-sm never for empty-state messages; the empty-group message is text-sm (41); line 50 sizes only the list marker.
+V || R12879 || COMPLIANT || SPACE-02 || - || 48 || Numbered Alpha list is ol.list-numbered; mentor and MITten ul is unmarked with space-y-1.
+V || R12878 || DIVERGENT || TOUCH-01 || high || 54 || Interactive elements have a 36px target (min-h-9); member links use min-h-8 (32px) and are not the TABLE_LINK_CLASSES exception.
+V || M0082 || COMPLIANT || BADGE-01 || - || 58 || pattern=other size: "xs" on ui_badge "Lead", a documented badge size; not a button.
+V || M0083 || COMPLIANT || BADGE-01 || - || 65 || pattern=other size: "xs" on the Bonked ui_badge, a documented badge size; not a button.
+V || M0084 || COMPLIANT || BADGE-01 || - || 69 || pattern=other size: "xs" on the On duty ui_badge, a documented badge size; not a button.
+V || R12881 || COMPLIANT || BTN-05 || - || 85 || :ghost for minimal reorder controls; disabled ends also drop out of the tab order.
+V || R12882 || DIVERGENT || BTN-05 || medium || 94 || Destructive actions take :error; "Delete Pod" delete_button is passed variant: :ghost (its confirm button stays red).
+V || R05396 || COMPLIANT || TYPE-04 || - || 21 || h2 takes heading-section; extra classes are colour and margins.
+V || R12868 || COMPLIANT || TYPE-04 || - || 21 || heading-section plus text-heading and margins; no size or weight override.
+V || R12869 || COMPLIANT || LAYOUT-02 || - || 23 || two-column-lg is an @utility for "grid grid-cols-1 lg:grid-cols-2 gap-4", the documented grid form.
+V || R05409 || COMPLIANT || TYPE-04 || - || 11 || h4 takes heading-title; extra classes are colour and margins.
+V || R12896 || COMPLIANT || TYPE-04 || - || 11 || heading-title plus text-heading and margins; no size or weight override.
+V || R12899 || DIVERGENT || EMPTY-01 || low || 16 || An empty state uses ui_empty_state; an empty pool prints p "text-sm text-stone-muted", or nothing when empty is nil.
+V || R05412 || DIVERGENT || TYPE-03 || medium || 16 || text-sm never for empty-state messages; the empty pool message is text-sm (16); line 39 is candidate metadata, an allowed use.
+V || M0033 || DIVERGENT || BP-01 || medium || 19 || pattern=spacing sm: only in a field width:; the candidate list uses "grid-cols-1 sm:grid-cols-2", a layout tier below the lg fold.
+V || R12897 || UNCOVERED || - || - || 19 || Bulk-select checkbox list as a grid of flex rows with raw labels; bulk selection has no rule (the sm: tier is logged on M0033).
+V || R12898 || COMPLIANT || A11Y-01 || - || 28 || Already-assigned state shown by icon plus muted text naming the pod; it is not a control, so it needs no name.
+V || R05406 || UNCOVERED || - || - || 30 || &middot; separates callsign and note; a text separator, not an icon.
+V || R05403 || UNCOVERED || - || - || 36 || Raw <label> for a bulk_select_checkbox row selector; bulk selection is outside FORM-01 per the rulings and has no rule.
+V || M0382 || COMPLIANT || MODAL-01 || - || 11 || pattern=modals Dialog rendered by modal_dialog into the modal frame, not a page; hero_panel does not apply.
+V || M0306 || COMPLIANT || FORM-01 || - || 12 || pattern=forms form_with with builder: AppFormBuilder is an allowed form.
+V || R05420 || COMPLIANT || FORM-01 || - || 12 || form_with passes builder: AppFormBuilder; the hand-built fields inside are logged on R12890.
+V || R12890 || DIVERGENT || FORM-01 || medium || 16 || Fields come from the builder; lead is check_box_tag in a hand label, pod is select_tag with a raw label and hand help paragraph, all borrowing builder classes.
+V || R05418 || DIVERGENT || FORM-01 || medium || 23 || Raw <label> elements (15, 23) stand in for builder field labels.
+V || M0307 || DIVERGENT || FORM-01 || medium || 16 || pattern=forms check_box_tag with CHECKBOX_CLASSES in place of f.check_box.
+V || R05419 || DIVERGENT || FORM-01 || medium || 16 || check_box_tag with CHECKBOX_CLASSES in place of a builder checkbox.
+V || M0308 || DIVERGENT || FORM-01 || medium || 24 || pattern=forms select_tag with SELECT_CLASSES in place of f.select.
+V || R05422 || DIVERGENT || FORM-01 || medium || 24 || select_tag with SELECT_CLASSES in place of a builder select.
+V || M0034 || COMPLIANT || BP-01 || - || 25 || pattern=spacing sm:w-44 is a field width on a select; the raw select itself is counted under FORM-01.
+V || R05428 || DIVERGENT || TYPE-03 || medium || 36 || text-sm never for paragraph content; the walk-order paragraph is text-sm (36); line 26 is field help text, an allowed use.
+V || R12891 || DIVERGENT || FORM-10 || low || 35 || A sub-group divider is "mt-4 pt-3 border-t border-line"; the dialog uses "border-t border-base-300 mt-4 pt-3".
+V || R12892 || COMPLIANT || BTN-05 || - || 48 || Secondary sm move buttons and an :error take-out; no confirm by design, as removal is reversible.
+V || M0383 || COMPLIANT || MODAL-01 || - || 13 || pattern=modals Dialog rendered by modal_dialog, not a page; hero_panel does not apply.
+V || M0309 || COMPLIANT || FORM-01 || - || 17 || pattern=forms form_with with builder: AppFormBuilder is an allowed form.
+V || R05438 || COMPLIANT || FORM-01 || - || 17 || form_with passes builder: AppFormBuilder.
+V || R12893 || UNCOVERED || - || - || 21 || ambiguous ALERT-01: ui_callout_box :secondary frames a lead-mentor checkbox rather than carrying a notice; rule lists notice variants, not this use.
+V || R05434 || DIVERGENT || FORM-01 || medium || 22 || Raw <label> wrapping check_box_tag stands in for f.check_box.
+V || M0310 || DIVERGENT || FORM-01 || medium || 23 || pattern=forms check_box_tag with CHECKBOX_CLASSES in place of f.check_box.
+V || R05437 || DIVERGENT || FORM-01 || medium || 23 || check_box_tag with CHECKBOX_CLASSES in place of a builder checkbox.
+V || R12894 || COMPLIANT || DISC-01 || - || 41 || Folded candidate pools are ui_disclosure; class: "mt-3" is a margin only.
+V || R05446 || DIVERGENT || TYPE-03 || medium || 49 || text-sm never for paragraph content; the Not Checked In explanation is p "text-sm text-stone-muted".
+V || M0261 || COMPLIANT || COPY-10 || - || 58 || pattern=buttons "submit" is the Stimulus target; the label "Add to Pod N" is specific.
+V || R12895 || COMPLIANT || EMPTY-01 || - || 62 || Empty dialog uses ui_empty_state above a Close button row.
+V || M0384 || DIVERGENT || HERO-01 || low || 33 || pattern=navigation Every page's header is a hero_panel; this print view opens with a print:hidden back link and hint, like every print sheet in the area.
+V || R12883 || DIVERGENT || STYLE-01 || medium || 19 || No per-view CSS; the view injects a <style> block (named @page with a page-counter margin box) through content_for :page_rules.
+V || M0450 || DIVERGENT || STYLE-01 || medium || 19 || pattern=other No scoped or per-view CSS; a <style> block in the view sets @page alpha-pod-sheet.
+V || R05448 || DIVERGENT || COLOR-01 || low || 25 || Semantic colour tokens only; the page-counter margin box hard-codes color: #444 in the view's <style>.
+V || R12884 || DIVERGENT || HERO-04 || low || 34 || Back navigation lives in the hero panel; print view puts back_to in a print:hidden div, an inline copy of the print-nav block with landscape wording.
+V || R12885 || UNCOVERED || - || - || 42 || Hand copy of the _sheet_masthead markup (alpha-masthead, alpha-doc-label, h1.alpha-shift, alpha-when) instead of rendering the partial.
+V || R05463 || UNCOVERED || - || - || 45 || ambiguous TYPE-04: print-sheet h1 styled by .alpha-shift; the rule does not give h1 a style.
+V || R05449 || UNCOVERED || - || - || 53 || &middot; separators in the subline counts; text separators, not icons.
+V || M0466 || DIVERGENT || TABLE-01 || medium || 64 || pattern=tables-lists Data tables are ui_table (responsive: false on paper); the pod sheet is a raw table.alpha-pod-table.
+V || R05462 || DIVERGENT || TABLE-01 || medium || 64 || Data tables are ui_table; the pod columns are a raw table styled by alpha-pod-table CSS.
+V || M0451 || DIVERGENT || STYLE-01 || low || 68 || pattern=other No inline style=; each th carries style width computed from the column count.
+V || R12886 || DIVERGENT || STYLE-01 || low || 68 || No inline style= without a reason; th width is an inline style holding a computed percentage.
+V || R12888 || DIVERGENT || EMPTY-02 || low || 85 || An empty value prints "—"; an empty pod group cell prints span.alpha-pod-empty "None" (the no-pods sentence at 107 is logged as F).
+V || R12887 || UNCOVERED || - || - || 93 || Lead and prior bonk marked by literal " (Lead)" and " [B]" text after the callsign on paper; no rule on text markers.
+V || R12870 || COMPLIANT || ALERT-01 || - || 20 || class: "my-4" on the callout and the disclosure is a margin only, as the guide's disclosure example shows.
+V || R05472 || COMPLIANT || LIST-01 || - || 28 || dl.instruction-list Q&A inside the How This Page Works card; not a data table.
+V || R12871 || COMPLIANT || BTN-01 || - || 40 || button_link with method: :post is a ButtonHelper method; Turbo sends it as a form.
+V || R05485 || DIVERGENT || TYPE-03 || medium || 11 || text-sm never for paragraph content; the dialog's explanatory paragraph is text-sm.
+V || R12889 || DIVERGENT || TYPE-03 || medium || 11 || text-sm never for paragraph content; p "text-sm text-stone-muted mb-3" explains what to do next in the dialog.
+V || R12802 || DIVERGENT || HERO-04 || low || 3 || Back navigation lives in the hero panel; the shared print nav puts back_to in a print:hidden div above the sheet, which has no hero.
+V || R12803 || UNCOVERED || - || - || 6 || Print masthead partial: doc label, then a flex row with h1/h2.alpha-shift and the time; print sheets as components have no rule.
+V || M0385 || DIVERGENT || HERO-01 || low || 14 || pattern=navigation Every page's header is a hero_panel; this print view renders the print nav partial and masthead instead, like every print sheet in the area.
+V || R12812 || UNCOVERED || - || - || 17 || Section class string adds the whole class "break-before-page" by an inline conditional; no guide rule on conditional classes.
+V || R05493 || UNCOVERED || - || - || 19 || Middle dots separate parts of doc labels, sublines and running heads; text separators, not icons.
+V || R12811 || DIVERGENT || EMPTY-01 || low || 23 || An empty state uses ui_empty_state; an empty apparel group prints a plain p.mt-4 sentence.
+V || M0467 || DIVERGENT || TABLE-01 || medium || 30 || pattern=tables-lists Data tables are ui_table (responsive: false on paper); the apparel list is a raw unclassed table.
+V || R05502 || DIVERGENT || TABLE-01 || medium || 30 || Data tables are ui_table; apparel rows (30) and size totals (75) are raw tables.
+V || R12809 || DIVERGENT || TABLE-01 || medium || 30 || Data tables are ui_table; apparel rows and captioned totals tables are raw HTML styled by .alpha-sheet.
+V || M0468 || DIVERGENT || TABLE-01 || medium || 75 || pattern=tables-lists Data tables are ui_table; each size-totals table is a raw table with a caption.
+V || R12810 || DIVERGENT || EMPTY-01 || low || 85 || An empty state uses ui_empty_state; an empty totals table prints a bare row "None" (colspan 2).
+V || R05512 || COMPLIANT || TYPE-04 || - || 20 || h2 takes heading-section; extra classes are colour and margins.
+V || R12795 || COMPLIANT || TYPE-04 || - || 20 || Day heading is heading-section plus colour and margins; no size or weight override.
+V || R12796 || COMPLIANT || LAYOUT-02 || - || 22 || two-column-lg is an @utility for the documented "grid grid-cols-1 lg:grid-cols-2 gap-4".
+V || M0386 || DIVERGENT || HERO-01 || low || 32 || pattern=navigation Every page's header is a hero_panel; this print view renders the print nav partial and a sheet h1 instead, like every print sheet in the area.
+V || R12813 || DIVERGENT || STYLE-01 || medium || 19 || No per-view CSS; the view injects a <style> block (@page alpha-info margin box with page counter) through content_for :page_rules.
+V || M0452 || DIVERGENT || STYLE-01 || medium || 19 || pattern=other No scoped or per-view CSS; a <style> block in the view sets @page alpha-info.
+V || R05516 || DIVERGENT || COLOR-01 || low || 24 || Semantic colour tokens only; the page-counter margin box hard-codes color: #444 in the view's <style>.
+V || R05537 || UNCOVERED || - || - || 39 || ambiguous TYPE-04: print-sheet h1 styled by .alpha-info-title; the rule does not give h1 a style.
+V || R12814 || UNCOVERED || - || - || 39 || ambiguous TYPE-04: h1.alpha-info-title stands in for the _sheet_masthead partial the other two Alpha sheets use; h1 styling is not ruled.
+V || M0469 || DIVERGENT || TABLE-01 || medium || 44 || pattern=tables-lists Data tables are ui_table (responsive: false on paper); the information sheet is a raw table.alpha-info-table.
+V || R05535 || DIVERGENT || TABLE-01 || medium || 44 || Data tables are ui_table; the per-Alpha information blocks are a raw table.
+V || R12815 || UNCOVERED || - || - || 60 || Flagged Alpha marked only by an unlabelled fa_icon flag (text-2xl) in a header-less cell; ICON-04 asks for label: only when a page card explains the icon.
+V || R12817 || DIVERGENT || EMPTY-02 || low || 89 || An empty value prints "—"; known rangers, known Alphas and trainings print nothing at all when empty (73-78, 89, 93).
+V || R05518 || COMPLIANT || BADGE-01 || - || 76 || intake_rank_badge builds through ui_badge.
+V || R12816 || DIVERGENT || EMPTY-02 || low || 101 || An empty value prints "—"; prior mentors and mentor notes print <em>None</em>, a missing note source <em>Unknown</em> (101, 116, 126).
+V || R12818 || UNCOVERED || - || - || 124 || ambiguous SPACE-02: note lines are divs prefixed by a literal &mdash;; rule does not say whether dash-prefixed lines must be a list.
+V || M0387 || COMPLIANT || MODAL-01 || - || 4 || pattern=modals Dialog rendered by modal_dialog into the modal frame with a button_row footer; not a page.
+V || R12819 || COMPLIANT || SPACE-01 || - || 5 || mb-2 between dialog paragraphs is on the Tailwind scale.
+V || R12825 || COMPLIANT || ALERT-01 || - || 22 || Refusal message is a ui_callout_box :warning.
+V || R05555 || COMPLIANT || SPACE-02 || - || 27 || ul.list-bulleted lists of requirements and enrolments; not data tables.
+V || R12826 || COMPLIANT || SPACE-02 || - || 27 || Bulleted lists use list-bulleted.
+V || M0311 || COMPLIANT || FORM-01 || - || 57 || pattern=forms form_with with builder: AppFormBuilder, hidden fields and modal_form_footer.
+V || R05550 || COMPLIANT || FORM-01 || - || 57 || form_with passes builder: AppFormBuilder; it has no visible fields.
+V || R12827 || COMPLIANT || FORM-01 || - || 57 || Builder form with hidden fields and modal_form_footer "Add Anyway" :warning; nothing hand-built.
+V || M0312 || COMPLIANT || FORM-01 || - || 11 || pattern=forms form_with with builder: AppFormBuilder; the raw field inside is logged on M0313.
+V || R05565 || COMPLIANT || FORM-01 || - || 11 || Both form_with calls (11, 47) pass builder: AppFormBuilder.
+V || R12820 || DIVERGENT || FORM-01 || medium || 19 || Fields come from the builder; the search has a raw label and a text_field_tag with INPUT_CLASSES in a hand flex row, inside a builder form.
+V || R05564 || DIVERGENT || FORM-01 || medium || 16 || Raw <label class="font-medium block mb-1"> stands in for a builder field label.
+V || M0313 || DIVERGENT || FORM-01 || medium || 19 || pattern=forms text_field_tag with INPUT_CLASSES in place of f.text_field.
+V || R05566 || DIVERGENT || FORM-01 || medium || 19 || text_field_tag with INPUT_CLASSES in place of a builder text field.
+V || M0497 || COMPLIANT || TABLE-02 || - || 28 || pattern=tables-lists Four-column result table in a dialog, an allowed plain case.
+V || M0314 || COMPLIANT || FORM-01 || - || 47 || pattern=forms Per-row add form passes builder: AppFormBuilder; one hidden field and a submit.
+V || R12821 || COMPLIANT || BTN-01 || - || 51 || Per-row add is a one-button form whose button is submit_button.
+V || R05572 || DIVERGENT || TYPE-03 || medium || 54 || text-sm never for table content; "Not an Alpha or Prospective" in the Add column is text-sm.
+V || R12824 || UNCOVERED || - || - || 54 || ambiguous EMPTY-02: muted words "Not an Alpha or Prospective" replace the add button, stating a fact rather than an empty value.
+V || R12822 || DIVERGENT || EMPTY-01 || medium || 62 || An empty result uses ui_empty_state; no match prints p "text-error font-semibold", error colour for an empty search.
+V || R12823 || UNCOVERED || - || - || 65 || ambiguous FORM-06: a too-short query is told by a muted paragraph under the form; the search is a raw field, so builder error display cannot reach it.
+V || M0388 || COMPLIANT || MODAL-01 || - || 1 || pattern=modals rosters/new is a modal turbo_frame wrapper rendering the dialog partial; not a page.
+V || R12797 || COMPLIANT || ALERT-01 || - || 22 || class: "my-4" on ui_callout_box is a margin only.
+V || R12801 || UNCOVERED || - || - || 45 || Sheet buttons swap href and turbo_frame to open a no-Alphas dialog instead of the sheet; conditional modal links have no rule.
+V || R12798 || UNCOVERED || - || - || 80 || Flags folded under the callsign as a flex row of year plus intake_rank_badge chips; the text-xs size is logged on R05592.
+V || R05592 || DIVERGENT || TYPE-02 || high || 82 || text-xs never for content a reader needs; the flag year beside each rank badge is in a text-xs span (text-sm trainings at 104 logged as F).
+V || R05584 || COMPLIANT || BADGE-01 || - || 84 || intake_rank_badge builds through ui_badge.
+V || R12799 || DIVERGENT || EMPTY-02 || low || 101 || An empty value prints "—"; no training prints muted "None" (101); the muted "No" at 96 answers the Yes badge.
+V || R12800 || COMPLIANT || BTN-05 || - || 113 || Taking a sign-up off a shift is not a delete; secondary sm, and delete_button makes the confirm red.
+V || M0389 || DIVERGENT || HERO-01 || low || 17 || pattern=navigation Every page's header is a hero_panel; this print view renders the print nav partial and masthead instead, like every print sheet in the area.
+V || R05594 || UNCOVERED || - || - || 20 || Middle dots separate doc labels and running heads; text separators, not icons.
+V || R12808 || COMPLIANT || TYPE-08 || - || 24 || font-bold marks one instruction line as strong emphasis.
+V || R12807 || DIVERGENT || EMPTY-01 || low || 28 || An empty state uses ui_empty_state; an empty roster prints a plain p.mt-4 sentence (the dash for no trainings at 61 is correct).
+V || M0470 || DIVERGENT || TABLE-01 || medium || 30 || pattern=tables-lists Data tables are ui_table; the roster blocks are a raw unclassed table styled by .alpha-sheet.
+V || R05607 || DIVERGENT || TABLE-01 || medium || 30 || Data tables are ui_table; the roster at 30 is a raw table (the blank standby grid at 106 is on M0471).
+V || R12804 || DIVERGENT || TABLE-01 || medium || 30 || Data tables are ui_table; roster blocks are raw tbody groups with alpha-write-row rows and a repeating running head.
+V || R05593 || DIVERGENT || ICON-01 || medium || 48 || Icons are FontAwesome via fa_icon; a flagged person is a literal "⚑" character, where the information sheet uses fa_icon flag.
+V || R12805 || DIVERGENT || ICON-01 || medium || 48 || Icons are FontAwesome via fa_icon; the flag mark is a hard-coded "⚑" glyph (column header carries sr-only "Flagged").
+V || R12806 || UNCOVERED || - || - || 50 || Fill-in captions (span.alpha-fill) above printed values or blank space; label/value displays have no rule.
+V || M0471 || UNCOVERED || - || - || 106 || pattern=tables-lists ambiguous TABLE-01: the standby table is an entirely blank handwriting grid; rule does not say whether a blank form grid must be ui_table.
+V || R12846 || COMPLIANT || A11Y-01 || - || 33 || Success or error row tint is repeated by the result badge's words and icon.
+V || R12845 || COMPLIANT || A11Y-01 || - || 38 || Coloured check or x icon in the select column is restated by the result badge's text; it is not a control.
+V || R05615 || COMPLIANT || BADGE-01 || - || 54 || alpha_signout_result_badge builds through ui_badge.
+V || R12838 || UNCOVERED || - || - || 31 || Hidden div data-controller="scroll-to-top" moves the reader to the result callouts after a POST re-render; no rule.
+V || R12839 || COMPLIANT || ALERT-01 || - || 37 || class: "my-4" and "mb-4" on callouts and the disclosure are margins only.
+V || R05639 || COMPLIANT || LIST-01 || - || 61 || dl.instruction-list Q&A inside the How This Page Works card; not a data table.
+V || R12843 || COMPLIANT || BTN-07 || - || 71 || The button sits in a button_row; the extra classless div has no effect.
+V || R05643 || COMPLIANT || TYPE-04 || - || 82 || h2 takes heading-section; extra classes are colour and margins.
+V || R12841 || COMPLIANT || TYPE-04 || - || 82 || Day heading is heading-section plus colour and margins; no size or weight override.
+V || R12842 || COMPLIANT || LAYOUT-02 || - || 84 || two-column-lg is an @utility for the documented "grid grid-cols-1 lg:grid-cols-2 gap-4".
+V || R12840 || DIVERGENT || COLOR-02 || medium || 97 || Colour carries meaning; the :error callout marks live data that ignores the schedule, which the comment says is not an error state.
+V || M0262 || COMPLIANT || COPY-10 || - || 156 || pattern=buttons "submit" is the Stimulus target; the label "Sign Out Selected Alphas" is specific.
+V || R05633 || DIVERGENT || MODAL-02 || medium || 157 || A destructive confirm is red (variant: :error); the irreversible sign-out confirm_modal_dialog passes no variant, so its confirm button is primary under an :error submit.
+V || R05634 || COMPLIANT || MODAL-02 || - || 157 || turbo_confirm carries the modal dialog, not a browser string; it asks with the action and says it cannot be undone here.
+V || R12844 || COMPLIANT || DISC-01 || - || 176 || Already-signed-out rows folded in a ui_disclosure card with the count in the title.
+V || M0498 || COMPLIANT || TABLE-02 || - || 178 || pattern=tables-lists Four-column table, an allowed plain case.
+V || R12762 || COMPLIANT || ALERT-01 || - || 34 || Personnel warning is an :error accent ui_callout_box, the same markup the shared personnel_warning partial renders.
+V || R12761 || COMPLIANT || ALERT-01 || - || 34 || class: "my-4" on the callout and disclosure is a margin only.
+V || R05664 || COMPLIANT || LIST-01 || - || 44 || dl.instruction-list Q&A inside the About This Report card; not a data table.
+V || R12765 || COMPLIANT || LIST-01 || - || 44 || Legend and section key are dt/dd pairs in an instruction-list inside the card disclosure.
+V || R12763 || DIVERGENT || EMPTY-01 || low || 97 || An empty state uses ui_empty_state; an empty section prints a muted p with a filter-aware sentence.
+V || R12764 || UNCOVERED || - || - || 107 || ui_subheading (an h3) with a trailing ui_badge count heads sub-groups in a ui_section; the helper is not in the guide.
+V || R12834 || COMPLIANT || A11Y-01 || - || 45 || Success tint on a just-converted row is paired with a "Converted" badge.
+V || R12837 || UNCOVERED || - || - || 65 || ambiguous EMPTY-02: muted "No mentor on record" states a fact rather than printing an empty value.
+V || R12835 || COMPLIANT || ALERT-01 || - || 75 || Consequence notice is a warning accent ui_callout_box; class: "my-4" is a margin only.
+V || R12836 || COMPLIANT || BTN-05 || - || 83 || :success for minting, :error for the destructive bonk, passed in per section.
+V || M0263 || COMPLIANT || COPY-10 || - || 84 || pattern=buttons "submit" is the Stimulus target; labels "Mint Selected Shiny Pennies" and "Bonk Selected Alphas" are specific.
+V || R05682 || DIVERGENT || MODAL-02 || medium || 85 || A destructive confirm is red; the bonk confirm (index 102-105) passes no variant: :error, so "Bonk Alphas" is a primary button.
+V || R05683 || DIVERGENT || MODAL-02 || low || 85 || A confirm says whether it can be undone; the mint and bonk messages (index 86, 103) ask with the action but omit that sentence.
+V || R12830 || UNCOVERED || - || - || 22 || Hidden div data-controller="scroll-to-top" moves the reader to the result callout after a POST re-render; no rule.
+V || R12831 || COMPLIANT || ALERT-01 || - || 24 || class: "my-4" on callouts and the disclosure is a margin only.
+V || R05698 || COMPLIANT || LIST-01 || - || 50 || dl.instruction-list Q&A inside the How This Page Works card; not a data table.
+V || R12832 || UNCOVERED || - || - || 54 || Inline text links with "link link-primary" in a dd and an empty state; plain links have no rule.
+V || R12833 || COMPLIANT || EMPTY-01 || - || 61 || ui_empty_state with block content holding a link, the documented complex form.
+V || R12775 || UNCOVERED || - || - || 23 || Hidden div data-controller="scroll-to-top" moves the reader to the result callout after a POST re-render; no rule.
+V || R12776 || COMPLIANT || ALERT-01 || - || 25 || class: "my-4" on callouts and the disclosure is a margin only.
+V || R12777 || COMPLIANT || ALERT-01 || - || 49 || Inline :error accent ui_callout_box; same markup as the shared personnel_warning partial.
+V || R05722 || COMPLIANT || LIST-01 || - || 61 || dl.instruction-list Q&A inside the How This Page Works card; not a data table.
+V || R12783 || COMPLIANT || LIST-01 || - || 61 || instruction-list with the shared rank_legend given page-specific question and lead.
+V || R12778 || COMPLIANT || A11Y-01 || - || 101 || Red tint for a Personnel flag is restated by the "Personnel flag" badge, green by the "Converted" badge.
+V || R05730 || DIVERGENT || TYPE-03 || medium || 115 || text-sm never for table content; status and FKA lines under callsign and name are text-sm (115, 124).
+V || R12779 || DIVERGENT || TYPE-03 || medium || 115 || text-sm never for table content; "<status>" in literal angle brackets and the FKA line are text-sm muted divs in table cells.
+V || R12780 || UNCOVERED || - || - || 145 || ambiguous EMPTY-02: muted "Nothing raised" states a fact in the Concerns cell rather than an empty value.
+V || R12781 || UNCOVERED || - || - || 149 || Details toggle opens a detail row holding a lazily loaded turbo-frame history; lazy loading has no rule.
+V || R12782 || COMPLIANT || MODAL-02 || - || 171 || Non-destructive convert confirmed through confirm_modal_dialog with a primary confirm; the wording gap is on R05718.
+V || M0264 || COMPLIANT || COPY-10 || - || 172 || pattern=buttons "submit" is the Stimulus target; the label "Convert Selected to Alpha" is specific.
+V || R05717 || COMPLIANT || MODAL-02 || - || 173 || Conversion is not destructive, so the default primary confirm fits.
+V || R05718 || DIVERGENT || MODAL-02 || low || 175 || A confirm says whether it can be undone; "Convert the selected Prospectives to Alpha status?" omits it (the callout above says it).
+V || R05731 || UNCOVERED || - || - || 6 || ambiguous TYPE-03: text-sm on the Alpha-shift state word in the review list line, matching the shared row's other text-sm items; rule does not say whether that line is metadata.
+V || R12772 || UNCOVERED || - || - || 6 || ambiguous TYPE-03: span.text-sm around post_season_signup_text on a review list line; the rule does not settle whether the line is secondary metadata.
+V || R12770 || UNCOVERED || - || - || 9 || Label/value line "Mentors:" with slash-joined links, else muted "None assigned"; label/value displays have no rule.
+V || R12771 || UNCOVERED || - || - || 13 || link_to with TABLE_LINK_CLASSES for mentor callsigns (hashes, not records) instead of callsign_link; link helpers have no rule.
+V || R12766 || COMPLIANT || STAT-01 || - || 28 || Tiles are ui_stat_box in ui_stat_row; ui_stat_link (not in the guide) makes each a filter link with an aria label and active ring.
+V || R12767 || COMPLIANT || HELP-02 || - || 39 || Card disclosure with class my-4, as the guide's example; under the stat row and above the filter bar.
+V || R05753 || COMPLIANT || LIST-01 || - || 40 || dl.instruction-list Q&A inside the About This Report card; not a data table.
+V || R12769 || COMPLIANT || TABLE-04 || - || 49 || Filters use filter_bar with form_rows; the hidden year field keeps page state.
+V || M0183 || COMPLIANT || COPY-07 || - || 62 || pattern=typography :signup is a parameter name; reader text says "Alpha Shift" and "No sign-up".
+V || M0184 || COMPLIANT || COPY-07 || - || 63 || pattern=typography The match is @filter_params[:signup], a key; the visible label is "Alpha Shift".
+V || R12768 || DIVERGENT || EMPTY-01 || low || 100 || An empty state uses ui_empty_state; an empty section prints a muted p with post_season_empty_message.
+V || R05772 || COMPLIANT || LIST-01 || - || 40 || dl.instruction-list Q&A inside the About This Report card; not a data table.
+V || R12485 || DIVERGENT || EMPTY-01 || low || 84 || An empty state uses ui_empty_state; an empty cohort section prints a muted p, while the page-level empties (17, 72) use the helper.
+V || R12790 || DIVERGENT || EMPTY-01 || low || 8 || An empty state uses ui_empty_state; three empty cases print muted p sentences (8, 12-14, 27).
+V || R12791 || UNCOVERED || - || - || 17 || ui_subheading holding the title, a muted font-normal "— time · description" span and a count badge; the helper is not in the guide.
+V || R05778 || UNCOVERED || - || - || 22 || &middot; separates slot time and description in a subheading; not an icon.
+V || R12792 || COMPLIANT || TYPE-07 || - || 20 || Times and durations take tabular-nums, not the mono face.
+V || R12794 || COMPLIANT || BADGE-01 || - || 28 || Bonked years are ui_badge :warning, wrapped in an inline-flex span.
+V || R12793 || COMPLIANT || EMPTY-02 || - || 34 || No bonks prints "—"; "No rangering history" states a fact.
+V || R12789 || COMPLIANT || HERO-04 || - || 19 || back_to sits in panel.back_to, with the year selector also in the hero.
+V || R12786 || COMPLIANT || BTN-07 || - || 27 || The button sits in a button_row; div.print:hidden only keeps it off paper.
+V || R05809 || COMPLIANT || TYPE-04 || - || 40 || h2 takes heading-section; extra classes are colour and margins.
+V || R12784 || COMPLIANT || TYPE-04 || - || 40 || Day heading is heading-section plus colour and margins; no size or weight override.
+V || R12785 || COMPLIANT || LAYOUT-02 || - || 42 || two-column-lg is an @utility for the documented "grid grid-cols-1 lg:grid-cols-2 gap-4".
+V || R12787 || DIVERGENT || COLOR-02 || medium || 54 || Colour carries meaning; the :error callout flags "On duty now" live data, which the comment says is not an error state.
+V || R12788 || COMPLIANT || ALERT-01 || - || 54 || class: "my-4" on callouts and the disclosure is a margin only.
+V || R05800 || UNCOVERED || - || - || 61 || &middot; separates slot time and description in the banner; not an icon.
+V || R05806 || COMPLIANT || LIST-01 || - || 90 || dl.instruction-list Q&A inside the About This Report card; not a data table.
+V || R12828 || COMPLIANT || HELP-02 || - || 16 || Card disclosure with class my-4 directly under the hero (no stat row), as the guide's example.
+V || R05819 || COMPLIANT || LIST-01 || - || 17 || dl.instruction-list Q&A inside the About This Report card; not a data table.
+V || R12829 || DIVERGENT || COLOR-02 || medium || 25 || Colour carries meaning; the survey count badge is :success with a pluralized word, where sibling sections show a bare number without a success colour.
+F || app/views/mentoring/alpha_mentor_assignments/index.html.erb || 176 || buttons || submit-outside-button-row || DIVERGENT || BTN-07 || medium || Buttons sit in a button_row; the "Assign Mentors from Pods" f.submit sits in a hand flex div beside the raw pod select.
+F || app/views/mentoring/alpha_mentor_assignments/index.html.erb || 172 || forms || aria-only-label || DIVERGENT || FORM-02 || medium || Every field has a visible label; the pod shift select has only an aria-label.
+F || app/views/mentoring/alpha_mentor_assignments/index.html.erb || 34 || other || long-callout-paragraph || DIVERGENT || COPY-10 || low || Paragraphs are two or three sentences; the no-bonks callout body is five sentences and opens by repeating its title as a question.
+F || app/views/mentoring/alpha_pods/_pod_card.html.erb || 33 || buttons || button-outside-button-row || DIVERGENT || BTN-07 || medium || Buttons sit in a button_row; each group's "Add" button_link sits in a div.ms-auto inside the heading row.
+F || app/views/mentoring/alpha_pods/people/edit.html.erb || 49 || buttons || take-out-of-verb || DIVERGENT || COPY-04 || low || Taking something out of a group is "Remove from [Group]"; the button reads "Take out of Pod N".
+F || app/views/mentoring/alpha_pods/print_sheet.html.erb || 107 || empty-loading || plain-p-empty || DIVERGENT || EMPTY-01 || low || An empty state uses ui_empty_state; no pods prints a plain p.mt-4 sentence.
+F || app/views/mentoring/alpha_schedule/show.html.erb || 104 || typography || text-sm-table-cell || DIVERGENT || TYPE-03 || medium || text-sm never for table content; each training line in the Training cell is a text-sm div.
+F || app/views/mentoring/alpha_schedule/show.html.erb || 112 || buttons || bare-remove || DIVERGENT || COPY-04 || low || Taking someone out of a group reads "Remove from [Group]"; the row button is a bare "Remove".
+F || app/views/mentoring/alpha_schedule/show.html.erb || 116 || modals || confirm-no-undo-sentence || DIVERGENT || MODAL-02 || low || A confirm says whether it can be undone; "Remove X from Y?" stops at the question.
+F || app/views/mentoring/alpha_schedule/rosters/_dialog.html.erb || 22 || buttons || submit-outside-button-row || DIVERGENT || BTN-07 || medium || Buttons sit in a button_row; the Search submit_button sits in a hand "flex flex-wrap items-end gap-2" row beside the raw field.
+F || app/views/mentoring/alpha_schedule/rosters/_dialog.html.erb || 51 || buttons || many-primaries || DIVERGENT || BTN-04 || medium || One clear primary action per view; Search and every result row's "Add CALLSIGN" submit_button default to primary.
+F || app/views/mentoring/alpha_signout/index.html.erb || 102 || color || success-callout-neutral-info || DIVERGENT || COLOR-02 || medium || Colour carries meaning; a :success callout states the chosen shift and its sign-out window, which is neutral information, not a success.
+F || app/views/mentoring/shift_report/index.html.erb || 59 || color || success-callout-neutral-info || DIVERGENT || COLOR-02 || medium || Colour carries meaning; a :success callout states the scheduled shift and window, which is neutral information, not a success.
+F || app/views/mentoring/shift_report/index.html.erb || 62 || other || visible-counting-rule || DIVERGENT || HELP-02 || medium || On a report the card is the only home for counting rules; the visible banner says shifts 1 hour before and 2 hours after are included.
+F || app/views/mentoring/shift_report/index.html.erb || 30 || buttons || title-case-preposition || DIVERGENT || COPY-03 || low || Prepositions of four letters or fewer stay lower case; "Currently On Duty" capitalises "On" (the sign-out page writes "Still on Duty").
+F || app/views/mentoring/alphas_convert/index.html.erb || 76 || typography || section-title-sentence-case || DIVERGENT || COPY-03 || low || Section titles are Title Case; pluralize builds "N Shiny Penny candidates" with lower-case "candidates".
+F || app/views/mentoring/alpha_acceptance_sheets/print_sheets.html.erb || 169 || tables-lists || all-caps-headings || DIVERGENT || COPY-03 || low || Table headings are Title Case; the sign-off grid headings are all caps ("MENTOR NAME", "ACCEPT W/RESERV.", "REJECT") (169-172).
+F || app/views/mentoring/alpha_acceptance_sheets/print_sheets.html.erb || 32 || typography || no-heading-elements || DIVERGENT || TYPE-05 || low || Heading hierarchy is clear (h1 > h2 > h3); the form title and section bands are plain divs, so the document has no headings at all.
+S || HERO-01 || 20 || 6 || 14 screen pages all use hero_panel; the 6 print sheets (rows M0380, M0381, M0384-M0386, M0389) do not; 4 modal dialogs and rosters/new are not pages.
+S || HERO-02 || 14 || 0 || Every description is one sentence.
+S || HERO-03 || 14 || 0 || Year selectors (pods index, schedule index, post season, shift report) all sit in the hero.
+S || HERO-04 || 20 || 4 || Show pages use panel.back_to; print sheets and _print_screen_nav put back_to outside a hero (rows).
+S || HELP-01 || 14 || 0 || No help section further down any page.
+S || HELP-02 || 14 || 1 || Shift report keeps a counting rule visible in its banner; all cards are card-variant disclosures in place.
+S || STAT-01 || 15 || 0 || Every stat row is ui_stat_row/ui_stat_box, including _board.
+S || STAT-02 || 14 || 0 || No hero stats.
+S || TABLE-02 || 10 || 0 || responsive: false only on a print sheet and two four-column tables.
+S || TABLE-04 || 14 || 0 || The four filtered pages use filter_bar.
+S || TABLE-05 || 14 || 0 || No CSV export in the area.
+S || BTN-03 || 41 || 0 || No xs buttons; sm used in dialog and table rows only.
+S || BTN-04 || 41 || 1 || rosters/_dialog; filter_bar Apply Filters beside a page's own primary not counted (see Q).
+S || BTN-05 || 41 || 1 || _pod_card ghost Delete Pod (row R12882).
+S || BTN-07 || 41 || 3 || alpha_mentor_assignments/index (row R12854 and F), _pod_card, rosters/_dialog.
+S || MODAL-02 || 5 || 4 || Templates with confirms: _pod_card passes; alpha_schedule/show, alpha_signout/index, alphas_convert/_section, convert_prospectives/index depart (rows and F).
+S || FORM-02 || 13 || 1 || alpha_mentor_assignments/index pod select is aria-label only; per-row table selects are labelled by column headings.
+S || FORM-03 || 13 || 0 || No required fields in the area.
+S || FORM-07 || 13 || 0 || Filter bars use the shared w-full/flex-1 pattern; dialog fields sized.
+S || FORM-08 || 13 || 0 || No standalone form page; all forms are worksheets, filter bars or dialogs.
+S || TYPE-05 || 41 || 1 || Acceptance print sheets have no heading elements.
+S || COLOR-02 || 41 || 4 || alpha_signout/index (row and F), shift_report/index (row and F), surveys/index (row).
+S || COLOR-03 || 41 || 1 || rosters/_dialog error-coloured no-match line, logged under EMPTY-01 (R12822).
+S || A11Y-01 || 41 || 0 || Every coloured state carries a word or icon; row tints are restated by badges.
+S || A11Y-02 || 41 || 0 || Icon-bearing buttons all have text or aria labels.
+S || LAYOUT-03 || 0 || 0 || No records-management page in the area.
+S || COPY-03 || 41 || 3 || shift_report/index, alphas_convert/index, alpha_acceptance_sheets/print_sheets.
+S || COPY-04 || 41 || 2 || alpha_pods/people/edit "Take out of", alpha_schedule/show bare "Remove".
+S || COPY-10 || 41 || 1 || alpha_mentor_assignments/index no-bonks callout.
+Q || Three print views (acceptance print_sheets, mentor assignments print_sheet, pods print_sheet) copy the _print_screen_nav block inline, and the pods sheet copies _sheet_masthead by hand; one partial with label and hint locals would remove the drift.
+Q || The guide has no print-sheet pattern (back link outside a hero, masthead, @page rules in content_for :page_rules), so every sheet here reads as a HERO-01, HERO-04 and STYLE-01 departure; documenting it would turn these into one ruled exception.
+Q || Several filtered pages pair filter_bar's primary "Apply Filters" with the page's own primary submit; the guide could say whether the filter bar's submit counts toward BTN-04.
+Q || Alpha Sign-Out and Mentor Shift Report deliberately use an :error callout for live data and a :success callout for neutral shift info; a neutral or info variant would carry that without borrowing status colours.
+Q || alpha_pods/index badges the pod count in :primary and the empty state in :secondary; primary for a count sits uneasily with COLOR-04 (primary for primary actions and key elements).
+Q || The Training Notes box on the acceptance form prints empty when there are no passed trainings while the other notes boxes print a sentence; the inconsistency shows on paper.

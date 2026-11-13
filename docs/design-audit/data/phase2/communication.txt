@@ -1,0 +1,313 @@
+V || R12130 || COMPLIANT || BADGE-01 || - || 40 || announcement_status_badge builds through ui_badge with icon and word (Expired/Active), so status is not colour alone.
+V || R12129 || COMPLIANT || BADGE-01 || - || 49 || person_banner_type_badge builds through ui_badge with icon and word.
+V || R12243 || COMPLIANT || COLOR-02 || - || 13 || TYPES variant encodes how serious each broadcast is; the colour drives accent cards, callouts and buttons with a semantic purpose (severity).
+V || R12244 || COMPLIANT || COPY-08 || - || 112 || strftime sits in a helper, not a view, and uses DateTimeHelper::MONTH_DAY_TIME so the format is the helper's own; plain text needed inside option tags.
+V || M0209 || COMPLIANT || COPY-08 || - || 112 || pattern=typography strftime in a helper with the DateTimeHelper::MONTH_DAY_TIME constant, for option text; not a view and not an ad-hoc format.
+V || R12238 || COMPLIANT || EMPTY-02 || - || 141 || Empty values print the em dash, bare at 141,176,183 and muted span at 239,364,451,495,517.
+V || R12242 || COMPLIANT || BADGE-01 || - || 201 || rbs_channel_badges uses ui_badge :secondary with a channel icon and the channel word.
+V || R12235 || COMPLIANT || A11Y-01 || - || 216 || Outcomes pair colour with a word and icon (check + "sent/yes/queued", triangle + "failed"); reasons are words in muted text.
+V || R00157 || COMPLIANT || COLOR-05 || - || 216 || icon-success on a status check icon, as the rule prescribes for status icons; the word beside it carries the meaning.
+V || R12237 || COMPLIANT || BADGE-01 || - || 260 || rbs_count_cell badges a non-zero count with ui_badge; the column heading names what is counted, so colour is not the sole carrier.
+V || R12236 || COMPLIANT || BADGE-01 || - || 328 || Message outcomes and delivery column via ui_badge with label words (and icon on delivery badge).
+V || R12240 || COMPLIANT || COLOR-05 || - || 351 || Direction arrow is neutral text-stone-icon followed by the word incoming/outgoing.
+V || R12241 || UNCOVERED || - || - || 366 || Plain link pattern: link_to "#id" with class "underline" inside a table cell (links have no rule).
+V || R12239 || UNCOVERED || - || - || 520 || ambiguous ICON-04: rule covers icons explained in a page card; these channel icons have sr-only names but no tooltip, label: or visible legend, so sighted readers get icons only.
+V || R12163 || COMPLIANT || BADGE-01 || - || 22 || Survey status, responses, group-type and question-type badges all build through ui_badge with icon and word.
+V || R12164 || COMPLIANT || MODAL-02 || - || 99 || button_link :secondary from ButtonHelper; non-destructive confirm asks with the action ("Copy ... as a 2026 survey?") and says the copy starts switched off.
+V || R00167 || COMPLIANT || MODAL-02 || - || 99 || confirm_modal for a non-destructive POST (duplicate); wording asks with the action, so no :error variant is due.
+V || R12098 || UNCOVERED || - || - || 39 || Inline-styled <pre> inside a sandboxed srcdoc iframe showing a stored email body; email HTML is not addressed by the guide and app CSS cannot reach the iframe.
+V || M0435 || UNCOVERED || - || - || 7 || pattern=other inline style= on the email header wrapper; email HTML is not addressed by the guide (mail clients need inline styles, per the comment).
+V || R12097 || UNCOVERED || - || - || 7 || Email header image helper with inline styles for mail clients; email HTML is not addressed by the guide.
+V || M0436 || UNCOVERED || - || - || 11 || pattern=other inline style= on the email logo image_tag; email HTML is not addressed by the guide.
+V || R12067 || COMPLIANT || CARD-01 || - || 8 || card-standard with call-site padding and the documented bg-base-200 surface override; the guide shows the div form. Placement is a separate HELP-02 finding.
+V || R12068 || UNCOVERED || - || - || 9 || Div labels "font-semibold text-heading" (legend title, alert titles) at text-base; they do not outweigh the ui_section title, so TYPE-04 does not catch them.
+V || M0004 || DIVERGENT || BP-01 || medium || 10 || pattern=spacing sm: is allowed only in a field width:; the legend switches from column to row at sm:, creating an extra layout tier.
+V || R12076 || COMPLIANT || COLOR-06 || - || 13 || Legend descriptions use text-stone-muted, the ladder's muted step, for secondary text.
+V || R12071 || UNCOVERED || - || - || 29 || Rows of a hand-built list separated by <hr class="my-4 border-line">; no rule for row separators.
+V || R01580 || UNCOVERED || - || - || 29 || <hr> used as a row separator between alert rows; no rule addresses horizontal rules.
+V || R01576 || DIVERGENT || FORM-01 || medium || 53 || pattern=forms fields come from AppFormBuilder; the disabled SMS checkbox is a raw <input> borrowing CHECKBOX_CLASSES (32,71,90 are hidden fields, not judged).
+V || R12072 || DIVERGENT || FORM-01 || medium || 73 || Forms use AppFormBuilder fields; per-alert SMS/Email checkboxes are tag.input + raw <label> with the builder's CHECKBOX_CLASSES, looking the same.
+V || R12077 || UNCOVERED || - || - || 71 || Cannot tell from scope whether saving preferences can fail; the raw alerts[n] inputs have no input-error path and the form passes no_error_summary: true.
+V || R01582 || DIVERGENT || LAYOUT-02 || low || 35 || Columns are flex or grid grid-cols-1 lg:grid-cols-N gap-4; this grid uses an arbitrary track list lg:grid-cols-[1fr_auto_auto] with gap-3/lg:gap-6.
+V || R12070 || DIVERGENT || LAYOUT-02 || low || 35 || Columns use grid grid-cols-1 lg:grid-cols-N gap-4; alert rows form a hand-built 3-column table from an arbitrary grid template with fixed lg:w-44 columns.
+V || R01585 || COMPLIANT || TYPE-02 || - || 44 || text-xs only on the lg:hidden "SMS:"/"Email:" column labels, the listed mobile-only-label use; 57,75,94 are text-base.
+V || R12069 || COMPLIANT || TYPE-02 || - || 44 || Mobile-only column labels in a table-like layout are a listed text-xs use.
+V || R12074 || COMPLIANT || BADGE-01 || - || 47 || "Required"/"Email only"/"SMS only" via ui_badge :secondary; the word states why no checkbox is offered.
+V || R12073 || DIVERGENT || FORM-01 || medium || 53 || Fields come from the builder; the unavailable SMS option is a raw disabled <input> in a hand-built role=group div with an sr-only reason.
+V || R12075 || UNCOVERED || - || - || 57 || Label spans differ: SMS spans carry leading-tight, the Email span (94) does not; no rule on leading for labels.
+V || R01577 || DIVERGENT || FORM-01 || medium || 72 || Labels come from the builder; raw <label class="inline-flex items-center min-h-9"> wraps hand-made checkboxes (72,91).
+V || R01578 || DIVERGENT || FORM-01 || medium || 73 || Fields come from the builder; tag.input checkboxes with CHECKBOX_CLASSES (73,92) stand in for f.check_box.
+V || R12066 || COMPLIANT || HERO-04 || - || 4 || Back navigation to Profile through hero_panel back_to:.
+V || R01599 || UNCOVERED || - || - || 68 || 43 is a Q&A instruction-list (fine); 68 reuses instruction-list as a Phone number/Stopped/Verified label/value readout; label/value displays have no rule.
+V || R12055 || COMPLIANT || LIST-01 || - || 43 || Explanation as a Q&A dl.instruction-list above the tech-ninja form on a page the reader operates.
+V || R12064 || COMPLIANT || FORM-06 || - || 47 || Errors return through ui_form's summary on 47,97,124; no_error_summary: is a documented option, used on the button-only Resend form and the raw-input preferences form.
+V || R12054 || UNCOVERED || - || - || 68 || instruction-list (a Q&A style) used as a label/value readout; label/value displays have no rule.
+V || R01602 || DIVERGENT || EMPTY-02 || low || 70 || An empty value prints "—"; the missing phone number prints italic content_tag(:em, "none on file").
+V || R12056 || DIVERGENT || EMPTY-02 || low || 70 || Empty value should print "—"; prints <em>none on file</em>.
+V || R12065 || COMPLIANT || SPACE-01 || - || 86 || Intro paragraphs spaced mb-3, on the Tailwind scale.
+V || R12060 || UNCOVERED || - || - || 93 || Plain link pattern: email address as link_to "mailto:..." with class "underline" (93,157) instead of mail_to; links have no rule.
+V || R12063 || UNCOVERED || - || - || 100 || form_row wrapping a single field (100,127) while the admin form's field at 51 has none; no rule says when form_row is used.
+V || R12061 || DIVERGENT || BTN-07 || medium || 110 || A form's save sits in a button_row; Save Phone Number (110), Verify Code (138) and Resend Code (143) are bare f.submit outside any button_row.
+V || R12057 || UNCOVERED || - || - || 119 || ui_callout_box :info used as the container for two ui_forms (verify, resend); no rule says what a callout may hold.
+V || R12062 || COMPLIANT || SPACE-01 || - || 141 || Resend form spaced with html class mt-2, a Tailwind scale value.
+V || R12058 || DIVERGENT || TYPE-03 || medium || 156 || text-sm is never for paragraph content; the stopped-number callout's contact sentence is text-sm, among divs with ad-hoc strong/font-semibold emphasis.
+V || R01605 || DIVERGENT || TYPE-03 || medium || 156 || text-sm not for paragraphs; used on the contact line (156) and on the disclosure summary and explanation (162,163).
+V || R12059 || DIVERGENT || TYPE-03 || medium || 163 || text-sm not for paragraph content; ui_disclosure "Why It's Stopped" shrinks its summary and its explanation to text-sm via summary_class/content_class.
+V || R12083 || DIVERGENT || BP-01 || medium || 17 || md: is reserved for button-row stacking; the bookmark status line becomes three columns at md:, a layout tier (text-sm here is metadata, allowed).
+V || R02155 || DIVERGENT || HERO-01 || high || 10 || Every page header is a hero_panel; the kiosk bookmark page heads itself with a raw <h1 class="text-xl font-semibold px-3 pt-3">.
+V || R02158 || COMPLIANT || TYPE-03 || - || 17 || text-sm on the status line (countdown, updated time, clock) is metadata, a listed use; the text-xl h1 at 10 is covered by the HERO-01 rows.
+V || R12082 || DIVERGENT || HERO-01 || high || 10 || Page header should be hero_panel; a raw h1 with its own size and padding names the document.
+V || M0009 || DIVERGENT || BP-01 || medium || 17 || pattern=spacing md: only for button-row stacking; md:grid-cols-3 creates a three-column tier for the status line.
+V || R12084 || UNCOVERED || - || - || 18 || Countdown and clock are empty elements filled by the bookmark Stimulus controller; loading states have no rule.
+V || M0010 || DIVERGENT || BP-01 || low || 19 || pattern=spacing md: is not a sanctioned breakpoint here; md:text-center aligns the middle status column.
+V || M0011 || DIVERGENT || BP-01 || low || 22 || pattern=spacing md: is not a sanctioned breakpoint here; md:text-right aligns the clock column.
+V || R12085 || UNCOVERED || - || - || 31 || ambiguous FORM-09: cannot tell from scope whether document.body is saved Lexxy rich text; it renders via html_safe inside .lexxy-content rather than through rich_text.
+V || M0373 || UNCOVERED || - || - || 4 || pattern=other ambiguous HERO-01: this is the turbo-frame refresh fragment of bookmarks/show, not a page; the page-level departure is recorded on show and _document.
+V || R12088 || UNCOVERED || - || - || 6 || Own <main class="mx-auto w-full max-w-lg px-4 pt-16"> page-width wrapper on a bare kiosk layout; no rule on page wrappers.
+V || R02162 || DIVERGENT || HERO-01 || high || 7 || Page header should be hero_panel; not_found heads itself with a raw <h1 class="text-xl font-semibold mb-3">.
+V || R12089 || DIVERGENT || HERO-01 || high || 7 || Every page's header is a hero_panel; "Bookmark Not Found" is a raw h1 with its own size and weight.
+V || R12090 || COMPLIANT || EMPTY-01 || - || 9 || The not-found message uses ui_empty_state with a regular icon.
+V || M0374 || DIVERGENT || HERO-01 || high || 15 || pattern=other every page's header is a hero_panel; bookmarks/show renders a raw h1 (from _document) and its own <main> wrapper.
+V || R02166 || DIVERGENT || STYLE-01 || low || 15 || No CSS outside components/; bookmark-page is defined in app/assets/stylesheets/bookmark.css, outside components/.
+V || R02168 || UNCOVERED || - || - || 15 || Arbitrary max-w-[90rem] page cap with a written reason in the comment; the guide has no rule on arbitrary width values.
+V || R12086 || UNCOVERED || - || - || 15 || Kiosk page draws its own <main> with max-w-[90rem] because the bookmark layout yields bare; no rule on page wrappers.
+V || R12087 || UNCOVERED || - || - || 19 || turbo_frame with no src that the bookmark controller reloads on a timer; refresh/loading behaviour has no rule.
+V || M0375 || COMPLIANT || MODAL-01 || - || 11 || pattern=modals not a page: a modal fragment built with ModalHelper's modal_dialog, whose title: is its header, so HERO-01 does not apply.
+V || R12078 || COMPLIANT || MODAL-01 || - || 11 || Three dialog states all from ModalHelper's modal_dialog with modal_close_button in a button_row; the in-modal re-request is behaviour, not a rule matter.
+V || R12079 || COMPLIANT || FORM-06 || - || 12 || Refused report re-renders at 422 with errors through ui_form and f.text_area.
+V || R12080 || COMPLIANT || COPY-10 || - || 22 || Paragraph leads with the key point in bold, the documented content-writing pattern.
+V || R12081 || UNCOVERED || - || - || 24 || Plain link_to with data turbo_frame "_top" breaking out of the modal frame; links have no rule.
+V || R12113 || COMPLIANT || CARD-01 || - || 8 || ui_card with call-site padding (documented); expired cards add opacity-70 while the Expired badge states the status.
+V || R03378 || COMPLIANT || TYPE-04 || - || 10 || <h2> carries heading-section; the extra classes are layout and colour, not size or weight.
+V || R12114 || COMPLIANT || TYPE-04 || - || 10 || Card title is an h2 with heading-section; icon is neutral text-stone-icon.
+V || R03374 || COMPLIANT || BADGE-01 || - || 15 || announcement_status_badge builds through ui_badge.
+V || R03382 || COMPLIANT || TYPE-03 || - || 19 || text-sm on the meta line (Posted by, posted/expires timestamps, audience), a listed metadata use.
+V || R12115 || UNCOVERED || - || - || 19 || Hand-built meta row (flex-wrap of icon + text spans, text-sm text-stone-subtle), repeated in person_banners/_banner; no metadata-line rule or helper.
+V || R12116 || DIVERGENT || STYLE-03 || medium || 43 || No ad-hoc wrapper doing a helper's job; the message is a hand-made bordered, rounded, tinted, padded scroll box inside the card.
+V || R12117 || UNCOVERED || - || - || 47 || ambiguous FORM-10: the divider rule covers field groups (mt-4 pt-3 border-t); this card footer rule uses pt-3 mt-3 border-t above the button_row.
+V || R12120 || COMPLIANT || FORM-06 || - || 17 || ui_form with required: fields, errors through the builder.
+V || R03395 || COMPLIANT || LIST-01 || - || 4 || Q&A dl.instruction-list explaining fieldset choices (4,26).
+V || R12118 || COMPLIANT || LIST-01 || - || 4 || Explanations as Q&A instruction-lists at the top of two fieldsets.
+V || R12119 || COMPLIANT || BTN-07 || - || 38 || f.submit, cancel_link and delete_button together in one button_row.
+V || R12112 || COMPLIANT || HERO-02 || - || 4 || Description through panel.description is one sentence saying what the page does.
+V || R12109 || COMPLIANT || A11Y-01 || - || 13 || Expired stat's warning colour comes with its label and count, so colour is not the sole carrier.
+V || R12108 || DIVERGENT || BTN-05 || high || 21 || Destructive actions take :error (delete_button); "Delete Expired" is a grey :secondary button_link, unlike the red delete buttons elsewhere.
+V || R03412 || COMPLIANT || MODAL-02 || - || 24 || Destructive confirm asks with the action, says it cannot be undone, and passes variant: :error.
+V || R12110 || UNCOVERED || - || - || 44 || ambiguous FORM-07: filter_bar selects are w-full with wrapper flex-1 in a form_row; the rule's widths are for standalone fields and say nothing about filter-panel rows.
+V || R12111 || COMPLIANT || EMPTY-01 || - || 67 || Two ui_empty_state branches: none posted vs none matched the filters.
+V || R12104 || COMPLIANT || TYPE-06 || - || 22 || Variable names in <code> (mono), a listed use for literal strings.
+V || M0566 || COMPLIANT || TYPE-06 || - || 22 || pattern=typography font-mono on <code> variable names, a literal string; the class is redundant on code but allowed.
+V || R03434 || COMPLIANT || TYPE-06 || - || 56 || font-mono on <code> (22) and on the HTML/plain-text template source textareas (56,63): literal code, a listed use.
+V || R12107 || COMPLIANT || FORM-06 || - || 34 || ui_form shows errors; an unparseable template is refused on save.
+V || R03429 || COMPLIANT || LIST-01 || - || 44 || Q&A dl.instruction-list inside the Template text fieldset.
+V || R12106 || COMPLIANT || LIST-01 || - || 44 || Explanations about editing HTML as a Q&A instruction-list.
+V || R12105 || COMPLIANT || TYPE-06 || - || 56 || f.text_area with class font-mono for template source code, a literal string; field built by the builder.
+V || M0567 || COMPLIANT || TYPE-06 || - || 56 || pattern=forms font-mono on the HTML template textarea, which holds code.
+V || M0568 || COMPLIANT || TYPE-06 || - || 63 || pattern=forms font-mono on the plain-text template textarea, which holds template code.
+V || R12102 || COMPLIANT || COPY-10 || - || 15 || Section intro leads with the key point in bold, then one short sentence.
+V || M0569 || COMPLIANT || TYPE-06 || - || 29 || pattern=typography font-mono on the template tag, a document tag (listed use).
+V || R03450 || COMPLIANT || TYPE-06 || - || 29 || font-mono on the template tag identifier.
+V || R12099 || COMPLIANT || TYPE-06 || - || 29 || Template tag in mono is a document tag; the lowercase "shared" badge sits inside the mono div (badge casing has no rule).
+V || R12100 || UNCOVERED || - || - || 38 || Two values (updated date, updater) stacked in one cell with <br>; no rule on stacked cells.
+V || R12101 || UNCOVERED || - || - || 46 || Actions cell shows plain words "Admins only" where the reader may not edit, instead of an action; no rule for unavailable actions.
+V || R12103 || COMPLIANT || EMPTY-01 || - || 55 || Empty list via ui_empty_state.
+V || R12124 || COMPLIANT || CARD-01 || - || 7 || ui_card with call-site padding.
+V || R03463 || COMPLIANT || TYPE-04 || - || 9 || <h3> carries heading-title; extra classes are layout and colour.
+V || R12125 || COMPLIANT || TYPE-04 || - || 9 || Card title h3 with heading-title under the ui_section h2; neutral icon.
+V || R03460 || COMPLIANT || BADGE-01 || - || 17 || person_banner_type_badge builds through ui_badge.
+V || R03466 || COMPLIANT || TYPE-03 || - || 21 || text-sm on Posted/Changed history lines, metadata.
+V || R12126 || UNCOVERED || - || - || 21 || Hand-built meta row of calendar-icon spans, same shape as the announcement card's; no metadata-line rule.
+V || R12127 || UNCOVERED || - || - || 32 || Message in a tinted padded div with no border or radius (not a full hand-made container); comment promises kept line breaks but the div has no whitespace utility.
+V || R12128 || UNCOVERED || - || - || 36 || ambiguous FORM-10: card footer divider pt-3 mt-3 border-t over a button_row; the divider rule covers form field groups only.
+V || R12121 || COMPLIANT || ALERT-01 || - || 17 || Info notice via ui_callout_box on a page the reader operates (edit/delete per row), where a visible callout may hold a sentence.
+V || R12122 || UNCOVERED || - || - || 46 || ambiguous FORM-07: free-text filter in filter_bar at w-full with flex-1; the width table does not cover filter-panel rows.
+V || R12123 || COMPLIANT || EMPTY-01 || - || 57 || Two ui_empty_state branches: none posted vs none matched.
+V || R12169 || COMPLIANT || CARD-02 || - || 4 || ui_accent_card with a variant matching severity and heading_level: :h3.
+V || R12172 || COMPLIANT || COLOR-06 || - || 7 || "Reaches ..." secondary line in text-stone-muted.
+V || R12171 || UNCOVERED || - || - || 12 || Empty <span class="grow"> spacer pushes the button to the row end; no rule on spacers.
+V || R12170 || DIVERGENT || BTN-05 || medium || 13 || :error is for destructive actions; "Start" (not destructive) takes the card's severity colour, red :error for emergency, amber :warning for on-shift.
+V || R12168 || UNCOVERED || - || - || 15 || Curly quotes written as &ldquo; &rdquo; entities in copy; no rule on quotation marks (quoted "Any time" also differs in case from the "Any Time" section).
+V || R12165 || COMPLIANT || CARD-03 || - || 25 || Two ui_sections side by side in the documented flex flex-col lg:flex-row gap-4 wrapper.
+V || R12166 || COMPLIANT || LAYOUT-03 || - || 41 || Drill-down row list constrained to lg:w-3/4, as the records-management level-1 row list is.
+V || R12167 || COMPLIANT || LAYOUT-03 || - || 45 || Drill-down rows badge only the exception count, size "base", omitted at zero.
+V || R12224 || UNCOVERED || - || - || 9 || ambiguous FORM-07: widths are responsive but passed via html class: (not width:) and folded at lg: rather than sm:; the shift select at 27 is plain w-full.
+V || R12221 || DIVERGENT || FORM-10 || low || 13 || Sub-groups are divided with mt-4 pt-3 border-t border-line; 13 and 36 use mt-3 while 53 and 63 use mt-4.
+V || R03507 || COMPLIANT || LIST-01 || - || 14 || Q&A instruction-list inside a sub-section divider, as the FORM-10 example shows.
+V || R12225 || COMPLIANT || EMPTY-01 || - || 29 || No shifts for the chosen position shown via ui_empty_state.
+V || R03500 || DIVERGENT || FORM-01 || medium || 37 || Labels come from the builder; a raw <label> with LABEL_CLASSES titles a checkbox grid it is not associated with.
+V || R12222 || DIVERGENT || FORM-05 || medium || 37 || Checkbox groups are grouped with f.fieldset; Account status and Attendance use a raw label/span with LABEL_CLASSES plus role=group (37,64).
+V || R03510 || COMPLIANT || TYPE-03 || - || 46 || text-sm on a form help line, a listed use (the hand-written placement is R12223).
+V || R12223 || DIVERGENT || FORM-04 || medium || 46 || Help text is the field's help_text: tied by aria-describedby; this help line is a hand-written <p> not linked to the checkbox group.
+V || R03520 || COMPLIANT || LIST-01 || - || 14 || Q&A instruction-list inside the message section.
+V || R12220 || COMPLIANT || LIST-01 || - || 14 || Explanation of email vs Clubhouse message as a Q&A list.
+V || R12219 || COMPLIANT || FORM-01 || - || 22 || Channel checkboxes are builder f.check_box fields in a form_row.
+V || R12218 || UNCOVERED || - || - || 27 || ambiguous FORM-07: the subject width is responsive but uses an arbitrary lg:w-[40rem] rather than a scale width; the rule does not address arbitrary widths.
+V || R12226 || COMPLIANT || ALERT-01 || - || 6 || Severity notice via ui_callout_box with a documented variant (:secondary mapped to :info). Title casing is a separate COPY-03 finding.
+V || R12228 || UNCOVERED || - || - || 10 || Empty grow span as a spacer before the Select None button; no rule on spacers.
+V || R12227 || DIVERGENT || FORM-05 || medium || 7 || Checkbox groups are grouped with f.fieldset; the Positions group is labelled by a span with LABEL_CLASSES mb-0 and role=group.
+V || R03534 || COMPLIANT || TYPE-03 || - || 8 || text-sm on the live "N selected" count, supporting metadata.
+V || R12230 || UNCOVERED || - || - || 8 || aria-live polite selected-count span updated by Stimulus; no rule on live regions.
+V || R12229 || COMPLIANT || BTN-05 || - || 11 || "Select None" is a minimal action as button_action :ghost.
+V || R12231 || DIVERGENT || STYLE-03 || medium || 16 || No ad-hoc wrapper doing a helper's job; the checkbox list sits in a hand-made bordered, rounded, padded scroll box.
+V || R12234 || COMPLIANT || EMPTY-01 || - || 19 || Empty position list via ui_empty_state.
+V || R12232 || UNCOVERED || - || - || 22 || Team names as div "font-semibold text-heading" at text-base; does not outweigh the section title.
+V || R12233 || UNCOVERED || - || - || 23 || ambiguous LAYOUT-02: a checkbox grid (grid-cols-1 lg:grid-cols-3 gap-1), not page columns; the rule's gap-4 is for page columns.
+V || R12212 || UNCOVERED || - || - || 11 || Truncation note as a padded <p class="px-3 pb-2"> above the table in a border:false section; no rule for table notes.
+V || R12213 || UNCOVERED || - || - || 21 || ambiguous EMPTY-01: ui_table has no empty branch; cannot tell from scope whether review can be reached with no people.
+V || R12215 || COMPLIANT || A11Y-01 || - || 7 || Stat switches to :warning at zero, with the number and label stating it.
+V || R12214 || UNCOVERED || - || - || 9 || ambiguous STAT-01: ui_stat_box value is a phrase of channel names ("Text and Email"), not a number; the rule does not say values must be figures.
+V || R03547 || COMPLIANT || LIST-01 || - || 16 || Q&A instruction-list inside the section.
+V || R12217 || COMPLIANT || LIST-01 || - || 16 || Explanation of list ordering as a Q&A pair.
+V || R12216 || UNCOVERED || - || - || 26 || ambiguous FORM-07: select width w-full lg:w-96 via html class:, folding at lg: instead of the rule's sm:.
+V || R12202 || COMPLIANT || PROG-01 || - || 15 || Wizard step drawn with the hero's documented panel.progress, not hero stats.
+V || R12203 || COMPLIANT || FORM-06 || - || 34 || ui_form novalidate; server redraws with errors through the builder.
+V || R12204 || COMPLIANT || BTN-07 || - || 45 || f.submit and cancel_link together in a button_row.
+V || R12210 || UNCOVERED || - || - || 1 || Hidden div with data-controller scroll-to-top as behaviour carrier; no rule.
+V || R03575 || COMPLIANT || TYPE-04 || - || 33 || <h3> carries heading-title; mb-1 is spacing.
+V || R12205 || COMPLIANT || TYPE-04 || - || 33 || h3 heading-title under the Message ui_section.
+V || R12206 || DIVERGENT || STYLE-03 || medium || 36 || No ad-hoc wrapper doing a helper's job; message previews sit in hand-made bordered, rounded, tinted, padded boxes (36,46).
+V || R12209 || UNCOVERED || - || - || 66 || Intro note as <p class="px-3 pb-2"> inside a border:false section; no rule for section notes.
+V || R12208 || COMPLIANT || FORM-01 || - || 77 || ui_form(nil) carries hidden fields and the submit buttons.
+V || R12207 || DIVERGENT || BTN-05 || medium || 81 || :error is for destructive actions; the emergency Send is red :error though sending is not destructive (Edit Message :secondary and cancel_link fine).
+V || R12211 || COMPLIANT || BTN-07 || - || 28 || Closing actions in a button_row, one :primary and one :secondary.
+V || R12185 || UNCOVERED || - || - || 36 || ambiguous FORM-07: filter selects set w-full through html class: rather than width:; the rule does not cover filter-panel rows.
+V || R12187 || COMPLIANT || ALERT-01 || - || 48 || Warning callout shown only when results are capped, a state notice.
+V || R12188 || COMPLIANT || EMPTY-01 || - || 56 || ui_empty_state; one message whatever the filters (the two-empty-state rule binds records-management pages only).
+V || R12186 || UNCOVERED || - || - || 72 || Plain link pattern: row-header date link_to with class "underline"; links have no rule.
+V || R12189 || UNCOVERED || - || - || 79 || ambiguous ICON-04: "Sent By" column is icons with sr-only names, no tooltip or visible legend; the rule covers icons explained in a page card.
+V || R12198 || UNCOVERED || - || - || 5 || Hidden scroll-to-top behaviour div before content_for :title; no rule.
+V || R12199 || UNCOVERED || - || - || 18 || Explanation as <p class="px-3 pb-2"> inside a border:false section; no rule for section notes.
+V || R12200 || COMPLIANT || EMPTY-01 || - || 22 || "There was nothing left to send." via ui_empty_state.
+V || R12201 || DIVERGENT || HERO-04 || medium || 29 || Back navigation lives in the hero; a second back control, button_link "Back to This Broadcast" :primary, repeats the hero back_to in the body.
+V || R12192 || DIVERGENT || BTN-05 || medium || 32 || :error is for destructive actions; the non-destructive retry "Send Failed Messages Again" is a red :error button_link.
+V || R03626 || COMPLIANT || MODAL-02 || - || 35 || Non-destructive confirm asks with the action and says who is left alone.
+V || R12193 || COMPLIANT || EMPTY-02 || - || 52 || Unused channel and blank values print "—" (52,54,87,89).
+V || R12194 || COMPLIANT || A11Y-01 || - || 57 || Failed/Bounced stat colours pair with their counts and labels.
+V || R12197 || DIVERGENT || STYLE-04 || low || 66 || The documented utilities are the vocabulary; stack-to-row-lg is an undocumented @utility equal to the documented flex flex-col lg:flex-row gap-4 wrapper.
+V || R03634 || COMPLIANT || TYPE-04 || - || 69 || <h3> carries heading-title; mb-1 is spacing.
+V || R12190 || COMPLIANT || TYPE-04 || - || 69 || h3 heading-title under the Message section.
+V || R12191 || DIVERGENT || STYLE-03 || medium || 70 || No ad-hoc wrapper doing a helper's job; message bodies sit in hand-made bordered, rounded, tinted, padded boxes (70,74).
+V || R12195 || UNCOVERED || - || - || 104 || Truncation note as <p class="px-3 pb-2"> above the table; no rule for table notes.
+V || R12196 || COMPLIANT || EMPTY-01 || - || 110 || ui_empty_state without icon; icon is optional.
+V || R12177 || UNCOVERED || - || - || 37 || ambiguous FORM-07: direction select sets w-full via html class: while the callsign field uses width:; the rule does not settle filter-panel widths.
+V || R12178 || DIVERGENT || FORM-05 || medium || 41 || Checkbox groups are grouped with f.fieldset; Outcome and Email Failure Reason use raw <label> with LABEL_CLASSES plus role=group (41,53).
+V || R03647 || DIVERGENT || FORM-01 || medium || 41 || Labels come from the builder; raw <label> elements (41,53) label checkbox grids they are not associated with.
+V || R12179 || COMPLIANT || BTN-07 || - || 62 || Apply Filters in a button_row; class: mt-4 is a scale spacing value.
+V || R12180 || UNCOVERED || - || - || 124 || ui_pager drawn above the table (79) and again below the branch (124), so it shows under an empty state too; pagination has no rule.
+V || R12184 || COMPLIANT || EMPTY-01 || - || 73 || Two ui_empty_state branches: filters matched nothing vs nothing recorded in the year.
+V || R12181 || UNCOVERED || - || - || 92 || ui_table with detail_row_toggle/detail_row and a blank "" column heading for the toggle column; no rule on blank headings or detail rows.
+V || R12183 || COMPLIANT || TABLE-01 || - || 98 || ui_table cells with alignment and nowrap classes; content stays at table size.
+V || R12182 || DIVERGENT || STYLE-03 || medium || 112 || No ad-hoc wrapper doing a helper's job; message text in the detail row is a hand-made bordered, rounded, tinted, padded box.
+V || R03652 || DIVERGENT || EMPTY-02 || low || 113 || pattern=empty-loading not an icon: an empty message prints italic tag.i("empty message") instead of "—".
+V || R12176 || COMPLIANT || EMPTY-01 || - || 4 || Empty lists via ui_empty_state with a circle-check icon.
+V || R12174 || COMPLIANT || A11Y-01 || - || 17 || Stat and count-badge colours pair with numbers under named labels/columns.
+V || R12173 || DIVERGENT || HELP-02 || high || 24 || On a report, explanations go in one collapsed About card; this page keeps a visible info callout holding a Q&A instruction-list under the stat row.
+V || R03677 || DIVERGENT || HELP-02 || high || 25 || No Q&A list stays visible on a report; the dl.instruction-list defining the statuses sits in an always-open info callout.
+V || R12175 || UNCOVERED || - || - || 60 || Counts in parentheses inside section titles ("Not Confirmed (n)"), where other pages use the ui_section badge:; no rule on counts in titles.
+V || R03694 || COMPLIANT || LIST-01 || - || 5 || Q&A instruction-list in the fieldset.
+V || R12159 || COMPLIANT || LIST-01 || - || 5 || Explanation of a group as a Q&A pair.
+V || R12158 || UNCOVERED || - || - || 15 || help_text shows literal markup "<b>text</b>" and a spaced hyphen as a dash; no rule on markup examples in help text.
+V || R12157 || COMPLIANT || FORM-01 || - || 19 || Radio group from the builder's collection_radio_buttons with label and required:.
+V || R12160 || UNCOVERED || - || - || 6 || hidden_field_tag carrying the group id outside the builder; a hidden field is not a form field in the rule's sense.
+V || R03716 || COMPLIANT || LIST-01 || - || 10 || Q&A instruction-list; the first answer is the group's title.
+V || R12162 || COMPLIANT || LIST-01 || - || 10 || Q&A instruction-list at the top of the fieldset.
+V || R12161 || UNCOVERED || - || - || 29 || Both type-specific fields always shown; applicability stated only in help_text; no rule on conditional fields.
+V || R03738 || COMPLIANT || LIST-01 || - || 6 || Q&A instruction-lists in two fieldsets (6,51).
+V || R12154 || COMPLIANT || LIST-01 || - || 6 || Explanations as Q&A instruction-lists.
+V || R12155 || UNCOVERED || - || - || 22 || ambiguous FORM-07: selects are w-full with flex-1 in a form_row, and w-full lg:w-96 (lg: rather than sm:); the rule does not settle paired selects.
+V || R12156 || COMPLIANT || BTN-07 || - || 63 || f.submit, cancel_link and delete_button in one button_row (submit label is a COPY-04 finding).
+V || R12147 || COMPLIANT || CARD-03 || - || 4 || ui_section with documented badge: and an action partial for header buttons.
+V || R12148 || COMPLIANT || COLOR-06 || - || 13 || Secondary text (group description, Choices line, Optional) in text-stone-muted.
+V || R12150 || COMPLIANT || TABLE-01 || - || 31 || ui_table row header with a width class; tabular-nums is redundant with the table default.
+V || R12149 || UNCOVERED || - || - || 43 || Required as ui_badge :warning, its opposite as plain muted "Optional" text; no rule on paired badge/plain states.
+V || R12151 || COMPLIANT || BTN-06 || - || 50 || Row edit through edit_link beside the shared move buttons.
+V || R12152 || COMPLIANT || EMPTY-01 || - || 64 || Empty group via ui_empty_state inside its section.
+V || R12153 || DIVERGENT || BTN-04 || medium || 3 || One primary action per view; every group header has a :primary "Add Question", alongside the page's :primary "Add Group".
+V || R12131 || COMPLIANT || HELP-01 || - || 14 || Help section announced at the top by an info callout with an underlined font-semibold anchor link, exactly the documented pattern.
+V || R12135 || COMPLIANT || ALERT-01 || - || 22 || Warning via ui_callout_box with title when the permission covers no position.
+V || R12132 || UNCOVERED || - || - || 28 || button_row wrapped in a div "my-4" for spacing (also surveys/show 58); no rule on button-row margins.
+V || R12134 || COMPLIANT || COLOR-06 || - || 54 || Secondary mentoring line in text-stone-muted.
+V || R12133 || DIVERGENT || BTN-04 || medium || 63 || One clear primary action per view; every table row has a :primary "Manage" button besides the page's :primary "Add Survey".
+V || R03759 || COMPLIANT || BTN-01 || - || 66 || survey_duplicate_button builds through button_link.
+V || R12136 || COMPLIANT || EMPTY-01 || - || 75 || Empty year via ui_empty_state.
+V || R12137 || COMPLIANT || HELP-01 || - || 80 || Foot-of-page help ui_section id help-section with a Q&A list, announced from the top on a page the reader operates.
+V || R03771 || COMPLIANT || LIST-01 || - || 82 || Q&A instruction-list in the help section.
+V || R12144 || UNCOVERED || - || - || 4 || Hidden scroll-to-element behaviour div; no rule.
+V || R12145 || COMPLIANT || ALERT-01 || - || 15 || Active/inactive state as :success/:warning ui_callout_box with icon and bold lead words.
+V || R12138 || DIVERGENT || LAYOUT-02 || low || 28 || Grid columns take gap-4; Survey Details splits into lg:grid-cols-2 with gap-x-6 gap-y-2.
+V || R12142 || UNCOVERED || - || - || 30 || ui_label_value with size :base and label_width "9rem"; label/value displays have no rule.
+V || R03792 || COMPLIANT || BADGE-01 || - || 38 || survey_responses_badge builds through ui_badge.
+V || R12139 || UNCOVERED || - || - || 42 || "Prologue"/"Epilogue" labels as div font-semibold text-heading with a muted aside; do not outweigh the section title.
+V || R12140 || DIVERGENT || STYLE-03 || medium || 45 || No ad-hoc wrapper doing a helper's job; prologue and epilogue sit in hand-made bordered, rounded, tinted, padded scroll boxes (45,51).
+V || R12141 || DIVERGENT || EMPTY-02 || low || 46 || An empty value prints "—"; missing prologue/epilogue print italic muted "None given." (46,52).
+V || R12143 || UNCOVERED || - || - || 58 || button_row wrapped in div "my-4" for spacing; no rule on button-row margins (primary count is R12153).
+V || R03782 || COMPLIANT || BTN-01 || - || 63 || survey_duplicate_button builds through button_link.
+V || R12146 || COMPLIANT || EMPTY-01 || - || 77 || No groups via ui_empty_state.
+V || R12091 || UNCOVERED || - || - || 17 || Email layout literal hex colours (greys copied from light tokens, #0066cc links, #ff0000 warning); email HTML is not addressed by the guide.
+V || M0447 || UNCOVERED || - || - || 9 || pattern=other <style> block in the HTML email layout; email HTML is not addressed by the guide.
+V || R12094 || UNCOVERED || - || - || 28 || Email container styles (650px max, 5px border, 20px padding, 600px media query); email HTML is not addressed.
+V || R04488 || UNCOVERED || - || - || 17 || Literal colour values in the email <style> block; email HTML is not addressed by the guide.
+V || R12092 || UNCOVERED || - || - || 58 || Local .btn/.btn-primary rules in email CSS reuse the daisyUI class names; email HTML is not addressed.
+V || R12093 || UNCOVERED || - || - || 62 || !important in the email style block (62,74,106,107); email HTML is not addressed.
+V || R12096 || UNCOVERED || - || - || 79 || .warning class: bold #ff0000 text in email; email HTML is not addressed.
+V || R12095 || UNCOVERED || - || - || 85 || table.data-table email table styling; email HTML is not addressed.
+F || app/views/alerts/_alert_group.html.erb || 8 || other || legend-inside-section || DIVERGENT || HELP-02 || medium || A legend goes in one collapsed ui_disclosure card per page, never inside a ui_section; the channel legend box sits inside each group's section, so it renders twice.
+F || app/views/alerts/edit.html.erb || 110 || buttons || several-primary-submits || DIVERGENT || BTN-04 || medium || One primary action per view; f.submit defaults to :primary, so Save Phone Number (110), Verify Code (138) and Save Preferences (206) are three primaries (admin: 64, 206).
+F || app/views/alerts/edit.html.erb || 54 || forms || phone-width || DIVERGENT || FORM-07 || low || Phone fields are w-full sm:w-44; the SMS number fields use w-full sm:w-32 (54) and w-full sm:w-80 (108).
+F || app/views/bookmarks/_document.html.erb || 17 || color || me-muted-outside-hero || DIVERGENT || COLOR-06 || low || The same neutral text utility for the same purpose (text-stone-muted); the status line borrows me-muted, the /me hero panel's helper class.
+F || app/views/communication/rbs_history/index.html.erb || 22 || toasts-alerts || reference-callout-on-log || DIVERGENT || HELP-02 || high || On a log no reference info callout stays visible; the "Most rows are message alerts" explanation is an always-open info callout, not the collapsed About This Report card.
+F || app/views/communication/rbs/_type_card.html.erb || 13 || buttons || primary-per-card || DIVERGENT || BTN-04 || medium || One primary action per view; the launchpad gives every card a Start button, five of them :primary (secondary types mapped to :primary) beside :error and :warning ones.
+F || app/views/communication/rbs_history/show.html.erb || 31 || buttons || button-outside-row || DIVERGENT || BTN-07 || low || Buttons sit in a button_row; the retry button_link sits in a bare div "mt-2" inside the error callout.
+F || app/views/communication/announcements/_form.html.erb || 3 || typography || sentence-case-legend || DIVERGENT || COPY-03 || low || Headings are Title Case; fieldset legends read "Who sees it", "What it says", "When it stops showing" (3,16,25).
+F || app/views/communication/mail_templates/edit.html.erb || 36 || typography || sentence-case-legend || DIVERGENT || COPY-03 || low || Headings are Title Case; fieldset legends read "Subject line" and "Template text" (36,43).
+F || app/views/communication/mail_templates/index.html.erb || 13 || typography || lowercase-section-title || DIVERGENT || COPY-03 || low || Section titles are Title Case; pluralize(n, "template") prints "3 templates".
+F || app/views/communication/surveys/_form.html.erb || 5 || typography || sentence-case-legend || DIVERGENT || COPY-03 || low || Headings are Title Case; legends read "Who answers, and about what", "What it says", "Whether it is shown" (5,38,50).
+F || app/views/communication/survey_groups/_form.html.erb || 4 || typography || sentence-case-legend || DIVERGENT || COPY-03 || low || Headings are Title Case; legends read "What people see" and "How the answers are reported" (4,18).
+F || app/views/communication/survey_questions/_form.html.erb || 9 || typography || sentence-case-legend || DIVERGENT || COPY-03 || low || Headings are Title Case; legends read "The question" and "Settings for one type of question" (9,29).
+F || app/views/communication/surveys/index.html.erb || 36 || typography || lowercase-section-title || DIVERGENT || COPY-03 || low || Section titles are Title Case; the table section reads "3 surveys in 2026".
+F || app/views/communication/rbs_broadcasts/_notices.html.erb || 7 || toasts-alerts || sentence-case-callout-title || DIVERGENT || COPY-03 || low || Callout titles are Title Case; the emergency callout title reads "Use only in an emergency".
+F || app/views/communication/rbs_broadcasts/review.html.erb || 44 || typography || sentence-case-heading-button || DIVERGENT || COPY-03 || low || Headings and button labels are Title Case; h3 reads "Email and Clubhouse message" (44) and the submit "Send to N people" (80).
+F || app/views/communication/rbs_history/show.html.erb || 73 || typography || sentence-case-heading || DIVERGENT || COPY-03 || low || Headings are Title Case; the h3 reads "Email and Clubhouse message".
+F || app/views/communication/announcements/new.html.erb || 2 || typography || new-verb-title || DIVERGENT || COPY-04 || low || The create form is "Add [Entity]", never "New"; the hero title reads "New Announcement" (survey_groups/new uses "Add Group").
+F || app/views/communication/surveys/new.html.erb || 4 || typography || new-verb-title || DIVERGENT || COPY-04 || low || The create form is "Add [Entity]", never "New"; the hero title reads "New Survey".
+F || app/views/communication/surveys/_form.html.erb || 64 || buttons || create-submit || DIVERGENT || COPY-04 || low || A form submit says "Save [Entity]", never "Create"; the new-survey submit reads "Create Survey".
+F || app/views/communication/survey_groups/_form.html.erb || 27 || buttons || add-submit || DIVERGENT || COPY-04 || low || "Add" opens a create form and the submit says "Save [Entity]"; the new-group form's submit reads "Add Group".
+F || app/views/communication/survey_questions/_form.html.erb || 39 || buttons || add-submit || DIVERGENT || COPY-04 || low || The submit says "Save [Entity]"; the new-question form's submit reads "Add Question".
+F || app/views/communication/person_banners/index.html.erb || 18 || other || long-callout-paragraph || DIVERGENT || COPY-10 || low || Paragraphs are two or three sentences at most; the Who Sees Banners callout is four sentences and opens by repeating its title as a question.
+S || HERO-01 || 26 || 2 || 28 page-level templates, less the email layout and the bug-report modal fragment; bookmarks/show and not_found depart (document.html.erb is a frame fragment, UNCOVERED)
+S || HERO-02 || 24 || 0 || every hero description is one sentence; alerts/edit has no description at all
+S || HERO-03 || 24 || 0 || year selectors on rbs_history/index, rbs_messages/index, surveys/index all in the hero
+S || HERO-04 || 24 || 1 || rbs_history/retried repeats back navigation as a body button
+S || HELP-01 || 28 || 0 || surveys/index follows the documented announce-and-link pattern
+S || HELP-02 || 28 || 3 || alerts/edit legend in sections; rbs_phone_numbers and rbs_history/index keep reference callouts visible on reports/logs
+S || STAT-01 || 28 || 0 || all summary tiles use ui_stat_row
+S || STAT-02 || 24 || 0 || only panel.progress in heroes (rbs_broadcasts wizard)
+S || TABLE-02 || 28 || 0 || no responsive: false in scope
+S || TABLE-04 || 28 || 0 || all four filtered pages use filter_bar
+S || TABLE-05 || 28 || 0 || no CSV export in scope
+S || BTN-03 || 28 || 0 || no xs buttons
+S || BTN-04 || 28 || 4 || alerts/edit, rbs/index (cards), surveys/index (rows), surveys/show (group headers)
+S || BTN-05 || 28 || 4 || announcements/index Delete Expired, rbs type cards, rbs_broadcasts/review emergency Send, rbs_history/show retry
+S || BTN-07 || 28 || 2 || alerts/edit section submits and rbs_history/show retry sit outside button_row
+S || MODAL-02 || 28 || 0 || every destructive confirm is delete_button or confirm_modal variant: :error, worded with the action
+S || FORM-02 || 28 || 0 || every field has a visible label (raw alert checkboxes included)
+S || FORM-03 || 28 || 0 || required: used where fields are required; server-only requirements cannot be seen from views
+S || FORM-07 || 28 || 1 || alerts/edit phone widths; filter-panel and lg:-folded widths recorded as ambiguous rows
+S || FORM-08 || 11 || 0 || form pages: alerts/edit, announcements new/edit, mail_templates/edit, rbs_broadcasts/new, surveys new/edit, survey_groups new/edit, survey_questions new/edit
+S || TYPE-05 || 28 || 0 || h1 hero > h2 section/card > h3 card/sub-heading throughout
+S || COLOR-02 || 28 || 0 || colour used for status and severity only
+S || COLOR-03 || 28 || 0 || coloured text in scope is status (text-error with icon and word)
+S || A11Y-01 || 28 || 0 || badges and cells pair colour with words or icons
+S || A11Y-02 || 28 || 0 || no icon-only controls without a name (channel icons are not controls; see ICON-04 rows)
+S || LAYOUT-03 || 0 || 0 || no records-management page in scope; rbs/index borrows its drill-down row conventions
+S || COPY-03 || 28 || 10 || sentence-case fieldset legends, lowercase pluralized section titles, one callout title, two h3s and one button label
+S || COPY-04 || 28 || 5 || "New" hero titles (announcements, surveys), "Create Survey" and "Add Group"/"Add Question" as submit labels
+S || COPY-10 || 28 || 1 || person_banners/index callout runs four sentences
+Q || alerts/edit.html.erb has no hero description, unlike every other page in scope; the admin field label "SMS Phone " (52) has a trailing space.
+Q || person_banners/_banner.html.erb:30-34 says the message keeps its line breaks, but the div has no whitespace-pre-line, so stored newlines likely collapse; needs a rendered check.
+Q || announcements/_announcement.html.erb:6 dims expired cards with opacity-70 over all text, which may push muted metadata below AA contrast; needs a rendered contrast check in both themes.
+Q || Hero back_to labels are sentence case where sibling buttons are Title Case: rbs_history/show "Broadcast history" (9) and rbs_history/retried "This broadcast" (12).
+Q || rbs_messages/index draws ui_pager twice, and the second shows under the empty state; and its toggle column has a blank "" heading that screen readers announce as an unnamed column.
+Q || Five hand-made bordered message/text boxes (announcement, survey prologue/epilogue, broadcast review, broadcast record, message detail row) with differing max heights suggest a shared helper is missing.
+Q || rbs/index.html.erb:15 quotes "Any time" while the section it names is titled "Any Time".
+Q || Stat-box variant switching by count (warning/error when positive, else secondary/success) repeats across six pages with no documented rule for when a zero is green versus neutral.

@@ -1,0 +1,336 @@
+id	source	file	lines	pattern	variant	impl	rule_hint	note
+R14343	agent	app/helpers/training/all_notes_helper.rb	9,10,11,12,13,15,16	color	oneoff:status-by-color	area-helper		STANDING_VARIANTS maps veteran/mentee/prospective to ui_badge :secondary/:primary/:warning; colour carries the category, no icon
+R14344	agent	app/helpers/training/all_notes_helper.rb	29	empty-loading	oneoff:dash-empty-value	area-helper		Missing rank prints tag.span("—", class: "text-stone-muted") instead of value_or_dash or a badge
+R14345	agent	app/helpers/training/all_notes_helper.rb	31	other	oneoff:badge-nowrap-wrapper	area-helper		intake_rank_badge (from IntakeHelper) wrapped in a span "whitespace-nowrap" to keep the pill on one line
+R14348	agent	app/helpers/training/mentees_helper.rb	26,27,28,29,30,31,32	tables-lists	ui_table_rows	area-helper		Turbo-stream row replacement rebuilds one row through ui_table_rows with the same headings so responsive data-labels match
+R14346	agent	app/helpers/training/mentees_helper.rb	46	empty-loading	oneoff:plain-text-empty	area-helper		Ungranted position cell is tag.span("Not granted", class: "text-stone-muted")
+R14347	agent	app/helpers/training/mentees_helper.rb	48,50,51,52,53,54	tables-lists	oneoff:stacked-cell	area-helper		Grant cell is a "flex flex-col gap-y-1" div: "Granted YYYY" line, then muted "Rangered YYYY" (text-stone-muted tabular-nums) or a warning ui_badge "Never rangered"
+R14349	agent	app/helpers/training/mentoring_helper.rb	40	empty-loading	oneoff:plain-text-empty	area-helper		Deleted shift label: tag.span "Shift deleted" class "text-stone-muted"
+R14350	agent	app/helpers/training/mentoring_helper.rb	63,64,65,68,69,70	other	ui_stat_box	area-helper		art_need_mentor_box / art_awaiting_verdict_box: stat tiles whose variant flips :warning when count positive, :success when zero
+R14351	agent	app/helpers/training/mentoring_helper.rb	85,86,87,89,90	typography	oneoff:pre-line-notes	area-helper		Walk notes: one tag.div "whitespace-pre-line" per mentor ("Name: notes"), or value_or_dash(nil)
+R14353	agent	app/helpers/training/mentoring_helper.rb	106,111,119	forms	oneoff:grouped-select-options	area-helper		Mentor select options built in three optgroups (On shift / Other mentors / No longer a mentor) with "· signed in HH:MM" suffix
+M0232	grep:candidate	app/helpers/training/mentoring_helper.rb	111	-	strftime	-	COPY-08	["#{mentor.person.callsign} · signed in #{mentor.on_duty.strftime(DateTimeHelper::HOUR_MINS)}", mentor.person_id]
+R14352	agent	app/helpers/training/mentoring_helper.rb	157,158,160,163,166,167,169	other	oneoff:badge-chip-row	area-helper		Mentee shifts as ui_badge chips (success on shift, secondary rangered, info signed up, each with icon) in a "flex flex-wrap gap-1" div
+R14354	agent	app/helpers/training/online_course_progress_helper.rb	16,17,19	empty-loading	oneoff:dash-empty-value	area-helper		Timestamp cell returns a caller-supplied blank marker, default literal "—" string (not value_or_dash); value wrapped in span "whitespace-nowrap tabular-nums"
+R14355	agent	app/helpers/training/session_link_helper.rb	6,35,36	links	oneoff:table-link-classes	area-helper		Session time link_to with class_names(LinkHelper::TABLE_LINK_CLASSES, "whitespace-nowrap tabular-nums")
+R14357	agent	app/helpers/training/session_link_helper.rb	37,38	other	oneoff:unlinked-stamp	area-helper		linkable: false prints the time as a plain span with the same STAMP_CLASSES instead of a link
+R14356	agent	app/helpers/training/session_link_helper.rb	43	empty-loading	oneoff:plain-text-empty	area-helper		Missing description shows "(no description)" in span "text-stone-muted"
+R14358	agent	app/helpers/training/sessions_helper.rb	12,13,14,15,16,24,25,26	color	oneoff:status-by-color	area-helper		TRAINEE_STATUS_BADGES: Pending secondary hourglass-half, Passed success circle-check, No Show error user-slash, Not Passed error circle-xmark (icons accompany colour)
+R14360	agent	app/helpers/training/sessions_helper.rb	14,15,16,36,37	other	oneoff:print-mark-letters	area-helper		Print marks "Y", "NS", "N" per status for the trainer's report instead of badges
+R14359	agent	app/helpers/training/sessions_helper.rb	31,32,33	other	ui_stat_box	area-helper		trainee_status_stat_box: tile coloured with the status variant only when count positive, else :secondary
+R14361	agent	app/helpers/training/trained_no_work_helper.rb	9,10,11,14,15,16	color	oneoff:status-by-color	area-helper		QUALIFICATIONS: "Passed training" :primary graduation-cap, "Taught session" :secondary chalkboard-user ui_badge
+R14362	agent	app/helpers/training/untrained_people_helper.rb	13,14,15,16	other	helper-class-override	area-helper		ui_badge called with class: "whitespace-nowrap" (layout override, not colour); variants :error calendar-xmark / :warning hourglass-half per blocker
+R14363	agent	app/helpers/training/untrained_people_helper.rb	21,22,23,24,26,28	other	ui_stat_box	area-helper		One stat tile per non-zero blocker, coloured from the BLOCKERS variant table
+R14374	agent	app/views/training/all_notes/_notes.html.erb	5,6	empty-loading	oneoff:plain-text-empty	one-off-markup		No notes: span "text-stone-muted italic" "no notes" (lowercase)
+R14376	agent	app/views/training/all_notes/_notes.html.erb	8,10,16	tables-lists	oneoff:stacked-cell	one-off-markup		Notes stacked in "flex flex-col gap-y-2"; each note body "whitespace-pre-line"
+R10007	census	app/views/training/all_notes/_notes.html.erb	12	typography	tw-text-size	utility	TYPE-02	text-sm
+R14375	agent	app/views/training/all_notes/_notes.html.erb	12,13	typography	oneoff:muted-meta-line	one-off-markup		Note number and date line "text-stone-muted text-sm", date via strftime("%b %-d") rather than a date helper
+M0250	grep:definite	app/views/training/all_notes/_notes.html.erb	13	-	strftime	-	COPY-08	Note #<%= index + 1 %> &middot; <%= note.created_at.to_date.strftime("%b %-d") %>
+R10008	census	app/views/training/all_notes/_session.html.erb	3	links	area-link-helper	area-helper		training_session_link
+R14377	agent	app/views/training/all_notes/_session.html.erb	7,8	other	ui_badge	shared-helper		Lowercase sentence badge "did not pass this session" :error with no icon, in its own div under the session link
+R14379	agent	app/views/training/all_notes/index.html.erb	22	other	ui_stat_box	shared-helper		"With Notes" stat tile always variant :warning regardless of count
+R14378	agent	app/views/training/all_notes/index.html.erb	31	other	helper-class-override	shared-helper		ui_disclosure "About This Report" variant: :card class: "my-4"
+R10029	census	app/views/training/all_notes/index.html.erb	32	tables-lists	<dl>	raw-html	TABLE-01	
+R14382	agent	app/views/training/all_notes/index.html.erb	35,36,37	typography	<strong>	raw-html		Term definitions in dd use <strong> and &middot; separators inline
+R14380	agent	app/views/training/all_notes/index.html.erb	53	forms	hidden_field_tag	rails-helper		hidden_field_tag :year inside the filter_bar builder block to keep the year on GET submit
+R14381	agent	app/views/training/all_notes/index.html.erb	64,65	forms	f.check_box	form-builder		Filter checkbox "Only people with notes" with include_hidden: false, outside form_row
+R10027	census	app/views/training/all_notes/index.html.erb	96,98	other	area-badge-helper	area-helper		all_notes_rank_badge all_notes_standing_badge
+R14383	agent	app/views/training/capacity/_fill_meter.html.erb	5,6,7,8,9,10,11,16	color	oneoff:status-by-color	one-off-markup		Percentage text coloured "text-error font-semibold" at 90+ and "text-warning font-semibold" at 70+; bar variant error/warning/success; number printed beside it
+R14384	agent	app/views/training/capacity/_fill_meter.html.erb	12,13,14	other	ui_progress_bar	shared-helper		ui_progress_bar size: :sm with aria label inside a "w-20 shrink-0" box, in a custom-css "flex-center-gap-2" row
+R14387	agent	app/views/training/capacity/index.html.erb	14,17,18,19,20,61,67,68,71	other	attribute	attribute		Column heading tooltips via t.heading title:, text duplicated into the disclosure from one local hash
+R14390	agent	app/views/training/capacity/index.html.erb	31	other	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R10050	census	app/views/training/capacity/index.html.erb	32	tables-lists	<dl>	raw-html	TABLE-01	
+R14385	agent	app/views/training/capacity/index.html.erb	46,47,48,49,50	spacing	oneoff:spacing-wrapper-div	one-off-markup		export_csv_link inside button_row inside a bare <div class="my-4"> wrapper
+R14386	agent	app/views/training/capacity/index.html.erb	57	typography	oneoff:plain-count-line	one-off-markup		Result count as <p class="mb-4">Showing N active sessions.</p>, not filter_bar count
+R14388	agent	app/views/training/capacity/index.html.erb	93,94	empty-loading	oneoff:dash-empty-value	hard-coded-value		Unscored pass counts print a literal "—" cell
+R14389	agent	app/views/training/capacity/index.html.erb	100,113,114	tables-lists	oneoff:total-row-annotation	one-off-markup		Total row (state: :total) with a span "font-normal text-stone-muted" "(unique)" suffix
+R14391	agent	app/views/training/completed_training/_pager.html.erb	5,6,7,9,14,17,22,25	navigation	oneoff:prev-next-pager	one-off-markup		Session pager is <nav class="my-4" aria-label> with button_row of :secondary button_link Previous/Next (arrow icons, title tooltips); not ui_pager
+R10060	census	app/views/training/completed_training/_pager.html.erb	6	navigation	<nav>	raw-html		
+R14392	agent	app/views/training/completed_training/_people_table.html.erb	8,9,10,11,12,13	buttons	clipboard_button	shared-helper		clipboard_button with block label, inside <p class="mb-3">
+R14393	agent	app/views/training/completed_training/_people_table.html.erb	16	empty-loading	empty-not-handled	not-handled		Table has no empty branch; callers guard with ui_empty_state
+R14396	agent	app/views/training/completed_training/index.html.erb	23	other	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R10080	census	app/views/training/completed_training/index.html.erb	24	tables-lists	<dl>	raw-html	TABLE-01	
+R14394	agent	app/views/training/completed_training/index.html.erb	35,36,37,38,39	spacing	oneoff:spacing-wrapper-div	one-off-markup		export_csv_link in button_row inside <div class="my-4">
+R14395	agent	app/views/training/completed_training/index.html.erb	58,59,60	links	oneoff:table-link-classes	rails-helper		link_to with class: LinkHelper::TABLE_LINK_CLASSES for the session time
+R14397	agent	app/views/training/completed_training/show.html.erb	19,27,28,37,38	color	oneoff:status-by-color	shared-helper		Stat tile and ui_section badge_color flip :success / :warning on whether anyone passed or attended
+R14364	agent	app/views/training/mentees/_row.html.erb	7,8,9	tables-lists	oneoff:stacked-cell	one-off-markup		Row header is "flex flex-col gap-y-1 items-start" stacking person_display_link over person_status_badge
+R10096	census	app/views/training/mentees/_row.html.erb	9	other	area-badge-helper	area-helper		person_status_badge
+R14367	agent	app/views/training/mentees/_row.html.erb	20,21	other	ui_badge	shared-helper		After revoke, action cell becomes "flex flex-col gap-y-2 items-start" with a :secondary badge "Positions revoked" plus the restore button
+R14365	agent	app/views/training/mentees/_row.html.erb	22,23,24,25	buttons	button_link	shared-helper		button_link :secondary "Restore Positions" with method: :post performs a mutation (a link used as a POST button)
+R14366	agent	app/views/training/mentees/_row.html.erb	28,29,30,31,32,33,34	buttons	delete_button	shared-helper		delete_button with ban icon and confirm_modal (title, method: :delete, confirm_label, message)
+R10099	census	app/views/training/mentees/destroy.turbo_stream.erb	6	toasts-alerts	ui_toast_render	shared-helper	TOAST-01	
+R14372	agent	app/views/training/mentees/destroy.turbo_stream.erb	6	toasts-alerts	ui_toast_render	shared-helper		Success toast after revoke, third positional arg true
+R14371	agent	app/views/training/mentees/index.html.erb	14,15,16,73,74,75	empty-loading	ui_empty_state	shared-helper		Two empty states: whole roster empty (user-graduate icon) and no filter match (magnifying-glass icon)
+R14370	agent	app/views/training/mentees/index.html.erb	18,19,20,21	toasts-alerts	ui_callout_box	shared-helper		Read-only permission notice as ui_callout_box :info
+R14368	agent	app/views/training/mentees/index.html.erb	34	other	helper-class-override	shared-helper		ui_disclosure "How This Page Works" variant: :card with class: "my-4" (spacing override)
+R10115	census	app/views/training/mentees/index.html.erb	35	tables-lists	<dl>	raw-html	TABLE-01	
+R14369	agent	app/views/training/mentees/index.html.erb	35,36,37,40,41	tables-lists	class:instruction-list	custom-css		FAQ inside the disclosure is a <dl class="instruction-list"> of dt question / dd answer
+R10121	census	app/views/training/mentees/restore.turbo_stream.erb	5	toasts-alerts	ui_toast_render	shared-helper	TOAST-01	
+R14373	agent	app/views/training/mentees/restore.turbo_stream.erb	5	toasts-alerts	ui_toast_render	shared-helper		Success toast after restore
+R14509	agent	app/views/training/mentoring/_missing_positions.html.erb	9,14	other	helper-class-override	shared-helper		ui_callout_box :warning accent: true class: "my-4" with title
+R14510	agent	app/views/training/mentoring/_shift_rule.html.erb	3,4,7	tables-lists	<dl>	raw-html		Bare dt/dd pair meant to be injected into another page's dl.instruction-list
+R10124	census	app/views/training/mentoring/assignments/_general_notes.html.erb	13	forms	label_tag	rails-helper	FORM-01	
+R14535	agent	app/views/training/mentoring/assignments/_general_notes.html.erb	13,14,15,16,19,20	forms	oneoff:hand-built-field	rails-helper		label_tag LABEL_CLASSES + text_area_tag TEXTAREA_CLASSES + tag.p HELP_TEXT_CLASSES with aria describedby; builder look without the builder
+M0336	grep:candidate	app/views/training/mentoring/assignments/_general_notes.html.erb	14	-	text_area_tag	-	FORM-01	<%= text_area_tag "general_notes[#{person_id}]", typed, id: field_id, rows: 2,
+R10125	census	app/views/training/mentoring/assignments/_general_notes.html.erb	14	forms	text_area_tag	rails-helper	FORM-01	
+R14534	agent	app/views/training/mentoring/assignments/_general_notes_list.html.erb	9	empty-loading	attribute	attribute		Empty list hidden with the hidden attribute so it can be redrawn in place
+R14531	agent	app/views/training/mentoring/assignments/_general_notes_list.html.erb	10	typography	oneoff:label-as-heading	rails-helper		List title "General Notes" is tag.span with AppFormBuilder::LABEL_CLASSES (form-label styling as heading)
+R10131	census	app/views/training/mentoring/assignments/_general_notes_list.html.erb	11	tables-lists	content_tag/tag.ul	rails-helper	TABLE-01	
+R10134	census	app/views/training/mentoring/assignments/_general_notes_list.html.erb	14	typography	tw-text-size	utility	TYPE-02	text-sm
+R14532	agent	app/views/training/mentoring/assignments/_general_notes_list.html.erb	14,15	typography	oneoff:muted-meta-line	one-off-markup		Date and author line "text-sm text-stone-muted" with &middot;
+R14533	agent	app/views/training/mentoring/assignments/_general_notes_list.html.erb	19,20,21,22,23,24,25,26,27	buttons	oneoff:edit-delete-pair	shared-helper		edit_link + delete_button "Delete" in div "mt-1 flex gap-2" (same as scores/_dialog)
+R14536	agent	app/views/training/mentoring/assignments/_other_shifts.html.erb	7,8	other	helper-class-override	shared-helper		ui_section border: false, class: "mt-6"
+R14537	agent	app/views/training/mentoring/assignments/_other_shifts.html.erb	29,30,31	links	oneoff:table-link-classes	rails-helper		link_to tag.span with TABLE_LINK_CLASSES
+R10142	census	app/views/training/mentoring/assignments/_other_shifts.html.erb	41	other	area-badge-helper	area-helper		mentor_result_badge
+R14538	agent	app/views/training/mentoring/assignments/_pass_dialog.html.erb	21,22,23	modals	modal	shared-helper		Uses modal (closable: false, close_button: false, m.title / m.body) rather than modal_dialog used by the session dialogs
+R10154	census	app/views/training/mentoring/assignments/_pass_dialog.html.erb	40	tables-lists	<dl>	raw-html	TABLE-01	
+R14540	agent	app/views/training/mentoring/assignments/_pass_dialog.html.erb	40	tables-lists	class:instruction-list	custom-css		dl.instruction-list with "mb-4" inside the modal body
+M0286	grep:candidate	app/views/training/mentoring/assignments/_pass_dialog.html.erb	58	-	"submit"	-	COPY-10	<%= button_action answers[:record], :primary, type: "submit", name: "confirmed", value: :record,
+R14539	agent	app/views/training/mentoring/assignments/_pass_dialog.html.erb	58,59,61,64,65	buttons	button_action	shared-helper		Answers are button_action type "submit" name "confirmed"; first has data turbo_submits_with "Recording…"
+M0287	grep:candidate	app/views/training/mentoring/assignments/_pass_dialog.html.erb	61	-	"submit"	-	COPY-10	<%= button_action answers[:record_only], :secondary, type: "submit", name: "confirmed", value: :record_only %>
+M0288	grep:candidate	app/views/training/mentoring/assignments/_pass_dialog.html.erb	64	-	"submit"	-	COPY-10	<%= button_action answers[:without_verdict], :secondary, type: "submit", name: "confirmed",
+R14541	agent	app/views/training/mentoring/assignments/_promote_dialog.html.erb	16	other	helper-class-override	shared-helper		ui_callout_box :warning with class: "my-4" inside a modal
+M0289	grep:candidate	app/views/training/mentoring/assignments/_promote_dialog.html.erb	26	-	"submit"	-	COPY-10	<%= button_action Training::MentoringHelper::PROMOTE, :primary, type: "submit", name: "promote", value: "confirm",
+R14542	agent	app/views/training/mentoring/assignments/_promote_dialog.html.erb	26,27	empty-loading	attribute	attribute		Promote submit has turbo_submits_with "Promoting…"
+R14543	agent	app/views/training/mentoring/assignments/_roster.html.erb	19,23,24,25,26,27,28,29,30,32,33,34	validation	ui_callout_box	shared-helper		Form-level refusal summary as ui_callout_box :error accent class "my-4" title "Nothing Was Recorded"; ui_form called with no_error_summary: true (257)
+R14545	agent	app/views/training/mentoring/assignments/_roster.html.erb	37,38,43,50	toasts-alerts	ui_callout_box	shared-helper		Shift context as ui_callout_box :success (flag icon) or :warning, accent, class "my-4", with <strong> lead; :info callout class "my-4" for read-only notice
+R14551	agent	app/views/training/mentoring/assignments/_roster.html.erb	64,143	other	helper-class-override	shared-helper		ui_disclosure class "my-4"; ui_section "Mentees" border: false class "mt-6"
+R10190	census	app/views/training/mentoring/assignments/_roster.html.erb	65	tables-lists	<dl>	raw-html	TABLE-01	
+R14552	agent	app/views/training/mentoring/assignments/_roster.html.erb	165,200,201,229,239,240	tables-lists	oneoff:multi-row-record	shared-helper		One mentee spans up to four table rows (main, mentor notes colspan 4 "basis-full", error, general notes); table striped: false
+M0337	grep:candidate	app/views/training/mentoring/assignments/_roster.html.erb	172	-	select_tag	-	FORM-01	<%= select_tag "walks[#{entry.id}][status]",
+R10180	census	app/views/training/mentoring/assignments/_roster.html.erb	172,211	forms	select_tag	rails-helper	FORM-01	
+R14546	agent	app/views/training/mentoring/assignments/_roster.html.erb	172,176,210,211,214,216,217,220	forms	oneoff:hand-built-field	rails-helper		select_tag with "#{SELECT_CLASSES} min-w-32" / "w-full", label_tag LABEL_CLASSES (+ " mt-3"), text_area_tag TEXTAREA_CLASSES: fields assembled outside the builder
+R14549	agent	app/views/training/mentoring/assignments/_roster.html.erb	182,183,184,185,186,187	buttons	button_action	shared-helper		Per-row "Grant Team Positions" submit button_action in div "mt-2"
+M0290	grep:candidate	app/views/training/mentoring/assignments/_roster.html.erb	184	-	"submit"	-	COPY-10	type: "submit", name: "grant_for", value: entry.id,
+R14548	agent	app/views/training/mentoring/assignments/_roster.html.erb	189	typography	oneoff:br-muted-note	one-off-markup		<br><span class="text-stone-muted"> note after a select
+R14547	agent	app/views/training/mentoring/assignments/_roster.html.erb	204,208	spacing	class:stack-to-row-lg	custom-css		Mentor slots in div.stack-to-row-lg with "lg:flex-1" columns
+R10178	census	app/views/training/mentoring/assignments/_roster.html.erb	210,216	forms	label_tag	rails-helper	FORM-01	
+M0338	grep:candidate	app/views/training/mentoring/assignments/_roster.html.erb	211	-	select_tag	-	FORM-01	<%= select_tag "walks[#{entry.id}][mentors][#{i}][id]",
+M0339	grep:candidate	app/views/training/mentoring/assignments/_roster.html.erb	217	-	text_area_tag	-	FORM-01	<%= text_area_tag "walks[#{entry.id}][mentors][#{i}][notes]", slots[i]&.notes,
+R10181	census	app/views/training/mentoring/assignments/_roster.html.erb	217	forms	text_area_tag	rails-helper	FORM-01	
+R14544	agent	app/views/training/mentoring/assignments/_roster.html.erb	228,229,230,231	validation	oneoff:inline-error-text	one-off-markup		Per-row error in its own table row (state: :error) as span "text-error" with fa_icon triangle-exclamation
+R14550	agent	app/views/training/mentoring/assignments/_roster.html.erb	256,257,258,265,272	forms	ui_form	shared-helper		ui_form nil with unsaved-changes Stimulus controller, f.submit turbo_submits_with "Recording…", cancel_link
+M0291	grep:candidate	app/views/training/mentoring/assignments/_roster.html.erb	269	-	"submit"	-	COPY-10	<%= button_action Training::MentoringHelper::PROMOTE_WITHOUT_VERDICT, :secondary, type: "submit",
+R14554	agent	app/views/training/mentoring/assignments/_shift_card.html.erb	15,16,17,19,22	other	oneoff:badge-row	one-off-markup		Extra content: <p class="mb-2"> mentee names + "flex flex-wrap items-center gap-2 mb-2" badge row
+R14553	agent	app/views/training/mentoring/assignments/_shift_card.html.erb	26,27,28,39,40,41,42,43,44	cards	shared-partial	shared-partial		Card is common/mentoring/_shift_card with badges, subtitle, extra chips, meter (percent, variant success/warning), url, label "Manage"
+R14556	agent	app/views/training/mentoring/assignments/_upcoming.html.erb	7,13	other	helper-class-override	shared-helper		ui_callout_box :success / :warning with class: "my-4"; success callout used as a neutral shift header
+R14557	agent	app/views/training/mentoring/assignments/_upcoming.html.erb	20,26,32	empty-loading	empty-not-handled	not-handled		Signed Up table has no empty branch
+R14555	agent	app/views/training/mentoring/assignments/_upcoming_card.html.erb	3,10,11,12,14	cards	shared-partial	shared-partial		common/mentoring/_shift_card with extra tag.p class "mb-2" and button: :secondary "View Sign-Ups"
+R14559	agent	app/views/training/mentoring/assignments/index.html.erb	32,57,72	other	helper-class-override	shared-helper		ui_disclosure class "my-4"; ui_section border: false class "mt-6"
+R10225	census	app/views/training/mentoring/assignments/index.html.erb	33	tables-lists	<dl>	raw-html	TABLE-01	
+R14558	agent	app/views/training/mentoring/assignments/index.html.erb	48,63,77	spacing	class:two-column-lg	custom-css		Cards laid out in div.two-column-lg grid
+R14530	agent	app/views/training/mentoring/general_notes/_dialog.html.erb	9,10	validation	errors-via-form-builder	form-builder		No error callout (unlike sessions/notes/_dialog); controller failure path answers with an error toast and closes the modal
+M0402	grep:candidate	app/views/training/mentoring/general_notes/edit.html.erb	1	-	no hero_panel	-	HERO-01	GET /training/:slug/mentoring/general-notes/:id/edit
+R14517	agent	app/views/training/mentoring/landing/index.html.erb	35	other	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R10249	census	app/views/training/mentoring/landing/index.html.erb	36	tables-lists	<dl>	raw-html	TABLE-01	
+R14511	agent	app/views/training/mentoring/landing/index.html.erb	50,65	spacing	oneoff:page-width-wrapper	one-off-markup		<div class="lg:w-3/4 mb-6"> constrains the drill-down rows
+R14512	agent	app/views/training/mentoring/landing/index.html.erb	55,58	other	helper-class-override	shared-helper		ui_badge size: "base" passed into ui_drill_down_row badges
+R14514	agent	app/views/training/mentoring/landing/index.html.erb	88,89,90,122,123,124	links	oneoff:table-link-classes	rails-helper		link_to tag.span(...) with class LinkHelper::TABLE_LINK_CLASSES (span keeps spaces in inline-flex link)
+R14516	agent	app/views/training/mentoring/landing/index.html.erb	97,134	other	ui_badge	shared-helper		Missing mentor as :warning badge ("No mentor yet" user-clock, "No mentor signed up" triangle-exclamation)
+R14513	agent	app/views/training/mentoring/landing/index.html.erb	107	other	helper-class-override	shared-helper		ui_section ... border: false, class: "mt-6"
+R14515	agent	app/views/training/mentoring/landing/index.html.erb	127,136	empty-loading	oneoff:plain-text-empty	hard-coded-value		"None yet" bare text in table cells
+R14528	agent	app/views/training/mentoring/multiple_shifts/index.html.erb	27,30	color	oneoff:status-by-color	shared-helper		"Signed Up Again" tile :warning when positive; "On Shift Now" always :success
+R14529	agent	app/views/training/mentoring/multiple_shifts/index.html.erb	35	other	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R10275	census	app/views/training/mentoring/multiple_shifts/index.html.erb	36	tables-lists	<dl>	raw-html	TABLE-01	
+M0531	grep:candidate	app/views/training/mentoring/multiple_shifts/index.html.erb	58	-	export outside filter_bar actions:	-	TABLE-05	export_csv_link(training_mentoring_multiple_shifts_path(
+R14527	agent	app/views/training/mentoring/multiple_shifts/index.html.erb	78,79,80,81	empty-loading	ui_empty_state	shared-helper		No rows (clone icon) vs no filter match (filter icon)
+R10285	census	app/views/training/mentoring/verdicts/_mentor_shifts.html.erb	8	tables-lists	<ul>	raw-html	TABLE-01	
+R14518	agent	app/views/training/mentoring/verdicts/_mentor_shifts.html.erb	8,11	tables-lists	oneoff:custom-list-row	one-off-markup		<ul class="divide-y divide-base-300"> with li "flex flex-wrap items-center gap-x-4 gap-y-1 py-2"
+R14519	agent	app/views/training/mentoring/verdicts/_mentor_shifts.html.erb	13,15	typography	oneoff:utility-label	one-off-markup		Shift date span "font-semibold"; duration span "text-stone-muted whitespace-nowrap"
+R14520	agent	app/views/training/mentoring/verdicts/_mentor_shifts.html.erb	17,18	empty-loading	oneoff:plain-text-empty	one-off-markup		"No mentee assigned" span "text-stone-muted"
+R10283	census	app/views/training/mentoring/verdicts/_mentor_shifts.html.erb	23	other	area-badge-helper	area-helper		mentor_result_badge
+R14526	agent	app/views/training/mentoring/verdicts/index.html.erb	42	other	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R10307	census	app/views/training/mentoring/verdicts/index.html.erb	43	tables-lists	<dl>	raw-html	TABLE-01	
+M0532	grep:candidate	app/views/training/mentoring/verdicts/index.html.erb	81	-	export outside filter_bar actions:	-	TABLE-05	export_csv_link(training_mentoring_verdicts_path(training_slug, year: @year, format: :csv,
+R14523	agent	app/views/training/mentoring/verdicts/index.html.erb	100,101,102,103,148,149,150	empty-loading	ui_empty_state	shared-helper		Separate empty states for no verdicts (flag-checkered) and no filter match (filter icon)
+R10305	census	app/views/training/mentoring/verdicts/index.html.erb	120	other	area-badge-helper	area-helper		mentor_result_badge
+R14525	agent	app/views/training/mentoring/verdicts/index.html.erb	124,125,126	links	oneoff:table-link-classes	rails-helper		Shift time link_to with LinkHelper::TABLE_LINK_CLASSES
+R14524	agent	app/views/training/mentoring/verdicts/index.html.erb	133,134	typography	oneoff:pre-line-notes	one-off-markup		Notes cell div "whitespace-pre-line", else value_or_dash
+R14521	agent	app/views/training/mentoring/verdicts/index.html.erb	146	other	helper-class-override	shared-helper		ui_section "Mentors" border: false, class: "mt-6"
+R14522	agent	app/views/training/mentoring/verdicts/index.html.erb	177,178,181,182,183	tables-lists	oneoff:detail-row	shared-helper		Table detail_row_toggle "Shifts" and detail_row holding the _mentor_shifts list; table striped: false
+R14494	agent	app/views/training/multiple_enrollments/index.html.erb	24	other	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R10330	census	app/views/training/multiple_enrollments/index.html.erb	25	tables-lists	<dl>	raw-html	TABLE-01	
+R14490	agent	app/views/training/multiple_enrollments/index.html.erb	31,32,33,34,35	spacing	oneoff:spacing-wrapper-div	one-off-markup		export_csv_link in button_row in <div class="my-4">
+R14491	agent	app/views/training/multiple_enrollments/index.html.erb	40,41,42	color	oneoff:status-by-color	shared-helper		ui_section badge_color :warning when trainees exist, :success when none
+R14492	agent	app/views/training/multiple_enrollments/index.html.erb	50,51,52,53,54	buttons	clipboard_button	shared-helper		clipboard_button with block label inside <p class="mb-3">
+R14493	agent	app/views/training/multiple_enrollments/index.html.erb	76,78	tables-lists	oneoff:stacked-cell	one-off-markup		Sessions cell "flex flex-col gap-y-1" of "flex flex-wrap items-center gap-x-2" rows
+R10324	census	app/views/training/multiple_enrollments/index.html.erb	79	links	area-link-helper	area-helper		training_session_link
+R14487	agent	app/views/training/online_course_progress/index.html.erb	13,14,15,16,17	other	hero_panel.progress	shared-helper		hero_panel progress bar (completed of enrolled, percent end label) on a report page
+R14489	agent	app/views/training/online_course_progress/index.html.erb	34	other	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R10354	census	app/views/training/online_course_progress/index.html.erb	35	tables-lists	<dl>	raw-html	TABLE-01	
+R10352	census	app/views/training/online_course_progress/index.html.erb	93	other	area-badge-helper	area-helper		person_status_badge
+R14488	agent	app/views/training/online_course_progress/index.html.erb	95	empty-loading	oneoff:italic-blank-marker	rails-helper		Missing enrolled date shown as tag.i("— direct enrollment —")
+R14403	agent	app/views/training/sessions/_print_screen_nav.html.erb	3,4,5,6,7	navigation	oneoff:print-screen-nav	one-off-markup		Screen-only back_to plus muted hint in <div class="print:hidden mb-4">, p "text-stone-muted mt-1"
+R14410	agent	app/views/training/sessions/_session_table.html.erb	8	tables-lists	ui_table	shared-helper		ui_table striped: true without full_width: true (other report tables pass full_width)
+R14404	agent	app/views/training/sessions/_session_table.html.erb	22,23,24	links	oneoff:font-medium-link	rails-helper		Session time link_to with class "font-medium" (not TABLE_LINK_CLASSES used on other report tables)
+R14405	agent	app/views/training/sessions/_session_table.html.erb	25,26	other	ui_badge	shared-helper		All-caps "FULL" :error badge with circle-dot regular icon
+R14411	agent	app/views/training/sessions/_session_table.html.erb	29,31	typography	oneoff:font-weight-reset	one-off-markup		Description under the row header reset with "font-normal"
+R14406	agent	app/views/training/sessions/_session_table.html.erb	30,31	toasts-alerts	oneoff:plain-text-alert	one-off-markup		"Not activated — sign-ups are disabled." as div "text-error font-normal" inside the row header
+R10370	census	app/views/training/sessions/_session_table.html.erb	35	other	area-badge-helper	area-helper		slot_status_badge
+R14409	agent	app/views/training/sessions/_session_table.html.erb	44	typography	oneoff:utility-label	one-off-markup		Trainer group title as span "font-medium" "Title (n):"
+R14408	agent	app/views/training/sessions/_session_table.html.erb	50,51	empty-loading	oneoff:plain-text-empty	one-off-markup		"No trainers signed up yet." span "text-stone-muted"
+R14407	agent	app/views/training/sessions/_session_table.html.erb	56,57,58	toasts-alerts	oneoff:plain-text-alert	one-off-markup		"No trainer slots were found." as <p class="text-error font-semibold"> plus rule sentence in a <p>
+R14412	agent	app/views/training/sessions/_stats.html.erb	9,10,11,23,24	color	oneoff:status-by-color	shared-helper		"Signed up — FULL" tile :warning when full; Inactive / Retired tile :warning when positive, else :secondary
+R14413	agent	app/views/training/sessions/_trainee_card.html.erb	7,8,19,69	cards	oneoff:custom-list-row	one-off-markup		Trainee row: div "flex gap-3 border-b border-line py-3 last:border-b-0" with photo column, grow body, right action column "flex flex-col items-end gap-2"
+R14414	agent	app/views/training/sessions/_trainee_card.html.erb	9,10,11,13,14,15	other	oneoff:avatar-placeholder	one-off-markup		photo_tag "rounded-lg object-cover" or placeholder div "w-16 h-16 rounded-lg bg-default flex-center justify-center text-stone-muted" with fa_icon user lg
+R10391	census	app/views/training/sessions/_trainee_card.html.erb	21,63	typography	tw-text-size	utility	TYPE-02	text-lg text-sm
+R14415	agent	app/views/training/sessions/_trainee_card.html.erb	21	typography	oneoff:utility-heading	one-off-markup		Callsign as span "text-lg font-semibold" wrapping person_display_link (no heading tag)
+R14416	agent	app/views/training/sessions/_trainee_card.html.erb	22,24,27,63,64,65	typography	oneoff:muted-meta-line	one-off-markup		Status, years, FKA as "text-stone-muted" spans with "·" separators; Signed up stamp "text-stone-muted text-sm mt-1"
+M0090	grep:candidate	app/views/training/sessions/_trainee_card.html.erb	30	-	size: "xs	-	BTN-03	<%= ui_badge "now #{trainee.current_status}", :secondary, size: "xs" %>
+R14417	agent	app/views/training/sessions/_trainee_card.html.erb	30	other	helper-class-override	shared-helper		ui_badge "now <status>" :secondary with size: "xs"
+R14418	agent	app/views/training/sessions/_trainee_card.html.erb	34,35,36,37,38	toasts-alerts	oneoff:plain-text-alert	one-off-markup		Full-day requirement as div "font-semibold" with fa_icon, no colour or callout
+R14422	agent	app/views/training/sessions/_trainee_card.html.erb	41,42,44,46,49	other	oneoff:badge-row	one-off-markup		Status/rank/ART badges in "flex flex-wrap items-center gap-2 mt-1"
+R10383	census	app/views/training/sessions/_trainee_card.html.erb	42	other	area-badge-helper	area-helper		trainee_status_badge
+R14419	agent	app/views/training/sessions/_trainee_card.html.erb	43,44	color	oneoff:status-by-color	shared-helper		Rank badge :error when rank == 4 else :primary, no icon
+R14420	agent	app/views/training/sessions/_trainee_card.html.erb	58,59	empty-loading	oneoff:plain-text-empty	one-off-markup		"No notes yet." span "text-stone-muted italic"
+R14421	agent	app/views/training/sessions/_trainee_card.html.erb	71,72,73,76,77,78	buttons	button_link	shared-helper		"Score" :primary and "Work History" :secondary button_link opening the modal turbo frame
+R14427	agent	app/views/training/sessions/_trainees_section.html.erb	10,11	cards	ui_section	shared-helper		ui_section title carries live counts "Trainees — N Signed Up · N Passed"
+R14425	agent	app/views/training/sessions/_trainees_section.html.erb	14,15,16,17,18,19,20,21	typography	oneoff:intro-paragraph	one-off-markup		Intro <p class="mb-3"> with <strong> naming a button
+R14426	agent	app/views/training/sessions/_trainees_section.html.erb	24,25,26,27,28,29,30	toasts-alerts	ui_callout_box	shared-helper		ui_callout_box :warning with custom icon "hand" and a <strong> lead sentence
+R14424	agent	app/views/training/sessions/_trainees_section.html.erb	35,36,60,61	spacing	oneoff:spacing-wrapper-div	one-off-markup		button_row wrapped in <div class="mb-3">
+R14423	agent	app/views/training/sessions/_trainees_section.html.erb	48,49,50,51,52,53	buttons	oneoff:copy-via-button-action	shared-helper		Copy Email List is button_action with controller: "copy-to-clipboard" and data copy_to_clipboard_success_class "btn-copy-success", not clipboard_button
+R14428	agent	app/views/training/sessions/_trainees_section.html.erb	69	empty-loading	ui_empty_state	shared-helper		ui_empty_state with no icon
+R14434	agent	app/views/training/sessions/_trainer_section.html.erb	7,8,9,10	typography	oneoff:intro-paragraph	one-off-markup		Intro <p class="mb-3"> with <strong>Attended</strong>
+R14435	agent	app/views/training/sessions/_trainer_section.html.erb	12,13	empty-loading	ui_empty_state	shared-helper		ui_empty_state with no icon; Add Trainer button then repeated in a separate button_row at 90-96
+M0340	grep:candidate	app/views/training/sessions/_trainer_section.html.erb	15	-	form_with	-	FORM-01	<%= form_with url: training_session_trainer_statuses_path(training_slug, session.slot.id),
+R10410	census	app/views/training/sessions/_trainer_section.html.erb	15	forms	form_with	rails-helper	FORM-01	
+R14429	agent	app/views/training/sessions/_trainer_section.html.erb	15,16	forms	form_with	rails-helper		Bulk attendance form is form_with builder: AppFormBuilder, not ui_form
+R14436	agent	app/views/training/sessions/_trainer_section.html.erb	15	validation	errors-via-flash	not-handled		No error display in the view; trainer status save outcome is not shown here (controller-side, not traced)
+M0341	grep:candidate	app/views/training/sessions/_trainer_section.html.erb	39	-	select_tag	-	FORM-01	<%= select_tag "trainers[#{row_key}][status]",
+R10412	census	app/views/training/sessions/_trainer_section.html.erb	39	forms	select_tag	rails-helper	FORM-01	
+R14430	agent	app/views/training/sessions/_trainer_section.html.erb	39,40,41,42,43,44,45,46,47	forms	select_tag	rails-helper		Per-row select_tag with class AppFormBuilder::SELECT_CLASSES and aria label, bypassing f.select
+R10408	census	app/views/training/sessions/_trainer_section.html.erb	50	forms	<label>	raw-html	FORM-01	
+R14431	agent	app/views/training/sessions/_trainer_section.html.erb	50,51,52,53,54,55,56	forms	oneoff:hand-built-checkbox-label	one-off-markup		<label class="inline-flex items-center gap-2 min-h-9 cursor-pointer"> around hidden_field_tag + check_box_tag (CHECKBOX_CLASSES) + span "Lead"
+M0342	grep:candidate	app/views/training/sessions/_trainer_section.html.erb	52	-	check_box_tag	-	FORM-01	<%= check_box_tag "trainers[#{row_key}][is_lead]", "1", trainer.is_lead,
+R10409	census	app/views/training/sessions/_trainer_section.html.erb	52	forms	check_box_tag	rails-helper	FORM-01	
+R14432	agent	app/views/training/sessions/_trainer_section.html.erb	60,61,62,63,64,65,66,67,68	buttons	delete_button	shared-helper		delete_button "Remove" with variant: :secondary, size: "sm" and confirm_modal
+R14433	agent	app/views/training/sessions/_trainer_section.html.erb	79	other	helper-class-override	shared-helper		button_row class: "mt-4"
+R14455	agent	app/views/training/sessions/graduations/_dialog.html.erb	6,7,8	validation	ui_callout_box	shared-helper		Error from local_assigns[:error] shown as ui_callout_box :error at top of the dialog (controller re-renders the modal with 422)
+R14456	agent	app/views/training/sessions/graduations/_dialog.html.erb	17,18,19,20,21	other	oneoff:count-badges	shared-helper		Three count ui_badges (success eligible, warning override, secondary ineligible) in "flex flex-wrap gap-2 mb-3"
+M0343	grep:candidate	app/views/training/sessions/graduations/_dialog.html.erb	24	-	form_with	-	FORM-01	<%= form_with url: training_session_graduation_path(training_slug, session.slot.id),
+R10424	census	app/views/training/sessions/graduations/_dialog.html.erb	24	forms	form_with	rails-helper	FORM-01	
+R14457	agent	app/views/training/sessions/graduations/_dialog.html.erb	24,25	forms	form_with	rails-helper		form_with builder: AppFormBuilder (not ui_form) wrapping the table and modal_form_footer
+R14458	agent	app/views/training/sessions/graduations/_dialog.html.erb	36,37,38,39,40	forms	check_box_tag	rails-helper		check_box_tag in a ui_table cell with CHECKBOX_CLASSES and aria label
+M0344	grep:candidate	app/views/training/sessions/graduations/_dialog.html.erb	37	-	check_box_tag	-	FORM-01	<%= check_box_tag "person_ids[]", candidate.person.id, true,
+R10423	census	app/views/training/sessions/graduations/_dialog.html.erb	37,60	forms	check_box_tag	rails-helper	FORM-01	
+R14459	agent	app/views/training/sessions/graduations/_dialog.html.erb	57,58,59,60,61,62,63,64	forms	oneoff:hand-built-checkbox-label	one-off-markup		Override rows: div "border-t border-line pt-2 mt-2", <label class="inline-flex items-center gap-2 min-h-9 cursor-pointer font-semibold"> with check_box_tag
+R10422	census	app/views/training/sessions/graduations/_dialog.html.erb	58	forms	<label>	raw-html	FORM-01	
+M0345	grep:candidate	app/views/training/sessions/graduations/_dialog.html.erb	60	-	check_box_tag	-	FORM-01	<%= check_box_tag "person_ids[]", candidate.person.id, false,
+R10429	census	app/views/training/sessions/graduations/_dialog.html.erb	65	tables-lists	<ul>	raw-html	TABLE-01	
+R14462	agent	app/views/training/sessions/graduations/_dialog.html.erb	65	tables-lists	class:list-bulleted	custom-css		<ul class="list-bulleted"> of gap messages inside the warning callout
+R14460	agent	app/views/training/sessions/graduations/_dialog.html.erb	78	empty-loading	oneoff:plain-text-alert	one-off-markup		"No eligible candidates were found." as <p class="text-error font-semibold mb-3">
+R10433	census	app/views/training/sessions/graduations/_dialog.html.erb	85	typography	<h3>	raw-html	TYPE-04	
+R14461	agent	app/views/training/sessions/graduations/_dialog.html.erb	85	typography	oneoff:raw-heading-with-utilities	custom-css		<h3 class="heading-title mt-4 mb-1">Not Eligible</h3>
+M0519	grep:candidate	app/views/training/sessions/graduations/_dialog.html.erb	86	-	responsive: false	-	TABLE-02	<%= ui_table full_width: true, responsive: false do |t| %>
+M0520	grep:candidate	app/views/training/sessions/graduations/_results.html.erb	3	-	responsive: false	-	TABLE-02	<%= ui_table full_width: true, responsive: false do |t| %>
+R14464	agent	app/views/training/sessions/graduations/_results.html.erb	9	empty-loading	empty-not-handled	not-handled		results.each with no empty branch
+R14463	agent	app/views/training/sessions/graduations/_results.html.erb	13,14,15,17	other	ui_badge	shared-helper		"Graduated" success badge plus span "ms-1" text; other outcomes humanized :warning badge with no icon
+M0138	grep:definite	app/views/training/sessions/graduations/_results.html.erb	17	-	.status.humanize	-	COPY-02	<%= ui_badge result.status.humanize, :warning %>
+M0403	grep:candidate	app/views/training/sessions/graduations/show.html.erb	1	-	no hero_panel	-	HERO-01	GET /training/:slug/session/:slot_id/graduation
+R14465	agent	app/views/training/sessions/notes/_dialog.html.erb	5,6,7	validation	ui_callout_box	shared-helper		local_assigns[:error] as ui_callout_box :error; ui_form below also has builder errors
+M0404	grep:candidate	app/views/training/sessions/notes/edit.html.erb	1	-	no hero_panel	-	HERO-01	GET /training/:slug/session/:slot_id/notes/:note_id/edit
+R14466	agent	app/views/training/sessions/rosters/_blocked.html.erb	6,7,19,22,23,24	toasts-alerts	ui_callout_box	shared-helper		Refusal reason computed in a case block, shown as ui_callout_box :warning; fallback string prints a raw status code in brackets
+R10460	census	app/views/training/sessions/rosters/_blocked.html.erb	27	tables-lists	<ul>	raw-html	TABLE-01	
+M0346	grep:candidate	app/views/training/sessions/rosters/_blocked.html.erb	34	-	form_with	-	FORM-01	<%= form_with url: training_session_roster_path(training_slug, session.slot.id),
+R10456	census	app/views/training/sessions/rosters/_blocked.html.erb	34	forms	form_with	rails-helper	FORM-01	
+R14467	agent	app/views/training/sessions/rosters/_blocked.html.erb	34,35,36,37,38,40,42,43	forms	form_with	rails-helper		form_with AppFormBuilder of hidden fields with modal_form_footer submit "Add Anyway" variant: :warning
+M0347	grep:candidate	app/views/training/sessions/rosters/_dialog.html.erb	17	-	form_with	-	FORM-01	<%= form_with url: training_session_new_roster_path(training_slug, session.slot.id),
+R10469	census	app/views/training/sessions/rosters/_dialog.html.erb	17,67	forms	form_with	rails-helper	FORM-01	
+R14468	agent	app/views/training/sessions/rosters/_dialog.html.erb	22,23,24,29,36,37,40,41	forms	oneoff:hand-built-field	one-off-markup		Labels "font-medium block mb-1" + select_tag SELECT_CLASSES and text_field_tag with "#{AppFormBuilder::INPUT_CLASSES} w-full", bypassing the builder
+R10468	census	app/views/training/sessions/rosters/_dialog.html.erb	23,37	forms	<label>	raw-html	FORM-01	
+M0348	grep:candidate	app/views/training/sessions/rosters/_dialog.html.erb	24	-	select_tag	-	FORM-01	<%= select_tag :trainer_slot_id,
+R10471	census	app/views/training/sessions/rosters/_dialog.html.erb	24	forms	select_tag	rails-helper	FORM-01	
+R14469	agent	app/views/training/sessions/rosters/_dialog.html.erb	35,36,43,44	forms	oneoff:inline-search-row	one-off-markup		Search row "flex flex-wrap items-end gap-2 mb-3": grow input then submit_button "Search"
+M0349	grep:candidate	app/views/training/sessions/rosters/_dialog.html.erb	40	-	text_field_tag	-	FORM-01	<%= text_field_tag :q, query, id: "roster-search", autofocus: true,
+R10472	census	app/views/training/sessions/rosters/_dialog.html.erb	40	forms	text_field_tag	rails-helper	FORM-01	
+M0521	grep:candidate	app/views/training/sessions/rosters/_dialog.html.erb	49	-	responsive: false	-	TABLE-02	<%= ui_table full_width: true, responsive: false do |t| %>
+M0350	grep:candidate	app/views/training/sessions/rosters/_dialog.html.erb	67	-	form_with	-	FORM-01	<%= form_with url: training_session_roster_path(training_slug, session.slot.id),
+R14472	agent	app/views/training/sessions/rosters/_dialog.html.erb	67,68,69,70,71,72,73,74,75,76	forms	oneoff:per-row-form	rails-helper		Each results row holds its own form_with posting to _top with submit_button "Add <callsign>"
+R14470	agent	app/views/training/sessions/rosters/_dialog.html.erb	82,83	empty-loading	oneoff:plain-text-alert	one-off-markup		No search results as <p class="text-error font-semibold">No one matched "...".</p>
+R14471	agent	app/views/training/sessions/rosters/_dialog.html.erb	85,86	empty-loading	oneoff:plain-text-empty	one-off-markup		Hint "Type at least 2 characters and search." p "text-stone-muted"
+M0405	grep:candidate	app/views/training/sessions/rosters/new.html.erb	1	-	no hero_panel	-	HERO-01	GET /training/:slug/session/:slot_id/roster/new
+R14473	agent	app/views/training/sessions/scores/_dialog.html.erb	8,9,10,11	toasts-alerts	ui_callout_box	shared-helper		Personnel flag as ui_callout_box :error title "Personnel Flag Raised" with <strong>
+M0522	grep:candidate	app/views/training/sessions/scores/_dialog.html.erb	19	-	responsive: false	-	TABLE-02	<%= ui_table full_width: true, responsive: false do |t| %>
+R14475	agent	app/views/training/sessions/scores/_dialog.html.erb	32,33	typography	oneoff:muted-italic-log	one-off-markup		Log notes rendered span "italic text-stone-muted"; author fallback literal "* imported *"
+R14476	agent	app/views/training/sessions/scores/_dialog.html.erb	37,38,39,40,41,42,43,44,45,46,47	buttons	oneoff:edit-delete-pair	shared-helper		edit_link + delete_button in div "mt-1 flex gap-2" inside a table cell
+R14474	agent	app/views/training/sessions/scores/_dialog.html.erb	55,56	empty-loading	oneoff:plain-text-empty	one-off-markup		"No notes yet." as <p class="text-stone-muted italic mb-2">
+R14479	agent	app/views/training/sessions/scores/_dialog.html.erb	59	validation	errors-via-form-builder	form-builder		ui_form(score_form) with no callout; errors presumably via builder (not traced)
+R14478	agent	app/views/training/sessions/scores/_dialog.html.erb	76,77,78,79,80	forms	f.collection_radio_buttons	form-builder		Yes/No radios layout: :horizontal, label_position: :stacked
+R14477	agent	app/views/training/sessions/scores/_dialog.html.erb	83,84,85,89,90,91,92,98	modals	button_row	shared-helper		Dialog footer is button_row with f.submit, modal_close_button and delete_button (secondary, _top) instead of modal_form_footer
+M0406	grep:candidate	app/views/training/sessions/scores/edit.html.erb	1	-	no hero_panel	-	HERO-01	GET /training/:slug/session/:slot_id/score/:person_id
+R14439	agent	app/views/training/sessions/show.html.erb	16,49	other	oneoff:stream-target-wrapper	one-off-markup		Bare div#session-stats and div#trainees-section as turbo_stream update targets
+R14437	agent	app/views/training/sessions/show.html.erb	20,21,28,29,34,35,40,41	toasts-alerts	ui_callout_box	shared-helper		Four conditional ui_callout_box with title: (three :error, one :warning) stacked under the stats
+R10501	census	app/views/training/sessions/show.html.erb	23	tables-lists	<ul>	raw-html	TABLE-01	
+R14438	agent	app/views/training/sessions/show.html.erb	23	tables-lists	class:list-bulleted	custom-css		<ul class="list-bulleted mt-1"> inside an error callout
+M0407	grep:candidate	app/views/training/sessions/signup_sheet.html.erb	1	-	no hero_panel	-	HERO-01	GET /training/:slug/session/:slot_id/signup-sheet
+R14440	agent	app/views/training/sessions/signup_sheet.html.erb	21,22,23,24,25,26,27,28,29,30,31,32	other	inline-style	inline-style		Inline <style> named @page rule, font-size 7.5pt, color #444, font-family "Atkinson Hyperlegible"
+M0461	grep:definite	app/views/training/sessions/signup_sheet.html.erb	22	-	<style>	-	STYLE-01	<style>
+M0205	grep:candidate	app/views/training/sessions/signup_sheet.html.erb	23	-	signup	-	COPY-07	@page signup-sheet {
+R10505	census	app/views/training/sessions/signup_sheet.html.erb	27	color	literal-color-value	hard-coded	COLOR-01	
+R14441	agent	app/views/training/sessions/signup_sheet.html.erb	39,40,41,86,87,88	typography	oneoff:raw-heading-with-utilities	custom-css		<h1>/<h2 class="signup-session"> inside "flex flex-row justify-between items-center w-full mt-2" row with signup-when
+R10523	census	app/views/training/sessions/signup_sheet.html.erb	40	typography	<h1>	raw-html	TYPE-04	
+R14443	agent	app/views/training/sessions/signup_sheet.html.erb	45,46	empty-loading	oneoff:plain-text-empty	one-off-markup		<p class="mt-4">No one is signed up for this session yet.</p>
+R14444	agent	app/views/training/sessions/signup_sheet.html.erb	50	typography	oneoff:utility-bold	one-off-markup		span "font-bold" instruction in the subline
+M0474	grep:candidate	app/views/training/sessions/signup_sheet.html.erb	52	-	<table>	-	TABLE-01	<table>
+R10522	census	app/views/training/sessions/signup_sheet.html.erb	52,95	tables-lists	<table>	raw-html	TABLE-01	
+R14442	agent	app/views/training/sessions/signup_sheet.html.erb	52,53,54,55,57,58,64,65,66,72,95,107,108	tables-lists	<table>	raw-html		Raw table, one <tbody> per trainee, repeating running-head <tr>, sr-only "Row" header, rowspan number cell
+R10524	census	app/views/training/sessions/signup_sheet.html.erb	87	typography	<h2>	raw-html	TYPE-04	
+M0475	grep:candidate	app/views/training/sessions/signup_sheet.html.erb	95	-	<table>	-	TABLE-01	<table>
+M0408	grep:candidate	app/views/training/sessions/trainers_report.html.erb	1	-	no hero_panel	-	HERO-01	GET /training/:slug/session/:slot_id/trainers-report
+R14445	agent	app/views/training/sessions/trainers_report.html.erb	15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32	other	inline-style	inline-style		Inline <style> @page rule with escaped footer text, font-size 7.5pt, color #444, font-family; near-copy of signup_sheet's
+M0462	grep:definite	app/views/training/sessions/trainers_report.html.erb	17	-	<style>	-	STYLE-01	<style>
+R10526	census	app/views/training/sessions/trainers_report.html.erb	22,28	color	literal-color-value	hard-coded	COLOR-01	
+R10559	census	app/views/training/sessions/trainers_report.html.erb	41	typography	<h1>	raw-html	TYPE-04	
+R10527	census	app/views/training/sessions/trainers_report.html.erb	48,94	icons	emoji-or-symbol-character	hard-coded	ICON-01	
+R14447	agent	app/views/training/sessions/trainers_report.html.erb	48,94	icons	oneoff:glyph-icon	hard-coded-value		"✔&#xFE0E;" glyph used as the pass-column header and in the legend; the header th has no text alternative
+R14446	agent	app/views/training/sessions/trainers_report.html.erb	54,55,56,57,58,59,60,61	other	oneoff:print-stat-tiles	custom-css		Stat tiles hand-built as div.report-stat with <b> number and span.report-stat-label (not ui_stat_box)
+R14451	agent	app/views/training/sessions/trainers_report.html.erb	55,57,59,60,66,75,80,163	typography	<b>	raw-html		<b> used for numbers, group labels, "Email ahead:" lead and legend codes
+R14450	agent	app/views/training/sessions/trainers_report.html.erb	70,84	empty-loading	oneoff:plain-text-empty	one-off-markup		span "italic" "No trainers signed up." / "None signed up."
+R14452	agent	app/views/training/sessions/trainers_report.html.erb	78,79,80,81,82,83,84,85,86	toasts-alerts	oneoff:print-callout	custom-css		div.report-callout notice with <b> lead
+M0476	grep:candidate	app/views/training/sessions/trainers_report.html.erb	90	-	<table>	-	TABLE-01	<table>
+R10557	census	app/views/training/sessions/trainers_report.html.erb	90	tables-lists	<table>	raw-html	TABLE-01	
+R14453	agent	app/views/training/sessions/trainers_report.html.erb	90,91,92,93,94,100,101,102,116,117,139	tables-lists	<table>	raw-html		Raw table banded by tbody.report-band-body, rowspan number and pass cells, sr-only "Row"
+R14449	agent	app/views/training/sessions/trainers_report.html.erb	107,108,109,110,111,112,113	empty-loading	oneoff:table-row-empty	one-off-markup		Empty band: tr.report-empty-row "None signed up."
+R14454	agent	app/views/training/sessions/trainers_report.html.erb	119	other	oneoff:print-checkbox	custom-css		Undecided trainee gets tag.span(class: "report-checkbox") as an empty tick box
+R14448	agent	app/views/training/sessions/trainers_report.html.erb	123,125,132,135,148	other	oneoff:utility-badge	custom-css		Pills via custom classes report-years-pill / report-new "NEW", report-full-day, report-chip team, report-status
+M0409	grep:candidate	app/views/training/sessions/work_histories/show.html.erb	1	-	no hero_panel	-	HERO-01	GET /training/:slug/session/:slot_id/work-history/:person_id
+R14484	agent	app/views/training/sessions/work_histories/show.html.erb	11,12,52,53,54	empty-loading	turbo_frame_tag	rails-helper		Drill-down via turbo_frame "wh-detail"; frame request renders only the frame (no loading indicator in view)
+R14485	agent	app/views/training/sessions/work_histories/show.html.erb	14,33	empty-loading	empty-not-handled	not-handled		Drill-down entries table has no empty branch; matrix empty uses ui_empty_state without icon (123)
+R10573	census	app/views/training/sessions/work_histories/show.html.erb	22	typography	<h3>	raw-html	TYPE-04	
+R14480	agent	app/views/training/sessions/work_histories/show.html.erb	22,23,24	typography	oneoff:raw-heading-with-utilities	custom-css		<h3 class="heading-title mt-4 mb-1"> heads the drill-down table
+R14486	agent	app/views/training/sessions/work_histories/show.html.erb	37,38	typography	oneoff:muted-meta-line	one-off-markup		"as Echelon volunteer" div "text-stone-muted" under a shift time
+R14481	agent	app/views/training/sessions/work_histories/show.html.erb	76,77	color	oneoff:status-by-color	one-off-markup		<strong class="text-error">includes Echelon volunteer entries</strong> warning by colour in a summary line
+M0523	grep:candidate	app/views/training/sessions/work_histories/show.html.erb	81	-	responsive: false	-	TABLE-02	<%= ui_table full_width: true, responsive: false do |t| %>
+R14483	agent	app/views/training/sessions/work_histories/show.html.erb	95,96,104,105,111,112	links	link_to	rails-helper		Hour totals as bare link_to (no class) targeting turbo_frame wh-detail
+R14482	agent	app/views/training/sessions/work_histories/show.html.erb	113,114	empty-loading	oneoff:dash-empty-value	one-off-markup		Empty matrix cell span "text-stone-muted" "—"
+R14495	agent	app/views/training/surveys/index.html.erb	18	other	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R10585	census	app/views/training/surveys/index.html.erb	19	tables-lists	<dl>	raw-html	TABLE-01	
+R14496	agent	app/views/training/surveys/index.html.erb	34	color	oneoff:status-by-color	shared-helper		ui_section badge_color :success when surveys exist, :secondary when none
+M0132	grep:candidate	app/views/training/trained_no_work/index.html.erb	4	-	work	-	COPY-01	id: "training-trained-no-work-header" do |panel| %>
+R14400	agent	app/views/training/trained_no_work/index.html.erb	16,17,18,19,20	toasts-alerts	ui_callout_box	shared-helper		Configuration problem shown as ui_callout_box :warning instead of an empty state
+M0133	grep:candidate	app/views/training/trained_no_work/index.html.erb	18	-	working	-	COPY-01	<%= @training.title %> has no working positions that require it, so there is nothing to
+R14401	agent	app/views/training/trained_no_work/index.html.erb	33	other	ui_stat_box	shared-helper		"People" tile always variant :warning
+R14402	agent	app/views/training/trained_no_work/index.html.erb	41	other	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R10608	census	app/views/training/trained_no_work/index.html.erb	42	tables-lists	<dl>	raw-html	TABLE-01	
+M0134	grep:candidate	app/views/training/trained_no_work/index.html.erb	51	-	work	-	COPY-01	<%= filter_bar id: "trained-no-work-filters",
+R10606	census	app/views/training/trained_no_work/index.html.erb	95,100	other	area-badge-helper	area-helper		person_status_badge trained_no_work_qualification_badge
+R14399	agent	app/views/training/trained_no_work/index.html.erb	98,105	tables-lists	oneoff:stacked-cell	one-off-markup		Two cells each "flex flex-col gap-y-1" so badges and dates line up row for row
+R14398	agent	app/views/training/trained_no_work/index.html.erb	109,110,111	links	oneoff:table-link-classes	rails-helper		link_to with class_names(LinkHelper::TABLE_LINK_CLASSES, Training::SessionLinkHelper::STAMP_CLASSES) written inline instead of training_session_link
+R14503	agent	app/views/training/trainer_attendance/_session_line.html.erb	7,8,9,10,11,14	color	oneoff:status-by-color	shared-helper		Local case maps trainer status to badge: Attended success circle-check, No Show error circle-xmark, Pending warning clock
+R14504	agent	app/views/training/trainer_attendance/_session_line.html.erb	13,16	other	oneoff:badge-row	one-off-markup		Line is "flex flex-wrap items-center gap-x-2 gap-y-1": badge, session link, plain span position title
+R10614	census	app/views/training/trainer_attendance/_session_line.html.erb	15	links	area-link-helper	area-helper		training_session_link
+R14508	agent	app/views/training/trainer_attendance/index.html.erb	23	other	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R10629	census	app/views/training/trainer_attendance/index.html.erb	24	tables-lists	<dl>	raw-html	TABLE-01	
+R14505	agent	app/views/training/trainer_attendance/index.html.erb	30,31,32,33,34	spacing	oneoff:spacing-wrapper-div	one-off-markup		export_csv_link in button_row inside <div class="my-4">
+R14506	agent	app/views/training/trainer_attendance/index.html.erb	42	typography	oneoff:plain-count-line	one-off-markup		<p class="mb-4">Showing N trainers.</p>
+R14507	agent	app/views/training/trainer_attendance/index.html.erb	54,55,56,57	links	oneoff:unlinked-fallback	one-off-markup		Trainer with no person record prints bare callsign text in the row header
+R14501	agent	app/views/training/untrained_people/index.html.erb	32	other	ui_stat_box	shared-helper		"People" tile always :warning
+R14502	agent	app/views/training/untrained_people/index.html.erb	37	other	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R10658	census	app/views/training/untrained_people/index.html.erb	38	tables-lists	<dl>	raw-html	TABLE-01	
+R14497	agent	app/views/training/untrained_people/index.html.erb	49,50,51,54,55,56,57,58,59,60	buttons	oneoff:copy-via-button-action	shared-helper		Copy emails via button_action controller: "copy-to-clipboard" in button_row in <div class="my-4">, not clipboard_button
+R10667	census	app/views/training/untrained_people/index.html.erb	109	typography	tw-text-size	utility	TYPE-02	text-sm
+R14498	agent	app/views/training/untrained_people/index.html.erb	109	typography	oneoff:muted-meta-line	one-off-markup		Full name under callsign as span "block text-sm text-stone-muted"
+R10655	census	app/views/training/untrained_people/index.html.erb	111	other	area-badge-helper	area-helper		untrained_people_blocker_badge
+R14500	agent	app/views/training/untrained_people/index.html.erb	115,124,126,127,130,131	tables-lists	oneoff:stacked-cell	one-off-markup		Shift list "flex flex-col gap-y-1"; time span "whitespace-nowrap tabular-nums" written inline; position in muted parentheses
+R10650	census	app/views/training/untrained_people/index.html.erb	116	links	area-link-helper	area-helper		training_session_link
+R14499	agent	app/views/training/untrained_people/index.html.erb	119,120	empty-loading	oneoff:dash-empty-value	one-off-markup		Missing session as span "text-stone-muted" &mdash; (email column uses email_link_or_dash)

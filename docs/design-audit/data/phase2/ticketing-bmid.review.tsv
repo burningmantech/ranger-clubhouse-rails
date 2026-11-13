@@ -1,0 +1,280 @@
+id	source	file	lines	pattern	variant	impl	rule_hint	note
+R13987	agent	app/helpers/bmid/manage_helper.rb	55-63,390-394	color	oneoff:status-by-color	area-helper		STATUS_VARIANTS map bmid status to ui_badge variant (prep secondary, ready success, issues error, do-not-print warning, submitted primary), size sm
+R13985	agent	app/helpers/bmid/manage_helper.rb	72-75,179-191	links	oneoff:sort-link	hard-coded-value		SORT_LINK_CLASSES "no-decoration inline-flex min-h-9 items-center gap-2 text-body hover:text-heading ... focus-visible:ring-2 ring-primary ring-offset-base-200"; caret-up/down fa_icon on active column; aria-sort on heading
+R13990	agent	app/helpers/bmid/manage_helper.rb	81	color	hard-coded-value	hard-coded-value		DIRTY_ROW_CLASS "bg-warning/10" handed to the bulk-edit Stimulus controller
+R13993	agent	app/helpers/bmid/manage_helper.rb	253-257	modals	bmid_modal_frame	area-helper		wraps dialog in turbo_frame_tag "modal" only for frame requests
+R13986	agent	app/helpers/bmid/manage_helper.rb	287-313	buttons	oneoff:icon-plus-sr-text-button	area-helper		bmid_provision_cell_action: button_link sm secondary with face fa_icon (aria-hidden) + span.sr-only label + visible "Manage"; title tooltip; visible word stays "Manage" also for the Add case
+R13992	agent	app/helpers/bmid/manage_helper.rb	370-372	validation	oneoff:error-sentence	area-helper		bmid_row_error_sentence joins full_messages for the error callout on manage/index
+R00109	census	app/helpers/bmid/manage_helper.rb	371	validation	model-errors-inline	one-off	FORM-06	
+R13991	agent	app/helpers/bmid/manage_helper.rb	378-386,414	other	ui_badge size sm	shared-helper		SAP state badges "Previous year", "SAP missing", "SAP submitted", "No SAP" (all size sm)
+R13988	agent	app/helpers/bmid/manage_helper.rb	430-438	color	oneoff:row-accent-border	hard-coded-value		row accent class "border-l-4 border-error" / "border-warning" / "border-transparent"
+R13989	agent	app/helpers/bmid/manage_helper.rb	442-458	icons	fa_icon title + sr-only	area-helper		flag icons fa_icon eye "icon-error" and circle-exclamation "icon-warning" with title attr, wrapped span "inline-flex items-center gap-1" plus span.sr-only text
+R00103	census	app/helpers/bmid/manage_helper.rb	446	icons	css:icon-error	custom-css(icons.css)	ICON-01	
+R00104	census	app/helpers/bmid/manage_helper.rb	451	icons	css:icon-warning	custom-css(icons.css)	ICON-01	
+M0231	grep:candidate	app/helpers/ticketing/access_documents_helper.rb	64	-	strftime	-	COPY-08	Date.iso8601(value).strftime(AccessDocumentSummaryRow::ARRIVAL_DATE_FORMAT)
+R13994	agent	app/helpers/tickets_provisions_helper.rb	78-86	other	oneoff:plain-dash	hard-coded-value		access_date_label returns "Any", date, or literal "—"
+M0251	grep:candidate	app/helpers/tickets_provisions_helper.rb	109	-	number_to_currency	-	COPY-09	number_to_currency(amount, precision: (amount % 1).zero? ? 0 : 2)
+R13909	agent	app/views/bmid/badges/edit.html.erb	27-33	color	oneoff:status-by-color	shared-helper		three ui_stat_box with variant switching warning/secondary by condition
+R13906	agent	app/views/bmid/badges/edit.html.erb	62-84	tables-lists	oneoff:definition-grid	one-off-markup		div "grid gap-3 lg:grid-cols-3" of label div "text-sm text-stone-muted" over value div "flex min-h-9 items-center font-medium"; not ui_label_value
+R01891	census	app/views/bmid/badges/edit.html.erb	64,71,78,81,85	typography	tw-text-size	utility	TYPE-02	text-base text-sm
+R13907	agent	app/views/bmid/badges/edit.html.erb	80-81	other	oneoff:plain-yes-no	one-off-markup		"Yes"/"No" in span "font-medium" plus span "text-sm text-stone-muted" "(Read-only)"
+R13908	agent	app/views/bmid/badges/edit.html.erb	85,109,116	typography	oneoff:muted-note	custom-css		notes as p "mt-2 text-base text-stone-muted", p "me-muted mb-4" (timestamps), plain p "mb-4"
+R13911	agent	app/views/bmid/badges/edit.html.erb	104-106	validation	errors-via-form-builder	shared-helper		ui_form(@bmid) re-rendered at 422; inline errors come from the builder inside common/bmids/_fields (not opened)
+R13910	agent	app/views/bmid/badges/edit.html.erb	120	buttons	cancel_link	shared-helper		cancel_link beside f.submit (other forms in scope use cancel_button)
+R13965	agent	app/views/bmid/export/_buckets.html.erb	10-11	empty-loading	oneoff:render-nothing	not-handled		no buckets: renders nothing
+R13962	agent	app/views/bmid/export/_buckets.html.erb	12	spacing	oneoff:grid-layout	one-off-markup		div "my-4 grid grid-cols-1 lg:grid-cols-2 gap-2" of disclosures
+R13961	agent	app/views/bmid/export/_buckets.html.erb	17-23	cards	oneoff:rich-disclosure-summary	shared-helper		ui_disclosure card with summary built from span "font-semibold" + ui_badge count size sm, subtitle reason
+R13963	agent	app/views/bmid/export/_buckets.html.erb	24-33	tables-lists	oneoff:custom-list-row	one-off-markup		callsigns as div "flex flex-wrap gap-x-4 gap-y-1" of span "inline-flex items-center" + span "ms-1 text-stone-muted" status
+R13964	agent	app/views/bmid/export/_buckets.html.erb	36-39	links	class:link link-primary	daisyui-class		overflow p "mt-2 text-stone-muted" with link_to class "link link-primary"
+R13966	agent	app/views/bmid/export/_filter_bar.html.erb	32	buttons	f.submit variant:secondary	shared-helper		Apply button :secondary
+R13970	agent	app/views/bmid/export/_previous_exports.html.erb	13-15	empty-loading	ui_empty_state	shared-helper		ui_empty_state inside the ui_section
+R13969	agent	app/views/bmid/export/_previous_exports.html.erb	24	tables-lists	oneoff:empty-heading	shared-helper		t.heading "" for the action column (no sr-only text)
+R13968	agent	app/views/bmid/export/_previous_exports.html.erb	31-33	links	oneoff:table-link-classes	rails-helper		download link_to with fa_icon download + filename and TABLE_LINK_CLASSES
+R13967	agent	app/views/bmid/export/_previous_exports.html.erb	44-53	buttons	delete_button relabelled	shared-helper		delete_button labelled "Un-Submit" with icon rotate-left for a DELETE that un-submits a batch
+R13973	agent	app/views/bmid/export/_selection_table.html.erb	33,52-53	tables-lists	helper-class-override	shared-helper		t.cell class bmid_row_accent_class; "max-w-md"; simple_format class "text-base"
+R13971	agent	app/views/bmid/export/_selection_table.html.erb	42	tables-lists	oneoff:muted-subline	one-off-markup		name as div "text-stone-muted" under callsign and flag icons
+R13972	agent	app/views/bmid/export/_selection_table.html.erb	48-49	other	oneoff:plain-dash	hard-coded-value		"Yes" or literal "—"
+R13974	agent	app/views/bmid/export/_skipped.html.erb	6-13	toasts-alerts	ui_callout_box+list-bulleted	shared-helper		same markup as ticketing/trs_export/_skipped with different noun
+R01924	census	app/views/bmid/export/_skipped.html.erb	8	tables-lists	<ul>	raw-html	TABLE-01	
+R13977	agent	app/views/bmid/export/create.html.erb	36-38	typography	oneoff:intro-paragraph	one-off-markup		p "mt-4" instruction line above the buttons
+R13975	agent	app/views/bmid/export/create.html.erb	40	buttons	helper-class-override	shared-helper		button_row class: "my-4"
+R13976	agent	app/views/bmid/export/create.html.erb	41-42	buttons	export_csv_link	shared-helper		export_csv_link to an ActiveStorage blob, label "Download <filename>", variant :primary
+R01962	census	app/views/bmid/export/index.html.erb	33	tables-lists	<dl>	raw-html	TABLE-01	
+R13979	agent	app/views/bmid/export/index.html.erb	39-47	spacing	oneoff:button-row-wrapper	one-off-markup		button_row wrapped in div "my-4"
+M0528	grep:candidate	app/views/bmid/export/index.html.erb	44	-	export outside filter_bar actions:	-	TABLE-05	<%= button_link "Previous Exports", :secondary, "#previous-exports",
+R13978	agent	app/views/bmid/export/index.html.erb	44-45	navigation	oneoff:anchor-as-button	shared-helper		button_link "Previous Exports" to in-page "#previous-exports"
+R13981	agent	app/views/bmid/export/index.html.erb	55-58	empty-loading	ui_empty_state	shared-helper		one empty branch with conditional wording for search
+R13980	agent	app/views/bmid/export/index.html.erb	70	toasts-alerts	helper-class-override	shared-helper		ui_callout_box :warning accent class: "my-4"
+M0254	grep:candidate	app/views/bmid/export/index.html.erb	86	-	"submit"	-	COPY-10	data: { checkbox_select_all_target: "submit",
+R01958	census	app/views/bmid/export/index.html.erb	87	modals	confirm_modal_dialog	shared-helper	MODAL-02	
+R01959	census	app/views/bmid/export/index.html.erb	87	modals	turbo-confirm	attribute	MODAL-02	
+M0162	grep:candidate	app/views/bmid/export/unsubmit.html.erb	5	-	unsubmit	-	COPY-07	<%= hero_panel icon: "rotate-left", heading_level: :h1, id: "bmid-export-unsubmit-header",
+R13984	agent	app/views/bmid/export/unsubmit.html.erb	33-39	empty-loading	ui_callout_box as empty	shared-helper		nothing reverted: ui_callout_box warning accent instead of ui_empty_state; table section skipped
+R13982	agent	app/views/bmid/export/unsubmit.html.erb	41-50	toasts-alerts	ui_callout_box+list-bulleted	shared-helper		skipped list inline (ui_callout_box warning accent class "my-4" + ul.list-bulleted) rather than a _skipped partial
+R01978	census	app/views/bmid/export/unsubmit.html.erb	44	tables-lists	<ul>	raw-html	TABLE-01	
+M0480	grep:candidate	app/views/bmid/export/unsubmit.html.erb	54	-	responsive: false	-	TABLE-02	<%= ui_table responsive: false do |t| %>
+R13983	agent	app/views/bmid/export/unsubmit.html.erb	73	buttons	helper-class-override	shared-helper		button_row class: "my-4"
+R02002	census	app/views/bmid/manage/_edit_grid.html.erb	29,59	validation	model-errors-inline	one-off	FORM-06	
+R13938	agent	app/views/bmid/manage/_edit_grid.html.erb	29,63-66	validation	oneoff:dirty-row-tint	one-off-markup		failed rows re-render with DIRTY_ROW_CLASS "bg-warning/10" and data-dirty; ui_form no_error_summary: true
+R13939	agent	app/views/bmid/manage/_edit_grid.html.erb	30-39	forms	oneoff:toolbar	one-off-markup		div "mb-3 flex flex-wrap items-center gap-3" holding ui_badge change counter and button_row (submit_button, button_action Discard)
+M0255	grep:candidate	app/views/bmid/manage/_edit_grid.html.erb	34	-	"submit"	-	COPY-10	<%= submit_button "Save All Changes", data: { bulk_edit_target: "submit" } %>
+R13940	agent	app/views/bmid/manage/_edit_grid.html.erb	34,157	buttons	submit_button	shared-helper		submit_button "Save All Changes" twice (top and bottom) instead of f.submit
+M0481	grep:candidate	app/views/bmid/manage/_edit_grid.html.erb	44	-	responsive: false	-	TABLE-02	<%= ui_table striped: false, responsive: false do |t| %>
+R13946	agent	app/views/bmid/manage/_edit_grid.html.erb	46-48	tables-lists	oneoff:sr-only-heading	one-off-markup		flags column header is span.sr-only "Flags"
+R13945	agent	app/views/bmid/manage/_edit_grid.html.erb	66,145	tables-lists	helper-class-override	shared-helper		t.cell class: bmid_row_accent_class (border-l-4 colour) and class: "min-w-56"
+R13942	agent	app/views/bmid/manage/_edit_grid.html.erb	68	spacing	custom-css	custom-css		span "inline-flex-center-gap-2" wrapping flag icons
+R13941	agent	app/views/bmid/manage/_edit_grid.html.erb	70-72	icons	fa_icon label	shared-helper		hidden marker span with fa_icon pen class "icon-warning" label "Changed, not yet saved."
+R01990	census	app/views/bmid/manage/_edit_grid.html.erb	71	icons	css:icon-warning	custom-css(icons.css)	ICON-01	
+R13943	agent	app/views/bmid/manage/_edit_grid.html.erb	81-148	forms	hide_label + aria	shared-helper		every grid field hide_label: true with aria-label, width "w-full sm:w-NN", wrapper_class "min-w-0"
+R13944	agent	app/views/bmid/manage/_edit_grid.html.erb	105	other	oneoff:plain-dash	hard-coded-value		MVR cell "Yes" or literal "—", not value_or_dash
+R01994	census	app/views/bmid/manage/_edit_grid.html.erb	136	other	area-badge-helper	area-helper		bmid_sap_disabled_badge
+M0256	grep:candidate	app/views/bmid/manage/_edit_grid.html.erb	157	-	"submit"	-	COPY-10	<%= submit_button "Save All Changes", data: { bulk_edit_target: "submit" } %>
+R13948	agent	app/views/bmid/manage/_filter_bar.html.erb	48-60	forms	bmid_filter_select	area-helper		area helper builds selects that disable themselves and show help_text when the category offers nothing
+R13947	agent	app/views/bmid/manage/_filter_bar.html.erb	70	buttons	f.submit variant:secondary	shared-helper		filter_bar Apply button variant :secondary (ticketing filter bars use default)
+R13949	agent	app/views/bmid/manage/_meals_cell.html.erb	18-23	tables-lists	oneoff:cell-with-action	one-off-markup		span "inline-flex items-center gap-2" with label span and bmid_provision_cell_action button
+R13950	agent	app/views/bmid/manage/_showers_cell.html.erb	19	other	oneoff:plain-dash	hard-coded-value		"Yes" or literal "—"
+M0482	grep:candidate	app/views/bmid/manage/_table.html.erb	13	-	responsive: false	-	TABLE-02	<%= ui_table responsive: false do |t| %>
+R13954	agent	app/views/bmid/manage/_table.html.erb	15-17	tables-lists	oneoff:sr-only-heading	one-off-markup		span.sr-only "Flags" header
+R13953	agent	app/views/bmid/manage/_table.html.erb	28,48-49	tables-lists	helper-class-override	shared-helper		t.cell class bmid_row_accent_class; class "max-w-md" with simple_format class "text-base"
+R13951	agent	app/views/bmid/manage/_table.html.erb	35-37	links	oneoff:table-link-classes	rails-helper		text link "Edit" via link_to TABLE_LINK_CLASSES with aria-label, not edit_link
+R13952	agent	app/views/bmid/manage/_table.html.erb	43	other	oneoff:plain-dash	hard-coded-value		MVR "Yes" or literal "—"
+R13957	agent	app/views/bmid/manage/index.html.erb	15	navigation	hero_panel.year_selector	shared-helper		year selector in hero, min_year year_floor
+R13959	agent	app/views/bmid/manage/index.html.erb	36	toasts-alerts	ui_callout_box icon	shared-helper		warning callout with icon "hand-point-right" and no icon_type
+R13955	agent	app/views/bmid/manage/index.html.erb	43-55	validation	oneoff:error-summary-callout	shared-helper		failed rows listed in ui_callout_box :error with p "mb-2" and ul "space-y-1" of strong callsign + bmid_row_error_sentence; not form_error_summary
+R02032	census	app/views/bmid/manage/index.html.erb	49	tables-lists	<ul>	raw-html	TABLE-01	
+R02031	census	app/views/bmid/manage/index.html.erb	61	tables-lists	<dl>	raw-html	TABLE-01	
+M0108	grep:candidate	app/views/bmid/manage/index.html.erb	63	-	work	-	COPY-01	<dt>How does saving work?</dt>
+R13956	agent	app/views/bmid/manage/index.html.erb	80-92	navigation	oneoff:view-toggle-button	shared-helper		Table View / Edit Mode switch is one button_link (primary or secondary) in button_row wrapped by div "my-4"
+R13958	agent	app/views/bmid/manage/index.html.erb	108-114	other	oneoff:legend-extra	custom-css		captured span "inline-flex-center-gap-2" fa_icon pen "icon-warning" passed as extra: to common/bmids/flag_legend
+R02025	census	app/views/bmid/manage/index.html.erb	110	icons	css:icon-warning	custom-css(icons.css)	ICON-01	
+R13960	agent	app/views/bmid/manage/index.html.erb	116-121	empty-loading	ui_empty_state	shared-helper		filtered-empty and empty branches
+R13900	agent	app/views/bmid/provisions/_list.html.erb	14	modals	modal	shared-helper		modal size :xl, close_button: false; title built with &mdash; and callsign
+R13901	agent	app/views/bmid/provisions/_list.html.erb	19-23	typography	oneoff:intro-paragraph	one-off-markup		p "mb-3 text-body" explaining save behaviour (near-identical text in _modal 18-22)
+R13903	agent	app/views/bmid/provisions/_list.html.erb	28	empty-loading	shared-partial empty_message	shared-partial		empty case delegated to common/provisions/list via empty_message local
+R13902	agent	app/views/bmid/provisions/_list.html.erb	32-40	spacing	oneoff:button-row-wrapper	one-off-markup		button_row wrapped in div "mt-4"; button_link primary with data turbo_frame modal and modal_close_button "Close"
+R13904	agent	app/views/bmid/provisions/_modal.html.erb	9	modals	modal	shared-helper		modal size :lg (list dialog is :xl), close_button: false, same id bmid-provision-modal
+R13905	agent	app/views/bmid/provisions/_modal.html.erb	18-22	typography	oneoff:intro-paragraph	one-off-markup		p "mb-3 text-body" intro
+M0370	grep:candidate	app/views/bmid/provisions/edit.html.erb	1	-	no hero_panel	-	HERO-01	GET /bmid/manage/provisions/:id/edit
+M0371	grep:candidate	app/views/bmid/provisions/index.html.erb	1	-	no hero_panel	-	HERO-01	GET /bmid/manage/provisions
+M0372	grep:candidate	app/views/bmid/provisions/new.html.erb	1	-	no hero_panel	-	HERO-01	GET /bmid/manage/provisions/new
+R13932	agent	app/views/bmid/sanity_check/index.html.erb	10-20	other	oneoff:stat-grid	one-off-markup		div "grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 mb-2" of ui_stat_link wrapping ui_stat_box (clickable filters) instead of ui_stat_row
+R13933	agent	app/views/bmid/sanity_check/index.html.erb	16-17	color	oneoff:status-by-color	shared-helper		tile variant warning when count positive, success when zero, icon switches to circle-check
+R02066	census	app/views/bmid/sanity_check/index.html.erb	34	tables-lists	<dl>	raw-html	TABLE-01	
+R13937	agent	app/views/bmid/sanity_check/index.html.erb	62-69	empty-loading	ui_empty_state	shared-helper		zero-total and filtered-empty branches; first without icon_type
+R02074	census	app/views/bmid/sanity_check/index.html.erb	90	typography	tw-text-size	utility	TYPE-02	text-sm
+R13936	agent	app/views/bmid/sanity_check/index.html.erb	90-93	tables-lists	oneoff:muted-subline	one-off-markup		div "text-sm text-stone-muted" name, status, email joined by middots
+R02059	census	app/views/bmid/sanity_check/index.html.erb	91	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13934	agent	app/views/bmid/sanity_check/index.html.erb	95	other	helper-class-override	shared-helper		ui_badge size "sm" class: "whitespace-nowrap"
+R13935	agent	app/views/bmid/sanity_check/index.html.erb	98-103	links	oneoff:table-link-classes	rails-helper		span "inline-flex flex-wrap gap-x-4" of two link_to with LinkHelper::TABLE_LINK_CLASSES as row actions
+M0298	grep:candidate	app/views/bmid/titles/_cell.html.erb	7	-	select_tag	-	FORM-01	<%= select_tag "titles[#{cell[:key]}]",
+R02076	census	app/views/bmid/titles/_cell.html.erb	7	forms	select_tag	rails-helper	FORM-01	
+R13912	agent	app/views/bmid/titles/_cell.html.erb	7-17,20-23	forms	oneoff:raw-field-tags	rails-helper		select_tag and text_field_tag outside the builder, classes from AppFormBuilder::SELECT_CLASSES / INPUT_CLASSES + "w-full", aria-label only, no visible label
+R13913	agent	app/views/bmid/titles/_cell.html.erb	15-19	other	oneoff:conditional-reveal	one-off-markup		custom title box div "mt-1" toggled by conditional-show controller and server-side "hidden" class
+M0299	grep:candidate	app/views/bmid/titles/_cell.html.erb	20	-	text_field_tag	-	FORM-01	<%= text_field_tag "custom_titles[#{cell[:key]}]", cell[:custom],
+R02077	census	app/views/bmid/titles/_cell.html.erb	20	forms	text_field_tag	rails-helper	FORM-01	
+R13914	agent	app/views/bmid/titles/_cell.html.erb	20-23	validation	empty-not-handled	not-handled		custom title field has maxlength only; no error display in the cell
+R13917	agent	app/views/bmid/titles/_form.html.erb	1	validation	errors-via-form-builder	shared-helper		ui_form(@title) re-rendered at 422 by create/update; no page-level error markup
+R02093	census	app/views/bmid/titles/_form.html.erb	4	tables-lists	<dl>	raw-html	TABLE-01	
+R13916	agent	app/views/bmid/titles/_form.html.erb	4-12	tables-lists	class:instruction-list	custom-css		dl "instruction-list mb-3" inside f.fieldset as form help
+M0007	grep:candidate	app/views/bmid/titles/_form.html.erb	22	-	sm:w	-	BP-01	{ class: "w-full sm:w-44" } %>
+R13915	agent	app/views/bmid/titles/_form.html.erb	22,29	forms	helper-class-override	shared-helper		f.select / f.collection_select width given via html class: "w-full sm:w-44" / "sm:w-72" while text/number fields use width: kwarg (17,31)
+M0008	grep:candidate	app/views/bmid/titles/_form.html.erb	29	-	sm:w	-	BP-01	{ class: "w-full sm:w-72" } %>
+R13918	agent	app/views/bmid/titles/_form.html.erb	40-47	buttons	delete_button confirm_modal	shared-helper		delete_button in the form's button_row with confirm_modal hash
+R13929	agent	app/views/bmid/titles/apply.html.erb	19-26	spacing	oneoff:button-row-wrapper	one-off-markup		button_row wrapped in div "my-4"
+R13931	agent	app/views/bmid/titles/apply.html.erb	29	empty-loading	ui_empty_state	shared-helper		ui_empty_state with icon but no icon_type
+M0483	grep:candidate	app/views/bmid/titles/apply.html.erb	31	-	responsive: false	-	TABLE-02	<%= ui_table striped: true, responsive: false do |t| %>
+R13930	agent	app/views/bmid/titles/apply.html.erb	41-44	tables-lists	oneoff:muted-subline	one-off-markup		person column as t.cell (not row_header) with div "text-sm text-stone-muted" status
+R02110	census	app/views/bmid/titles/apply.html.erb	43	typography	tw-text-size	utility	TYPE-02	text-sm
+R02122	census	app/views/bmid/titles/index.html.erb	7	tables-lists	<dl>	raw-html	TABLE-01	
+R13922	agent	app/views/bmid/titles/index.html.erb	7-10	tables-lists	class:instruction-list	custom-css		bare dl "instruction-list my-4" on the page, not in a disclosure
+R13920	agent	app/views/bmid/titles/index.html.erb	12	buttons	helper-class-override	shared-helper		button_row class: "my-4"
+R13923	agent	app/views/bmid/titles/index.html.erb	25-26	empty-loading	ui_empty_state	shared-helper		per-line empty state inside each ui_section
+R13921	agent	app/views/bmid/titles/index.html.erb	42	tables-lists	oneoff:action-group	one-off-markup		span "inline-flex gap-1 justify-end" grouping common/move_buttons and edit_link in an Actions cell
+R13919	agent	app/views/bmid/titles/index.html.erb	48-50	buttons	oneoff:icon-only-control	shared-helper		edit_link with empty label "", class: "btn-square", title "Edit", aria-label "Edit <title>"
+R02116	census	app/views/bmid/titles/index.html.erb	50	buttons	class:btn	daisyui-class	BTN-01	btn-square
+R13928	agent	app/views/bmid/titles/set.html.erb	15-20	empty-loading	ui_empty_state	shared-helper		two empty branches with different icons
+R13926	agent	app/views/bmid/titles/set.html.erb	24	cards	helper-class-override	shared-helper		ui_disclosure card class: "my-4"
+R02145	census	app/views/bmid/titles/set.html.erb	25	tables-lists	<dl>	raw-html	TABLE-01	
+M0484	grep:candidate	app/views/bmid/titles/set.html.erb	40	-	responsive: false	-	TABLE-02	<%= ui_table striped: true, responsive: false do |t| %>
+R13927	agent	app/views/bmid/titles/set.html.erb	46	tables-lists	t.heading width	shared-helper		t.heading width: "22%" per title column
+M0075	grep:candidate	app/views/bmid/titles/set.html.erb	55	-	size: "xs	-	BTN-03	<%= ui_badge "New badge", :primary, size: "xs" %>
+R13925	agent	app/views/bmid/titles/set.html.erb	55	other	ui_badge size xs	shared-helper		ui_badge "New badge" :primary size "xs" beside callsign
+R02152	census	app/views/bmid/titles/set.html.erb	57	typography	tw-text-size	utility	TYPE-02	text-sm
+R13924	agent	app/views/bmid/titles/set.html.erb	57-60	tables-lists	oneoff:muted-subline	one-off-markup		div "text-sm text-stone-muted" status and positions under callsign (cell, not row_header)
+R02139	census	app/views/bmid/titles/set.html.erb	58	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13847	agent	app/views/ticketing/access_documents/_summary_error.html.erb	7-9	validation	oneoff:inline-error-text	one-off-markup		span "text-error font-semibold" with fa_icon circle-exclamation, per-document problem text
+R13857	agent	app/views/ticketing/access_documents/_summary_filter_bar.html.erb	43-44	forms	f.check_box in filter_bar	shared-helper		checkbox filter with include_hidden false beside a form_row of four selects (width w-full, wrapper_class flex-1)
+M0054	grep:candidate	app/views/ticketing/access_documents/_summary_legend.html.erb	13	-	sm:g	-	BP-01	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
+R13856	agent	app/views/ticketing/access_documents/_summary_legend.html.erb	13-48	other	oneoff:legend-grid	one-off-markup		legend as div "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2" of div.flex-center-gap-2 sample + span "text-stone-muted" meaning, inside a dd
+R13848	agent	app/views/ticketing/access_documents/_summary_missing.html.erb	5-7	color	oneoff:status-by-color	one-off-markup		strong "text-error whitespace-nowrap" with fa_icon triangle-exclamation + "Missing"
+R13849	agent	app/views/ticketing/access_documents/_summary_notes.html.erb	10-11	empty-loading	oneoff:plain-text-dash	one-off-markup		empty cell drawn as span "text-stone-muted" &mdash; rather than value_or_dash
+R13850	agent	app/views/ticketing/access_documents/_summary_notes.html.erb	13-20	tables-lists	oneoff:stacked-cell-lines	one-off-markup		div "flex flex-col gap-1" stacking span "text-body" notes and error spans
+R09283	census	app/views/ticketing/access_documents/_summary_notes.html.erb	17	validation	model-errors-inline	one-off	FORM-06	
+R13851	agent	app/views/ticketing/access_documents/_summary_special.html.erb	6-7	empty-loading	oneoff:plain-text-dash	one-off-markup		span "text-stone-muted" &mdash; placeholder
+R13852	agent	app/views/ticketing/access_documents/_summary_special.html.erb	9-19	tables-lists	oneoff:stacked-cell-lines	one-off-markup		div "flex flex-col gap-1 whitespace-nowrap text-body" with one span per count
+R13853	agent	app/views/ticketing/access_documents/_summary_value.html.erb	12-13	empty-loading	oneoff:plain-text-dash	one-off-markup		span "text-stone-muted" &mdash; placeholder; qualified values as span "text-body" (15)
+R13855	agent	app/views/ticketing/access_documents/_summary_value.html.erb	18-22	color	oneoff:status-by-color	hard-coded-value		status to badge variant map: claimed success, banked warning, submitted secondary, fallback secondary
+R13854	agent	app/views/ticketing/access_documents/_summary_value.html.erb	27-31	other	helper-class-override	shared-helper		ui_badge size "base", title: status, class: "inline-flex items-center gap-2 whitespace-nowrap" in block form with fa_icon and sr-only status word
+R13860	agent	app/views/ticketing/access_documents/index.html.erb	18	cards	helper-class-override	shared-helper		ui_disclosure card class: "my-4"
+R09300	census	app/views/ticketing/access_documents/index.html.erb	19	tables-lists	<dl>	raw-html	TABLE-01	
+R13858	agent	app/views/ticketing/access_documents/index.html.erb	53,86	tables-lists	helper-class-override	shared-helper		t.heading/t.cell for SOs with right: true and class: "pe-4"
+R09305	census	app/views/ticketing/access_documents/index.html.erb	96	validation	model-errors-inline	one-off	FORM-06	
+R13859	agent	app/views/ticketing/access_documents/index.html.erb	102-109	empty-loading	ui_empty_state	shared-helper		filtered-empty and truly-empty branches, the second in block form
+R13863	agent	app/views/ticketing/access_documents/records.html.erb	14	cards	helper-class-override	shared-helper		ui_disclosure card class: "my-4", shown only when total_count positive
+R09316	census	app/views/ticketing/access_documents/records.html.erb	15	tables-lists	<dl>	raw-html	TABLE-01	
+R13862	agent	app/views/ticketing/access_documents/records.html.erb	29-33	empty-loading	ui_empty_state	shared-helper		two ui_empty_state branches inside the ui_section
+M0137	grep:definite	app/views/ticketing/access_documents/records.html.erb	60	-	.status.humanize	-	COPY-02	<%= t.cell document.status.humanize %>
+R13861	agent	app/views/ticketing/access_documents/records.html.erb	66-68	color	oneoff:status-by-color	one-off-markup		inline strong "text-error" + fa_icon triangle-exclamation "Missing", duplicating _summary_missing without its whitespace-nowrap
+R13883	agent	app/views/ticketing/bulk_access_documents/_consequence.html.erb	5,12	toasts-alerts	ui_callout_box	shared-helper		warning or info callout with explicit icon option; copy refers to "the amber ones above" (colour named in text)
+R13880	agent	app/views/ticketing/bulk_access_documents/_formats.html.erb	12	spacing	oneoff:disclosure-stack-wrapper	one-off-markup		div "space-y-2 mb-4" wraps two ui_disclosure cards (others in scope pass class: "my-4" instead)
+R13881	agent	app/views/ticketing/bulk_access_documents/_formats.html.erb	16,43,49	typography	oneoff:intro-paragraph	one-off-markup		p "mb-3", p "mt-3", p "mt-2" with strong leads and inline <code> samples inside the disclosure
+R13882	agent	app/views/ticketing/bulk_access_documents/_formats.html.erb	24-41	tables-lists	ui_table striped	shared-helper		format table with <code> in row headers
+R09328	census	app/views/ticketing/bulk_access_documents/_formats.html.erb	61	tables-lists	<dl>	raw-html	TABLE-01	
+R13878	agent	app/views/ticketing/bulk_provisions/_formats.html.erb	9	cards	helper-class-override	shared-helper		ui_disclosure card class: "my-4"
+R13879	agent	app/views/ticketing/bulk_provisions/_formats.html.erb	10,19	tables-lists	helper-class-override	shared-helper		ui_table full_width striped, t.cell class: "font-mono" for line formats
+M0580	grep:candidate	app/views/ticketing/bulk_provisions/_formats.html.erb	19	-	font-mono	-	TYPE-06	<%= t.cell provision_action.help, class: "font-mono" %>
+R09338	census	app/views/ticketing/bulk_provisions/_formats.html.erb	19	typography	tw-font-and-text-style	utility	TYPE-06	font-mono
+M0197	grep:candidate	app/views/ticketing/claimed_with_no_signups/_filter_bar.html.erb	25	-	signups	-	COPY-07	<%= filter_bar id: "claimed-no-signups-filters",
+M0198	grep:candidate	app/views/ticketing/claimed_with_no_signups/index.html.erb	12	-	signups	-	COPY-07	<%= hero_panel icon: "ticket", heading_level: :h1, id: "ticketing-claimed-no-signups-header",
+R09358	census	app/views/ticketing/claimed_with_no_signups/index.html.erb	29	tables-lists	<dl>	raw-html	TABLE-01	
+M0126	grep:candidate	app/views/ticketing/claimed_with_no_signups/index.html.erb	33	-	staff	-	COPY-01	They have a special price ticket or staff credential in hand, and they have
+R13895	agent	app/views/ticketing/claimed_with_no_signups/index.html.erb	57-62	empty-loading	ui_empty_state	shared-helper		filtered-empty and empty branches; empty trainings cell value_or_dash (127)
+R13893	agent	app/views/ticketing/claimed_with_no_signups/index.html.erb	86-100	tables-lists	oneoff:stacked-cell-lines	one-off-markup		name cell with raw <i> for preferred name and div for email; documents as one bare div per line
+R13894	agent	app/views/ticketing/claimed_with_no_signups/index.html.erb	113-114	cards	helper-class-override	shared-helper		in-cell ui_disclosure with summary_class: "font-semibold text-heading"; list ul.list-bulleted, li "mt-1", span "font-semibold whitespace-nowrap"
+R09359	census	app/views/ticketing/claimed_with_no_signups/index.html.erb	115	tables-lists	<ul>	raw-html	TABLE-01	
+M0127	grep:candidate	app/views/ticketing/expiring/index.html.erb	10	-	staff	-	COPY-01	Special price tickets and staff credentials that lapse at the end of the
+R13888	agent	app/views/ticketing/expiring/index.html.erb	20-22,102-103	color	oneoff:status-by-color	shared-helper		ui_stat_box variant warning when count positive else secondary; ui_badge "Already expired" warning with icon
+R09386	census	app/views/ticketing/expiring/index.html.erb	26	tables-lists	<dl>	raw-html	TABLE-01	
+R13885	agent	app/views/ticketing/expiring/index.html.erb	47-54	buttons	oneoff:button-in-paragraph	one-off-markup		clipboard_button wrapped in p "my-4"
+R13889	agent	app/views/ticketing/expiring/index.html.erb	64-69	empty-loading	ui_empty_state	shared-helper		filtered-empty and empty branches
+R13886	agent	app/views/ticketing/expiring/index.html.erb	92	tables-lists	oneoff:muted-subline	one-off-markup		person status under callsign in row header: div "text-stone-muted font-normal"
+R13887	agent	app/views/ticketing/expiring/index.html.erb	98-99	tables-lists	helper-class-override	shared-helper		t.cell class: "text-right" for numeric columns instead of right: true
+R13869	agent	app/views/ticketing/maintenance/index.html.erb	23,28	empty-loading	empty-not-handled	not-handled		@groups and group entries iterated with no empty branch
+R13865	agent	app/views/ticketing/maintenance/index.html.erb	25,33,40	typography	oneoff:intro-paragraph	one-off-markup		p "mb-3" blurb, p "mb-2" card description, p "font-medium" card note
+R13864	agent	app/views/ticketing/maintenance/index.html.erb	27	spacing	oneoff:grid-layout	custom-css		cards in div "two-column-lg"
+R13867	agent	app/views/ticketing/maintenance/index.html.erb	35	other	ui_badge as note	shared-helper		ui_badge "Opens its own page" :secondary used as an informational label, not a status
+R13866	agent	app/views/ticketing/maintenance/index.html.erb	37-38	toasts-alerts	oneoff:plain-text-alert	one-off-markup		ui_badge "Setting required" error with icon, then blocked reason as p "mt-2 text-error"
+R13868	agent	app/views/ticketing/maintenance/index.html.erb	45-50	buttons	button_link full_width	shared-helper		card footer actions are full-width primary button_link
+R13872	agent	app/views/ticketing/maintenance/preview.html.erb	18	typography	oneoff:intro-paragraph	one-off-markup		task description as p "my-4" under the hero
+R13874	agent	app/views/ticketing/maintenance/preview.html.erb	27-32	empty-loading	ui_empty_state	shared-helper		ui_empty_state + button_row back; blocked state uses ui_callout_box error + back (20-26)
+R13871	agent	app/views/ticketing/maintenance/preview.html.erb	34-37	typography	oneoff:summary-count-line	one-off-markup		p "text-lg my-4" with strong lead + count (a p here, a div on results pages)
+R13873	agent	app/views/ticketing/maintenance/preview.html.erb	41	toasts-alerts	helper-class-override	shared-helper		ui_callout_box :warning, accent: true, class: "my-4"
+R13870	agent	app/views/ticketing/maintenance/preview.html.erb	48-53	validation	oneoff:inline-error-text	one-off-markup		reason error as p "text-error font-medium mb-2" role="alert" with fa_icon and "Error:" text above f.text_area, not the builder's inline error
+R13877	agent	app/views/ticketing/maintenance/results.html.erb	10	other	oneoff:scroll-to-top-marker	attribute		hidden scroll-to-top div
+R13875	agent	app/views/ticketing/maintenance/results.html.erb	27-29	typography	oneoff:summary-count-line	one-off-markup		div "text-lg my-4" count headline
+R13876	agent	app/views/ticketing/maintenance/results.html.erb	32-34	empty-loading	ui_empty_state	shared-helper		ui_empty_state with no back button (sibling results pages add one)
+R09452	census	app/views/ticketing/provisions/index.html.erb	16	tables-lists	<dl>	raw-html	TABLE-01	
+R13892	agent	app/views/ticketing/provisions/index.html.erb	30-34	empty-loading	ui_empty_state	shared-helper		filtered-empty and empty branches
+R13890	agent	app/views/ticketing/provisions/index.html.erb	52-54	links	oneoff:table-link-classes	rails-helper		link_to display_ref with class LinkHelper::TABLE_LINK_CLASSES as edit entry
+R13891	agent	app/views/ticketing/provisions/index.html.erb	68	other	oneoff:plain-yes-no	one-off-markup		boolean Allocated as plain "Yes"/"No" text, not yes_no_badge
+R09471	census	app/views/ticketing/sap_candidates/index.html.erb	27	tables-lists	<dl>	raw-html	TABLE-01	
+M0128	grep:candidate	app/views/ticketing/sap_candidates/index.html.erb	37	-	staff	-	COPY-01	Anyone already holding a SAP, and anyone holding a staff credential &mdash;
+R13896	agent	app/views/ticketing/sap_candidates/index.html.erb	44-48	buttons	oneoff:button-row-wrapper	one-off-markup		export_csv_link in button_row wrapped by div "my-4"; other reports pass the export into filter_bar actions
+R13899	agent	app/views/ticketing/sap_candidates/index.html.erb	52-54	empty-loading	ui_empty_state	shared-helper		single empty branch
+R13897	agent	app/views/ticketing/sap_candidates/index.html.erb	75-79	tables-lists	oneoff:muted-subline	one-off-markup		ticket lines under yes_no_badge as div "mt-1 text-stone-muted"
+R13898	agent	app/views/ticketing/sap_candidates/index.html.erb	89-90	cards	helper-class-override	shared-helper		in-cell ui_disclosure summary_class: "font-semibold text-heading"; li "mt-1", span "font-semibold"
+R09472	census	app/views/ticketing/sap_candidates/index.html.erb	91	tables-lists	<ul>	raw-html	TABLE-01	
+R13814	agent	app/views/ticketing/statistics/_pipeline_card.html.erb	12-21,40-44	color	oneoff:status-by-color	hard-coded-value		local tints hash maps status to bg-success/bg-warning/bg-secondary/bg-base-content/30 and text-success/text-warning/text-secondary/text-stone-muted; chips pair tint with fa_icon and word
+R13811	agent	app/views/ticketing/statistics/_pipeline_card.html.erb	23	cards	oneoff:div-card	custom-css		div "card-standard p-4" used as a card container instead of ui_card; padding added by utility
+R09488	census	app/views/ticketing/statistics/_pipeline_card.html.erb	25	typography	<h3>	raw-html	TYPE-04	
+R13812	agent	app/views/ticketing/statistics/_pipeline_card.html.erb	25	typography	oneoff:raw-heading-with-utilities	raw-html		raw <h3 class="heading-title text-heading"> card title; count beside it in span "text-base text-stone-muted" (26)
+R09480	census	app/views/ticketing/statistics/_pipeline_card.html.erb	31,33	cards	class:stat	daisyui-class	CARD-01	stat-meter stat-meter-segment
+R13813	agent	app/views/ticketing/statistics/_pipeline_card.html.erb	31,33	other	oneoff:custom-progress	inline-style		segmented bar: div "stat-meter" aria-hidden with span "stat-meter-segment" per status, width set by inline style="width: N%"
+M0457	grep:definite	app/views/ticketing/statistics/_pipeline_card.html.erb	33	-	style="	-	STYLE-01	<span class="stat-meter-segment <%= tints[status][:bar] %>" style="width: <%= percent %>%"></span>
+R13815	agent	app/views/ticketing/statistics/_pipeline_card.html.erb	40-44	other	oneoff:utility-badge	one-off-markup		legend chip: span "inline-flex items-center gap-2 text-base" + tint text colour + icon + label + span "font-semibold" count; not ui_badge
+R13818	agent	app/views/ticketing/statistics/index.html.erb	31	cards	helper-class-override	shared-helper		ui_disclosure "About This Report", variant: :card, class: "my-4" (margin override); same call on 9 other pages in scope
+R09500	census	app/views/ticketing/statistics/index.html.erb	32	tables-lists	<dl>	raw-html	TABLE-01	
+R13819	agent	app/views/ticketing/statistics/index.html.erb	32-52	tables-lists	class:instruction-list	custom-css		explanations as dl.instruction-list question/answer pairs inside the disclosure
+M0129	grep:candidate	app/views/ticketing/statistics/index.html.erb	37	-	staff	-	COPY-01	People holding a special price ticket or a staff credential, counted once each
+M0130	grep:candidate	app/views/ticketing/statistics/index.html.erb	47	-	staff	-	COPY-01	<dd>Only special price tickets and staff credentials can be saved for a later year.</dd>
+R13817	agent	app/views/ticketing/statistics/index.html.erb	56	spacing	oneoff:grid-layout	custom-css		pipeline cards laid out in div "two-column-lg"
+R13820	agent	app/views/ticketing/statistics/index.html.erb	57	empty-loading	empty-not-handled	not-handled		@statistics[:types].each renders cards with no empty branch
+R13816	agent	app/views/ticketing/statistics/index.html.erb	63,67,78	other	oneoff:stat-grid	one-off-markup		stat tiles placed in hand grids "grid grid-cols-1 lg:grid-cols-2 gap-x-4", "grid grid-cols-3 gap-2", "grid grid-cols-2 lg:grid-cols-4 gap-2" instead of ui_stat_row
+R13821	agent	app/views/ticketing/statistics/index.html.erb	71,86	color	oneoff:status-by-color	shared-helper		ui_stat_box variant :success for Claimed and :warning for Banked in the SAPSO and Provisions grids, other tiles default
+R13833	agent	app/views/ticketing/trs_export/_rows_table.html.erb	32	empty-loading	empty-not-handled	not-handled		partial does not handle empty rows; callers check
+R13832	agent	app/views/ticketing/trs_export/_rows_table.html.erb	43-46	icons	fa_icon+sr-only	one-off-markup		problem rows: fa_icon triangle-exclamation class "text-error me-1" followed by span.sr-only "Has problems:"
+R09512	census	app/views/ticketing/trs_export/_rows_table.html.erb	54	validation	model-errors-inline	one-off	FORM-06	
+R13831	agent	app/views/ticketing/trs_export/_rows_table.html.erb	54-56	validation	oneoff:inline-error-text	one-off-markup		row problems listed as div "text-error" with "Problem:" prefix in Note cell
+R13834	agent	app/views/ticketing/trs_export/_skipped.html.erb	8-14	toasts-alerts	ui_callout_box+list-bulleted	shared-helper		skipped items as ul.list-bulleted inside ui_callout_box :warning accent with pluralized title
+R09513	census	app/views/ticketing/trs_export/_skipped.html.erb	9	tables-lists	<ul>	raw-html	TABLE-01	
+R13837	agent	app/views/ticketing/trs_export/export.html.erb	10	other	oneoff:scroll-to-top-marker	attribute		hidden div data-controller="scroll-to-top"
+R13835	agent	app/views/ticketing/trs_export/export.html.erb	33-34	buttons	export_csv_link	shared-helper		export_csv_link used for a data: URI download with custom label "Download <filename>", variant :primary, download: attr
+R13836	agent	app/views/ticketing/trs_export/export.html.erb	39	toasts-alerts	helper-class-override	shared-helper		ui_callout_box :info, class: "my-4"
+M0281	grep:candidate	app/views/ticketing/trs_export/export.html.erb	54	-	"submit"	-	COPY-10	data: { checkbox_select_all_target: "submit",
+R09527	census	app/views/ticketing/trs_export/export.html.erb	55	modals	confirm_modal_dialog	shared-helper	MODAL-02	
+R09528	census	app/views/ticketing/trs_export/export.html.erb	55	modals	turbo-confirm	attribute	MODAL-02	
+R13841	agent	app/views/ticketing/trs_export/index.html.erb	25-33	toasts-alerts	ui_callout_box+list-numbered	shared-helper		info callout holding a strong lead and ol.list-numbered "mt-1" of steps
+R09552	census	app/views/ticketing/trs_export/index.html.erb	27	tables-lists	<ol>	raw-html	TABLE-01	
+R13840	agent	app/views/ticketing/trs_export/index.html.erb	38-42,121-123	typography	oneoff:intro-paragraph	one-off-markup		p "my-2" explanatory paragraphs inside ui_section before the table, one with a strong lead sentence
+R09560	census	app/views/ticketing/trs_export/index.html.erb	60	validation	model-errors-inline	one-off	FORM-06	
+R13842	agent	app/views/ticketing/trs_export/index.html.erb	74-76	forms	filter_bar width override	shared-helper		single f.select in filter_bar with width "w-full lg:w-96" and help_text, not wrapped in form_row
+R13843	agent	app/views/ticketing/trs_export/index.html.erb	82-84	empty-loading	ui_empty_state	shared-helper		no rows: ui_empty_state circle-check; problems section only drawn when any
+R13838	agent	app/views/ticketing/trs_export/index.html.erb	89	forms	oneoff:raw-select-all-wrapper	raw-html		raw div data-controller="checkbox-select-all" wraps the selectable table instead of bulk_select helper
+R13839	agent	app/views/ticketing/trs_export/index.html.erb	94	toasts-alerts	helper-class-override	shared-helper		ui_callout_box :warning, accent: true, class: "my-4"
+R13844	agent	app/views/ticketing/trs_export/index.html.erb	100-115	buttons	f.submit formaction	shared-helper		two submits in one form, second variant :secondary with formaction to another route; both with confirm_modal_dialog
+M0282	grep:candidate	app/views/ticketing/trs_export/index.html.erb	101	-	"submit"	-	COPY-10	data: { checkbox_select_all_target: "submit",
+R09548	census	app/views/ticketing/trs_export/index.html.erb	102,110	modals	confirm_modal_dialog	shared-helper	MODAL-02	
+R09549	census	app/views/ticketing/trs_export/index.html.erb	102,110	modals	turbo-confirm	attribute	MODAL-02	
+M0283	grep:candidate	app/views/ticketing/trs_export/index.html.erb	109	-	"submit"	-	COPY-10	data: { checkbox_select_all_target: "submit",
+R13846	agent	app/views/ticketing/trs_export/mark_submitted.html.erb	20-26	validation	oneoff:failure-callout	shared-helper		failures summarised in ui_callout_box :error accent title
+R13845	agent	app/views/ticketing/trs_export/mark_submitted.html.erb	30-32	typography	oneoff:summary-count-line	one-off-markup		div "text-lg my-4" with strong count headline
+M0199	grep:candidate	app/views/ticketing/unclaimed_with_signups/_filter_bar.html.erb	24	-	signup	-	COPY-07	chip_labels = { signup: "Shift Sign-Up", type: "Type" }
+M0200	grep:candidate	app/views/ticketing/unclaimed_with_signups/_filter_bar.html.erb	28	-	signup	-	COPY-07	key == :signup ? value.capitalize : AccessDocument::TYPE_LABELS.fetch(value, value)
+M0201	grep:candidate	app/views/ticketing/unclaimed_with_signups/_filter_bar.html.erb	41	-	signup	-	COPY-07	<%= f.select :signup, signup_choices, label: "Shift Sign-Up", selected: filter_params[:signup],
+M0131	grep:candidate	app/views/ticketing/unclaimed_with_signups/index.html.erb	12	-	staff	-	COPY-01	Special price tickets and staff credentials that were earned but never claimed.
+R09590	census	app/views/ticketing/unclaimed_with_signups/index.html.erb	25	tables-lists	<dl>	raw-html	TABLE-01	
+R13884	agent	app/views/ticketing/unclaimed_with_signups/index.html.erb	49-54	empty-loading	ui_empty_state	shared-helper		filtered-empty and empty branches
+M0202	grep:candidate	app/views/ticketing/unsubmit_provisions/index.html.erb	9	-	unsubmit	-	COPY-07	<%= hero_panel icon: "rotate-left", heading_level: :h1, id: "ticketing-unsubmit-provisions-header",
+R13823	agent	app/views/ticketing/unsubmit_provisions/index.html.erb	23-29	empty-loading	ui_empty_state	shared-helper		empty list: ui_empty_state circle-check plus button_row with button_link back to Maintenance Tasks
+M0203	grep:candidate	app/views/ticketing/unsubmit_provisions/index.html.erb	62	-	unsubmit	-	COPY-07	<%= bulk_select_checkbox "person_ids[]", row.person.id, id: "unsubmit-person-#{row.person.id}",
+R13825	agent	app/views/ticketing/unsubmit_provisions/index.html.erb	70-72	other	yes_no_badge	shared-helper		boolean columns via yes_no_badge
+R13824	agent	app/views/ticketing/unsubmit_provisions/index.html.erb	74-76	tables-lists	oneoff:stacked-cell-lines	one-off-markup		provision summaries stacked as bare div per line inside a table cell
+R13822	agent	app/views/ticketing/unsubmit_provisions/index.html.erb	85	toasts-alerts	helper-class-override	shared-helper		ui_callout_box :warning, accent: true, class: "my-4"
+R13826	agent	app/views/ticketing/unsubmit_provisions/index.html.erb	91-96	buttons	f.submit variant:error	shared-helper		destructive submit, variant :error, with turbo_confirm confirm_modal_dialog; cancel_button beside it
+R09613	census	app/views/ticketing/unsubmit_provisions/index.html.erb	92	modals	confirm_modal_dialog	shared-helper	MODAL-02	
+R09614	census	app/views/ticketing/unsubmit_provisions/index.html.erb	92	modals	turbo-confirm	attribute	MODAL-02	
+R13828	agent	app/views/ticketing/unsubmit_provisions/results.html.erb	11	other	oneoff:scroll-to-top-marker	attribute		hidden div data-controller="scroll-to-top" to reset scroll after 422 render
+M0204	grep:candidate	app/views/ticketing/unsubmit_provisions/results.html.erb	13	-	unsubmit	-	COPY-07	<%= hero_panel icon: "circle-check", heading_level: :h1, id: "ticketing-unsubmit-results-header",
+R13830	agent	app/views/ticketing/unsubmit_provisions/results.html.erb	20-26	validation	oneoff:failure-callout	shared-helper		per-row failures counted and announced in ui_callout_box :error accent title; rows marked in shared results table
+R13827	agent	app/views/ticketing/unsubmit_provisions/results.html.erb	28-30	typography	oneoff:summary-count-line	one-off-markup		div "text-lg my-4" with strong count, as result headline
+R13829	agent	app/views/ticketing/unsubmit_provisions/results.html.erb	33-38	empty-loading	ui_empty_state	shared-helper		ui_empty_state plus button_row back link

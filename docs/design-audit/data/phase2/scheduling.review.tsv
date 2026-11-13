@@ -1,0 +1,381 @@
+id	source	file	lines	pattern	variant	impl	rule_hint	note
+R13361	agent	app/helpers/scheduling/early_arrivals_helper.rb	86-90,113	color	oneoff:plain-text-alert	area-helper		Cells as spans: "text-stone-muted" Not recorded, "text-body" Any time, "text-error font-semibold" missing pass / No BMID.
+R13362	agent	app/helpers/scheduling/early_arrivals_helper.rb	126-133	typography	oneoff:stacked-cell	area-helper		Radios cell divs "font-medium", "text-sm text-body", "text-sm text-stone-muted".
+R00413	census	app/helpers/scheduling/early_arrivals_helper.rb	130,133	typography	tw-text-size	utility	TYPE-02	text-sm
+R13202	agent	app/helpers/scheduling/flake_report_helper.rb	5,7	other	ui_badge	area-helper		Status badges Flake (:error, user-xmark) / Rogue (:warning, user-plus), size "sm", in a table cell.
+R13204	agent	app/helpers/scheduling/flake_report_helper.rb	12-16,20-51	typography	oneoff:dot-separated-detail	area-helper		Detail strings built with " · " separators around slot_shift_time span.
+R00414	census	app/helpers/scheduling/flake_report_helper.rb	14,23,44,46,47,48	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13203	agent	app/helpers/scheduling/flake_report_helper.rb	54-67	other	ui_badge	area-helper		Drill-down badges size "base": flakes :error, rogues :warning, "with no sign-ups" :warning.
+M0216	grep:candidate	app/helpers/scheduling/hq_forecast_helper.rb	9	-	strftime	-	COPY-08	def hq_forecast_period_label(period) = period.begins.strftime("%H:%M")
+R00424	census	app/helpers/scheduling/hq_forecast_helper.rb	21	icons	css:icon-warning	custom-css(icons.css)	ICON-01	
+R13336	agent	app/helpers/scheduling/hq_forecast_helper.rb	21-23	icons	fa_icon	area-helper		triangle-exclamation "icon-warning me-1" with sr-only gap words.
+R13338	agent	app/helpers/scheduling/hq_forecast_helper.rb	30	typography	oneoff:secondary-text	area-helper		Zero count tag.span "0" "text-stone-subtle" (not a link).
+R13337	agent	app/helpers/scheduling/hq_forecast_helper.rb	32-37,234-235	links	link_to	rails-helper		Count and bar links with LinkHelper::TABLE_LINK_CLASSES / "hq-gantt-hit", data turbo_frame "modal", aria-label.
+M0217	grep:candidate	app/helpers/scheduling/hq_forecast_helper.rb	52	-	strftime	-	COPY-08	def hq_forecast_moment_label(period) = period.begins.strftime(DateTimeHelper::MONTH_DAY_TIME)
+R13333	agent	app/helpers/scheduling/hq_forecast_helper.rb	76-96,155-170,176-190,221-276	other	oneoff:gantt-chart	custom-css		Hand-built Gantt: hq-gantt* classes, grid min-w-160, inline style --start/--span/--share, daisyUI tooltip with tooltip-content span.
+M0218	grep:candidate	app/helpers/scheduling/hq_forecast_helper.rb	100	-	strftime	-	COPY-08	"#{shift.desk.title} — #{shift.begins.strftime(DateTimeHelper::MONTH_DAY_TIME)} to " \
+R13335	agent	app/helpers/scheduling/hq_forecast_helper.rb	156-157,167	spacing	oneoff:sticky-lane-label	one-off-markup		"sticky left-0 z-10 ... bg-base-100 pe-2 text-base text-body lg:static lg:z-auto".
+R00445	census	app/helpers/scheduling/hq_forecast_helper.rb	168,226,296	typography	tw-text-size	utility	TYPE-02	text-sm
+R13334	agent	app/helpers/scheduling/hq_forecast_helper.rb	187,228-229,297-300	color	oneoff:status-by-color	area-helper		Bars "bg-base-content/80 text-base-100", traffic "bg-base-content/50", vacant/gap hatch classes; legend swatches.
+M0219	grep:candidate	app/helpers/scheduling/hq_forecast_helper.rb	290	-	strftime	-	COPY-08	time.strftime(format)
+R13339	agent	app/helpers/scheduling/hq_forecast_helper.rb	296-310	typography	oneoff:legend-row	area-helper		Legend `flex flex-wrap ... pt-2 text-sm text-stone-muted`; keys "inline-flex-center-gap-2" with swatch "size-3 rounded-xs".
+R13190	agent	app/helpers/scheduling/no_shows_report_helper.rb	8	links	person_display_link	shared-helper		Callsign links joined with ", " in one cell.
+R13189	agent	app/helpers/scheduling/no_shows_report_helper.rb	15	other	ui_badge	area-helper		Drill-down row badge ui_badge("N no shows", :error, size: "base").
+R13258	agent	app/helpers/scheduling/position_credits_helper.rb	12-17	forms	oneoff:manual-chip	area-helper		Filter chip built as a raw {label:, url:} hash instead of filter_chips.
+R13254	agent	app/helpers/scheduling/position_credits_helper.rb	31-35,67-89,103-124	other	oneoff:stacked-step-chart	custom-css		Hand-built chart: ct/ct-seg/ct-layer/ct-tick/ct-axis-* classes, inline style custom props --ymax/--y/--h/--w.
+M0437	grep:candidate	app/helpers/scheduling/position_credits_helper.rb	32	-	style: "	-	STYLE-01	tag.div(class: "ct mb-3 overflow-x-clip", style: "--ymax: #{timeline.y_max}") do
+M0220	grep:candidate	app/helpers/scheduling/position_credits_helper.rb	53	-	strftime	-	COPY-08	def credit_tip_time(time) = time.strftime(DateTimeHelper::MONTH_DAY_TIME)
+R13256	agent	app/helpers/scheduling/position_credits_helper.rb	55-63	icons	oneoff:legend-swatch	one-off-markup		Legend swatch tag.i "ct-swatch size-3 rounded-xs ct-sN" (an <i> used as a colour chip, not an icon).
+R00466	census	app/helpers/scheduling/position_credits_helper.rb	56,71,111,118	typography	tw-text-size	utility	TYPE-02	text-sm text-xs
+R00450	census	app/helpers/scheduling/position_credits_helper.rb	59	icons	content_tag/tag.i	rails-helper	ICON-01	
+M0438	grep:candidate	app/helpers/scheduling/position_credits_helper.rb	69	-	style: "	-	STYLE-01	tag.div(class: "ct-tick absolute inset-x-0", style: "--y: #{tick}") do
+R13257	agent	app/helpers/scheduling/position_credits_helper.rb	70-71,111,118	typography	oneoff:axis-labels	one-off-markup		Axis/tick labels "text-xs text-stone-subtle tabular-nums", day cells "text-xs leading-5", Sundays font-semibold.
+M0439	grep:candidate	app/helpers/scheduling/position_credits_helper.rb	84	-	style: "	-	STYLE-01	tag.div(class: class_names("ct-layer", credit_series_class(layer.series)), style: "--h: #{layer.rate}")
+R13255	agent	app/helpers/scheduling/position_credits_helper.rb	86-97	other	class:tooltip	daisyui-class		Chart steps are daisyUI tooltips with data-tip, side via tooltip-right/left.
+M0440	grep:candidate	app/helpers/scheduling/position_credits_helper.rb	88	-	style: "	-	STYLE-01	style: "--w: #{segment.minutes}", data: { tip: credit_segment_tip(segment) })
+M0221	grep:candidate	app/helpers/scheduling/position_credits_helper.rb	117	-	strftime	-	COPY-08	tag.span((month.first.strftime("%B") if month.size >= 4),
+M0441	grep:candidate	app/helpers/scheduling/position_credits_helper.rb	119	-	style: "	-	STYLE-01	style: "--w: #{month.size}")
+R13172	agent	app/helpers/scheduling/sandman_qualified_helper.rb	52-83,95-105	cards	oneoff:clickable-stat-filter	area-helper		Stat tiles double as filter links via ui_stat_link with aria_label; a tile with nothing to open is not a link.
+R13174	agent	app/helpers/scheduling/sandman_qualified_helper.rb	75-82,142	color	oneoff:status-by-color	area-helper		Only the "Qualified" tile takes variant :success; every other tile defaults to :secondary.
+R13178	agent	app/helpers/scheduling/sandman_qualified_helper.rb	88-91	spacing	hard-coded-value	area-helper		Frozen lookup of "lg:grid-cols-4/5/6" for the tile grid column count.
+R13173	agent	app/helpers/scheduling/sandman_qualified_helper.rb	97-104	cards	helper-class-override	area-helper		ui_stat_box class "h-full ring-2 ring-primary" marks the active filter; ui_stat_link class "transition-shadow duration-200 hover:ring-2 hover:ring-primary".
+R13175	agent	app/helpers/scheduling/sandman_qualified_helper.rb	109-117	icons	oneoff:icon-flag	area-helper		Yes/No table cells: fa_icon circle-check `icon-success` / circle-xmark `text-stone-subtle`, aria-hidden, with sr-only "Yes"/"No".
+R00472	census	app/helpers/scheduling/sandman_qualified_helper.rb	111	icons	css:icon-success	custom-css(icons.css)	ICON-01	
+R13176	agent	app/helpers/scheduling/sandman_qualified_helper.rb	123-129	other	helper-class-override	area-helper		ui_badge Qualified/Missing with class "whitespace-nowrap"; title: tooltip spells out what is missing.
+R13177	agent	app/helpers/scheduling/sandman_qualified_helper.rb	162-164	color	oneoff:status-by-color	area-helper		Shortfall line under a tile label: tag.div "N missing" with "text-warning font-medium".
+R00478	census	app/helpers/scheduling/schedule_by_callsign_helper.rb	14,15	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13226	agent	app/helpers/scheduling/schedule_by_callsign_helper.rb	14-15,76	typography	oneoff:meta-bullets	area-helper		Meta string joined with " • " and en dash date range.
+R13227	agent	app/helpers/scheduling/schedule_by_callsign_helper.rb	51	typography	hard-coded-value	area-helper		Literal "—" returned for a missing position (not value_or_dash).
+R13228	agent	app/helpers/scheduling/schedule_by_callsign_helper.rb	55-56	other	ui_badge	area-helper		Inline "Inactive" ui_badge :secondary size "base" circle-pause after the title.
+M0222	grep:candidate	app/helpers/scheduling/schedule_by_callsign_helper.rb	89	-	strftime	-	COPY-08	time.strftime("%b %-d")
+R00485	census	app/helpers/scheduling/schedule_by_position_helper.rb	22,23	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13214	agent	app/helpers/scheduling/schedule_by_position_helper.rb	22-24,129	typography	oneoff:meta-bullets	area-helper		Drill-down meta string joined with " • " and an en dash date range.
+R13215	agent	app/helpers/scheduling/schedule_by_position_helper.rb	34	other	ui_badge	area-helper		"Inactive" ui_badge :secondary size "base" circle-pause.
+R13216	agent	app/helpers/scheduling/schedule_by_position_helper.rb	64-65	color	oneoff:status-by-color	area-helper		"No sign-ups" tag.span "text-error" (active shift) or "text-stone-subtle" (inactive).
+R13217	agent	app/helpers/scheduling/schedule_by_position_helper.rb	90-101	tables-lists	oneoff:indented-sublist	area-helper		Linked-shift block tag.div "mt-2 border-s-2 border-line ps-2 text-stone-subtle" with plain divs inside.
+M0223	grep:candidate	app/helpers/scheduling/schedule_by_position_helper.rb	136	-	strftime	-	COPY-08	time.strftime(year ? "%b %-d, %Y" : "%b %-d")
+R13316	agent	app/helpers/scheduling/shift_coverage_helper.rb	11,20-28	color	oneoff:status-by-color	area-helper		Gap shading class "lg:bg-warning/15" on cells and headings.
+R13317	agent	app/helpers/scheduling/shift_coverage_helper.rb	21,40-41	tables-lists	oneoff:responsive-hide	area-helper		Vacant cells "hidden lg:table-cell"; mobile-only line div "lg:hidden mt-1 font-normal text-stone-muted".
+R13318	agent	app/helpers/scheduling/shift_coverage_helper.rb	50,100,121	typography	oneoff:secondary-text	area-helper		Dash span "text-stone-subtle"; time div "text-sm text-stone-subtle whitespace-nowrap"; tag span "text-stone-subtle".
+R00501	census	app/helpers/scheduling/shift_coverage_helper.rb	100	typography	tw-text-size	utility	TYPE-02	text-sm
+R13422	agent	app/helpers/scheduling/shift_drop_report_helper.rb	14-18	forms	oneoff:manual-chip	area-helper		Chip built as raw {label:, url:} hash, not filter_chips.
+R00502	census	app/helpers/scheduling/shift_drop_report_helper.rb	27,28,56	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13423	agent	app/helpers/scheduling/shift_drop_report_helper.rb	47-48,72	other	ui_badge	area-helper		Drill-down badge :error size base; notice cell badge :error size sm with triangle-exclamation.
+R13301	agent	app/helpers/scheduling/shift_lead_helper.rb	123-127	forms	oneoff:carried-hidden-fields	area-helper		hidden_field_tag per carried param with id: nil for four GET forms.
+R13299	agent	app/helpers/scheduling/shift_lead_helper.rb	173-174,208-210	other	ui_badge	area-helper		GD/TS chips with title:; vehicle badges with icons ban (:error), check (:success), xmark (:secondary).
+M0224	grep:candidate	app/helpers/scheduling/shift_lead_helper.rb	181	-	strftime	-	COPY-08	def shift_lead_time(time) = time&.strftime(DateTimeHelper::HOUR_MINS)
+R13298	agent	app/helpers/scheduling/shift_lead_helper.rb	188,247,251	color	oneoff:status-by-color	area-helper		-BL- span "font-bold text-error"; mode words ON DUTY "font-bold text-error", SCHEDULED "font-bold text-success".
+R13300	agent	app/helpers/scheduling/shift_lead_helper.rb	235-240	color	oneoff:status-by-color	area-helper		Headline tile variants :success when > 0, Below Minimum :warning vs :success.
+R13398	agent	app/helpers/scheduling/slots_helper.rb	27-33	other	ui_badge	area-helper		slot_status_badge Active :success circle-check / Inactive :secondary circle-pause.
+R13399	agent	app/helpers/scheduling/slots_helper.rb	46	other	oneoff:title-tooltip	area-helper		Venue short label span with title: full label.
+M0225	grep:candidate	app/helpers/scheduling/slots_helper.rb	102	-	strftime	-	COPY-08	["#{slot.position_title} - #{slot.description} - #{slot.begins.strftime(DateTimeHelper::MONTH_DAY_TIME)}",
+M0226	grep:candidate	app/helpers/scheduling/slots_helper.rb	116	-	strftime	-	COPY-08	value.to_time.strftime(DateTimeHelper::MONTH_DAY_TIME)
+R13353	agent	app/views/scheduling/early_arrivals/index.html.erb	21-41	toasts-alerts	ui_callout_box	shared-helper		Callouts :error and :warning, unwrapped, with a <p> inside the body.
+R13360	agent	app/views/scheduling/early_arrivals/index.html.erb	44-47,169-170	empty-loading	ui_empty_state	shared-helper		No arrivals (message varies live/past) and filter-miss.
+R13354	agent	app/views/scheduling/early_arrivals/index.html.erb	57-70	color	oneoff:status-by-color	shared-helper		Tiles :error/:warning/:success depending on count > 0.
+R13355	agent	app/views/scheduling/early_arrivals/index.html.erb	74-115	tables-lists	class:instruction-list	custom-css		dl.instruction-list with <strong> dates in ui_disclosure class "my-4".
+R07660	census	app/views/scheduling/early_arrivals/index.html.erb	75	tables-lists	<dl>	raw-html	TABLE-01	
+R13356	agent	app/views/scheduling/early_arrivals/index.html.erb	133-164	forms	helper-class-override	shared-helper		Six selects width "w-full" wrapper_class "flex-1" in 3 form_rows; submit :secondary.
+R13357	agent	app/views/scheduling/early_arrivals/index.html.erb	189-192	typography	oneoff:stacked-cell	one-off-markup		First shift as divs: plain, "text-sm", "text-sm text-stone-muted".
+R07668	census	app/views/scheduling/early_arrivals/index.html.erb	190,192	typography	tw-text-size	utility	TYPE-02	text-sm
+R13358	agent	app/views/scheduling/early_arrivals/index.html.erb	195,201	color	oneoff:plain-text-alert	one-off-markup		`span class="text-error font-semibold"` "No pre-event shift"; `span class="text-stone-muted"` "Not recorded".
+R13359	agent	app/views/scheduling/early_arrivals/index.html.erb	203-212	other	ui_badge	shared-helper		On site (:success location-dot), Off site (:secondary location-crosshairs), Signed/Unsigned badges.
+R13370	agent	app/views/scheduling/event_stats/_share_bar.html.erb	15-25	other	oneoff:labelled-progress	one-off-markup		`div.mb-4` > flex justify-between row (span "font-semibold text-heading" label + counts) > ui_progress_bar > caption div "text-stone-subtle".
+R13371	agent	app/views/scheduling/event_stats/_share_bar.html.erb	20-21	other	helper-class-override	shared-helper		ui_progress_bar class: "my-1".
+R13369	agent	app/views/scheduling/event_stats/index.html.erb	30-32,119-120,148-149	empty-loading	ui_empty_state	shared-helper		Page-level and two in-section empty states.
+R13363	agent	app/views/scheduling/event_stats/index.html.erb	36-72	tables-lists	class:instruction-list	custom-css		dl.instruction-list in ui_disclosure class "my-4".
+R07683	census	app/views/scheduling/event_stats/index.html.erb	37	tables-lists	<dl>	raw-html	TABLE-01	
+R13364	agent	app/views/scheduling/event_stats/index.html.erb	75,113	spacing	oneoff:grid-layout	one-off-markup		Two-column section body `grid grid-cols-1 lg:grid-cols-2 gap-x-8`.
+R13368	agent	app/views/scheduling/event_stats/index.html.erb	101	typography	hard-coded-value	one-off-markup		"n/a" literal for a missing figure in a stat tile.
+R13365	agent	app/views/scheduling/event_stats/index.html.erb	102-107,137-142	cards	oneoff:grid-layout	one-off-markup		Paired ui_stat_box in `grid grid-cols-2 gap-2 mb-4` (not ui_stat_row).
+R13366	agent	app/views/scheduling/event_stats/index.html.erb	122-124	typography	oneoff:utility-heading	one-off-markup		`p class="font-semibold text-heading mb-2"` lead line over bars.
+R13367	agent	app/views/scheduling/event_stats/index.html.erb	151-169	tables-lists	ui_table	shared-helper		ui_table striped (not full_width) with caption; span "font-semibold" cell; ui_progress_bar in a cell.
+R13191	agent	app/views/scheduling/flake_report/index.html.erb	18-24	typography	oneoff:summary-line	one-off-markup		Count sentence with &middot; in `div class="text-lg my-4"`.
+R07690	census	app/views/scheduling/flake_report/index.html.erb	20,21,22	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R07695	census	app/views/scheduling/flake_report/index.html.erb	31	tables-lists	<dl>	raw-html	TABLE-01	
+R13192	agent	app/views/scheduling/flake_report/index.html.erb	31-49	tables-lists	class:instruction-list	custom-css		dl.instruction-list in ui_disclosure "About This Report" class "my-4"; inline link_to No Shows Report (role-gated).
+R13193	agent	app/views/scheduling/flake_report/index.html.erb	52-59	spacing	oneoff:page-width-wrapper	one-off-markup		`div class="lg:w-3/4"` around ui_drill_down_row list.
+R13194	agent	app/views/scheduling/flake_report/index.html.erb	61-62	empty-loading	ui_empty_state	shared-helper		"No <year> shifts have started yet."
+R13195	agent	app/views/scheduling/flake_report/position.html.erb	22-32	color	oneoff:status-by-color	shared-helper		ui_stat_box variants :error/:warning only when count > 0.
+R13196	agent	app/views/scheduling/flake_report/position.html.erb	37-45	tables-lists	class:instruction-list	custom-css		One-question dl.instruction-list in ui_disclosure class "my-4", shown only when there are rows.
+R07712	census	app/views/scheduling/flake_report/position.html.erb	38	tables-lists	<dl>	raw-html	TABLE-01	
+R13197	agent	app/views/scheduling/flake_report/position.html.erb	48-49	cards	ui_section	shared-helper		One ui_section per shift (border: false, clock icon) whose title is markup from flake_report_shift.
+R13198	agent	app/views/scheduling/flake_report/position.html.erb	53	typography	oneoff:section-count-line	one-off-markup		`p class="text-base text-body mb-2"` sign-up count instead of a section badge.
+R13199	agent	app/views/scheduling/flake_report/position.html.erb	58-59	tables-lists	ui_table	shared-helper		Fixed t.heading widths "20%"/"15%" so per-shift tables align.
+R13200	agent	app/views/scheduling/flake_report/position.html.erb	86-90	typography	oneoff:footer-summary	one-off-markup		`p class="mt-2 text-base text-body"` summary with " · ".
+R07706	census	app/views/scheduling/flake_report/position.html.erb	87,88	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13201	agent	app/views/scheduling/flake_report/position.html.erb	94-104	empty-loading	ui_empty_state	shared-helper		Three empty states; the first passes an interpolated string marked .html_safe containing &mdash;.
+R13327	agent	app/views/scheduling/hq_forecast/_people_dialog.html.erb	10,56-58	modals	modal_dialog	shared-helper		modal_dialog size: :lg; button_row with modal_close_button.
+M0514	grep:candidate	app/views/scheduling/hq_forecast/_people_dialog.html.erb	12	-	responsive: false	-	TABLE-02	<%= ui_table full_width: true, striped: true, responsive: false do |t| %>
+M0236	grep:definite	app/views/scheduling/hq_forecast/_people_dialog.html.erb	25	-	strftime	-	COPY-08	<%= t.cell signup.begins.strftime(DateTimeHelper::MONTH_DAY_TIME) %>
+R13330	agent	app/views/scheduling/hq_forecast/_people_dialog.html.erb	30-32	other	ui_badge	shared-helper		"On Site" :success person-walking / "Off Site" :secondary moon (regular).
+R07728	census	app/views/scheduling/hq_forecast/_people_dialog.html.erb	37	tables-lists	<ul>	raw-html	TABLE-01	
+R13328	agent	app/views/scheduling/hq_forecast/_people_dialog.html.erb	37-43	tables-lists	<ul>	raw-html		Unstyled <ul>/<li> of desk years inside a table cell.
+R13329	agent	app/views/scheduling/hq_forecast/_people_dialog.html.erb	45	typography	oneoff:plain-text-empty	one-off-markup		Cell fallback `span class="text-stone-muted"` "No years at an HQ desk".
+R13331	agent	app/views/scheduling/hq_forecast/_people_dialog.html.erb	53	empty-loading	ui_empty_state	shared-helper		ui_empty_state inside the dialog, message from local.
+R13332	agent	app/views/scheduling/hq_forecast/_periods_table.html.erb	3-4,15,18	tables-lists	helper-class-override	shared-helper		ui_table class "hq-forecast-table", container_class "hq-forecast-pane", caption; row state :warning; row_header data label nil.
+R07744	census	app/views/scheduling/hq_forecast/burn_perimeters.html.erb	18	links	area-link-helper	area-helper		hq_forecast_other_page_link
+R07747	census	app/views/scheduling/hq_forecast/burn_perimeters.html.erb	24	tables-lists	<dl>	raw-html	TABLE-01	
+R13324	agent	app/views/scheduling/hq_forecast/burn_perimeters.html.erb	24-29	tables-lists	class:instruction-list	custom-css		dl.instruction-list in ui_disclosure class "my-4".
+R13325	agent	app/views/scheduling/hq_forecast/burn_perimeters.html.erb	32-41	forms	filter_bar	shared-helper		filter_bar with count only (no chips, no clear_url).
+R13326	agent	app/views/scheduling/hq_forecast/burn_perimeters.html.erb	51-52	empty-loading	ui_empty_state	shared-helper		"No <year> burn perimeter shifts have been scheduled."
+R07762	census	app/views/scheduling/hq_forecast/index.html.erb	25	links	area-link-helper	area-helper		hq_forecast_other_page_link
+R13319	agent	app/views/scheduling/hq_forecast/index.html.erb	25	navigation	oneoff:page-switch-button	area-helper		hq_forecast_other_page_link: one secondary button_link to sibling report in tag.div "mb-4".
+M0187	grep:candidate	app/views/scheduling/hq_forecast/index.html.erb	32	-	checkin	-	COPY-07	"Most Check-Ins (#{busiest.checkin})" %>
+R13320	agent	app/views/scheduling/hq_forecast/index.html.erb	34-35	color	oneoff:status-by-color	shared-helper		Unstaffed Periods tile :warning when > 0.
+R07765	census	app/views/scheduling/hq_forecast/index.html.erb	42	tables-lists	<dl>	raw-html	TABLE-01	
+R13321	agent	app/views/scheduling/hq_forecast/index.html.erb	42-53	tables-lists	class:instruction-list	custom-css		dl.instruction-list in ui_disclosure class "my-4".
+R13322	agent	app/views/scheduling/hq_forecast/index.html.erb	77-78	cards	ui_section	shared-helper		ui_section per day, border: false, badge "N unstaffed" badge_color :warning.
+R13323	agent	app/views/scheduling/hq_forecast/index.html.erb	83-84	empty-loading	ui_empty_state	shared-helper		"No <year> HQ shifts have been scheduled."
+M0390	grep:candidate	app/views/scheduling/hq_forecast/people.html.erb	1	-	no hero_panel	-	HERO-01	GET /scheduling/hq-forecast/people
+M0237	grep:definite	app/views/scheduling/hq_forecast/people.html.erb	2	-	strftime	-	COPY-08	<%= render "people_dialog", title: "#{@desk.title} — #{@period.strftime(DateTimeHelper::MONTH_DAY_TIME)}",
+M0391	grep:candidate	app/views/scheduling/hq_forecast/shift.html.erb	1	-	no hero_panel	-	HERO-01	GET /scheduling/hq-forecast/shifts/:slot_id
+R13179	agent	app/views/scheduling/no_shows_report/index.html.erb	18-23	typography	oneoff:summary-line	one-off-markup		Count sentence with &middot; in `div class="text-lg my-4"`.
+R07773	census	app/views/scheduling/no_shows_report/index.html.erb	20	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R07778	census	app/views/scheduling/no_shows_report/index.html.erb	27	tables-lists	<dl>	raw-html	TABLE-01	
+R13180	agent	app/views/scheduling/no_shows_report/index.html.erb	27-42	tables-lists	class:instruction-list	custom-css		dl.instruction-list in ui_disclosure "About This Report" class "my-4"; inline link_to to Flake Report inside a dd (role-gated).
+R13181	agent	app/views/scheduling/no_shows_report/index.html.erb	45-53	spacing	oneoff:page-width-wrapper	one-off-markup		`div class="lg:w-3/4"` caps the ui_drill_down_row list width.
+R13182	agent	app/views/scheduling/no_shows_report/index.html.erb	55-56	empty-loading	ui_empty_state	shared-helper		"No <year> shifts have started yet." calendar-xmark.
+R13183	agent	app/views/scheduling/no_shows_report/position.html.erb	24-29	color	oneoff:status-by-color	shared-helper		ui_stat_box variant flips :error/:warning when count > 0, else :secondary.
+R13184	agent	app/views/scheduling/no_shows_report/position.html.erb	33-37	buttons	oneoff:action-row	one-off-markup		export_csv_link alone in `div class="my-4"`.
+R13185	agent	app/views/scheduling/no_shows_report/position.html.erb	40-41	tables-lists	ui_table	shared-helper		t.heading width: "30%" / "20%" fixed column widths.
+R13186	agent	app/views/scheduling/no_shows_report/position.html.erb	52-54	typography	oneoff:secondary-text	one-off-markup		Count under the callsigns: tag.span "block text-base text-stone-muted mt-1".
+R13187	agent	app/views/scheduling/no_shows_report/position.html.erb	62-65	typography	oneoff:footer-summary	one-off-markup		Summary after table: `p class="mt-2 text-base text-body"` with &middot;.
+R07789	census	app/views/scheduling/no_shows_report/position.html.erb	63	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13188	agent	app/views/scheduling/no_shows_report/position.html.erb	70-74	empty-loading	ui_empty_state	shared-helper		Two empty states: none had a no show (circle-check) vs none started (calendar-xmark).
+R13405	agent	app/views/scheduling/position_credit_copies/new.html.erb	10-15,19-24	toasts-alerts	oneoff:callout-wrapper	one-off-markup		Two ui_callout_box :warning each in `div class="my-2"`.
+R13410	agent	app/views/scheduling/position_credit_copies/new.html.erb	27	validation	errors-via-flash	not-handled		ui_form nil; errors via flash.now[:error] (position_credit_copies_controller.rb:28).
+R13406	agent	app/views/scheduling/position_credit_copies/new.html.erb	29,52	typography	oneoff:intro-paragraph	one-off-markup		`p class="mb-3"` intros.
+R13407	agent	app/views/scheduling/position_credit_copies/new.html.erb	49-50	cards	ui_section	shared-helper		ui_section badge: total count string.
+R13408	agent	app/views/scheduling/position_credit_copies/new.html.erb	57-59	forms	helper-class-override	shared-helper		bulk_select class "mb-2" around ui_accordion per position.
+M0238	grep:definite	app/views/scheduling/position_credit_copies/new.html.erb	81	-	strftime	-	COPY-08	<%= credit.start_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+R13409	agent	app/views/scheduling/position_credit_copies/new.html.erb	81-90	icons	oneoff:glyph-arrow	one-off-markup		"&rarr;" glyph in `div class="text-stone-subtle"` before shifted time.
+M0239	grep:definite	app/views/scheduling/position_credit_copies/new.html.erb	83	-	strftime	-	COPY-08	&rarr; <%= Scheduling::SlotCopier.adjust_time(credit.start_time, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+R07814	census	app/views/scheduling/position_credit_copies/new.html.erb	83,89	icons	html-entity-or-glyph	hard-coded	ICON-01	
+M0240	grep:definite	app/views/scheduling/position_credit_copies/new.html.erb	87	-	strftime	-	COPY-08	<%= credit.end_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+M0241	grep:definite	app/views/scheduling/position_credit_copies/new.html.erb	89	-	strftime	-	COPY-08	&rarr; <%= Scheduling::SlotCopier.adjust_time(credit.end_time, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+R13411	agent	app/views/scheduling/position_credit_copies/new.html.erb	102-103	empty-loading	ui_empty_state	shared-helper		One empty state (no filter on this page).
+M0148	grep:candidate	app/views/scheduling/position_credit_copies/new.html.erb	109	-	submit_button "Update Preview"	-	COPY-04	<%= submit_button "Update Preview", name: "preview", variant: :secondary %>
+R13248	agent	app/views/scheduling/position_credits/_form.html.erb	1-2	validation	errors-via-form-builder	shared-helper		ui_form(@credit) with default error summary and builder field errors; no view-level error markup.
+R13249	agent	app/views/scheduling/position_credits/_form.html.erb	11-15	forms	helper-class-override	shared-helper		Multiple select html class "h-64 min-h-0" to pin height.
+R13250	agent	app/views/scheduling/position_credits/_form.html.erb	20-23	typography	oneoff:intro-paragraph	one-off-markup		Fieldset explanation `p class="my-2"`.
+R13251	agent	app/views/scheduling/position_credits/_form.html.erb	32-35	forms	helper-class-override	shared-helper		Field widths "w-32" and "w-full sm:w-64".
+R13252	agent	app/views/scheduling/position_credits/_form.html.erb	41	buttons	cancel_button	shared-helper		cancel_link (alias of cancel_button) beside submit and delete_button confirm_modal.
+R13229	agent	app/views/scheduling/position_credits/index.html.erb	6	navigation	hero_panel.year_selector	shared-helper		year_selector min_year: 2012 literal (report pages pass year_floor).
+R13230	agent	app/views/scheduling/position_credits/index.html.erb	9-19	buttons	oneoff:action-row	one-off-markup		button_row wrapped in `div class="my-4"` with primary Add, secondary Copy, export.
+R13231	agent	app/views/scheduling/position_credits/index.html.erb	22-24	typography	oneoff:summary-line	one-off-markup		`div class="text-lg"` count line, no vertical margin.
+R13232	agent	app/views/scheduling/position_credits/index.html.erb	25-35	spacing	oneoff:page-width-wrapper	one-off-markup		`div class="lg:w-3/4"`.
+R13233	agent	app/views/scheduling/position_credits/index.html.erb	30-33	other	ui_badge	shared-helper		Inline ui_badge "position deleted" :error size base, triangle-exclamation, built in the view.
+R13234	agent	app/views/scheduling/position_credits/index.html.erb	37-40	empty-loading	ui_empty_state	shared-helper		Block form ui_empty_state nil { two sentences } with coins icon.
+R13253	agent	app/views/scheduling/position_credits/new.html.erb	8-13	toasts-alerts	oneoff:callout-wrapper	one-off-markup		ui_callout_box :warning "Not the Current Year" in `div class="my-2"`.
+R13235	agent	app/views/scheduling/position_credits/position.html.erb	8	cards	ui_stat_box	shared-helper		Single ui_stat_box "Credits" without icon or variant.
+R13236	agent	app/views/scheduling/position_credits/position.html.erb	12-17	toasts-alerts	oneoff:callout-wrapper	one-off-markup		ui_callout_box :error wrapped in `div class="my-2"`.
+R13237	agent	app/views/scheduling/position_credits/position.html.erb	23-37	buttons	oneoff:action-row	one-off-markup		button_row in `div class="my-4"` (Add primary, Bulk Copy, Credit Timeline secondary).
+R13238	agent	app/views/scheduling/position_credits/position.html.erb	54-60	forms	helper-class-override	shared-helper		filter_bar select width "w-full sm:w-44"; f.submit "Apply Filters" variant: :secondary.
+R13241	agent	app/views/scheduling/position_credits/position.html.erb	66-67,113	forms	helper-class-override	shared-helper		ui_form(nil, ..., no_error_summary: true) for bulk delete; bulk_select_count class "text-stone-subtle".
+M0242	grep:definite	app/views/scheduling/position_credits/position.html.erb	89	-	strftime	-	COPY-08	<%= t.cell credit.start_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+R13240	agent	app/views/scheduling/position_credits/position.html.erb	89-90	typography	hard-coded-value	rails-helper		Dates via strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) in cells.
+M0243	grep:definite	app/views/scheduling/position_credits/position.html.erb	90	-	strftime	-	COPY-08	<%= t.cell credit.end_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+R13239	agent	app/views/scheduling/position_credits/position.html.erb	94-95	buttons	oneoff:icon-only-control	shared-helper		edit_link with "" label, class "btn-square", title "Edit" and aria-label "Edit".
+R07860	census	app/views/scheduling/position_credits/position.html.erb	95	buttons	class:btn	daisyui-class	BTN-01	btn-square
+R13242	agent	app/views/scheduling/position_credits/position.html.erb	102-112	modals	confirm_modal_dialog	shared-helper		Delete Selected submit (variant :error) with data turbo_confirm: confirm_modal_dialog.
+R07877	census	app/views/scheduling/position_credits/position.html.erb	104	modals	confirm_modal_dialog	shared-helper	MODAL-02	variant=:error
+R07878	census	app/views/scheduling/position_credits/position.html.erb	104	modals	turbo-confirm	attribute	MODAL-02	
+M0268	grep:candidate	app/views/scheduling/position_credits/position.html.erb	111	-	"submit"	-	COPY-10	checkbox_select_all_target: "submit"
+R13243	agent	app/views/scheduling/position_credits/position.html.erb	117-121	empty-loading	ui_empty_state	shared-helper		Filter-miss (filter icon) vs none for year (coins).
+R13244	agent	app/views/scheduling/position_credits/timeline.html.erb	8-12	toasts-alerts	oneoff:callout-wrapper	one-off-markup		ui_callout_box :error in `div class="my-2"`.
+R13245	agent	app/views/scheduling/position_credits/timeline.html.erb	22-25,31	typography	oneoff:intro-paragraph	one-off-markup		Section intro `p class="mb-2"`.
+R13246	agent	app/views/scheduling/position_credits/timeline.html.erb	29-30	buttons	export_csv_link	shared-helper		Export placed in ui_section link: slot.
+R13247	agent	app/views/scheduling/position_credits/timeline.html.erb	54	empty-loading	ui_empty_state	shared-helper		"No <position> credits were found for <year>."
+R13163	agent	app/views/scheduling/sandman_qualified/index.html.erb	22-27	typography	oneoff:summary-line	one-off-markup		Count sentence joined by " · " in `div class="my-4 text-lg"`; plain text above the scoreboard.
+R07905	census	app/views/scheduling/sandman_qualified/index.html.erb	23,24,25	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13164	agent	app/views/scheduling/sandman_qualified/index.html.erb	33-37	cards	oneoff:grid-layout	one-off-markup		Stat tiles laid out by hand: `grid grid-cols-2 <lg:grid-cols-N> gap-2 lg:gap-3 my-4` instead of ui_stat_row.
+R13166	agent	app/views/scheduling/sandman_qualified/index.html.erb	40	cards	helper-class-override	shared-helper		ui_disclosure variant: :card with class: "my-4".
+R07911	census	app/views/scheduling/sandman_qualified/index.html.erb	41	tables-lists	<dl>	raw-html	TABLE-01	
+R13165	agent	app/views/scheduling/sandman_qualified/index.html.erb	41-82	tables-lists	class:instruction-list	custom-css		Q&A glossary `<dl class="instruction-list">` (dt question / dd answer) inside ui_disclosure "About This Report".
+R13170	agent	app/views/scheduling/sandman_qualified/index.html.erb	89	buttons	export_csv_link	shared-helper		Export passed as filter_bar actions:, labelled "Export All to CSV".
+R13169	agent	app/views/scheduling/sandman_qualified/index.html.erb	95-97	forms	helper-class-override	shared-helper		f.select in filter_bar with width: "w-full", wrapper_class: "flex-1".
+R13167	agent	app/views/scheduling/sandman_qualified/index.html.erb	108-113	tables-lists	helper-class-override	shared-helper		ui_table container_class "sandman-qualified-pane" (custom CSS scroll height) and t.header class "lg:sticky lg:top-0 lg:z-20".
+R13168	agent	app/views/scheduling/sandman_qualified/index.html.erb	127	color	oneoff:status-by-color	shared-helper		Row tint t.row state: :warning for an unqualified person who is signed up.
+R13171	agent	app/views/scheduling/sandman_qualified/index.html.erb	141-146	empty-loading	ui_empty_state	shared-helper		Two empty states: filter matched nothing (filter-circle-xmark) vs no sandmen at all (user-xmark).
+R13218	agent	app/views/scheduling/schedule_by_callsign/index.html.erb	32-41	forms	helper-class-override	shared-helper		filter_bar text_field + select with width "w-full", wrapper_class "flex-1".
+R13219	agent	app/views/scheduling/schedule_by_callsign/index.html.erb	53-56	navigation	oneoff:jump-to-letter	shared-helper		Bare text node "Jump to a callsign starting with the letter:" then dropdown_scroll_list.
+R13221	agent	app/views/scheduling/schedule_by_callsign/index.html.erb	58-72	spacing	oneoff:page-width-wrapper	one-off-markup		`div class="lg:w-3/4"`.
+R13220	agent	app/views/scheduling/schedule_by_callsign/index.html.erb	64-70	tables-lists	helper-class-override	shared-helper		ui_drill_down_row with id: and class: "scroll-mt-20".
+R13222	agent	app/views/scheduling/schedule_by_callsign/index.html.erb	74-79	empty-loading	ui_empty_state	shared-helper		Filter-miss vs no schedules, two icons.
+R13223	agent	app/views/scheduling/schedule_by_callsign/person.html.erb	22-25	color	ui_stat_box	shared-helper		Neutral counts colored by variant: Hours :secondary, Positions :success (not a status).
+R13224	agent	app/views/scheduling/schedule_by_callsign/person.html.erb	32-43	buttons	oneoff:action-row	one-off-markup		`div class="my-4 flex flex-wrap gap-2"` with button_link Account/Schedule (cross-navigation) and export_csv_link.
+R13225	agent	app/views/scheduling/schedule_by_callsign/person.html.erb	65-66	empty-loading	ui_empty_state	shared-helper		"<callsign> has no <year> shift sign-ups."
+R13205	agent	app/views/scheduling/schedule_by_position/index.html.erb	21-24	navigation	oneoff:jump-to-letter	shared-helper		Bare text node "Jump to a position starting with the letter:" (no wrapping element) then dropdown_scroll_list.
+R13207	agent	app/views/scheduling/schedule_by_position/index.html.erb	26-40	spacing	oneoff:page-width-wrapper	one-off-markup		`div class="lg:w-3/4"` around the rows.
+R13206	agent	app/views/scheduling/schedule_by_position/index.html.erb	31-38	tables-lists	helper-class-override	shared-helper		ui_drill_down_row with id: anchor and class: "scroll-mt-20" for jump targets.
+R13208	agent	app/views/scheduling/schedule_by_position/index.html.erb	42-43	empty-loading	ui_empty_state	shared-helper		"No <year> shifts were found."
+R13209	agent	app/views/scheduling/schedule_by_position/position.html.erb	26-28	color	oneoff:status-by-color	shared-helper		Empty Shifts tile :warning when > 0 else :success.
+R13210	agent	app/views/scheduling/schedule_by_position/position.html.erb	31-42	buttons	oneoff:action-row	one-off-markup		`div class="my-4 flex flex-wrap gap-2"` holding button_link "Manage Slots" and export_csv_link, no button_row.
+R07961	census	app/views/scheduling/schedule_by_position/position.html.erb	58	typography	tw-text-size	utility	TYPE-02	text-sm
+R13211	agent	app/views/scheduling/schedule_by_position/position.html.erb	58	typography	oneoff:secondary-text	one-off-markup		Shift description under the time: `div class="text-sm text-stone-subtle"` with value_or_dash.
+R07956	census	app/views/scheduling/schedule_by_position/position.html.erb	62	other	area-badge-helper	area-helper		slot_status_badge
+R13212	agent	app/views/scheduling/schedule_by_position/position.html.erb	65-66	tables-lists	helper-class-override	shared-helper		t.cell class: "whitespace-nowrap".
+R13213	agent	app/views/scheduling/schedule_by_position/position.html.erb	75-76	empty-loading	ui_empty_state	shared-helper		"<position> has no <year> shifts."
+R13311	agent	app/views/scheduling/shift_coverage/index.html.erb	16	typography	<strong>	raw-html		<strong> shift label in hero description.
+R07974	census	app/views/scheduling/shift_coverage/index.html.erb	30	tables-lists	<dl>	raw-html	TABLE-01	
+R13312	agent	app/views/scheduling/shift_coverage/index.html.erb	30-40	tables-lists	class:instruction-list	custom-css		dl.instruction-list in ui_disclosure class "my-4".
+R13313	agent	app/views/scheduling/shift_coverage/index.html.erb	62-63	forms	f.select	shared-helper		Filter selects with no width/wrapper_class options.
+R13314	agent	app/views/scheduling/shift_coverage/index.html.erb	75-79,89	tables-lists	helper-class-override	shared-helper		ui_table container_class "shift-coverage-grid", caption:, heading/row_header class "shift-coverage-period", data label nil.
+R13315	agent	app/views/scheduling/shift_coverage/index.html.erb	104-112	empty-loading	ui_empty_state	shared-helper		Three empty states (no types, no posts, no shifts).
+R13421	agent	app/views/scheduling/shift_drop_report/_window_filter.html.erb	17-18	forms	f.select	shared-helper		f.select placed directly in filter_bar without form_row; width "w-full" wrapper_class "flex-1".
+R13412	agent	app/views/scheduling/shift_drop_report/index.html.erb	22-32	tables-lists	class:instruction-list	custom-css		dl.instruction-list in ui_disclosure class "my-4", always shown.
+R07992	census	app/views/scheduling/shift_drop_report/index.html.erb	23	tables-lists	<dl>	raw-html	TABLE-01	
+R13413	agent	app/views/scheduling/shift_drop_report/index.html.erb	43-52	spacing	oneoff:page-width-wrapper	one-off-markup		`div class="lg:w-3/4"`; meta "N drops · N shifts".
+R07988	census	app/views/scheduling/shift_drop_report/index.html.erb	48	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13414	agent	app/views/scheduling/shift_drop_report/index.html.erb	53-62	empty-loading	ui_empty_state	shared-helper		Message built by string + shift_drop_widen_hint concatenation; second state for no shifts.
+R13415	agent	app/views/scheduling/shift_drop_report/position.html.erb	23-25	color	oneoff:status-by-color	shared-helper		Drops tile :warning when > 0.
+R13416	agent	app/views/scheduling/shift_drop_report/position.html.erb	42-43	cards	ui_section	shared-helper		ui_section per shift, border: false.
+R13417	agent	app/views/scheduling/shift_drop_report/position.html.erb	47	typography	oneoff:section-count-line	one-off-markup		`p class="text-base text-body mb-2"` drop count.
+R13418	agent	app/views/scheduling/shift_drop_report/position.html.erb	52-53	tables-lists	ui_table	shared-helper		Fixed t.heading widths "30%"/"40%".
+R13419	agent	app/views/scheduling/shift_drop_report/position.html.erb	80-84	typography	oneoff:footer-summary	one-off-markup		`p class="mt-2 text-base text-body"` summary with " · ".
+R08001	census	app/views/scheduling/shift_drop_report/position.html.erb	82	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13420	agent	app/views/scheduling/shift_drop_report/position.html.erb	85-92	empty-loading	ui_empty_state	shared-helper		Concatenated hint message vs no shifts.
+R13285	agent	app/views/scheduling/shift_lead/_below_min.html.erb	22	spacing	oneoff:page-width-wrapper	one-off-markup		`div id="shift-lead-below-min" class="mb-4 lg:max-w-3xl"`.
+R13286	agent	app/views/scheduling/shift_lead/_below_min.html.erb	24-30	cards	ui_section	shared-helper		Staffed branch: ui_section badge "0" :success with `p class="text-success font-semibold"` + fa_icon circle-check.
+R08015	census	app/views/scheduling/shift_lead/_below_min.html.erb	40	icons	css:icon-warning	custom-css(icons.css)	ICON-01	
+R13287	agent	app/views/scheduling/shift_lead/_below_min.html.erb	40-43	cards	helper-class-override	shared-helper		Short branch: ui_disclosure with icon-warning icon + span role=heading "font-semibold"; class "mb-4" inside an mb-4 wrapper.
+M0515	grep:candidate	app/views/scheduling/shift_lead/_below_min.html.erb	44	-	responsive: false	-	TABLE-02	<%= ui_table full_width: true, striped: true, responsive: false do |t| %>
+R13288	agent	app/views/scheduling/shift_lead/_below_min.html.erb	57-60	color	oneoff:status-by-color	one-off-markup		Count cell "none" in `span class="font-bold text-error"`, else `span class="font-semibold"`.
+R13279	agent	app/views/scheduling/shift_lead/_callsign.html.erb	7	icons	fa_icon	shared-helper		fa_icon ban "text-error" with label: "Not marked as being on site".
+R13280	agent	app/views/scheduling/shift_lead/_filters.html.erb	24-51	forms	helper-class-override	shared-helper		Five filter selects width "w-full" wrapper_class "flex-1" across 3 form_rows; submit variant :secondary.
+R13281	agent	app/views/scheduling/shift_lead/_legend.html.erb	9-62	tables-lists	class:instruction-list	custom-css		dl.instruction-list in ui_disclosure class "my-4".
+R08036	census	app/views/scheduling/shift_lead/_legend.html.erb	10	tables-lists	<dl>	raw-html	TABLE-01	
+R13282	agent	app/views/scheduling/shift_lead/_legend.html.erb	23-25,59	color	oneoff:status-by-color	raw-html		`<strong class="text-error">-BL-</strong>` and plain <strong> code examples.
+R13284	agent	app/views/scheduling/shift_lead/_legend.html.erb	31,33	other	ui_badge	shared-helper		Sample GD/TS ui_badge chips inside dd text.
+R13283	agent	app/views/scheduling/shift_lead/_legend.html.erb	38,52	icons	fa_icon	shared-helper		Icons shown inline in prose: ban "text-error" (no label) in a dt, award "text-stone-icon".
+R13263	agent	app/views/scheduling/shift_lead/_picker.html.erb	32-34	cards	helper-class-override	shared-helper		ui_disclosure title is tag.span "font-semibold" role=heading aria-level 2; class: "mb-3"; subtitle:.
+R13265	agent	app/views/scheduling/shift_lead/_picker.html.erb	35,56,61	spacing	oneoff:grid-layout	one-off-markup		`flex flex-col lg:flex-row lg:items-end gap-2` with `grow` and `shrink-0` children.
+M0322	grep:candidate	app/views/scheduling/shift_lead/_picker.html.erb	37	-	form_tag	-	FORM-01	<%= form_tag false, method: :get, data: { controller: "form" } do %>
+R08042	census	app/views/scheduling/shift_lead/_picker.html.erb	37	forms	form_tag	rails-helper	FORM-01	
+R13264	agent	app/views/scheduling/shift_lead/_picker.html.erb	37-54	forms	form_tag	raw-html		Raw GET form_tag with label_tag "block font-medium text-heading mb-1" and select_tag SELECT_CLASSES auto-submit.
+R08043	census	app/views/scheduling/shift_lead/_picker.html.erb	38	forms	label_tag	rails-helper	FORM-01	
+M0323	grep:candidate	app/views/scheduling/shift_lead/_picker.html.erb	42	-	select_tag	-	FORM-01	<%= select_tag :slot_id,
+R08044	census	app/views/scheduling/shift_lead/_picker.html.erb	42	forms	select_tag	rails-helper	FORM-01	
+R13266	agent	app/views/scheduling/shift_lead/_picker.html.erb	56-58	empty-loading	ui_empty_state	shared-helper		ui_empty_state inside a disclosure body, wrapped in `div class="grow"`.
+R13267	agent	app/views/scheduling/shift_lead/_picker.html.erb	71-77	buttons	helper-class-override	shared-helper		button_link with class: "w-full justify-center" (primary Refresh / secondary Currently On Duty).
+R13268	agent	app/views/scheduling/shift_lead/_roster.html.erb	21-22	cards	ui_section	shared-helper		ui_section with badge count, badge_color :secondary, border: false.
+R13269	agent	app/views/scheduling/shift_lead/_roster.html.erb	25-28	spacing	oneoff:toolbar-row	one-off-markup		Sort control in `div class="flex justify-end mb-2"`.
+R13271	agent	app/views/scheduling/shift_lead/_roster.html.erb	35-36	tables-lists	ui_table	shared-helper		Desktop table in `div class="hidden lg:block"` with responsive: false (dual rendering).
+M0516	grep:candidate	app/views/scheduling/shift_lead/_roster.html.erb	36	-	responsive: false	-	TABLE-02	<%= ui_table full_width: true, striped: true, responsive: false do |t| %>
+R13274	agent	app/views/scheduling/shift_lead/_roster.html.erb	58-59,64	typography	hard-coded-value	one-off-markup		Missing values print "-".
+R13273	agent	app/views/scheduling/shift_lead/_roster.html.erb	71-73,117-119	icons	fa_icon	shared-helper		Certification marker fa_icon award "text-stone-icon" inline in `span whitespace-nowrap me-2`.
+R13270	agent	app/views/scheduling/shift_lead/_roster.html.erb	92-124	tables-lists	oneoff:custom-list-row	one-off-markup		Phone-only stacked list `lg:hidden rounded-box border border-base-300 divide-y divide-base-300`, rows `p-2 odd:bg-base-100 even:bg-base-200`.
+R08066	census	app/views/scheduling/shift_lead/_roster.html.erb	97,100,107,114,117	typography	tw-text-size	utility	TYPE-02	text-base text-sm
+R13272	agent	app/views/scheduling/shift_lead/_roster.html.erb	97,100-101,107,114,117	typography	oneoff:text-tones	one-off-markup		"text-sm text-stone-muted", "text-base text-stone-emphasis", "font-semibold" spans for card lines.
+R08057	census	app/views/scheduling/shift_lead/_roster.html.erb	102,107	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R08059	census	app/views/scheduling/shift_lead/_roster.html.erb	111,112	other	area-badge-helper	area-helper		shift_lead_vehicle_badge
+R13275	agent	app/views/scheduling/shift_lead/_roster.html.erb	128-133	empty-loading	ui_empty_state	shared-helper		Filter-miss (filter) vs empty roster (user-slash) inside the section.
+M0324	grep:candidate	app/views/scheduling/shift_lead/_sort_control.html.erb	16	-	form_tag	-	FORM-01	<%= form_tag false, method: :get, data: { controller: "form" },
+R08069	census	app/views/scheduling/shift_lead/_sort_control.html.erb	16	forms	form_tag	rails-helper	FORM-01	
+R13260	agent	app/views/scheduling/shift_lead/_sort_control.html.erb	16-31	forms	form_tag	raw-html		Raw GET form_tag + label_tag + select_tag with class AppFormBuilder::SELECT_CLASSES; not ui_form/filter_bar.
+R13261	agent	app/views/scheduling/shift_lead/_sort_control.html.erb	16,28,30	forms	oneoff:auto-submit-select	attribute		Stimulus form#submit on change; noscript submit_button "Sort" fallback.
+R08070	census	app/views/scheduling/shift_lead/_sort_control.html.erb	23	forms	label_tag	rails-helper	FORM-01	
+R13262	agent	app/views/scheduling/shift_lead/_sort_control.html.erb	23-24	typography	oneoff:inline-label	one-off-markup		label_tag "text-sm text-stone-muted whitespace-nowrap" with sr-only roster name.
+R08076	census	app/views/scheduling/shift_lead/_sort_control.html.erb	24	typography	tw-text-size	utility	TYPE-02	text-sm
+M0325	grep:candidate	app/views/scheduling/shift_lead/_sort_control.html.erb	25	-	select_tag	-	FORM-01	<%= select_tag key, options_for_select(Scheduling::ShiftLeadHelper::SORT_LABELS.invert.to_a,
+R08072	census	app/views/scheduling/shift_lead/_sort_control.html.erb	25	forms	select_tag	rails-helper	FORM-01	
+R08081	census	app/views/scheduling/shift_lead/_status_band.html.erb	13	spacing	tw-radius-shadow	utility	SHADOW-01	shadow-xs
+R13276	agent	app/views/scheduling/shift_lead/_status_band.html.erb	13-14	cards	oneoff:div-card	custom-css		`div class="mb-3 card-standard p-2 shadow-xs lg:p-3"` role=region aria-label as a card.
+R13277	agent	app/views/scheduling/shift_lead/_status_band.html.erb	15-23	spacing	oneoff:toolbar-row	one-off-markup		`flex flex-wrap items-center gap-2 mb-2` with `span.grow` spacer pushing Print button_link right.
+R13278	agent	app/views/scheduling/shift_lead/_status_band.html.erb	27-31	cards	oneoff:grid-layout	one-off-markup		`grid grid-cols-3 lg:grid-cols-6 gap-2` of ui_stat_box size: :sm (not ui_stat_row).
+M0117	grep:candidate	app/views/scheduling/shift_lead/index.html.erb	49	-	STAFF	-	COPY-01	{ title: "COMMAND STAFF", id: "shift-lead-command", section: :command,
+R13259	agent	app/views/scheduling/shift_lead/index.html.erb	61-63	empty-loading	ui_empty_state	shared-helper		Pre-pick state: "Pick a shift period..." clipboard-list.
+M0392	grep:candidate	app/views/scheduling/shift_lead/print_sheet.html.erb	1	-	no hero_panel	-	HERO-01	GET /scheduling/shift-lead/print
+R08091	census	app/views/scheduling/shift_lead/print_sheet.html.erb	14,76,87,255,261,263,264,265,266,267,268,269	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13289	agent	app/views/scheduling/shift_lead/print_sheet.html.erb	33-52	other	inline-style	inline-style		Inline <style> @page rule with color #444, font-size 7pt, font-family "Atkinson Hyperlegible" literals.
+M0455	grep:definite	app/views/scheduling/shift_lead/print_sheet.html.erb	34	-	<style>	-	STYLE-01	<style>
+R08089	census	app/views/scheduling/shift_lead/print_sheet.html.erb	41,47	color	literal-color-value	hard-coded	COLOR-01	
+R13290	agent	app/views/scheduling/shift_lead/print_sheet.html.erb	56-65	navigation	oneoff:print-back-link	shared-helper		back_to helper + `p class="text-stone-muted mt-1"` note in `div class="print:hidden mb-4"`.
+R13291	agent	app/views/scheduling/shift_lead/print_sheet.html.erb	67-99	other	oneoff:print-sheet	custom-css		sheet-masthead/sheet-headline/sheet-subline/sheet-stats/sheet-stat custom classes; h1.sheet-shift.
+R08126	census	app/views/scheduling/shift_lead/print_sheet.html.erb	75	typography	<h1>	raw-html	TYPE-04	
+R13297	agent	app/views/scheduling/shift_lead/print_sheet.html.erb	87,95,255-262	typography	<b>	raw-html		<b> for labels and legend keys.
+R13292	agent	app/views/scheduling/shift_lead/print_sheet.html.erb	103,106,162,186	typography	oneoff:utility-heading	custom-css		Section bands are `div.sheet-band` / th with role=heading aria-level=2.
+R13296	agent	app/views/scheduling/shift_lead/print_sheet.html.erb	104,163-169	empty-loading	oneoff:plain-text-empty	raw-html		Empty roster / fully staffed as plain <p>.
+M0472	grep:candidate	app/views/scheduling/shift_lead/print_sheet.html.erb	109	-	<table>	-	TABLE-01	<table>
+R08124	census	app/views/scheduling/shift_lead/print_sheet.html.erb	109,171	tables-lists	<table>	raw-html	TABLE-01	
+R13293	agent	app/views/scheduling/shift_lead/print_sheet.html.erb	109-140,171-246	tables-lists	<table>	raw-html		Raw tables with <colgroup> col.sheet-col-* and th/td.sheet-num/.sheet-ctr; running-head row in thead.
+M0118	grep:candidate	app/views/scheduling/shift_lead/print_sheet.html.erb	152	-	STAFF	-	COPY-01	{ title: "COMMAND STAFF", rangers: @command, all: @report.command },
+M0473	grep:candidate	app/views/scheduling/shift_lead/print_sheet.html.erb	171	-	<table	-	TABLE-01	<table class="sheet-roster">
+R13295	agent	app/views/scheduling/shift_lead/print_sheet.html.erb	210-211,254	icons	fa_icon	shared-helper		fa_icon ban followed by sr-only text in table; bare in legend.
+R13294	agent	app/views/scheduling/shift_lead/print_sheet.html.erb	215-218,229	other	oneoff:utility-badge	custom-css		GD/TS/certification chips as `span.sheet-chip` / `sheet-chip-solid`; "NONE" as span.sheet-none (130).
+R13351	agent	app/views/scheduling/shift_signups/_fill_meter.html.erb	8	typography	oneoff:plain-text-empty	one-off-markup		"No limit" `span class="whitespace-nowrap text-stone-subtle"`.
+R13350	agent	app/views/scheduling/shift_signups/_fill_meter.html.erb	11-16	other	ui_progress_bar	shared-helper		ui_progress_bar size :sm in `div class="w-20 shrink-0"` inside "flex-center-gap-2", percent span coloured by severity_style class.
+R13352	agent	app/views/scheduling/shift_signups/_legend.html.erb	4-9	tables-lists	oneoff:dl-fragment	one-off-markup		Bare dt/dd pair partial explaining red/amber rows in words.
+M0188	grep:candidate	app/views/scheduling/shift_signups/index.html.erb	8	-	signups	-	COPY-07	id: "shift-signups-header",
+R13340	agent	app/views/scheduling/shift_signups/index.html.erb	25-30	typography	oneoff:summary-line	one-off-markup		`div class="my-4 text-lg"` count sentence with " · ".
+R08141	census	app/views/scheduling/shift_signups/index.html.erb	27	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13341	agent	app/views/scheduling/shift_signups/index.html.erb	35-39	tables-lists	class:instruction-list	custom-css		dl.instruction-list in ui_disclosure; dt/dd from _legend partial.
+R08146	census	app/views/scheduling/shift_signups/index.html.erb	36	tables-lists	<dl>	raw-html	TABLE-01	
+M0189	grep:candidate	app/views/scheduling/shift_signups/index.html.erb	41	-	signups	-	COPY-07	<%= filter_bar id: "shift-signups-filters",
+R13342	agent	app/views/scheduling/shift_signups/index.html.erb	61-76	tables-lists	ui_table	shared-helper		Position index as ui_table with row_header link_to (TABLE_LINK_CLASSES) instead of ui_drill_down_row.
+R13343	agent	app/views/scheduling/shift_signups/index.html.erb	72	color	oneoff:status-by-color	shared-helper		Row tint via t.row state: (:error/:warning) from fill variant.
+R13344	agent	app/views/scheduling/shift_signups/index.html.erb	82	typography	hard-coded-value	one-off-markup		Literal "—" for zero empty shifts; t.cell class "whitespace-nowrap" (79).
+R13345	agent	app/views/scheduling/shift_signups/index.html.erb	92-97	empty-loading	ui_empty_state	shared-helper		Filter-miss vs no shifts.
+M0190	grep:candidate	app/views/scheduling/shift_signups/position.html.erb	8	-	signups	-	COPY-07	id: "shift-signups-detail-header",
+R13346	agent	app/views/scheduling/shift_signups/position.html.erb	31-33,71	color	oneoff:status-by-color	shared-helper		Empty Shifts tile :warning/:success; rows tinted by state.
+R08164	census	app/views/scheduling/shift_signups/position.html.erb	40	tables-lists	<dl>	raw-html	TABLE-01	
+R13347	agent	app/views/scheduling/shift_signups/position.html.erb	46-58	buttons	oneoff:action-row	one-off-markup		`div class="my-4 flex flex-wrap gap-2"` with button_link "Who Signed Up" + export_csv_link.
+R13348	agent	app/views/scheduling/shift_signups/position.html.erb	79-81	other	ui_badge	shared-helper		"Empty" ui_badge :error user-slash beside description.
+R13349	agent	app/views/scheduling/shift_signups/position.html.erb	92-93	empty-loading	ui_empty_state	shared-helper		"<position> has no active <year> shifts."
+R13400	agent	app/views/scheduling/slot_bulk_edits/new.html.erb	23-45	forms	helper-class-override	shared-helper		Filter selects "w-full sm:w-44/64/40/56"; submit :secondary.
+M0244	grep:definite	app/views/scheduling/slot_bulk_edits/new.html.erb	40	-	strftime	-	COPY-08	options_for_select([["Any start", ""]] + @datetime_options.map { |dt| [dt.strftime(DateTimeHelper::MONTH_DAY_TIME), dt.iso8601] },
+R13403	agent	app/views/scheduling/slot_bulk_edits/new.html.erb	51-52	validation	errors-via-flash	not-handled		ui_form nil; errors via flash.now[:error] (slot_bulk_edits_controller.rb:23,28,35).
+R13401	agent	app/views/scheduling/slot_bulk_edits/new.html.erb	58	typography	oneoff:intro-paragraph	one-off-markup		`p class="mb-3"` instruction line.
+R13402	agent	app/views/scheduling/slot_bulk_edits/new.html.erb	59-71	forms	helper-class-override	shared-helper		Widths "w-full sm:w-72", "w-full sm:w-64", "w-24".
+R08187	census	app/views/scheduling/slot_bulk_edits/new.html.erb	111	other	area-badge-helper	area-helper		slot_status_badge
+R13404	agent	app/views/scheduling/slot_bulk_edits/new.html.erb	125-129	empty-loading	ui_empty_state	shared-helper		Filter-miss vs none.
+R13302	agent	app/views/scheduling/slot_copies/new.html.erb	10-15	toasts-alerts	oneoff:callout-wrapper	one-off-markup		ui_callout_box :warning in `div class="my-2"`.
+R13303	agent	app/views/scheduling/slot_copies/new.html.erb	31-49	forms	helper-class-override	shared-helper		Filter selects widths "w-full sm:w-64/44/40/56"; submit variant :secondary.
+M0245	grep:definite	app/views/scheduling/slot_copies/new.html.erb	44	-	strftime	-	COPY-08	options_for_select([["Any start", ""]] + @datetime_options.map { |dt| [dt.strftime(DateTimeHelper::MONTH_DAY_TIME), dt.iso8601] },
+R13309	agent	app/views/scheduling/slot_copies/new.html.erb	54	validation	errors-via-flash	not-handled		ui_form nil; errors set as flash.now[:error] (slot_copies_controller.rb:31), no view markup.
+R13304	agent	app/views/scheduling/slot_copies/new.html.erb	56,72,93	typography	oneoff:intro-paragraph	one-off-markup		Section intros `p class="mb-3"`.
+R13305	agent	app/views/scheduling/slot_copies/new.html.erb	66-68	typography	oneoff:help-note	one-off-markup		Note `p class="mt-2 text-stone-subtle"`.
+R13306	agent	app/views/scheduling/slot_copies/new.html.erb	98-100	forms	helper-class-override	shared-helper		bulk_select class: "mb-2" wrapping a ui_accordion per position.
+M0246	grep:definite	app/views/scheduling/slot_copies/new.html.erb	122	-	strftime	-	COPY-08	<%= slot.begins.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+R13307	agent	app/views/scheduling/slot_copies/new.html.erb	123-131	icons	oneoff:glyph-arrow	one-off-markup		"&rarr;" glyph before shifted time in `div class="text-stone-subtle"`; times via strftime.
+M0247	grep:definite	app/views/scheduling/slot_copies/new.html.erb	124	-	strftime	-	COPY-08	&rarr; <%= Scheduling::SlotCopier.adjust_time(slot.begins, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+R08213	census	app/views/scheduling/slot_copies/new.html.erb	124,130	icons	html-entity-or-glyph	hard-coded	ICON-01	
+M0248	grep:definite	app/views/scheduling/slot_copies/new.html.erb	128	-	strftime	-	COPY-08	<%= slot.ends.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+M0249	grep:definite	app/views/scheduling/slot_copies/new.html.erb	130	-	strftime	-	COPY-08	&rarr; <%= Scheduling::SlotCopier.adjust_time(slot.ends, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+R13310	agent	app/views/scheduling/slot_copies/new.html.erb	143-146	empty-loading	ui_empty_state	shared-helper		Filter-miss vs none copyable, inside ui_section.
+R13308	agent	app/views/scheduling/slot_copies/new.html.erb	150-154	buttons	submit_button	shared-helper		f.submit + submit_button "Update Preview" (name preview, :secondary) + cancel_link.
+M0149	grep:candidate	app/views/scheduling/slot_copies/new.html.erb	152	-	submit_button "Update Preview"	-	COPY-04	<%= submit_button "Update Preview", name: "preview", variant: :secondary %>
+R13388	agent	app/views/scheduling/slots/_form.html.erb	1-5	validation	errors-via-form-builder	shared-helper		ui_form(@slot) default error summary and builder field errors.
+R13390	agent	app/views/scheduling/slots/_form.html.erb	3-5,10,41-43	empty-loading	turbo_frame_tag	rails-helper		Stimulus link-options refreshes turbo-frame "slot-link-options" on position change; no busy indicator.
+R13389	agent	app/views/scheduling/slots/_form.html.erb	11-15,29-36	typography	oneoff:intro-paragraph	one-off-markup		Help copy in `p class="my-2"` paragraphs; raw <i> example text (34-35).
+R13391	agent	app/views/scheduling/slots/_form.html.erb	47-54	toasts-alerts	oneoff:callout-wrapper	one-off-markup		Untitled ui_callout_box :warning in `div class="my-2"` inside a fieldset.
+R13392	agent	app/views/scheduling/slots/_form.html.erb	65-78	buttons	f.submit	shared-helper		Save + "Save as New Slot" (:secondary) + cancel_link + delete_button confirm_modal.
+R13393	agent	app/views/scheduling/slots/_link_fieldsets.html.erb	4	forms	oneoff:bare-fields-builder	rails-helper		`fields :slot, builder: AppFormBuilder` (not ui_form) so the partial renders standalone.
+R13394	agent	app/views/scheduling/slots/_link_fieldsets.html.erb	8-13,30-34	typography	oneoff:intro-paragraph	raw-html		`p class="my-2"` with leading <strong> sentence.
+R13396	agent	app/views/scheduling/slots/_link_fieldsets.html.erb	15,25,36,41	empty-loading	oneoff:plain-text-empty	one-off-markup		Unavailable option explained in plain `p class="my-2"`.
+R13395	agent	app/views/scheduling/slots/_link_fieldsets.html.erb	20-23	toasts-alerts	oneoff:plain-text-alert	one-off-markup		Warning as `p class="my-2 text-error"` "Warning: ..." rather than a callout.
+R13372	agent	app/views/scheduling/slots/index.html.erb	6	navigation	hero_panel.year_selector	shared-helper		year_selector min_year: 2008 literal.
+R13373	agent	app/views/scheduling/slots/index.html.erb	10-14	typography	oneoff:intro-paragraph	one-off-markup		Pre-event period sentence in `p class="my-2"`, alternative is a callout.
+R13374	agent	app/views/scheduling/slots/index.html.erb	16-21	toasts-alerts	oneoff:callout-wrapper	one-off-markup		ui_callout_box :error in `div class="my-2"`.
+R13375	agent	app/views/scheduling/slots/index.html.erb	24-33	buttons	oneoff:action-row	one-off-markup		button_row in `div class="my-4"`.
+R13376	agent	app/views/scheduling/slots/index.html.erb	36-38	typography	oneoff:summary-line	one-off-markup		`div class="text-lg"` count, no margin.
+R13377	agent	app/views/scheduling/slots/index.html.erb	39-46	spacing	oneoff:page-width-wrapper	one-off-markup		`div class="lg:w-3/4"`; drill-down badge "N inactive" :warning size base (44).
+R13378	agent	app/views/scheduling/slots/index.html.erb	48	empty-loading	ui_empty_state	shared-helper		"No slots were found for <year>."
+M0393	grep:candidate	app/views/scheduling/slots/link_options.html.erb	1	-	no hero_panel	-	HERO-01	GET /scheduling/slots/link-options
+R13397	agent	app/views/scheduling/slots/new.html.erb	8-13	toasts-alerts	oneoff:callout-wrapper	one-off-markup		ui_callout_box :warning in `div class="my-2"`.
+R13379	agent	app/views/scheduling/slots/position.html.erb	10-12	color	oneoff:status-by-color	shared-helper		Inactive tile variant :warning, only shown when > 0.
+R13380	agent	app/views/scheduling/slots/position.html.erb	15-35	buttons	button_link	shared-helper		button_row in `div class="my-4"`; Activate/Deactivate All are button_link method: :post (no confirm).
+R13381	agent	app/views/scheduling/slots/position.html.erb	45-59	forms	helper-class-override	shared-helper		Filter selects "w-full sm:w-44/64"; submit variant :secondary.
+R13382	agent	app/views/scheduling/slots/position.html.erb	90-98	typography	oneoff:secondary-text	one-off-markup		record_title block with `div class="text-stone-muted"` meta and Inactive ui_badge (:warning sm, class whitespace-nowrap) in div.mt-1.
+R08288	census	app/views/scheduling/slots/position.html.erb	92	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13385	agent	app/views/scheduling/slots/position.html.erb	100	tables-lists	helper-class-override	shared-helper		t.cell class "whitespace-nowrap"; value_list and common slot_additional_info in Attributes cell (106-107).
+R13383	agent	app/views/scheduling/slots/position.html.erb	111-118	buttons	oneoff:icon-only-control	shared-helper		button_link label fa_icon("clone"), class "btn-square", title+aria "Repeat"; second adds span "+24h" "text-xs".
+R08271	census	app/views/scheduling/slots/position.html.erb	115	buttons	class:btn	daisyui-class	BTN-01	btn-square
+R08300	census	app/views/scheduling/slots/position.html.erb	116	typography	tw-text-size	utility	TYPE-02	text-xs
+R13384	agent	app/views/scheduling/slots/position.html.erb	119	buttons	edit_link	shared-helper		edit_link "Edit Slot" with text label beside icon-only buttons in "flex-center-gap-2 justify-end".
+R13386	agent	app/views/scheduling/slots/position.html.erb	126-138	modals	confirm_modal_dialog	shared-helper		Bulk delete submit :error with turbo_confirm confirm_modal_dialog; bulk_select_count class "text-stone-subtle".
+R08290	census	app/views/scheduling/slots/position.html.erb	129	modals	confirm_modal_dialog	shared-helper	MODAL-02	variant=:error
+R08291	census	app/views/scheduling/slots/position.html.erb	129	modals	turbo-confirm	attribute	MODAL-02	
+M0269	grep:candidate	app/views/scheduling/slots/position.html.erb	136	-	"submit"	-	COPY-10	checkbox_select_all_target: "submit"
+R13387	agent	app/views/scheduling/slots/position.html.erb	142-146	empty-loading	ui_empty_state	shared-helper		Filter-miss vs none (calendar-plus).

@@ -1,0 +1,382 @@
+V || R14583 || DIVERGENT || BADGE-01 || medium || 7 || Badge variants are primary, secondary, success, warning, error; application_status_badge passes :info (Pending) and :neutral (Handle Check), which ui_badge silently renders as secondary.
+V || R14585 || UNCOVERED || - || - || 13 || Plain link helper: application id as link_to with "underline font-semibold"; no rule for link styling.
+V || R14581 || COMPLIANT || A11Y-01 || - || 34 || Assignment state is a real status shown by text-success/text-warning/text-stone-muted ink, and the sentence itself says who it is assigned to, so colour is not the sole carrier.
+V || R14586 || UNCOVERED || - || - || 40 || status_dashboard_groups defines an icon per group that index.html.erb:46 never passes to ui_stat_box; dead data, no rule covers it.
+V || R14582 || UNCOVERED || - || - || 109 || Custom anchor pill (vc-progress-* classes from component CSS) with state icon plus label and title tooltip; no rule covers status chips that are links. Icon plus label means colour is not alone.
+V || R14584 || DIVERGENT || BADGE-01 || medium || 95 || Badge variants are primary, secondary, success, warning, error; STAGE_STATE_BADGES gives "To do" :info, which ui_badge falls back to secondary while tinting the icon icon-info.
+V || R14715 || UNCOVERED || - || - || 112 || Plain link helper: callsign plus "(status)" link with "underline font-semibold"; no rule for links.
+V || R14716 || UNCOVERED || - || - || 118 || External Salesforce link through ext_link; _admin_section.html.erb:7 renders the same URL with plain link_to target _blank. No rule for links.
+V || R14681 || COMPLIANT || A11Y-01 || - || 85 || Priority is printed as a word and also coloured (error/warning/muted); the word carries the status, colour reinforces it.
+V || R14682 || UNCOVERED || - || - || 69 || Conflicting handle link "link font-semibold" target _blank with no new-tab indicator; no rule for links.
+V || R14683 || COMPLIANT || BADGE-01 || - || 78 || Handle type and Vintage both through ui_badge with documented size "sm".
+V || M0233 || DIVERGENT || COPY-08 || low || 39 || pattern=typography Dates come from DateTimeHelper, never strftime; reserved_handle_twii_default_date formats with strftime("%B %-d, %Y") and the result prints in help_text on two views.
+V || R00887 || UNCOVERED || - || - || 53 || Middle dot "·" is a typographic separator inside the filter_bar count string, not an icon; ICON-01 does not address separators.
+V || R14747 || UNCOVERED || - || - || 53 || Middle dot separator in the count line text; no rule for text separators.
+V || R14726 || COMPLIANT || EMPTY-01 || - || 9 || Partial has no empty branch, but both callers (_results.html.erb:64,77) guard with .any? and render ui_empty_state otherwise.
+V || R10669 || UNCOVERED || - || - || 22 || application_link plain link helper; no rule for links.
+V || R10671 || COMPLIANT || BADGE-01 || - || 31 || application_status_badge builds through ui_badge (its variant mapping problem is recorded on R14583).
+V || R14725 || COMPLIANT || BTN-01 || - || 39 || export_csv_link, the one export helper, given an in-page data: URI; page has no filter_bar so TABLE-05 does not apply. Lone button sits in a mt-3 div, not a button_row.
+V || R14722 || UNCOVERED || - || - || 6 || ambiguous EMPTY-01: the rule does not say every collection needs an empty state; an empty failure bucket omits its whole section while the stat box above shows 0.
+V || R14723 || COMPLIANT || A11Y-01 || - || 25 || Failure label is text in text-error font-semibold; the words state the problem, colour reinforces.
+V || R14724 || COMPLIANT || BTN-01 || - || 38 || export_csv_link with data: URI and download name; no filter_bar on the page. Lone button in a mt-3 div.
+V || R14720 || DIVERGENT || STAT-01 || medium || 38 || Summary tiles go in ui_stat_row, never a hand-rolled div or grid; the four ui_stat_box tiles sit in "grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 my-4".
+V || R14721 || COMPLIANT || EMPTY-01 || - || 71 || Both empty buckets use ui_empty_state inside their ui_section.
+V || R14718 || COMPLIANT || FORM-01 || - || 39 || Each one-button action is a ui_form with f.submit, both inside one button_row.
+V || R14719 || UNCOVERED || - || - || 41 || Busy state: turbo_submits_with "Contacting Salesforce…" plus a visible text-stone-subtle wait notice; loading states have no rule.
+V || R10700 || DIVERGENT || MODAL-02 || low || 47 || A confirm asks with the action and says whether it can be undone; "Confirm Salesforce Import" message states what happens but asks nothing and is silent on undo.
+V || R10701 || DIVERGENT || MODAL-02 || low || 47 || turbo_confirm carries the app's confirm_modal_dialog (not a browser string), but its wording neither asks with the action nor says whether the import can be undone.
+V || R14717 || DIVERGENT || HELP-02 || medium || 61 || Help belongs in one collapsed ui_disclosure card or an announced foot ui_section; this page puts its Q&A in an always-open ui_accent_card at the foot (sister create_prospectives uses ui_section).
+V || R10703 || COMPLIANT || LIST-01 || - || 63 || <dl> is the documented dl.instruction-list Q&A, not a data table.
+V || M0151 || COMPLIANT || COPY-04 || - || 80 || pattern=links In-text link names the destination page (Create Prospective Accounts); not an action that opens a create form, and "Create Account" is the guide's own allowed verb.
+V || R14633 || COMPLIANT || ALERT-01 || - || 3 || Inline warning through ui_callout_box :error accent.
+V || R14587 || UNCOVERED || - || - || 2 || Sticky review action bar built on the custom sticky-progress-container class with id, badge, check chips, count link, menu and buttons; no rule covers a sticky toolbar.
+V || R10720 || COMPLIANT || BADGE-01 || - || 5 || application_status_badge builds through ui_badge.
+V || R10716 || UNCOVERED || - || - || 7 || Raw <nav aria-label="Review checks"> holding in-page anchor chips; NAV rules cover sidebar, dropdowns and match steppers only.
+V || R14588 || COMPLIANT || BP-01 || - || 7 || "hidden xl:flex" uses xl: as an optional refinement; the n/5 count link stays visible below xl.
+V || R10715 || UNCOVERED || - || - || 9 || vc_check_link emits custom vc-progress-* anchor pills (not a shared helper); no rule for status chip links.
+V || R10725 || COMPLIANT || TYPE-03 || - || 12 || text-sm on a compact jump link in the action bar (compact navigation is a listed use).
+V || R14589 || UNCOVERED || - || - || 12 || Raw <a href="#stage-decision"> showing n/5 with sr-only "checks passed" and a title; plain in-page links have no rule.
+V || R10717 || COMPLIANT || NAV-01 || - || 18 || dropdown-end passed to dropdown_menu as class:.
+V || R14591 || COMPLIANT || NAV-01 || - || 18 || Assign menu is dropdown_menu with dropdown_item entries.
+V || R14590 || COMPLIANT || BTN-01 || - || 33 || Both controls are button_link; Email carries visible label plus aria-label "Email Applicant".
+V || R14632 || UNCOVERED || - || - || 7 || Salesforce record as plain link_to target _blank (the helper ext_link exists for the same URL); no rule for links.
+V || R14631 || DIVERGENT || MODAL-02 || low || 17 || Confirm asks with the action, not "Are you sure…"; delete_button's message reads "Are you absolutely sure you want to delete application …?"
+V || R14571 || COMPLIANT || EMPTY-01 || - || 4 || Filtered empty result is ui_empty_state (padding wrapper only).
+V || R14572 || COMPLIANT || A11Y-01 || - || 31 || Failing age/BRC states pair an icon with a visible word ("Under 18", "none", "issue"); passing state pairs a check icon with sr-only text.
+V || R10736 || COMPLIANT || COLOR-05 || - || 29 || Status check icons take icon-success, the documented status tint.
+V || R14573 || COMPLIANT || A11Y-01 || - || 29 || Pass is a check-shaped icon with sr-only text, fail a different icon plus a word; shape, not colour alone, separates them.
+V || R10735 || COMPLIANT || COLOR-05 || - || 31 || Failing-state icons take icon-error, the documented status tint.
+V || R14574 || UNCOVERED || - || - || 44 || ambiguous BTN-06: rule makes edit_link the edit control but says nothing about a row link to a show/review page; this one says "Edit" and opens the read view.
+V || R14629 || COMPLIANT || EMPTY-01 || - || 3 || No audit entries uses ui_empty_state.
+V || R10749 || UNCOVERED || - || - || 18 || Action name bolded with <strong> in a table cell; it does not outweigh the section title, so no heading rule applies.
+V || R10745 || UNCOVERED || - || - || 23 || Unbulleted <ul> change list in a table cell; not a bulleted list, no rule.
+V || R14628 || UNCOVERED || - || - || 23 || Per-column change list (bold label, from → to) inside an audit table cell; no rule for diff displays.
+V || R10743 || UNCOVERED || - || - || 29 || ambiguous ICON-01: the rule governs icons but does not say whether a typographic &rarr; glyph between values counts as one.
+V || R10748 || DIVERGENT || EMPTY-02 || low || 29 || An empty value prints "—"; blank from/to values print as italic <em>blank</em>.
+V || R14630 || UNCOVERED || - || - || 34 || ambiguous ICON-01: &rarr; entity used as a from-to arrow in text; rule does not settle typographic glyphs.
+V || R14592 || COMPLIANT || ALERT-01 || - || 9 || All banners are ui_callout_box with semantic types; custom icons through the helper.
+V || R14593 || UNCOVERED || - || - || 22 || Links inside callouts styled "underline font-semibold" (the HELP-01 example uses the same); no rule for links.
+V || R14617 || DIVERGENT || COLOR-03 || medium || 15 || No coloured text for emphasis; the approved callsign value is shown in "font-bold text-success" though the row label already says Approved callsign.
+V || R14618 || COMPLIANT || BTN-02 || - || 17 || class: "ms-2" on edit_link and button_link is spacing only, not bg-* or ring-*.
+V || R14623 || DIVERGENT || EMPTY-01 || medium || 46 || Empty collections use ui_empty_state; no submitted handles shows red "none submitted" text, no rejections a muted span (94), no message a text-sm div (109).
+V || R14622 || COMPLIANT || ALERT-01 || - || 26 || Handle-list problems are ui_callout_box :warning / :error with list-bulleted lists.
+V || R10772 || COMPLIANT || SPACE-02 || - || 28 || Lists at 28 and 38 use list-bulleted; 48 and 96 are unbulleted row lists with no list rule.
+V || R14619 || UNCOVERED || - || - || 48 || Screened handles as <ul> rows of icon, name, badges, link and button; no rule for a custom action list.
+V || R10763 || COMPLIANT || COLOR-05 || - || 53 || Check icon takes icon-success.
+V || R10762 || COMPLIANT || COLOR-05 || - || 54 || Ban icon takes icon-error.
+V || R14620 || UNCOVERED || - || - || 71 || Placeholder "check handle (not yet available)" muted text with explanatory title tooltip; tooltips have no rule.
+V || R14621 || COMPLIANT || NAV-01 || - || 79 || dropdown_menu with dropdown_item; class/menu_class only place and size it.
+V || R14625 || UNCOVERED || - || - || 96 || Rejected handle batches as <ul> items with bold date, handle list and disclosure; no rule for this list.
+V || R10779 || DIVERGENT || TYPE-03 || medium || 109 || text-sm is never for empty-state messages; "No rejection message was given." is text-sm. Line 105 is a disclosure summary (see R14624).
+V || R14624 || UNCOVERED || - || - || 105 || ambiguous TYPE-03: the lists name no case for a disclosure summary label; summary_class gives "Rejection Message" text-sm text-stone-muted.
+V || R14607 || UNCOVERED || - || - || 3 || Post-decision outcome as a paragraph with a bold lead word; no rule for a status sentence.
+V || R10783 || UNCOVERED || - || - || 7 || <ul> of check chips with aria-label; no rule for chip lists.
+V || R14606 || UNCOVERED || - || - || 7 || Recap list of vc_check_link anchor pills; no rule for status chip links.
+V || R10781 || UNCOVERED || - || - || 9 || vc_check_link custom anchor pill; no rule.
+V || R14610 || COMPLIANT || A11Y-01 || - || 12 || Notes under badges are written sentences; error/warning ink and a triangle icon reinforce text that states the issue.
+V || R14611 || DIVERGENT || BTN-07 || low || 40 || Buttons sit in a button_row; edit_link and two :warning button_links sit in a hand-made "flex flex-wrap items-center gap-2 mt-3" div.
+V || R14627 || COMPLIANT || EMPTY-01 || - || 3 || No emails uses ui_empty_state.
+V || R14626 || UNCOVERED || - || - || 20 || Email body preview: sandboxed iframe with border/rounded-lg inside a ui_disclosure in a table cell; no rule for embedded previews.
+V || R10798 || UNCOVERED || - || - || 20 || Raw <iframe sandbox srcdoc> email preview with title; no rule.
+V || R10812 || COMPLIANT || TYPE-04 || - || 4 || <h3> takes heading-title; text-heading is colour and mb-1 spacing, no size or weight override.
+V || R14602 || COMPLIANT || TYPE-04 || - || 4 || h3 uses heading-title (the explanation paragraph's text-sm is judged on R10816).
+V || R10816 || DIVERGENT || TYPE-03 || medium || 5 || text-sm is never for paragraph content; the notes explanation <p> is text-sm. Line 12 (timestamp and author) is metadata and fine.
+V || R14605 || DIVERGENT || EMPTY-01 || low || 7 || Empty collections use ui_empty_state; no notes renders a plain muted <p>.
+V || R10810 || UNCOVERED || - || - || 9 || <ul> of note items; the container markup is judged on R14603.
+V || R14603 || DIVERGENT || CARD-01 || medium || 11 || Cards come from ui_card/card-standard; each note is an <li> with its own border, rounded-lg and p-3 acting as a card.
+V || R14604 || DIVERGENT || BTN-02 || medium || 23 || Button colour comes from the variant; the Delete button_link is :ghost recoloured with class "text-error" instead of an :error variant.
+V || R10826 || COMPLIANT || TYPE-03 || - || 12 || text-sm on "Reviewed … by" metadata, a listed use.
+V || R14616 || DIVERGENT || EMPTY-02 || low || 13 || An empty value prints "—"; an unknown reviewer prints "- unknown -".
+V || R10820 || COMPLIANT || FORM-01 || - || 21 || form_with with builder: AppFormBuilder, the documented alternative to ui_form.
+V || R14615 || COMPLIANT || FORM-01 || - || 21 || One-button action form built with AppFormBuilder and submit_button.
+V || R14614 || COMPLIANT || ALERT-01 || - || 3 || Hold, resolved and blank-field notices are ui_callout_box.
+V || R10830 || COMPLIANT || FORM-01 || - || 11 || form_with with builder: AppFormBuilder.
+V || R14612 || COMPLIANT || FORM-01 || - || 11 || One-button status form with AppFormBuilder and submit_button.
+V || R14613 || UNCOVERED || - || - || 32 || ambiguous EMPTY-02: "not stated" states a fact about the applicant; address joined with <br> lines (label/value display, no rule).
+V || R14596 || UNCOVERED || - || - || 3 || Label/value display through ui_label_value with label_width 8rem (stages 12rem, bpguid 9rem); no rule for label/value displays.
+V || R14600 || UNCOVERED || - || - || 5 || ambiguous EMPTY-02: "none stated" states a fact; "Updated … by" metadata line in a text-sm muted <p> below the rail sections.
+V || R14601 || DIVERGENT || TYPE-05 || medium || 13 || Heading hierarchy is consistent; sibling rail sections are titled h2 by ui_section, but the two notes sections pass no title and carry a raw h3 instead.
+V || R14599 || COMPLIANT || CARD-03 || - || 30 || ui_section with id and class "scroll-mt-24" so the anchor clears the sticky bar.
+V || R14598 || COMPLIANT || EMPTY-01 || - || 32 || No related applications uses ui_empty_state.
+V || R10846 || UNCOVERED || - || - || 34 || Unbulleted <ul> of related-application rows; no rule.
+V || R14597 || UNCOVERED || - || - || 34 || Related applications as flex list rows (link, year, badge, muted name); no rule for compact record lists.
+V || R10843 || UNCOVERED || - || - || 37 || application_link plain link; no rule.
+V || R10844 || COMPLIANT || BADGE-01 || - || 39 || application_status_badge builds through ui_badge.
+V || R10849 || COMPLIANT || TYPE-03 || - || 40 || text-sm on secondary metadata (Salesforce name, "Updated … by").
+V || R14595 || UNCOVERED || - || - || 5 || Stage title is a font-semibold span in a custom accordion summary, not a heading tag; it does not outweigh a section title (the stages sit outside any section).
+V || R10857 || COMPLIANT || BADGE-01 || - || 4 || vc_stage_badge builds through ui_badge (its :info variant is recorded on R14584).
+V || R10863 || COMPLIANT || TYPE-03 || - || 6 || text-sm on the stage's one-line summary, supporting content beside the text-base title.
+V || R14594 || COMPLIANT || DISC-01 || - || 9 || ui_accordion unstyled: true is reserved for custom shells with their own CSS component, and the guide names the VC stage cards as its example.
+V || R10850 || COMPLIANT || DISC-01 || - || 10 || "box" on the stage card is the documented custom shell for VC stage cards (unstyled accordion with its own CSS).
+V || R10851 || COMPLIANT || DISC-01 || - || 10 || "box-default" is part of the documented VC stage card shell.
+V || R14609 || COMPLIANT || BTN-05 || - || 6 || Approve is :success (positive), Adjust Status :ghost (minimal).
+V || R14608 || COMPLIANT || NAV-01 || - || 12 || dropdown_menu with dropdown_item; width classes only stack the menus below lg.
+V || R10870 || COMPLIANT || FORM-01 || - || 6 || form_with with builder: AppFormBuilder.
+V || M0351 || COMPLIANT || FORM-01 || - || 19 || pattern=forms form_with passes builder: AppFormBuilder.
+V || R10876 || COMPLIANT || FORM-01 || - || 19 || form_with with builder: AppFormBuilder.
+V || R10883 || COMPLIANT || FORM-01 || - || 2 || form_with with builder: AppFormBuilder.
+V || M0352 || COMPLIANT || FORM-01 || - || 8 || pattern=forms form_with passes builder: AppFormBuilder.
+V || R10888 || COMPLIANT || FORM-01 || - || 8 || form_with with builder: AppFormBuilder.
+V || M0353 || COMPLIANT || FORM-01 || - || 4 || pattern=forms form_with passes builder: AppFormBuilder.
+V || R10895 || COMPLIANT || FORM-01 || - || 4 || form_with with builder: AppFormBuilder.
+V || M0354 || COMPLIANT || FORM-01 || - || 8 || pattern=forms form_with passes builder: AppFormBuilder.
+V || R10903 || COMPLIANT || FORM-01 || - || 8 || form_with with builder: AppFormBuilder.
+V || R14643 || COMPLIANT || MODAL-01 || - || 14 || Footer is a button_row with the submits and modal_close_button; modal_form_footer's own comment says multi-submit footers keep an explicit button_row.
+V || R14640 || UNCOVERED || - || - || 8 || Note being deleted quoted in a <blockquote> with border-s-4 and muted text; no rule for quoted content.
+V || M0355 || COMPLIANT || FORM-01 || - || 11 || pattern=forms form_with passes builder: AppFormBuilder (one-button delete form).
+V || R10910 || COMPLIANT || FORM-01 || - || 11 || form_with with builder: AppFormBuilder.
+V || M0356 || COMPLIANT || FORM-01 || - || 23 || pattern=forms form_with passes builder: AppFormBuilder.
+V || R10917 || COMPLIANT || FORM-01 || - || 23 || Both forms (23, 29) are form_with with builder: AppFormBuilder.
+V || M0357 || COMPLIANT || FORM-01 || - || 29 || pattern=forms form_with passes builder: AppFormBuilder.
+V || M0358 || COMPLIANT || FORM-01 || - || 5 || pattern=forms form_with passes builder: AppFormBuilder.
+V || R10925 || COMPLIANT || FORM-01 || - || 5 || form_with with builder: AppFormBuilder.
+V || M0359 || COMPLIANT || FORM-01 || - || 6 || pattern=forms form_with passes builder: AppFormBuilder.
+V || R10935 || COMPLIANT || FORM-01 || - || 6 || form_with with builder: AppFormBuilder.
+V || R14642 || DIVERGENT || FORM-07 || medium || 9 || Field widths fit content and are responsive (w-full sm:w-*); the Subject field sets size: 70 instead, a fixed width that can exceed a phone-width dialog.
+V || R14641 || COMPLIANT || ICON-01 || - || 23 || Envelope icon drawn by fa_icon, neutral, leading the sentence it illustrates.
+V || M0360 || COMPLIANT || FORM-01 || - || 28 || pattern=forms form_with passes builder: AppFormBuilder.
+V || R10944 || COMPLIANT || FORM-01 || - || 28 || form_with with builder: AppFormBuilder.
+V || R14636 || COMPLIANT || FORM-06 || - || 12 || ui_form supplies the error summary; fields use the builder's inline errors.
+V || R10967 || COMPLIANT || LIST-01 || - || 16 || <dl> is a dl.instruction-list Q&A.
+V || R14635 || COMPLIANT || LIST-01 || - || 16 || Q&A instruction-list inside a form's ui_section is the documented form pattern (FORM-05 example "Legal Name").
+V || R10955 || DIVERGENT || FORM-05 || medium || 20 || Checkbox groups use f.fieldset; the event-year group is a raw <fieldset> with a hand-styled <legend class="font-medium mb-2">.
+V || R14634 || DIVERGENT || FORM-01 || high || 25 || Fields come through AppFormBuilder; the year grid is raw labels and check_box_tag "checkbox checkbox-sm", missing the builder's checkbox-primary, so checked boxes look different from builder checkboxes.
+V || R10956 || DIVERGENT || FORM-01 || high || 24 || Raw <label> wrapping check_box_tag stands in for builder checkbox fields (visibly different checkbox colour).
+V || M0361 || DIVERGENT || FORM-01 || high || 25 || pattern=forms check_box_tag outside the builder with hand classes "checkbox checkbox-sm" (builder uses checkbox-primary), so it renders differently.
+V || R10957 || DIVERGENT || FORM-01 || high || 25 || check_box_tag outside AppFormBuilder; renders without the builder's checkbox-primary.
+V || R10958 || DIVERGENT || FORM-01 || high || 27 || Hand-written "checkbox checkbox-sm" instead of the builder's CHECKBOX_CLASSES (checkbox checkbox-primary checkbox-sm).
+V || R14637 || COMPLIANT || FORM-06 || - || 12 || ui_form error summary and builder errors; required: marks required fields (FORM-03).
+V || M0410 || COMPLIANT || MODAL-01 || - || 1 || pattern=navigation A dialog fragment, not a page: titled by modal_dialog (ModalHelper), so HERO-01 does not apply.
+V || R10996 || COMPLIANT || SPACE-02 || - || 7 || Bulleted list inside the callout uses list-bulleted.
+V || M0362 || COMPLIANT || FORM-01 || - || 18 || pattern=forms form_with passes builder: AppFormBuilder.
+V || R10990 || COMPLIANT || FORM-01 || - || 18 || form_with with builder: AppFormBuilder.
+V || R14639 || COMPLIANT || LAYOUT-02 || - || 21 || two-column-lg is an @utility for "grid grid-cols-1 lg:grid-cols-2 gap-4", the documented grid column form.
+V || R14638 || DIVERGENT || CARD-01 || medium || 26 || Panels come from the card/section helpers; the original-handles box is a div with its own border, rounded-lg, p-3 and bg-base-200, with a div pseudo-label.
+V || R11001 || COMPLIANT || TYPE-03 || - || 31 || text-sm on a one-line note about what Save does, the form's help text.
+V || R14570 || COMPLIANT || ALERT-01 || - || 10 || Prior-year warning through ui_callout_box :warning.
+V || R14568 || COMPLIANT || HELP-02 || - || 17 || About This Report is ui_disclosure variant: :card with an instruction-list; class "my-4" is spacing (its placement above the stat row is an F line).
+V || R11022 || COMPLIANT || LIST-01 || - || 18 || <dl> is a dl.instruction-list inside the collapsed card.
+V || R11016 || COMPLIANT || FORM-01 || - || 27 || Both GET forms (27, 64) are form_with with builder: AppFormBuilder.
+V || R14565 || COMPLIANT || FORM-01 || - || 27 || form_with with builder: AppFormBuilder is allowed in place of ui_form.
+V || R14564 || UNCOVERED || - || - || 32 || Search submit wrapped in a "lg:mt-6" div to line up with the labelled field in form_row; no rule for inline search-button alignment.
+V || R14560 || COMPLIANT || STAT-01 || - || 40 || ui_stat_box tiles inside ui_stat_row, each wrapped by the shared ui_stat_link with aria_label and active: state.
+V || R14561 || UNCOVERED || - || - || 46 || ambiguous STAT-01: the rule fixes the container, not tile width; each ui_stat_box gets a fixed class "w-20".
+V || R14562 || DIVERGENT || A11Y-01 || high || 54 || Status is never colour alone; the active workflow preset is shown only by switching button_link :primary vs :secondary, with no aria-current, text or icon change.
+V || R14563 || DIVERGENT || TABLE-04 || high || 64 || A table page's filters use filter_bar; this page hand-rolls an auto-submitting row of selects in a flex div, with no chips, count or actions slot.
+V || R14566 || UNCOVERED || - || - || 83 || Result count line in a padded flex wrapper with muted <p> and an export link pushed right; no rule for a count line outside filter_bar.
+V || R14567 || COMPLIANT || BTN-01 || - || 89 || export_csv_link with a spacing class; the page has no filter_bar, so TABLE-05 placement does not apply.
+V || R14569 || COMPLIANT || EMPTY-01 || - || 95 || No applications for the year uses ui_empty_state with icon.
+V || R11032 || COMPLIANT || FORM-01 || - || 9 || form_with with builder: AppFormBuilder.
+V || R14575 || UNCOVERED || - || - || 10 || Same search form laid out differently from index (flex items-end, primary submit vs form_row + lg:mt-6, secondary); no rule for search form layout.
+V || R14576 || COMPLIANT || EMPTY-01 || - || 43 || No results uses ui_empty_state.
+V || R14578 || DIVERGENT || HERO-04 || low || 52 || Back navigation lives in the hero panel; the page repeats the hero's back_to as a standalone back_to in a my-4 div at the bottom.
+V || R14580 || UNCOVERED || - || - || 9 || ambiguous HERO-02: the rule fixes the description to one sentence but not its styling; this one is text-lg, font-semibold and status-coloured.
+V || R11043 || DIVERGENT || LAYOUT-02 || low || 19 || Columns are flex flex-col lg:flex-row gap-4 or grid grid-cols-1 lg:grid-cols-N; the body uses an arbitrary track list lg:grid-cols-[1fr_20rem].
+V || R14577 || DIVERGENT || LAYOUT-02 || low || 19 || Same two-column body: "lg:grid lg:grid-cols-[1fr_20rem] lg:gap-4" with a mt-4 lg:mt-0 rail, outside the documented column forms.
+V || R14579 || COMPLIANT || DISC-01 || - || 32 || Mail Log, Audit Log and Misc. & Admin are ui_accordion.
+V || R14670 || COMPLIANT || ALERT-01 || - || 7 || Refusal is a persistent ui_callout_box :error streamed into a slot, not a toast (TOAST-02 favours the persistent indicator).
+V || R14669 || UNCOVERED || - || - || 3 || Empty <div id> slot that turbo streams fill with a callout; no rule.
+V || R14663 || COMPLIANT || ALERT-01 || - || 7 || Search refusal and error are ui_callout_box :warning/:error with heading_level and title.
+V || R14664 || COMPLIANT || ALERT-01 || - || 26 || Capped and note callouts are ui_callout_box; they state consequences beside the row buttons on a page the reader operates.
+V || R14665 || UNCOVERED || - || - || 66 || Row header holding two block spans (bold name, subtle address); no rule for two-line cells.
+V || R14666 || UNCOVERED || - || - || 76 || ambiguous EMPTY-02: "No email addresses" / "No phone numbers" in text-stone-subtle state a fact rather than leave the cell blank.
+V || R14667 || COMPLIANT || BP-01 || - || 92 || Conditional "max-lg:hidden" hides an empty Actions cell on the lg fold, the one structural breakpoint.
+V || R14668 || DIVERGENT || MODAL-02 || low || 101 || Confirm says whether it can be undone; Replace BPGUID asks with the action (variant :error) but never says the link can be replaced again or only an Admin can remove it.
+V || R11052 || DIVERGENT || MODAL-02 || low || 101 || confirm_modal is red and asks "Replace it with …?", but the dialog text does not say whether the replacement can be undone.
+V || R14661 || UNCOVERED || - || - || 27 || Busy label turbo_submits_with "Searching Salesforce…"; loading states have no rule.
+V || R14659 || DIVERGENT || LAYOUT-02 || low || 35 || Columns use flex flex-col lg:flex-row gap-4 or a grid; photo beside details uses "flex flex-wrap items-start gap-4", which wraps by content width instead of folding at lg.
+V || R14658 || UNCOVERED || - || - || 37 || Label/value display via ui_label_value (9rem); empty values through the shared none_stated (italic "None stated") or tag.i at BPGUID; no rule for label/value displays.
+V || R11072 || COMPLIANT || BADGE-01 || - || 38 || person_status_badge builds through ui_badge (plain span for ordinary statuses).
+V || R11070 || DIVERGENT || EMPTY-02 || low || 67 || An empty value prints "—"; a missing BPGUID prints italic "None on file" via tag.i.
+V || R14662 || COMPLIANT || CARD-03 || - || 75 || ui_section with its documented badge and badge_color options.
+V || R14660 || COMPLIANT || EMPTY-01 || - || 77 || Results slot pre-filled with ui_empty_state.
+V || R14713 || COMPLIANT || CARD-03 || - || 10 || ui_section with icon, count badge and badge_color from the group's variant.
+V || R11080 || UNCOVERED || - || - || 29 || application_link, application_salesforce_link (ext_link) and prospective_person_link are plain link helpers; no rule.
+V || R14714 || COMPLIANT || A11Y-01 || - || 50 || Problem messages are written text; the first in text-error reinforces it. Empty cell prints &mdash; (EMPTY-02).
+V || R14711 || COMPLIANT || ALERT-01 || - || 10 || Outcome summary through ui_callout_box variants matching the outcome.
+V || R14710 || DIVERGENT || STAT-01 || medium || 41 || Summary tiles go in ui_stat_row, never a hand-rolled grid; the ui_stat_box tiles sit in "grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 my-4".
+V || R14712 || COMPLIANT || EMPTY-01 || - || 75 || Nothing-ready cases use ui_empty_state inside ui_section.
+V || M0135 || COMPLIANT || COPY-01 || - || 79 || pattern=typography "Work through the sections above" means process the list; COPY-01 bans "work" for volunteering only. False positive.
+V || R11106 || UNCOVERED || - || - || 40 || <ul> of settings rows; no rule.
+V || R14704 || UNCOVERED || - || - || 40 || Settings list: On/Off ui_badge (icon plus word) beside a bold name and sentence; no rule for a settings summary list.
+V || R14705 || COMPLIANT || FORM-01 || - || 68 || Two one-button ui_forms with f.submit inside one button_row.
+V || R14706 || UNCOVERED || - || - || 70 || Busy labels via turbo_submits_with plus a visible wait notice; loading states have no rule.
+V || M0152 || COMPLIANT || COPY-04 || - || 73 || pattern=buttons The guide keeps a submit that does more than store a record on its own verb and gives "Create Account" as the example.
+V || R11101 || DIVERGENT || MODAL-02 || low || 76 || Confirm asks with the action and says whether it can be undone; this message describes effects and says "Preview first", with no question and no undo statement.
+V || R11102 || DIVERGENT || MODAL-02 || low || 76 || turbo_confirm holds the app's confirm_modal_dialog, but its wording does not ask with the action or say the account creation cannot be undone.
+V || R14707 || DIVERGENT || MODAL-02 || low || 77 || Same commit confirm: title "Create Prospective Accounts" and a descriptive message, with no question and nothing on whether it can be undone.
+V || R14708 || DIVERGENT || HELP-01 || medium || 92 || Help at the foot of a page must be announced and linked from the top; the "How This Page Behaves" Q&A section has an id but no callout links to it.
+V || R11105 || COMPLIANT || LIST-01 || - || 93 || <dl> is a dl.instruction-list Q&A.
+V || R14709 || UNCOVERED || - || - || 97 || In-text links with class "underline"; no rule for links.
+V || R14680 || DIVERGENT || EMPTY-01 || low || 8 || Empty collections use ui_empty_state; a handle with no conflicts shows plain text "No conflicts found." from handle_checker_result_summary and omits the table.
+V || R14679 || DIVERGENT || TYPE-03 || medium || 31 || text-sm is never for table content; the conflict "Reason:" line inside a table cell is text-sm (the overflow note at 10 is supporting text and fine).
+V || R11116 || DIVERGENT || TYPE-03 || medium || 40 || Table content is text-base; the Reason line (31) and the rowspan Rule cell (40) are text-sm text-stone-muted.
+V || M0524 || COMPLIANT || TABLE-02 || - || 18 || pattern=tables-lists responsive: false on a four-column ledger with a rowspan, explained in a comment at the call site.
+V || R14678 || COMPLIANT || TABLE-02 || - || 18 || responsive: false is commented and the table has four columns; the cell's text-sm is judged on R11116.
+V || R14676 || UNCOVERED || - || - || 11 || ambiguous FORM-06: the rule does not say whether a GET checker form may drop ui_form's error summary (no_error_summary: true).
+V || M0056 || DIVERGENT || BP-01 || medium || 18 || pattern=spacing sm: is only for a field width; "flex flex-col gap-3 sm:flex-row sm:items-end" makes an sm layout tier.
+V || R14671 || DIVERGENT || BP-01 || medium || 18 || Field and buttons switch from column to row at sm: (outside a field width), plus wrapper_class mb-0 and button_row mb-1 tweaks to align them.
+V || R14674 || COMPLIANT || BTN-07 || - || 29 || Buttons sit in button_row; class: adds only margin.
+V || R11131 || COMPLIANT || LIST-01 || - || 39 || dl.instruction-list in a section of a page the reader operates, the visible form the guide allows there.
+V || R14673 || UNCOVERED || - || - || 44 || Wrapper div with data-action change->form#submit auto-submits on any checkbox change; no rule for auto-submitting groups.
+V || R14672 || DIVERGENT || FORM-01 || medium || 66 || Fields come through AppFormBuilder; the vintage checkbox is check_box_tag borrowing AppFormBuilder::CHECKBOX_CLASSES inside common/_checkbox_tile, so it looks the same.
+V || M0363 || DIVERGENT || FORM-01 || medium || 66 || pattern=forms check_box_tag outside the builder, borrowing CHECKBOX_CLASSES so it renders like a builder checkbox.
+V || R11126 || DIVERGENT || FORM-01 || medium || 66 || check_box_tag in place of a builder check box, styled with the builder's classes.
+V || R11135 || DIVERGENT || TYPE-03 || medium || 69 || text-sm is never for form labels; the checkbox label "Always include vintage callsigns" is text-sm (the help line at 71 is fine).
+V || R14675 || COMPLIANT || EMPTY-01 || - || 96 || No checks yet uses ui_empty_state with icon.
+V || R14677 || DIVERGENT || LAYOUT-02 || low || 103 || Columns use flex-col lg:flex-row or a grid; results use "flex flex-row flex-wrap" with each article "grow basis-xl", a content-width wrap with no lg fold.
+V || M0525 || COMPLIANT || TABLE-02 || - || 18 || pattern=tables-lists responsive: false on a table of two or three columns, which the rule allows without a comment.
+V || R14741 || COMPLIANT || EMPTY-01 || - || 18 || Partial has no empty branch, but every caller checks @results.any? and renders ui_empty_state otherwise.
+V || R14740 || COMPLIANT || A11Y-01 || - || 38 || Error row pairs text-error with a triangle icon and the word "Error:".
+V || R14729 || COMPLIANT || TYPE-06 || - || 24 || <code> for format examples (callsign patterns), a listed mono use.
+V || R14727 || COMPLIANT || LAYOUT-02 || - || 30 || "grid grid-cols-1 lg:grid-cols-2" is the documented grid column form (gap-x-4 because sections carry their own bottom margin).
+V || R14728 || DIVERGENT || BTN-05 || high || 41 || :error is for destructive actions; the two "Preview …" links change nothing and only open a preview, yet are red :error full-width buttons.
+V || R14733 || UNCOVERED || - || - || 18 || Count sentence as <p class="text-lg my-4"> with bold count; count lines outside records management have no rule.
+V || R14735 || COMPLIANT || ALERT-01 || - || 26 || ui_callout_box :warning accent with a spacing class.
+V || R14734 || DIVERGENT || HERO-04 || low || 42 || Back navigation lives in the hero panel; the empty case adds a body "Back to Maintenance Tasks" button_link although the hero already has back_to.
+V || R14730 || UNCOVERED || - || - || 18 || Count sentence <p class="text-lg my-4">; no rule for this count line.
+V || R14732 || COMPLIANT || ALERT-01 || - || 25 || ui_callout_box :warning accent with a spacing class.
+V || R14731 || DIVERGENT || HERO-04 || low || 41 || Back navigation lives in the hero panel; the empty case repeats it as a body button_link "Back to Maintenance Tasks".
+V || R14739 || UNCOVERED || - || - || 10 || Hidden scroll-to-top controller div to reset scroll after the POST render; no rule.
+V || R14738 || UNCOVERED || - || - || 19 || Count as <div class="text-lg my-4"> with "callsign(s)" wording; no rule for count lines here.
+V || R14737 || UNCOVERED || - || - || 10 || Hidden scroll-to-top controller div; no rule.
+V || R14736 || UNCOVERED || - || - || 19 || Count as <div class="text-lg my-4"> (previews use <p>); no rule.
+V || R14702 || COMPLIANT || STAT-01 || - || 8 || One ui_stat_box inside ui_stat_row.
+V || R14703 || COMPLIANT || EMPTY-01 || - || 13 || ui_empty_state; icon_type :regular is the helper's own default.
+V || R11208 || COMPLIANT || LIST-01 || - || 17 || dl.instruction-list inside the About This Report card.
+V || R14700 || UNCOVERED || - || - || 24 || ui_pager rendered above and below the table in spacing divs; pagination has no rule.
+V || R14701 || UNCOVERED || - || - || 42 || Thumbnail link opening a modal, with aria-label and fixed-size photo_tag; photos and thumbnails have no rule.
+V || R11205 || COMPLIANT || BADGE-01 || - || 56 || photo_status_badge builds through ui_badge.
+V || R14694 || DIVERGENT || EMPTY-02 || low || 4 || An empty value prints "—"; missing uploader and never-reviewed print italic <i>unknown</i> and <i>never</i>.
+V || R14689 || UNCOVERED || - || - || 6 || photo_tag class "rounded-lg p-2" (dialogs use rounded-lg without padding); photos have no rule.
+V || R11231 || COMPLIANT || TYPE-04 || - || 9 || <h3> takes heading-title; text-heading and mb-2 add no size or weight.
+V || R14687 || COMPLIANT || TYPE-04 || - || 9 || h3 heading-title; the status beside it is a font-normal muted span in literal angle brackets.
+V || R14688 || UNCOVERED || - || - || 14 || One-row ui_table used as a horizontal label/value strip of photo metadata; label/value displays have no rule.
+V || R11225 || COMPLIANT || BADGE-01 || - || 25 || photo_status_badge builds through ui_badge.
+V || R14693 || DIVERGENT || MODAL-02 || low || 47 || Confirm says whether it can be undone; Approve Photo asks with the action but, though it removes every other photo, says nothing about undo.
+V || R11224 || DIVERGENT || MODAL-02 || low || 46 || confirm_modal asks with the action but its message omits whether the approval (and removal of other photos) can be undone.
+V || R14691 || DIVERGENT || EMPTY-01 || low || 78 || Empty collections use ui_empty_state; no prior rejections shows a bold <div class="font-semibold"> sentence.
+V || R14692 || UNCOVERED || - || - || 68 || Rejected-photo thumbnails as block links; every one shares one aria-label that hides its visible date. Photos have no rule.
+V || R11236 || COMPLIANT || TYPE-03 || - || 70 || text-sm on a thumbnail's date, metadata.
+V || R11229 || UNCOVERED || - || - || 82 || Raw <dl> label/value list (not instruction-list); no rule for label/value displays.
+V || R14690 || UNCOVERED || - || - || 82 || Rejection reasons and message as a <dl> with font-semibold dt; label/value display, no rule (italic fallback recorded as an F line).
+V || R14686 || COMPLIANT || STAT-01 || - || 3 || ui_stat_box inside ui_stat_row; variant switches with the count.
+V || R14684 || DIVERGENT || EMPTY-01 || medium || 8 || An empty state is always ui_empty_state; the empty review queue is a ui_callout_box :success "Congratulations! All photos have been reviewed."
+V || R14685 || COMPLIANT || ALERT-01 || - || 19 || ui_callout_box :info accent with icon; the class only adds margin.
+V || M0411 || COMPLIANT || MODAL-01 || - || 2 || pattern=modals Modal fragment built with ModalHelper's modal, m.title and m.body; HERO-01 does not apply to a dialog.
+V || R14695 || COMPLIANT || MODAL-01 || - || 2 || Uses the documented modal builder (m.title, m.body) with its default close footer; the other dialogs use the modal_dialog wrapper over the same helper.
+V || R11253 || COMPLIANT || TYPE-04 || - || 11 || <h3> takes heading-title with only colour and margin added.
+V || R14696 || COMPLIANT || TYPE-04 || - || 11 || h3 heading-title.
+V || R11252 || UNCOVERED || - || - || 15 || Raw <dl> label/value list; no rule.
+V || R14697 || UNCOVERED || - || - || 15 || Photo metadata as a <dl> with font-semibold dt; label/value display, no rule (italic fallbacks recorded as an F line).
+V || R11248 || COMPLIANT || BADGE-01 || - || 17 || photo_status_badge builds through ui_badge.
+V || M0412 || COMPLIANT || MODAL-01 || - || 1 || pattern=modals Dialog fragment titled by modal_dialog; HERO-01 does not apply.
+V || R14699 || DIVERGENT || FORM-06 || medium || 3 || Errors show through the builder with ui_form's summary; the form sets no_error_summary and an empty reason list answers with an error toast stream (controller line 43), not a field error.
+V || R14698 || COMPLIANT || FORM-05 || - || 10 || Reason checkboxes grouped in f.fieldset, laid out in a grid-cols-1 lg:grid-cols-2 grid.
+V || R14652 || COMPLIANT || FORM-06 || - || 3 || ui_form error summary; maxlength with show_counter through the builder.
+V || R11282 || COMPLIANT || LIST-01 || - || 6 || Q&A instruction-list inside f.fieldset, the documented form pattern.
+V || R14651 || COMPLIANT || BTN-07 || - || 44 || Save, Cancel and delete_button share the form's button_row; the confirm asks with the action and says it cannot be undone.
+V || R14650 || UNCOVERED || - || - || 9 || ambiguous STAT-01: the rule covers summary tiles; a single ui_stat_box "Expired" labelled "Status" is used as a status indicator, not a number.
+V || R14649 || COMPLIANT || HELP-02 || - || 20 || One collapsed ui_disclosure card "How This Page Works" with an instruction-list, under the stat row and above the filter bar.
+V || R11307 || COMPLIANT || LIST-01 || - || 21 || dl.instruction-list inside the card.
+V || R14645 || COMPLIANT || BTN-07 || - || 32 || Buttons sit in a button_row; the my-4 wrapper only adds spacing.
+V || R14646 || DIVERGENT || BTN-05 || high || 38 || :error is for destructive actions; "Delete Expired Handles" is a :secondary button_link (its confirm button is red, the trigger is grey).
+V || R11305 || COMPLIANT || MODAL-02 || - || 40 || confirm_modal variant :error asks "Delete all N expired handles now?" and says it cannot be undone.
+V || R14647 || DIVERGENT || FORM-07 || low || 62 || Field widths fit content and are responsive rather than full width; both filter selects are width "w-full" stretched with wrapper_class "flex-1".
+V || R14648 || COMPLIANT || EMPTY-01 || - || 79 || Both empty cases use ui_empty_state, with different messages and icons.
+V || R14644 || COMPLIANT || TOUCH-02 || - || 107 || Icon-only edit_link takes btn-square and has aria-label "Edit {handle}" (A11Y-02).
+V || R11293 || COMPLIANT || TOUCH-02 || - || 107 || btn-square passed to an icon-only ButtonHelper button, as the rule requires.
+V || R14654 || UNCOVERED || - || - || 14 || stale-results controller swaps the commit block for a hidden warning callout when the form below changes; no rule.
+V || R14653 || COMPLIANT || A11Y-01 || - || 82 || Line problems shown by error callout naming lines, a Problem badge with icon, and the error text; colour is never alone.
+V || R14655 || COMPLIANT || FORM-01 || - || 41 || Commit is a ui_form of hidden fields with one f.submit (a one-button action in a my-3 div).
+V || R14657 || UNCOVERED || - || - || 61 || Summary <p class="mt-3"> with bold type label; no rule for this count line.
+V || R11337 || COMPLIANT || LIST-01 || - || 107 || dl.instruction-list inside f.fieldset; <code> holds format examples (TYPE-06).
+V || R14656 || COMPLIANT || BTN-04 || - || 145 || Verify drops to :secondary when a commit is ready, so only one primary shows at a time.
+V || R11357 || COMPLIANT || LIST-01 || - || 9 || dl.instruction-list in the About This Report card.
+V || R14748 || COMPLIANT || BTN-07 || - || 17 || export_csv_link inside button_row; no filter_bar on the page, so TABLE-05 does not apply.
+V || R14749 || UNCOVERED || - || - || 22 || Count as <div class="text-lg mb-2">; no rule for a report count line.
+V || R14750 || COMPLIANT || EMPTY-01 || - || 45 || ui_empty_state with block text and icon.
+V || R14755 || DIVERGENT || STYLE-01 || low || 9 || No inline style= attribute; the popover trigger and panel set anchor-name and position-anchor through style (a per-cell name, explained only by the popover comment).
+V || R14756 || COMPLIANT || A11Y-02 || - || 7 || Number-only button_action has an aria label naming the count, milestone and day.
+V || M0463 || DIVERGENT || STYLE-01 || low || 6 || pattern=other Inline style: "anchor-name: --…" on the count button holds a computed per-cell name.
+V || R11366 || UNCOVERED || - || - || 8 || ambiguous SHADOW-01: the rule says new components are flat but does not say whether a floating popover panel (rounded-box shadow-lg) may cast a shadow.
+V || M0464 || DIVERGENT || STYLE-01 || low || 9 || pattern=other Inline style="position-anchor: --…" on the popover panel, a computed per-cell anchor name.
+V || R14757 || UNCOVERED || - || - || 10 || Popover title as <div class="font-semibold mb-2"> above a multi-column link list; no rule.
+V || R11377 || COMPLIANT || LIST-01 || - || 26 || dl.instruction-list in the About This Report card.
+V || R14751 || COMPLIANT || BTN-07 || - || 50 || export_csv_link inside button_row; no filter_bar on the page.
+V || R14752 || UNCOVERED || - || - || 55 || Count as <div class="text-lg mb-2">; no rule.
+V || M0526 || COMPLIANT || TABLE-02 || - || 62 || pattern=tables-lists responsive: false on a day-by-milestone matrix, with a comment at the call site explaining why.
+V || R14753 || DIVERGENT || EMPTY-02 || low || 91 || An empty value prints "—"; empty matrix cells print "-" (lines 83 and 91).
+V || R14754 || COMPLIANT || EMPTY-01 || - || 99 || ui_empty_state with block text and icon.
+V || R14744 || COMPLIANT || STAT-01 || - || 15 || ui_stat_box per status inside ui_stat_row; warning variant paired with a triangle icon.
+V || R11391 || DIVERGENT || FORM-05 || medium || 31 || Checkbox groups use f.fieldset; the filter panel wraps its checkbox grid in a raw <fieldset> with a hand-styled legend.
+V || R14742 || DIVERGENT || FORM-05 || medium || 32 || Raw <legend class="mb-2 text-base font-medium text-heading"> in place of f.fieldset's form-legend (edit_details hand-styles its legend differently again).
+V || R14746 || COMPLIANT || TABLE-01 || - || 46 || ui_table with its striped: option.
+V || R14743 || DIVERGENT || COLOR-06 || medium || 66 || The same neutral utility serves the same purpose; "No address on file" uses text-base-content/70 where muted fallbacks elsewhere use text-stone-muted.
+V || R14745 || COMPLIANT || EMPTY-01 || - || 73 || ui_empty_state with block text and icon.
+F || app/views/vc/reserved_handles/edit.html.erb || 2 || other || hero-description-not-purpose || DIVERGENT || HERO-02 || low || The description is one sentence saying what the page does; "Reserved handle #N." only names the record.
+F || app/views/vc/application_import/index.html.erb || 61 || other || foot-help-unannounced || DIVERGENT || HELP-01 || medium || Help further down the page is announced and linked from the top; the "How the Import Behaves" card (id import-help) has no callout linking to it.
+F || app/views/vc/applications/index.html.erb || 17 || cards || help-card-above-stat-row || DIVERGENT || HELP-02 || low || The one collapsed card sits under the stat row and above the filters; About This Report comes before the search form and the stat row (40).
+F || app/views/vc/applications/show.html.erb || 13 || buttons || several-primary-actions || DIVERGENT || BTN-04 || medium || One clear primary action per view; the review page shows the next-stage jump (_action_bar 37), Assign Callsign (_callsign_stage 20), Mark Okay (_paragraph_stage 23) and Approve Application (_personal_info_stage 13) all as primary.
+F || app/views/vc/bpguid/index.html.erb || 11 || buttons || several-primary-actions || DIVERGENT || BTN-04 || medium || One primary action per view; Look Up Callsign (11), Search Salesforce (27) and every row's Use This BPGUID (_results 109) are all primary.
+F || app/views/vc/reserved_handles/index.html.erb || 33 || buttons || several-primary-actions || DIVERGENT || BTN-04 || low || One primary action per view; Add Reserved Handle (33) is :primary and the filter panel's Apply Filters f.submit (73) defaults to :primary too.
+F || app/views/vc/applications/_paragraph_stage.html.erb || 19 || buttons || buttons-outside-button-row || DIVERGENT || BTN-07 || low || Buttons sit in a button_row; Mark Okay and the two :warning button_links sit in a hand-made flex flex-wrap gap-2 div.
+F || app/views/vc/applications/_status_actions.html.erb || 4 || buttons || buttons-outside-button-row || DIVERGENT || BTN-07 || low || Buttons sit in a button_row; Approve, the Reject and Hold menus and Adjust Status sit in a hand-made flex flex-wrap gap-2 div.
+F || app/views/vc/applications/_notes_list.html.erb || 20 || buttons || buttons-outside-button-row || DIVERGENT || BTN-07 || low || Buttons sit in a button_row; each note's Edit and Delete button_links sit inside the flex meta row beside the timestamp.
+F || app/views/vc/applications/edit_details.html.erb || 35 || forms || fixed-width-select || DIVERGENT || FORM-07 || low || Fields wider than w-32 take responsive widths (w-full sm:w-44); Experience Type select is a fixed "w-44".
+F || app/views/vc/applications/edit_personal_info.html.erb || 25 || forms || fixed-width-fields || DIVERGENT || FORM-07 || low || Fields wider than w-32 take responsive widths; Country (25) and State (29) are fixed "w-44" and City (28) fixed "w-48".
+F || app/views/vc/photos_review/_photo.html.erb || 9 || typography || heading-level-skip || DIVERGENT || TYPE-05 || low || Heading hierarchy runs h1 > h2 > h3; each review card's callsign is an h3 directly under the page h1, with no h2 section between.
+F || app/views/vc/applications/_applications_table.html.erb || 43 || empty-loading || dash-empty-value || DIVERGENT || EMPTY-02 || low || An empty value prints "—"; a missing Last Updated prints "-".
+F || app/views/vc/applications/_audit_log_section.html.erb || 17 || empty-loading || dash-empty-value || DIVERGENT || EMPTY-02 || low || An empty value prints "—"; an unknown author prints "- unknown -".
+F || app/views/vc/photos_review/_photo.html.erb || 90 || empty-loading || italic-empty-value || DIVERGENT || EMPTY-02 || low || An empty value prints "—"; a missing rejection message prints italic <i>none given</i>.
+F || app/views/vc/photos_review/info.html.erb || 23 || empty-loading || italic-empty-value || DIVERGENT || EMPTY-02 || low || An empty value prints "—"; missing dimensions, reasons and message print italic <i>unknown</i> / <i>none given</i> (lines 23, 38, 46).
+F || app/views/vc/applications/_action_bar.html.erb || 20 || typography || menu-items-sentence-case || DIVERGENT || COPY-03 || low || Every label a reader scans is Title Case; menu items read "Assign to self", "Assign to VC…", "Clear assignment" (20, 24, 27).
+F || app/views/vc/applications/_status_actions.html.erb || 15 || typography || menu-items-sentence-case || DIVERGENT || COPY-03 || low || Labels are Title Case; Reject and Hold menu items are sentence case ("Lacking event experience", "Why Ranger answer issue", "Ask for event confirmation", lines 15-36).
+F || app/views/vc/applications/_callsign_stage.html.erb || 13 || typography || labels-sentence-case || DIVERGENT || COPY-03 || low || Labels are Title Case; row labels "Approved callsign", "Submitted handles", "Rejected handles" (13, 24, 92) and menu items "Reject handle submissions…", "Edit handles list…" (81, 84, 87) are sentence case.
+F || app/views/vc/applications/_eligibility_stage.html.erb || 3 || typography || labels-sentence-case || DIVERGENT || COPY-03 || low || Labels are Title Case; ui_label_value rows "BRC events" (3) and "Experience type" (27) are sentence case (bpguid's rows use Title Case).
+F || app/views/vc/applications/_paragraph_stage.html.erb || 39 || typography || labels-sentence-case || DIVERGENT || COPY-03 || low || Labels are Title Case; the row label "Regional experience" is sentence case.
+F || app/views/vc/applications/_personal_info_stage.html.erb || 42 || typography || labels-sentence-case || DIVERGENT || COPY-03 || low || Labels are Title Case; the row label "Emergency contact" is sentence case.
+F || app/views/vc/reserved_handles/upload.html.erb || 18 || typography || section-title-sentence-case || DIVERGENT || COPY-03 || low || Section titles are Title Case; the results ui_section is titled "Commit results" or "Verified handles — not saved yet".
+F || app/views/vc/applications/search.html.erb || 18 || typography || section-title-sentence-case || DIVERGENT || COPY-03 || low || Section titles are Title Case; the results ui_section is titled "Found N applications".
+F || app/views/vc/photos_review/reject_dialog.html.erb || 10 || typography || legend-sentence-case || DIVERGENT || COPY-03 || low || Headings are Title Case; the fieldset legend reads "Rejection reasons".
+F || app/views/vc/applications/edit_details.html.erb || 21 || typography || legend-sentence-case || DIVERGENT || COPY-03 || low || Headings are Title Case; the legend reads "Events attended".
+F || app/views/vc/thank_you_cards/index.html.erb || 32 || typography || legend-sentence-case || DIVERGENT || COPY-03 || low || Headings are Title Case; the filter legend reads "Also include people we do not normally mail".
+F || app/views/vc/applications/dialogs/status_message.html.erb || 4 || typography || update-verb-in-title || DIVERGENT || COPY-04 || low || One verb per action, never "Update"; the status dialog is titled "Update Status" while its button says "Save Status".
+F || app/views/vc/reserved_handles/new.html.erb || 4 || typography || new-verb-in-title || DIVERGENT || COPY-04 || low || Creating a record is "Add [Entity]", never "New"; the page reached by Add Reserved Handle is titled "New Reserved Handle".
+S || HERO-01 || 23 || 0 || 23 full pages all open with hero_panel; 14 dialog fragments use ModalHelper titles instead.
+S || HERO-02 || 23 || 1 || reserved_handles/edit; show's styled description recorded as UNCOVERED (R14580).
+S || HERO-03 || 23 || 0 || Year selectors on applications index, shiny penny, spigot flow and thank-you cards are all in the hero.
+S || HERO-04 || 23 || 3 || show (bottom back_to), preview_pnvs and preview_past_prospectives (empty-case back buttons); all rows.
+S || HELP-01 || 23 || 2 || application_import (F) and create_prospectives (R14708) foot help not announced.
+S || HELP-02 || 23 || 2 || application_import accent card (R14717); applications index card placement (F).
+S || STAT-01 || 26 || 2 || 23 pages plus _results partials and _stats; both _results grids (rows).
+S || STAT-02 || 23 || 0 || No hero stats anywhere.
+S || TABLE-02 || 17 || 0 || Three responsive: false tables, each a matrix/ledger with comment or a table of three columns or fewer.
+S || TABLE-04 || 23 || 1 || applications index hand-rolled filter row (R14563).
+S || TABLE-05 || 23 || 0 || Only thank_you_cards and reserved_handles have filter_bar; thank-you export is in actions:, reserved has no export.
+S || BTN-03 || 67 || 0 || No xs buttons in scope.
+S || BTN-04 || 37 || 3 || show, bpguid index, reserved_handles index.
+S || BTN-05 || 67 || 2 || reserved_handles index (R14646), maintenance index (R14728); notes Delete recoloured recorded under BTN-02.
+S || BTN-07 || 67 || 4 || _eligibility_stage (row), _paragraph_stage, _status_actions, _notes_list.
+S || MODAL-02 || 8 || 5 || _admin_section, application_import, bpguid _results, create_prospectives, photos_review _photo; note_delete, reserved index and reserved _form comply.
+S || FORM-02 || 25 || 0 || Every field has a visible label.
+S || FORM-03 || 25 || 0 || Required fields use required:.
+S || FORM-07 || 25 || 4 || edit_details, edit_personal_info, send_email (R14642), reserved_handles index filter (R14647); dialog fields left at the builder default w-auto were not counted.
+S || FORM-08 || 5 || 0 || edit_details, edit_personal_info, reserved new, edit and upload follow hero > ui_form > sections > button_row.
+S || TYPE-05 || 67 || 2 || _rail (R14601), photos_review _photo.
+S || COLOR-02 || 67 || 0 ||
+S || COLOR-03 || 67 || 1 || _callsign_stage approved callsign (R14617).
+S || A11Y-01 || 67 || 1 || applications index preset toggles (R14562).
+S || A11Y-02 || 67 || 0 || Icon-only edit link and spigot count buttons carry aria labels.
+S || LAYOUT-03 || 23 || 0 || No records-management page in scope.
+S || COPY-03 || 67 || 11 || Mostly sentence-case menu items, label/value labels, legends and two section titles.
+S || COPY-04 || 67 || 2 || status_message title, reserved_handles new title.
+S || COPY-10 || 67 || 0 ||
+Q || _notes_list, photos_review/_photo and info hand-write <h3 class="heading-title text-heading mb-2">, the exact classes ui_subheading emits; ui_subheading would keep them in step.
+Q || VC stage cards title each stage with a span inside <summary>, so the review page's main column has no headings between the h1 and the rail's h2s; a screen-reader user cannot jump between stages by heading.
+Q || application_status_badge prints "Bug [status]" to reviewers for an unknown status; a neutral fallback label would read better.
+Q || Lone buttons (export links in mt-3 divs on application_import, the upload commit submit) sit outside button_row; BTN-07 does not say whether a single button needs one, worth ruling on.
+Q || The "Vintage" handle-type badge uses :error though vintage is not an error state; :warning may fit the meaning better.
+Q || Spigot Flow headings are right-aligned (right: true) while every cell is centred (center: true), so columns do not line up with their headings.
+Q || reset_pnvs empty state reads "Odd, no qualified applicants were found." — a tone departure from the other empty states; no copy rule names it.
+Q || Several dialog fields (approve_callsign, edit_approved_handle, assign, adjust_status) rely on the builder default w-auto width; FORM-07 does not say whether that default counts as fitted.

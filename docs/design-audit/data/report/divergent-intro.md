@@ -1,0 +1,3 @@
+Each line: severity, rule, `file:line`, pattern, then what the rule says and what the code does. **high** is a visible inconsistency or an accessibility problem; **medium** is the wrong component or token that renders about the same; **low** is cosmetic or internal. Where one departure repeats in a file, the note lists the lines. Pages are grouped by area and ordered by weight within it; findings in a file that several pages render are in 3.2, and departures in the shared helpers, stylesheets and controllers are in 3.3.
+
+Severity was judged from code. A "medium" that turns out to look different on screen is a "high"; section 6 lists the ones the reviewers flagged as needing a look.

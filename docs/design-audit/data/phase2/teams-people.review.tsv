@@ -1,0 +1,289 @@
+id	source	file	lines	pattern	variant	impl	rule_hint	note
+R13758	agent	app/helpers/people/languages_known_helper.rb	7,8,9,10,11,17,48,52,55,79,80	other	ui_badge	area-helper		proficiency coloured by PROFICIENCY_VARIANTS (success/primary/secondary, no icon); status badges On duty/Radio/Off site with icons; row badges size base
+R13757	agent	app/helpers/people/languages_known_helper.rb	15,49	color	oneoff:me-muted-outside-me	custom-css		tag.span class "me-muted" (hero-panel.css class from /me) for muted proficiency/position text, "me-muted text-sm"
+R00332	census	app/helpers/people/languages_known_helper.rb	49	typography	tw-text-size	utility	TYPE-02	text-sm
+R13765	agent	app/helpers/people/retention_report_helper.rb	51,52,53,54,55,56,57,58,59,60,61	other	oneoff:year-strip	area-helper		tag.div flex flex-wrap gap-1 of ui_badge success check (rangered) or span.px-1.text-stone-muted year (not)
+R13785	agent	app/helpers/people/search_helper.rb	22,23,24	icons	oneoff:icon-in-disclosure-title	area-helper		disclosure title built as tag.span.font-semibold of fa_icon(end: 2) + text
+R13750	agent	app/helpers/people/status_change_recommendations_helper.rb	38,39,40,41,42	icons	oneoff:dash-aria-label-span	area-helper		vintage cell: ui_badge Vintage with award icon, else span.text-stone-muted "—" with aria-label on a span (no role)
+R13613	agent	app/helpers/teams_positions/bulk_positions_helper.rb	16,17,18,19,20,21,22,23,24,25,26,28,29,30,31	other	ui_badge	area-helper		identical VERDICT_BADGES table and badge method duplicated from bulk_teams_helper
+R13612	agent	app/helpers/teams_positions/bulk_teams_helper.rb	21,22,23,24,25,26,27,28,29,30,31,40,41,42,43	other	ui_badge	area-helper		verdict pill via VERDICT_BADGES lookup: label, colour (success/warning/secondary/error) and an icon so status is not colour alone
+R13656	agent	app/helpers/teams_positions/membership_report_helper.rb	92,93	other	helper-class-override	area-helper		ui_badge "No managers" size: "base", class: "whitespace-nowrap" for drill-down row
+R13666	agent	app/helpers/teams_positions/position_grants_helper.rb	127,128,129,130,131,132,133,134,135,140,141,142,143,144,145	other	ui_badge	area-helper		row badges size "base" (Inactive warning, N unassigned error) and scope badge :primary with globe / universal-access icons
+R13690	agent	app/helpers/teams_positions/position_sanity_checker_helper.rb	182,183,184	other	ui_badge	area-helper		findings count badge: success at zero else error, size passed through
+R13642	agent	app/helpers/teams_positions/roster_management_helper.rb	36,37,38,39,174,175	icons	fa_icon	area-helper		category heading = fa_icon + label via safe_join (star, circle-dot, globe)
+R13641	agent	app/helpers/teams_positions/roster_management_helper.rb	184,217,218,225	typography	oneoff:cell-year-and-date	area-helper		tag.span/tag.div font-semibold year (with title tooltip) and tag.div text-sm text-stone-muted whitespace-nowrap "since" date
+R13639	agent	app/helpers/teams_positions/roster_management_helper.rb	209,210,211,212	tables-lists	oneoff:dash-sr-only	hard-coded-value		NOT_GRANTED raw SafeBuffer: span.text-stone-subtle aria-hidden "&mdash;" plus span.sr-only "Not granted"
+R00621	census	app/helpers/teams_positions/roster_management_helper.rb	218	typography	tw-text-size	utility	TYPE-02	text-sm
+R13640	agent	app/helpers/teams_positions/roster_management_helper.rb	233,234,235	other	helper-class-override	area-helper		ui_badge "NS" with title: tooltip plus a sibling sr-only span duplicating the title
+R13707	agent	app/helpers/teams_positions/team_documents_helper.rb	18,19,20,21,22,23,24,25,26	tables-lists	ui_drill_down_row	area-helper		row built in helper; "No document yet" in meta text; badges error (Document missing / Tag cannot be used) and Inactive :secondary size base
+R13728	agent	app/views/certificates/certificates_report/index.html.erb	8	cards	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R02188	census	app/views/certificates/certificates_report/index.html.erb	9	tables-lists	<dl>	raw-html	TABLE-01	
+R13729	agent	app/views/certificates/certificates_report/index.html.erb	17,18,19,20,21	spacing	oneoff:button-row-wrapper	one-off-markup		div.my-4 > button_row > export_csv_link "Export All to CSV"
+R13730	agent	app/views/certificates/certificates_report/index.html.erb	25,26,27,28	typography	oneoff:lead-sentence-text-lg	one-off-markup		div.text-lg "Showing N certifications with M records" (no my-4)
+R13731	agent	app/views/certificates/certificates_report/index.html.erb	29	spacing	oneoff:page-width-wrapper	one-off-markup		div.lg:w-3/4 around drill-down rows
+R13732	agent	app/views/certificates/certificates_report/index.html.erb	36,37	empty-loading	ui_empty_state	shared-helper		none: ui_empty_state
+R13734	agent	app/views/certificates/certificates_report/show.html.erb	9,54,55	empty-loading	oneoff:filtered-empty-not-handled	not-handled		no filtered-empty branch; comment argues status choices always return someone
+R13733	agent	app/views/certificates/certificates_report/show.html.erb	41,51,68	tables-lists	helper-class-override	shared-helper		ui_table class: "whitespace-nowrap"; Notes heading width "100%" class whitespace-normal; Notes cell whitespace-normal
+R13735	agent	app/views/certificates/certificates_report/show.html.erb	73,74,75	empty-loading	ui_empty_state	shared-helper		nobody holds it: ui_empty_state
+R13791	agent	app/views/people/bulk_lookup/_export_form.html.erb	7,8	forms	helper-class-override	shared-helper		second ui_form used as a CSV export button, class: "my-2", data turbo false, secondary submit
+R13786	agent	app/views/people/bulk_lookup/index.html.erb	12,13,14,15,16	validation	oneoff:error-in-callout	shared-helper		@refusal shown in ui_callout_box :error; form has no_error_summary: true
+R13787	agent	app/views/people/bulk_lookup/index.html.erb	18	spacing	oneoff:page-width-wrapper	one-off-markup		div.lg:w-1/2 around the form
+R13788	agent	app/views/people/bulk_lookup/index.html.erb	46,47,48,49,50,51,52,53,54,57,58,59,60,61,62,63,64,65	tables-lists	oneoff:custom-list-row	one-off-markup		not-found/ambiguous lines as div.mb-2 prose and div.mb-2 of plain divs
+R13789	agent	app/views/people/bulk_lookup/index.html.erb	101,102,103,104,105	tables-lists	oneoff:em-placeholder	raw-html		last rangered blank shown as <em>never</em>; other blanks via value_or_dash
+R13790	agent	app/views/people/bulk_lookup/index.html.erb	122,123,124	empty-loading	ui_empty_state	shared-helper		no found people: ui_empty_state
+R05849	census	app/views/people/bulk_status/_consequence.html.erb	17	tables-lists	<ul>	raw-html	TABLE-01	
+R13773	agent	app/views/people/bulk_status/_consequence.html.erb	17,18,19,20,21,22,23,24,25,26,27	tables-lists	oneoff:bulleted-list-in-callout	custom-css		ul.list-bulleted.mt-2 of li with <strong> status names inside warning callout
+R13810	agent	app/views/people/create_account/new.html.erb	11,70	navigation	oneoff:back-to-dashboard	shared-helper		hero back_to: :dashboard and cancel_link me_root_path
+R13809	agent	app/views/people/create_account/new.html.erb	16,17	validation	errors-via-form-builder	shared-helper		ui_form(@form) default error summary; password boxes explained as re-emptied on error
+R05867	census	app/views/people/create_account/new.html.erb	19,34,42,52	tables-lists	<dl>	raw-html	TABLE-01	
+R13808	agent	app/views/people/create_account/new.html.erb	19,34,42,52	other	css:instruction-list	custom-css		dl.instruction-list mb-3 at top of each section
+M0145	grep:candidate	app/views/people/create_account/new.html.erb	69	-	.submit "Create Account"	-	COPY-04	<%= f.submit "Create Account" %>
+R13756	agent	app/views/people/languages_known/_language_group.html.erb	5	typography	helper-class-override	shared-helper		ui_section_title class: "mt-4" with count badge
+R13752	agent	app/views/people/languages_known/index.html.erb	12,35,63,69	spacing	oneoff:page-width-wrapper	one-off-markup		div.my-4.lg:w-3/4, div.mt-4 around filter_bar, div.lg:w-3/4 list and empty wrappers
+M0315	grep:candidate	app/views/people/languages_known/index.html.erb	13	-	form_with	-	FORM-01	<%= form_with url: people_languages_known_path, method: :get, data: { turbo_action: "replace" } do |f| %>
+R05886	census	app/views/people/languages_known/index.html.erb	13	forms	form_with	rails-helper	FORM-01	
+R13751	agent	app/views/people/languages_known/index.html.erb	13,14,15,16,17,18,19,20,21,22,23,24,25	forms	form_with	rails-helper		raw form_with search row: div.flex gap-2, sr-only label, f.search_field class "input w-full max-w-sm min-h-9", submit_button, ghost Clear button_link
+R05880	census	app/views/people/languages_known/index.html.erb	18	forms	class:input	daisyui-class	FORM-01	input
+R13754	agent	app/views/people/languages_known/index.html.erb	56,57,58,59,60,61,62	typography	oneoff:lead-sentence-text-lg	one-off-markup		div.text-lg summary line, list-filter summary target
+R13753	agent	app/views/people/languages_known/index.html.erb	69,70,71,72	empty-loading	oneoff:client-toggled-empty	attribute		hidden div[data-list-filter-target=empty] with ui_empty_state revealed by list-filter JS on typing
+R13755	agent	app/views/people/languages_known/index.html.erb	76,77,78,79,80,81,82,83,84	empty-loading	ui_empty_state	shared-helper		no match for query (block text) and nothing listed states
+R13759	agent	app/views/people/languages_known/show.html.erb	12,26	spacing	oneoff:filter-bar-wrapper	one-off-markup		filter_bar wrapped in div.my-4
+R13760	agent	app/views/people/languages_known/show.html.erb	64,65	empty-loading	ui_empty_state	shared-helper		no speakers under filter: ui_empty_state
+R13801	agent	app/views/people/people_by_location/_country_group.html.erb	4	typography	helper-class-override	shared-helper		ui_section_title class: "mt-4"
+R05912	census	app/views/people/people_by_location/_filter_fields.html.erb	10	forms	<fieldset>	raw-html	FORM-01	
+R13803	agent	app/views/people/people_by_location/_filter_fields.html.erb	10,11,12,22	forms	oneoff:raw-fieldset	raw-html		raw <fieldset class="mt-3"> with <legend class="font-medium mb-2"> and p.text-sm.text-stone-muted.mb-2 help
+R05917	census	app/views/people/people_by_location/_filter_fields.html.erb	12	typography	tw-text-size	utility	TYPE-02	text-sm
+R13807	agent	app/views/people/people_by_location/_people_table.html.erb	29,33,37,39	tables-lists	oneoff:dash-literal-cell	hard-coded-value		blanks as .presence with a literal "—" fallback rather than value_or_dash
+R13802	agent	app/views/people/people_by_location/_status_notice.html.erb	6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26	toasts-alerts	ui_callout_box	shared-helper		info callout with title: and <p> body containing <strong> lead
+R13805	agent	app/views/people/people_by_location/country.html.erb	64	buttons	oneoff:submit-default-variant	shared-helper		filter_bar Apply Filters f.submit default variant
+R13804	agent	app/views/people/people_by_location/country.html.erb	70	spacing	oneoff:page-width-wrapper	one-off-markup		div.lg:w-3/4
+R13806	agent	app/views/people/people_by_location/country.html.erb	78,79,80,81,82,83,92,93,94,95,96,97	empty-loading	ui_empty_state	shared-helper		four ui_empty_state branches (filtered / none, for states and people)
+R13799	agent	app/views/people/people_by_location/index.html.erb	37	buttons	oneoff:submit-default-variant	shared-helper		filter_bar Apply Filters f.submit default variant
+R13798	agent	app/views/people/people_by_location/index.html.erb	42	spacing	oneoff:page-width-wrapper	one-off-markup		div.lg:w-3/4
+R13800	agent	app/views/people/people_by_location/index.html.erb	50,51,52,53,54,55	empty-loading	ui_empty_state	shared-helper		filtered-empty and no-addresses states
+R13766	agent	app/views/people/people_by_status/index.html.erb	12,13,14,15	typography	oneoff:lead-sentence-text-lg	one-off-markup		div.text-lg.my-4 with <strong> total
+R13767	agent	app/views/people/people_by_status/index.html.erb	17	spacing	oneoff:page-width-wrapper	one-off-markup		div.lg:w-3/4
+R13768	agent	app/views/people/people_by_status/index.html.erb	22,23,24,25,26	empty-loading	oneoff:blocked-row-empty	shared-helper		zero-count status shown as ui_drill_down_row nil, meta "no one", blocked: true; no page-level empty state
+R13769	agent	app/views/people/people_by_status/show.html.erb	12,13,14	typography	oneoff:lead-sentence-text-lg	one-off-markup		div.text-lg.my-4 count line duplicated by the section badge
+R13771	agent	app/views/people/people_by_status/show.html.erb	16,17,18,19,20,21,22	empty-loading	empty-not-handled	not-handled		no empty branch for a status with no people (index blocks the link to it)
+R13770	agent	app/views/people/people_by_status/show.html.erb	17,18,19,20,21	tables-lists	custom-css	custom-css		div.callsign-list of bare callsign_links
+R13762	agent	app/views/people/retention_report/index.html.erb	17,18,19	empty-loading	ui_empty_state	shared-helper		whole report empty: ui_empty_state replaces everything
+R13763	agent	app/views/people/retention_report/index.html.erb	29	cards	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R05977	census	app/views/people/retention_report/index.html.erb	30	tables-lists	<dl>	raw-html	TABLE-01	
+R13764	agent	app/views/people/retention_report/index.html.erb	62	buttons	oneoff:submit-default-variant	shared-helper		filter_bar Apply Filters f.submit default variant
+R13761	agent	app/views/people/retention_report/index.html.erb	67,68,69,70,71	empty-loading	helper-class-override	shared-helper		filtered-empty ui_empty_state wrapped in div.px-4.pb-2 inside ui_section
+R13774	agent	app/views/people/search/index.html.erb	20,21,22,23	validation	oneoff:error-in-callout	shared-helper		@error string shown in ui_callout_box :error (icon, no icon_type)
+R13775	agent	app/views/people/search/index.html.erb	24,25,26,27,28,29,30,31	toasts-alerts	oneoff:confirm-in-callout	shared-helper		no-status warning callout with p.mb-2 and button_link "Search Anyway" variant :warning
+R13776	agent	app/views/people/search/index.html.erb	37	cards	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R06002	census	app/views/people/search/index.html.erb	38	tables-lists	<dl>	raw-html	TABLE-01	
+R13779	agent	app/views/people/search/index.html.erb	70	spacing	oneoff:space-y-wrapper	one-off-markup		div.space-y-3 stacking the four criteria disclosures
+R06011	census	app/views/people/search/index.html.erb	80,113,135	typography	tw-text-size	utility	TYPE-02	text-base text-sm
+R13777	agent	app/views/people/search/index.html.erb	80,81,82	typography	oneoff:utility-heading	one-off-markup		p.mt-3.mb-2.text-base.font-semibold.text-body acting as a group label above checkbox grid
+R13778	agent	app/views/people/search/index.html.erb	113,114,115,116,135,136,137	typography	oneoff:help-note-paragraph	one-off-markup		p.text-sm.text-stone-muted (mt-2 / mb-2) explanatory notes in disclosures
+R13780	agent	app/views/people/search/index.html.erb	145	buttons	helper-class-override	shared-helper		button_row class: "mt-4"
+R13784	agent	app/views/people/search/index.html.erb	152,153,154,155,156	empty-loading	ui_empty_state	shared-helper		no matches: ui_empty_state with block text including link "Clear all criteria"
+R13781	agent	app/views/people/search/index.html.erb	158,159,160,161,162	typography	oneoff:count-paragraph	one-off-markup		p.mb-3.text-body.font-semibold "Showing x–y of z"
+R13782	agent	app/views/people/search/index.html.erb	166,167,168	tables-lists	helper-class-override	shared-helper		ui_table container_class "lg:max-h-[70vh] lg:overflow-y-auto" (arbitrary value) and t.header class PINNED_HEADER_CLASSES
+R06000	census	app/views/people/search/index.html.erb	167	spacing	tw-arbitrary-value	hard-coded	SPACE-01	lg:max-h-[70vh]
+R13783	agent	app/views/people/search/index.html.erb	188	navigation	ui_pager	shared-helper		ui_pager class "my-4" with role navigation and aria-label
+R13772	agent	app/views/people/shared/_privacy_notice.html.erb	6,7,8,9	toasts-alerts	ui_callout_box	shared-helper		warning callout, icon hand, title "Personal Information", no icon_type
+R13749	agent	app/views/people/status_change_recommendations/_table_head.html.erb	8	tables-lists	helper-class-override	shared-helper		first heading "Set" with width: "1%"
+R13748	agent	app/views/people/status_change_recommendations/_table_row.html.erb	8,9,12	tables-lists	oneoff:row-state-success	shared-helper		converted row: t.row class "scroll-mt-24" state: :success with ui_badge "Done" in place of the checkbox
+R13736	agent	app/views/people/status_change_recommendations/index.html.erb	12,13,14	navigation	oneoff:custom-tabs	shared-helper		period switch: span.text-stone-muted label + button_link pair, current one :primary with aria-current=page, others :secondary (status_change_period_buttons)
+R13737	agent	app/views/people/status_change_recommendations/index.html.erb	21	cards	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R06028	census	app/views/people/status_change_recommendations/index.html.erb	22	tables-lists	<dl>	raw-html	TABLE-01	
+R13738	agent	app/views/people/status_change_recommendations/index.html.erb	35,36,37,38	typography	oneoff:lead-sentence-text-lg	one-off-markup		div.text-lg.my-4 with <strong> count
+R13740	agent	app/views/people/status_change_recommendations/index.html.erb	40	spacing	oneoff:page-width-wrapper	one-off-markup		div.lg:w-3/4
+R13739	agent	app/views/people/status_change_recommendations/index.html.erb	43,44,45,46,47,48,49	tables-lists	ui_drill_down_row	shared-helper		drill rows with blocked: count.zero? and a block body div.text-stone-muted meaning
+R13741	agent	app/views/people/status_change_recommendations/index.html.erb	52,53,54	empty-loading	ui_empty_state	shared-helper		nothing proposed: ui_empty_state circle-check
+R13742	agent	app/views/people/status_change_recommendations/show.html.erb	21,30,90,91	toasts-alerts	helper-class-override	shared-helper		ui_callout_box accent: true, class: "my-4" (success result, warning failures, warning consequence)
+R06052	census	app/views/people/status_change_recommendations/show.html.erb	32	tables-lists	<ul>	raw-html	TABLE-01	
+R13743	agent	app/views/people/status_change_recommendations/show.html.erb	32,33,34,35,36	tables-lists	oneoff:bulleted-list-in-callout	custom-css		ul.list-bulleted.mt-1 of <strong> callsign + reason inside warning callout
+R13744	agent	app/views/people/status_change_recommendations/show.html.erb	67	buttons	oneoff:submit-default-variant	shared-helper		filter_bar "Apply Filters" f.submit with default variant (secondary on teams_positions pages)
+R13746	agent	app/views/people/status_change_recommendations/show.html.erb	73,74,75	validation	not-handled	not-handled		ui_form(nil) convert form; failures shown as on-page warning callout list after 422 render
+R13745	agent	app/views/people/status_change_recommendations/show.html.erb	104,105,106	buttons	f.submit	shared-helper		destructive confirm as f.submit variant :error with checkbox_select_all_target and turbo_confirm confirm_modal_dialog
+M0265	grep:candidate	app/views/people/status_change_recommendations/show.html.erb	105	-	"submit"	-	COPY-10	data: { checkbox_select_all_target: "submit",
+R06047	census	app/views/people/status_change_recommendations/show.html.erb	106	modals	confirm_modal_dialog	shared-helper	MODAL-02	
+R06048	census	app/views/people/status_change_recommendations/show.html.erb	106	modals	turbo-confirm	attribute	MODAL-02	
+R13747	agent	app/views/people/status_change_recommendations/show.html.erb	110,111,112,113,114,115	empty-loading	ui_empty_state	shared-helper		filtered-empty (filter-circle-xmark) and none proposed (circle-check)
+R06061	census	app/views/people/unified_flagging/_line_training_note.html.erb	10	typography	tw-text-size	utility	TYPE-02	text-sm
+R13797	agent	app/views/people/unified_flagging/_line_training_note.html.erb	10,11,12	typography	oneoff:inline-meta-span	one-off-markup		span.text-sm.text-stone-muted.whitespace-nowrap with fa_icon note-sticky :regular
+R13793	agent	app/views/people/unified_flagging/index.html.erb	16	navigation	hero_panel.year_selector	shared-helper		year selector inside hero_panel block
+R13795	agent	app/views/people/unified_flagging/index.html.erb	19,20,87,88,89	empty-loading	ui_empty_state	shared-helper		year-empty (icon flag, no icon_type) and filtered-empty states
+R13794	agent	app/views/people/unified_flagging/index.html.erb	28	cards	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R06076	census	app/views/people/unified_flagging/index.html.erb	29	tables-lists	<dl>	raw-html	TABLE-01	
+R13796	agent	app/views/people/unified_flagging/index.html.erb	82	buttons	oneoff:submit-default-variant	shared-helper		filter_bar Apply Filters f.submit default variant
+R13792	agent	app/views/people/unified_flagging/index.html.erb	96,97,98,99	navigation	oneoff:bare-text-label	one-off-markup		unwrapped text "Jump to a callsign starting with the letter:" before dropdown_scroll_list
+R13614	agent	app/views/teams_positions/bulk_membership_history/_advisory.html.erb	4,5,6,10,11,12,13,14,15,16,17	toasts-alerts	ui_callout_box	shared-helper		warning callout with <strong> lead; link shown only when Team.manageable_by?, else plain sentence naming the page
+R13615	agent	app/views/teams_positions/bulk_membership_history/_extra_fields.html.erb	16,17,18,19,20	forms	helper-class-override	shared-helper		f.select team picker with html option { class: "w-full sm:w-96" }
+M0045	grep:candidate	app/views/teams_positions/bulk_membership_history/_extra_fields.html.erb	20	-	sm:w	-	BP-01	{ class: "w-full sm:w-96" } %>
+R13605	agent	app/views/teams_positions/bulk_positions/index.html.erb	8,11,12,13,14,15,16,17	toasts-alerts	oneoff:outcome-banner-on-page	shared-helper		apply result ui_callout_box, variant chosen inline: failed? :error else :success (two-way), fixed closing sentence
+R13604	agent	app/views/teams_positions/bulk_positions/index.html.erb	31,32	validation	errors-via-flash	not-handled		ui_form(nil, no_error_summary: true); refusal re-renders with flash.now[:error] (controller line 138); nothing in the template
+M0046	grep:candidate	app/views/teams_positions/bulk_positions/index.html.erb	37	-	sm:w	-	BP-01	{ class: "w-full sm:w-96" } %>
+R13602	agent	app/views/teams_positions/bulk_positions/index.html.erb	37	forms	helper-class-override	shared-helper		f.select width via html option { class: "w-full sm:w-96" }
+R13603	agent	app/views/teams_positions/bulk_positions/index.html.erb	54,55,56,57	typography	oneoff:lead-paragraph	one-off-markup		p.mb-3 with <strong> lead sentence above the submit
+R13606	agent	app/views/teams_positions/bulk_positions/index.html.erb	64,65,66,67,68	empty-loading	ui_empty_state	shared-helper		no manageable positions: ui_empty_state nil with block text
+R13611	agent	app/views/teams_positions/bulk_positions/preview.html.erb	26,27,28,29,30,31	empty-loading	oneoff:callout-instead-of-empty	shared-helper		nothing to confirm shown as ui_callout_box :warning
+R13607	agent	app/views/teams_positions/bulk_positions/preview.html.erb	66	tables-lists	oneoff:row-state-error	shared-helper		problem rows tinted via t.row state: :error
+R13608	agent	app/views/teams_positions/bulk_positions/preview.html.erb	74	tables-lists	oneoff:dash-literal-cell	hard-coded-value		literal "—" status cell for an unmatched line
+R08837	census	app/views/teams_positions/bulk_positions/preview.html.erb	76	other	area-badge-helper	area-helper		bulk_position_badge
+R13609	agent	app/views/teams_positions/bulk_positions/preview.html.erb	78	spacing	oneoff:message-under-badge	one-off-markup		entry message in div.mt-1 under the badge
+R08835	census	app/views/teams_positions/bulk_positions/preview.html.erb	100	modals	confirm_modal_dialog	shared-helper	MODAL-02	
+R08836	census	app/views/teams_positions/bulk_positions/preview.html.erb	100	modals	turbo-confirm	attribute	MODAL-02	
+R13610	agent	app/views/teams_positions/bulk_positions/preview.html.erb	110,111	navigation	oneoff:formaction-back-button	shared-helper		"Go Back and Edit" f.submit :secondary with formaction; no hero back_to
+R13593	agent	app/views/teams_positions/bulk_teams/index.html.erb	8,14,15,16,17,18,19,20,21,22,23	toasts-alerts	oneoff:outcome-banner-on-page	shared-helper		apply result shown as ui_callout_box whose variant/icon come from bulk_team_outcome_banner (error/warning/success), with conditional closing sentence
+R13592	agent	app/views/teams_positions/bulk_teams/index.html.erb	39,40	validation	errors-via-flash	not-handled		ui_form(nil, no_error_summary: true); a refusal re-renders index with flash.now[:error] (controller line 173); no error markup in the template
+M0047	grep:candidate	app/views/teams_positions/bulk_teams/index.html.erb	45	-	sm:w	-	BP-01	{ class: "w-full sm:w-96" } %>
+R13590	agent	app/views/teams_positions/bulk_teams/index.html.erb	45	forms	helper-class-override	shared-helper		f.select width passed as html option { class: "w-full sm:w-96" } instead of the builder's width: option used by text fields elsewhere
+R13591	agent	app/views/teams_positions/bulk_teams/index.html.erb	62,63,64,65	typography	oneoff:lead-paragraph	one-off-markup		p.mb-3 opening with a <strong> lead sentence ("Checking is always safe.") placed above the submit button
+R13594	agent	app/views/teams_positions/bulk_teams/index.html.erb	72,73,74,75,76	empty-loading	ui_empty_state	shared-helper		no manageable teams: ui_empty_state nil with block text, icon people-group
+R13600	agent	app/views/teams_positions/bulk_teams/preview.html.erb	26,27,28,29,30,31	empty-loading	oneoff:callout-instead-of-empty	shared-helper		nothing to change shown as ui_callout_box :warning ("There is nothing to confirm.") while the table still renders below
+R13601	agent	app/views/teams_positions/bulk_teams/preview.html.erb	54,55,56	color	oneoff:callout-variant-by-condition	shared-helper		nested ternaries choose callout variant (:secondary/:info/:warning) and icon by whether positions move and direction
+R13595	agent	app/views/teams_positions/bulk_teams/preview.html.erb	75	tables-lists	oneoff:row-state-error	shared-helper		problem rows tinted via t.row state: :error; comment says striped background needs the important flag
+R13596	agent	app/views/teams_positions/bulk_teams/preview.html.erb	83	tables-lists	oneoff:dash-literal-cell	hard-coded-value		t.cell shows literal "—" when no person matched
+R08871	census	app/views/teams_positions/bulk_teams/preview.html.erb	85	other	area-badge-helper	area-helper		bulk_team_badge
+R13597	agent	app/views/teams_positions/bulk_teams/preview.html.erb	87	spacing	oneoff:message-under-badge	one-off-markup		per-entry message in div.mt-1 under the verdict badge
+R13599	agent	app/views/teams_positions/bulk_teams/preview.html.erb	106,107	buttons	oneoff:submit-variant-by-direction	shared-helper		confirm submit variant :success for grant, :error for revoke, label from bulk_team_preview_title
+R08869	census	app/views/teams_positions/bulk_teams/preview.html.erb	109	modals	confirm_modal_dialog	shared-helper	MODAL-02	
+R08870	census	app/views/teams_positions/bulk_teams/preview.html.erb	109	modals	turbo-confirm	attribute	MODAL-02	
+R13598	agent	app/views/teams_positions/bulk_teams/preview.html.erb	119,120	navigation	oneoff:formaction-back-button	shared-helper		"Go Back and Edit" is f.submit variant :secondary with formaction to the edit route, re-posting the list; no hero back_to
+R13661	agent	app/views/teams_positions/membership_report/_roster.html.erb	7	tables-lists	helper-class-override	shared-helper		t.heading width: "50%" to align two tables; no empty handling (callers guard)
+R13653	agent	app/views/teams_positions/membership_report/index.html.erb	16	cards	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R08891	census	app/views/teams_positions/membership_report/index.html.erb	17	tables-lists	<dl>	raw-html	TABLE-01	
+R13654	agent	app/views/teams_positions/membership_report/index.html.erb	62	spacing	oneoff:page-width-wrapper	one-off-markup		div.lg:w-3/4 around drill-down rows
+R13655	agent	app/views/teams_positions/membership_report/index.html.erb	72,73,74,75	empty-loading	ui_empty_state	shared-helper		filtered-empty (filter icon) and no-teams (people-group) empty states
+R13660	agent	app/views/teams_positions/membership_report/show.html.erb	23,24,25,27,28,29	color	oneoff:stat-variant-by-condition	shared-helper		stat box variant switches (:secondary/:error, :warning/:secondary) on the value
+R13657	agent	app/views/teams_positions/membership_report/show.html.erb	33	cards	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R08904	census	app/views/teams_positions/membership_report/show.html.erb	34	tables-lists	<dl>	raw-html	TABLE-01	
+R13658	agent	app/views/teams_positions/membership_report/show.html.erb	42,56,66	typography	oneoff:count-paragraph	one-off-markup		p.text-base.text-body (mb-2 / mt-2) count and overlap summary lines
+R13659	agent	app/views/teams_positions/membership_report/show.html.erb	44,45,46,47,48,49,50	empty-loading	oneoff:callout-instead-of-empty	shared-helper		no managers shown as ui_callout_box :error (no icon) on purpose; members empty uses ui_empty_state (59,60)
+R13662	agent	app/views/teams_positions/position_grants/index.html.erb	14	cards	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R08922	census	app/views/teams_positions/position_grants/index.html.erb	15	tables-lists	<dl>	raw-html	TABLE-01	
+R13663	agent	app/views/teams_positions/position_grants/index.html.erb	64	navigation	dropdown_scroll_list	shared-helper		jump-to-name dropdown above the list
+R13664	agent	app/views/teams_positions/position_grants/index.html.erb	66	spacing	oneoff:page-width-wrapper	one-off-markup		div.lg:w-3/4 around drill-down rows
+R13665	agent	app/views/teams_positions/position_grants/index.html.erb	78,79,80,81	empty-loading	ui_empty_state	shared-helper		filtered-empty and none-found states
+R13667	agent	app/views/teams_positions/position_grants/show.html.erb	35	cards	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R08943	census	app/views/teams_positions/position_grants/show.html.erb	36	tables-lists	<dl>	raw-html	TABLE-01	
+R13668	agent	app/views/teams_positions/position_grants/show.html.erb	42,43,44,45,46,47	spacing	oneoff:button-row-wrapper	one-off-markup		div.my-4 wrapping button_row holding only export_csv_link
+R13669	agent	app/views/teams_positions/position_grants/show.html.erb	51,52,53,54,55,56,57,58,59,60,61,62	typography	oneoff:count-paragraph	one-off-markup		p.text-base.text-body.mb-2 "Showing N of M" with an inline scope badge
+R13670	agent	app/views/teams_positions/position_grants/show.html.erb	66,67,68,69,70,71,72,73,74,75,76,77,78	tables-lists	oneoff:grid-table	one-off-markup		people roster as div.grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3 of two-line divs (link, muted status + On site badge)
+R13672	agent	app/views/teams_positions/position_grants/show.html.erb	79,80,81,82,83,84	empty-loading	ui_empty_state	shared-helper		filtered-empty and nobody-holds states inside the Roster section
+R13673	agent	app/views/teams_positions/position_grants/show.html.erb	93,94,95,96,97	toasts-alerts	ui_callout_box	shared-helper		ui_callout_box :error with no icon, <strong> lead, stating unassigned count
+R13671	agent	app/views/teams_positions/position_grants/show.html.erb	111,112,113,114,115,116	icons	oneoff:icon-with-sr-only	shared-helper		on-site cell: fa_icon circle-check class "icon-success" + sr-only text; else span.text-stone-muted "—" with no accessible text
+R08936	census	app/views/teams_positions/position_grants/show.html.erb	112	icons	css:icon-success	custom-css(icons.css)	ICON-01	
+R13727	agent	app/views/teams_positions/position_lineups/_form.html.erb	1,2,3	validation	errors-via-form-builder	shared-helper		ui_form(@lineup) default error summary
+R08962	census	app/views/teams_positions/position_lineups/_form.html.erb	12	tables-lists	<dl>	raw-html	TABLE-01	
+R13726	agent	app/views/teams_positions/position_lineups/_form.html.erb	20,21,22,23,24,25,26,27,28,29,30,31,32,33,34	forms	oneoff:grid-layout	one-off-markup		div.grid grid-cols-1 lg:grid-cols-2 gap-x-1 of checkbox_row with span.text-stone-muted.italic "(in X)" / "(inactive)" notes
+R13721	agent	app/views/teams_positions/position_lineups/index.html.erb	13,14,15,16,17,18	spacing	oneoff:button-row-wrapper	one-off-markup		div.my-4 around button_row with Add Lineup
+R13722	agent	app/views/teams_positions/position_lineups/index.html.erb	32	typography	oneoff:utility-heading	one-off-markup		row header text in div.font-semibold.text-heading
+R13724	agent	app/views/teams_positions/position_lineups/index.html.erb	38,39,40,41,42,43,44,45,46,47	tables-lists	oneoff:stacked-list-cell	one-off-markup		positions cell as div.flex.flex-col.gap-1 of divs (not value_list)
+R13723	agent	app/views/teams_positions/position_lineups/index.html.erb	43,49	color	oneoff:muted-italic-placeholder	one-off-markup		span.text-stone-muted.italic "(inactive)" and "No positions linked yet"
+R13725	agent	app/views/teams_positions/position_lineups/index.html.erb	60,61	empty-loading	ui_empty_state	shared-helper		no lineups: ui_empty_state
+R13720	agent	app/views/teams_positions/position_records/_form.html.erb	4,5,6	validation	errors-via-form-builder	shared-helper		ui_form(@position) default error summary and inline errors
+M0048	grep:candidate	app/views/teams_positions/position_records/_form.html.erb	19	-	sm:w	-	BP-01	{ class: "w-full sm:w-44" } %>
+R13713	agent	app/views/teams_positions/position_records/_form.html.erb	19,79,83,184,187	forms	helper-class-override	shared-helper		selects sized by html { class: "w-full sm:w-44/64/80" } while text/number fields use width:
+R09003	census	app/views/teams_positions/position_records/_form.html.erb	39,132,174,212	tables-lists	<dl>	raw-html	TABLE-01	
+R13715	agent	app/views/teams_positions/position_records/_form.html.erb	39,132,174,212	other	css:instruction-list	custom-css		dl.instruction-list mb-3 help blocks inside sections
+R13719	agent	app/views/teams_positions/position_records/_form.html.erb	51,69,192,246	toasts-alerts	ui_callout_box	shared-helper		warning callouts inside sections and an info callout standing in for the delete button when timesheets exist
+R13714	agent	app/views/teams_positions/position_records/_form.html.erb	57,65,75,98,198,208	spacing	oneoff:mt-3-wrapper	one-off-markup		div.mt-3 wrappers separating a warning callout from the checkboxes below it
+M0049	grep:candidate	app/views/teams_positions/position_records/_form.html.erb	79	-	sm:w	-	BP-01	{ class: "w-full sm:w-64" } %>
+M0050	grep:candidate	app/views/teams_positions/position_records/_form.html.erb	83	-	sm:w	-	BP-01	{ class: "w-full sm:w-80" } %>
+R13716	agent	app/views/teams_positions/position_records/_form.html.erb	146,147,148,149,150,151,152,153,154	forms	oneoff:grid-layout	one-off-markup		div.grid grid-cols-1 lg:grid-cols-3 gap-x-1 mt-3 of common/checkbox_row role checkboxes
+R13717	agent	app/views/teams_positions/position_records/_form.html.erb	161,162,163,164,165,166	tables-lists	oneoff:readonly-plain-list	one-off-markup		read-only permissions as div.flex.flex-col.gap-1 of plain divs (team form uses badges)
+R13718	agent	app/views/teams_positions/position_records/_form.html.erb	167,168,169	empty-loading	oneoff:plain-text-empty	one-off-markup		p.mt-3.text-stone-muted.italic "This position grants no permissions."
+M0051	grep:candidate	app/views/teams_positions/position_records/_form.html.erb	184	-	sm:w	-	BP-01	{ class: "w-full sm:w-80" } %>
+M0052	grep:candidate	app/views/teams_positions/position_records/_form.html.erb	187	-	sm:w	-	BP-01	{ class: "w-full sm:w-80" } %>
+M0125	grep:candidate	app/views/teams_positions/position_records/_form.html.erb	220	-	Employee	-	COPY-01	<%= f.text_field :paycode, label: "Paycom Employee Code",
+R13708	agent	app/views/teams_positions/position_records/index.html.erb	14,15,16,17,18,19,20,21	spacing	oneoff:button-row-wrapper	one-off-markup		div.my-4 around button_row with Add Position and Position Lineups button_links
+R13709	agent	app/views/teams_positions/position_records/index.html.erb	76,77,78,79,80,81,82,83,84	typography	oneoff:subtitle-line	one-off-markup		type and short title in div.text-stone-muted under the title, joined by a literal middot; empty ERB tags at 78-79, 82-83
+R09026	census	app/views/teams_positions/position_records/index.html.erb	80	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13710	agent	app/views/teams_positions/position_records/index.html.erb	86,87,88	other	helper-class-override	shared-helper		Inactive ui_badge sm class whitespace-nowrap in div.mt-1
+R13711	agent	app/views/teams_positions/position_records/index.html.erb	97	color	oneoff:muted-italic-placeholder	one-off-markup		span.text-stone-muted.italic "No team"
+R13712	agent	app/views/teams_positions/position_records/index.html.erb	120,121,122,123	empty-loading	ui_empty_state	shared-helper		filtered-empty and nothing-yet states
+R13689	agent	app/views/teams_positions/position_sanity_checker/_findings_table.html.erb	12,13,14	tables-lists	oneoff:sr-only-heading	one-off-markup		checkbox column heading width: "1%" containing span.sr-only "Repair"
+R13688	agent	app/views/teams_positions/position_sanity_checker/_results.html.erb	11,12,13,14,42,55,56	toasts-alerts	ui_callout_box	shared-helper		result callouts use title: param; secondary callout for skipped rows; warning with hand-point-up icon for nothing selected
+R09048	census	app/views/teams_positions/position_sanity_checker/_results.html.erb	15	tables-lists	<ul>	raw-html	TABLE-01	
+R13686	agent	app/views/teams_positions/position_sanity_checker/_results.html.erb	15,16,17,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37	tables-lists	oneoff:custom-list-row	one-off-markup		ul.flex.flex-col.gap-1 inside callout; each li has fa_icon + span.font-semibold callsign + em-dash text
+R13687	agent	app/views/teams_positions/position_sanity_checker/_results.html.erb	23,24,30	color	oneoff:status-by-color	one-off-markup		error line wrapped in span.text-error with circle-exclamation; success icon coloured with fa_icon class "text-success"
+R13682	agent	app/views/teams_positions/position_sanity_checker/check.html.erb	14,15,67,68,69	navigation	button_link	shared-helper		back via hero back_to and a second "Back to the Board" button_link :secondary with arrow-left icon
+R13680	agent	app/views/teams_positions/position_sanity_checker/check.html.erb	37,38,39	spacing	oneoff:badge-wrapper	one-off-markup		standalone findings-count badge inside div.my-4
+R09062	census	app/views/teams_positions/position_sanity_checker/check.html.erb	38	other	area-badge-helper	area-helper		position_check_badge
+R13685	agent	app/views/teams_positions/position_sanity_checker/check.html.erb	41,42	validation	not-handled	not-handled		ui_form(nil, no_error_summary: true); "Nothing Was Selected" reported by _results callout after POST
+R13681	agent	app/views/teams_positions/position_sanity_checker/check.html.erb	59	toasts-alerts	helper-class-override	shared-helper		ui_callout_box :info accent: true, class: "my-4" describing the repair beside the button
+R13683	agent	app/views/teams_positions/position_sanity_checker/check.html.erb	64,65,66	buttons	button_action	shared-helper		submit as button_action :primary type submit with icon wrench and checkbox_select_all_target
+M0273	grep:candidate	app/views/teams_positions/position_sanity_checker/check.html.erb	65	-	"submit"	-	COPY-10	type: "submit", icon: "wrench", icon_type: :solid,
+M0274	grep:candidate	app/views/teams_positions/position_sanity_checker/check.html.erb	66	-	"submit"	-	COPY-10	data: { checkbox_select_all_target: "submit" } %>
+R13684	agent	app/views/teams_positions/position_sanity_checker/check.html.erb	73,74	empty-loading	ui_empty_state	shared-helper		no findings: ui_empty_state with check's own empty text
+R13679	agent	app/views/teams_positions/position_sanity_checker/index.html.erb	32,33,34,35,51,67	empty-loading	empty-not-handled	not-handled		no empty state: when every check is clear only the Clear section renders (by design per comment)
+R13678	agent	app/views/teams_positions/position_sanity_checker/index.html.erb	40	cards	helper-class-override	shared-helper		ui_disclosure class: "my-4"
+R09073	census	app/views/teams_positions/position_sanity_checker/index.html.erb	41	tables-lists	<dl>	raw-html	TABLE-01	
+R13676	agent	app/views/teams_positions/position_sanity_checker/index.html.erb	50	spacing	oneoff:page-width-wrapper	one-off-markup		div.lg:w-3/4 flex flex-col gap-6 wrapping the bands
+R13674	agent	app/views/teams_positions/position_sanity_checker/index.html.erb	52,53,54,55,68,69,70,71,72,73,74	typography	oneoff:raw-heading-with-utilities	raw-html		raw <section class="flex flex-col gap-2"> with div.border-b.border-line.pb-1 > h2.heading-section.text-heading and p.text-sm.text-stone-muted, instead of ui_section
+R09076	census	app/views/teams_positions/position_sanity_checker/index.html.erb	54,70	typography	<h2>	raw-html	TYPE-04	
+R13677	agent	app/views/teams_positions/position_sanity_checker/index.html.erb	60,78	icons	oneoff:row-icon-on-some-rows	shared-helper		finding rows pass icon: "arrow-right"; clear rows pass none
+R09080	census	app/views/teams_positions/position_sanity_checker/index.html.erb	71	typography	tw-text-size	utility	TYPE-02	text-sm
+R13675	agent	app/views/teams_positions/position_sanity_checker/index.html.erb	78,79,80,81	tables-lists	helper-class-override	shared-helper		ui_drill_down_row class: "opacity-75" to dim clear checks
+R13616	agent	app/views/teams_positions/roster_management/index.html.erb	6,7,8,9,10,11,12,13,14	typography	oneoff:lead-sentence-text-lg	one-off-markup		div.text-lg.my-4 sentence ("You manage N teams") acting as a summary line
+R13617	agent	app/views/teams_positions/roster_management/index.html.erb	15	spacing	oneoff:page-width-wrapper	one-off-markup		div.lg:w-3/4 wrapping the ui_drill_down_row list
+R13618	agent	app/views/teams_positions/roster_management/index.html.erb	22	empty-loading	ui_empty_state	shared-helper		no teams: ui_empty_state with icon
+R13638	agent	app/views/teams_positions/roster_management/preview.html.erb	10,11,87	navigation	cancel_link	shared-helper		back via hero back_to plus cancel_link in the button row
+R13636	agent	app/views/teams_positions/roster_management/preview.html.erb	21	icons	oneoff:fixed-icon-varying-variant	shared-helper		callout icon always triangle-exclamation while the variant comes from roster_action_variant (:primary for grant, :error otherwise)
+M0517	grep:candidate	app/views/teams_positions/roster_management/preview.html.erb	28	-	responsive: false	-	TABLE-02	<%= ui_table striped: true, responsive: false do |t| %>
+R13634	agent	app/views/teams_positions/roster_management/preview.html.erb	44,47	color	oneoff:muted-placeholder-text	one-off-markup		span.text-stone-muted "team membership only" and div.text-sm.text-stone-muted second line inside a table cell
+R09108	census	app/views/teams_positions/roster_management/preview.html.erb	47	typography	tw-text-size	utility	TYPE-02	text-sm
+R13637	agent	app/views/teams_positions/roster_management/preview.html.erb	56,57	empty-loading	ui_empty_state	shared-helper		no one needs the change: ui_empty_state circle-check
+R13635	agent	app/views/teams_positions/roster_management/preview.html.erb	63,64	tables-lists	oneoff:inline-sentence-list	one-off-markup		skipped people listed as p.mb-2 reason then p with callsigns joined by to_sentence
+R09098	census	app/views/teams_positions/roster_management/preview.html.erb	80	modals	confirm_modal_dialog	shared-helper	MODAL-02	
+R09099	census	app/views/teams_positions/roster_management/preview.html.erb	80	modals	turbo-confirm	attribute	MODAL-02	
+R13630	agent	app/views/teams_positions/roster_management/show.html.erb	18,72,77,93,178	typography	oneoff:plain-paragraph-spacing	one-off-markup		explanatory prose in p.mb-3 / p.mb-1 / p.my-3 between components
+R13619	agent	app/views/teams_positions/roster_management/show.html.erb	22,23,24,40	cards	oneoff:grid-layout	one-off-markup		div.grid grid-cols-1 lg:grid-cols-3 gap-2 lg:gap-3 of position summary cards
+R13620	agent	app/views/teams_positions/roster_management/show.html.erb	24	cards	helper-class-override	shared-helper		ui_card class: "p-3" overrides card padding
+R09150	census	app/views/teams_positions/roster_management/show.html.erb	25,149	typography	tw-text-size	utility	TYPE-02	text-sm
+R13621	agent	app/views/teams_positions/roster_management/show.html.erb	25,26,27,28	typography	oneoff:utility-heading	one-off-markup		card eyebrow div.text-sm.text-stone-muted then title div.font-semibold.text-heading instead of a heading tag
+R09131	census	app/views/teams_positions/roster_management/show.html.erb	32	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R13622	agent	app/views/teams_positions/roster_management/show.html.erb	33,34,35	color	oneoff:status-by-color	one-off-markup		span.text-warning.font-semibold "N never rangered" warning count in text colour (no icon)
+R13631	agent	app/views/teams_positions/roster_management/show.html.erb	71,72,73,74,75,76,77,78,79,80,81,82,83	other	oneoff:legend-in-callout	shared-helper		grid legend as info ui_callout_box containing sample ui_badge "NS" chips
+R13633	agent	app/views/teams_positions/roster_management/show.html.erb	100,101	validation	not-handled	not-handled		ui_form(nil, no_error_summary: true); buttons disabled until a checkbox is ticked; no error output in the view
+R13624	agent	app/views/teams_positions/roster_management/show.html.erb	102,106,113,116,140,145	tables-lists	custom-css	custom-css		roster-grid, roster-grid-pane, roster-col-select, roster-col-callsign, roster-frozen-heading/-cell classes for a frozen-column scrolling grid
+R13623	agent	app/views/teams_positions/roster_management/show.html.erb	107,111,112,123,124,125,126,128,129,135,136	tables-lists	oneoff:hand-built-thead	raw-html		raw <thead> with TableHelper::HEADER_CLASSES + "sticky top-0 z-20" and raw <th scope=colgroup> using HEADING_CLASSES for the two-row grouped header
+R13625	agent	app/views/teams_positions/roster_management/show.html.erb	118,132,133,163	tables-lists	helper-class-override	shared-helper		t.heading/t.cell class overrides: max-w-20, "align-bottom min-w-24 max-w-32 whitespace-normal", conditional "border-l-2 border-line" group dividers
+R13626	agent	app/views/teams_positions/roster_management/show.html.erb	146,147,148,149	typography	oneoff:two-line-cell	one-off-markup		callsign cell: div.font-semibold link above div.text-sm.text-stone-muted status
+R13627	agent	app/views/teams_positions/roster_management/show.html.erb	152,153,154,155,156	other	ui_badge	shared-helper		Member / Not a member badges (success check / error xmark, size sm)
+R13628	agent	app/views/teams_positions/roster_management/show.html.erb	188	toasts-alerts	helper-class-override	shared-helper		ui_callout_box :warning accent: true, class: "my-4"
+R13629	agent	app/views/teams_positions/roster_management/show.html.erb	193,194,195,196,197,198,199,200,201,202,203,204	buttons	button_action	shared-helper		three submit buttons as button_action type submit with name/value action_type, disabled flag, checkbox_select_all_target
+M0275	grep:candidate	app/views/teams_positions/roster_management/show.html.erb	194	-	"submit"	-	COPY-10	type: "submit", name: "action_type", value: RosterAction::GRANT_POSITION,
+M0276	grep:candidate	app/views/teams_positions/roster_management/show.html.erb	196	-	"submit"	-	COPY-10	data: { checkbox_select_all_target: "submit" } %>
+M0277	grep:candidate	app/views/teams_positions/roster_management/show.html.erb	198	-	"submit"	-	COPY-10	type: "submit", name: "action_type", value: RosterAction::REVOKE_POSITION,
+M0278	grep:candidate	app/views/teams_positions/roster_management/show.html.erb	200	-	"submit"	-	COPY-10	data: { checkbox_select_all_target: "submit" } %>
+M0279	grep:candidate	app/views/teams_positions/roster_management/show.html.erb	202	-	"submit"	-	COPY-10	type: "submit", name: "action_type", value: RosterAction::REMOVE_FROM_TEAM,
+M0280	grep:candidate	app/views/teams_positions/roster_management/show.html.erb	204	-	"submit"	-	COPY-10	data: { checkbox_select_all_target: "submit" } %>
+R13632	agent	app/views/teams_positions/roster_management/show.html.erb	209,210,211,212,213,214	empty-loading	ui_empty_state	shared-helper		filtered-empty and truly-empty both ui_empty_state with different icons (filter, user-plus)
+R13643	agent	app/views/teams_positions/special_teams_hours/index.html.erb	21,47	cards	helper-class-override	shared-helper		ui_disclosure variant :card with class: "my-4"
+R09169	census	app/views/teams_positions/special_teams_hours/index.html.erb	22	tables-lists	<dl>	raw-html	TABLE-01	
+R13645	agent	app/views/teams_positions/special_teams_hours/index.html.erb	22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43	other	css:instruction-list	custom-css		About card body as dl.instruction-list question/answer pairs
+R13649	agent	app/views/teams_positions/special_teams_hours/index.html.erb	49,50	validation	errors-via-form-builder	shared-helper		ui_form(@form) with default error summary; comment says parameters stay open when the form has an error
+R13646	agent	app/views/teams_positions/special_teams_hours/index.html.erb	65,66,67,68,69,70,71,72	buttons	oneoff:ghost-select-all	shared-helper		flex row of button_action :ghost Select All/None plus span.text-stone-muted aria-live count, driven by position-picker controller
+R13647	agent	app/views/teams_positions/special_teams_hours/index.html.erb	74,75,93	forms	oneoff:grid-layout	one-off-markup		div.grid grid-cols-1 lg:grid-cols-3 items-start gap-x-6 of team disclosures holding checkbox rows
+R13644	agent	app/views/teams_positions/special_teams_hours/index.html.erb	80	typography	helper-class-override	shared-helper		nested ui_disclosure summary_class: "font-semibold text-body"
+R13652	agent	app/views/teams_positions/special_teams_hours/index.html.erb	107,108,109,110,111,112,113	toasts-alerts	ui_callout_box	shared-helper		truncation notice ui_callout_box :warning with title:, icon list-ol, no icon_type
+R13648	agent	app/views/teams_positions/special_teams_hours/index.html.erb	116,117,118,119,120,121,122,123,124,125	spacing	oneoff:summary-export-row	one-off-markup		div.flex flex-col lg:flex-row lg:items-center gap-3 my-4 with summary p and export link pushed right (lg:ms-auto)
+R13651	agent	app/views/teams_positions/special_teams_hours/index.html.erb	169,170,171,172,173,174,175,176,177,178	tables-lists	oneoff:total-row	shared-helper		totals as t.row state: :total with spanning row_header colspan
+R13650	agent	app/views/teams_positions/special_teams_hours/index.html.erb	181,182	empty-loading	ui_empty_state	shared-helper		run with no rows: ui_empty_state with helper-built message; nothing shown before a run (form open instead)
+R13704	agent	app/views/teams_positions/team_documents/index.html.erb	12,13,14,15,16,17,18,19,20	typography	oneoff:lead-sentence-text-lg	one-off-markup		div.text-lg.my-4 "You manage N teams" sentence
+R13705	agent	app/views/teams_positions/team_documents/index.html.erb	21	spacing	oneoff:page-width-wrapper	one-off-markup		div.lg:w-3/4 around rows
+R13706	agent	app/views/teams_positions/team_documents/index.html.erb	27	empty-loading	ui_empty_state	shared-helper		no teams: ui_empty_state
+R13702	agent	app/views/teams_positions/team_records/_form.html.erb	3,4,5	validation	errors-via-form-builder	shared-helper		ui_form(@team) with default error summary and inline errors
+R09202	census	app/views/teams_positions/team_records/_form.html.erb	7,57	tables-lists	<dl>	raw-html	TABLE-01	
+R13698	agent	app/views/teams_positions/team_records/_form.html.erb	7,57	other	css:instruction-list	custom-css		help as dl.instruction-list mb-3 at the top of sections
+M0053	grep:candidate	app/views/teams_positions/team_records/_form.html.erb	25	-	sm:w	-	BP-01	{ class: "w-full sm:w-44" } %>
+R13697	agent	app/views/teams_positions/team_records/_form.html.erb	25	forms	helper-class-override	shared-helper		type select width via html option { class: "w-full sm:w-44" } while text fields use width:
+R13699	agent	app/views/teams_positions/team_records/_form.html.erb	65,66,67,68,69,70,71,72,73	forms	oneoff:grid-layout	one-off-markup		div.grid grid-cols-1 lg:grid-cols-3 gap-x-1 of common/checkbox_row role checkboxes plus a hidden blank field
+R13700	agent	app/views/teams_positions/team_records/_form.html.erb	80,81,82,83,84,85	other	oneoff:readonly-badge-list	shared-helper		read-only role grants as div.flex.flex-wrap.gap-1.mt-3 of ui_badge :secondary sm
+R13701	agent	app/views/teams_positions/team_records/_form.html.erb	86,87,88	empty-loading	oneoff:plain-text-empty	one-off-markup		p.mt-3.text-stone-muted.italic "This team grants no permissions."
+R13703	agent	app/views/teams_positions/team_records/_form.html.erb	96,97,98,99,100,101,102	buttons	delete_button	shared-helper		delete_button with confirm_modal hash naming what else is deleted
+R13691	agent	app/views/teams_positions/team_records/index.html.erb	15,16,17,18,19,20	spacing	oneoff:button-row-wrapper	one-off-markup		div.my-4 around button_row with the Add button
+R13695	agent	app/views/teams_positions/team_records/index.html.erb	53	navigation	dropdown_scroll_list	shared-helper		jump list above the table
+R13692	agent	app/views/teams_positions/team_records/index.html.erb	71,72,74	other	helper-class-override	shared-helper		ui_badge size sm, class: "whitespace-nowrap" for type and Inactive badges inside div.flex.flex-wrap.gap-1.mt-1
+R13694	agent	app/views/teams_positions/team_records/index.html.erb	86,87,88,89,90	tables-lists	oneoff:stacked-links-cell	one-off-markup		managers as div.flex.flex-col.gap-1 of person_display_link; empty via value_or_dash(nil)
+R13693	agent	app/views/teams_positions/team_records/index.html.erb	97,101	color	oneoff:muted-italic-placeholder	one-off-markup		"No email" tag.span and "No document tag" div styled text-stone-muted italic; resource tag div.text-stone-muted
+R13696	agent	app/views/teams_positions/team_records/index.html.erb	112,113,114,115	empty-loading	ui_empty_state	shared-helper		filtered-empty and nothing-yet states

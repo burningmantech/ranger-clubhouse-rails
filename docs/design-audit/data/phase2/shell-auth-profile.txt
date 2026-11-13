@@ -1,0 +1,387 @@
+V || R00403 || UNCOVERED || - || - || 29 || Registration step-progress nav (tag.nav aria-label "Registration progress") wrapping badge chips; no rule covers a multi-step progress stepper.
+V || R13495 || COMPLIANT || BADGE-01 || - || 42 || Step chips are ui_badge size base; current step has circle-dot icon and aria-current=step, done steps a check icon, so position never rests on colour alone.
+V || R13448 || UNCOVERED || - || - || 19 || ambiguous ALERT-01: ui_callout_box given class "mx-4 mt-4 w-auto" to fit inside dialogs; the guide shows no class: option on callouts, so a spacing/width override is neither allowed nor barred.
+V || M0414 || DIVERGENT || MODAL-01 || medium || 4 || pattern=modals Modals come from ModalHelper with m.title/m.body/m.footer; the mega menu is a hand-written native <dialog class="mega-menu-dialog open:flex open:flex-col"> driven by its own controller.
+V || R01615 || DIVERGENT || MODAL-01 || medium || 4 || Native <dialog> for the mega menu instead of ModalHelper; no confirm here, so MODAL-02 (hint) does not apply.
+V || R13449 || DIVERGENT || MODAL-01 || medium || 5 || Rule: modals from ModalHelper, opened by the modal controller. Code: custom <dialog class="mega-menu-dialog"> styled in its own CSS and opened by mega-menu controller.
+V || M0296 || UNCOVERED || - || - || 18 || pattern=forms ambiguous FORM-01: an empty hidden form_tag that the star buttons submit through form=/formaction=; it has no fields, so the builder's label/error duties never arise.
+V || R01614 || UNCOVERED || - || - || 18 || ambiguous FORM-01: fieldless hidden form_tag used only as the submit target for mega-menu stars; the rule does not say whether such a carrier form needs the builder.
+V || R13451 || COMPLIANT || ALERT-01 || - || 22 || Offline, failed, expired and slow states rendered by application/_dialog_status, which builds each through ui_callout_box with a button_row.
+V || R13450 || UNCOVERED || - || - || 43 || Loading placeholder: "animate-spin rounded-full h-8 w-8 border-b-2 border-primary" ring with sr-only "Loading menu…", role=status; inline copy of shared/_frame_spinner. No loading rule.
+V || R13452 || COMPLIANT || TOAST-02 || - || 15 || Matches the guide's Unread Messages Envelope exactly: ghost btn-square button_link, ui_badge :warning count in an indicator wrapper span, count in aria-label.
+V || R01623 || COMPLIANT || TOUCH-02 || - || 16 || btn-square on the icon-only envelope button_link, as the rule and the envelope section require.
+V || R13453 || COMPLIANT || TOAST-02 || - || 22 || Hidden span#navbar-messages at zero so a Turbo Stream can replace it; guide says the envelope shows only while the count is above zero.
+V || R01632 || UNCOVERED || - || - || 7 || Signed-out top bar as raw <nav class="navbar bg-chrome/80">; NAV-02 covers only the sidebar, no rule covers the top navbar.
+V || R01633 || UNCOVERED || - || - || 7 || daisyUI navbar/navbar-start/navbar-end markup written in the partial; no rule addresses the top bar.
+V || M0060 || DIVERGENT || BTN-01 || medium || 9 || pattern=buttons Buttons come from ButtonHelper; brand link written as link_to with hand-written "btn btn-ghost text-xl no-decoration".
+V || R01628 || DIVERGENT || BTN-01 || medium || 9 || Rule bars btn classes written by hand; brand "Clubhouse" link_to carries "btn btn-ghost" instead of button_link.
+V || R13454 || DIVERGENT || BTN-01 || medium || 9 || Brand link styled "btn btn-ghost text-xl no-decoration" by hand rather than through button_link :ghost (same as _top_menu phone brand).
+V || R13456 || UNCOVERED || - || - || 3 || Avatar: photo_tag width 84 or fa_icon user 3x fallback; photos/avatars have no rule. Agent found no caller.
+V || R13447 || COMPLIANT || BTN-02 || - || 69 || button_action :ghost with class "min-w-9 px-2 lg:px-3" (size/padding only, no bg/ring); icon tinted text-neutral-content/70 for the black bar.
+V || M0005 || DIVERGENT || BP-01 || low || 62 || pattern=typography md: is only for .button-row stacking; "Search" label uses "hidden md:inline-block".
+V || M0006 || DIVERGENT || BP-01 || low || 64 || pattern=typography md: allowed only for button-row stacking; kbd chip uses "hidden md:inline-flex".
+V || R01655 || DIVERGENT || TYPE-03 || medium || 101 || text-sm barred for form labels; the "Mode" label of the mode radio group is text-sm. Hint p at 129 is help text (allowed); text-xs at 63,149 is kbd chips (see R13443).
+V || R13443 || UNCOVERED || - || - || 149 || ambiguous TYPE-02: hand-built kbd hint chips in text-xs (trigger's ⌘K at 63-66, "esc" at 149); the rule neither lists keyboard-shortcut hints as allowed nor clearly as content a reader needs.
+V || M0415 || DIVERGENT || MODAL-01 || medium || 83 || pattern=modals Modals come from ModalHelper; the search dialog is a hand-written native <dialog> styled entirely by utilities.
+V || R01650 || DIVERGENT || MODAL-01 || medium || 83 || Search <dialog> not built with ModalHelper; not a confirm, so MODAL-02 (hint) does not apply.
+V || R13440 || DIVERGENT || MODAL-01 || medium || 87 || Rule: ModalHelper modal. Code: <dialog> with "rounded-xl shadow-2xl border ... backdrop:backdrop-blur-sm", top-anchored at mt-[15vh], no daisyUI modal/modal-box.
+V || R13441 || DIVERGENT || SPACE-01 || low || 87 || Spacing follows the Tailwind scale; dialog uses arbitrary "mt-[15vh]" and "w-[calc(100%-2rem)]".
+V || R13444 || DIVERGENT || TYPE-03 || medium || 101 || text-sm barred for form labels; "Mode" label span is "text-sm font-semibold text-body". Hint p (129) text-sm is help text, allowed.
+V || R01645 || UNCOVERED || - || - || 104 || Segmented mode switcher: daisyUI join of labels around sr-only radios; not a submitted form field and no rule covers a segmented control.
+V || R13442 || UNCOVERED || - || - || 104 || Segmented radio join (lg up) plus raw select (below lg) switching search mode client-side; no rule for segmented controls. Raw select judged at R01644.
+V || M0061 || DIVERGENT || BTN-01 || medium || 106 || pattern=buttons No btn classes by hand; label.join-item written "btn btn-sm" with has-[:checked]:bg-primary, a hand-applied bg also barred by BTN-02.
+V || R01638 || DIVERGENT || BTN-01 || medium || 106 || Hand-written "btn btn-sm" on the mode labels instead of a ButtonHelper method, plus has-[:checked]:bg-primary/border-primary colour overrides.
+V || R01643 || UNCOVERED || - || - || 106 || Raw <label> wrapping an sr-only radio inside the segmented control; part of the uncovered segmented pattern.
+V || R01647 || UNCOVERED || - || - || 107 || sr-only radio built with tag.input inside the segmented control; not a builder field context.
+V || R01644 || DIVERGENT || FORM-01 || medium || 117 || Rule: fields via AppFormBuilder. Code: raw <select class="select select-sm min-h-9 w-auto lg:hidden"> for mode below lg, daisyUI-styled.
+V || R01646 || DIVERGENT || FORM-01 || medium || 117 || Raw select with daisyUI "select select-sm" standing in for a builder select; looks close to builder selects.
+V || R13445 || UNCOVERED || - || - || 167 || Autocomplete input restyled as a borderless dialog header (input_class replaced wholesale: border-b, ps-11 pe-14 py-3); AC-01 covers the dropdown, not the input.
+V || R01648 || COMPLIANT || AC-01 || - || 168 || Results use the ac-* family (ac-results-inline).
+V || R13446 || COMPLIANT || ALERT-01 || - || 181 || Search dialog error states via _dialog_status, which renders ui_callout_box.
+V || R13455 || COMPLIANT || ICON-01 || - || 17 || Sun/moon fa_icon pair swapped by dark: spans, visible word " Theme", aria-label "Toggle theme".
+V || R01668 || UNCOVERED || - || - || 7 || Signed-in top bar uses daisyUI navbar-start/center/end markup directly; no rule covers the top navbar.
+V || R01669 || UNCOVERED || - || - || 7 || tag.nav for the top bar; no top-navbar rule (NAV-02 is the sidebar).
+V || R13439 || COMPLIANT || COLOR-01 || - || 7 || Bar painted with the bg-chrome token at /80 opacity, no palette colour.
+V || M0062 || UNCOVERED || - || - || 35 || pattern=navigation ambiguous BTN-01: the guide documents the sidebar toggle as a raw <label for="sidebar-drawer"> (2269-2276) but its example has no btn classes; code adds hand-written "btn btn-ghost btn-sm".
+V || R01659 || DIVERGENT || BTN-01 || medium || 38 || No hand-written btn classes; brand links (38, 65) are link_to "btn btn-ghost". 35 is the documented drawer label; 80, 111 are ButtonHelper/dropdown_menu with btn-square (compliant).
+V || R01662 || COMPLIANT || NAV-02 || - || 35 || <label for="sidebar-drawer"> is the guide's documented navbar sidebar toggle, aria-label "Open sidebar".
+V || R13433 || COMPLIANT || NAV-02 || - || 35 || Sidebar toggle placed in the navbar as a drawer label with "Open sidebar", as the guide's Toggle Button Placement shows.
+V || M0063 || DIVERGENT || BTN-01 || medium || 38 || pattern=buttons Desktop brand link_to with hand-written "btn btn-ghost text-sm lg:text-xl" instead of a ButtonHelper method.
+V || R01674 || UNCOVERED || - || - || 38 || Brand wordmark sized text-xl; its text-sm applies only while the link is hidden below lg. No rule for the brand.
+V || R13434 || DIVERGENT || BTN-01 || medium || 38 || Brand "Clubhouse" link_to styled with btn classes by hand (desktop 38, phone 64-65) rather than button_link.
+V || R13438 || UNCOVERED || - || - || 47 || Mega menu and user menu rendered twice (labelled from lg, icon-only below) and toggled by lg:hidden / hidden lg:block; no rule on responsive duplicates.
+V || R13435 || UNCOVERED || - || - || 49 || ambiguous TYPE-02: kbd shortcut chip in text-xs on chrome tokens; the rule does not settle whether a shortcut hint counts as content a reader needs.
+V || R13436 || COMPLIANT || TOUCH-02 || - || 80 || Responsive classes on button_action/dropdown_menu; icon-only variants take btn-square (80, 111).
+V || M0064 || DIVERGENT || BTN-01 || medium || 65 || pattern=buttons Phone brand link_to "btn btn-ghost text-xl no-decoration px-1" written by hand.
+V || R13437 || COMPLIANT || A11Y-02 || - || 83 || Icon-only grip and circle-user triggers carry aria-label "Menu (…)" and trigger_label "User menu".
+V || R01667 || COMPLIANT || NAV-01 || - || 103 || Account menus built with dropdown_menu; dropdown-end is placement only.
+V || R13579 || UNCOVERED || - || - || 14 || Autocomplete result row: 32px avatar or neutral icon circle, title, muted meta lines; AC-01 covers the ac-* container classes only.
+V || R01869 || DIVERGENT || TYPE-02 || high || 27 || text-xs never for content a reader needs; meta lines (status and name, legal first name, FKA, phone match) are text-xs. Title text-sm is allowed for dropdowns.
+V || R01870 || UNCOVERED || - || - || 16 || "•" bullet glyph prefixed to meta strings as a separator; text, not an icon, so ICON-01 does not apply.
+V || R13580 || UNCOVERED || - || - || 16 || "•" glyph prefixes in meta strings and status shown in angle brackets "<status>"; no rule on in-string separators.
+V || R01872 || UNCOVERED || - || - || 38 || "•" glyph prefix on vehicle description string; text separator, not an icon.
+V || R13581 || UNCOVERED || - || - || 38 || Bullet glyph separator in vehicle meta line; no rule.
+V || R13427 || UNCOVERED || - || - || 39 || Inline <script> sets dark class/data-theme before first paint; STYLE-01 governs styles, no rule on inline scripts.
+V || R04464 || COMPLIANT || NAV-02 || - || 76 || daisyUI drawer hosting the SidebarHelper sidebar (content_for :sidebar), the documented sidebar structure.
+V || R13425 || UNCOVERED || - || - || 78 || Shell width wrappers: drawer-content "overflow-y-auto app-edge-pad"; sidebar-less flex wrapper with app-edge-pad, no max width; no rule on shell width.
+V || R04462 || COMPLIANT || NAV-02 || - || 77 || drawer-toggle checkbox is the daisyUI drawer state the documented sidebar label targets; not a form field.
+V || R13426 || COMPLIANT || TYPE-01 || - || 82 || <main> sets text-body text-base so unclassed page text is body size (82, 94).
+V || R04463 || UNCOVERED || - || - || 104 || Empty div#turbo-confirm-modal mount point for confirm_modal dialogs; holds no confirm text itself.
+V || R13424 || COMPLIANT || TOAST-01 || - || 111 || Layout renders every flash through ui_toast_render in an aria-live fixed stack; type-driven duration and role live in the helper.
+V || R04470 || COMPLIANT || TOAST-01 || - || 110 || Flash read in the layout, as the rule prescribes (set in controller, rendered by the layout).
+V || R04471 || COMPLIANT || TOAST-01 || - || 111 || ui_toast_render renders each flash as a toast.
+V || R13431 || COMPLIANT || ALERT-01 || - || 7 || Pre-2008 notice on timesheet pages is ui_callout_box :warning.
+V || R13430 || UNCOVERED || - || - || 11 || Wall-display layout pins class="dark" data-theme="dark" on <html>; no rule on forcing a theme.
+V || R13429 || UNCOVERED || - || - || 16 || Print layout pins data-theme="light" on <html> (reasoned in comment); no rule on forced themes.
+V || M0446 || DIVERGENT || STYLE-01 || low || 39 || pattern=other No scoped CSS outside components/; print layout holds an inline <style> with @page and a print :root background, with a written reason.
+V || R13428 || DIVERGENT || STYLE-01 || low || 39 || Rule: no per-view CSS. Code: inline <style> block in layouts/print for @page size/margins and print background (comment explains @page cannot be scoped).
+V || R04479 || DIVERGENT || COLOR-01 || low || 41 || Semantic tokens only; print rule uses literal "#fff" for :root background.
+V || M0092 || DIVERGENT || COLOR-01 || low || 59 || pattern=color Never a palette value; body has print:bg-white (print-only, reason in comment).
+V || R13432 || UNCOVERED || - || - || 13 || Door column wrapper "login-column mx-auto w-full max-w-md min-h-full flex flex-col justify-center py-8"; no rule on page width wrappers.
+V || R13519 || UNCOVERED || - || - || 7 || Label/value line: "SMS Number:" span font-semibold text-stone-emphasis with value and ui_badge status; label/value displays have no rule.
+V || R13520 || UNCOVERED || - || - || 18 || ambiguous EMPTY-02: missing SMS number shown as italic muted "No number on file", words stating a fact rather than "—".
+V || M0510 || COMPLIANT || TABLE-02 || - || 27 || pattern=tables-lists responsive: false on a three-column table, allowed for about four columns or fewer.
+V || R13518 || UNCOVERED || - || - || 27 || Two identical ui_table blocks (off-playa, on-playa) written out in full side by side; duplication, no rule.
+V || R13516 || DIVERGENT || STYLE-03 || medium || 35 || Use the helper where one exists; group header rows are raw <tr><td colspan=3 class="px-3 py-2 font-semibold ... bg-base-200"> inside ui_table bodies (35, 76) instead of t.row/t.cell.
+V || R13521 || UNCOVERED || - || - || 39 || ambiguous EMPTY-01: an empty off-playa or on-playa alert list renders only its group header row; the rule does not say every collection needs an empty state.
+V || R07125 || COMPLIANT || COLOR-05 || - || 44 || Status icons use icon-success; the neutral xmark uses text-stone-muted.
+V || R13517 || COMPLIANT || A11Y-01 || - || 44 || Yes/no carried by shape (circle-check vs circle-xmark) as well as colour; "&mdash;" for not applicable. Icons have no text alternative for screen readers (see Q).
+V || M0511 || COMPLIANT || TABLE-02 || - || 68 || pattern=tables-lists responsive: false on a three-column table, allowed.
+V || R13523 || COMPLIANT || CARD-03 || - || 3 || ui_section with class "w-auto shrink-0" (class: is a documented option) and badge/badge_color options.
+V || R13522 || UNCOVERED || - || - || 10 || BMID photo via photo_tag class rounded-2xl at AVATAR_WIDTH, common/photo_none fallback; photos have no rule.
+V || R13525 || DIVERGENT || BTN-07 || medium || 18 || Buttons sit in a button_row; Withdraw/Adjust/Upload Photo sit in a hand-made "flex flex-wrap justify-center gap-2 mt-3" div.
+V || R13524 || DIVERGENT || BTN-05 || medium || 20 || :error is the destructive variant; Withdraw (DELETE, confirmed with variant :error) is a :warning button_link.
+V || R07137 || COMPLIANT || MODAL-02 || - || 22 || confirm_modal with variant: :error, message asks "Withdraw this photo submission?" and states the consequence.
+V || R13534 || DIVERGENT || EMPTY-02 || low || 11 || Empty value prints "—"; empty camp location prints none_stated, an italic "None stated".
+V || M0512 || COMPLIANT || TABLE-02 || - || 6 || pattern=tables-lists responsive: false on a two-column table, allowed.
+V || R13526 || UNCOVERED || - || - || 6 || Headerless ui_table used as a label/value list (label in t.cell, not row_header); label/value displays have no rule.
+V || R13527 || DIVERGENT || EMPTY-02 || low || 10 || Empty value prints "—"; missing shirt choices print italic "None stated" via none_stated (10, 14, 18).
+V || R13535 || DIVERGENT || EMPTY-02 || low || 6 || Empty value prints "—"; missing emergency contact prints italic "None stated".
+V || R13536 || DIVERGENT || ALERT-01 || low || 4 || Inline notices are ui_callout_box; the permission denial is a muted italic <p> inside a ui_section.
+V || R13528 || UNCOVERED || - || - || 18 || Hand-built label/value blocks (label div over value, inline "Gender:" spans), not ui_label_value; label/value displays have no rule.
+V || R13529 || DIVERGENT || TYPE-04 || low || 8 || Nothing inside a section outweighs its title; callsign div "text-lg font-semibold" exceeds the text-base section title below lg.
+V || R13530 || DIVERGENT || EMPTY-02 || low || 37 || Empty value prints "—"; missing values print italic "no preferred first name given" (29) and "not stated" (37, 47).
+V || R13538 || UNCOVERED || - || - || 7 || instruction-list wrapped in div "text-stone-muted mb-3" (dl sets its own text-body, so the colour likely has no effect); no rule on wrappers.
+V || R07167 || COMPLIANT || LIST-01 || - || 8 || Explanation as a dl.instruction-list.
+V || M0513 || COMPLIANT || TABLE-02 || - || 18 || pattern=tables-lists responsive: false on a two-column table, allowed.
+V || R13537 || DIVERGENT || EMPTY-01 || low || 33 || Empty state is always ui_empty_state; no languages shows a plain muted span (profile_languages/index uses ui_empty_state for the same text).
+V || R13531 || UNCOVERED || - || - || 8 || Bare <a href> to profiles.burningman.org in an info callout, no class or target; plain links have no rule. Copy repeats "update update" (see Q).
+V || R13532 || UNCOVERED || - || - || 14 || Address block div "text-base text-stone-emphasis leading-relaxed space-y-1"; label/value and address displays have no rule.
+V || R13533 || DIVERGENT || EMPTY-02 || low || 25 || Empty value prints "—"; missing address prints italic "None stated".
+V || R07188 || COMPLIANT || LIST-01 || - || 15 || Q&A dl.instruction-list in the info callout.
+V || M0431 || DIVERGENT || SPACE-03 || low || 21 || pattern=typography No classes on instruction-list <dt>/<dd>; <dd class="italic"> on the example format.
+V || R13546 || COMPLIANT || FORM-06 || - || 26 || ui_form(person) shows errors through the builder.
+V || R13547 || UNCOVERED || - || - || 36 || ambiguous COPY-04: submit reads "Save" while sibling profile edits say "Save Changes"; the rule's "Save [Entity]" does not settle a bare "Save" or "Save Changes".
+V || R13545 || DIVERGENT || FORM-08 || low || 15 || Form page order is hero, callouts, then ui_form; the "How Shirts Are Awarded" callout sits inside the ui_form.
+V || R07204 || COMPLIANT || LIST-01 || - || 16 || Explanations as dl.instruction-list (16, 29).
+V || R13544 || UNCOVERED || - || - || 34 || Two selects in a hand "flex flex-col lg:flex-row gap-3 mb-3" row instead of form_row; no rule names form_row.
+V || R07218 || COMPLIANT || LIST-01 || - || 15 || Q&A dl.instruction-list in the info callout.
+V || R13548 || COMPLIANT || FORM-06 || - || 29 || ui_form(person) builder errors.
+V || R13543 || COMPLIANT || FORM-06 || - || 29 || ui_form(person) builder errors.
+V || R07241 || COMPLIANT || LIST-01 || - || 32 || Section explanations as dl.instruction-list.
+V || R13539 || COMPLIANT || FORM-10 || - || 54 || Sub-groups divided with "mt-4 pt-3 border-t border-line" (54, 121).
+V || R07235 || UNCOVERED || - || - || 59 || "→" arrow glyph in example copy ("3pio" → "Three-Pee-Oh"); text, not an icon.
+V || R13542 || UNCOVERED || - || - || 59 || Inline example as span text-stone-muted inside a dd; no rule on inline examples.
+V || R13540 || COMPLIANT || FORM-07 || - || 74 || Rows at 74, 91 match the guide's Conditional Field Layout ("flex flex-col lg:flex-row lg:items-start gap-2 lg:gap-4"); phone row 126 uses gap-4 lg:gap-6 instead of form_row.
+V || R13541 || COMPLIANT || FORM-07 || - || 78 || f.select html class "w-44" exactly as the guide's Conditional Field Layout example.
+V || R13549 || COMPLIANT || FORM-01 || - || 14 || ui_form with an html options hash for country/state data attributes.
+V || R07256 || COMPLIANT || LIST-01 || - || 16 || Q&A dl.instruction-list.
+V || R13508 || DIVERGENT || BTN-07 || medium || 19 || Buttons sit in a button_row; Change Password/Manage Passkeys sit in a "my-2 flex flex-wrap gap-2" div.
+V || R07268 || COMPLIANT || LIST-01 || - || 43 || Callout content as dl.instruction-list (43, 60, 75).
+V || R13510 || COMPLIANT || TYPE-08 || - || 45 || Emphasis by weight (strong) in the neutral text-heading ink, not by colour.
+V || R13514 || UNCOVERED || - || - || 65 || In-page anchor link "Scroll down" to #alerts; plain links have no rule.
+V || M0432 || DIVERGENT || SPACE-03 || low || 80 || pattern=typography No classes on instruction-list dt/dd; <dt class="text-error">.
+V || R13509 || DIVERGENT || COLOR-03 || medium || 80 || No coloured text for emphasis; "Pay special attention to" dt/dd set text-error inside a warning callout.
+V || M0433 || DIVERGENT || SPACE-03 || low || 81 || pattern=typography No classes on instruction-list dd; <dd class="text-error">.
+V || R13515 || UNCOVERED || - || - || 93 || ui_label_value with label_width "7rem" and class "my-2 space-y-1"; label/value displays have no rule.
+V || R13511 || UNCOVERED || - || - || 99 || ambiguous EMPTY-02: missing dates as <i>never updated</i> / <i>never reviewed</i>, words stating a fact.
+V || R13512 || DIVERGENT || LAYOUT-02 || low || 114 || Columns are "flex flex-col lg:flex-row gap-4"; first row is "flex flex-col lg:flex-row lg:gap-x-4" (no stacked gap), rows 2-3 "gap-y-4 lg:gap-x-4".
+V || R13513 || DIVERGENT || BTN-07 || medium || 161 || Buttons sit in a button_row; "My Information Is Correct" (size xl, PATCH) sits alone in a div.mt-4.
+V || R13555 || UNCOVERED || - || - || 1 || Untitled ui_section wrapping the whole ui_form (form inside a section, not sections inside a form); FORM-08 does not address an untitled wrapper.
+V || R13554 || COMPLIANT || FORM-06 || - || 2 || ui_form(language) with builder errors; select wrapper_class flex-1 is a documented option.
+V || R07299 || COMPLIANT || LIST-01 || - || 7 || Q&A dl.instruction-list in the info callout.
+V || R13553 || UNCOVERED || - || - || 22 || ambiguous TABLE-01: ui_table given class "mb-3"; the guide documents no class: option on ui_table.
+V || R13551 || DIVERGENT || BTN-05 || medium || 39 || :error is the destructive variant; row Delete is a :secondary button_link (confirm uses variant :error).
+V || R07296 || COMPLIANT || MODAL-02 || - || 40 || confirm_modal variant: :error; asks "Delete <language>? You can add it again."
+V || R13550 || COMPLIANT || EMPTY-01 || - || 50 || ui_empty_state with icon.
+V || R13552 || DIVERGENT || COPY-04 || low || 57 || Leaving a page reads "Back to [Page]"; a list page with no form ends in cancel_link "Cancel" to the profile.
+V || R13571 || DIVERGENT || COLOR-02 || medium || 21 || Colour carries meaning, never decoration; "fills the outline completely" gets a bg-primary/10 highlight for emphasis.
+V || R13570 || DIVERGENT || CARD-01 || medium || 27 || Cards are card-standard rendered by ui_card; desktop Quick Guide is a hand-made div.card-standard p-4 with its own h2.
+V || R07333 || COMPLIANT || TYPE-04 || - || 28 || <h2> takes heading-section; extra utilities are colour and margin only.
+V || R07329 || COMPLIANT || LIST-01 || - || 32 || Quick Guide content as dl.instruction-list.
+V || R07330 || UNCOVERED || - || - || 38 || Icon-led <ul> legend of the crop buttons inside a dd (no bullets, each item starts with an icon); no rule on icon lists.
+V || R07339 || DIVERGENT || TYPE-03 || medium || 38 || text-sm barred for paragraphs and instructions; button legend list (38), review reminder (52) and mobile tip (134) are text-sm.
+V || M0321 || DIVERGENT || FORM-01 || medium || 62 || pattern=forms Forms use AppFormBuilder; crop form is form_with model: @person_photo with no builder.
+V || R07319 || DIVERGENT || FORM-01 || medium || 62 || Raw form_with without builder: AppFormBuilder; holds only buttons and the cropper, so it renders like a builder form.
+V || R13569 || DIVERGENT || FORM-01 || medium || 62 || Rule: ui_form/AppFormBuilder. Code: plain form_with, and no error display in the view.
+V || R13572 || DIVERGENT || TOUCH-02 || low || 86 || Icon-only ButtonHelper buttons take btn-square; crop tools are icon-only below lg without btn-square (aria-label/title set).
+V || R13577 || UNCOVERED || - || - || 93 || HTML <!-- --> comments shipped in the page; no rule.
+V || M0093 || DIVERGENT || COLOR-01 || medium || 95 || pattern=color Semantic tokens only; cropper container uses palette bg-gray-800. The guide records no exception for it.
+V || R13573 || DIVERGENT || COLOR-01 || medium || 95 || Semantic tokens only; bg-gray-800/bg-gray-500 classes and literal #ffffff/#fbbf24/#f59e0b checkerboard (202). Guide records no exception.
+V || M0094 || DIVERGENT || COLOR-01 || medium || 97 || pattern=color Never a palette value; cropper-canvas has bg-gray-500.
+V || M0453 || DIVERGENT || STYLE-01 || low || 98 || pattern=other No inline style=; cropper-canvas style holds computed width/height from PersonPhoto constants.
+V || R13574 || DIVERGENT || STYLE-01 || medium || 161 || No scoped/per-view CSS; page carries an 80-line <style> block (wrapper, zoom, cropper elements) with !important at 216, 217, 222, 232.
+V || R13578 || DIVERGENT || TYPE-03 || medium || 134 || text-sm barred for instructions; mobile tip "No orange checkerboard…" is text-sm centred.
+V || M0041 || DIVERGENT || BP-01 || medium || 139 || pattern=spacing sm: only in a field width:; button_row class uses sm:flex-row and sm:justify-between, a stacking tier.
+V || R13575 || DIVERGENT || SPACE-01 || low || 139 || Button-row gaps are gap-2 or gap-4; button_row overridden with gap-3, flex-col and margins mt-0 mb-2.
+V || R13576 || COMPLIANT || MODAL-02 || - || 142 || "Cancel & Delete" is :error with confirm_modal variant :error, "Delete this photo? This cannot be undone."
+V || R07323 || COMPLIANT || MODAL-02 || - || 145 || confirm_modal variant :error with action-question and irreversibility stated.
+V || M0146 || DIVERGENT || COPY-04 || low || 152 || pattern=buttons Never "Submit" as a submit label; button reads "Submit Photo".
+V || M0454 || DIVERGENT || STYLE-01 || medium || 161 || pattern=other No per-view CSS; crop page has its own <style> block.
+V || R07315 || DIVERGENT || COLOR-01 || medium || 202 || Semantic tokens only; checkerboard uses literal #ffffff, #fbbf24, #f59e0b.
+V || R13556 || DIVERGENT || CARD-01 || medium || 24 || Cards render through ui_card; Photo Requirements is a hand-made "mb-4 card-standard p-4" div with a raw h2.
+V || R07374 || COMPLIANT || TYPE-04 || - || 25 || <h2 class="heading-section ..."> with colour/margin only.
+V || R13566 || UNCOVERED || - || - || 26 || Icon spacing mixes class mr-1/mr-2 with fa_icon end: 2; dropzone icon sized w-12 h-12. ICON-01 met (fa_icon); no rule on icon spacing outside buttons.
+V || R13557 || COMPLIANT || A11Y-01 || - || 30 || Must/must-not lists coloured text-success/text-error, each with check/xmark icons and words; deviation recorded in comment 18-21.
+V || R13568 || DIVERGENT || TYPE-04 || low || 138 || Nothing in a section outweighs its title; "Click to upload" line is text-lg with font-semibold in the Photo Upload section (title text-base below lg).
+V || R07371 || UNCOVERED || - || - || 33 || Icon-led <ul> do/don't lists (check/xmark icons, no bullets); SPACE-02 covers bulleted lists only.
+V || R13562 || COMPLIANT || ALERT-01 || - || 79 || JS upload/camera error box is a hidden ui_callout_box :error accent role=alert; ui_form summary suppressed for this client-side flow.
+V || M0535 || DIVERGENT || TABS-01 || medium || 86 || pattern=navigation Tabs come from tab_navigation; tablist written by hand as div.tabs.tabs-border.
+V || R07361 || DIVERGENT || TABS-01 || medium || 86 || Hand-written daisyUI "tabs tabs-border" markup instead of tab_navigation.
+V || R13558 || DIVERGENT || TABS-01 || medium || 86 || Rule: tabs from tab_navigation. Code: raw <button class="tab"> pair with ARIA tablist driven by camera controller.
+V || M0066 || DIVERGENT || TABS-01 || medium || 87 || pattern=navigation Raw <button class="tab tab-active"> is a hand-written tab; judged under TABS-01 rather than BTN-01.
+V || R07340 || DIVERGENT || BTN-01 || high || 292 || Buttons from ButtonHelper; capture is a raw <button class="camera-capture-btn">, a round primary disc unlike any helper button. 87/98 are tabs (TABS-01).
+V || M0536 || DIVERGENT || TABS-01 || medium || 89 || pattern=navigation "tab tab-active" written by hand, not tab_navigation.
+V || R07360 || DIVERGENT || TABS-01 || medium || 89 || daisyUI tab classes hand-written (89, 100).
+V || M0537 || DIVERGENT || TABS-01 || medium || 90 || pattern=navigation role="tab" on a hand-written tab button.
+V || M0067 || DIVERGENT || TABS-01 || medium || 98 || pattern=navigation Second raw <button class="tab">; hand-written tab.
+V || M0538 || DIVERGENT || TABS-01 || medium || 100 || pattern=navigation "tab gap-1" hand-written tab.
+V || M0539 || DIVERGENT || TABS-01 || medium || 101 || pattern=navigation role="tab" on hand-written tab markup.
+V || R13567 || UNCOVERED || - || - || 118 || HTML <!-- --> comments in the rendered page; no rule.
+V || R07367 || DIVERGENT || SPACE-01 || low || 131 || Spacing on the Tailwind scale; arbitrary "lg:w-[50%]" (131) and "border-[3px]" spinners (197, 255).
+V || R13559 || DIVERGENT || FORM-01 || high || 131 || Fields through AppFormBuilder; file field is a raw label dropzone (dashed border, bg-base-200, h-48) wrapping a hidden raw <input type=file>.
+V || R07351 || DIVERGENT || FORM-01 || high || 132 || Raw <label> for the dropzone (132) and camera select (266) instead of builder fields; both look unlike builder fields.
+V || R07379 || DIVERGENT || TYPE-03 || medium || 300 || text-sm barred for paragraphs/labels; file info (175-178), callout instructions (224, 229), camera label (266) and capture hint (300) are text-sm; file size (177) is text-xs.
+V || R07350 || DIVERGENT || FORM-01 || high || 150 || Raw hidden <input type=file> instead of a builder field.
+V || R13560 || DIVERGENT || ALERT-01 || medium || 161 || Inline notices are ui_callout_box; selected-file notice is a hand-made "rounded-lg border border-success/30 bg-success/10 p-3 text-success" box.
+V || R13561 || UNCOVERED || - || - || 197 || Spinners "animate-spin inline-block w-8 h-8 border-[3px] border-current border-t-transparent text-primary rounded-full", differing from shared/_frame_spinner; no loading rule.
+V || R13563 || COMPLIANT || ALERT-01 || - || 212 || Camera errors are ui_callout_box (:warning, :error); title given as a strong line rather than title:.
+V || R07370 || COMPLIANT || SPACE-02 || - || 224 || Numbered steps use list-numbered.
+V || R13565 || DIVERGENT || FORM-01 || high || 269 || Fields via builder; camera picker is raw <label> + <select class="camera-select"> (custom @utility: rounded-lg border p-2), unlike builder selects.
+V || R07352 || DIVERGENT || FORM-01 || high || 269 || Raw <select> standing in for a builder select, styled by camera-select.
+V || R07355 || DIVERGENT || FORM-01 || high || 270 || camera-select @utility restyles a raw select (rounded-lg border bg-base-100 p-2) instead of the builder's select.
+V || R07354 || UNCOVERED || - || - || 278 || camera-preview 4:3 frame (@utility in camera.css) around the live video; media preview, no rule.
+V || R07364 || UNCOVERED || - || - || 279 || Live <video> camera preview; no rule for media.
+V || R07356 || UNCOVERED || - || - || 283 || camera-video @utility (mirrored, object-cover); no rule.
+V || R07363 || UNCOVERED || - || - || 288 || Hidden <canvas> for capture, aria-hidden; no rule.
+V || M0068 || DIVERGENT || BTN-01 || high || 292 || pattern=buttons Raw <button class="camera-capture-btn"> instead of a ButtonHelper method; circular 64px primary disc.
+V || R13564 || DIVERGENT || BTN-01 || high || 292 || Rule: ButtonHelper only. Code: raw circular capture button (w-16 h-16 rounded-full border-4 shadow-sm bg-primary) with aria-label/title.
+V || R07353 || DIVERGENT || BTN-01 || high || 293 || camera-capture-btn @utility is a hand-built button style (bg-primary, hover brightness, active scale) instead of a helper variant.
+V || R13584 || UNCOVERED || - || - || 20 || PWA manifest theme_color/background_color "red"; the manifest link is commented out in the layout, and COLOR-01 addresses markup classes, not manifest values.
+V || R07571 || COMPLIANT || LIST-01 || - || 8 || Q&A dl.instruction-list.
+V || R13505 || UNCOVERED || - || - || 19 || ambiguous HERO-04: "Back to Start" is a step-back button_link inside a multi-step page; the rule places page back links in the hero but does not address in-page step navigation.
+V || R13507 || COMPLIANT || ALERT-01 || - || 5 || ui_callout_box :warning; the extra span around strong has no visible effect.
+V || R07579 || COMPLIANT || LIST-01 || - || 9 || Q&A dl.instruction-list.
+V || R13503 || UNCOVERED || - || - || 13 || Intro <p class="mb-4"> between the step chips and the form; no rule on a lede paragraph.
+V || R13499 || COMPLIANT || FORM-06 || - || 29 || ui_form(@form) errors through the builder; required_label "" keeps the asterisk and the input's required attribute.
+V || R13500 || COMPLIANT || ALERT-01 || - || 42 || Revealed Ranger-intent warning is ui_callout_box :error.
+V || R13501 || UNCOVERED || - || - || 45 || link_to "link link-primary" target _blank in a callout; plain links have no rule.
+V || R07602 || COMPLIANT || LIST-01 || - || 53 || Section explanations as dl.instruction-list.
+V || M0147 || COMPLIANT || COPY-04 || - || 122 || pattern=buttons A submit that does more than store keeps its own verb; the guide's own example is "Create Account".
+V || R13502 || UNCOVERED || - || - || 123 || Busy label via turbo_submits_with "Creating your account…"; busy states have no rule.
+V || M0267 || COMPLIANT || COPY-10 || - || 124 || pattern=buttons False positive: "submit" is a Stimulus target name; the visible label is "Create My Auditor Account".
+V || R13498 || UNCOVERED || - || - || 2 || Intro <p class="mb-4"> outside any section; no rule on lede paragraphs.
+V || R07615 || COMPLIANT || TYPE-04 || - || 10 || <h2 class="heading-section ..."> with colour and margins only.
+V || R13496 || COMPLIANT || TYPE-04 || - || 10 || Raw h2 carries heading-section; added text-heading mt-6 mb-3 change no size or weight.
+V || R13497 || COMPLIANT || CARD-03 || - || 13 || Two ui_section (class: documented) with flex-1 inside stack-to-row-lg, which is "flex flex-col lg:flex-row gap-4".
+V || R13504 || UNCOVERED || - || - || 4 || Footer "Questions?" paragraph with strong lead and mail_to link; no rule.
+V || R07628 || COMPLIANT || LIST-01 || - || 9 || Q&A dl.instruction-list.
+V || R07637 || COMPLIANT || LIST-01 || - || 9 || Q&A dl.instruction-list.
+V || R13506 || COMPLIANT || BTN-01 || - || 19 || External link drawn with button_link :primary and icon, inside a button_row.
+V || R13493 || UNCOVERED || - || - || 8 || Page column capped by "mx-auto max-w-4xl" around hero and steps; no rule on page width wrappers.
+V || R13494 || COMPLIANT || BADGE-01 || - || 13 || register_step_chips builds every chip through ui_badge.
+V || R13466 || UNCOVERED || - || - || 7 || Centred footer link: text-sm, tap-target-link, text-warning (next step) or text-body (muted), hover underline; plain links have no rule.
+V || R08306 || UNCOVERED || - || - || 7 || ambiguous TYPE-03: footer link text-sm; the rule allows compact navigation but does not say whether a standalone page link such as "Back to sign in" counts.
+V || R13465 || DIVERGENT || HERO-01 || medium || 6 || Every page's header is a hero_panel; door pages use header.text-center with h1 "text-3xl sm:text-4xl font-bold" and a lede p.
+V || M0042 || DIVERGENT || BP-01 || low || 6 || pattern=typography sm: only in a field width:; heading uses sm:text-4xl.
+V || R08309 || UNCOVERED || - || - || 6 || ambiguous TYPE-04: h1 with "text-3xl sm:text-4xl font-bold"; the one-style-per-level rule names h2-h4 only.
+V || R08321 || UNCOVERED || - || - || 11 || daisyUI divider labelled "or" in text-sm; a separator, not body text; no rule on dividers.
+V || R13469 || UNCOVERED || - || - || 11 || daisyUI divider "or" between sign-in methods; no rule.
+V || R13468 || COMPLIANT || BTN-01 || - || 13 || button_action :secondary lg with class w-full, a documented class use (guide 1189).
+V || M0270 || COMPLIANT || COPY-10 || - || 15 || pattern=buttons False positive: "submit" is a passkey target name; visible label "Sign In with a Passkey".
+V || R13467 || COMPLIANT || ALERT-01 || - || 19 || Passkey errors shown in a hidden ui_callout_box :warning filled by JS.
+V || R13474 || COMPLIANT || FORM-06 || - || 2 || Sign-in errors go to the ui_form summary and field errors.
+V || R13470 || COMPLIANT || FORM-01 || - || 7 || Fields are builder fields; icon_class/replace_class/login-input restyle them via login.css (icon tint judged in F).
+V || R13471 || COMPLIANT || FORM-02 || - || 29 || Password keeps a visible label via f.label in a hand-written row beside the "Forgot it?" link.
+V || R13472 || COMPLIANT || TOUCH-02 || - || 54 || Icon-only reveal button_action :ghost with btn-square, aria-label and aria-pressed.
+V || R08323 || COMPLIANT || TOUCH-02 || - || 54 || btn-square on the icon-only reveal button.
+V || R13473 || DIVERGENT || BTN-05 || medium || 62 || :primary for primary actions, :warning for warning actions; Sign In submit is :warning lg (amber), consistent across door pages.
+V || R13475 || COMPLIANT || ALERT-01 || - || 5 || SSO error is ui_callout_box :error accent with title and heading_level h2.
+V || R13476 || DIVERGENT || BTN-05 || medium || 10 || Primary action takes :primary; "Sign In with the Ranger Clubhouse" is :warning lg with login-submit-button.
+V || R13477 || UNCOVERED || - || - || 14 || Centred explanatory p "text-center text-body text-base mb-4" under the button; no rule.
+V || M0394 || DIVERGENT || HERO-01 || medium || 7 || pattern=other Every page's header is a hero_panel; /forgot uses sessions/_heading (centred h1 and lede).
+V || R13483 || DIVERGENT || ALERT-01 || medium || 3 || Inline notices are ui_callout_box or ui_alert_banner; "Reset Password Disabled" notice is a ui_accent_card :warning.
+V || R13486 || COMPLIANT || FORM-06 || - || 10 || ui_form @form error summary and field errors; 422 re-render.
+V || R13484 || COMPLIANT || FORM-01 || - || 14 || Builder email field with login.css overrides (icon tint judged in F).
+V || R13485 || DIVERGENT || BTN-05 || medium || 34 || Primary action takes :primary; "Send Reset Link" is submit_button :warning lg.
+V || M0395 || DIVERGENT || HERO-01 || medium || 12 || pattern=other Every page's header is a hero_panel; sign-in page uses a custom login-title h1, tagline and status line.
+V || R13482 || UNCOVERED || - || - || 5 || aria-hidden decorative watermark div.login-backdrop styled in login.css; no rule on page backdrops (MOTION-01 excepts login ambience).
+V || R13479 || UNCOVERED || - || - || 10 || ambiguous CARD-01: login-panel and nav.login-doors panels come from login.css, which the guide lists as the login page's stylesheet; it does not say whether those panels may stand in for ui_card.
+V || R13478 || DIVERGENT || HERO-01 || medium || 12 || Rule: hero_panel header. Code: h1.login-title with <br>, login-tagline and login-status; also differs from sibling door pages' sessions/_heading.
+V || R08388 || UNCOVERED || - || - || 12 || ambiguous TYPE-04: h1.login-title styled by login.css; the heading-level rule names h2-h4 only.
+V || R08374 || UNCOVERED || - || - || 44 || nav.login-doors landmark holding the other ways in; no rule.
+V || R08389 || DIVERGENT || TYPE-04 || low || 45 || <h2> takes heading-section; "Audit Training? Want to be a Ranger?" is h2.login-doors-title styled in login.css.
+V || R08387 || UNCOVERED || - || - || 46 || ul.login-doors-list of icon-led door rows; no rule.
+V || R13480 || UNCOVERED || - || - || 46 || Door rows: leading fa_icon, link.login-door-lead with trailing arrow, description p; no rule for link lists.
+V || R13481 || COMPLIANT || FORM-01 || - || 81 || Dev-only Sign-In As uses ui_form; class "flex flex-column" is not a Tailwind utility (no effect), field gets bg-base-300/60.
+V || R08406 || COMPLIANT || TYPE-04 || - || 5 || False positive: page_title is a local variable holding <title> text; no legacy page_title helper call.
+V || R13489 || COMPLIANT || FORM-06 || - || 22 || ui_form @form builder errors; 422 re-render.
+V || R13487 || COMPLIANT || FORM-01 || - || 29 || Builder password fields with login.css overrides; no reveal toggle unlike sign-in.
+V || R13488 || DIVERGENT || BTN-05 || medium || 64 || Primary action takes :primary; "Set Password"/"Reset Password" is submit_button :warning lg.
+V || R08410 || UNCOVERED || - || - || 34 || ambiguous FORM-01: the shared autocomplete is the component behind the builder's autocomplete field; its input is tag.input with AppFormBuilder::INPUT_CLASSES, and the rule does not say whether a component's own input counts.
+V || R13460 || UNCOVERED || - || - || 34 || ambiguous FORM-01: hand-built tag.input borrowing the builder's INPUT_CLASSES inside the autocomplete component.
+V || R13457 || UNCOVERED || - || - || 48 || Loading row div.ac-loading with spinning fa_icon and "Searching…", hidden until JS; no loading rule.
+V || R13458 || UNCOVERED || - || - || 54 || ambiguous EMPTY-01: results listbox is empty markup filled by JS; any no-results state is drawn client-side (ac-empty exists) and cannot be seen here.
+V || R13459 || COMPLIANT || AC-01 || - || 67 || Keyboard footer uses ac-keyboard-help with <kbd> arrow/return entities; aria-hidden.
+V || R08411 || COMPLIANT || AC-01 || - || 67 || ac-keyboard-help is a documented ac-* class.
+V || R08422 || COMPLIANT || TYPE-03 || - || 7 || Chip text-sm is the guide's documented callsign chip treatment; text-sm allowed for pills.
+V || R13461 || UNCOVERED || - || - || 7 || Callsign chip span "inline-flex min-h-9 rounded-full border border-line bg-base-200 ps-3 pe-1 text-sm text-body" matches the guide's Callsign Chips Field (2560-2577), which no rule ID covers.
+V || R08416 || COMPLIANT || TOUCH-02 || - || 11 || Icon-only remove button_action takes btn-square (plus btn-circle).
+V || R13462 || COMPLIANT || A11Y-02 || - || 12 || Remove button labelled "Remove <callsign>", 36px, per the documented chip field.
+V || R13463 || UNCOVERED || - || - || 16 || Autocomplete inside the chips box with wrapper_class "flex-1 min-w-32" and borderless input_class; documented chip field, no rule ID.
+V || R13464 || UNCOVERED || - || - || 3 || Shared frame spinner: "animate-spin rounded-full h-8 w-8 border-b-2 border-primary", role=status with sr-only label; not daisyUI loading. No loading rule.
+V || R13490 || COMPLIANT || MOTION-01 || - || 11 || Functional spinner with motion-reduce:animate-none and "Sending you back…" in a role=status lede.
+V || M0427 || COMPLIANT || MOTION-01 || - || 11 || pattern=empty-loading animate-spin paired with motion-reduce:animate-none honours reduced motion.
+V || R13491 || UNCOVERED || - || - || 14 || Centred explanatory p "text-center text-body text-base"; no rule.
+V || R13492 || DIVERGENT || BTN-05 || medium || 18 || Primary action takes :primary; "Continue to <client>" is :warning lg.
+V || R13582 || DIVERGENT || COLOR-02 || low || 10 || Colour carries meaning, never decoration; fixture body is bg-primary. Fixture page.
+V || R09245 || UNCOVERED || - || - || 12 || ambiguous TYPE-04: fixture h1 "text-xl font-bold mb-4"; the rule names h2-h4 only.
+V || M0191 || DIVERGENT || COPY-07 || low || 20 || pattern=typography Ellipsis is "…"; fixture placeholder "Search people..." (also 68 "(select on blur)...", 101 "(free text)...").
+V || M0192 || DIVERGENT || COPY-07 || low || 20 || pattern=typography Ellipsis is "…"; "Search people..." uses three dots. Fixture.
+V || R09246 || DIVERGENT || TYPE-04 || low || 37 || <h2> takes heading-section; fixture h2s are "text-lg font-bold mb-4" (37, 62, 112) and bare (93).
+V || M0193 || DIVERGENT || COPY-07 || low || 43 || pattern=typography Ellipsis is "…"; "Search with recents...". Fixture.
+V || M0194 || DIVERGENT || COPY-07 || low || 43 || pattern=typography Three-dot ellipsis in fixture placeholder.
+V || R09241 || COMPLIANT || AC-01 || - || 79 || ac-results-inline from the ac-* family.
+V || R09240 || DIVERGENT || FORM-01 || low || 85 || Fields via the builder; fixture focus sinks are raw <input type=text> (85, 95). Fixture.
+V || M0456 || DIVERGENT || STYLE-01 || low || 110 || pattern=spacing No inline style=; fixture spacer div style="min-height: 90vh". Fixture.
+V || M0540 || COMPLIANT || TOUCH-01 || - || 110 || pattern=spacing False positive: min-height sizes a spacer div, not a touch target.
+V || M0195 || DIVERGENT || COPY-07 || low || 118 || pattern=typography Ellipsis is "…"; "Search near bottom...". Fixture.
+V || M0196 || DIVERGENT || COPY-07 || low || 118 || pattern=typography Three-dot ellipsis in fixture placeholder.
+V || R13583 || DIVERGENT || COLOR-02 || low || 10 || Colour never decoration; search-bar fixture body is bg-primary, h1 "text-xl font-bold". Fixture.
+V || R09254 || UNCOVERED || - || - || 12 || ambiguous TYPE-04: fixture h1 with size/weight utilities; rule names h2-h4 only.
+V || R09251 || DIVERGENT || SPACE-01 || low || 18 || Tailwind scale spacing; fixture contenteditable uses min-h-[100px]. Fixture.
+V || R13586 || DIVERGENT || STYLE-01 || low || 12 || No CSS outside components/; static 400 page carries its own <style> with oklch tokens mirrored from the theme (same template as 404).
+V || R13585 || DIVERGENT || STYLE-01 || low || 12 || Rule: no per-page CSS. Code: inline <style> copying theme tokens (commented), theme script, a.action button look, footer code chip; static file outside the asset pipeline.
+V || R13589 || DIVERGENT || STYLE-01 || medium || 14 || No per-page CSS; 406 page inlines hex copies of the tokens and darkens only by prefers-color-scheme, so a saved theme choice is ignored.
+V || R13587 || DIVERGENT || STYLE-01 || low || 12 || Static 422 page with inline <style> token copy (same template as 404).
+V || R13588 || DIVERGENT || STYLE-01 || low || 12 || Static 500 page with inline <style> token copy (same as 404 plus mailto footer).
+F || app/views/sessions/reset_token.html.erb || 20 || other || door-heading-not-hero || DIVERGENT || HERO-01 || medium || Every page's header is a hero_panel; set/reset password page uses sessions/_heading (centred h1 and lede).
+F || app/views/sessions/reset_password_confirmation.html.erb || 4 || other || door-heading-not-hero || DIVERGENT || HERO-01 || medium || Every page's header is a hero_panel; "Check Your Email" uses sessions/_heading.
+F || app/views/sso/hand_back.html.erb || 10 || other || door-heading-not-hero || DIVERGENT || HERO-01 || medium || Every page's header is a hero_panel; "Signed In" uses sessions/_heading.
+F || app/views/sso/invalid_request.html.erb || 4 || other || door-heading-not-hero || DIVERGENT || HERO-01 || medium || Every page's header is a hero_panel; "Something Went Wrong" uses sessions/_heading.
+F || app/views/test_harness/autocomplete_fixture.html.erb || 12 || other || fixture-no-hero || DIVERGENT || HERO-01 || low || Every page's header is a hero_panel; fixture page has a raw h1. Fixture.
+F || app/views/test_harness/search_bar_fixture.html.erb || 12 || other || fixture-no-hero || DIVERGENT || HERO-01 || low || Every page's header is a hero_panel; fixture page has a raw h1. Fixture.
+F || public/400.html || 153 || other || static-error-no-hero || DIVERGENT || HERO-01 || medium || Every page's header is a hero_panel; static error page has its own h1 in a styled main panel.
+F || public/404.html || 153 || other || static-error-no-hero || DIVERGENT || HERO-01 || medium || Every page's header is a hero_panel; static error page has its own h1 in a styled main panel.
+F || public/406-unsupported-browser.html || 87 || other || static-error-no-hero || DIVERGENT || HERO-01 || medium || Every page's header is a hero_panel; static error page has its own h1 in a styled main panel.
+F || public/422.html || 153 || other || static-error-no-hero || DIVERGENT || HERO-01 || medium || Every page's header is a hero_panel; static error page has its own h1 in a styled main panel.
+F || public/500.html || 153 || other || static-error-no-hero || DIVERGENT || HERO-01 || medium || Every page's header is a hero_panel; static error page has its own h1 in a styled main panel.
+F || app/views/profile_photos/crop.html.erb || 27 || cards || visible-howto-card || DIVERGENT || HELP-02 || medium || A how-to or legend goes in one collapsed ui_disclosure variant :card; crop's Quick Guide (task how-to plus button legend) is an always-open card from lg up.
+F || app/views/profile/_bmid.html.erb || 26 || buttons || second-primary || DIVERGENT || BTN-04 || medium || One primary action per view; "Adjust" is :primary in the BMID section while profile/show:161 "My Information Is Correct" is also :primary when both show.
+F || app/views/sessions/_password_form.html.erb || 60 || buttons || submit-in-plain-div || DIVERGENT || BTN-07 || medium || Buttons sit in a button_row; Sign In submit sits in a bare <div>.
+F || app/views/sessions/forgot.html.erb || 32 || buttons || submit-in-plain-div || DIVERGENT || BTN-07 || medium || Buttons sit in a button_row; Send Reset Link sits in a bare <div>.
+F || app/views/sessions/reset_token.html.erb || 63 || buttons || submit-in-plain-div || DIVERGENT || BTN-07 || medium || Buttons sit in a button_row; the password submit sits in a bare <div>.
+F || app/views/sessions/_sso_door.html.erb || 10 || buttons || button-no-row || DIVERGENT || BTN-07 || medium || Buttons sit in a button_row; the SSO button_link stands alone with margin classes.
+F || app/views/sso/hand_back.html.erb || 17 || buttons || button-in-plain-div || DIVERGENT || BTN-07 || medium || Buttons sit in a button_row; "Continue to <client>" sits in div.pt-4.
+F || app/views/sessions/_passkey_door.html.erb || 13 || buttons || button-no-row || DIVERGENT || BTN-07 || medium || Buttons sit in a button_row; the passkey button_action stands alone, full width.
+F || app/views/sessions/_password_form.html.erb || 7 || forms || full-width-fields || DIVERGENT || FORM-07 || low || Field widths fit their content (email w-full sm:w-72); email and password fields fill the column with no width: (login-input).
+F || app/views/sessions/forgot.html.erb || 14 || forms || full-width-fields || DIVERGENT || FORM-07 || low || Email field should be w-full sm:w-72; it takes the full column width (login-input, no width:).
+F || app/views/sessions/reset_token.html.erb || 29 || forms || full-width-fields || DIVERGENT || FORM-07 || low || Field widths fit content (short text w-full sm:w-64); password fields at 29 and 47 fill the column.
+F || app/views/profile/camp_edit.html.erb || 25 || forms || form-inside-section || DIVERGENT || FORM-08 || low || Form page is ui_form with sections inside; here ui_section wraps the ui_form.
+F || app/views/profile/emergency_contact_edit.html.erb || 28 || forms || form-inside-section || DIVERGENT || FORM-08 || low || Form page is ui_form with sections inside; here ui_section wraps the ui_form.
+F || app/views/register/show.html.erb || 9 || forms || hero-no-back-link || DIVERGENT || FORM-08 || low || A form page's hero has a back link; the registration hero has none on its form step.
+F || app/views/application/_top_menu.html.erb || 92 || buttons || title-case-preposition || DIVERGENT || COPY-03 || low || Prepositions of four letters or fewer stay lowercase; menu buttons read "Switch To Dark Theme" and "Switch To Light Theme".
+F || app/views/sessions/new.html.erb || 45 || typography || question-heading || DIVERGENT || COPY-03 || low || A heading is a label, not a question; h2 and nav label read "Audit Training? Want to be a Ranger?".
+F || public/400.html || 153 || typography || sentence-case-heading || DIVERGENT || COPY-03 || low || Headings are Title Case; h1 reads "The Clubhouse couldn’t read that request." as a sentence.
+F || public/404.html || 153 || typography || sentence-case-heading || DIVERGENT || COPY-03 || low || Headings are Title Case; h1 reads "That page isn’t here." as a sentence.
+F || public/406-unsupported-browser.html || 87 || typography || sentence-case-heading || DIVERGENT || COPY-03 || low || Headings are Title Case; h1 reads "This browser is too old for the Clubhouse." as a sentence.
+F || public/422.html || 153 || typography || sentence-case-heading || DIVERGENT || COPY-03 || low || Headings are Title Case; h1 reads "That change was rejected." as a sentence.
+F || public/500.html || 153 || typography || sentence-case-heading || DIVERGENT || COPY-03 || low || Headings are Title Case; h1 reads "Something broke on our end." as a sentence.
+F || app/views/shared/_autocomplete.html.erb || 1 || typography || three-dot-ellipsis || DIVERGENT || COPY-07 || low || Ellipsis is "…"; the component's default placeholder is "Search..." (callers that pass none show it).
+F || app/views/test_harness/autocomplete_fixture.html.erb || 85 || forms || unlabelled-input || DIVERGENT || FORM-02 || low || Every field has a visible label; fixture inputs at 85 and 95 have none. Fixture.
+F || app/views/profile_photos/crop.html.erb || 29 || icons || decorative-primary-icon || DIVERGENT || COLOR-05 || low || Icons are neutral unless they convey status; Quick Guide lightbulb is text-primary.
+F || app/views/sessions/_password_form.html.erb || 17 || icons || warning-field-icons || DIVERGENT || COLOR-05 || low || Icons are neutral unless status; field icons use icon_class "... text-warning" (17, 43).
+F || app/views/sessions/forgot.html.erb || 24 || icons || warning-field-icons || DIVERGENT || COLOR-05 || low || Icons are neutral unless status; envelope field icon is text-warning.
+F || app/views/sessions/reset_token.html.erb || 40 || icons || warning-field-icons || DIVERGENT || COLOR-05 || low || Icons are neutral unless status; key field icons are text-warning (40, 57).
+F || app/views/sessions/new.html.erb || 18 || icons || warning-decorative-icon || DIVERGENT || COLOR-05 || low || Icons are neutral unless status; the days-to-burn flame is text-warning (decorative).
+S || HERO-01 || 25 || 13 || 25 full pages (layouts excluded); sessions/new and forgot by rows, the rest by F. Door pages share sessions/_heading; public pages are static.
+S || HERO-02 || 25 || 0 || 13 pages have a hero; 10 descriptions are one sentence, crop and profile_languages new/edit have none.
+S || HERO-03 || 25 || 0 || No page in scope is year-scoped.
+S || HERO-04 || 25 || 0 || All hero pages but register/show carry back_to; register's in-page "Back to Start" is ruled ambiguous (R13505).
+S || HELP-01 || 25 || 0 || No foot-of-page help sections; profile/show links to #alerts from a callout.
+S || HELP-02 || 25 || 1 || crop Quick Guide. Form and operate pages keep Q&A lists in sections and callouts, which the rule allows there; no reports or logs in scope.
+S || STAT-01 || 25 || 0 || No stat tiles in scope.
+S || STAT-02 || 25 || 0 || No hero stats.
+S || TABLE-02 || 64 || 0 || Three responsive: false tables (alerts x2, clothing, languages) have 2-3 columns.
+S || TABLE-04 || 64 || 0 || No filtered tables.
+S || TABLE-05 || 64 || 0 || No CSV exports.
+S || BTN-03 || 64 || 0 || No xs buttons.
+S || BTN-04 || 25 || 1 || profile/show with _bmid Adjust; door pages have no :primary at all (warning submits).
+S || BTN-05 || 64 || 7 || _password_form, forgot, reset_token, _sso_door, sso/hand_back (warning as primary); _bmid Withdraw and profile_languages Delete (non-error destructive).
+S || BTN-07 || 64 || 8 || profile/show (2 rows), _bmid, plus six door templates by F.
+S || MODAL-02 || 64 || 0 || Three confirms (bmid withdraw, language delete, crop delete) all variant :error with an action question.
+S || FORM-02 || 64 || 1 || Fixture only. Search dialog input has a visible mode hint above it but names itself by aria-label (see Q).
+S || FORM-03 || 64 || 0 || register and door pages pass required: with required_label "" (asterisk, no "(required)" text); input keeps the required attribute.
+S || FORM-07 || 64 || 3 || Door-page fields fill the narrow column; register and profile edits use the documented widths.
+S || FORM-08 || 25 || 6 || camp_edit, emergency_contact_edit, register/show by F; clothing_edit (R13545) and profile_languages new/edit (R13555 wrapper) by rows.
+S || TYPE-05 || 25 || 0 || Hierarchy h1 > h2 > h3 holds on every page; _dialog_status uses h3 inside dialogs with no h2 (see Q).
+S || COLOR-02 || 64 || 3 || crop highlight span (row) and two fixture bg-primary bodies (rows).
+S || COLOR-03 || 64 || 1 || profile/show text-error instruction pair (row); photo do/don't colour is status with icons.
+S || A11Y-01 || 64 || 0 || Alerts yes/no differ by icon shape; register chips carry icons and aria-current.
+S || A11Y-02 || 64 || 0 || Every icon-only control in scope (envelope, phone menus, reveal, chip remove, crop tools, capture) has an accessible name.
+S || LAYOUT-03 || 0 || 0 || No records-management pages in scope.
+S || COPY-03 || 64 || 7 || _top_menu, sessions/new, five public pages.
+S || COPY-04 || 64 || 2 || crop "Submit Photo" (row), profile_languages/index Cancel as leave (row); bare "Save" ruled ambiguous.
+S || COPY-10 || 64 || 0 || Paragraphs stay at three sentences or fewer; button labels are specific.
+S || TOAST-01 || 31 || 0 || application layout renders flash via ui_toast_render; sessions, me/timesheet and the sidebar layouts reach it through render template. print, photo_board and bookmark render no flash (see Q).
+Q || layouts/print, layouts/photo_board and layouts/bookmark render no flash at all. Harmless only if no controller sets flash before landing on those pages; that cannot be checked from the views.
+Q || The door pages (sign in, forgot, reset, SSO) form their own consistent family: amber :warning lg submits, sessions/_heading, login.css panels, warning-tinted icons. The guide documents login.css and a motion exception but no hero or button exception; one written ruling would settle a dozen findings.
+Q || sessions/forgot.html.erb shows a "Reset Password Disabled" warning above a working reset form; if the feature really is off, the form should not render, and if it is on, the notice is stale.
+Q || profile/_alerts yes/no icons have no text alternative, so a screen reader hears empty SMS/Email cells; fa_icon label: (as ICON-04 describes) would fix it.
+Q || Copy errors: profile/show:62 "Be alerted when to when new Clubhouse Message are received"; profile/_mailing_address:8-9 "to update update your profile"; layouts/me/timesheet:9 "Any timesheet entry ... are placeholders"; profile/show:49 says "Withdraw Photo" but the button reads "Withdraw".
+Q || The search mode segmented control shows the selected mode only by a primary fill (has-[:checked]:bg-primary); worth a check that the checked segment reads as selected without colour.
+Q || The search dialog input is named by aria-label while the visible mode hint above it is not tied to it; tying the hint by aria-labelledby or aria-describedby would match FORM-02's intent.
+Q || _dialog_status titles are h3 inside dialogs that have no h2; h2 would keep the dialog's own outline clean.
+Q || Register step chips use sentence-case questions ("Why are you here?") as labels; COPY-03 does not list badges, but they read as headings.
+Q || application/_recipient_avatar has no partial caller per the Phase 1 agent; it may be dead.
+Q || profile_photos/new "must NOT have" and profile/_mailing_address "are NOT synced" use capitals for emphasis.

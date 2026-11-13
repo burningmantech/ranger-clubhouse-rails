@@ -1,0 +1,426 @@
+V || R13361 || COMPLIANT || A11Y-01 || - || 90 || "No pre-event pass" and "No BMID" are red bold words, so the status is said in text, not colour alone; "Not recorded" is a muted fact-word (ambiguous EMPTY-02).
+V || R13362 || DIVERGENT || TYPE-03 || medium || 130 || text-sm is never for table content; the Radios cell prints each radio barcode and "None issued" in text-sm.
+V || R00413 || DIVERGENT || TYPE-03 || medium || 130 || text-sm is never for table content; radio lines in the Radios cell are text-sm (not text-xs, so TYPE-02 does not apply).
+V || R13202 || COMPLIANT || BADGE-01 || - || 5 || Flake and Rogue badges built through ui_badge with icon and word.
+V || R13204 || UNCOVERED || - || - || 14 || Detail strings joined with " · " middot separators around the slot_shift_time span; no rule on inline separators.
+V || R00414 || UNCOVERED || - || - || 14 || The glyph is a " · " text separator, not an icon; ICON-01 does not address typographic separators.
+V || R13203 || COMPLIANT || LAYOUT-03 || - || 57 || Drill-down rows badge only exception counts, size "base", omitted at zero, through ui_badge.
+V || M0216 || DIVERGENT || COPY-08 || low || 9 || pattern=typography Dates come from DateTimeHelper; helper uses a literal strftime("%H:%M") where DateTimeHelper::HOUR_MINS exists.
+V || R00424 || COMPLIANT || COLOR-05 || - || 21 || Status icon triangle-exclamation drawn by fa_icon with icon-warning.
+V || R13336 || COMPLIANT || A11Y-01 || - || 21 || Unstaffed period carries a warning icon, a row tint and sr-only gap words, so the status is not colour alone.
+V || R13338 || UNCOVERED || - || - || 30 || A zero staffing count is a muted non-link span "0"; no rule on de-emphasised zero counts.
+V || R13337 || COMPLIANT || TOUCH-01 || - || 35 || Count links use LinkHelper::TABLE_LINK_CLASSES, the documented touch exception, with aria-label; bar links use hq-gantt-hit.
+V || M0217 || COMPLIANT || COPY-08 || - || 52 || pattern=typography strftime in a helper with the DateTimeHelper::MONTH_DAY_TIME format, not in a view.
+V || R13333 || UNCOVERED || - || - || 76 || Hand-built Gantt chart (hq-gantt* custom CSS, grid min-w-160, daisyUI tooltip with tooltip-content); charts have no rule.
+V || M0218 || COMPLIANT || COPY-08 || - || 100 || pattern=typography strftime in a helper with DateTimeHelper::MONTH_DAY_TIME.
+V || R13335 || UNCOVERED || - || - || 156 || Sticky lane-name column inside the chart (sticky left-0 z-10 bg-base-100, static from lg); chart internals have no rule.
+V || R00445 || DIVERGENT || TYPE-03 || medium || 226 || text-sm is for secondary content only; the bar's signed-up count (the figure the chart exists for) is text-sm, as are the hour axis and legend.
+V || R13334 || COMPLIANT || A11Y-01 || - || 297 || Bars differ by fill and hatching, each mark has an aria-label, and a legend names every key, so colour is not the sole carrier.
+V || M0219 || COMPLIANT || COPY-08 || - || 290 || pattern=typography strftime in a helper with DateTimeHelper constants (HOUR_MINS, HOUR_MIN_DAY, MONTH_DAY_TIME).
+V || R13339 || UNCOVERED || - || - || 296 || Chart legend row: flex-wrap text-sm muted keys with size-3 rounded-xs swatches; charts and legends have no component rule.
+V || R13190 || UNCOVERED || - || - || 8 || Comma-joined person_display_link callsigns in one cell; link helpers have no rule.
+V || R13189 || COMPLIANT || LAYOUT-03 || - || 15 || Exception-only badge "N no shows", size base, omitted at zero, via ui_badge.
+V || R13258 || COMPLIANT || TABLE-04 || - || 15 || Day chip passed to filter_bar chips: as a {label:, url:} hash; it still renders through filter_bar.
+V || R13254 || UNCOVERED || - || - || 31 || Hand-built stacked step chart (ct* custom CSS classes, custom-property geometry); charts have no rule.
+V || M0437 || DIVERGENT || STYLE-01 || low || 32 || pattern=other No inline style= attribute; chart root carries style "--ymax" holding a computed number.
+V || M0220 || COMPLIANT || COPY-08 || - || 53 || pattern=typography Helper strftime with DateTimeHelper::MONTH_DAY_TIME.
+V || R13256 || UNCOVERED || - || - || 59 || An <i> element used as a colour swatch in the chart legend, not an icon; no rule on legend swatches.
+V || R00466 || DIVERGENT || TYPE-02 || high || 71 || text-xs never for labels a reader needs; chart y-axis ticks, day numbers and month names are text-xs (legend is text-sm).
+V || R00450 || UNCOVERED || - || - || 59 || tag.i is a coloured legend swatch, not an icon, so ICON-01 does not apply; swatches have no rule.
+V || M0438 || DIVERGENT || STYLE-01 || low || 69 || pattern=other No inline style=; each y tick carries style "--y" with a computed number.
+V || R13257 || DIVERGENT || TYPE-02 || high || 111 || text-xs never for labels a reader needs; axis tick labels, day numbers and month labels use text-xs.
+V || M0439 || DIVERGENT || STYLE-01 || low || 84 || pattern=other No inline style=; each layer carries style "--h" with the credit rate.
+V || R13255 || UNCOVERED || - || - || 87 || Chart steps are daisyUI tooltips with data-tip and side classes; tooltips have no rule.
+V || M0440 || DIVERGENT || STYLE-01 || low || 88 || pattern=other No inline style=; each step carries style "--w" with its minutes.
+V || M0221 || DIVERGENT || COPY-08 || low || 117 || pattern=typography Dates come from DateTimeHelper; month axis label uses a literal strftime("%B").
+V || M0441 || DIVERGENT || STYLE-01 || low || 119 || pattern=other No inline style=; month cells carry style "--w" with a day count.
+V || R13172 || UNCOVERED || - || - || 103 || Stat tiles double as filter links via ui_stat_link with aria_label, unlinked when nothing to open; no rule on clickable stat tiles.
+V || R13174 || COMPLIANT || A11Y-01 || - || 80 || Only the Qualified tile turns success, and its number and label carry the meaning.
+V || R13178 || DIVERGENT || STAT-01 || high || 89 || Summary tiles go in ui_stat_row; this lookup feeds the hand-rolled lg:grid-cols-4/5/6 scoreboard grid.
+V || R13173 || COMPLIANT || STAT-01 || - || 99 || ui_stat_box class: is a documented option; ring-2 ring-primary marks the active filter, hover ring on the link.
+V || R13175 || COMPLIANT || A11Y-01 || - || 111 || Yes/No told apart by icon shape and sr-only words, not colour alone.
+V || R00472 || COMPLIANT || COLOR-05 || - || 111 || Status icon circle-check uses icon-success via fa_icon.
+V || R13176 || COMPLIANT || BADGE-01 || - || 123 || Verdict badges via ui_badge with whitespace-nowrap and a title spelling out what is missing.
+V || R13177 || COMPLIANT || A11Y-01 || - || 163 || Shortfall "N missing" is amber text that says the status in words.
+V || R00478 || UNCOVERED || - || - || 14 || Glyphs are " • " separators and an en dash date range in a meta string, not icons.
+V || R13226 || UNCOVERED || - || - || 14 || Drill-down meta line joined with bullets and an en dash; no rule on meta separators.
+V || R13227 || COMPLIANT || EMPTY-02 || - || 51 || A missing position prints the literal "—".
+V || R13228 || COMPLIANT || BADGE-01 || - || 55 || Inactive badge via ui_badge :secondary with icon.
+V || M0222 || DIVERGENT || COPY-08 || low || 89 || pattern=typography Dates come from DateTimeHelper; helper formats with literal strftime("%b %-d").
+V || R00485 || UNCOVERED || - || - || 22 || " • " separators and en dash in a meta string, not icons.
+V || R13214 || UNCOVERED || - || - || 22 || Drill-down meta joined with bullets and an en dash range; no rule.
+V || R13215 || COMPLIANT || BADGE-01 || - || 34 || Inactive badge via ui_badge.
+V || R13216 || COMPLIANT || A11Y-01 || - || 64 || "No sign-ups" is said in words; red only while the shift is active.
+V || R13217 || UNCOVERED || - || - || 90 || Linked-shift block indented with border-s-2 border-line ps-2 muted text; no rule on nested sub-lists in a cell.
+V || M0223 || DIVERGENT || COPY-08 || low || 136 || pattern=typography Dates come from DateTimeHelper; helper uses literal "%b %-d" and "%b %-d, %Y".
+V || R13316 || COMPLIANT || A11Y-01 || - || 11 || Gap shading lg:bg-warning/15 backs a dash or 0 that says the gap on its own.
+V || R13317 || UNCOVERED || - || - || 21 || Vacant cells hidden below lg and replaced by a mobile-only "Vacant:" line; no rule on per-cell responsive hiding.
+V || R13318 || DIVERGENT || TYPE-03 || medium || 100 || text-sm is never for table content; the shift window time inside a coverage cell is text-sm.
+V || R00501 || DIVERGENT || TYPE-03 || medium || 100 || text-sm is never for table content; window time line in coverage cells uses text-sm.
+V || R13422 || COMPLIANT || TABLE-04 || - || 17 || Window chip built as a {label:, url:} hash but rendered by filter_bar.
+V || R00502 || UNCOVERED || - || - || 27 || " · " text separators in summary and shift strings, not icons.
+V || R13423 || COMPLIANT || BADGE-01 || - || 47 || Exception and notice badges via ui_badge, notice badge with icon.
+V || R13301 || UNCOVERED || - || - || 125 || hidden_field_tag per carried param with id: nil; hidden fields are not judged by FORM-01.
+V || R13299 || COMPLIANT || BADGE-01 || - || 173 || GD/TS chips and vehicle badges via ui_badge, with text carrying yes/no.
+V || M0224 || COMPLIANT || COPY-08 || - || 181 || pattern=typography Helper strftime with DateTimeHelper::HOUR_MINS.
+V || R13298 || DIVERGENT || COLOR-03 || medium || 247 || No coloured text for emphasis; mode words "ON DUTY" (bold red) and "SCHEDULED" (bold green) are not statuses. The -BL- red text is a real status with words.
+V || R13300 || COMPLIANT || A11Y-01 || - || 240 || Tile variants follow counts and each tile states its number and label.
+V || R13398 || COMPLIANT || BADGE-01 || - || 29 || slot_status_badge builds through ui_badge with icon and word.
+V || R13399 || UNCOVERED || - || - || 46 || Venue short label span with title: full label tooltip; tooltips have no rule.
+V || M0225 || COMPLIANT || COPY-08 || - || 102 || pattern=typography Helper strftime with DateTimeHelper::MONTH_DAY_TIME (select option labels).
+V || M0226 || COMPLIANT || COPY-08 || - || 116 || pattern=typography Helper strftime with DateTimeHelper::MONTH_DAY_TIME for a chip label.
+V || R13353 || COMPLIANT || ALERT-01 || - || 21 || Error and warning notices use ui_callout_box with titles.
+V || R13360 || COMPLIANT || EMPTY-01 || - || 44 || Both empty branches use ui_empty_state.
+V || R13354 || COMPLIANT || A11Y-01 || - || 58 || Tile colours follow counts; number and label carry the meaning.
+V || R13355 || COMPLIANT || HELP-02 || - || 74 || One collapsed ui_disclosure card "About This Report" with an instruction-list, under the stat row, above the filter bar.
+V || R07660 || COMPLIANT || LIST-01 || - || 75 || The <dl> is the documented instruction-list, not a data table.
+V || R13356 || UNCOVERED || - || - || 136 || ambiguous FORM-07: filter-panel selects are w-full with wrapper flex-1 sharing a row; the width table does not settle selects laid out across a filter panel.
+V || R13357 || DIVERGENT || TYPE-03 || medium || 190 || text-sm is never for table content; first-shift time and description lines are text-sm.
+V || R07668 || DIVERGENT || TYPE-03 || medium || 190 || text-sm is never for table content; shift time and description in the cell are text-sm.
+V || R13358 || COMPLIANT || A11Y-01 || - || 195 || "No pre-event shift" says the status in words alongside red; "Not recorded" muted fact-word.
+V || R13359 || COMPLIANT || BADGE-01 || - || 203 || On/Off site and Signed/Unsigned badges via ui_badge with icons.
+V || R13370 || UNCOVERED || - || - || 15 || Labelled progress: label and counts row, ui_progress_bar, caption line; no rule for a labelled bar block.
+V || R13371 || COMPLIANT || PROG-01 || - || 20 || ui_progress_bar used; class "my-1" is spacing and breaks no rule.
+V || R13369 || COMPLIANT || EMPTY-01 || - || 30 || Page-level and in-section empty states use ui_empty_state.
+V || R13363 || COMPLIANT || HELP-02 || - || 36 || Collapsed "About This Report" card with instruction-list under the stat row.
+V || R07683 || COMPLIANT || LIST-01 || - || 37 || The <dl> is an instruction-list, not a table.
+V || R13364 || DIVERGENT || LAYOUT-02 || low || 75 || Columns are grid grid-cols-1 lg:grid-cols-N gap-4; section bodies use gap-x-8.
+V || R13368 || DIVERGENT || EMPTY-02 || low || 101 || An empty value prints "—"; the Still Marked On Site tile prints "n/a".
+V || R13365 || DIVERGENT || STAT-01 || medium || 102 || Summary tiles go in ui_stat_row, never a hand-rolled grid; paired tiles sit in grid grid-cols-2 gap-2 (lines 102, 137).
+V || R13366 || UNCOVERED || - || - || 122 || Lead line p font-semibold text-heading over the Alpha bars; lighter than the section title, so not a TYPE-04 departure.
+V || R13367 || COMPLIANT || TABLE-01 || - || 151 || ui_table with caption, striped, responsive default; progress bar in a cell.
+V || R13191 || COMPLIANT || LAYOUT-03 || - || 18 || Drill-down index count is one text-lg summary line, not stat boxes.
+V || R07690 || UNCOVERED || - || - || 20 || &middot; separators in the count line, not icons.
+V || R07695 || COMPLIANT || LIST-01 || - || 31 || The <dl> is an instruction-list.
+V || R13192 || COMPLIANT || HELP-02 || - || 30 || Definitions in one collapsed About This Report card; inline link in a dd.
+V || R13193 || COMPLIANT || LAYOUT-03 || - || 52 || Drill-down rows constrained to lg:w-3/4.
+V || R13194 || COMPLIANT || EMPTY-01 || - || 61 || ui_empty_state.
+V || R13195 || COMPLIANT || A11Y-01 || - || 23 || Tile colours follow counts with number and label.
+V || R13196 || COMPLIANT || HELP-02 || - || 37 || Collapsed card with a one-pair instruction-list under the stat row.
+V || R07712 || COMPLIANT || LIST-01 || - || 38 || The <dl> is an instruction-list.
+V || R13197 || COMPLIANT || CARD-03 || - || 48 || One ui_section per shift, border: false, title built by a helper.
+V || R13198 || UNCOVERED || - || - || 53 || Sign-up count as a p text-base text-body line inside the section instead of a section badge; no rule.
+V || R13199 || UNCOVERED || - || - || 58 || Fixed t.heading widths 20%/15% so stacked per-shift tables align; no rule on column widths.
+V || R13200 || UNCOVERED || - || - || 86 || Footer summary paragraph under the tables with " · " separators; no rule.
+V || R07706 || UNCOVERED || - || - || 87 || " · " separators in a summary line, not icons.
+V || R13201 || COMPLIANT || EMPTY-01 || - || 94 || Three ui_empty_state branches; the first builds its message with .html_safe to keep &mdash;.
+V || R13327 || COMPLIANT || MODAL-01 || - || 10 || modal_dialog from ModalHelper with a button_row footer and modal_close_button.
+V || M0514 || COMPLIANT || TABLE-02 || - || 12 || pattern=tables-lists responsive: false on a three- or four-column dialog table, the short-table case the rule allows.
+V || M0236 || DIVERGENT || COPY-08 || low || 25 || pattern=typography Never strftime in a view; cell formats signup.begins with strftime(MONTH_DAY_TIME).
+V || R13330 || COMPLIANT || BADGE-01 || - || 30 || On Site / Off Site via ui_badge with icons.
+V || R07728 || UNCOVERED || - || - || 37 || An unstyled <ul> of desk years inside a cell, not a data table; no rule on in-cell lists.
+V || R13328 || UNCOVERED || - || - || 37 || Unstyled <ul>/<li> list of HQ desk years inside a table cell; no rule.
+V || R13329 || UNCOVERED || - || - || 45 || ambiguous EMPTY-02: muted words "No years at an HQ desk" state a fact rather than an empty value.
+V || R13331 || COMPLIANT || EMPTY-01 || - || 53 || ui_empty_state inside the dialog.
+V || R13332 || COMPLIANT || TABLE-01 || - || 3 || ui_table with caption, class and container_class overrides; warning row state is paired with an icon and words.
+V || R07744 || COMPLIANT || BTN-01 || - || 18 || hq_forecast_other_page_link builds through button_link.
+V || R07747 || COMPLIANT || LIST-01 || - || 24 || The <dl> is an instruction-list.
+V || R13324 || COMPLIANT || HELP-02 || - || 23 || Legend in one collapsed About This Report card above the filter bar.
+V || R13325 || COMPLIANT || TABLE-04 || - || 32 || filter_bar used for the period control, with a count and no chips.
+V || R13326 || COMPLIANT || EMPTY-01 || - || 51 || ui_empty_state.
+V || R07762 || COMPLIANT || BTN-01 || - || 25 || Area link helper builds through button_link.
+V || R13319 || DIVERGENT || BTN-07 || low || 25 || Buttons sit in a button_row; the sibling-report button is wrapped in a bare tag.div "mb-4" by the helper (hq_forecast_helper.rb:119).
+V || M0187 || COMPLIANT || COPY-07 || - || 32 || pattern=typography "Check-Ins" is the hyphenated noun, as the rule asks.
+V || R13320 || COMPLIANT || A11Y-01 || - || 35 || Warning tile states its count and label.
+V || R07765 || COMPLIANT || LIST-01 || - || 42 || The <dl> is an instruction-list.
+V || R13321 || COMPLIANT || HELP-02 || - || 41 || Collapsed About This Report card under the stat row, above the filter bar.
+V || R13322 || COMPLIANT || CARD-03 || - || 77 || ui_section per day with a worded "N unstaffed" warning badge.
+V || R13323 || COMPLIANT || EMPTY-01 || - || 83 || ui_empty_state.
+V || M0390 || COMPLIANT || HERO-01 || - || 1 || pattern=navigation False positive: a modal dialog rendered into the "modal" Turbo Frame, not a page.
+V || M0237 || DIVERGENT || COPY-08 || low || 2 || pattern=typography Never strftime in a view; dialog title formats @period with strftime(MONTH_DAY_TIME).
+V || M0391 || COMPLIANT || HERO-01 || - || 1 || pattern=navigation False positive: modal dialog content for the "modal" frame, not a page.
+V || R13179 || COMPLIANT || LAYOUT-03 || - || 18 || Drill-down index count as one text-lg line.
+V || R07773 || UNCOVERED || - || - || 20 || &middot; separator, not an icon.
+V || R07778 || COMPLIANT || LIST-01 || - || 27 || The <dl> is an instruction-list.
+V || R13180 || COMPLIANT || HELP-02 || - || 26 || Definition in one collapsed About This Report card.
+V || R13181 || COMPLIANT || LAYOUT-03 || - || 45 || Row list constrained to lg:w-3/4.
+V || R13182 || COMPLIANT || EMPTY-01 || - || 55 || ui_empty_state.
+V || R13183 || COMPLIANT || A11Y-01 || - || 25 || Tile colours follow counts with number and label.
+V || R13184 || DIVERGENT || BTN-07 || low || 33 || Buttons sit in a button_row; export_csv_link stands alone in a div "my-4".
+V || R13185 || UNCOVERED || - || - || 40 || Fixed heading widths 30%/20%; no rule on column widths.
+V || R13186 || UNCOVERED || - || - || 52 || Count line under the callsigns as a block text-base muted span; no rule.
+V || R13187 || UNCOVERED || - || - || 62 || Footer summary paragraph with &middot;; no rule.
+V || R07789 || UNCOVERED || - || - || 63 || &middot; separator, not an icon.
+V || R13188 || COMPLIANT || EMPTY-01 || - || 70 || Two distinct ui_empty_state messages.
+V || R13405 || COMPLIANT || ALERT-01 || - || 11 || Warnings use ui_callout_box; the my-2 div only spaces them.
+V || R13410 || DIVERGENT || FORM-06 || medium || 27 || Errors show through the builder and ui_form's summary; copy failures arrive as flash.now[:error] toasts (position_credit_copies_controller.rb:28).
+V || R13406 || COMPLIANT || HELP-02 || - || 29 || On a page the reader operates, a sentence joins the section it explains.
+V || R13407 || COMPLIANT || CARD-03 || - || 49 || ui_section with a badge count.
+V || R13408 || UNCOVERED || - || - || 57 || bulk_select class "mb-2" wrapping a ui_accordion per position; bulk selection has no rule.
+V || M0238 || DIVERGENT || COPY-08 || low || 81 || pattern=typography Never strftime in a view; start_time formatted inline.
+V || R13409 || DIVERGENT || ICON-01 || low || 83 || Icons are FontAwesome via fa_icon; a "&rarr;" glyph marks the shifted time.
+V || M0239 || DIVERGENT || COPY-08 || low || 83 || pattern=typography Never strftime in a view; adjusted start time formatted inline.
+V || R07814 || DIVERGENT || ICON-01 || low || 83 || Icons come from fa_icon; &rarr; glyphs used as arrow markers (lines 83, 89).
+V || M0240 || DIVERGENT || COPY-08 || low || 87 || pattern=typography Never strftime in a view; end_time formatted inline.
+V || M0241 || DIVERGENT || COPY-08 || low || 89 || pattern=typography Never strftime in a view; adjusted end time formatted inline.
+V || R13411 || COMPLIANT || EMPTY-01 || - || 102 || ui_empty_state.
+V || M0148 || UNCOVERED || - || - || 109 || pattern=buttons ambiguous COPY-04: "Update" is banned for saving a form; this submit only recalculates a preview, which the verb table does not settle.
+V || R13248 || COMPLIANT || FORM-06 || - || 1 || ui_form(@credit) with the default summary and builder field errors.
+V || R13249 || UNCOVERED || - || - || 15 || Multiple select pinned with class "h-64 min-h-0"; no rule on multi-select height.
+V || R13250 || COMPLIANT || HELP-02 || - || 20 || On a form page the explanation sentence joins its fieldset.
+V || R13251 || COMPLIANT || FORM-07 || - || 33 || Widths w-32 and w-full sm:w-64 fit content.
+V || R13252 || COMPLIANT || BTN-07 || - || 41 || f.submit and cancel_link in one button_row, delete_button beside them.
+V || R13229 || COMPLIANT || HERO-03 || - || 6 || Year selector in the hero; min_year is a literal 2012 rather than year_floor.
+V || R13230 || COMPLIANT || BTN-07 || - || 10 || Actions in a button_row; the my-4 div only spaces it.
+V || R13231 || COMPLIANT || LAYOUT-03 || - || 22 || Level 1 count is one text-lg line.
+V || R13232 || COMPLIANT || LAYOUT-03 || - || 25 || Level 1 rows in lg:w-3/4.
+V || R13233 || COMPLIANT || LAYOUT-03 || - || 31 || Exception-only badge, size base, via ui_badge.
+V || R13234 || COMPLIANT || EMPTY-01 || - || 37 || Block-form ui_empty_state.
+V || R13253 || COMPLIANT || ALERT-01 || - || 9 || ui_callout_box :warning with title.
+V || R13235 || COMPLIANT || STAT-01 || - || 8 || One ui_stat_box inside ui_stat_row.
+V || R13236 || COMPLIANT || ALERT-01 || - || 13 || ui_callout_box :error with title.
+V || R13237 || COMPLIANT || BTN-07 || - || 24 || button_row holds Add (primary) and secondary actions.
+V || R13238 || COMPLIANT || FORM-07 || - || 57 || Day select w-full sm:w-44 as the width table gives for selects.
+V || R13241 || COMPLIANT || FORM-01 || - || 66 || Bulk delete form is ui_form(nil, ...) with no_error_summary; count styled muted.
+V || M0242 || DIVERGENT || COPY-08 || low || 89 || pattern=typography Never strftime in a view; From cell uses strftime(MONTH_DAY_TIME_YEAR).
+V || R13240 || DIVERGENT || COPY-08 || low || 89 || Never strftime in a view; From/To cells call strftime with DateTimeHelper constants (89-90).
+V || M0243 || DIVERGENT || COPY-08 || low || 90 || pattern=typography Never strftime in a view; To cell uses strftime.
+V || R13239 || COMPLIANT || TOUCH-02 || - || 94 || Icon-only edit_link takes btn-square, title and aria-label "Edit".
+V || R07860 || COMPLIANT || TOUCH-02 || - || 95 || btn-square passed to edit_link for an icon-only ButtonHelper button, as the rule asks.
+V || R13242 || COMPLIANT || MODAL-02 || - || 104 || confirm_modal_dialog variant :error, asks "Delete the selected position credits?" and says it cannot be undone.
+V || R07877 || COMPLIANT || MODAL-02 || - || 109 || Destructive confirm passes variant: :error.
+V || R07878 || COMPLIANT || MODAL-02 || - || 104 || turbo_confirm carries an in-app confirm_modal_dialog, not a browser string.
+V || M0268 || COMPLIANT || COPY-10 || - || 111 || pattern=buttons False positive: "submit" is a Stimulus target name, not a button label.
+V || R13243 || COMPLIANT || EMPTY-01 || - || 118 || Two distinct ui_empty_state messages.
+V || R13244 || COMPLIANT || ALERT-01 || - || 9 || ui_callout_box :error with title.
+V || R13245 || DIVERGENT || HELP-02 || medium || 22 || On a report, how-tos go in the collapsed card; the timeline keeps a visible how-to paragraph ("Hover a step...") in the section body (22-25).
+V || R13246 || COMPLIANT || TABLE-05 || - || 30 || No filter bar on the page; the export sits beside the table it describes.
+V || R13247 || COMPLIANT || EMPTY-01 || - || 54 || ui_empty_state.
+V || R13163 || UNCOVERED || - || - || 22 || text-lg count sentence with " · " separators above a scoreboard that repeats the figures; not a records-management page.
+V || R07905 || UNCOVERED || - || - || 23 || " · " separators, not icons.
+V || R13164 || DIVERGENT || STAT-01 || high || 33 || Summary tiles go in ui_stat_row, never a hand-rolled grid; scoreboard is grid grid-cols-2 lg:grid-cols-N gap-2 lg:gap-3 of linked tiles.
+V || R13166 || COMPLIANT || HELP-02 || - || 40 || ui_disclosure variant :card with class my-4 for spacing.
+V || R07911 || COMPLIANT || LIST-01 || - || 41 || The <dl> is an instruction-list.
+V || R13165 || COMPLIANT || LIST-01 || - || 41 || Q&A glossary as dl.instruction-list in the About card.
+V || R13170 || COMPLIANT || TABLE-05 || - || 89 || Export in filter_bar actions:, labelled "Export All to CSV".
+V || R13169 || UNCOVERED || - || - || 97 || ambiguous FORM-07: lone filter select at w-full with wrapper flex-1; the width table does not cover filter-panel selects.
+V || R13167 || COMPLIANT || TABLE-01 || - || 108 || ui_table with container_class for a bounded scrollport and a sticky header class.
+V || R13168 || COMPLIANT || A11Y-01 || - || 127 || Warning row tint is backed by the Missing badge and Signed Up flag in the row.
+V || R13171 || COMPLIANT || EMPTY-01 || - || 141 || Two distinct ui_empty_state messages.
+V || R13218 || UNCOVERED || - || - || 34 || ambiguous FORM-07: filter text field and select both w-full with flex-1; the width table does not settle shared filter rows.
+V || R13219 || UNCOVERED || - || - || 54 || Bare unwrapped text node labels the dropdown_scroll_list jump control; no rule on its label.
+V || R13221 || UNCOVERED || - || - || 58 || lg:w-3/4 row wrapper on a person directory that is not a records-management page.
+V || R13220 || UNCOVERED || - || - || 68 || ui_drill_down_row with id: anchor and scroll-mt-20 for jump targets; no rule.
+V || R13222 || COMPLIANT || EMPTY-01 || - || 74 || Two distinct ui_empty_state messages.
+V || R13223 || DIVERGENT || COLOR-02 || medium || 25 || Colour carries meaning only; the neutral Positions count is painted :success with no status behind it.
+V || R13224 || DIVERGENT || BTN-07 || medium || 32 || Buttons sit in a button_row; Account, Schedule and export sit in a hand-made div "my-4 flex flex-wrap gap-2".
+V || R13225 || COMPLIANT || EMPTY-01 || - || 65 || ui_empty_state.
+V || R13205 || UNCOVERED || - || - || 22 || Bare text node "Jump to a position..." before dropdown_scroll_list; no rule.
+V || R13207 || UNCOVERED || - || - || 26 || lg:w-3/4 wrapper on a non-records-management drill-down index.
+V || R13206 || UNCOVERED || - || - || 36 || ui_drill_down_row with id anchor and scroll-mt-20; no rule.
+V || R13208 || COMPLIANT || EMPTY-01 || - || 42 || ui_empty_state.
+V || R13209 || COMPLIANT || A11Y-01 || - || 27 || Empty Shifts tile states the count; colour follows it.
+V || R13210 || DIVERGENT || BTN-07 || medium || 31 || Buttons sit in a button_row; Manage Slots and export sit in a div "my-4 flex flex-wrap gap-2".
+V || R07961 || DIVERGENT || TYPE-03 || medium || 58 || text-sm is never for table content; the shift description under the time is text-sm.
+V || R13211 || DIVERGENT || TYPE-03 || medium || 58 || text-sm never for table content; description line in the row header is text-sm text-stone-subtle.
+V || R07956 || COMPLIANT || BADGE-01 || - || 62 || slot_status_badge builds through ui_badge.
+V || R13212 || COMPLIANT || TABLE-01 || - || 65 || ui_table cell with whitespace-nowrap.
+V || R13213 || COMPLIANT || EMPTY-01 || - || 75 || ui_empty_state.
+V || R13311 || UNCOVERED || - || - || 16 || <strong> shift-type name inside a one-sentence hero description; no rule on emphasis in descriptions.
+V || R07974 || COMPLIANT || LIST-01 || - || 30 || The <dl> is an instruction-list.
+V || R13312 || COMPLIANT || HELP-02 || - || 29 || Legend in one collapsed About This Report card above the filter bar.
+V || R13313 || UNCOVERED || - || - || 62 || ambiguous FORM-07: filter selects keep the builder default w-auto; the rule does not settle default widths in a filter panel.
+V || R13314 || COMPLIANT || TABLE-01 || - || 75 || ui_table with container_class, caption and heading classes; responsive default.
+V || R13315 || COMPLIANT || EMPTY-01 || - || 105 || Three distinct ui_empty_state messages.
+V || R13421 || UNCOVERED || - || - || 17 || ambiguous FORM-07: one select placed straight in filter_bar at w-full flex-1 with no form_row; neither width nor grouping rule covers it.
+V || R13412 || COMPLIANT || HELP-02 || - || 22 || Collapsed About This Report card directly under the hero, above the filter bar.
+V || R07992 || COMPLIANT || LIST-01 || - || 23 || The <dl> is an instruction-list.
+V || R13413 || UNCOVERED || - || - || 43 || lg:w-3/4 wrapper and " · " meta on a non-records-management drill-down index.
+V || R07988 || UNCOVERED || - || - || 48 || " · " separator, not an icon.
+V || R13414 || COMPLIANT || EMPTY-01 || - || 56 || Two distinct ui_empty_state messages, one with a widen hint appended.
+V || R13415 || COMPLIANT || A11Y-01 || - || 24 || Drops tile states its count.
+V || R13416 || COMPLIANT || CARD-03 || - || 42 || ui_section per shift, border: false.
+V || R13417 || UNCOVERED || - || - || 47 || Drop count as p text-base text-body inside the section; no rule.
+V || R13418 || UNCOVERED || - || - || 52 || Fixed heading widths 30%/40% so per-shift tables align; no rule.
+V || R13419 || UNCOVERED || - || - || 80 || Footer summary paragraph with " · "; no rule.
+V || R08001 || UNCOVERED || - || - || 82 || " · " separator, not an icon.
+V || R13420 || COMPLIANT || EMPTY-01 || - || 86 || Two distinct ui_empty_state messages.
+V || R13285 || UNCOVERED || - || - || 22 || Wrapper div with id and lg:max-w-3xl caps the below-minimum block width; no rule.
+V || R13286 || DIVERGENT || ALERT-01 || medium || 26 || Inline notices are ui_callout_box; the fully-staffed message is a p text-success font-semibold with an icon inside a ui_section.
+V || R08015 || COMPLIANT || COLOR-05 || - || 40 || Status icon uses icon-warning.
+V || R13287 || COMPLIANT || DISC-01 || - || 39 || ui_disclosure card with a rich title span role=heading; class mb-4 doubles the wrapper's mb-4.
+V || M0515 || COMPLIANT || TABLE-02 || - || 44 || pattern=tables-lists responsive: false on a four-column table, the short-table case the rule allows.
+V || R13288 || COMPLIANT || A11Y-01 || - || 57 || A shortfall of zero prints the word "none" in bold red, so status is in text.
+V || R13279 || DIVERGENT || COLOR-05 || low || 7 || A status icon takes icon-error; the not-on-site ban icon uses text-error (it does carry label:).
+V || R13280 || UNCOVERED || - || - || 26 || ambiguous FORM-07: five filter selects at w-full with flex-1 across form_rows; the width table does not settle filter panels.
+V || R13281 || COMPLIANT || HELP-02 || - || 9 || Legend and definitions in one collapsed About This Report card.
+V || R08036 || COMPLIANT || LIST-01 || - || 10 || The <dl> is an instruction-list.
+V || R13282 || COMPLIANT || HELP-02 || - || 25 || Samples in the dd: -BL- shown as the roster prints it.
+V || R13284 || COMPLIANT || HELP-02 || - || 31 || Sample GD/TS badges in the dd, as legend samples.
+V || R13283 || COMPLIANT || HELP-02 || - || 38 || Ban and award icons appear as legend samples in the card; the roster's ban carries label: (ICON-04).
+V || R13263 || COMPLIANT || DISC-01 || - || 32 || ui_disclosure variant :card with subtitle and a span title given role=heading aria-level 2.
+V || R13265 || UNCOVERED || - || - || 35 || Control row flex flex-col lg:flex-row lg:items-end gap-2 with grow/shrink-0 children; LAYOUT-02 covers content columns, not a control row.
+V || M0322 || DIVERGENT || FORM-01 || medium || 37 || pattern=forms Forms use AppFormBuilder via ui_form; the shift picker is a raw form_tag GET form.
+V || R08042 || DIVERGENT || FORM-01 || medium || 37 || Forms use AppFormBuilder; form_tag builds the picker without the builder.
+V || R13264 || DIVERGENT || FORM-01 || medium || 37 || Forms use the builder; picker is form_tag + label_tag with hand classes + select_tag borrowing SELECT_CLASSES (37-46).
+V || R08043 || DIVERGENT || FORM-01 || medium || 38 || Builder fields only; label_tag hand-styled "block font-medium text-heading mb-1" stands in for a builder label.
+V || M0323 || DIVERGENT || FORM-01 || medium || 42 || pattern=forms Builder fields only; select_tag with AppFormBuilder::SELECT_CLASSES stands in for f.select.
+V || R08044 || DIVERGENT || FORM-01 || medium || 42 || Builder fields only; select_tag borrows SELECT_CLASSES instead of f.select.
+V || R13266 || COMPLIANT || EMPTY-01 || - || 57 || ui_empty_state inside the disclosure body.
+V || R13267 || COMPLIANT || BTN-01 || - || 71 || button_link with layout classes w-full justify-center; no colour override.
+V || R13268 || COMPLIANT || CARD-03 || - || 21 || ui_section with count badge, border: false.
+V || R13269 || UNCOVERED || - || - || 25 || Sort control right-aligned in a div flex justify-end mb-2 toolbar; no rule.
+V || R13271 || DIVERGENT || TABLE-02 || medium || 36 || ui_table stays responsive except listed cases; the ten-column roster passes responsive: false and is hidden below lg, replaced by a hand-built list.
+V || M0516 || DIVERGENT || TABLE-02 || medium || 36 || pattern=tables-lists responsive: false only for matrices, print or about four columns; this ten-column roster opts out (dual rendering, no call-site comment on the flag).
+V || R13274 || DIVERGENT || EMPTY-02 || low || 58 || An empty value prints "—"; pronouns, gender and positions print "-" (58, 59, 64).
+V || R13273 || COMPLIANT || COLOR-05 || - || 72 || Certification award icon is neutral text-stone-icon.
+V || R13270 || DIVERGENT || TABLE-02 || high || 92 || ui_table's own fold is the narrow strategy; phones get a hand-built rounded-box border divide-y list with striped divs, unlike every sibling table.
+V || R08066 || DIVERGENT || TYPE-03 || medium || 114 || text-sm never for primary card information; phone roster years, pronouns/gender, positions and certifications are text-sm (97, 107, 114, 117).
+V || R13272 || DIVERGENT || TYPE-03 || medium || 107 || text-sm never for primary card information; card lines for years, details and positions use text-sm.
+V || R08057 || UNCOVERED || - || - || 102 || &middot; and " · " separators in phone card lines, not icons.
+V || R08059 || COMPLIANT || BADGE-01 || - || 111 || shift_lead_vehicle_badge builds through ui_badge with words.
+V || R13275 || COMPLIANT || EMPTY-01 || - || 129 || Two distinct ui_empty_state messages.
+V || M0324 || DIVERGENT || FORM-01 || medium || 16 || pattern=forms Forms use AppFormBuilder; the per-roster sort control is a raw form_tag.
+V || R08069 || DIVERGENT || FORM-01 || medium || 16 || form_tag without the builder for the sort control.
+V || R13260 || DIVERGENT || FORM-01 || medium || 16 || Forms use the builder; sort control is form_tag + label_tag + select_tag with SELECT_CLASSES.
+V || R13261 || UNCOVERED || - || - || 30 || Auto-submit select (form#submit on change) with a noscript Sort button; no rule on auto-submitting controls.
+V || R08070 || DIVERGENT || FORM-01 || medium || 23 || label_tag stands in for a builder label.
+V || R13262 || DIVERGENT || TYPE-03 || medium || 24 || text-sm never for form labels; the "Sort by" label is text-sm text-stone-muted inline.
+V || R08076 || DIVERGENT || TYPE-03 || medium || 24 || text-sm on a form label ("Sort by").
+V || M0325 || DIVERGENT || FORM-01 || medium || 25 || pattern=forms select_tag with SELECT_CLASSES stands in for f.select.
+V || R08072 || DIVERGENT || FORM-01 || medium || 25 || select_tag instead of a builder select.
+V || R08081 || DIVERGENT || SHADOW-01 || low || 13 || Flat by default, no shadow on a component; the status band adds shadow-xs.
+V || R13276 || DIVERGENT || CARD-01 || medium || 13 || card-standard is rendered by ui_card with no shadow; the band is a raw div card-standard p-2 shadow-xs lg:p-3.
+V || R13277 || DIVERGENT || BTN-07 || low || 20 || Buttons sit in a button_row; Print sits in a flex toolbar pushed right by a span.grow spacer.
+V || R13278 || DIVERGENT || STAT-01 || medium || 27 || Summary tiles go in ui_stat_row; six size :sm tiles sit in a hand grid grid-cols-3 lg:grid-cols-6 gap-2.
+V || M0117 || UNCOVERED || - || - || 49 || pattern=typography ambiguous COPY-01: "Command Staff" names a Ranger roster; the proper-name exception does not say whether an org's team name counts.
+V || R13259 || COMPLIANT || EMPTY-01 || - || 61 || Pre-pick state uses ui_empty_state.
+V || M0392 || DIVERGENT || HERO-01 || low || 67 || pattern=navigation Every page's header is a hero_panel; the print sheet has a custom sheet-masthead (print layout).
+V || R08091 || UNCOVERED || - || - || 14 || Middots, em dashes and &lt;/&gt; time markers in print text, not icons.
+V || R13289 || DIVERGENT || STYLE-01 || low || 34 || No per-view CSS; an inline <style> named @page rule with literal font-size, colour and font family is emitted from the view.
+V || M0455 || DIVERGENT || STYLE-01 || low || 34 || pattern=other No scoped or per-view CSS; a <style> block in the view (comment says the bundle cannot scope @page).
+V || R08089 || DIVERGENT || COLOR-01 || low || 41 || Semantic tokens only; page-footer margin boxes use literal color #444 (41, 47).
+V || R13290 || DIVERGENT || HERO-04 || low || 60 || Back navigation lives in the hero panel; print sheet puts back_to in a print:hidden div with a muted note.
+V || R13291 || UNCOVERED || - || - || 68 || Print sheet masthead/headline/stats built from sheet-* custom CSS; print sheets as components have no rule.
+V || R08126 || UNCOVERED || - || - || 75 || h1.sheet-shift on a print sheet; TYPE-04 covers h2-h4 only.
+V || R13297 || UNCOVERED || - || - || 87 || <b> for print labels and legend keys; no rule on bold tags.
+V || R13292 || UNCOVERED || - || - || 103 || Section bands are div/th with role=heading aria-level 2 and sheet-band CSS; no rule for print section bands.
+V || R13296 || DIVERGENT || EMPTY-01 || low || 104 || Empty states always use ui_empty_state; print sheet uses plain <p> for fully staffed and empty rosters (104, 163-169).
+V || M0472 || DIVERGENT || TABLE-01 || medium || 109 || pattern=tables-lists Data tables are ui_table (TABLE-02 expects responsive: false for print); print sheet uses raw <table>.
+V || R08124 || DIVERGENT || TABLE-01 || medium || 109 || Raw <table> elements instead of ui_table on the print sheet (109, 171).
+V || R13293 || DIVERGENT || TABLE-01 || medium || 171 || Data tables are ui_table; raw tables with colgroup sheet-col-* and sheet-num cells.
+V || M0118 || UNCOVERED || - || - || 152 || pattern=typography ambiguous COPY-01: "COMMAND STAFF" roster name; the proper-name exception does not settle team names.
+V || M0473 || DIVERGENT || TABLE-01 || medium || 171 || pattern=tables-lists Raw <table class="sheet-roster"> instead of ui_table.
+V || R13295 || COMPLIANT || ICON-01 || - || 210 || Ban icon via fa_icon with sr-only text in the table.
+V || R13294 || DIVERGENT || BADGE-01 || low || 215 || Badges come from ui_badge; print chips are span.sheet-chip / sheet-chip-solid and span.sheet-none.
+V || R13351 || UNCOVERED || - || - || 8 || ambiguous EMPTY-02: muted words "No limit" state a fact rather than an empty value.
+V || R13350 || COMPLIANT || PROG-01 || - || 13 || ui_progress_bar with the percentage printed beside it, so colour is not alone.
+V || R13352 || COMPLIANT || LIST-01 || - || 4 || dt/dd pair partial rendered inside a dl.instruction-list.
+V || M0188 || COMPLIANT || COPY-07 || - || 8 || pattern=typography False positive: "signups" is in a DOM id, not reader-facing copy.
+V || R13340 || UNCOVERED || - || - || 25 || text-lg count sentence with " · " above the About card on a report; not a records-management page.
+V || R08141 || UNCOVERED || - || - || 27 || " · " separator, not an icon.
+V || R13341 || COMPLIANT || HELP-02 || - || 35 || Row-colour legend in one collapsed About card above the filter bar.
+V || R08146 || COMPLIANT || LIST-01 || - || 36 || The <dl> is an instruction-list.
+V || M0189 || COMPLIANT || COPY-07 || - || 41 || pattern=typography False positive: "signups" in a filter_bar id.
+V || R13342 || COMPLIANT || TABLE-01 || - || 61 || Position index is a ui_table with row-header links using TABLE_LINK_CLASSES.
+V || R13343 || COMPLIANT || A11Y-01 || - || 72 || Red/amber row tint is backed by the printed sign-up count and fill percentage.
+V || R13344 || UNCOVERED || - || - || 82 || ambiguous EMPTY-02: "—" stands for a zero count, not an empty value; the rule does not cover zeros.
+V || R13345 || COMPLIANT || EMPTY-01 || - || 92 || Two distinct ui_empty_state messages.
+V || M0190 || COMPLIANT || COPY-07 || - || 8 || pattern=typography False positive: "signups" in a DOM id.
+V || R13346 || COMPLIANT || A11Y-01 || - || 32 || Tile states its count; tinted rows also carry an Empty badge and fill percentage.
+V || R08164 || COMPLIANT || LIST-01 || - || 40 || The <dl> is an instruction-list.
+V || R13347 || DIVERGENT || BTN-07 || medium || 46 || Buttons sit in a button_row; Who Signed Up and export sit in a div "my-4 flex flex-wrap gap-2".
+V || R13348 || COMPLIANT || BADGE-01 || - || 80 || "Empty" ui_badge with icon.
+V || R13349 || COMPLIANT || EMPTY-01 || - || 92 || ui_empty_state.
+V || R13400 || COMPLIANT || FORM-07 || - || 26 || Filter selects use responsive content widths (w-full sm:w-40 to sm:w-64).
+V || M0244 || DIVERGENT || COPY-08 || low || 40 || pattern=typography Never strftime in a view; option labels formatted with strftime(MONTH_DAY_TIME).
+V || R13403 || DIVERGENT || FORM-06 || medium || 51 || Errors show through ui_form's summary; bulk-edit validation failures are flash.now[:error] toasts (slot_bulk_edits_controller.rb:23,28,35).
+V || R13401 || COMPLIANT || HELP-02 || - || 58 || On a page the reader operates, the sentence joins the section it explains.
+V || R13402 || COMPLIANT || FORM-07 || - || 62 || Widths w-full sm:w-72, sm:w-64 and w-24 fit content.
+V || R08187 || COMPLIANT || BADGE-01 || - || 111 || slot_status_badge builds through ui_badge.
+V || R13404 || COMPLIANT || EMPTY-01 || - || 126 || Two distinct ui_empty_state messages.
+V || R13302 || COMPLIANT || ALERT-01 || - || 11 || ui_callout_box :warning with title.
+V || R13303 || COMPLIANT || FORM-07 || - || 34 || Filter selects use responsive content widths.
+V || M0245 || DIVERGENT || COPY-08 || low || 44 || pattern=typography Never strftime in a view; option labels formatted inline.
+V || R13309 || DIVERGENT || FORM-06 || medium || 54 || Errors show through ui_form's summary; copy failures arrive as flash.now[:error] (slot_copies_controller.rb:31).
+V || R13304 || COMPLIANT || HELP-02 || - || 56 || Section intros on an operated page join their sections.
+V || R13305 || UNCOVERED || - || - || 66 || Muted p note after the shift fields about uncopyable slot types; no rule on section notes.
+V || R13306 || UNCOVERED || - || - || 98 || bulk_select class mb-2 around a ui_accordion per position; bulk selection has no rule.
+V || M0246 || DIVERGENT || COPY-08 || low || 122 || pattern=typography Never strftime in a view; slot.begins formatted inline.
+V || R13307 || DIVERGENT || ICON-01 || low || 124 || Icons come from fa_icon; &rarr; glyph marks the shifted times (124, 130).
+V || M0247 || DIVERGENT || COPY-08 || low || 124 || pattern=typography Never strftime in a view; adjusted begins formatted inline.
+V || R08213 || DIVERGENT || ICON-01 || low || 124 || &rarr; glyphs as arrow markers instead of fa_icon (124, 130).
+V || M0248 || DIVERGENT || COPY-08 || low || 128 || pattern=typography Never strftime in a view; slot.ends formatted inline.
+V || M0249 || DIVERGENT || COPY-08 || low || 130 || pattern=typography Never strftime in a view; adjusted ends formatted inline.
+V || R13310 || COMPLIANT || EMPTY-01 || - || 143 || Two distinct ui_empty_state messages inside the section.
+V || R13308 || COMPLIANT || BTN-07 || - || 150 || f.submit, a secondary submit_button and cancel_link in one button_row.
+V || M0149 || UNCOVERED || - || - || 152 || pattern=buttons ambiguous COPY-04: "Update Preview" recalculates a preview rather than saving the form; the verb table does not settle it.
+V || R13388 || COMPLIANT || FORM-06 || - || 1 || ui_form(@slot) with the default error summary and builder field errors.
+V || R13390 || UNCOVERED || - || - || 41 || Turbo Frame refreshed by the link-options controller on position change with no busy indicator; loading states have no rule.
+V || R13389 || UNCOVERED || - || - || 34 || Fieldset help copy as p.my-2 paragraphs with a raw <i> example; no rule on in-form example text.
+V || R13391 || COMPLIANT || ALERT-01 || - || 48 || Untitled ui_callout_box :warning; the div only spaces it.
+V || R13392 || COMPLIANT || BTN-07 || - || 65 || Save, Save as New Slot, cancel_link and delete_button in one button_row.
+V || R13393 || COMPLIANT || FORM-01 || - || 4 || fields with builder: AppFormBuilder so the partial renders standalone.
+V || R13394 || UNCOVERED || - || - || 9 || Fieldset explanation p.my-2 opening with a bold <strong> sentence; no rule.
+V || R13396 || UNCOVERED || - || - || 15 || Plain p.my-2 explains why a link option is unavailable; not an empty collection.
+V || R13395 || DIVERGENT || ALERT-01 || medium || 20 || Inline notices are ui_callout_box; the recursion warning is a p.my-2 text-error starting "Warning:".
+V || R13372 || COMPLIANT || HERO-03 || - || 6 || Year selector in the hero; min_year is a literal 2008.
+V || R13373 || UNCOVERED || - || - || 10 || Pre-event period sentence as a plain p.my-2 above the actions on a records page; no rule.
+V || R13374 || COMPLIANT || ALERT-01 || - || 17 || ui_callout_box :error with title.
+V || R13375 || COMPLIANT || BTN-07 || - || 25 || button_row; the my-4 div spaces it.
+V || R13376 || COMPLIANT || LAYOUT-03 || - || 36 || Level 1 count is one text-lg line.
+V || R13377 || COMPLIANT || LAYOUT-03 || - || 39 || Rows in lg:w-3/4 with an exception-only "N inactive" badge, size base.
+V || R13378 || COMPLIANT || EMPTY-01 || - || 48 || ui_empty_state.
+V || M0393 || COMPLIANT || HERO-01 || - || 1 || pattern=navigation False positive: a Turbo Frame fragment re-rendering form fieldsets, not a page.
+V || R13397 || COMPLIANT || ALERT-01 || - || 9 || ui_callout_box :warning with title.
+V || R13379 || COMPLIANT || A11Y-01 || - || 11 || Inactive tile states its count and label.
+V || R13380 || COMPLIANT || BTN-07 || - || 16 || Actions in a button_row; Activate/Deactivate All post with no confirmation (no rule requires one).
+V || R13381 || COMPLIANT || FORM-07 || - || 48 || Filter selects use responsive content widths.
+V || R13382 || COMPLIANT || BADGE-01 || - || 95 || Inactive ui_badge; meta line muted. Note this badge is :warning while slot_status_badge says Inactive in :secondary.
+V || R08288 || UNCOVERED || - || - || 92 || " · " separator in the meta line, not an icon.
+V || R13385 || COMPLIANT || TABLE-01 || - || 100 || ui_table cell with whitespace-nowrap; value_list and shared partial in the Attributes cell.
+V || R13383 || COMPLIANT || TOUCH-02 || - || 115 || Icon-only Repeat button_link takes btn-square with title and aria-label.
+V || R08271 || COMPLIANT || TOUCH-02 || - || 115 || btn-square on an icon-only ButtonHelper button.
+V || R08300 || DIVERGENT || TYPE-02 || high || 116 || text-xs never for text a reader needs; the "+24h" that tells the two Repeat buttons apart is text-xs.
+V || R13384 || COMPLIANT || BTN-06 || - || 119 || edit_link is the edit control.
+V || R13386 || COMPLIANT || MODAL-02 || - || 129 || confirm_modal_dialog variant :error asks "Delete the selected slots?" and says it cannot be undone.
+V || R08290 || COMPLIANT || MODAL-02 || - || 134 || Destructive confirm passes variant: :error.
+V || R08291 || COMPLIANT || MODAL-02 || - || 129 || turbo_confirm holds an in-app confirm_modal_dialog, not a browser string.
+V || M0269 || COMPLIANT || COPY-10 || - || 136 || pattern=buttons False positive: "submit" is a Stimulus target name.
+V || R13387 || COMPLIANT || EMPTY-01 || - || 143 || Two distinct ui_empty_state messages.
+F || app/views/scheduling/position_credits/new.html.erb || 4 || typography || hero-title-create || DIVERGENT || COPY-04 || low || The create form is "Add [Entity]", never "Create"; the hero title reads "Create Position Credit for <year>".
+F || app/views/scheduling/slots/new.html.erb || 4 || typography || hero-title-create || DIVERGENT || COPY-04 || low || The create form is "Add [Entity]", never "Create"; the hero title reads "Create Slot for <year>".
+F || app/views/scheduling/slots/new.html.erb || 2 || typography || hero-description-caveat || DIVERGENT || HERO-02 || low || Description is one sentence saying what the page does; it states a caveat ("The slot's year is set by its start time...") instead.
+F || app/views/scheduling/slots/edit.html.erb || 2 || typography || hero-description-not-sentence || DIVERGENT || HERO-02 || low || Description is one sentence saying what the page does; it is the fragment "<position> - <description>".
+F || app/views/scheduling/position_credits/edit.html.erb || 2 || typography || hero-description-not-sentence || DIVERGENT || HERO-02 || low || Description is one sentence saying what the page does; it is the fragment "<position> - <description>".
+F || app/views/scheduling/shift_lead/index.html.erb || 47 || typography || all-caps-section-title || DIVERGENT || COPY-03 || low || Section titles are Title Case; roster ui_section titles are all caps "DIRT / GREEN DOTS", "COMMAND STAFF", "SPECIAL TEAMS" (47-51).
+F || app/views/scheduling/shift_lead/_picker.html.erb || 32 || typography || sentence-case-heading || DIVERGENT || COPY-03 || low || Headings are Title Case; the disclosure heading reads "Shift period".
+F || app/views/scheduling/shift_lead/_below_min.html.erb || 21 || typography || sentence-case-heading || DIVERGENT || COPY-03 || low || Headings and table headings are Title Case; column heading "Signed up"/"On duty" (21, 48) and heading "N positions below minimum" (41) are sentence case.
+F || app/views/scheduling/shift_lead/print_sheet.html.erb || 103 || typography || sentence-case-heading || DIVERGENT || COPY-03 || low || Headings are Title Case; bands "Below minimum staffing" (103, 106), all-caps roster titles (151-153), "Decoder ring" (252), column headings "On duty"/"Signed up"/"Start" (118, 147).
+F || app/views/scheduling/shift_lead/_roster.html.erb || 72 || icons || unlabelled-legend-icon || DIVERGENT || ICON-04 || low || An icon explained only in the card carries fa_icon label:; the award icon marking a certification has no label (72, 118).
+F || app/helpers/scheduling/shift_lead_helper.rb || 190 || typography || hyphen-for-empty || DIVERGENT || EMPTY-02 || low || An empty value prints "—"; the GTR/Veh cell prints "-" when the Ranger has neither.
+F || app/views/scheduling/shift_lead/print_sheet.html.erb || 221 || typography || hyphen-for-empty || DIVERGENT || EMPTY-02 || low || An empty value prints "—"; print roster prints "-" for missing pronouns, gender and positions (221, 222, 227).
+S || HERO-01 || 35 || 1 || 31 hero pages plus print sheet, two modal frame responses and one frame fragment; only the print sheet lacks a hero.
+S || HERO-02 || 31 || 3 || slots/new, slots/edit, position_credits/edit.
+S || HERO-03 || 31 || 0 || Every year-scoped page puts the selector in the hero; two pass a literal min_year.
+S || HERO-04 || 32 || 1 || print sheet back link outside a hero.
+S || HELP-01 || 53 || 0 ||
+S || HELP-02 || 53 || 1 || position_credits/timeline keeps a how-to paragraph visible.
+S || STAT-01 || 53 || 3 || sandman scoreboard, event_stats paired grids, shift_lead status band.
+S || STAT-02 || 31 || 0 ||
+S || TABLE-02 || 53 || 1 || shift_lead roster; three other responsive: false tables are short or dialog tables.
+S || TABLE-04 || 53 || 0 || Two pages hand-build chip hashes but pass them through filter_bar.
+S || TABLE-05 || 53 || 0 ||
+S || BTN-03 || 53 || 0 ||
+S || BTN-04 || 35 || 0 ||
+S || BTN-05 || 53 || 0 || Apply Filters is primary on seven pages and secondary on eight; no rule settles which.
+S || BTN-07 || 53 || 7 || no_shows/position, schedule_by_callsign/person, schedule_by_position/position, shift_signups/position, shift_lead/_status_band, hq_forecast index and burn_perimeters (via helper).
+S || MODAL-02 || 53 || 0 ||
+S || FORM-02 || 53 || 0 ||
+S || FORM-03 || 53 || 0 ||
+S || FORM-07 || 53 || 0 || Filter-panel selects at w-full flex-1 or default w-auto left UNCOVERED (ambiguous).
+S || FORM-08 || 6 || 0 ||
+S || TYPE-05 || 53 || 0 ||
+S || COLOR-02 || 53 || 1 || schedule_by_callsign/person Positions tile in :success.
+S || COLOR-03 || 53 || 1 || shift_lead mode summary ON DUTY/SCHEDULED coloured words.
+S || A11Y-01 || 53 || 0 ||
+S || A11Y-02 || 53 || 0 ||
+S || LAYOUT-03 || 4 || 0 || position_credits index/position and slots index/position.
+S || COPY-03 || 53 || 4 || shift_lead index, _picker, _below_min, print_sheet.
+S || COPY-04 || 53 || 2 || position_credits/new and slots/new titles; "Update Preview" left ambiguous.
+S || COPY-10 || 53 || 0 ||
+Q || Apply Filters is the default primary variant on hq_forecast, burn_perimeters, sandman, schedule_by_callsign, shift_coverage, shift_drop and shift_signups but :secondary on early_arrivals, shift_lead, slots, credits and the copy pages; one convention would help.
+Q || The Inactive slot badge is :secondary (slot_status_badge, Inactive position badges) on most pages but :warning in slots/position record_title and "N inactive" on slots/index.
+Q || Icon-only edit_link on position credits versus a text "Edit Slot" edit_link on slots/position, two sibling records pages.
+Q || Activate All / Deactivate All on slots/position change every slot of a position in one click with no confirmation.
+Q || flake_report/position.html.erb:94 builds an empty-state message with .html_safe around an interpolated string; safe today (integers only) but fragile.

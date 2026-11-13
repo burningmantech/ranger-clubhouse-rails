@@ -1,0 +1,230 @@
+C || button_row || app/helpers/button_helper.rb:52 || buttons || DIVERGENT || COLOR-01 || low || Sticky row, spacer and --button-row-controls match guide 2844-2889. The sticky shadow is an arbitrary rgba value with a dark: twin in helper markup (line 63); guide 1013-1014 keeps dark: pairs on raw values to component CSS.
+C || button_action || app/helpers/button_helper.rb:106 || buttons || COMPLIANT || BTN-01 || - || Variant map, sm default and btn-disabled match guide 1101-1155. Undocumented: an unknown variant falls back to btn-primary, and nothing stops an icon-only call with no aria-label.
+C || button_link || app/helpers/button_helper.rb:133 || buttons || COMPLIANT || BTN-01 || - || Same maps as button_action; disabled drops the href and adds btn-disabled + aria-disabled as guide 1185-1186 says. Unknown options (icon_position) leak to link_to as HTML attributes.
+C || cancel_button (alias cancel_link) || app/helpers/button_helper.rb:169 || buttons || COMPLIANT || BTN-07 || - || Secondary button_link labelled Cancel, alias cancel_link, as guide 1128 documents.
+C || edit_link || app/helpers/button_helper.rb:185 || buttons || COMPLIANT || BTN-06 || - || Secondary + solid pen-to-square, label Edit, matching guide 1129 ("the one edit control").
+C || export_csv_link || app/helpers/button_helper.rb:204 || buttons || UNCOVERED || - || - || The guide never names export_csv_link; its own examples (3401, 3450) spell button_link "Export CSV", :secondary by hand. Code: secondary, solid file-csv, variant: overridable.
+C || delete_button || app/helpers/button_helper.rb:217 || buttons || DIVERGENT || MODAL-02 || medium || Guide 1130 says delete_button "includes confirmation". Code confirms only when confirm_message: or confirm_modal: is passed; a bare delete_button url deletes on click. Both confirm paths do use variant :error.
+C || submit_button || app/helpers/button_helper.rb:239 || buttons || DIVERGENT || COPY-04 || low || Guide shows submit_button "Save"; COPY-04 bans "Submit". The default label is "Submit" (line 241). Otherwise a btn-primary btn-sm input as documented; no icon support.
+C || button_classes || app/helpers/button_helper.rb:300 || buttons || UNCOVERED || - || - || Private class-string builder used for summary/span elements styled as buttons; guide 934 says use ButtonHelper methods rather than the classes and does not document this.
+C || ui_table || app/helpers/table_helper.rb:99 || tables-lists || COMPLIANT || TABLE-01 || - || full_width false, striped true, responsive true, caption sr-only match guide 1419-1424. Undocumented size: "sm" option emits text-sm table content, which TABLE-03 forbids when used.
+C || ui_table builder: header / heading / body / row / row_header / cell || app/helpers/table_helper.rb:234 || tables-lists || COMPLIANT || TABLE-01 || - || right:/center:/width: as guide 1426-1481 shows (width as inline style is the documented form). row state: and align: are undocumented; state tints use !important.
+C || ui_table builder: detail_row || app/helpers/table_helper.rb:337 || tables-lists || UNCOVERED || - || - || Hidden full-span detail row with mobile-only label; not in the guide.
+C || ui_table builder: detail_row_toggle || app/helpers/table_helper.rb:376 || tables-lists || UNCOVERED || - || - || Ghost btn-sm with min-h-9 h-auto, aria-controls/expanded and a label-in-name accessible name; not in the guide.
+C || ui_table_rows || app/helpers/table_helper.rb:149 || tables-lists || UNCOVERED || - || - || Rows-only builder for turbo_stream replacement; not in the guide.
+C || modal || app/helpers/modal_helper.rb:30 || modals || DIVERGENT || A11Y-02 || high || API matches guide 1588-1603 (title/body/footer, modal controller). The dialog carries no aria-labelledby to its h3 or aria-modal, and modal_controller.js adds none, so it has no accessible name. Confirm in a rendered page.
+C || ModalBuilder title / body / footer / close_button || app/helpers/modal_helper.rb:176 || modals || DIVERGENT || TYPE-04 || medium || TYPE-04: h3 takes heading-title. The title h3 is modal-title-text (text-xl, modals.css), and the guide sample (808) shows text-lg. Close icon button is btn-circle, not btn-square (TOUCH-02).
+C || modal_dialog || app/helpers/modal_helper.rb:70 || modals || UNCOVERED || - || - || Turbo-frame modal scaffold with title and body, no auto footer; not in the guide.
+C || modal_form_footer || app/helpers/modal_helper.rb:81 || modals || UNCOVERED || - || - || button_row of submit plus modal_close_button Cancel; not in the guide, though it follows BTN-07.
+C || modal_close_dialog || app/helpers/modal_helper.rb:88 || modals || UNCOVERED || - || - || Turbo stream that empties the modal frame; no markup.
+C || modal_close_button || app/helpers/modal_helper.rb:92 || modals || COMPLIANT || MODAL-01 || - || Secondary button_action with modal#hide, used as guide 1597 shows.
+C || confirm_modal || app/helpers/modal_helper.rb:96 || modals || COMPLIANT || MODAL-02 || - || Returns turbo_confirm dialog data and passes variant: through, the form guide 3827 names for a red destructive confirm.
+C || confirm_modal_dialog || app/helpers/modal_helper.rb:127 || modals || DIVERGENT || MODAL-02 || low || MODAL-02: ask with the action and say whether it can be undone. Defaults are title "Confirm", message "Continue?", confirm variant :primary; a caller that omits them gets a generic question.
+C || modal_placement_class || app/helpers/modal_helper.rb:152 || modals || UNCOVERED || - || - || Internal placement map (modal-top/bottom/middle).
+C || tab_navigation || app/helpers/tabs_helper.rb:9 || navigation || COMPLIANT || TABS-01 || - || tabs tabs-border, role tab/tabpanel, aria-selected, remote href panes as guide 1661-1674. Every tablist is named the generic "Tabs"; options[:remote] is never read.
+C || fa_icon || app/helpers/icon_helper.rb:80 || icons || COMPLIANT || ICON-01 || - || Regular default, raise on missing regular glyph (guide 3113-3116), size:/start:/end: per 3137-3145, aria-hidden, label: sr-only text. size: builds "fa-#{size}" by interpolation.
+C || nav_link_to || app/helpers/link_helper.rb:9 || navigation || UNCOVERED || - || - || Active-state link helper with aria-current; not in the guide and has zero callers.
+C || callsign_link || app/helpers/link_helper.rb:20 || links || COMPLIANT || TOUCH-01 || - || TABLE_LINK_CLASSES min-h-5 is the one standing exception guide 581 names, and the constant carries its comment.
+C || email_link_or_dash || app/helpers/link_helper.rb:27 || links || COMPLIANT || EMPTY-02 || - || mailto link with TABLE_LINK_CLASSES, or "—" when no address.
+C || person_display_name || app/helpers/link_helper.rb:36 || other || COMPLIANT || EMPTY-02 || - || Callsign, "—" by default when no id, or "Deleted #id".
+C || person_display_link || app/helpers/link_helper.rb:51 || links || UNCOVERED || - || - || Role-gated callsign_link or plain name; link helpers have no rule.
+C || can_view_person_page? || app/helpers/link_helper.rb:64 || other || UNCOVERED || - || - || Role check, no markup.
+C || dropdown_menu || app/helpers/navigation_helper.rb:41 || navigation || COMPLIANT || NAV-01 || - || Label is the trigger, variant default :secondary, class: placement, menu_label as guide 2331-2343. Native details rather than the daisyUI focus sample at 846.
+C || dropdown_item || app/helpers/navigation_helper.rb:62 || navigation || COMPLIANT || NAV-01 || - || li > a.dropdown-link no-decoration, as the guide sample uses.
+C || dropdown_button || app/helpers/navigation_helper.rb:78 || navigation || UNCOVERED || - || - || ambiguous BTN-01: undocumented menu row that acts on the page, a raw tag.button styled as dropdown-link; the rule does not say how a menu-item action is built.
+C || dropdown_divider || app/helpers/navigation_helper.rb:91 || navigation || COMPLIANT || NAV-01 || - || Empty aria-hidden li, used as the guide sample at 2337 does.
+C || dropdown_item_disabled || app/helpers/navigation_helper.rb:99 || navigation || UNCOVERED || - || - || Guide 2342 shows the call but no markup to compare. Emits span.dropdown-disabled-item (text-sm, base-content/40) with no aria-disabled; zero callers.
+C || page_title || app/helpers/page_layout_helper.rb:9 || typography || DIVERGENT || TYPE-08 || low || Guide 473 keeps text-3xl for the legacy page_title; TYPE-08 gives headings font-semibold. The h1 is font-normal. HERO-01 makes hero_panel the page header; 3 views still call this.
+C || render_for_user / render_partial_for_user || app/helpers/page_layout_helper.rb:20 || other || UNCOVERED || - || - || Render wrappers, no markup; zero callers.
+C || year_selector || app/helpers/page_layout_helper.rb:37 || navigation || DIVERGENT || FORM-01 || medium || Behaviour matches guide 3050-3055 (mobile full selector, auto-submit). FORM-01 wants AppFormBuilder; this is form_tag + select_tag + raw label borrowing the builder's horizontal classes.
+C || year_selector_compact || app/helpers/page_layout_helper.rb:62 || navigation || DIVERGENT || FORM-01 || medium || The documented desktop compact selector, built from form_tag + select_tag (select select-sm) and a text-lg raw label, not the builder. aria-label "Select year to view" replaces the visible label's name.
+C || year_selector_keep_fields || app/helpers/page_layout_helper.rb:86 || forms || UNCOVERED || - || - || Hidden fields that carry other params through a year change.
+C || title_year_selector || app/helpers/page_layout_helper.rb:102 || typography || DIVERGENT || HERO-03 || low || HERO-03: a year selector lives in the hero panel. This pairs page_title with year_selector outside any hero; zero callers.
+C || turbo_empty_frame || app/helpers/turbo_helper.rb:4 || other || UNCOVERED || - || - || Turbo stream update to empty; no markup.
+C || turbo_response || app/helpers/turbo_helper.rb:8 || other || UNCOVERED || - || - || respond_to wrapper; zero callers.
+C || page_redirect || app/helpers/turbo_stream_actions_helper.rb:4 || other || UNCOVERED || - || - || Custom turbo-stream action tag; no visible markup.
+C || severity_style || app/helpers/severity_style_helper.rb:20 || color || UNCOVERED || - || - || Row tint (!bg-error/10, !bg-warning/10) and figure emphasis (text-error font-semibold); not in the guide. Comment requires words beside the tint (A11Y-01).
+C || menu_build / menu_uses_person? / ... / menu_section_has_content? || app/helpers/menu_helper.rb:16 || navigation || UNCOVERED || - || - || Data helpers for Menus definitions. menu_item_confirm_data builds confirm_modal titled "Confirm {title}" with "{description}?" at the default primary variant.
+C || navbar_render_menu || app/helpers/navbar_helper.rb:22 || navigation || UNCOVERED || - || - || Renders menu definitions as dropdown_item/dropdown_divider; menus are documented in docs/MENUS.md, not the guide.
+C || kbd_shortcut / kbd_modifier_name / kbd_modifier_filter / mac_client? || app/helpers/navbar_helper.rb:79 || other || UNCOVERED || - || - || Platform keyboard glyph strings and spoken names; no rule.
+C || mega_menu_offered? / mega_recent_items / ... / mega_category_groups || app/helpers/mega_menu_helper.rb:27 || navigation || UNCOVERED || - || - || Data accessors; no markup.
+C || mega_panel || app/helpers/mega_menu_helper.rb:86 || navigation || UNCOVERED || - || - || section.mega-menu-panel toggled by hidden; mega menu not in the guide.
+C || mega_chrome_button || app/helpers/mega_menu_helper.rb:95 || navigation || UNCOVERED || - || - || ambiguous TABS-01: a panel switcher made of ghost button_actions with aria-current true/false, not tab roles; the rule covers tabs but not whether this switcher is one.
+C || mega_category_index_button || app/helpers/mega_menu_helper.rb:106 || navigation || UNCOVERED || - || - || Ghost button_action with icon, title, description and chevron; not in the guide.
+C || mega_star_button / mega_category_star_button || app/helpers/mega_menu_helper.rb:125 || navigation || COMPLIANT || TOUCH-02 || - || Icon-only button_action with aria-label and aria-pressed; .mega-menu-star applies btn-square in mega-menu.css:131.
+C || mega_item_link_options || app/helpers/mega_menu_helper.rb:146 || navigation || UNCOVERED || - || - || Link options with confirm data or close action; no markup.
+C || sidebar_menu || app/helpers/sidebar_helper.rb:55 || navigation || DIVERGENT || NAV-02 || low || Guide 2117-2126 gives width default "w-65 lg:w-45"; code "w-65 lg:w-50" (comment says lg:w-55). Guide logo is 180px with pt/mt/mb-10; code h-[140px] w-[140px], absolute, mb-5, opacity-30. Header row matches 2070-2088.
+C || sidebar_section || app/helpers/sidebar_helper.rb:112 || navigation || COMPLIANT || NAV-02 || - || h6.sidebar-section-header with theme classes, as the guide structure at 2063 shows.
+C || sidebar_submenu || app/helpers/sidebar_helper.rb:119 || navigation || DIVERGENT || A11Y-02 || low || Guide 2184-2188: a grouping title with no interactive disclosure. Code puts a fixed aria-expanded="false" on a non-interactive div, a state that never changes and has no control.
+C || sidebar_item || app/helpers/sidebar_helper.rb:129 || navigation || DIVERGENT || NAV-02 || medium || Guide 2143-2153 lists icon:, icon_type:, badge:, badge_variant:. Code accepts all four and renders none (render_sidebar_content has no caller). active/active_prefix/use_turbo/aria-current match.
+C || sidebar_submenu_item || app/helpers/sidebar_helper.rb:163 || navigation || COMPLIANT || NAV-02 || - || li wrapping sidebar_item with pl-4, as guide 2027 shows; zero callers.
+C || sidebar_render_menu || app/helpers/sidebar_helper.rb:171 || navigation || UNCOVERED || - || - || Menu-definition renderer; documented in docs/MENUS.md, not the guide.
+C || sidebar_badge (private) || app/helpers/sidebar_helper.rb:240 || other || DIVERGENT || NAV-02 || low || Guide 2213: info badge is brand text, background and border. Code's info variant has no text colour. The helper is unreachable (no caller of render_sidebar_content).
+C || years_breakdown || app/helpers/year_helper.rb:4 || other || DIVERGENT || EMPTY-02 || low || Undocumented; its partial (common/_years_breakdown.html.erb:17,34) prints empty values as italic muted "none" rather than "—", and hand-writes dl.ui-label-value with a class on only the first dt.
+C || year_range || app/helpers/year_helper.rb:8 || typography || DIVERGENT || EMPTY-02 || low || EMPTY-02: an empty value prints "—". No years renders span.text-stone-muted "none".
+C || dropdown_scroll_list || app/helpers/application_helper.rb:65 || navigation || DIVERGENT || NAV-04 || low || Guide 3303 says the letter links are plain fragments with data-turbo="false". The partial's dropdown_item links carry no data-turbo and rely on application.js turbo:click to scroll instead.
+C || none_stated || app/helpers/application_helper.rb:80 || typography || DIVERGENT || EMPTY-02 || low || EMPTY-02: an empty value prints "—". This prints italic muted "None stated".
+C || value_or_dash || app/helpers/application_helper.rb:84 || typography || COMPLIANT || EMPTY-02 || - || Value or "—".
+C || record_title || app/helpers/application_helper.rb:108 || tables-lists || COMPLIANT || A11Y-01 || - || Active/inactive shown by icon shape (circle-check vs circle-xmark) and colour; the icon has no label:, so a screen reader gets no state.
+C || value_list || app/helpers/application_helper.rb:121 || tables-lists || COMPLIANT || EMPTY-02 || - || One item per line, or "—" when empty.
+C || expires_on_cell / expires_at_cell || app/helpers/application_helper.rb:132 || other || COMPLIANT || BADGE-01 || - || Date plus ui_badge "Expired" :warning with icon; fallback "—".
+C || photo_tag || app/helpers/application_helper.rb:142 || other || DIVERGENT || STYLE-01 || low || STYLE-01: no inline style=. width:/height: become an inline px style (lines 148-149). Missing photo falls back to an unlabelled user icon.
+C || hyperlink_text / nl2br / rich_text || app/helpers/application_helper.rb:172 || typography || COMPLIANT || FORM-09 || - || rich_text sanitizes and keeps lexxy-content__ classes as guide 2539-2555 expects; the .lexxy-content wrapper is the caller's. hyperlink_text/nl2br are plain-text formatting with no rule.
+C || hour_not_counted_disclaimer || app/helpers/application_helper.rb:231 || toasts-alerts || DIVERGENT || ALERT-01 || medium || ALERT-01: inline notices are ui_callout_box. This is a "Note:" disclaimer in a plain div.my-2.text-sm (also TYPE-03: paragraph text in text-sm).
+C || slot_virtual_venue_badge || app/helpers/application_helper.rb:241 || other || COMPLIANT || BADGE-01 || - || ui_badge :secondary with laptop icon.
+C || back_to || app/helpers/application_helper.rb:245 || navigation || DIVERGENT || HERO-04 || low || Guide 3074-3075: text link with left arrow, muted colour with hover state. Code rests at text-body and hovers to text-stone-emphasis, the same --color-body token (guide 955), so no muted rest and no visible hover.
+C || back_to_dashboard || app/helpers/application_helper.rb:263 || navigation || COMPLIANT || HERO-04 || - || back_to "Clubhouse Dashboard"; hero_panel back_to: :dashboard routes here.
+C || yes_no_badge || app/helpers/application_helper.rb:270 || other || COMPLIANT || A11Y-01 || - || ui_badge with text and icon, not colour alone.
+C || qualification_icon / ... / qualification_unit || app/helpers/application_helper.rb:283 || other || DIVERGENT || COLOR-05 || low || COLOR-05: a status icon takes icon-success/warning/error/info. The "on track" hourglass is text-primary (line 287); none of the four state icons has a label:.
+C || setting / phone_format / title_marking_inactive / position_choices_by_team || app/helpers/application_helper.rb:57 || other || UNCOVERED || - || - || Value helpers, no markup.
+C || action_box || app/helpers/ui_components/action_box_helper.rb:49 || cards || DIVERGENT || TYPE-03 || medium || Undocumented card. TYPE-03 bans text-sm for primary card information; the description is text-sm. The icon is always icon-warning (COLOR-05), and icon_position: :end is not a ButtonHelper option.
+C || ui_badge || app/helpers/ui_components/badge_helper.rb:29 || other || COMPLIANT || BADGE-01 || - || badge badge-{v} badge-soft text-{size}, xs default, icon_type :solid, class:/aria: as guide 883-895 and 1980-2006. :info falls back to secondary colours.
+C || bulk_select || app/helpers/ui_components/bulk_select_helper.rb:13 || forms || UNCOVERED || - || - || Wrapper with checkbox-select-all controller; bulk selection has no rule.
+C || bulk_select_all || app/helpers/ui_components/bulk_select_helper.rb:22 || forms || UNCOVERED || - || - || Select-all checkbox in a min-h-9 min-w-9 label, optional visible label and live count.
+C || bulk_select_count || app/helpers/ui_components/bulk_select_helper.rb:40 || forms || UNCOVERED || - || - || "N selected" span, aria-live polite.
+C || position_picker_count_label || app/helpers/ui_components/bulk_select_helper.rb:48 || forms || UNCOVERED || - || - || String "X of Y selected".
+C || bulk_select_checkbox || app/helpers/ui_components/bulk_select_helper.rb:55 || forms || UNCOVERED || - || - || Row checkbox in a 36px label; aria_label optional, so a row box can go unnamed.
+C || clipboard_button || app/helpers/ui_components/clipboard_helper.rb:5 || buttons || COMPLIANT || TOAST-03 || - || label: option and the live-region "Copied" tip match guide 1757-1776. The control is a raw icon button whose hit area is a before:-inset-3.5 pseudo-element, not min-h-9.
+C || filter_bar || app/helpers/ui_components/filter_bar_helper.rb:52 || forms || COMPLIANT || TABLE-04 || - || Filters toggle with count badge, GET-link chips, clear-all, count and actions: slot as guide 1561-1580. Chips are hand-rolled rounded-full links (text-sm).
+C || filter_chips / active_filters / known_filter / filter_time / ... / filter_url || app/helpers/ui_components/filter_bar_helper.rb:73 || forms || UNCOVERED || - || - || Data helpers for chips, option lists and URLs; no markup.
+C || ui_flash_successful / ui_flash_submit_error / ui_success_text || app/helpers/ui_components/flash_helper.rb:5 || toasts-alerts || COMPLIANT || COPY-05 || - || "{thing} {verb}." success wording and an error flash set from the controller, as guide 1682-1695 asks.
+C || ui_callout_box || app/helpers/ui_components/notice_box_helper.rb:15 || toasts-alerts || COMPLIANT || ALERT-01 || - || Five variants, title:, accent:, icon:/icon_type: as guide 1723-1745. Undocumented: role="alert" by default on every type, info and success included.
+C || ui_alert_banner || app/helpers/ui_components/notice_box_helper.rb:66 || toasts-alerts || COMPLIANT || ALERT-01 || - || label + type as guide 1749-1753. Checks for :danger, which BOX_TYPES lacks, and an unknown type takes success styling.
+C || ui_empty_state || app/helpers/ui_components/notice_box_helper.rb:106 || empty-loading || COMPLIANT || EMPTY-01 || - || Message or block, icon: with :regular default, class: appended, as guide 2310-2324.
+C || ui_toast_render / ui_toast_stream || app/helpers/ui_components/toast_helper.rb:34 || toasts-alerts || COMPLIANT || TOAST-01 || - || Durations and roles by type match guide 1700-1704 (success/notice/info status, warning alert, error/alert stay).
+C || ui_accent_card || app/helpers/ui_components/ui_accent_card_helper.rb:62 || cards || DIVERGENT || SHADOW-01 || low || API, variants and heading_level match guide 1257-1289. SHADOW-01: hover is a colour change, never a lift; the card adds transition-all hover:shadow-sm on a non-interactive article. info border is full opacity, others /30.
+C || ui_accordion || app/helpers/ui_components/ui_accordion_helper.rb:22 || modals || COMPLIANT || DISC-01 || - || details.collapse collapse-arrow with unstyled: escape, as guide 1607-1619. Summary is text-sm font-semibold.
+C || ui_card || app/helpers/ui_components/ui_card_helper.rb:37 || cards || DIVERGENT || CARD-01 || medium || CARD-01 / guide 711-713: card-standard has no shadow and a card that needs one adds shadow-xs at the call site. ui_card defaults shadow: :xs, so every card gets one. width:/height: inline style as documented (1214).
+C || ui_card_image || app/helpers/ui_components/ui_card_helper.rb:53 || cards || UNCOVERED || - || - || Not in the guide. width:/height: are computed into options that never reach image_tag, and class: is ignored.
+C || ui_card_body || app/helpers/ui_components/ui_card_helper.rb:66 || cards || COMPLIANT || CARD-01 || - || div.text-body.px-4, used as the guide sample at 1199 shows.
+C || ui_card_title || app/helpers/ui_components/ui_card_helper.rb:73 || typography || COMPLIANT || CARD-01 || - || size: :lg default as guide 1198 uses. Renders a centred div, not a heading, so it never enters the outline.
+C || ui_card_section || app/helpers/ui_components/ui_card_helper.rb:86 || typography || DIVERGENT || TYPE-05 || low || TYPE-05: clear h1 > h2 > h3 hierarchy. The section title is always an h6 whatever the surrounding level.
+C || ui_card_footer || app/helpers/ui_components/ui_card_helper.rb:93 || cards || COMPLIANT || CARD-01 || - || Centred flex footer, as the guide sample at 1205 uses.
+C || ui_data_block || app/helpers/ui_components/ui_data_block_helper.rb:23 || other || UNCOVERED || - || - || Not in the guide. Pre block in font-mono text-sm, border-base-300 (other boxes use border-line), shadow-inner.
+C || ui_disclosure || app/helpers/ui_components/ui_disclosure_helper.rb:23 || modals || COMPLIANT || DISC-01 || - || :inline keeps the native marker; :card has title, subtitle and rotating chevron, as guide 1611-1612. The card title is font-semibold only for plain strings.
+C || ui_drill_down_row || app/helpers/ui_components/ui_drill_down_row_helper.rb:43 || tables-lists || COMPLIANT || LAYOUT-03 || - || Row with meta: and badges: as the records-management level-1 sample uses (3414-3418). Undocumented figures: and blocked:; header comment says chevron, default icon is arrow-right.
+C || ui_form || app/helpers/ui_components/ui_form_helper.rb:21 || forms || COMPLIANT || FORM-01 || - || form_with builder: AppFormBuilder plus the error summary, as guide 2408-2424.
+C || hero_panel || app/helpers/ui_components/ui_hero_panel_helper.rb:242 || navigation || COMPLIANT || HERO-01 || - || icon required, heading_level :h1/:h2 default :h2 at text-2xl/text-xl, back link right on desktop and above on mobile, compact/full year selector (1818-1831, 3050-3075). Title icon always icon-warning.
+C || hero_panel builder: hero_stats / stat_badge || app/helpers/ui_components/ui_hero_panel_helper.rb:85 || other || COMPLIANT || STAT-02 || - || Documented with approval required (1830-1847); :default and :warning colours as the sample. The list is named "{id} statistics", which reads "hero-panel-xxxx statistics" with an auto id.
+C || hero_panel builder: progress / progress_status / year_selector / back_to / description / title || app/helpers/ui_components/ui_hero_panel_helper.rb:106 || other || COMPLIANT || HERO-03 || - || Panel methods as guide 1824-1831 and 1895-1896; the year selector renders compact on desktop and full on mobile.
+C || ui_icon_item || app/helpers/ui_components/ui_icon_item_helper.rb:26 || tables-lists || UNCOVERED || - || - || li with leading icon and tone: class; not in the guide.
+C || ui_label_value || app/helpers/ui_components/ui_label_value_helper.rb:36 || tables-lists || DIVERGENT || TYPE-03 || medium || Undocumented. TYPE-03 bans text-sm for labels and primary content; the default size: :sm sets the whole label/value list in text-sm. label_width travels as an inline style property.
+C || ui_match_stepper || app/helpers/ui_components/ui_match_stepper_helper.rb:23 || navigation || COMPLIANT || NAV-03 || - || join group named by label:, role=status count, secondary btn-square icon buttons named Previous match/Next match, as guide 1631-1655.
+C || ui_pager || app/helpers/ui_components/ui_pager_helper.rb:29 || navigation || UNCOVERED || - || - || Pagination has no rule. Summary line plus Previous Page/Next Page secondary buttons, disabled at the ends; no nav landmark.
+C || ui_progress_bar || app/helpers/ui_components/ui_progress_bar_helper.rb:52 || other || DIVERGENT || STYLE-01 || low || Variants, sizes and label: match guide 1902-1917. The fill width is an inline style="width: N%" (line 106), a computed number.
+C || ui_progress_box || app/helpers/ui_components/ui_progress_box_helper.rb:97 || other || DIVERGENT || COLOR-01 || low || COLOR-01 bans palette colours and dark: pairs in markup. ICON_BADGE_BASE uses from-amber-100 to-orange-100 dark:from-amber-900/40 (line 21); guide 736-743 records it as tolerated legacy.
+C || render_progress_bar || app/helpers/ui_components/ui_progress_completed_bar_helper.rb:12 || other || DIVERGENT || STYLE-01 || low || Gradient fill and pulse classes as guide 721-733. Fill and pulse widths are inline styles (lines 32, 40); a 5% floor is what aria-valuenow reports at 0.
+C || render_progress_status || app/helpers/ui_components/ui_progress_completed_bar_helper.rb:56 || other || UNCOVERED || - || - || Guide 1896 names progress_status but gives nothing to compare. Polite atomic status div.
+C || progress_count_of || app/helpers/ui_components/ui_progress_completed_bar_helper.rb:66 || typography || UNCOVERED || - || - || "X of Y label" with font-medium emphasis; not in the guide.
+C || ui_section || app/helpers/ui_components/ui_section_helper.rb:10 || cards || DIVERGENT || CARD-03 || medium || Guide 1964/1971: border: false removes the body padding. Code always keeps px-4 pb-2 and border: false drops only a second px-4 pb-1. Guide title padding px-4 py-2; code px-4 pt-2 mb-1.
+C || ui_section_title || app/helpers/ui_components/ui_section_helper.rb:30 || typography || UNCOVERED || - || - || div role=heading aria-level=2 with heading-section; not in the guide.
+C || ui_subheading || app/helpers/ui_components/ui_section_helper.rb:39 || typography || UNCOVERED || - || - || h3.heading-title; not in the guide, though its markup follows TYPE-04.
+C || ui_stat_box || app/helpers/ui_components/ui_stat_box_helper.rb:47 || other || COMPLIANT || STAT-01 || - || Variants, sizes and options match guide 1331-1351. id:/data: are silently dropped; :primary falls back to secondary.
+C || ui_stat_link || app/helpers/ui_components/ui_stat_box_helper.rb:99 || links || UNCOVERED || - || - || Stat box wrapped in a focus-ringed link with aria-label and an active ring; not in the guide.
+C || ui_stat_row || app/helpers/ui_components/ui_stat_row_helper.rb:26 || spacing || COMPLIANT || STAT-01 || - || Wrapping flex row, gap-2 lg:gap-4, as guide 1364-1366.
+C || UiComponentsHelper (module) || app/helpers/ui_components_helper.rb:3 || other || UNCOVERED || - || - || Module that includes 13 of 26 UiComponents modules; no markup.
+V || R00066 || DIVERGENT || EMPTY-02 || low || 81 || pattern=empty-loading none_stated prints italic muted "None stated"; EMPTY-02 wants "—" for an empty value. Not an icon (the i tag is italics).
+V || R00068 || COMPLIANT || COLOR-05 || - || 110 || icon-success on status icons (record_title active, qualification earned), drawn by fa_icon.
+V || R00067 || COMPLIANT || COLOR-05 || - || 112 || icon-error on record_title's inactive circle-xmark, a status icon.
+V || R00079 || UNCOVERED || - || - || 176 || tag.br joining lines of plain user text in hyperlink_text; line-break formatting, not spacing.
+V || R00085 || DIVERGENT || TYPE-03 || medium || 232 || TYPE-03 bans text-sm for paragraphs; hour_not_counted_disclaimer's two-sentence note is text-sm. Line 338 is text-base and fine.
+V || R00082 || COMPLIANT || TYPE-08 || - || 314 || strong around the amount and item name in a sentence; bold for strong emphasis, not a heading.
+V || M0070 || COMPLIANT || BTN-03 || - || 33 || pattern=buttons SIZE_CLASSES map entry for xs; the size exists by design, its uses are judged at call sites.
+V || R00122 || COMPLIANT || BTN-07 || - || 57 || button-row class emitted by button_row itself.
+V || R00129 || DIVERGENT || COLOR-01 || low || 63 || COLOR-01 bans a dark: pair on a raw colour in markup; the sticky row's shadow is rgba(0,0,0,0.1) with a dark: rgba twin in the helper.
+V || R00141 || UNCOVERED || - || - || 63 || Arbitrary shadow value on the sticky row; SPACE-01 governs spacing, and the colour side is judged in R00129.
+V || M0434 || COMPLIANT || STYLE-01 || - || 83 || pattern=other The spacer's style holds --button-row-controls, the count guide 2874-2876 documents as derived and passed to CSS.
+V || R00123 || COMPLIANT || BTN-07 || - || 83 || button-row-spacer for the sticky row, as guide 2871-2886.
+V || R00119 || COMPLIANT || BTN-01 || - || 119 || button_tag inside button_action, ButtonHelper's own implementation.
+V || R00135 || COMPLIANT || BTN-01 || - || 162 || A disabled button_link renders an href-less a with btn-disabled, as guide 1185-1186.
+V || R00137 || COMPLIANT || MODAL-02 || - || 227 || delete_button merges confirm_modal with variant :error.
+V || R00138 || COMPLIANT || MODAL-02 || - || 229 || delete_button's confirm_message builds confirm_modal_dialog at variant :error.
+V || R00139 || COMPLIANT || MODAL-02 || - || 229 || data-turbo-confirm holds the confirm_modal_dialog markup, not a browser confirm string.
+V || M0252 || DIVERGENT || COPY-04 || low || 241 || pattern=buttons COPY-04 never "Submit"; submit_button's default label is "Submit".
+V || R00128 || COMPLIANT || BTN-01 || - || 246 || submit_tag inside submit_button, ButtonHelper's own implementation.
+V || R00206 || COMPLIANT || ICON-01 || - || 118 || The i tag fa_icon itself emits.
+V || M0253 || COMPLIANT || COPY-10 || - || 128 || pattern=buttons type: "submit" is the button's type attribute, not a label; the star is named by aria-label.
+V || R00269 || UNCOVERED || - || - || 94 || ambiguous MODAL-02: menu confirm ("Confirm {title}", "{description}?") at primary for a sign-out; the rule does not say whether a non-destructive confirm must state undoability.
+V || R00287 || COMPLIANT || MODAL-01 || - || 38 || modal, modal-box, modal-backdrop classes emitted by ModalHelper.
+V || R00290 || COMPLIANT || MODAL-01 || - || 45 || The dialog element ModalHelper builds.
+V || R00285 || COMPLIANT || MODAL-01 || - || 56 || form method=dialog for the click-outside .modal-backdrop layer guide 823 lists; not a data form.
+V || R00279 || DIVERGENT || COPY-03 || low || 57 || COPY-03: button labels are Title Case. The backdrop button's text, its accessible name, is lowercase "close"; a raw button inside daisyUI's documented backdrop.
+V || R00288 || COMPLIANT || MODAL-02 || - || 96 || confirm_modal passes variant: through to the dialog.
+V || R00289 || DIVERGENT || MODAL-02 || low || 129 || MODAL-02: ask with the action and say if undoable. confirm_modal_dialog defaults to "Confirm" / "Continue?" with a primary confirm button.
+V || R00295 || COMPLIANT || MODAL-02 || - || 100 || turbo_confirm carries ModalHelper markup, not a browser confirm.
+V || R00296 || DIVERGENT || TYPE-04 || medium || 181 || TYPE-04: h3 takes heading-title. Modal title h3 is modal-title-text, text-xl font-semibold (modals.css:13).
+V || R00278 || DIVERGENT || TOUCH-02 || low || 185 || TOUCH-02: an icon-only ButtonHelper button takes btn-square. The modal close is btn-circle (same 36px, round).
+V || R00302 || COMPLIANT || NAV-01 || - || 47 || details element of dropdown_menu, not a card.
+V || R00305 || COMPLIANT || NAV-01 || - || 50 || dropdown-content on dropdown_menu's list.
+V || R00311 || COMPLIANT || NAV-01 || - || 50 || ul of dropdown items, not a table.
+V || R00300 || UNCOVERED || - || - || 82 || ambiguous BTN-01: dropdown_button is a raw button styled as a dropdown-link menu row; no ButtonHelper method builds a menu row.
+V || R00325 || DIVERGENT || TYPE-08 || low || 10 || TYPE-08: headings font-semibold. page_title's h1 is text-3xl font-normal (the size is guide 473's legacy entry).
+V || R00324 || DIVERGENT || TYPE-08 || low || 10 || Same h1 as R00325: font-normal where headings take font-semibold.
+V || R00319 || COMPLIANT || HERO-03 || - || 37 || year_selector is what the hero builder renders as the mobile selector (guide 3053).
+V || M0292 || DIVERGENT || FORM-01 || medium || 42 || pattern=forms FORM-01 wants AppFormBuilder; year_selector is form_tag + select_tag + raw label borrowing builder classes.
+V || R00315 || DIVERGENT || FORM-01 || medium || 42 || form_tag in both year selectors (42, 67) instead of the builder; same departure as M0292 and M0293.
+V || R00314 || DIVERGENT || FORM-01 || medium || 44 || Raw label tags in both year selectors standing in for builder labels.
+V || R00317 || DIVERGENT || FORM-01 || medium || 49 || select_tag in both year selectors standing in for f.select.
+V || R00321 || COMPLIANT || HERO-03 || - || 86 || Hidden keep fields that let the hero's year selector carry other params; not visible.
+V || R00320 || COMPLIANT || HERO-03 || - || 62 || year_selector_compact is the hero's desktop selector (guide 3052); its form markup is judged in M0293.
+V || M0293 || DIVERGENT || FORM-01 || medium || 67 || pattern=forms Compact selector is form_tag + select_tag (select select-sm) with a text-lg raw label, not AppFormBuilder.
+V || R00313 || DIVERGENT || FORM-01 || medium || 75 || select select-sm written by hand in year_selector_compact rather than a builder field.
+V || R00318 || DIVERGENT || HERO-03 || low || 102 || HERO-03: year selector lives in the hero. title_year_selector puts it under page_title outside a hero; zero callers.
+V || R00557 || DIVERGENT || NAV-02 || low || 62 || Guide 2047-2067 and 2245-2252 describe sidebar-backdrop/sidebar-drawer utilities; the helper builds daisyUI drawer-side/drawer-overlay instead. The guide's structure is stale.
+V || R00552 || COMPLIANT || NAV-02 || - || 64 || The drawer-overlay label named "Close sidebar", as guide 2286 lists; not a form field.
+V || R00560 || DIVERGENT || NAV-02 || low || 100 || Guide 2260 sets the sidebar logo at 180px; code uses arbitrary h-[140px] w-[140px] with opacity-30.
+V || R00562 || COMPLIANT || NAV-02 || - || 113 || h6.sidebar-section-header, the exact markup guide 2063 documents.
+V || R00576 || COMPLIANT || TABLE-01 || - || 203 || The table element ui_table emits.
+V || M0477 || COMPLIANT || TABLE-02 || - || 221 || pattern=tables-lists Builder constructor default; ui_table passes responsive: true by default, so no table opts out here.
+V || R00581 || COMPLIANT || TYPE-02 || - || 384 || text-xs sizes the chevron icon inside the detail toggle, icon sizing as TYPE-02 allows; the label keeps btn-sm.
+V || R00583 || COMPLIANT || TABS-01 || - || 89 || Remote tab drawn as an a with role=tab, the href pane guide 1669-1670 documents.
+V || R00582 || COMPLIANT || TABS-01 || - || 92 || Static tab is a button type=button with role=tab, the daisyUI tab markup guide 1674 says the helper owns.
+V || R00711 || COMPLIANT || TYPE-04 || - || 70 || action_box title h3 uses heading-title.
+V || R00717 || UNCOVERED || - || - || 28 || check_box_tag as bulk-select toggles and row selectors; bulk selection has no rule.
+V || R00718 || UNCOVERED || - || - || 30 || min-h-9 labels wrapping bulk-select checkboxes; bulk selection has no rule.
+V || R00724 || UNCOVERED || - || - || 21 || ambiguous BTN-01: the guide documents clipboard_button (TOAST-03) but not that its icon control is a raw button with no btn class.
+V || R00722 || COMPLIANT || TOAST-03 || - || 29 || btn-copy-success is a data value for the copy controller, not a hand-written btn.
+V || R00741 || COMPLIANT || TOAST-01 || - || 6 || Flash set from controllers through the helper, rendered by the layout.
+V || R00760 || COMPLIANT || TOAST-01 || - || 34 || toast-base + type colour and role per guide 1700-1704.
+V || R00759 || COMPLIANT || TOAST-01 || - || 59 || The shared common/toast partial the layout uses.
+V || R00761 || COMPLIANT || TOAST-01 || - || 65 || Streams the same toast partial into toast-container.
+V || M0423 || DIVERGENT || SHADOW-01 || low || 81 || pattern=cards SHADOW-01: hover is a colour change, never a lift. ui_accent_card adds hover:shadow-sm with transition-all on a non-interactive card.
+V || R00766 || COMPLIANT || DISC-01 || - || 30 || details of ui_accordion, not a card.
+V || R00776 || DIVERGENT || TYPE-05 || low || 88 || TYPE-05: clear heading hierarchy. ui_card_section always emits h6, skipping levels.
+V || M0541 || COMPLIANT || TYPE-06 || - || 21 || pattern=typography font-mono for a raw data/log block, a literal-string use TYPE-06 allows.
+V || R00780 || COMPLIANT || DISC-01 || - || 46 || details of ui_disclosure, not a card.
+V || R00785 || UNCOVERED || - || - || 89 || "•" separator glyph between headline parts; a text separator, not an icon.
+V || R00791 || COMPLIANT || FORM-06 || - || 31 || ui_form renders the error summary when the model has errors.
+V || R00788 || COMPLIANT || FORM-01 || - || 37 || form_with with builder: AppFormBuilder.
+V || R00795 || DIVERGENT || COLOR-05 || low || 70 || COLOR-05: icons neutral unless status. Every hero title icon is icon-warning (gold) as decoration.
+V || R00794 || COMPLIANT || HERO-03 || - || 116 || Year selector set through the hero builder.
+V || R00792 || COMPLIANT || HERO-01 || - || 245 || me-hero-panel section emitted by hero_panel.
+V || R00805 || UNCOVERED || - || - || 41 || ui-label-value dl class; label/value displays have no rule.
+V || R00804 || UNCOVERED || - || - || 44 || dl of label/value rows; no rule.
+V || R00811 || COMPLIANT || NAV-03 || - || 24 || join/join-item group of the match stepper, as guide 1631; not a form.
+V || R00809 || COMPLIANT || TOUCH-02 || - || 37 || Icon-only step buttons carry btn-square.
+V || R00817 || UNCOVERED || - || - || 34 || "·" separator in the pager summary line; not an icon.
+V || R00827 || COMPLIANT || TYPE-02 || - || 103 || text-xs label inside the progress bar element, an allowed TYPE-02 use.
+V || M0442 || DIVERGENT || STYLE-01 || low || 106 || pattern=other STYLE-01 bans inline style=; ui_progress_bar's fill width is style="width: N%".
+V || M0091 || DIVERGENT || COLOR-01 || low || 21 || pattern=color Palette gradient from-amber-100 to-orange-100 with dark: twins; confirmed. Guide 736-743 records it as a tolerated legacy run.
+V || R00830 || COMPLIANT || TYPE-04 || - || 90 || ui_progress_box title h2 uses heading-section.
+V || M0443 || DIVERGENT || STYLE-01 || low || 32 || pattern=other Inline style="width: N%" on the progress fill.
+V || M0444 || DIVERGENT || STYLE-01 || low || 40 || pattern=other Inline style="width: N%" on the progress pulse.
+V || R00840 || COMPLIANT || TYPE-04 || - || 42 || ui_subheading h3 uses heading-title.
+Q || The guide's two "sticky" button_row examples (1138-1142, 2848-2853) omit sticky: true, so as written they render an ordinary row.
+Q || The guide's modal example (1594-1599) wraps a button_row inside m.footer, but m.footer is already a button_row, so the sample nests one row in another.
+Q || The guide contradicts itself on stat-box labels: ui_stat_box :sm is documented with a text-xs label and :md with text-sm (1340-1341), while TYPE-02/TYPE-03 bar those sizes for labels a reader needs.
+Q || hero_panel's :h2 title is text-xl font-semibold (documented at 471), while TYPE-04 says every h2 takes heading-section; one of the two should give way.
+Q || export_csv_link is the code's one export affordance, but the guide's records-management examples (3401, 3450) still spell button_link "Export CSV", :secondary; naming the helper in the guide would stop that drift.
+Q || ui_callout_box defaults role="alert" for every type. An info, success or secondary note announced as an alert on each render is noisy; role="note" or none for static types would be calmer.
+Q || Status icons drawn without label: (record_title, qualification_icon, photo_tag fallback) leave screen-reader users without the state that sighted readers get from shape and colour.
+Q || tab_navigation names every tablist "Tabs"; taking a label from the caller would give each its own name.
+Q || modal defaults to size :lg (max-w-2xl) while its header comment says :md, so every confirm_modal_dialog opens at 2xl for a one-line question.
+Q || render_progress_bar floors progress to 5% and reports that in aria-valuenow, so "0 of 10" is announced as 5 percent.
+Q || back_to's hover goes from text-body to text-stone-emphasis, which resolve to the same token; the link has no visible hover change.
+Q || dropdown_item_disabled draws text-sm at base-content/40, likely below AA contrast; it has no callers, so this is latent.
+Q || Icon default style varies by helper (button_action, ui_section, ui_empty_state regular; ui_badge, ui_accent_card, ui_stat_box solid); one default would cut the regular-glyph raises fa_icon guards against.
+Q || Two progress-bar implementations coexist (ui_progress_bar utility-built, render_progress_bar custom CSS with gradient and pulse); the guide documents both without saying when to use which.
+Q || delete_button renders an a with data-turbo-method rather than a button, so a destructive action is announced as a link.
+Q || ui_disclosure :card bolds plain-string titles but not SafeBuffer ones, so two cards with the same title can differ in weight depending on how the caller built it.
+Q || clipboard_button meets the 36px floor through a before:-inset-3.5 pseudo-element rather than min-h-9; TOUCH-01 does not say whether that counts.

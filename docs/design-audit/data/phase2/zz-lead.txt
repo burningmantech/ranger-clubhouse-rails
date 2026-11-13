@@ -1,0 +1,5 @@
+V || R11934 || COMPLIANT || MODAL-01 || - || 7 || Lead correction: m.footer wraps its block in a button_row itself (modal_helper.rb footer), so the close button is not bare. The reviewer's DIVERGENT verdict was wrong.
+V || R11936 || COMPLIANT || MODAL-01 || - || 10 || Lead correction: the modal helper appends a Close footer when the block has no m.footer (modal_helper.rb:49-51), so this modal has one. The reviewer's DIVERGENT verdict was wrong.
+V || R11946 || DIVERGENT || MODAL-01 || low || 1 || The guide's modal has m.title, m.body and a footer; this one has no m.title. Lead correction: it does get a Close footer, which the helper appends (modal_helper.rb:49-51).
+V || R11956 || COMPLIANT || MODAL-01 || - || 6 || Lead correction: the modal helper appends a Close footer when the block has no m.footer (modal_helper.rb:49-51). The reviewer's DIVERGENT verdict was wrong.
+V || R11967 || COMPLIANT || MODAL-01 || - || 61 || Lead correction: m.footer wraps its block in a button_row itself, so "Cancel" is not bare. The reviewer's DIVERGENT verdict was wrong.

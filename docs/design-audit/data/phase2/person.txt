@@ -1,0 +1,451 @@
+V || R13160 || COMPLIANT || MODAL-02 || - || 21 || Destructive clear confirmed through the in-app modal markup (confirm_modal_dialog) with variant :error; turbo_confirm here carries the dialog, not a browser string
+V || R00351 || COMPLIANT || MODAL-02 || - || 21 || confirm_modal_dialog with variant: :error for a destructive clear
+V || R00352 || COMPLIANT || MODAL-02 || - || 21 || turbo_confirm holds confirm_modal_dialog markup (the app modal), not a browser confirm string
+V || R13159 || COMPLIANT || EMPTY-02 || - || 22 || Current spell's empty end date prints "—"; the muted "Not recorded" / "Before <date>" words state a fact (ambiguous under EMPTY-02)
+V || R13154 || COMPLIANT || A11Y-01 || - || 11 || Active is icon plus the word "active"; inactive is a text badge "deactivated"; colour never carries status alone
+V || R00359 || COMPLIANT || COLOR-05 || - || 11 || icon-success on a status icon (circle-check for active), as COLOR-05 prescribes
+V || R13153 || COMPLIANT || COLOR-05 || - || 21 || ui_icon_item lines with neutral text-stone-icon, icon-success only on a met condition
+V || R00363 || UNCOVERED || - || - || 26 || Hand-built tag.ul wrapping ui_icon_item items (space-y-1, nested ps-5); a list of icon lines, not a data table, so TABLE-01 does not apply and no rule covers icon lists
+V || R13152 || UNCOVERED || - || - || 41 || Helper rebuilds a ui_icon_item line from UiIconItemHelper::ITEM_CLASSES/ICON_CLASSES so nested conditions share the li; reuse of helper internals, no rule addresses it
+V || R13161 || COMPLIANT || EMPTY-02 || - || 52 || Empty duration prints "—"
+V || R13158 || COMPLIANT || BADGE-01 || - || 83 || person_status_badge builds through ui_badge with variant plus icon; "active" plain text by design; colour never alone
+V || R00370 || COMPLIANT || MODAL-02 || - || 101 || confirm_modal for a status-change warning (not a destructive action, so no :error variant required); wording comes from StatusChangeWarnings outside this scope
+V || R00371 || COMPLIANT || MODAL-02 || - || 104 || .fetch(:turbo_confirm) extracts the confirm_modal dialog markup for the status-warning controller; not a browser confirm string
+V || R13162 || DIVERGENT || EMPTY-02 || low || 13 || EMPTY-02 says an empty value prints "—"; swag_type_label returns a hyphen "-" when swag is nil
+V || R13157 || UNCOVERED || - || - || 60 || timesheet_status_icon and missing_request_status_icon are status icons no template calls (dead helpers); no rule covers unused helpers
+V || R00378 || COMPLIANT || COLOR-05 || - || 64 || icon-success on a verified/approved status icon (in a helper nothing calls)
+V || R00377 || COMPLIANT || COLOR-05 || - || 68 || icon-error on a pending status icon (in a helper nothing calls)
+V || R13155 || COMPLIANT || A11Y-01 || - || 85 || Every timesheet status is a ui_badge with words (Correction Requested, Verified, ...); colour is paired with text
+V || R13156 || COMPLIANT || A11Y-01 || - || 105 || Missing-request status badges carry words with their colour
+V || M0213 || UNCOVERED || - || - || 314 || pattern=typography ambiguous COPY-08: bans strftime in a view; this is a helper formatting "Jan 8 14:30" for a blocker label, and the rule says nothing about helpers
+V || M0214 || UNCOVERED || - || - || 321 || pattern=typography ambiguous COPY-08: helper strftime("%b %-d") for a blocker label; the rule's ban names views only
+V || R06081 || COMPLIANT || MODAL-02 || - || 39 || Delete Account confirm_modal uses variant :error and asks "Delete X's account? ... It cannot be undone."; Resend/Reset confirms are non-destructive questions
+V || R12911 || COMPLIANT || MODAL-02 || - || 40 || dropdown_item confirm_modal: destructive one red with action-led question and undo statement; others plain questions
+V || R12910 || UNCOVERED || - || - || 54 || ambiguous BTN-07: On/Off Site button beside the Actions dropdown in a hand-made "flex flex-col gap-2 lg:flex-row" stack; rule does not say whether a button plus a dropdown menu needs button_row
+V || R12909 || COMPLIANT || BTN-01 || - || 56 || On/Off Site toggle is button_link :secondary with icon
+V || R06082 || COMPLIANT || NAV-01 || - || 66 || dropdown_menu class: "dropdown-end", the documented daisyUI placement modifier
+V || R12908 || COMPLIANT || NAV-01 || - || 66 || dropdown_menu with class/summary_class/menu_class overrides; guide documents class: and menu_class: on dropdown_menu
+V || R12912 || UNCOVERED || - || - || 9 || Each banner in a callout as div "mb-1" with Posted date span and p message, duplicated for event and permanent banners; list-in-callout pattern no rule covers
+V || R06093 || COMPLIANT || TYPE-03 || - || 10 || text-sm on the "Posted <date>" metadata line, a listed text-sm use
+V || R12913 || COMPLIANT || ALERT-01 || - || 34 || Account-status notices are ui_callout_box :error / :warning
+V || R06088 || COMPLIANT || BTN-01 || - || 55 || email_suppression_clear_button builds through button_link
+V || R12914 || COMPLIANT || BTN-01 || - || 55 || Clear Report button from the area helper, which calls button_link :secondary
+V || R12918 || UNCOVERED || - || - || 3 || Label/value display: ui_label_value label_width "9rem" here while the summary strip uses "7rem"; no rule for label/value displays
+V || R12915 || DIVERGENT || EMPTY-02 || low || 9 || EMPTY-02 says an empty value prints "—"; Camp and Emergency Contact print italic muted "None" / "None stated" (lines 9, 26)
+V || R12916 || UNCOVERED || - || - || 12 || ambiguous ALERT-01: access notices ("only available to you while the event is running", "You do not have the permissions") as div font-medium inside a label-value row; rule does not say whether a value cell's notice needs a callout
+V || R12917 || COMPLIANT || TOAST-03 || - || 40 || Legal name and address copy through clipboard_button with label: as the accessible name
+V || R06103 || COMPLIANT || BADGE-01 || - || 8 || person_status_badge builds through ui_badge
+V || R12919 || COMPLIANT || BADGE-01 || - || 14 || Status, vintage and On/Off Site are ui_badge with words and icons (A11Y-01 met); the hero description holding them is an F row (HERO-02)
+V || R12921 || UNCOVERED || - || - || 22 || Callsign pronunciation as italic div with literal quote marks in the hero description; no rule for pronunciation display
+V || R12920 || UNCOVERED || - || - || 27 || ambiguous HERO-04: says back navigation lives in panel.back_to; silent on that slot holding a cross-interface switch ("Switch to HQ Interface") with no back link
+V || R12924 || COMPLIANT || EMPTY-01 || - || 5 || "No permissions granted." through ui_empty_state
+V || R12922 || UNCOVERED || - || - || 12 || Plain link_to "View Agreements" with tap-target-link inside a warning callout; plain links have no rule
+V || R12923 || COMPLIANT || A11Y-01 || - || 29 || Status cell is icon plus "active" or a "deactivated" badge; colour never alone
+V || R12927 || UNCOVERED || - || - || 4 || ambiguous RADIUS-01: names rounded-full for avatars; the profile photo uses photo_tag with rounded-2xl and fixed AVATAR_WIDTH/HEIGHT, unclear whether a full profile photo counts as an avatar
+V || M0085 || COMPLIANT || TYPE-02 || - || 9 || pattern=typography size "xs" is on ui_badge, not a button; badges are a listed text-xs use (BTN-03 does not apply)
+V || R12925 || COMPLIANT || A11Y-01 || - || 9 || Photo status badges carry words (approved / awaiting approval / rejected) with their colour
+V || M0086 || COMPLIANT || TYPE-02 || - || 11 || pattern=typography ui_badge size "xs"; badges are a listed text-xs use
+V || M0087 || COMPLIANT || TYPE-02 || - || 13 || pattern=typography ui_badge size "xs"; badges are a listed text-xs use
+V || R06121 || DIVERGENT || TYPE-02 || high || 15 || TYPE-02 bans text-xs on content a reader needs; the fallback photo status "Status: <status>" is a span text-xs
+V || R12926 || DIVERGENT || TYPE-02 || high || 15 || TYPE-02 bans text-xs on text a reader needs; unknown photo status prints as span "text-xs text-body" instead of a badge
+V || R06125 || DIVERGENT || TYPE-04 || medium || 4 || TYPE-04 gives h3 one style (heading-title); this h3 adds a bottom rule (border-b border-line pb-1) and text-heading-primary colour, so it differs from every other h3
+V || R12928 || DIVERGENT || TYPE-04 || medium || 4 || TYPE-04: one style per heading level; the summary group h3 adds border-b, pb-1 and text-heading-primary on top of heading-title
+V || R12935 || COMPLIANT || CARD-03 || - || 1 || ui_section "Overview" with the action menu in its action: slot
+V || R12929 || DIVERGENT || LAYOUT-02 || low || 5 || LAYOUT-02 says columns are flex lg:flex-row gap-4 or grid lg:grid-cols-N gap-4; the label-value groups use "grid gap-x-8 gap-y-4 xl:grid-cols-2" (xl fold, own gaps)
+V || R12930 || DIVERGENT || TOUCH-01 || high || 13 || TOUCH-01 sets a 36px floor (min-h-9); the email and phone links use "inline-flex items-center min-h-7" (28px), lines 13, 22
+V || R12932 || DIVERGENT || EMPTY-02 || low || 25 || EMPTY-02 says an empty value prints "—"; missing phone, years and former callsigns print italic muted "None" (lines 25, 51, 62, 72, 94)
+V || R12931 || COMPLIANT || TOUCH-01 || - || 32 || Alt. Phone link uses tap-target-link (min-h-9); the primary phone link two rows up does not (see R12930)
+V || R12933 || UNCOVERED || - || - || 49 || Year ranges in square brackets in a text-stone-muted span, "(date unknown)" muted span; label/value display detail no rule covers
+V || R12934 || COMPLIANT || A11Y-01 || - || 84 || Callsign approval is ui_badge with the words "approved" / "not approved"
+V || R12938 || COMPLIANT || EMPTY-01 || - || 6 || Separate ui_empty_state for no teams and no positions
+V || R06146 || DIVERGENT || TYPE-03 || medium || 9 || TYPE-03 bans text-sm for main content; the team and position lists (the section's content) are "text-sm text-body" (lines 9, 26)
+V || R12936 || DIVERGENT || TYPE-03 || medium || 9 || TYPE-03: text-sm never for main content; team and position names render as text-sm divs in lg:columns-2 inside the accordions (lines 9, 26)
+V || M0088 || COMPLIANT || TYPE-02 || - || 14 || pattern=typography size "xs" on ui_badge "manager"; badges are a listed text-xs use, BTN-03 does not apply
+V || R12937 || COMPLIANT || BADGE-01 || - || 14 || ui_badge "manager" :success with class "ml-2" spacing only
+V || R12939 || COMPLIANT || BTN-07 || - || 4 || Section action slot holds a button_row of button_link and edit_link (with aria label)
+V || R12940 || UNCOVERED || - || - || 8 || ambiguous EMPTY-02: missing timestamps print caller words that state a fact ("Never", "Not yet taken", "Before 2010") in italic muted text
+V || R12943 || COMPLIANT || ALERT-01 || - || 3 || Ticketing-open warning and the delivery note are ui_callout_box (:warning with clock icon, :info)
+V || M0035 || DIVERGENT || BP-01 || low || 17 || pattern=forms BP-01 allows sm: only in a field's width: option; f.select passes "w-full sm:w-64" in the html-options class hash instead of width:
+V || R12941 || DIVERGENT || BP-01 || low || 17 || BP-01 sanctions sm: only through a field's width:; the selects carry sm:w-64/44/32/56 in html-options class (17, 19, 22, 27, 36), and 43 uses lg:w-40, while awards/_form uses width:
+V || M0036 || DIVERGENT || BP-01 || low || 19 || pattern=forms sm:w-44 passed in the select's html class hash rather than the builder's width: option
+V || M0037 || DIVERGENT || BP-01 || low || 22 || pattern=forms sm:w-32 passed in the select's html class hash rather than width:
+V || M0038 || DIVERGENT || BP-01 || low || 27 || pattern=forms sm:w-32 passed in the select's html class hash rather than width:
+V || M0039 || DIVERGENT || BP-01 || low || 36 || pattern=forms sm:w-56 passed in the select's html class hash rather than width:
+V || R06158 || COMPLIANT || COLOR-01 || - || 58 || me-muted is the documented muted-text class (applies text-stone-muted); no palette colour
+V || R12942 || UNCOVERED || - || - || 58 || ambiguous EMPTY-02: an empty comments value prints "No comments yet." in a me-muted p; words state a fact; the Created/Last modified metadata line in me-muted is the documented muted ladder
+V || R06165 || UNCOVERED || - || - || 69 || &middot; is a text separator between two metadata dates, not an icon; ICON-01 does not apply and no rule covers separators
+V || R12944 || COMPLIANT || MODAL-02 || - || 78 || delete_button variant :error with "Delete <ref> (<type>)? This cannot be undone."
+V || R12945 || DIVERGENT || BTN-07 || low || 9 || BTN-07 says buttons sit in a button_row; "View Change History" button_link sits alone in a div "my-4" between hero and form
+V || M0499 || COMPLIANT || TABLE-02 || - || 11 || pattern=tables-lists responsive: false on a three-column change log; tables of about four columns or fewer may opt out
+V || R12946 || UNCOVERED || - || - || 25 || Change cell: strong operation then one div per column "col: <em>old</em> arrow <em>new</em>"; diff display no rule covers
+V || R06177 || COMPLIANT || COLOR-05 || - || 28 || Decorative arrow icon in me-muted (text-stone-muted), a neutral icon tone
+V || R12947 || UNCOVERED || - || - || 28 || Arrow-right fa_icon between old and new values with no text alternative; the arrow carries "changed to" meaning but is not a control, so A11Y-02 does not reach it
+V || R12948 || COMPLIANT || FORM-01 || - || 3 || Agreement checkbox is the builder's f.check_box with label; row layout (flex-wrap, grow, badges beside) is local
+V || R12949 || COMPLIANT || BADGE-01 || - || 10 || Hidden/Available/Not available are ui_badge with icons and words
+V || R12952 || COMPLIANT || ALERT-01 || - || 15 || Past-year notice is ui_callout_box :secondary with icon
+V || R06209 || DIVERGENT || TYPE-03 || medium || 31 || TYPE-03 bans text-sm for paragraph content; the Lifetime Agreements intro paragraph is p "text-sm"
+V || R12950 || DIVERGENT || COLOR-06 || low || 31 || COLOR-06 wants one neutral utility per purpose (muted = text-stone-muted/me-muted); this section intro uses text-base-content/70, off the ladder
+V || R12951 || COMPLIANT || BTN-07 || - || 43 || cancel_button is the same helper cancel_link aliases; f.submit plus cancel in one button_row
+V || R12955 || UNCOVERED || - || - || 16 || ambiguous CARD-03: untitled ui_section wrapping the whole page body; rule does not say whether a section needs a title
+V || R12954 || UNCOVERED || - || - || 17 || Burner Profile record line as p "my-3" with ext_link or a plain sentence; plain link display has no rule
+V || R06211 || COMPLIANT || COLOR-01 || - || 26 || me-muted is the documented muted class (text-stone-muted)
+V || R12953 || COMPLIANT || COLOR-06 || - || 26 || Count line "Showing N applications." in me-muted, the documented muted rung
+V || M0500 || COMPLIANT || TABLE-02 || - || 28 || pattern=tables-lists responsive: false on a three-column table, allowed for four columns or fewer
+V || R12956 || COMPLIANT || MODAL-02 || - || 2 || Confirm body asks "Delete the asset record for X ...?" and the callout says it cannot be undone; delivered through delete_button (red)
+V || M0185 || UNCOVERED || - || - || 8 || pattern=other ambiguous COPY-07: the spelling rule names sign-up and check-in only; "checkout" as a noun is not addressed
+V || R12957 || COMPLIANT || MODAL-01 || - || 1 || modal with m.title, m.body, m.footer and modal_close_button
+V || R12958 || UNCOVERED || - || - || 13 || ambiguous EMPTY-01: the asset history table has no empty branch; the rule does not say every collection needs one (the history always holds at least the row opened from)
+V || R12959 || COMPLIANT || A11Y-01 || - || 31 || "Still checked out" is a worded :warning badge
+V || R12960 || COMPLIANT || BTN-01 || - || 5 || History is button_link :secondary with icon, opening the modal by turbo stream
+V || M0186 || UNCOVERED || - || - || 3 || pattern=other ambiguous COPY-07: "checkout history" / "checkouts" as nouns; the rule's hyphenation list does not include checkout
+V || R12962 || UNCOVERED || - || - || 38 || ambiguous CARD-03: "Asset Authorization" ui_section has no icon while its sibling sections do; no rule requires section icons
+V || R12961 || DIVERGENT || BTN-07 || low || 45 || BTN-07 says a form's save sits in a button_row; the authorization form's f.submit "Save" follows the checkbox with no button_row
+V || R12963 || DIVERGENT || BTN-07 || low || 4 || BTN-07 says buttons sit in a button_row; each "Grant ... award" button_link sits alone in a div "my-4" inside the section
+V || R12964 || COMPLIANT || EMPTY-02 || - || 32 || Empty service-year, date and notes cells print "—"
+V || R12965 || COMPLIANT || BTN-06 || - || 41 || Row edit control is edit_link with a descriptive aria label in a right-aligned Actions column
+V || R06265 || COMPLIANT || LIST-01 || - || 8 || The dl is an instruction-list Q&A, not a data table; TABLE-01 does not apply
+V || R12966 || COMPLIANT || LIST-01 || - || 8 || Award explanation as dl.instruction-list Q&A on a form (a page the reader operates), no classes on dt/dd
+V || R12967 || COMPLIANT || FORM-07 || - || 20 || Select widths through the builder's width: "w-full sm:w-72" / "w-full sm:w-44"
+V || R12968 || COMPLIANT || STAT-01 || - || 9 || Tallies are ui_stat_box in ui_stat_row in the body; year ranges follow in a p
+V || R12969 || DIVERGENT || BTN-07 || low || 32 || BTN-07 says buttons sit in a button_row; "Rebuild Awards" button_link sits alone in a div "mb-3"
+V || R06274 || DIVERGENT || MODAL-02 || low || 37 || MODAL-02 says a confirm asks with the action ("Rebuild awards?"); the Rebuild message is a statement ("Rebuild re-checks ... history and grants ...") with no question
+V || R12971 || COMPLIANT || ALERT-01 || - || 7 || Visibility warning and "will not see" notice are ui_callout_box (:warning, :error accent)
+V || R12970 || COMPLIANT || FORM-01 || - || 18 || Event/Permanent choice is the builder's f.collection_radio_buttons with label and layout options
+V || R12972 || DIVERGENT || BTN-07 || low || 19 || BTN-07 says buttons sit in a button_row; "Add Banner" button_link sits in a div "mb-3" outside any section
+V || M0501 || COMPLIANT || TABLE-02 || - || 25 || pattern=tables-lists responsive: false on a four-column table, within the four-or-fewer allowance
+V || R12974 || COMPLIANT || A11Y-01 || - || 37 || Banner type badge carries the words Permanent / Event only with its colour
+V || R12973 || DIVERGENT || BTN-07 || low || 47 || BTN-07 says buttons sit in a button_row; row edit_link and delete_button sit in a hand-made div "flex-center gap-2 justify-end"
+V || R12975 || COMPLIANT || STAT-01 || - || 19 || Three ui_stat_box in ui_stat_row, :warning variant when a value needs attention (value text says it too)
+V || R12977 || COMPLIANT || FORM-01 || - || 43 || ui_form with an unsaved-changes Stimulus controller attached via data:
+V || R06321 || COMPLIANT || COLOR-01 || - || 55 || me-muted is the documented muted class
+V || R12976 || COMPLIANT || COLOR-06 || - || 55 || Created/Last modified metadata in me-muted (the text-stone-muted rung)
+V || R06323 || UNCOVERED || - || - || 57 || &middot; text separator between metadata dates, not an icon; no rule covers separators
+V || R06357 || COMPLIANT || TYPE-03 || - || 54 || text-sm on checkbox notes and a warning under an action description: help text and messages, listed text-sm uses (the hand-rolled help text is R12980)
+V || R12979 || DIVERGENT || ALERT-01 || medium || 17 || ALERT-01 says inline notices are ui_callout_box; the "HIGHLY not recommended" release warning is a div "text-error mt-1 text-sm" inside the action_box description
+V || R12978 || UNCOVERED || - || - || 22 || Release Callsign action_box wrapped in div "hidden lg:flex", so the action does not exist below lg; no rule addresses hiding an action on phones
+V || R06347 || DIVERGENT || MODAL-02 || medium || 31 || MODAL-02 says a destructive confirm is red (confirm_modal variant: :error); the Release Callsign confirm_modal (renames and unapproves the callsign) passes no variant
+V || R12980 || DIVERGENT || FORM-04 || medium || 54 || FORM-04 says help text is the field's help_text:; notes under the checkboxes are hand-made div/p "text-sm text-stone-muted ml-8 -mt-1 mb-2" (54, 60, 67, 76)
+V || R12981 || UNCOVERED || - || - || 72 || Read-only "Vintage:" label in span font-medium followed by a vintage :success / not vintage :secondary badge and a muted note; label/value display has no rule
+V || R12982 || DIVERGENT || BTN-07 || low || 94 || BTN-07 says buttons sit in a button_row; "Add FKA" button_link (size sm) sits alone in a div "mb-3"
+V || M0502 || COMPLIANT || TABLE-02 || - || 99 || pattern=tables-lists responsive: false on a three-column table, within the allowance
+V || R12984 || DIVERGENT || EMPTY-02 || low || 113 || EMPTY-02 says an empty value prints "—"; a missing FKA date prints italic muted "unknown"
+V || R12983 || DIVERGENT || BTN-07 || low || 117 || BTN-07 says buttons sit in a button_row; edit_link and delete_button sit in a hand-made div "flex-center gap-2 justify-end"
+V || R12985 || DIVERGENT || BTN-07 || low || 8 || BTN-07 says buttons sit in a button_row; "Add Certification" button_link sits alone in a div "my-4"
+V || R06380 || COMPLIANT || COLOR-01 || - || 20 || me-muted is the documented muted class
+V || R12987 || COMPLIANT || COLOR-06 || - || 20 || Count line in me-muted, the text-stone-muted rung used for counts elsewhere
+V || R12986 || COMPLIANT || BTN-07 || - || 34 || Row actions grouped in button_row (edit_link plus "Show Details" button_link); the unaligned Actions heading is not covered by a rule
+V || R06401 || UNCOVERED || - || - || 10 || Arbitrary value grid-cols-[8rem_1fr] on a hand-built label/value dl; label/value displays have no rule (ui_label_value exists elsewhere)
+V || R06403 || UNCOVERED || - || - || 10 || The dl is a label/value display, not a data table; TABLE-01 does not apply and label/value displays have no rule
+V || R12988 || UNCOVERED || - || - || 10 || Hand-built definition grid: dl "grid grid-cols-[8rem_1fr] gap-y-2 gap-x-3", dt "font-semibold text-base-content", dd "text-body" instead of ui_label_value; label/value displays have no rule
+V || R12989 || UNCOVERED || - || - || 23 || Recorder callsign as link_to with class "underline"; plain links have no rule
+V || R06395 || COMPLIANT || COLOR-01 || - || 27 || me-muted is the documented muted class
+V || R12990 || UNCOVERED || - || - || 27 || ambiguous EMPTY-02: missing recorder prints italic "— imported —", words stating why the value is absent
+V || R12991 || COMPLIANT || BTN-06 || - || 38 || edit_link "Edit Certification" in a button_row
+V || R12992 || COMPLIANT || ALERT-01 || - || 17 || Read-only notice is ui_callout_box :secondary with eye icon
+V || R12993 || COMPLIANT || FORM-07 || - || 17 || Text fields sized by content through width: (sm:w-96, sm:w-72); w-32 needs no responsive class per FORM-07
+V || M0115 || COMPLIANT || COPY-01 || - || 31 || pattern=other "Paycom Employee ID" is a Paycom surface, an explicit COPY-01 exception
+V || R12995 || COMPLIANT || ALERT-01 || - || 5 || Correction-only warning is ui_callout_box :warning; the all-caps "ADD A NEW NOTE." is noted as a Q row
+V || R12994 || DIVERGENT || FORM-08 || medium || 17 || FORM-08 says a form page is hero, callouts, then ui_form with sections; the edit note form puts its textarea straight in ui_form with no ui_section, unlike new.html.erb
+V || R12996 || DIVERGENT || HELP-02 || low || 16 || HELP-02 says a consequence of the page's action stays visible as a callout beside the action; "Your note will be timestamped, and appended..." is a whole-bold p inside the section
+V || R12998 || COMPLIANT || HELP-02 || - || 16 || "About This Report" ui_disclosure variant :card with instruction-list, under the stat row and above the sections; class "my-4" spacing only
+V || R06478 || COMPLIANT || LIST-01 || - || 17 || dl is the instruction-list Q&A inside the About card
+V || R12997 || UNCOVERED || - || - || 26 || Same ui_pager rendered above (div mb-3) and below (div mt-4) the table; pagination has no rule
+V || R12999 || DIVERGENT || EMPTY-02 || low || 53 || EMPTY-02 says an empty value prints "—"; Changed By passes blank: "-" (hyphen)
+V || R13002 || COMPLIANT || HELP-02 || - || 18 || "About This Report" ui_disclosure :card holding the instruction-list, directly under the hero (no stat row)
+V || R06490 || COMPLIANT || LIST-01 || - || 19 || dl is the instruction-list Q&A inside the About card
+V || R13001 || COMPLIANT || CARD-03 || - || 33 || Tables grouped in ui_section; border: false is a helper option
+V || R13000 || COMPLIANT || TABLE-01 || - || 39 || Data tables are ui_table; striped: true is a helper option
+V || R13003 || COMPLIANT || A11Y-01 || - || 52 || Status cells are words (Member/Held) or a worded :secondary badge (Left/Revoked); muted "Not recorded" is text
+V || M0316 || DIVERGENT || FORM-01 || medium || 6 || pattern=forms FORM-01 says fields come from AppFormBuilder; each position checkbox is check_box_tag borrowing AppFormBuilder::CHECKBOX_CLASSES, so it looks the same
+V || R06500 || DIVERGENT || FORM-01 || medium || 6 || FORM-01: builder fields only; check_box_tag with CHECKBOX_CLASSES and a Stimulus action stands in for f.check_box
+V || R13004 || DIVERGENT || FORM-01 || medium || 6 || FORM-01: builder fields only; raw check_box_tag "position_ids[]" with the builder's checkbox classes instead of a builder field
+V || R06507 || DIVERGENT || TYPE-03 || medium || 12 || TYPE-03 bans text-sm on form labels; the span wrapping each position's label and its markers is text-sm (icon text-xs at 15, 18, 21 is icon sizing)
+V || R06499 || DIVERGENT || FORM-01 || medium || 13 || FORM-01: labels come with builder fields; a raw <label for> with hand-written classes pairs with the check_box_tag
+V || R13005 || DIVERGENT || FORM-01 || medium || 13 || FORM-01: raw label "inline-flex items-center min-h-9 min-w-9 font-medium text-heading cursor-pointer" built by hand instead of the builder's label
+V || R13006 || UNCOVERED || - || - || 15 || ambiguous TYPE-02: lists icon sizing within links as a text-xs use; these are text-xs icons beside muted words (All Rangers, All Accounts, Clears on join), not in links
+V || R13007 || COMPLIANT || A11Y-01 || - || 24 || Inactive marker carries the word "[inactive]" with its red; the team card shows the same fact as ui_badge "inactive" (see Q)
+V || R13008 || DIVERGENT || NAV-01 || medium || 31 || NAV-01 says a dropdown is dropdown_menu with dropdown_item; the permissions menu fills it with raw li.menu-title and li span items, plus class overrides
+V || R06510 || DIVERGENT || TYPE-03 || medium || 3 || TYPE-03 bans text-sm on labels a reader needs; the position group title (e.g. "Optional Positions ...") is a div text-sm
+V || R13009 || UNCOVERED || - || - || 3 || Group title as div "text-sm text-stone-muted mb-1" with items indented "ml-3"; a non-heading styled as a group label that does not outweigh the card title
+V || R13010 || COMPLIANT || CARD-01 || - || 2 || Team card uses card-standard (the guide shows the class written on markup) with call-site shadow-xs, which CARD-01 permits; its p-3 padding is an F row
+V || R06522 || COMPLIANT || CARD-01 || - || 2 || shadow-xs added at the call site, the one shadow CARD-01 allows a card that needs it
+V || M0317 || DIVERGENT || FORM-01 || medium || 11 || pattern=forms team checkbox is check_box_tag with CHECKBOX_CLASSES rather than a builder field; looks the same
+V || R06517 || DIVERGENT || FORM-01 || medium || 11 || FORM-01: team and manager checkboxes are check_box_tag (11, 40) borrowing the builder's classes
+V || R13011 || DIVERGENT || FORM-01 || medium || 11 || FORM-01: raw check_box_tag for team and manager with raw labels (17, 46) instead of builder fields
+V || R06516 || DIVERGENT || FORM-01 || medium || 17 || FORM-01: raw <label for> elements (17, 46) with hand-written classes in place of builder labels
+V || R06526 || DIVERGENT || TYPE-03 || medium || 46 || TYPE-03 bans text-sm on form labels and empty-state messages; "Is Team Manager" label (46) and "Team does not have any positions." (77) are text-sm
+V || R13012 || COMPLIANT || NAV-01 || - || 23 || dropdown_menu with class/summary_class/menu_class overrides (documented class: and menu_class:); its raw li items are an F row
+V || M0089 || COMPLIANT || TYPE-02 || - || 36 || pattern=typography size "xs" on ui_badge "inactive"; badges are a listed text-xs use
+V || M0318 || DIVERGENT || FORM-01 || medium || 40 || pattern=forms manager checkbox is check_box_tag with CHECKBOX_CLASSES rather than a builder field
+V || R13013 || DIVERGENT || ALERT-01 || medium || 51 || ALERT-01 says inline notices are ui_callout_box; the inactive-team warning is p "mt-1 text-sm text-error"
+V || R13014 || DIVERGENT || EMPTY-01 || low || 77 || EMPTY-01 says an empty state is always ui_empty_state; "Team does not have any positions." is p "text-sm italic text-stone-muted"
+V || R13015 || DIVERGENT || BTN-07 || low || 81 || BTN-07 says a form's save and cancel are f.submit plus cancel_link in one button_row; each card has its own submit_button "Save" in a div "mt-2 ml-1", apart from the cancel
+V || R06546 || DIVERGENT || TYPE-03 || medium || 5 || TYPE-03 bans text-sm on paragraph content; the intro and legend paragraph is p "mb-2 text-sm text-stone-muted" with text-xs icons
+V || R13019 || DIVERGENT || HELP-02 || medium || 11 || HELP-02 puts a legend in one collapsed ui_disclosure :card; the icon legend is inline in the intro paragraph, icons and italic terms separated by middots
+V || R06536 || UNCOVERED || - || - || 12 || &middot; separators between legend entries; a text separator, not an icon, so ICON-01 does not apply
+V || R13016 || DIVERGENT || LAYOUT-02 || low || 31 || LAYOUT-02 says columns are flex lg:flex-row gap-4 or grid lg:grid-cols-N gap-4; the cards flow in CSS columns "columns-1 gap-4 lg:columns-2" with break-inside-avoid
+V || R06541 || COMPLIANT || CARD-01 || - || 34 || shadow-xs at the call site on a card-standard, permitted by CARD-01
+V || R13017 || COMPLIANT || CARD-01 || - || 34 || General Positions card uses card-standard with call-site shadow-xs; p-3 padding is an F row
+V || R06543 || COMPLIANT || TYPE-04 || - || 35 || h3 carries heading-title; the extra text-heading and mb-2 set no size or weight
+V || R13018 || COMPLIANT || TYPE-04 || - || 35 || h3 "heading-title text-heading mb-2": heading-title present, no size or weight override
+V || R13020 || DIVERGENT || BTN-07 || low || 54 || BTN-07 pairs a form's save with its cancel in one button_row; the bottom row holds only cancel_link while Save buttons sit in each card
+V || R13026 || COMPLIANT || ALERT-01 || - || 12 || Approved/Rejected states are ui_callout_box :success / :error with titles
+V || R13022 || UNCOVERED || - || - || 22 || One record shown as a one-row ui_table (striped: false) in a section; no rule says how a single record's fields are displayed
+V || M0503 || COMPLIANT || TABLE-02 || - || 51 || pattern=tables-lists responsive: false on a four-column partner table, within the allowance
+V || R13021 || DIVERGENT || ALERT-01 || medium || 89 || ALERT-01 says inline notices are ui_callout_box; partner lookup failures are span "text-error" in cells (68, 75) and "No shift partner name(s) stated." is div "text-error" (89)
+V || R06564 || COMPLIANT || LIST-01 || - || 120 || dl is an instruction-list Q&A on a form, not a data table
+V || R13025 || COMPLIANT || LIST-01 || - || 120 || Single Q&A as dl.instruction-list in the section it explains, on a page the reader operates
+V || R13024 || COMPLIANT || BTN-07 || - || 140 || cancel_button (the helper cancel_link aliases) in the form's button_row with the submits
+V || R13023 || COMPLIANT || BTN-05 || - || 146 || Delete Request is button_link :error (destructive variant) with confirm_modal variant :error; class "ms-auto" only pushes it to the row's end
+V || R06561 || COMPLIANT || MODAL-02 || - || 148 || confirm_modal with variant :error and "Delete the X request for ...? This cannot be undone."
+V || R13027 || COMPLIANT || HELP-02 || - || 15 || On a page the reader operates, the one-sentence consequence joins the section it concerns, which HELP-02 allows
+V || R13029 || DIVERGENT || EMPTY-02 || low || 25 || EMPTY-02 says an empty value prints "—"; a blank partner prints "-" (hyphen)
+V || R13028 || DIVERGENT || HERO-04 || low || 37 || HERO-04 says back navigation lives in the hero panel; back_to "Timesheet" is repeated in a button_row at the page foot
+V || R13030 || UNCOVERED || - || - || 11 || Plain link_to "Login Sessions" with "underline font-semibold" inside an info callout; plain links have no rule
+V || R13031 || DIVERGENT || BTN-07 || low || 17 || BTN-07 says buttons sit in a button_row; "Add Security Key" button_link sits alone in a div "my-4"
+V || R13032 || COMPLIANT || MODAL-02 || - || 47 || delete_button confirm_message: renders the app confirm modal with variant :error; message asks "Delete <nickname> from ...?" and states the consequence
+V || R06620 || COMPLIANT || SPACE-02 || - || 10 || The ul is a bulleted list with list-bulleted, as SPACE-02 prescribes; not a data table
+V || R13035 || COMPLIANT || SPACE-02 || - || 10 || Before-you-start steps as ul.list-bulleted inside the warning callout
+V || R13033 || COMPLIANT || ALERT-01 || - || 27 || Script-revealed notices are ui_callout_box (:warning, :error accent) inside hidden wrappers the passkey controller shows
+V || M0266 || COMPLIANT || COPY-10 || - || 57 || pattern=buttons the submit reads "Add Security Key", a specific label, not "Submit"; the match is the data target name
+V || R13034 || UNCOVERED || - || - || 57 || Busy state through f.submit data pending_label "Waiting for the Key…"; loading and busy states have no rule
+V || M0504 || COMPLIANT || TABLE-02 || - || 19 || pattern=tables-lists responsive: false on a four-column grant table, within the allowance
+V || R13040 || COMPLIANT || TABLE-01 || - || 21 || ui_table heading with width: "1%" for the checkbox column, a helper option
+V || M0319 || DIVERGENT || FORM-01 || medium || 30 || pattern=forms each role's grant field is check_box_tag with AppFormBuilder::CHECKBOX_CLASSES; it is the form's data, not a row selector, and bypasses the builder
+V || R06642 || DIVERGENT || FORM-01 || medium || 30 || FORM-01: builder fields only; check_box_tag "role_ids[]" borrowing the builder's checkbox classes
+V || R13036 || DIVERGENT || FORM-01 || medium || 30 || FORM-01: per-role raw check_box_tag in a table cell (CHECKBOX_CLASSES, disabled when not editable) stands in for a builder field
+V || R06641 || DIVERGENT || FORM-01 || medium || 45 || FORM-01: raw <label for> with hand-written classes in place of a builder label
+V || R13037 || DIVERGENT || FORM-01 || medium || 45 || FORM-01: raw label "inline-flex items-center min-h-9 cursor-pointer font-medium text-heading" built by hand
+V || R13038 || UNCOVERED || - || - || 50 || t.cell colspan 2 with class "text-stone-muted italic" holding "Contact the Tech Team to assign or remove."; an in-cell note no rule covers
+V || R06647 || UNCOVERED || - || - || 57 || Titles joined with tag.br inside a cell; line breaks in cells have no rule
+V || R13039 || DIVERGENT || EMPTY-02 || low || 59 || EMPTY-02 says an empty value prints "—"; empty team/position cells print italic muted "None"
+V || R13042 || UNCOVERED || - || - || 7 || form_row wrapping a lone textarea (cols 80); no rule says when form_row is used
+V || R13041 || DIVERGENT || BTN-07 || low || 13 || BTN-07 says a form's cancel is cancel_link in the button_row; Cancel is button_link "Cancel" :secondary
+V || R13045 || DIVERGENT || HELP-02 || low || 9 || HELP-02 says a sentence on an operated page joins a fitting list, callout or section (or the card); the 2023-and-later scope note is a bare p "text-body mb-4" between hero and button
+V || R13043 || DIVERGENT || BTN-07 || low || 14 || BTN-07 says buttons sit in a button_row; "Add Pog" button_link sits inside a p "mb-4"
+V || R13044 || DIVERGENT || COLOR-06 || low || 20 || COLOR-06 wants one neutral utility per purpose (counts use me-muted/text-stone-muted elsewhere); the count is div "text-base-content/80", off the ladder
+V || R13046 || COMPLIANT || BTN-07 || - || 43 || Row edit_link and delete_button (with aria labels) in a button_row in a right-aligned cell
+V || R13048 || DIVERGENT || DISC-01 || medium || 28 || DISC-01 says collapsible content is ui_accordion or ui_disclosure; the provisions body is hidden with class "hidden hidden!" and aria-hidden and toggled by a button_action on the toggle controller
+V || R13047 || UNCOVERED || - || - || 19 || Inline key/value line: p "mb-1" with strong labels and span "mx-1" middot separators; label/value displays have no rule
+V || R06688 || COMPLIANT || COLOR-01 || - || 30 || me-muted is the documented muted class
+V || R13049 || COMPLIANT || COLOR-06 || - || 30 || Explanation and count paragraphs in me-muted, the text-stone-muted rung
+V || R13050 || COMPLIANT || BTN-07 || - || 54 || Add buttons and the show-all toggle in a button_row; class "mt-4" spacing only
+V || R13051 || COMPLIANT || EMPTY-02 || - || 4 || No changes prints a bare "—"
+V || R13052 || UNCOVERED || - || - || 6 || Change entries as stacked divs (space-y-2): datetime, "by" line with muted "self" or a person link, override badges, muted reason; a log-entry layout no rule covers
+V || R06697 || COMPLIANT || BADGE-01 || - || 21 || schedule_log_override_badge builds through ui_badge :warning with a worded label
+V || R13053 || COMPLIANT || BADGE-01 || - || 21 || Override markers are worded ui_badge :warning from the area helper, grouped in a div "mt-1"
+V || R13057 || COMPLIANT || HERO-03 || - || 8 || Year selector lives in the hero (panel.year_selector); the years list is built inline from ScheduleLog::FIRST_YEAR
+V || R06711 || COMPLIANT || LIST-01 || - || 18 || dl is the instruction-list inside the About card, not a data table
+V || R06712 || UNCOVERED || - || - || 31 || ul "mt-1 space-y-1" inside an instruction-list answer listing badge plus meaning (a legend); an unbulleted legend list no rule covers
+V || R06708 || COMPLIANT || BADGE-01 || - || 33 || Legend shows the same ui_badge as the rows
+V || R13056 || DIVERGENT || COLOR-06 || low || 47 || COLOR-06 wants one neutral utility per purpose; sibling logs set their count line in me-muted, this one is p "my-3 text-body"
+V || R13054 || DIVERGENT || CARD-03 || medium || 51 || CARD-03 says related content is grouped in ui_section; the log table sits directly on the page while its empty state (96) is wrapped in ui_section, and sibling logs put tables in sections
+V || R13055 || UNCOVERED || - || - || 70 || ambiguous EMPTY-02: a deleted shift prints muted "Deleted shift #N" (words stating a fact); its time cell prints "—" as the rule wants
+V || R06726 || COMPLIANT || LIST-01 || - || 14 || dl is the instruction-list inside the How This Page Works card
+V || R13059 || COMPLIANT || BADGE-01 || - || 46 || "This session" ui_badge :primary beside the timestamp
+V || R13058 || DIVERGENT || MODAL-02 || low || 52 || MODAL-02 says a confirm asks with the action ("Revoke your own session?"); the own-session message ends "...Continue?" (the other branch, "Revoke this login session?", follows the rule)
+V || R06744 || COMPLIANT || LIST-01 || - || 20 || dl is the instruction-list inside the About card
+V || R13060 || COMPLIANT || TABLE-04 || - || 32 || Filters use filter_bar with chips, clear_url and count; the Apply Filters submit is :secondary here and default elsewhere (see Q)
+V || R13061 || COMPLIANT || CARD-03 || - || 66 || One ui_section per year (border: false) grouping that year's ui_table
+V || R13062 || COMPLIANT || EMPTY-01 || - || 97 || Both empty cases are ui_empty_state (filter mismatch and no history), wrapped in a section
+V || R06758 || COMPLIANT || LIST-01 || - || 19 || dl is the instruction-list inside the About card
+V || R06752 || COMPLIANT || COLOR-01 || - || 28 || me-muted is the documented muted class
+V || R13064 || COMPLIANT || COLOR-06 || - || 28 || Count line "Showing N status logs." in me-muted
+V || R13063 || UNCOVERED || - || - || 48 || ambiguous EMPTY-02: a missing changer prints "* imported *" in me-muted, words stating why the value is absent
+V || R13066 || COMPLIANT || MODAL-01 || - || 18 || Status-change warnings are confirm_modal markup (status_warning_modals_for) handed to the status-warning controller as data values
+V || R13065 || COMPLIANT || BTN-07 || - || 24 || f.submit and cancel_link in one button_row; class "mb-2" on ui_form and "mt-4" on button_row are spacing only
+V || R13069 || COMPLIANT || ALERT-01 || - || 6 || An empty swag catalog is a ui_callout_box :warning telling the reader what to do, standing in for the radio group
+V || R13068 || UNCOVERED || - || - || 26 || form_row wrapping a single number_field and a single textarea; no rule says when form_row is used
+V || R13067 || DIVERGENT || BTN-07 || low || 35 || BTN-07 says a form's cancel is cancel_link in the button_row; Cancel is button_link "Cancel" :secondary
+V || R13070 || DIVERGENT || BTN-04 || medium || 29 || BTN-04 wants one primary action per view; seven :primary button_links (T-Shirt ... Other Swag) sit in a hand-made div "my-3 flex flex-wrap gap-2" role=group, not a button_row
+V || R13071 || DIVERGENT || COLOR-06 || low || 36 || COLOR-06 wants one neutral utility per purpose; the count is div "text-base-content/80" while other counts use me-muted
+V || R13072 || DIVERGENT || EMPTY-02 || low || 56 || EMPTY-02 says an empty value prints "—"; missing year and notes print "-" (56, 58)
+V || R13073 || COMPLIANT || TABLE-01 || - || 57 || ui_table cell with class "whitespace-pre-line" to keep the notes' line breaks
+V || R13080 || COMPLIANT || ALERT-01 || - || 9 || Read-only preview notice is ui_callout_box :info with eye icon
+V || R13079 || UNCOVERED || - || - || 8 || Show-all toggle links carry #access-documents / #provisions anchors so the reader lands back on the section; in-page anchor navigation has no rule
+V || R13074 || DIVERGENT || STAT-01 || high || 21 || STAT-01 says summary tiles are ui_stat_box in ui_stat_row; four hand-rolled "border rounded px-2 py-1" boxes with a font-semibold label sit in "flex justify-start gap-2" (no wrap)
+V || R13075 || DIVERGENT || BTN-07 || low || 55 || BTN-07 says buttons sit in a button_row; "View Their Tickets & Stuff Page" button_link sits alone in a div "my-4"
+V || R06819 || COMPLIANT || COLOR-01 || - || 62 || me-muted is the documented muted class
+V || R13076 || COMPLIANT || COLOR-06 || - || 62 || Count line in me-muted, the text-stone-muted rung
+V || R13078 || UNCOVERED || - || - || 87 || A <br> then "for <name>" inside the Type cell for SAP S.O. documents; line breaks in cells have no rule
+V || R13077 || COMPLIANT || BTN-07 || - || 104 || Add and show-all toggle in a button_row; class "mt-4" spacing only
+V || M0505 || COMPLIANT || TABLE-02 || - || 16 || pattern=tables-lists responsive: false on a four-column comparison table, within the allowance
+V || R13082 || COMPLIANT || A11Y-01 || - || 29 || Applied / Not applied yet badges carry words with their colour
+V || R13081 || DIVERGENT || BTN-07 || low || 42 || BTN-07 says buttons sit in a button_row; "Use the Desired Changes" button_link sits alone in a div "my-3"
+V || R13084 || DIVERGENT || TABLE-03 || medium || 1 || TABLE-03 says table content is text-base; the entries table passes size: "sm", which TableHelper turns into text-sm on the whole table
+V || R13088 || COMPLIANT || EMPTY-01 || - || 11 || The partial renders only rows; its caller (timesheets/index) shows ui_empty_state when there are none
+V || R13083 || COMPLIANT || A11Y-01 || - || 19 || Row warnings are worded ("Time is overlapping.", "Entry might be too short.") with text-error colour; the overlapping row's :error state is backed by the same words
+V || R13087 || UNCOVERED || - || - || 35 || "(as Echelon volunteer)" as div "italic text-stone-muted" under the position; a qualifier display no rule covers
+V || R06840 || COMPLIANT || COLOR-05 || - || 40 || icon-warning on a status icon (hours not counted), a COLOR-05 status tone
+V || R13085 || UNCOVERED || - || - || 40 || ambiguous ICON-04: requires label: when an icon is explained only in the page's card; this ban icon has no label: and is explained by a legend div on the page, not a card, so screen readers get no meaning
+V || R13086 || DIVERGENT || BTN-07 || low || 46 || BTN-07 says buttons sit in a button_row; row actions (sm button_links) sit in a hand-made div "flex flex-wrap gap-1"
+V || R06843 || DIVERGENT || MODAL-02 || medium || 55 || MODAL-02 says a destructive confirm is red and says whether it can be undone; End Shift is an :error button but its confirm_modal passes no variant and says nothing about undoing
+V || R13092 || UNCOVERED || - || - || 3 || Log action label as div "font-semibold text-heading"; a non-heading label that does not outweigh the section title
+V || R06851 || UNCOVERED || - || - || 11 || &rarr; is a text character between old and new values, not an icon, so ICON-01 does not reach it; access_documents/history draws the same arrow with fa_icon
+V || R13089 || UNCOVERED || - || - || 11 || Field changes as div with span "me-2 text-stone-muted" label then value; label/value displays have no rule
+V || R13090 || UNCOVERED || - || - || 11 || &rarr; glyph between old and new values (11, 17, 25, 30, 33) while access_documents/history uses fa_icon arrow-right; separator glyphs have no rule
+V || R13091 || COMPLIANT || A11Y-01 || - || 48 || Forced-past blockers print their label in text-error; the words carry the status, colour only reinforces it
+V || R13093 || UNCOVERED || - || - || 51 || "Force reason:<br>", "Notes:<br>", "Reviewer notes:<br>" label then line break; label/value displays have no rule
+V || R13095 || COMPLIANT || EMPTY-01 || - || 9 || The partial renders rows only; log.html.erb shows ui_empty_state where no logs exist
+V || R13094 || DIVERGENT || EMPTY-02 || low || 17 || EMPTY-02 says an empty value prints "—"; a missing creator prints "-" (the creator link_to "underline" at 14 is a plain link, uncovered)
+V || R13096 || DIVERGENT || BTN-05 || medium || 21 || BTN-05 gives :primary to primary actions; every row's Edit and View button is :primary (21, 25), while the entries table uses :secondary for the same actions
+V || R06874 || COMPLIANT || LIST-01 || - || 11 || dl is the instruction-list Q&A on the form, not a data table
+V || R13099 || COMPLIANT || LIST-01 || - || 11 || Back-fill explanation as dl.instruction-list in the section it explains (a page the reader operates)
+V || R13098 || UNCOVERED || - || - || 21 || Year tiles in "grid grid-cols-2 gap-2 lg:grid-cols-5" using common/_checkbox_tile; a tile grid, not page columns, so LAYOUT-02 does not settle it
+V || M0320 || DIVERGENT || FORM-01 || medium || 24 || pattern=forms each year is check_box_tag "years[]" with CHECKBOX_CLASSES, not a builder field
+V || R06869 || DIVERGENT || FORM-01 || medium || 24 || FORM-01: check_box_tag stands in for a builder field, borrowing CHECKBOX_CLASSES
+V || R13097 || DIVERGENT || FORM-01 || medium || 24 || FORM-01: raw check_box_tag "years[]" with CHECKBOX_CLASSES + shrink-0 inside common/_checkbox_tile; the tile's span is the only label
+V || R13119 || DIVERGENT || EMPTY-01 || medium || 15 || EMPTY-01 says an empty state is always ui_empty_state; a year before 2018 with no logs shows a ui_callout_box :warning instead
+V || R13117 || COMPLIANT || DISC-01 || - || 40 || Each timesheet's log is a ui_disclosure :card with captured summary markup, in a "space-y-3 mt-4" stack
+V || R13118 || COMPLIANT || A11Y-01 || - || 27 || DELETED, Still On Duty and the association failure are words in text-error; the colour is paired with text (the same states are badges elsewhere, see Q)
+V || R06941 || UNCOVERED || - || - || 34 || <i class="text-error">Still On Duty</i> is italic text, not an icon element; ICON-01 does not apply
+V || R13120 || UNCOVERED || - || - || 15 || Body wrapped in div "max-w-3xl" around the shared check-in/out partial; page width caps have no rule
+V || R13108 || COMPLIANT || ALERT-01 || - || 13 || Review-state and duration notices are ui_callout_box (:error, :success, :warning, :secondary) with titles and icons
+V || R13103 || UNCOVERED || - || - || 40 || One timesheet entry shown as a one-row ui_table (striped: false) in the read-only branch; no rule covers single-record display
+V || R13105 || UNCOVERED || - || - || 57 || "Review status:" span "font-semibold text-heading" then value; duration as div "font-medium mt-2" with muted aside; label/value displays have no rule
+V || R13107 || DIVERGENT || HERO-04 || low || 62 || HERO-04 says back navigation lives in the hero panel; back_to "<year> Timesheet" is repeated in a button_row at the end of the read-only branch
+V || M0506 || COMPLIANT || TABLE-02 || - || 107 || pattern=tables-lists responsive: false on a three-column reference table, within the allowance
+V || R13102 || COMPLIANT || TABLE-01 || - || 107 || Reference schedule is a ui_table (class "my-2" spacing), placed between two sentences of a div
+V || R13104 || DIVERGENT || EMPTY-01 || medium || 131 || EMPTY-01 says an empty state is always ui_empty_state; no desired changes shows as div "text-error font-semibold mb-3" red text
+V || R13106 || COMPLIANT || CARD-02 || - || 160 || Own-entry note is ui_accent_card variant :info with a title
+V || R13100 || COMPLIANT || BTN-05 || - || 180 || Delete Entry is button_link :error (destructive variant) with a red confirm_modal; class "ms-auto" only positions it
+V || R06902 || DIVERGENT || MODAL-02 || low || 184 || MODAL-02 says ask with the action ("Delete this entry?"), not "Are you sure…"; the message reads "Are you certain you want to permanently delete this entry?"
+V || R13101 || COMPLIANT || CARD-03 || - || 194 || Audit Log is a ui_section; class "mt-4" spacing only
+V || R13110 || DIVERGENT || COPY-03 || low || 11 || COPY-03 asks for Title Case labels; the stat labels are all caps (ENTRIES, VERIFIED, UNVERIFIED, PENDING) where sibling stat rows use Title Case
+V || R13113 || UNCOVERED || - || - || 38 || In-page anchor link_to "#missing-requests" with "underline font-semibold" inside a callout; plain links have no rule
+V || R13109 || DIVERGENT || BTN-07 || low || 56 || BTN-07 says buttons sit in a button_row; the quick links are full_width button_links with class "text-base py-3" in a div "flex flex-row flex-wrap gap-3" (comment says mobile-only, nothing hides them)
+V || R06936 || DIVERGENT || TYPE-03 || medium || 124 || TYPE-03 bans text-sm on main content; the Credits / Appreciation Hours / Total hours rollup line is div "mb-3 text-sm" (text-base at 59-87 is on buttons)
+V || R06927 || COMPLIANT || MODAL-02 || - || 72 || Confirm/Un-Confirm asks "<Verb> this timesheet?" and says it is logged and can be reversed; not destructive, so no red needed
+V || R13114 || DIVERGENT || SPACE-01 || low || 91 || SPACE-01 sets section spacing at mb-4; the two sections sit in a div "flex flex-col lg:gap-6 mt-2", adding 24px gaps on desktop only
+V || R13116 || COMPLIANT || TABLE-04 || - || 94 || Entry filters use filter_bar with chips, clear_url, count and a button_row submit
+V || R13111 || UNCOVERED || - || - || 124 || Rollup line as spans "me-3" with "font-semibold text-heading" labels; label/value display has no rule (its text-sm is R06936)
+V || R13112 || DIVERGENT || HELP-02 || medium || 142 || HELP-02 puts a legend in one collapsed ui_disclosure :card; the ban-icon legend is a visible div "mb-2 text-body" above the table
+V || R06923 || COMPLIANT || COLOR-05 || - || 143 || icon-warning on the status icon in the legend
+V || R13115 || DIVERGENT || BTN-07 || low || 159 || BTN-07 says buttons sit in a button_row; "Add Request" sits beside a plain count span in a div "mb-3 flex flex-wrap items-center gap-3"
+V || R13121 || COMPLIANT || TYPE-08 || - || 40 || Field label and expected value in font-medium, the weight TYPE-08 gives labels and slight emphasis
+V || R13122 || UNCOVERED || - || - || 47 || ambiguous EMPTY-02: empty values print "—" (42, 45) as the rule wants, but an expected blank value prints "(blank)", words saying the value is empty
+V || R06959 || COMPLIANT || LIST-01 || - || 62 || dl is the instruction-list Q&A, not a data table
+V || R13123 || COMPLIANT || LIST-01 || - || 62 || Username/email Q&A as dl.instruction-list under the comparison table, on a page the reader operates
+V || R13126 || UNCOVERED || - || - || 18 || Shared partial and _moodle_account wrapped in plain spacing divs ("mb-4", "mt-4"); spacing wrappers have no rule beyond SPACE-01's scale
+V || R06973 || DIVERGENT || MODAL-02 || low || 59 || MODAL-02 bans "Are you sure…"; the Force Completion dialog asks "Are you absolutely sure you want to mark X as having completed...?"
+V || R06974 || COMPLIANT || MODAL-02 || - || 57 || turbo_confirm carries confirm_modal_dialog markup (the app modal), not a browser confirm string
+V || R13124 || DIVERGENT || MODAL-02 || low || 59 || MODAL-02 wants "<Verb> <thing>?"; Force Completion's confirm opens "Are you absolutely sure..." (the Generate Password one at 76 follows the rule); mechanism is the app modal via turbo_confirm
+V || R13125 || COMPLIANT || LAYOUT-02 || - || 99 || two-column-lg applies "grid grid-cols-1 lg:grid-cols-2 gap-4", the LAYOUT-02 column pattern; ART cards are ui_accent_card :secondary with h3
+V || R13127 || UNCOVERED || - || - || 7 || Note as li with a meta div "text-sm text-stone-muted mb-1" (date, author) and a body div "text-body" simple_format; a note-list row no rule covers
+V || R06988 || COMPLIANT || TYPE-03 || - || 8 || text-sm on the note's date-and-author metadata line, a listed text-sm use
+V || R13128 || UNCOVERED || - || - || 14 || ambiguous EMPTY-02: missing author prints italic "*imported*", words saying why the value is absent
+V || R13129 || DIVERGENT || BTN-07 || low || 19 || BTN-07 says buttons sit in a button_row; the note's edit_link and delete_button sit in a hand-made div "mt-1 flex flex-wrap gap-2"
+V || R13130 || DIVERGENT || EMPTY-01 || low || 6 || EMPTY-01 says an empty state is always ui_empty_state; "No <team> notes yet." (6) and "No notes." (25) are plain p "text-body"
+V || R13131 || UNCOVERED || - || - || 12 || Year block "mb-4 pb-4 border-b border-line last:border-0 last:pb-0 last:mb-0" separating years by a bottom rule; FORM-10's divider is a top rule inside forms, so no rule settles this
+V || R13132 || DIVERGENT || TYPE-04 || medium || 14 || TYPE-04: nothing inside a section outweighs its title; the year is span "font-semibold text-heading text-lg", larger than the section title's text-base on phones
+V || R06996 || COMPLIANT || BADGE-01 || - || 15 || intake_rank_badge (IntakeHelper) builds through ui_badge with variant and icon
+V || R06998 || UNCOVERED || - || - || 20 || Unstyled ul lists of notes (space-y-3) and rank-change log entries; note lists are not data tables and no rule covers them
+V || R13133 || COMPLIANT || DISC-01 || - || 30 || Rank change history is ui_disclosure with class and summary_class options
+V || R13134 || UNCOVERED || - || - || 32 || Rank change log as ul "mt-2 space-y-1 text-stone-muted" of whole-italic li entries joined by an mdash; a log-list style no rule covers
+V || R13135 || DIVERGENT || BTN-07 || low || 55 || BTN-07 says buttons sit in a button_row; "Add Note / Rank" button_link sits alone in a div "mt-3"
+V || R13136 || UNCOVERED || - || - || 13 || The year-block divider and note li markup of _team_notes/_note are repeated inline here; duplication across partials is not addressed by a guide rule
+V || R13138 || UNCOVERED || - || - || 19 || Person status printed as stored inside literal angle brackets (&lt;status&gt;) in a muted span; COPY-02 is met, the bracket display has no rule
+V || R07009 || COMPLIANT || BADGE-01 || - || 21 || intake_rank_badge and training_pass_badge build through ui_badge
+V || R07012 || UNCOVERED || - || - || 31 || Unstyled ul of training notes; a note list, not a data table
+V || R07015 || DIVERGENT || TYPE-03 || medium || 51 || TYPE-03 bans text-sm on paragraph content; the feedback-delivered statement is p "mt-2 text-sm" (text-sm on the 34 metadata line is allowed)
+V || R13140 || UNCOVERED || - || - || 40 || ambiguous EMPTY-02: missing author prints italic "*imported*", words saying why the value is absent
+V || R13139 || DIVERGENT || EMPTY-01 || low || 48 || EMPTY-01 says an empty state is always ui_empty_state; "No training notes." is a plain p "text-body"
+V || R13137 || COMPLIANT || A11Y-01 || - || 53 || Feedback state is an icon plus a sentence in text-success / text-warning; colour never carries it alone
+V || R13142 || COMPLIANT || ALERT-01 || - || 11 || Personnel flag is ui_callout_box :error accent with title and icon
+V || M0507 || COMPLIANT || TABLE-02 || - || 46 || pattern=tables-lists responsive: false on a three-column table, within the allowance
+V || R07025 || COMPLIANT || BADGE-01 || - || 57 || training_status_badge and mentee_status_badge build through ui_badge (mentee returns the plain words "no alpha sign-up" in one case)
+V || R13143 || UNCOVERED || - || - || 61 || Alpha outcome as bare lowercase words ("was auditor", "active status") where other rows show a badge; mixed text/badge cells have no rule
+V || R07027 || DIVERGENT || LIST-01 || medium || 93 || LIST-01 reserves dl.instruction-list for instructional Q&A; here it shows two read-only field values, so they render with Q:/A: prefixes
+V || R13141 || DIVERGENT || LIST-01 || medium || 93 || LIST-01: instruction-list is for Q&A; Known Rangers / Known Fellow Applicants values are shown in one, drawing "Q:" before a field name and "A:" before its value
+V || R13146 || UNCOVERED || - || - || 4 || Group label as strong "N titles" followed by an explanatory p; a count label no rule covers
+V || M0508 || COMPLIANT || TABLE-02 || - || 19 || pattern=tables-lists responsive: false on a two-column table, within the allowance
+V || M0040 || DIVERGENT || BP-01 || medium || 34 || pattern=spacing BP-01 allows sm: only in a field's width:; "grid grid-cols-2 sm:grid-cols-4" makes a third layout tier
+V || R13144 || DIVERGENT || BP-01 || medium || 34 || BP-01: lg: is the one structural fold and sm: only for field widths; the team/position names use "grid grid-cols-2 sm:grid-cols-4 gap-2", a 640px layout tier
+V || R13145 || DIVERGENT || EMPTY-01 || low || 41 || EMPTY-01 says an empty state is always ui_empty_state; an empty list prints bare text "No <title>s" in the wrapper div
+V || R07049 || DIVERGENT || FORM-10 || low || 35 || FORM-10 divides a sub-group with "mt-4 pt-3 border-t border-line"; the MVR/PVR split is a raw <hr class="my-4 border-base-300">
+V || R13147 || DIVERGENT || FORM-10 || low || 35 || FORM-10's divider is "mt-4 pt-3 border-t border-line"; an <hr> with border-base-300 separates the MVR and PVR lists
+V || R13148 || COMPLIANT || A11Y-01 || - || 67 || Read-only flags are worded badges (authorized / not authorized, signed / not signed) leading a sentence
+V || R13149 || COMPLIANT || A11Y-01 || - || 146 || Blacklist state is spelled out ("VEHICLE BLACKLISTED" in text-error, "No blacklisted vehicle" in em); colour is not the only carrier
+V || M0116 || COMPLIANT || COPY-01 || - || 2 || pattern=other "Work History" is the page name COPY-01 names as an exception
+V || R13151 || COMPLIANT || HERO-04 || - || 4 || Back navigation is in the hero (back_to Timesheet); where it points is not something HERO-04 settles
+V || R07061 || COMPLIANT || LIST-01 || - || 7 || dl is the instruction-list inside the About card
+V || R13150 || UNCOVERED || - || - || 37 || Year/position summary as div "text-body my-2" with counts, a bracketed year range and a <br>; a count line no rule covers
+F || app/views/person/_hero.html.erb || 6 || other || hero-description-identity-block || DIVERGENT || HERO-02 || medium || HERO-02 says the description is one sentence saying what the page does; the person overview's description holds badges, name, pronouns and pronunciation in a flex row
+F || app/views/person/certifications/show.html.erb || 2 || other || hero-description-fragment || DIVERGENT || HERO-02 || low || HERO-02 wants one sentence saying what the page does; the description is the fragment "Certification details."
+F || app/views/person/missing_requests/edit.html.erb || 4 || other || hero-description-data || DIVERGENT || HERO-02 || low || HERO-02 wants a sentence saying what the page does; the description is the position title and shift time joined by a comma
+F || app/views/person/missing_requests/show.html.erb || 1 || other || hero-no-description || DIVERGENT || HERO-02 || low || HERO-02 wants a one-sentence description; the hero has none
+F || app/views/person/memberships/edit.html.erb || 1 || other || hero-no-description || DIVERGENT || HERO-02 || low || HERO-02 wants a one-sentence description; the hero has title and back link only
+F || app/views/person/pogs/index.html.erb || 1 || other || hero-no-description || DIVERGENT || HERO-02 || low || HERO-02 wants a one-sentence description; the hero has none and a loose p below it carries the scope note
+F || app/views/person/pogs/new.html.erb || 1 || other || hero-no-description || DIVERGENT || HERO-02 || low || HERO-02 wants a one-sentence description; the hero has none
+F || app/views/person/pogs/edit.html.erb || 1 || other || hero-no-description || DIVERGENT || HERO-02 || low || HERO-02 wants a one-sentence description; the hero has none
+F || app/views/person/swag/new.html.erb || 1 || other || hero-no-description || DIVERGENT || HERO-02 || low || HERO-02 wants a one-sentence description; the hero has none
+F || app/views/person/swag/edit.html.erb || 1 || other || hero-no-description || DIVERGENT || HERO-02 || low || HERO-02 wants a one-sentence description; the hero has none
+F || app/views/person/tickets_provisions/show.html.erb || 14 || other || hero-no-description || DIVERGENT || HERO-02 || low || HERO-02 wants a one-sentence description; the Tickets & Provisions hero has none
+F || app/views/person/timesheets/edit.html.erb || 4 || other || hero-no-description || DIVERGENT || HERO-02 || low || HERO-02 wants a one-sentence description; the timesheet entry hero has none
+F || app/views/person/intake_notes/new.html.erb || 1 || other || hero-no-description || DIVERGENT || HERO-02 || low || HERO-02 wants a one-sentence description; the hero passes title and back_to only
+F || app/views/person/intake_notes/edit.html.erb || 1 || other || hero-no-description || DIVERGENT || HERO-02 || low || HERO-02 wants a one-sentence description; the hero passes title and back_to only
+F || app/views/person/awards/index.html.erb || 18 || toasts-alerts || reference-info-callout || DIVERGENT || HELP-02 || medium || HELP-02 puts background and rules in one collapsed ui_disclosure :card; "What These Awards Recognize" is a visible info callout of reference text under the stat row
+F || app/views/person/awards/_awards_table.html.erb || 5 || buttons || primary-per-section || DIVERGENT || BTN-04 || medium || BTN-04 wants one primary action per view; each of the three award sections renders its own :primary "Grant ... award" button
+F || app/views/person/memberships/_team_card.html.erb || 81 || buttons || primary-per-card || DIVERGENT || BTN-04 || medium || BTN-04 wants one primary action per view; every team card and the General Positions card (edit.html.erb 40) has its own primary submit_button "Save"
+F || app/views/person/missing_requests/edit.html.erb || 136 || buttons || two-primary-submits || DIVERGENT || BTN-04 || low || BTN-04 wants one primary action per view; "Save Request" and "Save & Review Next" are both primary f.submit buttons in one row
+F || app/views/person/unified_flagging/_team_notes.html.erb || 56 || buttons || primary-per-section || DIVERGENT || BTN-04 || medium || BTN-04 wants one primary action per view; each team's section renders a :primary "Add Note / Rank", so the page shows one per writable team
+F || app/views/person/vehicles/index.html.erb || 61 || buttons || primary-per-form || DIVERGENT || BTN-04 || medium || BTN-04 wants one primary action per view; four separate forms each end in a primary f.submit (61, 87, 114, 142)
+F || app/views/person/callsigns/edit.html.erb || 95 || buttons || two-primaries || DIVERGENT || BTN-04 || low || BTN-04 wants one primary action per view; "Save Callsign" (84) and "Add FKA" (95) are both primary
+F || app/views/person/timesheets/edit.html.erb || 165 || forms || radio-group-no-label || DIVERGENT || FORM-02 || low || FORM-02 says every field has a visible label; the review_status collection_radio_buttons passes no label: (only the section title names it)
+F || app/views/person/access_documents/_form.html.erb || 45 || forms || full-width-text-field || DIVERGENT || FORM-07 || low || FORM-07 says widths fit their content and are responsive; "Name on Document" is width "w-full" at every size
+F || app/views/person/pogs/_form.html.erb || 3 || forms || form-without-section || DIVERGENT || FORM-08 || medium || FORM-08 says a form page is hero, callouts, ui_form with sections, button row; the pog fields sit in form_rows directly in ui_form with no ui_section
+F || app/views/person/swag/_form.html.erb || 10 || forms || form-without-section || DIVERGENT || FORM-08 || medium || FORM-08 wants ui_form with sections; the swag radios, year and notes sit in form_rows directly in ui_form
+F || app/views/person/memberships/edit.html.erb || 35 || typography || heading-level-skip || DIVERGENT || TYPE-05 || low || TYPE-05 wants h1 > h2 > h3; the General Positions card title is an h3 directly under the hero's h1 with no h2 between
+F || app/views/person/awards/index.html.erb || 55 || buttons || sentence-case-button || DIVERGENT || COPY-03 || low || COPY-03 says button labels are Title Case; "Grant team award", "Grant special award", "Grant position award" (55, 64, 73)
+F || app/views/person/awards/index.html.erb || 55 || buttons || grant-not-add || DIVERGENT || COPY-04 || low || COPY-04 says the control opening a create form is "Add [Entity]"; the award buttons say "Grant ... award" (55, 64, 73)
+F || app/views/person/certifications/_form.html.erb || 27 || buttons || sentence-case-button || DIVERGENT || COPY-03 || low || COPY-03 says button labels are Title Case; the delete button reads "Delete certification"
+F || app/views/person/banners/_form.html.erb || 39 || buttons || sentence-case-button || DIVERGENT || COPY-03 || low || COPY-03 says button labels are Title Case; the delete button reads "Delete banner"
+F || app/views/person/provisions/_section.html.erb || 64 || buttons || sentence-case-button || DIVERGENT || COPY-03 || low || COPY-03 says button labels are Title Case; the toggle reads "Show current provisions" / "Show all provisions"
+F || app/views/person/tickets_provisions/show.html.erb || 108 || buttons || sentence-case-button || DIVERGENT || COPY-03 || low || COPY-03 says button labels are Title Case; the toggle reads "Show current documents" / "Show all documents"
+F || app/views/person/passkeys/index.html.erb || 10 || other || remove-vs-delete || DIVERGENT || COPY-04 || low || COPY-04 says getting rid of a record is "Delete"; the callout says "Remove its passkey here" and "Removing a passkey" while the button says Delete
+F || app/views/person/timesheets/edit.html.erb || 19 || empty-loading || hyphen-empty || DIVERGENT || EMPTY-02 || low || EMPTY-02 says an empty value prints "—"; a missing verifier (19) and review status (57) print "-"
+F || app/views/person/unified_flagging/show.html.erb || 95 || empty-loading || none-empty || DIVERGENT || EMPTY-02 || low || EMPTY-02 says an empty value prints "—"; empty Known Rangers / Applicants print "None" (95, 97)
+F || app/views/person/memberships/_team_card.html.erb || 2 || spacing || card-p-3 || DIVERGENT || SPACE-01 || low || SPACE-01 sets card padding at p-4 or p-2 lg:p-4; the team card article is card-standard p-3
+F || app/views/person/memberships/edit.html.erb || 34 || spacing || card-p-3 || DIVERGENT || SPACE-01 || low || SPACE-01 sets card padding at p-4 or p-2 lg:p-4; the General Positions card is card-standard p-3
+F || app/views/person/memberships/_team_card.html.erb || 28 || navigation || raw-dropdown-items || DIVERGENT || NAV-01 || medium || NAV-01 says a dropdown is dropdown_menu with dropdown_item; the team's permission menu holds raw li.menu-title and li span items (28-30)
+S || HERO-01 || 57 || 0 || Every page template with its own markup (13 wrapper-only templates render common/) opens with hero_panel; show.html.erb through _hero
+S || HERO-02 || 57 || 14 || 11 heroes have no description, 3 hold data or a fragment
+S || HERO-03 || 57 || 0 || 9 year-scoped pages all put the selector in the hero
+S || HERO-04 || 57 || 2 || missing_requests/show and timesheets/edit repeat back_to at the foot; the overview's back slot holding "Switch to HQ Interface" is UNCOVERED (R12920)
+S || HELP-01 || 57 || 0 || No page in scope has a help or FAQ section further down
+S || HELP-02 || 57 || 5 || awards/index, memberships/edit, pogs/index, timesheets/index, intake_notes/new; the six About/How cards present are correctly placed
+S || STAT-01 || 57 || 1 || tickets_provisions/show hand-rolls four bordered boxes
+S || STAT-02 || 57 || 0 || No hero stats
+S || TABLE-02 || 31 || 0 || 11 responsive: false tables, all four columns or fewer
+S || TABLE-04 || 26 || 0 || Only site_log and timesheets/index filter, both through filter_bar
+S || TABLE-05 || 2 || 0 || No CSV export in scope
+S || BTN-03 || 95 || 0 || No xs buttons; size "xs" appears only on badges
+S || BTN-04 || 57 || 7 || awards/index, memberships/edit, missing_requests/edit, swag/index, unified_flagging/show, vehicles/index, callsigns/edit
+S || BTN-05 || 95 || 1 || timesheets/_missing_requests_table makes row Edit/View :primary
+S || BTN-07 || 95 || 19 || Mostly single buttons in a spacing div and row actions in a flex div; three forms build Cancel with button_link
+S || MODAL-02 || 27 || 6 || awards/index, callsigns/edit, sessions/index, timesheets/_entries_table, timesheets/edit, training/index
+S || FORM-02 || 34 || 1 || timesheets/edit review radios have no label
+S || FORM-03 || 34 || 0 ||
+S || FORM-07 || 34 || 1 || access_documents/_form (plus its sm: widths passed as html class, BP-01 rows)
+S || FORM-08 || 30 || 3 || intake_notes/edit, pogs/_form, swag/_form
+S || TYPE-05 || 95 || 1 || memberships/edit h3 under h1
+S || COLOR-02 || 95 || 0 ||
+S || COLOR-03 || 95 || 0 || Red and green text in scope always states a status, judged under A11Y-01
+S || A11Y-01 || 95 || 0 || Every coloured status carries words or an icon
+S || A11Y-02 || 95 || 0 || edit_link and delete_button always render a text label; icon-only status icons are R13085 (UNCOVERED)
+S || LAYOUT-03 || 0 || 0 || No records-management page in scope
+S || COPY-03 || 95 || 6 || awards/index, certifications/_form, banners/_form, provisions/_section, tickets_provisions/show, timesheets/index (stat labels in caps)
+S || COPY-04 || 95 || 2 || awards/index "Grant", passkeys/index "Remove"; "New X" hero titles left as a Q
+S || COPY-10 || 95 || 0 ||
+Q || Create-form heroes say "New Access Document", "New Banner", "New Certification", "New FKA", "New Pog", "New Missing Timesheet Request" while the buttons that open them say "Add ..."; COPY-04 covers action labels, not page titles, but the reader sees two verbs.
+Q || The same fact is drawn several ways across the area: "inactive" as red "[inactive]" text (_position_checkbox) and as ui_badge (_team_card); "Still On Duty" as a :warning badge (timesheets helper) and as red italic text (timesheets/log); the change arrow as fa_icon (access_documents/history) and as &rarr; (_log_entry_data).
+Q || Count lines use four neutral treatments: me-muted (applications, certifications, status_history, tickets_provisions), text-body (scheduling/log), text-base-content/80 (pogs, swag) and no class (timesheets/index). One count-line helper would settle it.
+Q || Vintage is ui_badge :secondary in the overview hero but :success on callsigns/edit.
+Q || timesheet_status_badges paints "Correction Requested" :error and "Correction Rejected" :warning, so the pending state reads as more alarming than the rejected one.
+Q || person/banners shows the same two visibility callouts on the index and again inside the form; on the form they could be one.
+Q || callsigns/edit hides the Release Callsign action below lg with "hidden lg:flex", so the action does not exist on a phone.
+Q || ui_label_value uses label_width "9rem" in contact details and "7rem" in the summary strip on the same page; certifications/show hand-builds the same display with grid-cols-[8rem_1fr].
+Q || intake_notes/edit shouts "ADD A NEW NOTE." in capitals inside the warning; bold alone would carry it.
+Q || Person::TimesheetsHelper#timesheet_status_icon and #missing_request_status_icon have no callers and could be deleted.
+Q || site_log's filter submit is :secondary while timesheets/index's is the default primary; filter_bar submits should agree.
+Q || Several pages wrap the whole body in an untitled ui_section (applications, certifications/index, status_history, empty states on scheduling/log and site_log); the guide never says whether a section may be untitled.

@@ -1,0 +1,254 @@
+id	source	file	lines	pattern	variant	impl	rule_hint	note
+R12130	agent	app/helpers/communication/announcements_helper.rb	38,39,40,41,42,43,44	other	ui_badge	area-helper		announcement_status_badge: "Expired" :warning clock / "Active" :success circle-check
+R12129	agent	app/helpers/communication/person_banners_helper.rb	47,48,49,50,51,52,53	other	ui_badge	area-helper		person_banner_type_badge: "Permanent" :warning thumbtack / "Event only" :secondary calendar
+R12243	agent	app/helpers/communication/rbs_helper.rb	7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68	color	oneoff:severity-variant-table	hard-coded-value		TYPES hash fixes each broadcast type's icon and colour variant (:error emergency, :warning on-shift, :primary call-ups, :secondary others) used for cards, buttons and callouts
+R12244	agent	app/helpers/communication/rbs_helper.rb	105,106,107,108,109,110,111,112,113,114	typography	oneoff:manual-date-format	hard-coded-value		rbs_slot_label formats the shift date with strftime(DateTimeHelper::MONTH_DAY_TIME) for use inside <option> text
+M0209	grep:candidate	app/helpers/communication/rbs_helper.rb	112	-	strftime	-	COPY-08	"#{slot.begins.strftime(DateTimeHelper::MONTH_DAY_TIME)} — #{slot.description} " \
+R12238	agent	app/helpers/communication/rbs_helper.rb	141,176,183,239,364,451,495,517	empty-loading	oneoff:dash-empty-value	area-helper		Empty values as "—": plain string at 141,176,183; span "text-stone-subtle" at 239,364,451,495,517
+R12242	agent	app/helpers/communication/rbs_helper.rb	199,200,201,202	other	ui_badge channel	area-helper		rbs_channel_badges: ui_badge :secondary with CHANNEL_ICONS icon (no icon_type)
+R12235	agent	app/helpers/communication/rbs_helper.rb	215,216,217,218,219,222,223,224,225,226,227,228,229,230,231,235,236,237,238,239,240,494,495,496,497,498,499,500,501,502,503,504,505,506,507,508	other	oneoff:status-by-color	area-helper		Per-recipient outcomes as icon+text: fa_icon check class "icon-success" + "yes/sent/queued"; failures span "text-error" with triangle icon; reasons span "text-stone-subtle"
+R00157	census	app/helpers/communication/rbs_helper.rb	216,225,237,499	icons	css:icon-success	custom-css(icons.css)	ICON-01	
+R12237	agent	app/helpers/communication/rbs_helper.rb	254,255,256,257,258,259,260,261	other	oneoff:count-badge	area-helper		rbs_count_cell: plain number at zero, ui_badge with variant when non-zero
+R12236	agent	app/helpers/communication/rbs_helper.rb	323,324,325,326,327,328,329,456,457,458,459,460,461	other	ui_badge status	area-helper		Message log outcomes as ui_badge via MESSAGE_STATUS_VARIANTS lookup; delivery column ui_badge "Delivered" :success / "n failed" :error (icon without icon_type)
+R12240	agent	app/helpers/communication/rbs_helper.rb	347,348,349,350,351,352	icons	fa_icon direction	area-helper		Direction cell arrow-left/arrow-right fa_icon "text-stone-icon" + word
+R12241	agent	app/helpers/communication/rbs_helper.rb	363,364,365,366,367,368	links	oneoff:underlined-link	rails-helper		Broadcast "#id" link_to with class "underline"
+R12239	agent	app/helpers/communication/rbs_helper.rb	510,511,512,513,514,515,516,517,518,519,520,521,522,523	icons	oneoff:icon-only-control	area-helper		rbs_channel_icons: fa_icon "text-stone-icon" fixed per channel with sr-only name span, no visible text
+R12163	agent	app/helpers/communication/surveys_helper.rb	20,21,22,23,24,25,26,30,31,32,33,34,35,36,40,41,42,43,44,45,46,47,48,49,50,51,52,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70	other	ui_badge	area-helper		Status, responses, group-type and question-type badges; group-type badges carry long text ("Own report by session: <title>")
+R12164	agent	app/helpers/communication/surveys_helper.rb	95,96,97,98,99,100,101,102,103,104,105,106	buttons	button_link + confirm_modal	area-helper		survey_duplicate_button: button_link "Duplicate" :secondary clone icon, confirm_modal method :post
+R00167	census	app/helpers/communication/surveys_helper.rb	99	modals	confirm_modal	shared-helper	MODAL-02	method=:post
+R12098	agent	app/helpers/mail_log_helper.rb	35,36,37,38,39,40	typography	oneoff:srcdoc-pre	inline-style		mail_body_srcdoc wraps plain-text bodies in <pre style="white-space: pre-wrap; font-family: sans-serif;"> for a sandboxed iframe
+M0435	grep:candidate	app/helpers/mailer_helper.rb	7	-	style: "	-	STYLE-01	content_tag(:div, style: "text-align: center; margin-bottom: 20px;") do
+R12097	agent	app/helpers/mailer_helper.rb	7,8,9,10,11,12,13	other	oneoff:mail-header-image	inline-style		ranger_header_image: div style "text-align: center; margin-bottom: 20px;" around image_tag ranger-logo.png style "max-width: 200px; height: auto;"
+M0436	grep:candidate	app/helpers/mailer_helper.rb	11	-	style: "	-	STYLE-01	style: "max-width: 200px; height: auto;"
+R12067	agent	app/views/alerts/_alert_group.html.erb	8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24	cards	oneoff:div-card	custom-css		Channel legend box div "mb-4 card-standard bg-base-200 p-3" with badge + muted-text pairs
+R12068	agent	app/views/alerts/_alert_group.html.erb	9,38	typography	oneoff:utility-heading	one-off-markup		Headings as div "font-semibold text-heading mb-2" ("Alert Channels:") and "font-semibold text-heading mb-1" (each alert title)
+M0004	grep:candidate	app/views/alerts/_alert_group.html.erb	10	-	sm:f	-	BP-01	<div class="flex flex-col sm:flex-row sm:flex-wrap gap-x-4 gap-y-2">
+R12076	agent	app/views/alerts/_alert_group.html.erb	13,17,21	color	class:text-stone-muted	custom-css		Legend descriptions in span "text-stone-muted"
+R12071	agent	app/views/alerts/_alert_group.html.erb	28,29,30	tables-lists	oneoff:custom-list-row	raw-html		Rows separated by <hr class="my-4 border-line"> between items
+R01580	census	app/views/alerts/_alert_group.html.erb	29	spacing	<hr>	raw-html	SPACE-01	
+R01576	census	app/views/alerts/_alert_group.html.erb	32,53,71,90	forms	<input>	raw-html	FORM-01	
+R12072	agent	app/views/alerts/_alert_group.html.erb	32,71,72,73,74,75,76,90,91,92,93,94,95	forms	oneoff:raw-checkbox	raw-html		Checkboxes outside the form builder: raw hidden inputs plus tag.input class AppFormBuilder::CHECKBOX_CLASSES inside <label class="inline-flex items-center min-h-9 cursor-pointer">, label text span "ms-2 text-base text-heading select-none"
+R12077	agent	app/views/alerts/_alert_group.html.erb	32,71,90	validation	not-handled	not-handled		The raw alerts[n][...] inputs show no per-field error markup; none is rendered in this partial
+R01582	census	app/views/alerts/_alert_group.html.erb	35	spacing	tw-arbitrary-value	hard-coded	SPACE-01	lg:grid-cols-[1fr_auto_auto]
+R12070	agent	app/views/alerts/_alert_group.html.erb	35,36,37,38,39,40,41,42,43,82	tables-lists	oneoff:grid-table	one-off-markup		Alert rows laid out as a 3-column table from div "grid grid-cols-1 lg:grid-cols-[1fr_auto_auto] gap-3 lg:gap-6 lg:items-start", columns "lg:w-44 shrink-0"
+R01585	census	app/views/alerts/_alert_group.html.erb	44,57,75,83,94	typography	tw-text-size	utility	TYPE-02	text-base text-xs
+R12069	agent	app/views/alerts/_alert_group.html.erb	44,83	typography	oneoff:mobile-column-label	one-off-markup		Mobile-only column labels div "lg:hidden text-xs font-medium text-stone-muted uppercase tracking-wide mt-1" ("SMS:", "Email:")
+R12074	agent	app/views/alerts/_alert_group.html.erb	47,49,86,88	other	ui_badge in place of control	shared-helper		ui_badge "Required" / "Email only" / "SMS only" (:secondary) replaces the checkbox when the channel cannot be chosen; same badges repeated in the legend at 12,16,20
+R12073	agent	app/views/alerts/_alert_group.html.erb	51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69	forms	oneoff:disabled-checkbox	one-off-markup		Unavailable SMS shown as a disabled checkbox in div "inline-flex items-center opacity-50 cursor-not-allowed" role=group with an sr-only reason span (aria-describedby)
+R12075	agent	app/views/alerts/_alert_group.html.erb	57,75,94	typography	oneoff:label-leading-mismatch	one-off-markup		SMS label spans carry "leading-tight", the Email label span (94) does not
+R01577	census	app/views/alerts/_alert_group.html.erb	72,91	forms	<label>	raw-html	FORM-01	
+R01578	census	app/views/alerts/_alert_group.html.erb	73,92	forms	content_tag/tag.input	rails-helper	FORM-01	
+R12066	agent	app/views/alerts/edit.html.erb	4	navigation	hero_panel back_to kwarg	shared-helper		Back link to "Profile" via back_to: [label, path]; the title switches to "Alert Preferences for <callsign>" when an admin acts
+R01599	census	app/views/alerts/edit.html.erb	43,68	tables-lists	<dl>	raw-html	TABLE-01	
+R12055	agent	app/views/alerts/edit.html.erb	43,44,45,46	other	class:instruction-list	custom-css		"Who sees this?" Q/A dl class="instruction-list mb-3" above the tech-ninja SMS state form
+R12064	agent	app/views/alerts/edit.html.erb	47,97,124,141,174	validation	errors-via-form-builder	shared-helper		Errors come back on a 422 re-render; ui_form default error summary on 47,97,124; the Resend form (141) and the preferences form (174) pass no_error_summary: true
+R12054	agent	app/views/alerts/edit.html.erb	68,69,70,71,72,73,74,75	tables-lists	oneoff:definition-grid	custom-css		Read-only SMS state shown as <dl class="instruction-list"> (Phone number / Stopped / Verified rows), the FAQ-styled list used as a label/value readout instead of ui_label_value
+R01602	census	app/views/alerts/edit.html.erb	70	typography	content_tag/tag.em	rails-helper	TYPE-04	
+R12056	agent	app/views/alerts/edit.html.erb	70	empty-loading	oneoff:em-empty-value	rails-helper		Missing phone number shown as content_tag(:em, "none on file")
+R12065	agent	app/views/alerts/edit.html.erb	86,120	typography	<p class=mb-3>	one-off-markup		Intro paragraphs spaced with p class "mb-3"
+R12060	agent	app/views/alerts/edit.html.erb	93,157	links	oneoff:link_to-mailto-underline	rails-helper		Email address linked with link_to "mailto:..." and class "underline" rather than mail_to
+R12063	agent	app/views/alerts/edit.html.erb	100,127	forms	form_row single field	shared-helper		form_row wraps a single field (telephone_field, verification code) while the admin form at 51 places a text_field without form_row
+R12061	agent	app/views/alerts/edit.html.erb	110,138,143	buttons	f.submit size sm	shared-helper		Section-level submits use size: "sm" ("Save Phone Number", "Verify Code", "Resend Code" variant :secondary); page-level submits at 64 and 206 use the default size
+R12057	agent	app/views/alerts/edit.html.erb	119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145	toasts-alerts	oneoff:callout-wrapping-form	shared-helper		ui_callout_box :info "Step 2: Verify Your Number" used as the container for two ui_forms (Verify Code, Resend Code)
+R12062	agent	app/views/alerts/edit.html.erb	141	spacing	oneoff:form-margin-by-html-class	attribute		Resend form spaced with ui_form html: { class: "mt-2" }
+R12058	agent	app/views/alerts/edit.html.erb	150,151,152,153,154,155,156,157,158,159	typography	oneoff:callout-body-utilities	one-off-markup		Stopped-number callout body built from divs: "mb-2" with <strong>, "font-semibold mb-2" sentence, "text-sm" contact line
+R01605	census	app/views/alerts/edit.html.erb	156,162,163	typography	tw-text-size	utility	TYPE-02	text-sm
+R12059	agent	app/views/alerts/edit.html.erb	160,161,162,163	cards	helper-class-override	shared-helper		ui_disclosure "Why It's Stopped" with class "mt-3", summary_class "text-sm font-medium", content_class "mt-2 text-sm" (shrinks the disclosure text)
+R12083	agent	app/views/bookmarks/_document.html.erb	6,17,18,19,20,21,22,23,24,25	other	oneoff:status-line-grid	one-off-markup		Header border-b border-line; status line div "grid grid-cols-1 md:grid-cols-3 tabular-nums me-muted text-sm px-3 py-2" (md: breakpoint, me-muted class from hero-panel.css)
+R02155	census	app/views/bookmarks/_document.html.erb	10	typography	<h1>	raw-html	TYPE-04	
+R02158	census	app/views/bookmarks/_document.html.erb	10,17	typography	tw-text-size	utility	TYPE-02	text-sm text-xl
+R12082	agent	app/views/bookmarks/_document.html.erb	10	typography	oneoff:raw-heading-with-utilities	raw-html		<h1 class="text-xl font-semibold px-3 pt-3"> document name (no hero_panel)
+M0009	grep:candidate	app/views/bookmarks/_document.html.erb	17	-	md:g	-	BP-01	<div class="grid grid-cols-1 md:grid-cols-3 tabular-nums me-muted text-sm px-3 py-2">
+R12084	agent	app/views/bookmarks/_document.html.erb	18,23	empty-loading	oneoff:js-filled-empty-div	one-off-markup		Countdown and clock are empty elements filled by the bookmark Stimulus controller; nothing shows until it runs
+M0010	grep:candidate	app/views/bookmarks/_document.html.erb	19	-	md:t	-	BP-01	<div class="md:text-center">
+M0011	grep:candidate	app/views/bookmarks/_document.html.erb	22	-	md:t	-	BP-01	<div class="md:text-right">
+R12085	agent	app/views/bookmarks/_document.html.erb	30,31	other	class:lexxy-content	custom-css		Document body html_safe inside div "lexxy-content px-3 py-4"
+M0373	grep:candidate	app/views/bookmarks/document.html.erb	1	-	no hero_panel	-	HERO-01	GET /bookmark/:tag/document
+R12088	agent	app/views/bookmarks/not_found.html.erb	6	spacing	oneoff:page-width-wrapper	one-off-markup		Own <main class="mx-auto w-full max-w-lg px-4 pt-16">
+R02162	census	app/views/bookmarks/not_found.html.erb	7	typography	<h1>	raw-html	TYPE-04	
+R12089	agent	app/views/bookmarks/not_found.html.erb	7	typography	oneoff:raw-heading-with-utilities	raw-html		<h1 class="text-xl font-semibold mb-3">Bookmark Not Found</h1>
+R12090	agent	app/views/bookmarks/not_found.html.erb	9,10	empty-loading	ui_empty_state as 404	shared-helper		ui_empty_state used as the not-found message (icon circle-question :regular)
+M0374	grep:candidate	app/views/bookmarks/show.html.erb	1	-	no hero_panel	-	HERO-01	GET /bookmark/:tag
+R02166	census	app/views/bookmarks/show.html.erb	15	navigation	css:bookmark-page	custom-css(bookmark.css)		
+R02168	census	app/views/bookmarks/show.html.erb	15	spacing	tw-arbitrary-value	hard-coded	SPACE-01	max-w-[90rem]
+R12086	agent	app/views/bookmarks/show.html.erb	15	spacing	oneoff:page-width-wrapper	one-off-markup		Own <main class="bookmark-page mx-auto w-full max-w-[90rem]"> (layout yields bare)
+R12087	agent	app/views/bookmarks/show.html.erb	16,17,18,19	empty-loading	oneoff:timer-refresh-frame	rails-helper		turbo_frame "bookmark" with no src; bookmark controller sets source and refresh-seconds and reloads it on a timer
+M0375	grep:candidate	app/views/bug_reports/new.html.erb	1	-	no hero_panel	-	HERO-01	GET /bug-reports/new
+R12078	agent	app/views/bug_reports/new.html.erb	10,11,19,20,34,35,38,39	modals	oneoff:modal-state-switch	shared-helper		One template, three modal_dialog states with the same id; button_link "Report a Bug"/"Request a Feature" re-request the modal frame with ?kind=
+R12079	agent	app/views/bug_reports/new.html.erb	12,13,14,15,16	validation	errors-via-form-builder	shared-helper		Refused report re-renders the form at 422 (controller), errors through ui_form/f.text_area; rate-limit refusal goes to a toast via ui_toast_stream in the controller
+R12080	agent	app/views/bug_reports/new.html.erb	21,22	typography	<p class=mb-2> + <strong> lead	one-off-markup		Feature-request text: p "mb-2" opening with <strong>This dialog is for bugs only.</strong>
+R12081	agent	app/views/bug_reports/new.html.erb	24	links	link_to data turbo_frame _top	rails-helper		"Cadre Directory" link breaks out of the modal frame with data: { turbo_frame: "_top" }; mail_to used for the email at 28
+R12113	agent	app/views/communication/announcements/_announcement.html.erb	6,8	cards	helper-class-override	shared-helper		ui_card class "mb-3 p-4" plus "opacity-70" when expired; role "article"
+R03378	census	app/views/communication/announcements/_announcement.html.erb	10	typography	<h2>	raw-html	TYPE-04	
+R12114	agent	app/views/communication/announcements/_announcement.html.erb	10,11,12,13	typography	oneoff:raw-heading-with-utilities	raw-html		<h2 class="inline-flex-center-gap-2 heading-section text-heading"> with fa_icon class "text-stone-icon" fixed
+R03374	census	app/views/communication/announcements/_announcement.html.erb	15	other	area-badge-helper	area-helper		announcement_status_badge
+R03382	census	app/views/communication/announcements/_announcement.html.erb	19	typography	tw-text-size	utility	TYPE-02	text-sm
+R12115	agent	app/views/communication/announcements/_announcement.html.erb	19,20,21,25,26,27,29,30,31,34,35,36,38,39	other	oneoff:meta-line	one-off-markup		Meta row div "flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-subtle my-2" of icon+text spans "inline-flex-center-gap-2"
+R12116	agent	app/views/communication/announcements/_announcement.html.erb	43,44,45	cards	oneoff:scroll-box	one-off-markup		Message box div "lexxy-content text-body bg-default rounded-base border border-line p-3 max-h-64 overflow-y-auto"
+R12117	agent	app/views/communication/announcements/_announcement.html.erb	47,48,62,63	spacing	oneoff:card-footer-rule	one-off-markup		Card footer div "pt-3 mt-3 border-t border-line" holding button_row (edit_link + delete_button with confirm_modal)
+R12120	agent	app/views/communication/announcements/_form.html.erb	1,2,17,21,33	validation	errors-via-form-builder	shared-helper		ui_form with required fields; text_field maxlength 191 show_counter
+R03395	census	app/views/communication/announcements/_form.html.erb	4,26	tables-lists	<dl>	raw-html	TABLE-01	
+R12118	agent	app/views/communication/announcements/_form.html.erb	4,5,6,7,8,9,26,27,28,29,30,31	other	class:instruction-list	custom-css		Q/A dl "instruction-list mb-3" at the top of two fieldsets
+R12119	agent	app/views/communication/announcements/_form.html.erb	38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54	buttons	delete_button in form button_row	shared-helper		Submit, cancel_link and delete_button (confirm_modal) side by side in one button_row
+R12112	agent	app/views/communication/announcements/index.html.erb	1,2,3,4,5,6	typography	hero_panel description block	shared-helper		Description passed through panel.description block; no content_for :title on this page (also absent on new/edit)
+R12109	agent	app/views/communication/announcements/index.html.erb	12,13,14	other	oneoff:status-by-color	shared-helper		ui_stat_box "Expired" variant switches :warning/:secondary by count
+R12108	agent	app/views/communication/announcements/index.html.erb	21,22,23,24,25,26,27,28,29,30	buttons	oneoff:secondary-destructive-link	shared-helper		"Delete Expired" is button_link :secondary with trash icon and confirm_modal(variant: :error, method: :post) rather than delete_button
+R03412	census	app/views/communication/announcements/index.html.erb	24	modals	confirm_modal	shared-helper	MODAL-02	method=:post variant=:error
+R12110	agent	app/views/communication/announcements/index.html.erb	40,41,42,43,44,45,46,52,57	forms	f.select width + wrapper_class	shared-helper		Filter selects width: "w-full", wrapper_class: "flex-1" inside form_row
+R12111	agent	app/views/communication/announcements/index.html.erb	65,66,67,68,69,70	empty-loading	ui_empty_state	shared-helper		Two empty states: none posted (bullhorn) vs none matched filters (magnifying-glass)
+R12104	agent	app/views/communication/mail_templates/edit.html.erb	16,22,28,29	typography	oneoff:code-in-callout	rails-helper		Variable names shown with <code> and tag.code(name, class: "font-mono") inside the info callout; <p class="mt-2"> paragraphs at 20,26
+M0566	grep:candidate	app/views/communication/mail_templates/edit.html.erb	22	-	font-mono	-	TYPE-06	<%= safe_join(variables.map { |name| tag.code(name, class: "font-mono") }, ", ") %>
+R03434	census	app/views/communication/mail_templates/edit.html.erb	22,56,63	typography	tw-font-and-text-style	utility	TYPE-06	font-mono
+R12107	agent	app/views/communication/mail_templates/edit.html.erb	34,51	validation	errors-via-form-builder	shared-helper		ui_form errors; comment says an unparseable template is refused on save
+R03429	census	app/views/communication/mail_templates/edit.html.erb	44	tables-lists	<dl>	raw-html	TABLE-01	
+R12106	agent	app/views/communication/mail_templates/edit.html.erb	44,45,46,47,48,49,50,51,52	other	class:instruction-list	custom-css		Q/A dl "instruction-list mb-3" inside the Template text fieldset
+R12105	agent	app/views/communication/mail_templates/edit.html.erb	54,55,56,57,58,59,60,63,64	forms	helper-class-override	shared-helper		f.text_area with class: "font-mono" (HTML and plain-text bodies), cols: 100, rows: 20
+M0567	grep:candidate	app/views/communication/mail_templates/edit.html.erb	56	-	font-mono	-	TYPE-06	class: "font-mono",
+M0568	grep:candidate	app/views/communication/mail_templates/edit.html.erb	63	-	font-mono	-	TYPE-06	<%= f.text_area :text_body, label: "Plain Text Message", class: "font-mono",
+R12102	agent	app/views/communication/mail_templates/index.html.erb	14,15,16,17	typography	<p class=mb-3> + <strong> lead	one-off-markup		Section intro p "mb-3" opening with a <strong> sentence
+M0569	grep:candidate	app/views/communication/mail_templates/index.html.erb	29	-	font-mono	-	TYPE-06	<div class="font-mono">
+R03450	census	app/views/communication/mail_templates/index.html.erb	29	typography	tw-font-and-text-style	utility	TYPE-06	font-mono
+R12099	agent	app/views/communication/mail_templates/index.html.erb	29,30,31,32,33,34	typography	oneoff:mono-tag-with-badge	one-off-markup		Template tag in div "font-mono" with lowercase ui_badge "shared" :secondary
+R12100	agent	app/views/communication/mail_templates/index.html.erb	38,39	tables-lists	oneoff:br-stacked-cell	raw-html		Updated date and person stacked in one cell with <br>
+R12101	agent	app/views/communication/mail_templates/index.html.erb	42,43,44,45,46,47	buttons	oneoff:plain-text-disabled-action	one-off-markup		Actions cell shows edit_link, or the plain words "Admins only" when the reader may not edit
+R12103	agent	app/views/communication/mail_templates/index.html.erb	54,55,56	empty-loading	ui_empty_state	shared-helper		Empty list via ui_empty_state (icon envelope :regular)
+R12124	agent	app/views/communication/person_banners/_banner.html.erb	7	cards	helper-class-override	shared-helper		ui_card class "mb-3 p-4", role "article"
+R03463	census	app/views/communication/person_banners/_banner.html.erb	9	typography	<h3>	raw-html	TYPE-04	
+R12125	agent	app/views/communication/person_banners/_banner.html.erb	9,10,11,12	typography	oneoff:raw-heading-with-utilities	raw-html		<h3 class="inline-flex-center-gap-2 heading-title text-heading"> with fa_icon "text-stone-icon"
+R03460	census	app/views/communication/person_banners/_banner.html.erb	17	other	area-badge-helper	area-helper		person_banner_type_badge
+R03466	census	app/views/communication/person_banners/_banner.html.erb	21	typography	tw-text-size	utility	TYPE-02	text-sm
+R12126	agent	app/views/communication/person_banners/_banner.html.erb	21,22,23,24,25,26,27,28	other	oneoff:meta-line	one-off-markup		Meta row div "flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-subtle my-2" of calendar-icon spans
+R12127	agent	app/views/communication/person_banners/_banner.html.erb	32,33,34	cards	oneoff:message-box	one-off-markup		Message div "text-body bg-default max-w-prose p-2" (no border or radius); comment says line breaks are kept, the div carries no whitespace utility
+R12128	agent	app/views/communication/person_banners/_banner.html.erb	36,37,51,52	spacing	oneoff:card-footer-rule	one-off-markup		Footer div "pt-3 mt-3 border-t border-line" > button_row (edit_link + delete_button with aria-label and confirm_modal)
+R12121	agent	app/views/communication/person_banners/index.html.erb	17,18,19,20,21,22	toasts-alerts	ui_callout_box	shared-helper		Info callout titled "Who Sees Banners" whose body opens by repeating the question ("Who can see these banners?")
+R12122	agent	app/views/communication/person_banners/index.html.erb	42,43,44,45,46,47	forms	f.text_field in filter_bar	shared-helper		Callsign free-text filter with help_text, width "w-full", wrapper_class "flex-1"
+R12123	agent	app/views/communication/person_banners/index.html.erb	55,56,57,58,59,60	empty-loading	ui_empty_state	shared-helper		Two empty states: none posted vs none matched filters
+R12169	agent	app/views/communication/rbs/_type_card.html.erb	4,5	cards	ui_accent_card	shared-helper		ui_accent_card coloured by severity variant from RbsHelper::TYPES (:error, :warning, :primary, :secondary)
+R12172	agent	app/views/communication/rbs/_type_card.html.erb	7,8,9	color	class:text-stone-muted	custom-css		"Reaches ..." line p "mb-2 text-stone-muted"
+R12171	agent	app/views/communication/rbs/_type_card.html.erb	10,12	spacing	oneoff:grow-spacer	one-off-markup		div "flex flex-wrap items-center gap-2" with empty <span class="grow"></span> pushing the button right
+R12170	agent	app/views/communication/rbs/_type_card.html.erb	13,14,15,16	buttons	oneoff:severity-coloured-button	shared-helper		"Start" button_link variant = card severity (:error/:warning/:primary), :secondary mapped to :primary; size "sm"
+R12168	agent	app/views/communication/rbs/index.html.erb	15	typography	oneoff:html-entity-quotes	hard-coded-value		Curly quotes written as &ldquo; &rdquo; in callout text
+R12165	agent	app/views/communication/rbs/index.html.erb	25,26,27,31,32,33,36,37	tables-lists	oneoff:grid-layout	one-off-markup		Two ui_sections side by side in div "flex flex-col lg:flex-row gap-4 mt-4", second uses column: :next / :start
+R12166	agent	app/views/communication/rbs/index.html.erb	41	spacing	oneoff:drill-down-wrapper	one-off-markup		Drill-down rows wrapped in div "px-3 pb-2 lg:w-3/4"
+R12167	agent	app/views/communication/rbs/index.html.erb	45,56	other	helper-class-override	shared-helper		ui_badge "... with failures"/"... unusable" :warning size: "base" passed as badges: to ui_drill_down_row
+R12224	agent	app/views/communication/rbs_broadcasts/_audience_fields.html.erb	6,9,18,21,24,27	forms	helper-class-override	shared-helper		Selects pass html { class: "w-full lg:w-96" } / { class: "w-full" }; position select auto-submits with data action "change->form#submit"
+R12221	agent	app/views/communication/rbs_broadcasts/_audience_fields.html.erb	13,36,53,63	spacing	oneoff:subsection-rule	one-off-markup		Subsections divided by div "mt-3 pt-3 border-t border-line" (13,36) and "mt-4 pt-3 border-t border-line" (53,63)
+R03507	census	app/views/communication/rbs_broadcasts/_audience_fields.html.erb	14	tables-lists	<dl>	raw-html	TABLE-01	
+R12225	agent	app/views/communication/rbs_broadcasts/_audience_fields.html.erb	28,29,30	empty-loading	ui_empty_state inside form	shared-helper		"That position has no shifts with sign-ups this year." ui_empty_state in place of the shift select
+R03500	census	app/views/communication/rbs_broadcasts/_audience_fields.html.erb	37	forms	<label>	raw-html	FORM-01	
+R12222	agent	app/views/communication/rbs_broadcasts/_audience_fields.html.erb	37,38,64,65	forms	oneoff:raw-group-label	raw-html		Group labels with AppFormBuilder::LABEL_CLASSES: <label> at 37, <span> at 64, each + div role=group aria-labelledby
+R03510	census	app/views/communication/rbs_broadcasts/_audience_fields.html.erb	46	typography	tw-text-size	utility	TYPE-02	text-sm
+R12223	agent	app/views/communication/rbs_broadcasts/_audience_fields.html.erb	46,47,48	forms	oneoff:hand-help-text	one-off-markup		Help line p "text-sm text-stone-subtle mt-1" written by hand under the checkbox grid
+R03520	census	app/views/communication/rbs_broadcasts/_message_fields.html.erb	14	tables-lists	<dl>	raw-html	TABLE-01	
+R12220	agent	app/views/communication/rbs_broadcasts/_message_fields.html.erb	14,15,16,17,18,19	other	class:instruction-list	custom-css		Q/A dl "instruction-list mb-3"
+R12219	agent	app/views/communication/rbs_broadcasts/_message_fields.html.erb	21,22,23,24	forms	form_row check boxes	shared-helper		Two f.check_box inline_label in form_row with wrapper_class "flex-1"
+R12218	agent	app/views/communication/rbs_broadcasts/_message_fields.html.erb	27	forms	oneoff:arbitrary-width	hard-coded-value		Subject field width "w-full lg:w-[40rem]"
+R12226	agent	app/views/communication/rbs_broadcasts/_notices.html.erb	5,6,7,8,9,10,11,12,13,14	toasts-alerts	ui_callout_box variant mapping	shared-helper		Callout variant taken from broadcast severity, :secondary mapped to :info; title only for emergency
+R12228	agent	app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb	6,10	spacing	oneoff:grow-spacer	one-off-markup		Header div "flex flex-wrap items-center gap-3 mb-2" with empty span "grow" before the button
+R12227	agent	app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb	7	forms	helper-class-override	one-off-markup		Label span AppFormBuilder::LABEL_CLASSES plus "mb-0"
+R03534	census	app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb	8	typography	tw-text-size	utility	TYPE-02	text-sm
+R12230	agent	app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb	8,9	other	oneoff:live-count	attribute		Selected count span "text-sm text-stone-subtle" aria-live polite
+R12229	agent	app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb	11,12	buttons	button_action :ghost	shared-helper		"Select None" button_action :ghost wired to position-picker#selectNone
+R12231	agent	app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb	16,17	cards	oneoff:scroll-box	one-off-markup		Checkbox list in div "max-h-96 overflow-y-auto rounded-base border border-line p-2" role=group
+R12234	agent	app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb	18,19,20	empty-loading	ui_empty_state no icon	shared-helper		Empty position list via ui_empty_state without icon inside the bordered scroll box
+R12232	agent	app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb	22	typography	oneoff:utility-heading	one-off-markup		Team names as div "font-semibold text-heading mt-2 mb-1 px-1"
+R12233	agent	app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb	23	tables-lists	oneoff:grid-layout	one-off-markup		Checkbox rows in div "grid grid-cols-1 lg:grid-cols-3 gap-1" via render layout: common/checkbox_row
+R12212	agent	app/views/communication/rbs_broadcasts/_recipients_table.html.erb	10,11,12,13,14,15,16,17,18,19,20	typography	oneoff:padded-note-p	one-off-markup		Truncation note p "px-3 pb-2" above the table
+R12213	agent	app/views/communication/rbs_broadcasts/_recipients_table.html.erb	21	empty-loading	empty-not-handled	not-handled		ui_table rendered with no empty branch
+R12215	agent	app/views/communication/rbs_broadcasts/_simple_fields.html.erb	6,7,8	other	oneoff:status-by-color	shared-helper		"People This Would Reach Now" stat :secondary when positive, :warning at zero
+R12214	agent	app/views/communication/rbs_broadcasts/_simple_fields.html.erb	9,10	other	oneoff:text-stat-value	shared-helper		ui_stat_box value is a sentence of channel names ("Text and Email"), not a number
+R03547	census	app/views/communication/rbs_broadcasts/_simple_fields.html.erb	16	tables-lists	<dl>	raw-html	TABLE-01	
+R12217	agent	app/views/communication/rbs_broadcasts/_simple_fields.html.erb	16,17,18,19	other	class:instruction-list	custom-css		Q/A dl "instruction-list mb-3"
+R12216	agent	app/views/communication/rbs_broadcasts/_simple_fields.html.erb	20,21,22,23,24,25,26	forms	helper-class-override	shared-helper		f.select :position_id html { class: "w-full lg:w-96" } with grouped_options_for_select
+R12202	agent	app/views/communication/rbs_broadcasts/new.html.erb	15	other	hero_panel progress	shared-helper		Wizard step shown with panel.progress completed 1 of 3, labels "Write"/"Sent" (review 2/3, sent 3/3)
+R12203	agent	app/views/communication/rbs_broadcasts/new.html.erb	26,27,28,29,30,31,32,33,34,35,36	validation	errors-via-form-builder	shared-helper		ui_form html novalidate: true; every rule checked server-side and the page redrawn with errors (comment)
+R12204	agent	app/views/communication/rbs_broadcasts/new.html.erb	45,46	buttons	f.submit formaction	shared-helper		Submit "Review Message and Recipients" posts to the review action through formaction
+R12210	agent	app/views/communication/rbs_broadcasts/review.html.erb	1	other	oneoff:hidden-behaviour-div	attribute		Hidden div data-controller "scroll-to-top" as first line (also sent.html.erb 5)
+R03575	census	app/views/communication/rbs_broadcasts/review.html.erb	33,42	typography	<h3>	raw-html	TYPE-04	
+R12205	agent	app/views/communication/rbs_broadcasts/review.html.erb	33,34,35,42,43,44,45	typography	oneoff:raw-heading-with-utilities	raw-html		<h3 class="heading-title text-heading mb-1"> with fa_icon fixed
+R12206	agent	app/views/communication/rbs_broadcasts/review.html.erb	36,37,38,46,47,48,49,50,51	cards	oneoff:bordered-text-box	one-off-markup		Message preview divs "rounded-base border border-line bg-default p-3 mb-3" (no max height); SMS suffix span "text-stone-subtle"
+R12209	agent	app/views/communication/rbs_broadcasts/review.html.erb	66,67,68	typography	oneoff:padded-note-p	one-off-markup		Intro p "px-3 pb-2" inside Recipients section
+R12208	agent	app/views/communication/rbs_broadcasts/review.html.erb	77,78	forms	ui_form(nil)	shared-helper		ui_form with nil model carrying hidden fields from _carried_values
+R12207	agent	app/views/communication/rbs_broadcasts/review.html.erb	79,80,81,82,83,84,85	buttons	submit_button variant switch	shared-helper		"Send to N people" submit_button :error for emergency else :primary; "Edit Message" submit_button :secondary with formaction; cancel_link
+R12211	agent	app/views/communication/rbs_broadcasts/sent.html.erb	28,29,30,31,32,33,34,35	navigation	oneoff:back-button-row	shared-helper		End button_row: "Send Another Broadcast" :primary, "Broadcast History" :secondary (role-gated)
+R12185	agent	app/views/communication/rbs_history/index.html.erb	35,36,37,38,39,40	forms	helper-class-override	shared-helper		All three filter selects pass html { class: "w-full" } rather than width:
+R12187	agent	app/views/communication/rbs_history/index.html.erb	47,48,49,50,51,52,53	toasts-alerts	ui_callout_box truncation	shared-helper		Warning callout when results are capped ("Only the N most recent are listed")
+R12188	agent	app/views/communication/rbs_history/index.html.erb	55,56	empty-loading	ui_empty_state	shared-helper		Single empty state "No broadcast matched the current filters." regardless of whether filters are set
+R12186	agent	app/views/communication/rbs_history/index.html.erb	71,72,73,74,75	links	oneoff:underlined-link	rails-helper		Row header date links to the record via link_to class "underline"
+R12189	agent	app/views/communication/rbs_history/index.html.erb	79	icons	oneoff:icon-only-control	area-helper		"Sent By" column is icons only (rbs_channel_icons) with sr-only channel names
+R12198	agent	app/views/communication/rbs_history/retried.html.erb	5	other	oneoff:hidden-behaviour-div	attribute		Hidden div data-controller "scroll-to-top", placed before content_for :title
+R12199	agent	app/views/communication/rbs_history/retried.html.erb	18,19,20	typography	oneoff:padded-note-p	one-off-markup		Explanation p "px-3 pb-2" inside the section
+R12200	agent	app/views/communication/rbs_history/retried.html.erb	21,22	empty-loading	ui_empty_state no icon	shared-helper		"There was nothing left to send." via ui_empty_state without icon
+R12201	agent	app/views/communication/rbs_history/retried.html.erb	28,29,30,31,32,33,34	navigation	oneoff:back-button-row	shared-helper		End-of-page button_row: button_link "Back to This Broadcast" :primary arrow-left + "Broadcast History" :secondary (hero also has back_to)
+R12192	agent	app/views/communication/rbs_history/show.html.erb	28,29,30,31,32,33,34,35,36,37,38,39,40,41,42	buttons	button_link :error in callout	shared-helper		Retry action as button_link "Send Failed Messages Again" :error size "sm" inside div "mt-2" within the error callout, confirm_modal POST
+R03626	census	app/views/communication/rbs_history/show.html.erb	35	modals	confirm_modal	shared-helper	MODAL-02	method=:post
+R12193	agent	app/views/communication/rbs_history/show.html.erb	52,54,87,89	other	oneoff:dash-stat-value	hard-coded-value		"—" as ui_stat_box value for an unused channel and as ui_label_value value for blanks
+R12194	agent	app/views/communication/rbs_history/show.html.erb	56,57,58,62,63	other	oneoff:status-by-color	shared-helper		Failed stat :error/:success by state; Bounced :error/:secondary by count
+R12197	agent	app/views/communication/rbs_history/show.html.erb	66,100	tables-lists	oneoff:stack-to-row-lg	custom-css		Two ui_sections side by side via div "stack-to-row-lg"
+R03634	census	app/views/communication/rbs_history/show.html.erb	69,73	typography	<h3>	raw-html	TYPE-04	
+R12190	agent	app/views/communication/rbs_history/show.html.erb	69,73	typography	oneoff:raw-heading-with-utilities	raw-html		<h3 class="heading-title text-heading mb-1"> with fa_icon fixed, "Text" / "Email and Clubhouse message"
+R12191	agent	app/views/communication/rbs_history/show.html.erb	70,74,75,76,77,78,79	cards	oneoff:bordered-text-box	one-off-markup		Message boxes div "rounded-base border border-line bg-default p-3 mb-3"; email box adds "max-h-96 overflow-y-auto"; subject div "font-semibold"
+R12195	agent	app/views/communication/rbs_history/show.html.erb	103,104,105,106,107	typography	oneoff:padded-note-p	one-off-markup		Truncation note p "px-3 pb-2" above the table
+R12196	agent	app/views/communication/rbs_history/show.html.erb	109,110	empty-loading	ui_empty_state no icon	shared-helper		ui_empty_state called without icon
+R12177	agent	app/views/communication/rbs_messages/index.html.erb	36,37	forms	helper-class-override	shared-helper		f.select :direction passes html { class: "w-full" } instead of width:, while text_field at 33 uses width: "w-full"
+R12178	agent	app/views/communication/rbs_messages/index.html.erb	40,41,42,52,53,54	forms	oneoff:raw-group-label	raw-html		Checkbox-group legends as <label class=AppFormBuilder::LABEL_CLASSES id=...> + div role=group aria-labelledby, wrapped in div "mt-2"
+R03647	census	app/views/communication/rbs_messages/index.html.erb	41,53	forms	<label>	raw-html	FORM-01	
+R12179	agent	app/views/communication/rbs_messages/index.html.erb	62	buttons	helper-class-override	shared-helper		button_row class: "mt-4"
+R12180	agent	app/views/communication/rbs_messages/index.html.erb	67,68,69,79,124	navigation	ui_pager top and bottom	shared-helper		ui_pager class "my-3" rendered above the table and again after the branch (also shown when empty)
+R12184	agent	app/views/communication/rbs_messages/index.html.erb	71,72,73,74,75,76,77	empty-loading	ui_empty_state	shared-helper		Two empty states: filters matched nothing (filter icon) vs nothing recorded in year
+R12181	agent	app/views/communication/rbs_messages/index.html.erb	84,92,104,105,106,107,110,111,112,113,114,115	tables-lists	ui_table detail_row	shared-helper		striped: false; t.detail_row_toggle "Text" opens a t.detail_row; toggle column has empty heading ""
+R12183	agent	app/views/communication/rbs_messages/index.html.erb	98,99,100,101,102,103,104	tables-lists	helper-class-override	shared-helper		Cells class "align-top" and "whitespace-nowrap"
+R12182	agent	app/views/communication/rbs_messages/index.html.erb	112,113,114	cards	oneoff:bordered-text-box	one-off-markup		Message text in div "rounded-base border border-line bg-default p-3 my-1"; empty text as tag.i("empty message")
+R03652	census	app/views/communication/rbs_messages/index.html.erb	113	icons	content_tag/tag.i	rails-helper	ICON-01	
+R12176	agent	app/views/communication/rbs_phone_numbers/_list.html.erb	3,4	empty-loading	ui_empty_state	shared-helper		Empty list via ui_empty_state with icon circle-check (good-news empty)
+R12174	agent	app/views/communication/rbs_phone_numbers/index.html.erb	16,17,19,20,21,51,52	other	oneoff:status-by-color	area-helper		Stat boxes switch :warning/:error vs :secondary by count; table cells badge non-zero counts via rbs_count_cell
+R12173	agent	app/views/communication/rbs_phone_numbers/index.html.erb	24,25,26,27,28,29,30,31,32	other	class:instruction-list	custom-css		Q/A instruction-list inside an info ui_callout_box (no title)
+R03677	census	app/views/communication/rbs_phone_numbers/index.html.erb	25	tables-lists	<dl>	raw-html	TABLE-01	
+R12175	agent	app/views/communication/rbs_phone_numbers/index.html.erb	60,66	typography	oneoff:count-in-section-title	shared-helper		Section titles carry counts in parentheses "Not Confirmed (n)", "Asked to Stop (n)"
+R03694	census	app/views/communication/survey_groups/_form.html.erb	5	tables-lists	<dl>	raw-html	TABLE-01	
+R12159	agent	app/views/communication/survey_groups/_form.html.erb	5,6,7,8	other	class:instruction-list	custom-css		Q/A dl "instruction-list mb-3"
+R12158	agent	app/views/communication/survey_groups/_form.html.erb	15	typography	oneoff:html-in-help-text	hard-coded-value		help_text says "Simple HTML is kept - <b>text</b> comes out bold."
+R12157	agent	app/views/communication/survey_groups/_form.html.erb	19,20	forms	f.collection_radio_buttons	shared-helper		Group type as radio list with long explanatory labels from survey_group_type_options
+R12160	agent	app/views/communication/survey_questions/_form.html.erb	5,6,7	forms	hidden_field_tag	rails-helper		Group id carried by hidden_field_tag "survey_question[survey_group_id]" outside the builder
+R03716	census	app/views/communication/survey_questions/_form.html.erb	10	tables-lists	<dl>	raw-html	TABLE-01	
+R12162	agent	app/views/communication/survey_questions/_form.html.erb	10,11,12,13,14,15,16,17,18	other	class:instruction-list	custom-css		Q/A dl "instruction-list mb-3", first dd holds data (the group title)
+R12161	agent	app/views/communication/survey_questions/_form.html.erb	29,30,31,32,33,34,35,36	forms	oneoff:type-specific-fields-always-shown	shared-helper		"Settings for one type of question" fieldset always shows both type-specific fields; applicability stated only in help_text
+R03738	census	app/views/communication/surveys/_form.html.erb	6,51	tables-lists	<dl>	raw-html	TABLE-01	
+R12154	agent	app/views/communication/surveys/_form.html.erb	6,7,8,9,10,11,12,13,14,15,16,17,51,52,53,54,55,56,57	other	class:instruction-list	custom-css		Q/A dl "instruction-list mb-3" in two fieldsets
+R12155	agent	app/views/communication/surveys/_form.html.erb	20,21,22,23,24,25,28,29,30,31	forms	f.select options hash	shared-helper		Selects pass label/width/wrapper_class in the options hash; widths "w-full" (flex-1) and "w-full lg:w-96"
+R12156	agent	app/views/communication/surveys/_form.html.erb	63,64,65,66,67,68,69,70,71,72,73,74,75,76	buttons	delete_button in form button_row	shared-helper		Submit, cancel_link, delete_button with confirm_modal
+R12147	agent	app/views/communication/surveys/_group.html.erb	4,5,6,7	other	ui_section badge + action partial	shared-helper		ui_section with badge: question count and action: { partial: group_actions } for header buttons
+R12148	agent	app/views/communication/surveys/_group.html.erb	13,35,36,37,45	color	class:text-stone-muted	custom-css		Group description, "Choices:" line and "Optional" in text-stone-muted
+R12150	agent	app/views/communication/surveys/_group.html.erb	31	tables-lists	helper-class-override	shared-helper		t.row_header class "w-10 tabular-nums" for the question number column (heading "#")
+R12149	agent	app/views/communication/surveys/_group.html.erb	42,43,44,45,46	other	oneoff:badge-vs-plain-text	one-off-markup		Required shown as ui_badge :warning asterisk, its opposite as plain span "text-stone-muted" "Optional"
+R12151	agent	app/views/communication/surveys/_group.html.erb	49,50,51,52,53,54,55,56,57	buttons	shared-partial	shared-partial		Row actions div "flex-center-gap-2" > edit_link + common/move_buttons
+R12152	agent	app/views/communication/surveys/_group.html.erb	63,64,65	empty-loading	ui_empty_state	shared-helper		Group with no questions via ui_empty_state inside the section
+R12153	agent	app/views/communication/surveys/_group_actions.html.erb	2,3,4,5,6,7,8,9,10,11,12,13	buttons	button_row in section header	shared-helper		Header actions: button_link "Add Question" :primary, edit_link "Edit Group", common/move_buttons
+R12131	agent	app/views/communication/surveys/index.html.erb	14	navigation	oneoff:in-page-anchor	rails-helper		link_to "#help-section" with class "underline font-semibold" inside the info callout
+R12135	agent	app/views/communication/surveys/index.html.erb	18,22,23,24,25,26	toasts-alerts	ui_callout_box replaces list	shared-helper		Warning callout shown instead of the list and Add button when the permission covers no position
+R12132	agent	app/views/communication/surveys/index.html.erb	28,29,33	spacing	oneoff:div-my-4-button-row	one-off-markup		button_row wrapped in div "my-4"
+R12134	agent	app/views/communication/surveys/index.html.erb	54,55,56	color	class:text-stone-muted	custom-css		Mentoring sub-line div "text-stone-muted" with fa_icon arrow-right end: 1
+R12133	agent	app/views/communication/surveys/index.html.erb	61,62,63,64,65,66,67	buttons	oneoff:row-primary-button	shared-helper		Row actions cell "whitespace-nowrap" > div "flex-center-gap-2" with button_link "Manage" :primary + survey_duplicate_button (:secondary)
+R03759	census	app/views/communication/surveys/index.html.erb	66	buttons	area-button-helper	area-helper	BTN-01	survey_duplicate_button
+R12136	agent	app/views/communication/surveys/index.html.erb	74,75,76	empty-loading	ui_empty_state	shared-helper		Empty year via ui_empty_state (clipboard-question)
+R12137	agent	app/views/communication/surveys/index.html.erb	80,81,82,103,104	other	class:instruction-list	custom-css		Help section ui_section id "help-section" holding a Q/A instruction-list
+R03771	census	app/views/communication/surveys/index.html.erb	82	tables-lists	<dl>	raw-html	TABLE-01	
+R12144	agent	app/views/communication/surveys/show.html.erb	3,4,5,6	other	oneoff:hidden-behaviour-div	attribute		Hidden div data-controller "scroll-to-element" scrolls to the group just edited
+R12145	agent	app/views/communication/surveys/show.html.erb	14,15,16,17,18,19,20,21,22,23,24	toasts-alerts	ui_callout_box status	shared-helper		Active/inactive survey state as :success / :warning callouts with icon
+R12138	agent	app/views/communication/surveys/show.html.erb	28,29,40,41,54,55	tables-lists	oneoff:grid-layout	one-off-markup		Survey Details split by div "grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-2"
+R12142	agent	app/views/communication/surveys/show.html.erb	30	other	ui_label_value label_width	shared-helper		ui_label_value size: :base, label_width: "9rem"
+R03792	census	app/views/communication/surveys/show.html.erb	38	other	area-badge-helper	area-helper		survey_responses_badge
+R12139	agent	app/views/communication/surveys/show.html.erb	42,43,44,48,49,50	typography	oneoff:utility-heading	one-off-markup		"Prologue"/"Epilogue" labels as div "font-semibold text-heading mb-1" with span "text-stone-muted font-normal" aside
+R12140	agent	app/views/communication/surveys/show.html.erb	45,51	cards	oneoff:scroll-box	one-off-markup		Rich text in div "lexxy-content text-body bg-default rounded-base border border-line p-3 max-h-64 overflow-y-auto"
+R12141	agent	app/views/communication/surveys/show.html.erb	46,52	empty-loading	oneoff:italic-empty-value	rails-helper		Missing prologue/epilogue as tag.span("None given.", class: "italic text-stone-muted")
+R12143	agent	app/views/communication/surveys/show.html.erb	58,59,68,69	spacing	oneoff:div-my-4-button-row	one-off-markup		div "my-4" > button_row mixing button_link :primary, edit_link, survey_duplicate_button, button_link :secondary
+R03782	census	app/views/communication/surveys/show.html.erb	63	buttons	area-button-helper	area-helper	BTN-01	survey_duplicate_button
+R12146	agent	app/views/communication/surveys/show.html.erb	76,77,78	empty-loading	ui_empty_state	shared-helper		No groups via ui_empty_state (layer-group)
+R12091	agent	app/views/mail/layouts/mailer.html.erb	6,7,8,17,18,24,31,32,39,53,61,62,70,74,80,95,99	color	oneoff:mail-literal-colours	hard-coded-value		Literal hex colours: text/headings #322d29, page bg and borders #f3f1ef, content bg #ffffff, links and button #0066cc, button text #ffffff, .warning #ff0000, th bg #f8f6f3 (comment says greys copied from light tokens)
+M0447	grep:definite	app/views/mail/layouts/mailer.html.erb	9	-	<style>	-	STYLE-01	<style>
+R12094	agent	app/views/mail/layouts/mailer.html.erb	11,12,13,14,15,16,22,23,24,25,28,29,30,31,32,33,104,105,106,107,108	spacing	oneoff:mail-container	inline-style		body margin 0, system font stack 16px/1.5; .email-wrapper padding 20px 0; .email-content max-width 650px, 5px border, padding 20px (15px under 600px)
+R04488	census	app/views/mail/layouts/mailer.html.erb	17,18,24,31,32,39,53,61,62,70,74,80,95,99	color	literal-color-value	hard-coded	COLOR-01	
+R12092	agent	app/views/mail/layouts/mailer.html.erb	57,58,59,60,61,62,63,64,65,66,67,69,70,71,73,74,75,76	buttons	oneoff:mail-btn-class	custom-css		Local .btn / .btn-primary rules (inline-block, padding 12px 24px, radius 4px, bold, #0066cc) reusing the daisyUI class name inside email
+R12093	agent	app/views/mail/layouts/mailer.html.erb	62,74,106,107	other	oneoff:mail-important	inline-style		!important in the email style block (button text colour, mobile width/padding)
+R12096	agent	app/views/mail/layouts/mailer.html.erb	78,79,80,81,82	typography	oneoff:mail-warning-class	custom-css		.warning class: red #ff0000 bold text
+R12095	agent	app/views/mail/layouts/mailer.html.erb	85,86,87,88,89,91,92,93,94,95,96,98,99,100,101	tables-lists	oneoff:mail-data-table	custom-css		table.data-table: full width, collapsed, 8px 12px cells, bottom border #f3f1ef, th bg #f8f6f3 bold

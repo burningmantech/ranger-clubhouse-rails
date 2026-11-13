@@ -1,0 +1,109 @@
+id	source	file	lines	pattern	variant	impl	rule_hint	note
+M0059	grep:candidate	app/assets/stylesheets/components/mega-menu.css	20	-	@media (min-width: 1024px	-	BP-02	@media (min-width: 1024px) {
+R00066	census	app/helpers/application_helper.rb	81	icons	content_tag/tag.i	rails-helper	ICON-01	
+R00068	census	app/helpers/application_helper.rb	110,285	icons	css:icon-success	custom-css(icons.css)	ICON-01	
+R00067	census	app/helpers/application_helper.rb	112	icons	css:icon-error	custom-css(icons.css)	ICON-01	
+R00079	census	app/helpers/application_helper.rb	176	spacing	content_tag/tag.br	rails-helper	SPACE-01	
+R00085	census	app/helpers/application_helper.rb	232,338	typography	tw-text-size	utility	TYPE-02	text-base text-sm
+R00082	census	app/helpers/application_helper.rb	314,316	typography	content_tag/tag.strong	rails-helper	TYPE-04	
+M0070	grep:candidate	app/helpers/button_helper.rb	33	-	btn-xs	-	BTN-03	"xs" => "btn-xs",
+R00122	census	app/helpers/button_helper.rb	57	buttons	css:button-row	custom-css(buttons.css)	BTN-01	
+R00129	census	app/helpers/button_helper.rb	63	color	literal-color-value	hard-coded	COLOR-01	
+R00141	census	app/helpers/button_helper.rb	63	spacing	tw-arbitrary-value	hard-coded	SPACE-01	dark:shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]
+M0434	grep:candidate	app/helpers/button_helper.rb	83	-	style: "	-	STYLE-01	spacer = content_tag(:div, "", class: "button-row-spacer #{tallest}", style: "--button-row-controls: #{controls}", aria: { hidden: true })
+R00123	census	app/helpers/button_helper.rb	83	buttons	css:button-row-spacer	custom-css(buttons.css)	BTN-01	
+R00119	census	app/helpers/button_helper.rb	119	buttons	button_tag	rails-helper	BTN-01	
+R00135	census	app/helpers/button_helper.rb	162	links	content_tag/tag.a	rails-helper		
+R00137	census	app/helpers/button_helper.rb	227	modals	confirm_modal	shared-helper	MODAL-02	variant=:error
+R00138	census	app/helpers/button_helper.rb	229	modals	confirm_modal_dialog	shared-helper	MODAL-02	variant=:error
+R00139	census	app/helpers/button_helper.rb	229	modals	turbo-confirm	attribute	MODAL-02	
+M0252	grep:candidate	app/helpers/button_helper.rb	241	-	"Submit"	-	COPY-10	label ||= "Submit"
+R00128	census	app/helpers/button_helper.rb	246	buttons	submit_tag	rails-helper	BTN-01	
+R00181	census	app/helpers/form_helper.rb	298	forms	content_tag/tag.input	rails-helper	FORM-01	
+R00183	census	app/helpers/form_helper.rb	329	forms	css:ac-loading	custom-css(autocomplete.css)	FORM-01	
+R00184	census	app/helpers/form_helper.rb	337	forms	css:ac-results	custom-css(autocomplete.css)	FORM-01	
+R00180	census	app/helpers/form_helper.rb	526,963,986,1023	forms	content_tag/tag.fieldset	rails-helper	FORM-01	
+R00194	census	app/helpers/form_helper.rb	636	typography	content_tag/tag.strong	rails-helper	TYPE-04	
+R00197	census	app/helpers/form_helper.rb	792,816	typography	tw-text-size	utility	TYPE-02	text-sm text-xs
+R00190	census	app/helpers/form_helper.rb	883,908	spacing	tw-arbitrary-value	hard-coded	SPACE-01	field_opts[:has_errors])}
+R00182	census	app/helpers/form_helper.rb	933,950	forms	content_tag/tag.label	rails-helper	FORM-01	
+M0001	grep:candidate	app/helpers/form_helper.rb	1052	-	sm:c	-	BP-01	when :horizontal then "columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-x-4"
+R00198	census	app/helpers/form_helper.rb	1065	validation	aria-invalid	attribute	FORM-06	
+R00200	census	app/helpers/form_helper.rb	1078,1087,1185,1187,1191	validation	model-errors-inline	one-off	FORM-06	
+R00192	census	app/helpers/form_helper.rb	1189	tables-lists	content_tag/tag.ul	rails-helper	TABLE-01	
+R00206	census	app/helpers/icon_helper.rb	118	icons	content_tag/tag.i	rails-helper	ICON-01	
+M0253	grep:candidate	app/helpers/mega_menu_helper.rb	128	-	"submit"	-	COPY-10	type: "submit",
+R00269	census	app/helpers/menu_helper.rb	94	modals	confirm_modal	shared-helper	MODAL-02	method=:delete
+R00287	census	app/helpers/modal_helper.rb	38,46,56	modals	class:modal	daisyui-class	MODAL-02	modal modal-backdrop modal-box
+R00290	census	app/helpers/modal_helper.rb	45	modals	content_tag/tag.dialog	rails-helper	MODAL-02	
+R00285	census	app/helpers/modal_helper.rb	56	forms	content_tag/tag.form	rails-helper	FORM-01	
+R00279	census	app/helpers/modal_helper.rb	57	buttons	content_tag/tag.button	rails-helper	BTN-01	
+R00288	census	app/helpers/modal_helper.rb	96	modals	confirm_modal	shared-helper	MODAL-02	
+R00289	census	app/helpers/modal_helper.rb	100,127	modals	confirm_modal_dialog	shared-helper	MODAL-02	variant=:error
+R00295	census	app/helpers/modal_helper.rb	100,142	modals	turbo-confirm	attribute	MODAL-02	
+R00296	census	app/helpers/modal_helper.rb	181	typography	content_tag/tag.h3	rails-helper	TYPE-04	
+R00278	census	app/helpers/modal_helper.rb	185	buttons	class:btn	daisyui-class	BTN-01	btn-circle
+R00302	census	app/helpers/navigation_helper.rb	47	cards	content_tag/tag.details	rails-helper	CARD-01	
+R00305	census	app/helpers/navigation_helper.rb	50	navigation	class:dropdown	daisyui-class		dropdown-content
+R00311	census	app/helpers/navigation_helper.rb	50	tables-lists	content_tag/tag.ul	rails-helper	TABLE-01	
+R00300	census	app/helpers/navigation_helper.rb	82	buttons	content_tag/tag.button	rails-helper	BTN-01	
+R00325	census	app/helpers/page_layout_helper.rb	9,103	typography	page_title	shared-helper	TYPE-04	class=mb-1 class=mb-4 class=text-3xl font-normal
+R00324	census	app/helpers/page_layout_helper.rb	10	typography	content_tag/tag.h1	rails-helper	TYPE-04	
+R00319	census	app/helpers/page_layout_helper.rb	37,103	forms	year_selector	shared-helper	HERO-03	method=:get
+M0292	grep:candidate	app/helpers/page_layout_helper.rb	42	-	form_tag	-	FORM-01	form_tag false, method: :get, data: { controller: "form" } do
+R00315	census	app/helpers/page_layout_helper.rb	42,67	forms	form_tag	rails-helper	FORM-01	
+R00314	census	app/helpers/page_layout_helper.rb	44,68	forms	content_tag/tag.label	rails-helper	FORM-01	
+R00317	census	app/helpers/page_layout_helper.rb	49,72	forms	select_tag	rails-helper	FORM-01	
+R00321	census	app/helpers/page_layout_helper.rb	55,78,86	forms	year_selector_keep_fields	shared-helper	HERO-03	class=flex items-center gap-2 method=:get
+R00320	census	app/helpers/page_layout_helper.rb	62	forms	year_selector_compact	shared-helper	HERO-03	class=flex items-center gap-2 class=select select-sm w-auto class=text-lg font-medium text-stone-emphasis whitespace-nowrap method=:get
+M0293	grep:candidate	app/helpers/page_layout_helper.rb	67	-	form_tag	-	FORM-01	form_tag false, method: :get, data: { controller: "form" }, class: "flex items-center gap-2" do
+R00313	census	app/helpers/page_layout_helper.rb	75	forms	class:select	daisyui-class	FORM-01	select select-sm
+R00318	census	app/helpers/page_layout_helper.rb	102	forms	title_year_selector	shared-helper	HERO-03	
+R00546	census	app/helpers/shirt_helper.rb	16	icons	css:icon-warning	custom-css(icons.css)	ICON-01	
+R00557	census	app/helpers/sidebar_helper.rb	62,64	navigation	class:drawer	daisyui-class		drawer-overlay drawer-side
+R00552	census	app/helpers/sidebar_helper.rb	64	forms	content_tag/tag.label	rails-helper	FORM-01	
+R00560	census	app/helpers/sidebar_helper.rb	100	spacing	tw-arbitrary-value	hard-coded	SPACE-01	h-[140px] w-[140px]
+R00562	census	app/helpers/sidebar_helper.rb	113	typography	content_tag/tag.h6	rails-helper	TYPE-04	
+R00576	census	app/helpers/table_helper.rb	203	tables-lists	content_tag/tag.table	rails-helper	TABLE-01	
+M0477	grep:candidate	app/helpers/table_helper.rb	221	-	responsive: false	-	TABLE-02	def initialize(template, striped: false, responsive: false, headings: [])
+R00581	census	app/helpers/table_helper.rb	384	typography	tw-text-size	utility	TYPE-02	text-xs
+R00583	census	app/helpers/tabs_helper.rb	89	links	content_tag/tag.a	rails-helper		
+R00582	census	app/helpers/tabs_helper.rb	92	buttons	content_tag/tag.button	rails-helper	BTN-01	
+R00711	census	app/helpers/ui_components/action_box_helper.rb	70	typography	content_tag/tag.h3	rails-helper	TYPE-04	
+R00717	census	app/helpers/ui_components/bulk_select_helper.rb	28,62	forms	check_box_tag	rails-helper	FORM-01	
+R00718	census	app/helpers/ui_components/bulk_select_helper.rb	30,32,62	forms	content_tag/tag.label	rails-helper	FORM-01	
+R00724	census	app/helpers/ui_components/clipboard_helper.rb	21	buttons	content_tag/tag.button	rails-helper	BTN-01	
+R00722	census	app/helpers/ui_components/clipboard_helper.rb	29	buttons	class:btn	daisyui-class	BTN-01	btn-copy-success
+R00741	census	app/helpers/ui_components/flash_helper.rb	6,13	toasts-alerts	flash-read-in-view	one-off	TOAST-01	
+R00760	census	app/helpers/ui_components/toast_helper.rb	34,66	toasts-alerts	ui_toast_render	shared-helper	TOAST-01	class=#{TOAST_BASE} #{color_class}
+R00759	census	app/helpers/ui_components/toast_helper.rb	59	toasts-alerts	partial:common/toast	shared-partial	TOAST-01	
+R00761	census	app/helpers/ui_components/toast_helper.rb	65	toasts-alerts	ui_toast_stream	shared-helper	TOAST-01	
+M0423	grep:candidate	app/helpers/ui_components/ui_accent_card_helper.rb	81	-	hover:shadow-	-	MOTION-01	"hover:shadow-sm",
+R00766	census	app/helpers/ui_components/ui_accordion_helper.rb	30	cards	content_tag/tag.details	rails-helper	CARD-01	
+R00776	census	app/helpers/ui_components/ui_card_helper.rb	88	typography	content_tag/tag.h6	rails-helper	TYPE-04	
+M0541	grep:candidate	app/helpers/ui_components/ui_data_block_helper.rb	21	-	font-mono	-	TYPE-06	CONTENT_CLASSES = "font-mono text-sm leading-relaxed text-base-content whitespace-pre-wrap break-all"
+R00780	census	app/helpers/ui_components/ui_disclosure_helper.rb	46,62	cards	content_tag/tag.details	rails-helper	CARD-01	
+R00785	census	app/helpers/ui_components/ui_drill_down_row_helper.rb	89	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R00791	census	app/helpers/ui_components/ui_form_helper.rb	31	validation	model-errors-inline	one-off	FORM-06	
+R00788	census	app/helpers/ui_components/ui_form_helper.rb	37	forms	form_with	rails-helper	FORM-01	
+R00795	census	app/helpers/ui_components/ui_hero_panel_helper.rb	70	icons	css:icon-warning	custom-css(icons.css)	ICON-01	
+R00794	census	app/helpers/ui_components/ui_hero_panel_helper.rb	116	forms	year_selector	shared-helper	HERO-03	class=flex flex-col w-full
+R00792	census	app/helpers/ui_components/ui_hero_panel_helper.rb	245	cards	css:me-hero-panel	custom-css(hero-panel.css)	CARD-01	
+R00805	census	app/helpers/ui_components/ui_label_value_helper.rb	41	tables-lists	css:ui-label-value	custom-css(label-value.css)	TABLE-01	
+R00804	census	app/helpers/ui_components/ui_label_value_helper.rb	44	tables-lists	content_tag/tag.dl	rails-helper	TABLE-01	
+R00811	census	app/helpers/ui_components/ui_match_stepper_helper.rb	24,26,37	forms	class:join	daisyui-class	FORM-01	join join-item
+R00809	census	app/helpers/ui_components/ui_match_stepper_helper.rb	37	buttons	class:btn	daisyui-class	BTN-01	btn-square
+R00817	census	app/helpers/ui_components/ui_pager_helper.rb	34	icons	html-entity-or-glyph	hard-coded	ICON-01	
+R00827	census	app/helpers/ui_components/ui_progress_bar_helper.rb	103	typography	tw-text-size	utility	TYPE-02	text-xs
+M0442	grep:candidate	app/helpers/ui_components/ui_progress_bar_helper.rb	106	-	style: "	-	STYLE-01	content_tag(:div, label_html, class: bar_classes, style: "width: #{percentage}%",
+M0091	grep:definite	app/helpers/ui_components/ui_progress_box_helper.rb	21	-	from-amber-100	-	COLOR-01	ICON_BADGE_BASE = "flex items-center justify-center w-10 h-10 rounded-full bg-linear-to-br from-amber-100 to-orange-100 dark:from-amber-900/
+R00830	census	app/helpers/ui_components/ui_progress_box_helper.rb	90	typography	content_tag/tag.h2	rails-helper	TYPE-04	
+M0443	grep:candidate	app/helpers/ui_components/ui_progress_completed_bar_helper.rb	32	-	style: "	-	STYLE-01	style: "width: #{progress_percent}%",
+M0444	grep:candidate	app/helpers/ui_components/ui_progress_completed_bar_helper.rb	40	-	style: "	-	STYLE-01	style: "width: #{progress_percent}%",
+R00840	census	app/helpers/ui_components/ui_section_helper.rb	42	typography	content_tag/tag.h3	rails-helper	TYPE-04	
+M0417	grep:candidate	app/javascript/controllers/confirm_checkbox.js	3	-	window.confirm(	-	MODAL-02	if (window.confirm(message)) return true
+M0418	grep:candidate	app/javascript/controllers/photo_cropper_controller.js	238	-	alert("	-	MODAL-02	alert("Cropper not initialized")
+M0419	grep:candidate	app/javascript/controllers/photo_cropper_controller.js	245	-	alert("	-	MODAL-02	alert("Please select a crop area before saving")
+M0420	grep:candidate	app/javascript/controllers/photo_cropper_controller.js	251	-	alert("	-	MODAL-02	alert("The image does not fully cover the selection area. Please adjust the image position, zoom, or selection to eliminate gaps before savi
+M0421	grep:candidate	app/javascript/controllers/photo_cropper_controller.js	270	-	alert(`	-	MODAL-02	alert(`Error: ${error.message}`)
+M0422	grep:candidate	app/javascript/controllers/unsaved_changes_controller.js	84	-	window.confirm(	-	MODAL-02	if (window.confirm(guard.message)) {

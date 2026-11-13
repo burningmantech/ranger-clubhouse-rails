@@ -1,0 +1,486 @@
+V || R12488 || COMPLIANT || COLOR-05 || - || 50 || STEP_ICONS gives status icons icon-success/icon-warning/icon-error, neutral text-stone-muted otherwise; dashboard_step_icon has no caller and returns plain "bug <result>" text for an unknown status
+V || R12487 || UNCOVERED || - || - || 25 || Unused helper (no caller) mapping step status to text colours, including text-primary for action-needed and text-secondary for optional
+V || R12486 || DIVERGENT || MOTION-01 || medium || 41 || Rule allows animate-pulse on urgent badges only; helper pulses the action-needed (warning) badge, not the urgent one. Lowercase badge labels noted separately
+V || R12489 || UNCOVERED || - || - || 84 || Section icon chosen by regex on the section title text (sun, campground, snowflake...)
+V || R12490 || COMPLIANT || CARD-02 || - || 100 || Maps step status to ui_accent_card variant matching the status
+V || R03809 || COMPLIANT || COLOR-05 || - || 3 || icon-warning on an icon that marks an Inactive/Retired status line
+V || R12491 || COMPLIANT || A11Y-01 || - || 3 || Warning colour paired with icon and the words "Status: Inactive"; colour is not the sole carrier
+V || R12493 || COMPLIANT || ICON-01 || - || 9 || Both are FontAwesome names drawn by fa_icon; "info-circle" is the alias of "circle-info", an internal naming inconsistency only
+V || R12492 || UNCOVERED || - || - || 4 || p font-semibold used as a list lead-in label; same weight as the card title, does not outweigh it
+V || R03812 || COMPLIANT || SPACE-02 || - || 5 || Numbered lists use list-numbered (not a table; TABLE-01 hint does not apply)
+V || R03808 || COMPLIANT || COLOR-05 || - || 9 || icon-info on an informational note icon
+V || R03816 || DIVERGENT || TYPE-03 || medium || 9 || text-sm is for secondary content only; lines 9 and 21 set reactivation rules the reader needs in text-sm
+V || R03818 || COMPLIANT || COLOR-05 || - || 2 || icon-error on the failure icon
+V || R12494 || UNCOVERED || - || - || 2 || ambiguous ALERT-01: rule does not say whether a one-line error message (red text plus icon) inside a dashboard step card is an inline notice needing ui_callout_box
+V || R03823 || COMPLIANT || COLOR-05 || - || 2 || icon-error on the missed-shift icon
+V || R12495 || UNCOVERED || - || - || 2 || ambiguous ALERT-01: one-line red status message with icon inside a step card; rule does not settle whether it must be a callout
+V || R12496 || UNCOVERED || - || - || 2 || Bare text node with <b>, no block element; spacing comes from the step wrapper
+V || R12497 || UNCOVERED || - || - || 2 || Raw <a target=_blank> external link where siblings use ext_link (links have no rule)
+V || R12498 || DIVERGENT || STYLE-03 || medium || 4 || Use the helper where one exists; a hand-made bg-default rounded padded box does a callout/card job
+V || R03842 || COMPLIANT || TYPE-03 || - || 13 || text-sm only on the supporting address line under the location; 5 is a text-lg date, 34 text-base
+V || R12499 || UNCOVERED || - || - || 9 || ambiguous ALERT-01: ALL-CAPS red bold warning line with icon inside an info box; rule does not settle whether it must be a callout
+V || R03830 || COMPLIANT || COLOR-05 || - || 9 || icon-error on a warning clock icon
+V || R12500 || UNCOVERED || - || - || 17 || p font-semibold labels over bulleted lists; same weight as the card title
+V || R03837 || COMPLIANT || SPACE-02 || - || 18 || Bulleted lists use list-bulleted
+V || R12501 || UNCOVERED || - || - || 34 || Muted contact block div holding a sentence and a bare mail_to
+V || R12502 || UNCOVERED || - || - || 2 || Icon plus bold lead-in and text with no block element
+V || R03848 || COMPLIANT || COLOR-05 || - || 2 || icon-error on the arrive-early warning icon
+V || R12503 || UNCOVERED || - || - || 2 || ambiguous ALERT-01: ALL-CAPS red bold warning line with icon in a step card; rule does not settle whether it must be a callout
+V || R12504 || DIVERGENT || STYLE-03 || medium || 4 || Use the helper where one exists; hand-made bg-default rounded p-2 date box (alpha pending uses p-3)
+V || M0235 || DIVERGENT || COPY-08 || low || 5 || pattern=other Dates come from DateTimeHelper, never strftime in a view; uses Time.zone.parse(...).strftime(MONTH_DAY_TIME)
+V || R12505 || DIVERGENT || COPY-08 || low || 5 || Dates come from DateTimeHelper methods, never strftime in a view; prints with strftime where siblings use datetime_format tz:
+V || R03855 || DIVERGENT || TYPE-03 || medium || 8 || text-sm is for secondary content; the "Can't make it? Email Mentor Cadre" instruction is text-sm
+V || R03857 || COMPLIANT || COLOR-05 || - || 3 || icon-success on calendar-check marks the booked state
+V || R12506 || COMPLIANT || COLOR-05 || - || 3 || Status icon coloured icon-success for a booked state, with text
+V || R03863 || DIVERGENT || TYPE-03 || medium || 7 || text-sm is for secondary content; the "Can't make it?" instruction and its link are text-sm
+V || R12507 || UNCOVERED || - || - || 7 || Plain link_to inside muted text, no tap-target-link (links have no rule)
+V || R12508 || UNCOVERED || - || - || 2 || Bare bold line followed by a muted p
+V || R03868 || UNCOVERED || - || - || 2 || ambiguous ICON-01: rule does not say whether a typographic arrow character in sentence text counts as an icon
+V || R12509 || UNCOVERED || - || - || 2 || ambiguous ICON-01: literal arrow character in a sentence; rule does not settle whether it is an icon
+V || R12510 || UNCOVERED || - || - || 3 || ambiguous ALERT-01: red text status lines (semibold at 3, bold at 12) with icons in a step card; rule does not settle callout use
+V || R03871 || COMPLIANT || COLOR-05 || - || 4 || icon-error on failure icons
+V || R12511 || COMPLIANT || ALERT-01 || - || 14 || Inline notice is ui_callout_box :warning; class mt-2 is spacing only
+V || R03881 || COMPLIANT || COLOR-05 || - || 2 || icon-error on the warning icon
+V || R12512 || UNCOVERED || - || - || 2 || ambiguous ALERT-01: red semibold status line with icon in a step card
+V || R03883 || COMPLIANT || SPACE-02 || - || 4 || Bulleted list uses list-bulleted
+V || R12515 || UNCOVERED || - || - || 5 || Icon plus bold sentence lines with no block element in some branches
+V || R03891 || COMPLIANT || COLOR-05 || - || 11 || icon-error on the requirement icon
+V || R12513 || UNCOVERED || - || - || 11 || ambiguous ALERT-01: red bold "FULL DAY required" line with icon in a step card
+V || R03900 || COMPLIANT || TYPE-03 || - || 13 || text-sm only on a parenthetical reason line; 33 is text-base
+V || R12514 || DIVERGENT || STYLE-03 || medium || 27 || Use the helper where one exists; hand-made bg-default rounded slot box with icons and <br>
+V || R12516 || UNCOVERED || - || - || 33 || Plain link_to "Schedule" in text (links have no rule)
+V || R12517 || UNCOVERED || - || - || 2 || Icon plus bold lead-in text with no block element
+V || R12519 || UNCOVERED || - || - || 2 || div font-semibold "To fix it:" label; does not outweigh the card title
+V || R12518 || DIVERGENT || SPACE-02 || low || 5 || A bulleted list is list-bulleted; code builds bullets from literal &bullet; glyphs in divs with an ms-5 "OR" divider
+V || R12520 || UNCOVERED || - || - || 2 || Bare bold text fragment
+V || R03908 || COMPLIANT || COLOR-05 || - || 3 || icon-warning on the urgency icon of an action-needed step
+V || R12522 || COMPLIANT || COLOR-05 || - || 3 || Fire icon coloured icon-warning for an action-needed step
+V || R12521 || UNCOVERED || - || - || 6 || tap-target-link CTA link (custom link utility, not in the guide)
+V || M0491 || COMPLIANT || TABLE-02 || - || 2 || pattern=tables-lists Three-column table; responsive: false is allowed for about four columns or fewer
+V || R12523 || COMPLIANT || TABLE-02 || - || 2 || Three columns; plain table allowed at four or fewer; full_width/striped are documented options
+V || R12527 || UNCOVERED || - || - || 14 || tap-target-link CTAs inside a table cell and under the table
+V || R12524 || UNCOVERED || - || - || 19 || ambiguous COPY-03: rule does not list badge labels (its own CARD-02 example is lowercase "urgent"); lowercase labels, no icons, unlike operational_summary/_training
+V || R03920 || COMPLIANT || BADGE-01 || - || 32 || slot_virtual_venue_badge builds through ui_badge
+V || R12525 || UNCOVERED || - || - || 34 || Italic "(teaching)" marker where operational_summary uses ui_badge "Teaching"
+V || R12526 || COMPLIANT || EMPTY-02 || - || 37 || Empty slot prints an em dash; the art_trainings loop has no empty branch (step only shown when ARTs exist, unverified)
+V || R12528 || UNCOVERED || - || - || 7 || Orphan partial (no caller); strict locals differ from what every step passes
+V || R03934 || COMPLIANT || COLOR-05 || - || 5 || icon-error on ticket problem icons
+V || R12529 || UNCOVERED || - || - || 5 || ambiguous ALERT-01: red text problem lines with icons (bold at 5,9,12, semibold at 30) in a step card
+V || R03944 || COMPLIANT || TYPE-03 || - || 45 || text-sm on the banked-count metadata line; 7 is text-base
+V || R12531 || UNCOVERED || - || - || 15 || Bold labels in p as list lead-ins
+V || R03939 || COMPLIANT || SPACE-02 || - || 16 || Bulleted lists use list-bulleted
+V || R12530 || DIVERGENT || EMPTY-01 || medium || 30 || An empty state is always ui_empty_state; "No tickets claimed yet." is red bold-ish alert text with an error icon
+V || R12532 || COMPLIANT || COLOR-05 || - || 45 || Neutral bank icon in a muted note
+V || R12533 || UNCOVERED || - || - || 56 || CTA link preceded by a separate lead-in div
+V || R03945 || DIVERGENT || COLOR-05 || low || 2 || Icons are neutral unless they convey status; icon-success on a solid circle used as a decorative Green Dot glyph
+V || R12534 || DIVERGENT || COLOR-05 || low || 2 || Icons are neutral unless they convey status; solid circle tinted icon-success draws a green dot as decoration (check at 4 is neutral)
+V || R03950 || COMPLIANT || SPACE-02 || - || 3 || Numbered list uses list-numbered
+V || R12535 || UNCOVERED || - || - || 8 || Bare bold "Steps:" label before a numbered list
+V || R03960 || COMPLIANT || SPACE-02 || - || 9 || Numbered list uses list-numbered
+V || R12536 || UNCOVERED || - || - || 26 || ambiguous ALERT-01: red semibold warning line with icon in a step card
+V || R03955 || COMPLIANT || COLOR-05 || - || 27 || icon-error on the warning icon
+V || R03964 || COMPLIANT || TYPE-03 || - || 31 || text-sm on a secondary processing-time aside
+V || R12537 || UNCOVERED || - || - || 2 || Bare bold text fragment
+V || R12538 || COMPLIANT || COLOR-05 || - || 2 || Neutral icon uses text-stone-muted, the guide's neutral icon token
+V || R12539 || DIVERGENT || EMPTY-01 || low || 1 || An empty state is always ui_empty_state; the nothing-to-do state is bare bold text
+V || R03974 || UNCOVERED || - || - || 2 || ambiguous ICON-01: typographic arrow in sentence text; rule does not say whether it is an icon
+V || R12540 || UNCOVERED || - || - || 2 || ambiguous ICON-01: literal arrow character in bare text
+V || R03988 || DIVERGENT || TYPE-03 || medium || 16 || text-sm is for secondary content; the radio-protocol advice (4) and the completion/contact instruction (16) are text-sm
+V || R12541 || UNCOVERED || - || - || 5 || Auditor branch renders nothing; odd indentation of else
+V || R03993 || DIVERGENT || TYPE-03 || medium || 4 || text-sm is for secondary content; "Questions? email" and "Watch the Announce mailing list" instructions are text-sm
+V || R12542 || DIVERGENT || TYPE-03 || medium || 6 || text-sm is for secondary content; the notes are the step's instructions, in text-sm
+V || R12543 || UNCOVERED || - || - || 2 || Bare icon plus text fragment
+V || R04011 || UNCOVERED || - || - || 2 || ambiguous ICON-01: typographic arrow in sentence text
+V || R12544 || UNCOVERED || - || - || 2 || ambiguous ICON-01: literal arrow character in bare text
+V || R12545 || UNCOVERED || - || - || 3 || p font-semibold lead question with icon; does not outweigh the card title
+V || R12546 || UNCOVERED || - || - || 6 || Inline link_to whose text and target switch (links have no rule)
+V || R04014 || COMPLIANT || COLOR-05 || - || 10 || icon-info on an informational note
+V || R04022 || DIVERGENT || TYPE-03 || medium || 10 || text-sm is for secondary content; for applicants the step's only message ("Alphas don't drive Ranger vehicles.") is text-sm
+V || R04018 || COMPLIANT || SPACE-02 || - || 12 || Bulleted list uses list-bulleted
+V || R12547 || UNCOVERED || - || - || 2 || ambiguous ALERT-01: ALL-CAPS red bold "PRIVILEGES SUSPENDED" line with icon; arrow glyph at 6
+V || R04025 || COMPLIANT || COLOR-05 || - || 3 || icon-error on the warning icon
+V || R04027 || UNCOVERED || - || - || 6 || ambiguous ICON-01: typographic arrow in sentence text
+V || M0171 || UNCOVERED || - || - || 1 || pattern=typography ambiguous COPY-07: rule settles sign-up and check-in only, not "checkout"; here it is part of the agreement's name
+V || R04032 || UNCOVERED || - || - || 1 || ambiguous ICON-01: typographic arrow in sentence text
+V || R12548 || UNCOVERED || - || - || 1 || ambiguous ICON-01: literal arrow in bare text; no strict-locals comment
+V || M0172 || UNCOVERED || - || - || 2 || pattern=typography ambiguous COPY-07: rule names sign-up/check-in only; "Checkout" is in a proper name and the verb is already two words
+V || R04040 || COMPLIANT || TYPE-03 || - || 4 || text-sm on a secondary aside for applicants
+V || R04044 || UNCOVERED || - || - || 1 || ambiguous ICON-01: typographic arrow in sentence text
+V || R12549 || UNCOVERED || - || - || 1 || ambiguous ICON-01: literal arrow in bare text
+V || R04047 || DIVERGENT || TYPE-03 || medium || 2 || text-sm is for secondary content; the "Sat–Tue only, no exceptions" requirement is text-sm
+V || R12550 || COMPLIANT || ALERT-01 || - || 1 || Notice is ui_callout_box :info; class mb-2 is spacing. Same note is plain text in sibling partials
+V || R12551 || UNCOVERED || - || - || 7 || Muted span for an alternative rule inside running text
+V || R04059 || UNCOVERED || - || - || 1 || ambiguous ICON-01: typographic arrow in sentence text
+V || R12552 || UNCOVERED || - || - || 1 || ambiguous ICON-01: literal arrow in bare text
+V || R04061 || UNCOVERED || - || - || 4 || ambiguous ICON-01: typographic arrow between count and credits
+V || R12553 || UNCOVERED || - || - || 4 || ambiguous ICON-01: literal arrow; credits formatted with format("%.2f") in the view
+V || R04066 || COMPLIANT || COLOR-05 || - || 1 || icon-success on the open-state icon
+V || R12554 || COMPLIANT || COLOR-05 || - || 1 || calendar-check icon-success marks an open state, with text
+V || R04075 || DIVERGENT || TYPE-03 || medium || 2 || text-sm is for secondary content; the "Watch the Announce mailing list" instruction is text-sm
+V || R04077 || UNCOVERED || - || - || 2 || ambiguous ICON-01: typographic arrow in sentence text
+V || R12555 || UNCOVERED || - || - || 2 || ambiguous ICON-01: literal arrow in bare text
+V || R04080 || UNCOVERED || - || - || 3 || ambiguous ICON-01: typographic arrow in sentence text
+V || R12556 || UNCOVERED || - || - || 3 || ambiguous ICON-01: literal arrow in bare text
+V || R04093 || COMPLIANT || SPACE-02 || - || 3 || Bulleted list uses list-bulleted
+V || R12557 || UNCOVERED || - || - || 4 || ambiguous EMPTY-01: the rule does not say every collection needs an empty branch; step presumably shown only with surveys (unverified)
+V || R04100 || COMPLIANT || SPACE-02 || - || 3 || Bulleted list uses list-bulleted
+V || R12558 || UNCOVERED || - || - || 4 || ambiguous EMPTY-01: loop over trainer surveys has no empty branch; rule does not require one
+V || R12559 || UNCOVERED || - || - || 2 || ambiguous ALERT-01: red "Bug:" developer message div with icon; stray " ." on its own line at 4
+V || R04117 || COMPLIANT || COLOR-05 || - || 3 || icon-error on the bug icon
+V || R04121 || COMPLIANT || COLOR-05 || - || 2 || icon-error on the rejection icon
+V || R12560 || UNCOVERED || - || - || 2 || ambiguous ALERT-01: red semibold "Photo rejected:" line with icon as list heading
+V || R04126 || COMPLIANT || SPACE-02 || - || 3 || Bulleted list uses list-bulleted
+V || R12562 || UNCOVERED || - || - || 3 || ambiguous EMPTY-01: rejections loop has no empty branch; rule does not require one
+V || R12561 || UNCOVERED || - || - || 9 || p font-semibold "Reviewer note:" label
+V || R12563 || UNCOVERED || - || - || 2 || CTA link directly after bare text with no wrapper
+V || R04133 || COMPLIANT || COLOR-05 || - || 2 || icon-error on the denied icon
+V || R12564 || UNCOVERED || - || - || 2 || ambiguous ALERT-01: red status line with icon in a step card
+V || R12565 || COMPLIANT || COLOR-05 || - || 1 || Neutral icon uses text-stone-muted; no strict-locals comment
+V || R12566 || DIVERGENT || COLOR-03 || medium || 4 || No coloured text for emphasis; the same sentence is red text-error in one branch and plain in the other, colour alone marking urgency in the line
+V || R12567 || DIVERGENT || TYPE-04 || medium || 12 || Nothing inside a section outweighs its title; p font-semibold text-lg shirt line is larger than the step card title (assumed heading-title)
+V || R04152 || COMPLIANT || SPACE-02 || - || 18 || Numbered list uses list-numbered
+V || R12568 || UNCOVERED || - || - || 19 || Plain link_to inside a list item
+V || R12569 || COMPLIANT || ALERT-01 || - || 9 || Deadline notice is ui_callout_box :error; inner text sizing judged in R04165
+V || R04157 || COMPLIANT || COLOR-05 || - || 11 || icon-error on the deadline warning icon
+V || R04165 || DIVERGENT || TYPE-03 || medium || 14 || text-sm is for secondary content; the warning "your ranger hours won't count" is text-sm
+V || R12570 || UNCOVERED || - || - || 1 || Bare bold text, no wrapper, no strict locals
+V || R04495 || COMPLIANT || COLOR-05 || - || 9 || icon-warning marks the pending-to-sign status, with icon and words
+V || R12571 || COMPLIANT || A11Y-01 || - || 9 || hero progress_status (documented) shows status by icon, colour and words; muted text-sm count line is metadata
+V || R04494 || COMPLIANT || COLOR-05 || - || 14 || icon-success marks the all-signed status
+V || R04508 || COMPLIANT || TYPE-03 || - || 19 || text-sm on the hero count line (metadata); 32 is text-base on a heading
+V || M0424 || DIVERGENT || SHADOW-01 || low || 30 || pattern=spacing Flat by default and hover is a colour change, never a lift; article gains hover:shadow-sm with transition-all
+V || R04501 || DIVERGENT || SHADOW-01 || low || 30 || Hover is a colour change, never a lift; hover:shadow-sm on the agreement article (57 is only rounded-lg on the empty box)
+V || R12572 || DIVERGENT || CARD-02 || medium || 30 || A left-border accent card is ui_accent_card; hand-made <article> with border-l-4 and status border/bg colours from agreement_* helpers
+V || R04504 || DIVERGENT || TYPE-04 || low || 32 || <h3> takes heading-title; line 32 h3 carries text-base font-semibold instead (59 is correct)
+V || R12573 || DIVERGENT || TYPE-04 || low || 32 || <h3> takes heading-title; this h3 sets text-base font-semibold by hand
+V || R04499 || COMPLIANT || BADGE-01 || - || 36 || agreement_badge builds through ui_badge
+V || R12574 || COMPLIANT || A11Y-01 || - || 41 || Signed state in success colour with check icon and words; unavailable state is italic text
+V || R12575 || DIVERGENT || EMPTY-01 || medium || 57 || An empty state is always ui_empty_state, never a hand-rolled dashed box; code draws a dashed bordered box with medallion and h3
+V || R12576 || UNCOVERED || - || - || 74 || ui_drill_down_row (a records-management helper) used as a document link list with an icon prefixed into the label
+V || R12578 || COMPLIANT || BTN-07 || - || 26 || Hero carries the back link; the body back_to sits beside the sign button as its cancel-like alternative
+V || R12579 || COMPLIANT || A11Y-01 || - || 16 || Signed state shown in success colour with check icon and words
+V || R04510 || DIVERGENT || BTN-01 || medium || 21 || pattern=buttons Buttons come from ButtonHelper methods; sign action is button_to styled with button_classes
+V || R12577 || DIVERGENT || BTN-01 || medium || 21 || Buttons come from ButtonHelper; code uses button_to with class button_classes({}, :primary) and an fa_icon block
+V || R12580 || DIVERGENT || CARD-01 || medium || 17 || One card utility rendered by ui_card; announcement is a hand-made div with rounded-lg p-4 bg-base-200 border and role article
+V || R12582 || COMPLIANT || COLOR-05 || - || 21 || Status icons use icon-success/icon-warning or neutral text-stone-icon, and a worded badge repeats the status
+V || R04521 || COMPLIANT || COLOR-05 || - || 23 || icon-success on the read-status icon
+V || R04522 || COMPLIANT || COLOR-05 || - || 25 || icon-warning on the unread-status icon
+V || R04530 || COMPLIANT || TYPE-04 || - || 27 || h3 uses heading-title; only its colour changes
+V || R12581 || COMPLIANT || A11Y-01 || - || 27 || Read/unread title colour and expired line-through are backed by worded badges
+V || R04533 || COMPLIANT || TYPE-03 || - || 43 || text-sm on posted/expires metadata
+V || R12584 || DIVERGENT || BTN-07 || low || 70 || Buttons sit in a button_row; the Mark as Read/Unread button sits in a bordered div instead
+V || R12583 || COMPLIANT || BTN-01 || - || 79 || button_link with method: :post is a ButtonHelper method; aria-label contains the visible words
+V || R12585 || COMPLIANT || BADGE-01 || - || 5 || Read-progress summary drawn with ui_badge
+V || R12586 || DIVERGENT || ALERT-01 || medium || 11 || Inline notices are ui_callout_box; notice is a hand-made bordered rounded div with its own h3 and info icon
+V || R12588 || DIVERGENT || ALERT-01 || medium || 11 || Inline notices are ui_callout_box; the hand-made box renders as an empty bordered div for anyone neither ranger nor applicant
+V || R04548 || COMPLIANT || TYPE-04 || - || 13 || h3 uses heading-title; extra utilities are colour and flex layout only (hierarchy skip filed as F TYPE-05)
+V || R04541 || COMPLIANT || COLOR-05 || - || 14 || icon-info on an informational heading icon
+V || R04547 || UNCOVERED || - || - || 17 || Unmarked ul of ui_icon_item rows (icon list); not a table
+V || R12587 || DIVERGENT || EMPTY-01 || medium || 46 || An empty state is always ui_empty_state, never a dashed box; code draws a dashed bordered box with inbox icon and p heading
+V || R12590 || COMPLIANT || ALERT-01 || - || 12 || Both notices are ui_callout_box; "exclamation-triangle" is an alias of "triangle-exclamation"
+V || R04558 || COMPLIANT || SPACE-02 || - || 6 || Bulleted list uses list-bulleted
+V || R12589 || COMPLIANT || EMPTY-01 || - || 18 || ui_empty_state with class "text-lg" is the guide's own example
+V || R12591 || DIVERGENT || CARD-01 || medium || 9 || One card utility rendered by ui_card with p-4; code writes card-standard on a raw div with p-3
+V || R04569 || COMPLIANT || COLOR-05 || - || 13 || icon-warning on the bullhorn of an unread-announcements block (unread status) and on the Unread status span at 43
+V || R04579 || COMPLIANT || TYPE-04 || - || 14 || h2 uses heading-section; extra class is colour only
+V || R12592 || COMPLIANT || TYPE-04 || - || 14 || h2 heading-section text-heading
+V || R04576 || DIVERGENT || SPACE-01 || low || 15 || Spacing follows the Tailwind scale; count pill uses arbitrary min-w-[1.5rem]
+V || R12593 || DIVERGENT || BADGE-01 || medium || 15 || Badges come from ui_badge; unread count is a hand-made rounded-full bg-warning span
+V || R12594 || UNCOVERED || - || - || 19 || Utility-styled "View All" and "+ N more" links (links have no rule)
+V || R12595 || UNCOVERED || - || - || 31 || divide-y list of whole-row links with hover bg; subject p text-base lg:text-lg tracks heading-section scale
+V || R04583 || COMPLIANT || TYPE-03 || - || 39 || text-sm on the status/dates metadata line; 35 subject is text-base lg:text-lg
+V || R12597 || COMPLIANT || A11Y-01 || - || 41 || Expired/unread status given in words with icons, not colour alone
+V || R04571 || UNCOVERED || - || - || 45 || Middle-dot separator characters between metadata items (not an icon)
+V || R12596 || DIVERGENT || BTN-01 || medium || 56 || Never the btn classes by hand; a span inside the row link wears button_classes btn-outline pointer-events-none to look like a button
+V || R12598 || DIVERGENT || COLOR-03 || medium || 17 || No coloured text for emphasis; a key sentence is <b class="text-error">
+V || R12599 || DIVERGENT || FORM-09 || medium || 6 || Saved rich text renders in .lexxy-content through rich_text; Milestones document body is printed with body.html_safe
+V || R04595 || COMPLIANT || LIST-01 || - || 12 || Explanatory Q&A is dl.instruction-list (not a table)
+V || R12600 || COMPLIANT || LIST-01 || - || 12 || dl instruction-list inside ui_section; class only on the dl
+V || R12601 || COMPLIANT || TOUR-01 || - || 7 || The onboarding tour lives on /me only, as the rule allows
+V || R04599 || UNCOVERED || - || - || 14 || ambiguous ICON-01: the "×" character names the tour's close control in prose; rule does not say whether a glyph in copy is an icon
+V || R12602 || UNCOVERED || - || - || 31 || Non-link span with class link as a sample in the tour (links have no rule)
+V || R12603 || UNCOVERED || - || - || 88 || ambiguous TOAST-01: rule covers flash toasts set in a controller; this toast is rendered into a template and shown by the tour script
+V || R04602 || UNCOVERED || - || - || 88 || ambiguous TOAST-01: client-shown toast from a <template>, not a controller flash
+V || R12605 || COMPLIANT || HERO-02 || - || 17 || Description is one sentence (the countdown); the font-semibold wrapper div is styling no rule addresses
+V || R12604 || COMPLIANT || STAT-02 || - || 20 || Hero stats on the /me welcome banner, the one place they are allowed; class is layout only
+V || R04612 || DIVERGENT || HERO-01 || high || 4 || Every page's header is a hero_panel; the applicant dashboard header is a raw <h1> text-2xl font-bold (same as R12606)
+V || R12606 || DIVERGENT || HERO-01 || high || 4 || Every page header is hero_panel; applicant branch prints raw <h1> text-2xl font-bold while ranger and other branches use hero_panel
+V || R12607 || COMPLIANT || NAV-04 || - || 16 || Directory quick navigation is dropdown_scroll_list
+V || R12612 || UNCOVERED || - || - || 28 || Label/value display: strong text-heading "Contact:" then mail_to
+V || R12611 || DIVERGENT || EMPTY-02 || low || 32 || An empty value prints an em dash; missing email shows italic words "No contact email on file."; member grid has no empty branch
+V || R12608 || DIVERGENT || CARD-01 || medium || 41 || One card utility via ui_card, no shadow; member tiles are hand-made divs with border, rounded-lg and shadow-sm
+V || M0425 || DIVERGENT || SHADOW-01 || low || 41 || pattern=spacing Flat by default, hover never a lift; tiles have shadow-sm and hover:shadow-md
+V || R04630 || DIVERGENT || SHADOW-01 || low || 41 || Flat by default and hover is a colour change; tile has shadow-sm plus hover:shadow-md
+V || M0448 || DIVERGENT || STYLE-01 || low || 45 || pattern=other No inline style attribute; image height set by style: from PersonPhoto::AVATAR_HEIGHT
+V || R12609 || UNCOVERED || - || - || 49 || Avatar photo and no-photo placeholder (photos have no rule); inline height style judged in M0448/M0449
+V || M0449 || DIVERGENT || STYLE-01 || low || 50 || pattern=other No inline style attribute; placeholder div sets height by style attribute from a constant
+V || R04621 || COMPLIANT || ICON-01 || - || 52 || Icon drawn by fa_icon; fa-4x size class passed through it
+V || R04636 || DIVERGENT || TYPE-03 || medium || 64 || text-sm never for primary card information; position titles in member tiles (64) and the No Photo label (53) are text-sm
+V || R12610 || DIVERGENT || TYPE-04 || medium || 59 || Nothing inside a section outweighs its title; callsign div is text-xl font-semibold inside a ui_section with a text-base/lg title
+V || R12613 || COMPLIANT || TABS-01 || - || 3 || Tabs come from tab_navigation; panes hold placeholder text on an unrouted page
+V || R12614 || DIVERGENT || COPY-03 || low || 7 || Labels a reader scans are Title Case; stat labels are ALL CAPS ("TOTAL HOURS", "CREDITS", "POSITIONS")
+V || R12616 || UNCOVERED || - || - || 13 || Muted count line joined with middle-dot separators
+V || R04647 || UNCOVERED || - || - || 13 || Middle-dot separator characters in a count line (not an icon)
+V || R12617 || UNCOVERED || - || - || 17 || ui_subheading helper (not in the guide) for sub-headings inside a section
+V || R12615 || COMPLIANT || TABLE-01 || - || 31 || ui_table row_header with class whitespace-normal; no rule broken
+V || R12621 || COMPLIANT || HERO-03 || - || 11 || Year selector in the hero; back link through panel.back_to
+V || R12620 || COMPLIANT || STAT-01 || - || 22 || Summary in ui_stat_row of ui_stat_box with Title Case labels and icons
+V || R12619 || COMPLIANT || HELP-02 || - || 28 || One collapsed "About This Report" ui_disclosure card under the stat row
+V || R04665 || COMPLIANT || LIST-01 || - || 29 || dl.instruction-list inside the disclosure card
+V || R04661 || UNCOVERED || - || - || 42 || <nav> landmark wrapping in-page jump links
+V || R12618 || UNCOVERED || - || - || 45 || In-page jump links drawn as secondary button_links in a button_row; NAV-04 covers directories only
+V || R04672 || DIVERGENT || FORM-02 || low || 4 || Every field has a visible label, never placeholder-only; menu search has an sr-only label and a visible placeholder
+V || R12622 || UNCOVERED || - || - || 5 || ambiguous FORM-01: search_field_tag is a client-side filter with no form; rule addresses forms only
+V || M0302 || UNCOVERED || - || - || 5 || pattern=forms ambiguous FORM-01: filter input outside any form, driven by Stimulus
+V || R04674 || UNCOVERED || - || - || 5 || ambiguous FORM-01: search_field_tag used as a client-side filter, not a form field
+V || R04673 || UNCOVERED || - || - || 7 || ambiguous FORM-01: daisyUI input class on a standalone filter input outside any form
+V || R12623 || COMPLIANT || TOUCH-02 || - || 14 || Icon-only ButtonHelper close button takes btn-square and has an aria-label
+V || R04670 || COMPLIANT || TOUCH-02 || - || 14 || btn-square passed through button_action for the icon-only close control
+V || M0534 || DIVERGENT || TABS-01 || medium || 20 || pattern=navigation Tabs come from tab_navigation; mobile mega-menu tab bar is hand-written mega-menu-tabs of panel-switch buttons
+V || R12625 || DIVERGENT || TABS-01 || medium || 20 || Tabs come from tab_navigation; mobile tab bar and desktop side nav are custom mega-menu-tabs/mega-menu-side switches
+V || R04668 || COMPLIANT || BTN-01 || - || 21 || mega_* helpers build through button_action (ButtonHelper)
+V || R04676 || UNCOVERED || - || - || 28 || <nav> landmark for the mega-menu side column
+V || R04692 || DIVERGENT || TYPE-04 || low || 40 || <h3> takes heading-title; panel titles use the custom mega-menu-panel-title class
+V || R12626 || DIVERGENT || TYPE-04 || low || 40 || h3/h4 take heading-title; mega menu uses custom mega-menu-panel-title and mega-menu-section-title classes
+V || R12627 || COMPLIANT || EMPTY-01 || - || 48 || Empty recents, favorites and no-results use ui_empty_state
+V || R04693 || DIVERGENT || TYPE-04 || low || 66 || <h4> takes heading-title; uses custom mega-menu-section-title
+V || R12624 || DIVERGENT || COPY-04 || low || 90 || Leaving goes "Back to X"; the mobile back control is labelled "Categories" with a chevron
+V || R12628 || UNCOVERED || - || - || 3 || Custom mega-menu-item rows with star button or nbsp spacer, title, category and description spans
+V || R04694 || COMPLIANT || BTN-01 || - || 5 || mega_star_button builds through button_action
+V || R04695 || UNCOVERED || - || - || 7 || Non-breaking-space spacer span aligning rows without a star (not an icon)
+V || M0379 || UNCOVERED || - || - || 1 || pattern=navigation False positive for HERO-01: menu/show is a fragment loaded into the mega-menu frame (layout: false), not a page
+V || R04710 || COMPLIANT || LIST-01 || - || 7 || dl.instruction-list in a ui_section on a page the reader operates
+V || R12630 || DIVERGENT || COLOR-03 || medium || 13 || No coloured text for emphasis; "MUST complete In-Person Training" is strong text-warning
+V || R12629 || COMPLIANT || FORM-01 || - || 28 || ui_form nil with submit_button; the form exists to make a full-page POST redirect
+V || R12632 || COMPLIANT || BADGE-01 || - || 11 || Status chips are ui_badge with icons; explanation in p text-body
+V || R04722 || DIVERGENT || TYPE-03 || medium || 15 || text-sm never for paragraph content; the permit requirement is a text-sm paragraph
+V || R12631 || UNCOVERED || - || - || 24 || link_to with underline font-semibold (links have no rule)
+V || R12633 || UNCOVERED || - || - || 3 || Certifications as a grid of plain divs (list as grid)
+V || R04736 || DIVERGENT || TYPE-03 || medium || 7 || text-sm never for paragraph content; the "Required:" permit note (7) and the approval instruction (26) are text-sm paragraphs
+V || R12634 || UNCOVERED || - || - || 16 || link_to with underline font-semibold (links have no rule)
+V || R12635 || UNCOVERED || - || - || 5 || div font-semibold text-heading sub-headings with icons; same weight as the section title, not larger
+V || R12636 || COMPLIANT || BADGE-01 || - || 9 || Status shown with ui_badge; icons present on most, not on "Shower Pogs"
+V || M0112 || DIVERGENT || COPY-01 || low || 26 || pattern=typography Never "work"/"working" for volunteering; copy says "every 40 hours worked during event week"
+V || R04749 || DIVERGENT || TYPE-03 || medium || 30 || text-sm never for paragraph content; shower location and hours (primary info) are a text-sm paragraph
+V || R12637 || COMPLIANT || ALERT-01 || - || 56 || Not-yet-available state is ui_callout_box :info
+V || R12641 || UNCOVERED || - || - || 3 || Section copy as bare text nodes around a list, no <p>
+V || R04760 || COMPLIANT || SPACE-02 || - || 6 || Bulleted list uses list-bulleted; 18 is an unmarked column list
+V || R12638 || UNCOVERED || - || - || 14 || div font-semibold text-heading sub-headings with counts; not larger than the section title
+V || R12639 || UNCOVERED || - || - || 18 || Teams and positions as multi-column lists (columns-2 lg:columns-3), one ul and one div stack
+V || M0079 || COMPLIANT || BADGE-01 || - || 23 || pattern=other BTN-03 does not apply: a ui_badge with documented size "xs", not a button
+V || R12640 || DIVERGENT || STYLE-03 || medium || 30 || Use the helper where one exists; hand-made rounded-box bg-base-200 padded bar holds a label and document buttons
+V || R04764 || DIVERGENT || TYPE-03 || medium || 31 || text-sm never for labels; the "Team documents" label is text-sm
+V || R12643 || DIVERGENT || LAYOUT-02 || low || 2 || Columns are grid grid-cols-1 lg:grid-cols-N gap-4; the training cards use gap-2
+V || R04775 || COMPLIANT || TYPE-04 || - || 39 || h3 uses heading-title
+V || R12642 || COMPLIANT || TYPE-04 || - || 39 || h3 heading-title text-heading above the ART table
+V || M0495 || COMPLIANT || TABLE-02 || - || 40 || pattern=tables-lists Three-column table; plain table allowed at about four columns or fewer
+V || R04770 || COMPLIANT || BADGE-01 || - || 65 || slot_virtual_venue_badge builds through ui_badge
+V || M0080 || COMPLIANT || BADGE-01 || - || 67 || pattern=other BTN-03 does not apply: ui_badge with documented size "xs"
+V || R12644 || COMPLIANT || EMPTY-02 || - || 70 || Missing slot prints an em dash
+V || R12645 || COMPLIANT || LAYOUT-02 || - || 15 || two-column-lg is @utility grid grid-cols-1 lg:grid-cols-2 gap-4, the documented two-column form
+V || R12646 || UNCOVERED || - || - || 7 || In-page anchor link with underline font-semibold announcing the help section (HELP-01 is met)
+V || R12647 || DIVERGENT || BTN-07 || low || 10 || Buttons sit in a button_row; "Add Passkey" sits in a bare div my-4
+V || R12648 || COMPLIANT || MODAL-02 || - || 36 || delete_button with "Delete <name>?" and the consequence stated
+V || R04794 || COMPLIANT || LIST-01 || - || 49 || dl.instruction-list in the foot help section
+V || R12651 || COMPLIANT || FORM-03 || - || 38 || Required fields marked with required:, help_text set, responsive widths
+V || R12649 || COMPLIANT || ALERT-01 || - || 18 || Script-revealed notices are ui_callout_box
+V || R04813 || COMPLIANT || LIST-01 || - || 31 || dl.instruction-list inside the form's section
+V || M0257 || COMPLIANT || COPY-10 || - || 55 || pattern=buttons Specific submit label "Add Passkey" for a submit that also runs the device ceremony
+V || R12650 || UNCOVERED || - || - || 55 || Busy state via data pending_label on the submit (loading states have no rule)
+V || R12652 || COMPLIANT || FORM-06 || - || 5 || Errors through ui_form and the builder (required marking filed as F FORM-03)
+V || R12653 || DIVERGENT || FORM-03 || medium || 5 || A required field is marked through required:; the form says "All fields are required." in a warning callout and marks no field
+V || R12654 || DIVERGENT || FORM-07 || low || 15 || Widths fit content and are responsive (w-full sm:w-48); fixed w-24 and w-40 inputs and cols: 40 textarea
+V || R12655 || UNCOVERED || - || - || 14 || max-w-3xl page-width wrapper around the shared check-in/out partial
+V || R12656 || DIVERGENT || FORM-03 || medium || 17 || Required fields are marked through required: (asterisk + sr text); radio groups append a red "required" ui_badge into the label instead
+V || R12657 || DIVERGENT || ALERT-01 || low || 23 || Inline notices are ui_callout_box; unknown-question fallback is a text-error div ("Uh oh ... This is a bug")
+V || R12658 || COMPLIANT || CARD-03 || - || 18 || Question groups in ui_section; icon picked by regex on the group title
+V || R12659 || UNCOVERED || - || - || 5 || Trainer photo image_tag, missing photo shown as a secondary callout (photos have no rule)
+V || R12660 || COMPLIANT || FORM-05 || - || 19 || Radio pair grouped with form.fieldset
+V || R12661 || DIVERGENT || HERO-02 || low || 5 || Description is one sentence saying what the page does; it is a slot label plus a date span with class text-lg and ml-4
+V || R12662 || UNCOVERED || - || - || 23 || Estimated-time meta line with clock icon, computed in the view
+V || R12663 || COMPLIANT || FORM-09 || - || 33 || Prologue rich text in .lexxy-content through rich_text, inside ui_callout_box :info
+V || R12664 || DIVERGENT || FORM-06 || medium || 40 || Errors show in ui_form's summary at the top as well as on fields; survey form passes no_error_summary: true
+V || M0144 || DIVERGENT || COPY-04 || low || 82 || pattern=buttons Never "Submit" as a submit label; the survey button reads "Submit Feedback"
+V || R12665 || UNCOVERED || - || - || 82 || Busy state via turbo_submits_with "Submitting…" (loading states have no rule)
+V || R12666 || COMPLIANT || EMPTY-01 || - || 18 || No document shown with ui_empty_state
+V || R04890 || COMPLIANT || SPACE-02 || - || 20 || Bulleted lists use list-bulleted
+V || R04889 || COMPLIANT || LIST-01 || - || 39 || 39 and 61 are dl.instruction-list; the plain dl at 49 is a label/value display (R12670)
+V || R12670 || UNCOVERED || - || - || 49 || Label/value display: dl with dt font-bold for credits earned vs needed
+V || R12671 || COMPLIANT || BTN-05 || - || 39 || Will Call claim is :primary, the other options :secondary; all button_link
+V || R12674 || COMPLIANT || LAYOUT-02 || - || 11 || two-column-lg (grid-cols-1 lg:grid-cols-2 gap-4) with lg:col-span-2 full-width items
+V || R04910 || COMPLIANT || SPACE-02 || - || 16 || Unmarked ul lists and ui_icon_item lists; no banned list classes
+V || R12672 || UNCOVERED || - || - || 27 || ambiguous ALERT-01: red bold "Contact the Ranger Ticketing Team" lines inside overview items; a _contact_ticketing callout exists but the rule does not settle one-liners
+V || M0179 || UNCOVERED || - || - || 103 || pattern=typography ambiguous COPY-07: rule names sign-up and check-in only; "checkout" (a purchase) is not addressed
+V || R12673 || COMPLIANT || A11Y-01 || - || 132 || Warning/error strings carry status in words with status icons; markup is built in Ruby and marked html_safe
+V || R04915 || COMPLIANT || TYPE-03 || - || 186 || text-sm on a radio-allocation disclaimer (fine print)
+V || R04922 || COMPLIANT || SPACE-02 || - || 39 || list-bulleted at 39; 20 is an unmarked list
+V || R12675 || COMPLIANT || ALERT-01 || - || 65 || Notices are ui_callout_box; pricing total divided with border-t inside
+V || R04921 || COMPLIANT || SPACE-02 || - || 34 || Numbered list uses list-numbered
+V || R12676 || UNCOVERED || - || - || 15 || mail_to with underline font-semibold (links have no rule)
+V || R12677 || COMPLIANT || ALERT-01 || - || 1 || ui_callout_box :info with spacing class and id; inner ul unmarked
+V || R04936 || COMPLIANT || SPACE-02 || - || 3 || Unmarked link list; no banned list classes
+V || R12678 || DIVERGENT || STYLE-03 || medium || 14 || Use the helper where one exists; hand-made bordered rounded p-2 box wraps the ui_icon_item list
+V || R04943 || COMPLIANT || SPACE-02 || - || 15 || Unmarked ui_icon_item list
+V || R12682 || COMPLIANT || PROG-01 || - || 57 || Hero progress bar through panel.progress with start/end labels
+V || R04960 || COMPLIANT || SPACE-02 || - || 113 || list-bulleted at 113; 81 and 99 are unmarked lists
+V || R04959 || COMPLIANT || SPACE-02 || - || 134 || list-numbered at 134; 193 is a divided step list (R12681)
+V || M0180 || UNCOVERED || - || - || 137 || pattern=typography ambiguous COPY-07: "checkout" (Burning Man purchase) is not addressed by the hyphenation rule
+V || R12679 || DIVERGENT || CARD-01 || medium || 152 || Cards are card-standard via ui_card; checklist cards are hand-made divs with rounded-lg border border-line p-4
+V || R04964 || COMPLIANT || TYPE-04 || - || 156 || h3 uses heading-title (sentence-case titles filed as F COPY-03)
+V || R12680 || DIVERGENT || COPY-03 || low || 188 || Button labels are Title Case; "Start ticketing" / "Continue ticketing" are sentence case (button_link itself is compliant)
+V || R12681 || UNCOVERED || - || - || 193 || Ordered step list of whole-row links: number, icon, title, status chip, chevron, hover bg
+V || R04975 || COMPLIANT || SPACE-02 || - || 9 || Bulleted lists use list-bulleted
+V || R12683 || COMPLIANT || EMPTY-01 || - || 25 || No banked tickets shown with ui_empty_state
+V || R12684 || COMPLIANT || A11Y-01 || - || 55 || Coloured warning strings carry status in words with status icons; colour keys are strings here, symbols in _claimed_overview
+V || R12685 || UNCOVERED || - || - || 37 || ambiguous ALERT-01: red bold missing-data lines inside a checklist card; rule does not settle one-line notices
+V || M0181 || UNCOVERED || - || - || 60 || pattern=typography ambiguous COPY-07: "checkout" (purchase) not addressed by the rule
+V || R04987 || COMPLIANT || SPACE-02 || - || 63 || Unmarked lists; no banned list classes
+V || R12686 || COMPLIANT || BADGE-01 || - || 65 || Inline ui_badge "banked"
+V || M0182 || UNCOVERED || - || - || 81 || pattern=typography ambiguous COPY-07: "checkout" (purchase) not addressed by the rule
+V || R04991 || COMPLIANT || TYPE-03 || - || 118 || text-sm on a radio-allocation disclaimer (fine print)
+V || R12687 || COMPLIANT || TYPE-04 || - || 7 || h2 heading-section heading a title-less ui_section, with a status chip
+V || R04994 || COMPLIANT || TYPE-04 || - || 7 || h2 uses heading-section
+V || R12688 || COMPLIANT || BADGE-01 || - || 12 || Status chip partial renders ui_badge with variant, icon and words
+V || R12689 || DIVERGENT || STYLE-03 || medium || 2 || Use the helper where one exists; hand-made bordered rounded p-2 box around ui_icon_item rows
+V || R05002 || COMPLIANT || SPACE-02 || - || 3 || Unmarked ui_icon_item list
+V || R12690 || COMPLIANT || A11Y-01 || - || 27 || Title coloured by type is backed by its words and a status icon; h4 uses heading-title
+V || R05005 || COMPLIANT || TYPE-04 || - || 27 || h4 uses heading-title
+V || R12691 || UNCOVERED || - || - || 16 || Wizard step footer: border-t, "Step X of Y" line, lg Previous/Continue buttons in a button_row
+V || R12692 || DIVERGENT || HERO-04 || low || 33 || Back navigation lives in the hero; outside the wizard every step page adds a body "Back to Tickets & Provisions" button duplicating the hero link
+V || R12695 || DIVERGENT || EMPTY-01 || medium || 23 || An empty state is ui_empty_state; no gift tickets shown as a secondary callout box with a back button
+V || R05021 || COMPLIANT || SPACE-02 || - || 31 || Unmarked list in a callout
+V || R05023 || COMPLIANT || TYPE-04 || - || 56 || h3 uses heading-title
+V || R12693 || DIVERGENT || COPY-03 || low || 56 || A heading is a Title Case label, not prose; h3s are sentences ("Claimed — pick up at Will Call (free).")
+V || R12694 || DIVERGENT || BTN-04 || medium || 114 || One clear primary action per view; every claim, delivery and release button is :secondary, so the gift page has none (claim_buttons makes Will Call primary)
+V || R12697 || DIVERGENT || EMPTY-01 || medium || 27 || An empty state is ui_empty_state; no provisions shown as a secondary callout with a back button
+V || R05038 || COMPLIANT || SPACE-02 || - || 46 || Unmarked icon list; no banned list classes
+V || R12696 || DIVERGENT || STYLE-03 || low || 48 || Use the helper where one exists; li flex + fa_icon rows hand-build what ui_icon_item renders
+V || R12698 || COMPLIANT || BTN-05 || - || 77 || The page's one decision is a :primary button_link
+V || R05037 || COMPLIANT || LIST-01 || - || 91 || dl.instruction-list on a page the reader operates
+V || R05053 || COMPLIANT || SPACE-02 || - || 20 || Unmarked lists; no banned list classes
+V || R12700 || DIVERGENT || EMPTY-01 || low || 45 || An empty state is ui_empty_state; "Nothing claimed." is plain text in a p
+V || R12701 || UNCOVERED || - || - || 50 || p font-medium label over a price list; total li font-semibold text-heading
+V || R12699 || UNCOVERED || - || - || 89 || ambiguous BTN-05: the page's primary action is a positive confirmation; rule gives :primary for primary and :success for positive without saying which wins
+V || R05066 || COMPLIANT || LIST-01 || - || 35 || dl.instruction-list inside the How This Page Works card
+V || R12702 || COMPLIANT || CARD-03 || - || 43 || Content grouped in ui_section border: true; the heading comes from _section_header h2
+V || R12703 || COMPLIANT || TYPE-01 || - || 57 || Body copy is text-base (redundant explicit class)
+V || R12704 || UNCOVERED || - || - || 91 || ambiguous BTN-05: Claim is :success here but :primary on vehicle_pass and ticket; rule allows either for a positive primary action
+V || R05082 || COMPLIANT || LIST-01 || - || 59 || dl.instruction-list on a page the reader operates
+V || R12706 || DIVERGENT || COLOR-03 || medium || 69 || No coloured text for emphasis; "NO EXCEPTIONS!" is span text-error inside a Q&A answer
+V || R12705 || COMPLIANT || FORM-01 || - || 78 || ui_form with builder fields; hidden_field_tag ids are hidden fields, width w-full sm:w-80
+V || R12709 || UNCOVERED || - || - || 20 || Label/value display: "Status:" label plus status chip under the hero
+V || M0113 || COMPLIANT || COPY-01 || - || 39 || pattern=typography False positive: "works" means a ticket functions, not employment
+V || R12707 || DIVERGENT || CARD-01 || medium || 62 || Cards are card-standard via ui_card; ticket cards are hand-made rounded-lg bordered p-4 divs
+V || R05102 || COMPLIANT || TYPE-04 || - || 65 || h3 uses heading-title (success colour added when claimed)
+V || R12708 || COMPLIANT || BADGE-01 || - || 69 || Inline ui_badge with icons; differs from the _status_chip used at 21
+V || R05100 || COMPLIANT || SPACE-02 || - || 76 || Unmarked lists; no banned list classes
+V || R12710 || UNCOVERED || - || - || 87 || ambiguous COPY-04: rule fixes the verb (Bank) but not the rest; labels vary "Bank This Ticket", "Bank It", "Bank for Later"
+V || R12712 || COMPLIANT || BADGE-01 || - || 26 || status_chip (ui_badge) at the top of the section
+V || R12711 || COMPLIANT || BTN-05 || - || 57 || Claim :primary, release :secondary
+V || R12667 || UNCOVERED || - || - || 5 || ambiguous ALERT-01: success-coloured congratulations line in a div; rule does not settle whether a one-line status message must be a callout
+V || R12668 || COMPLIANT || BTN-07 || - || 16 || Confirm and back_to share one button_row
+V || R05137 || DIVERGENT || TYPE-04 || low || 8 || Headings take heading-section/heading-title; an <h6> with font-semibold mb-2 is used
+V || R12713 || DIVERGENT || TYPE-04 || low || 8 || Heading levels take the heading utilities; h6 styled font-semibold by hand (hierarchy jump filed as F TYPE-05)
+V || R12714 || DIVERGENT || STYLE-03 || medium || 16 || Use the helper where one exists; hand-made bg-default p-4 rounded-lg box holds the position list
+V || R05134 || COMPLIANT || SPACE-02 || - || 17 || Bulleted list uses list-bulleted
+V || R05139 || COMPLIANT || TYPE-02 || - || 31 || text-xs only sizes an icon inside a link, a listed use; 25 is text-base
+V || R12716 || DIVERGENT || COLOR-03 || medium || 25 || No coloured text for emphasis; a p text-warning paragraph inside an :info callout
+V || R12715 || UNCOVERED || - || - || 30 || Link styled text-warning font-semibold with an arrow icon (links have no rule)
+V || R12721 || UNCOVERED || - || - || 10 || ambiguous COPY-03: section badges are lowercase strings ("completed", "action needed"); rule does not list badges
+V || R05142 || COMPLIANT || TYPE-03 || - || 11 || text-sm on a secondary section subtitle
+V || R12717 || UNCOVERED || - || - || 1 || Centred status block: 4x check icon, h3 text-success, p text-lg text-success
+V || R05148 || COMPLIANT || TYPE-04 || - || 6 || h3 uses heading-title
+V || R12718 || UNCOVERED || - || - || 5 || Deadline countdown block: uppercase label, red date, bg-default days box with text-2xl number
+V || R05163 || DIVERGENT || TYPE-03 || medium || 8 || text-sm never for labels or paragraphs; the "Deadline" label (8), "days left" label (21) and the Tip paragraph (30) are text-sm
+V || R12720 || COMPLIANT || ALERT-01 || - || 29 || Tip is ui_callout_box :info (inner text-sm judged in R05163)
+V || R12719 || COMPLIANT || BTN-01 || - || 36 || button_link with a width class; aria-label differs from the visible words (see Q)
+V || R12722 || UNCOVERED || - || - || 21 || ambiguous COPY-03: section badges are lowercase strings; rule does not list badges
+V || R05167 || COMPLIANT || TYPE-03 || - || 22 || text-sm on a secondary section subtitle
+V || M0426 || DIVERGENT || SHADOW-01 || low || 6 || pattern=spacing Flat by default, hover never a lift; vehicle card has shadow-sm and hover:shadow-md
+V || R05176 || DIVERGENT || SHADOW-01 || low || 6 || Flat by default; card-standard with shadow-sm and hover:shadow-md
+V || R12723 || DIVERGENT || CARD-01 || medium || 6 || card-standard is rendered by ui_card with no shadow; raw div card-standard with shadow-sm and hover lift
+V || R05178 || DIVERGENT || TYPE-04 || low || 10 || <h4> takes heading-title; uses text-base font-semibold
+V || R05180 || COMPLIANT || TYPE-06 || - || 15 || font-mono only on the license plate, a listed use; other classes are weights and casing
+V || R05181 || DIVERGENT || TYPE-03 || medium || 43 || text-sm never for primary card information; vehicle colour/plate (13), reviewer response (37) and permit/logo/fuel/amber values (43) are text-sm
+V || R12724 || DIVERGENT || TYPE-04 || low || 10 || <h4> takes heading-title; vehicle title sets text-base font-semibold by hand
+V || R05173 || UNCOVERED || - || - || 14 || Bullet character as a separator between colour and plate (not an icon)
+V || M0570 || COMPLIANT || TYPE-06 || - || 15 || pattern=typography font-mono on a license plate, a use the rule lists
+V || R12725 || UNCOVERED || - || - || 15 || License plate chip: span font-mono bg-default px-1 rounded
+V || R12726 || DIVERGENT || STYLE-03 || medium || 37 || Use the helper where one exists; reviewer response is a hand-made bg-default bordered rounded box with an uppercase label
+V || R12727 || UNCOVERED || - || - || 43 || Label/value grid with uppercase tracking-wider labels
+V || R12729 || DIVERGENT || BTN-07 || low || 63 || Buttons sit in a button_row; Edit/Delete sit in a div flex gap-3 with a border-t
+V || R12728 || DIVERGENT || BTN-06 || medium || 65 || edit_link is the one edit control; Edit is a button_link :primary with a pen icon (Delete :secondary filed as F BTN-05)
+V || R05174 || COMPLIANT || MODAL-02 || - || 72 || confirm_modal with variant: :error asking "Delete this vehicle request? This cannot be undone."
+V || R12730 || UNCOVERED || - || - || 2 || Centred status block (status_medallion, h3, muted p); both branches reuse id pvr-agreement-title (only one renders)
+V || R05189 || COMPLIANT || TYPE-04 || - || 4 || h3 uses heading-title
+V || R12731 || UNCOVERED || - || - || 17 || Indented left rule (border-l-2 border-info/30) nesting a partial inside an info callout
+V || R12732 || DIVERGENT || BTN-05 || medium || 27 || :warning is for warnings; the "Sign Agreement" call to action is a :warning button_link
+V || R12733 || COMPLIANT || BTN-01 || - || 9 || button_link with a width class ("New" verb filed as F COPY-04)
+V || R05205 || COMPLIANT || TYPE-04 || - || 3 || h3 uses heading-title
+V || R12734 || COMPLIANT || TYPE-04 || - || 3 || h3 heading-title with a heading colour token inside a callout
+V || R12735 || DIVERGENT || COLOR-03 || medium || 10 || No coloured text for emphasis; div text-warning sentence inside an :info callout
+V || R12737 || DIVERGENT || COLOR-03 || medium || 4 || No coloured text for emphasis; p text-warning inside an :info callout
+V || R12736 || COMPLIANT || BTN-01 || - || 18 || button_link with a width class
+V || R12738 || COMPLIANT || ALERT-01 || - || 10 || Notice is ui_callout_box :error, though it carries its own h2 rather than title:
+V || R05224 || COMPLIANT || TYPE-04 || - || 11 || h2s use heading-section
+V || R12739 || COMPLIANT || LAYOUT-02 || - || 21 || stack-to-row-lg is @utility flex flex-col lg:flex-row gap-4
+V || R05221 || DIVERGENT || SHADOW-01 || low || 30 || Flat by default; the agreement-required panel has shadow-sm (and rounded-xl)
+V || R12740 || DIVERGENT || ALERT-01 || medium || 30 || Inline notices are ui_callout_box or ui_alert_banner; hand-made bg-error/10 bordered rounded-xl panel with medallion, h2 and lg button
+V || R12741 || DIVERGENT || BTN-05 || medium || 44 || :error is for destructive actions; "Review and Sign Agreement" is an :error lg button
+V || R05236 || COMPLIANT || TYPE-04 || - || 10 || h3 uses heading-title
+V || R12742 || DIVERGENT || ALERT-01 || medium || 10 || Inline notices are ui_callout_box; missing instructions shown as a red h3 plus "Uh oh" paragraph
+V || M0114 || COMPLIANT || COPY-01 || - || 2 || pattern=typography Work History is the owner-approved page-name exception
+V || R12669 || DIVERGENT || COPY-03 || low || 6 || Labels a reader scans are Title Case; stat labels are ALL CAPS ("TOTAL HOURS", "YEARS", "POSITIONS")
+V || R05245 || DIVERGENT || HELP-02 || medium || 12 || On a report the explanation lives only in one collapsed card; Work History keeps a visible Q&A dl inside a ui_section
+F || app/views/me/agreements/show.html.erb || 13 || other || rich-text-html-safe || DIVERGENT || FORM-09 || medium || Saved rich text renders in .lexxy-content through rich_text; the agreement document body is printed with @document.body.html_safe
+F || app/views/me/agreements/index.html.erb || 32 || typography || h1-to-h3-skip || DIVERGENT || TYPE-05 || low || Heading hierarchy runs h1 > h2 > h3; agreement article titles are h3 directly under the hero h1 with no h2
+F || app/views/me/announcements/index.html.erb || 13 || typography || h1-to-h3-skip || DIVERGENT || TYPE-05 || low || Hierarchy runs h1 > h2 > h3; notice box and announcement titles (_announcement:27) are h3 directly under the hero h1
+F || app/views/me/vehicles_dashboard/_eligible_positions.html.erb || 8 || typography || h6-heading || DIVERGENT || TYPE-05 || low || Hierarchy runs h1 > h2 > h3; an h6 sits under the section h2 (and an h3 in the agreement-needed branch), skipping levels
+F || app/views/me/event_info.html.erb || 4 || navigation || lowercase-tab-labels || DIVERGENT || COPY-03 || low || Tab labels are Title Case; tab_navigation panes are titled "event" and "training" (lines 4, 7)
+F || app/views/me/menu/_content.html.erb || 22 || buttons || sentence-case-button || DIVERGENT || COPY-03 || low || Button labels are Title Case; mega_chrome_button "Recently visited" (lines 22, 30)
+F || app/views/me/dashboard/_onboarding.html.erb || 67 || modals || title-case-article || DIVERGENT || COPY-03 || low || Title Case lowercases articles; tour step title is "File A Bug Report"
+F || app/views/me/tickets/_landing.html.erb || 37 || typography || sentence-case-heading || DIVERGENT || COPY-03 || low || Headings are Title Case; section_meta titles "Gift tickets", "SAPs for significant others", "Confirm your choices" print as h3 and step titles (lines 37, 41, 42)
+F || app/views/me/tickets/_wizard_nav.html.erb || 25 || buttons || sentence-case-button || DIVERGENT || COPY-03 || low || Button labels are Title Case; "Continue to confirmation"
+F || app/views/me/personal_vehicles/new.html.erb || 2 || other || new-submit-verb || DIVERGENT || COPY-04 || low || Opening the create form says "Add [Entity]", never "New"/"Submit"; hero title is "Submit New Personal Vehicle Request"
+F || app/views/me/personal_vehicles/_form.html.erb || 72 || buttons || submit-verb || DIVERGENT || COPY-04 || low || Submitting a form says "Save [Entity]", never "Submit"; create branch label is "Submit Request"
+F || app/views/me/vehicles_dashboard/_pvr_status_eligible.html.erb || 13 || buttons || new-verb || DIVERGENT || COPY-04 || low || Opening a create form says "Add [Entity]", never "New"; button reads "New Vehicle Request"
+F || app/views/me/password/edit.html.erb || 7 || forms || required-unmarked || DIVERGENT || FORM-03 || medium || Required fields are marked through required:; the three password fields (7-9) carry no required: marker
+F || app/views/me/password/edit.html.erb || 13 || buttons || submit-verb || DIVERGENT || COPY-04 || low || A form submit says "Save [Entity]"; the password form's submit reads "Change Password"
+F || app/views/me/vehicles_dashboard/_pvr_requests.html.erb || 70 || buttons || destructive-secondary || DIVERGENT || BTN-05 || medium || Destructive actions take :error (delete_button); Delete is a button_link :secondary with a confirm_modal
+F || app/views/me/vehicles_dashboard/index.html.erb || 21 || buttons || two-primaries || DIVERGENT || BTN-04 || medium || One clear primary action per view; the side-by-side MVR and PVR sections each end in a full-width :primary button (_mvr_status_eligible:36, _pvr_status_eligible:9 or _pvr_status_potential:18)
+Q || The dashboard step fragments carry ~15 one-line red text-error notices (several in ALL CAPS) inside status-coloured accent cards; the guide should say whether these are inline notices needing ui_callout_box, so they can be ranked consistently.
+Q || Typographic arrows ("→") are used as connectors in about 12 dashboard step fragments; the guide does not say whether such glyphs count as icons, and the same steps elsewhere use an arrow-right fa_icon.
+Q || Several buttons carry an aria-label that does not contain or differs from their visible text (_mvr_status_eligible:36 "Submit MVR Request", _pvr_status_eligible:12, _pvr_status_potential:20, vehicles index:46), which can break voice control (WCAG label-in-name); no guide rule covers it.
+Q || Dead or unrouted code: app/views/me/event_info.html.erb has no route and placeholder tab text; dashboard_tasks/_dashboard_survey.html.erb has no caller; DashboardHelper#dashboard_step_status_class and #dashboard_step_icon have no caller.
+Q || The awards page shows a reference info callout ("What These Awards Recognize") in its body; if the page counts as a report under HELP-02, that belongs in a collapsed About card. The guide's report-or-operated test does not clearly classify a page with no controls.
+Q || Ticket claim actions use :success on sap.html and review.html but :primary on vehicle_pass.html and ticket.html; one variant for "claim" across the ticket wizard would read more consistently.
+Q || Many TYPE-03 and TYPE-04 judgments in dashboard steps assume the ui_accent_card title renders as heading-title (text-base); a rendered page would confirm whether text-lg lines outweigh it.
+S || HERO-01 || 33 || 1 || 33 pages with own templates; 14 delegating templates and 69 dashboard fragments not applicable
+S || HERO-02 || 33 || 1 || surveys/show; several pages (awards, password, personal vehicles, final confirmation, mvr_submit, work-history-like forms) have no description at all, which the rule does not address
+S || HERO-03 || 33 || 0 ||
+S || HERO-04 || 33 || 1 || ticket step pages via _wizard_nav
+S || HELP-01 || 33 || 0 || passkeys announces its foot help section
+S || HELP-02 || 33 || 1 || work_history
+S || STAT-01 || 33 || 0 ||
+S || STAT-02 || 33 || 0 || welcome banner is the allowed exception
+S || TABLE-02 || 102 || 0 ||
+S || TABLE-04 || 33 || 0 || no filtered table pages in scope
+S || TABLE-05 || 33 || 0 || no filter bars in scope
+S || BTN-03 || 102 || 0 ||
+S || BTN-04 || 102 || 2 || tickets/gift, vehicles_dashboard index
+S || BTN-05 || 102 || 3 || _pvr_requests, _pvr_status_agreement_needed, vehicles_dashboard index
+S || BTN-07 || 102 || 3 || passkeys index, _announcement, _pvr_requests
+S || MODAL-02 || 102 || 0 ||
+S || FORM-02 || 102 || 1 || menu/_content search
+S || FORM-03 || 102 || 3 || personal_vehicles _form, password edit, surveys _question
+S || FORM-07 || 102 || 1 || personal_vehicles _form; default text_field width not determinable from code
+S || FORM-08 || 33 || 0 ||
+S || TYPE-05 || 102 || 3 || agreements index, announcements index, _eligible_positions
+S || COLOR-02 || 102 || 0 ||
+S || COLOR-03 || 102 || 7 || _dashboard_bonked, online_course, sap_so, _eligible_positions, _pvr_status_ineligible, _pvr_status_potential, _verify_personal_info
+S || A11Y-01 || 102 || 0 ||
+S || A11Y-02 || 102 || 0 ||
+S || LAYOUT-03 || 0 || 0 || no records-management pages in scope
+S || COPY-03 || 102 || 8 || event_summary, work_history, event_info, _landing, _wizard_nav, menu/_content, _onboarding, gift
+S || COPY-04 || 102 || 6 || personal_vehicles new and _form, _pvr_status_eligible, surveys show, password edit, menu/_content
+S || COPY-10 || 102 || 0 ||

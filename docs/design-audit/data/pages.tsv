@@ -1,0 +1,553 @@
+template	kind	routes	partials	unresolved_renders
+app/views/admin/action_logs/index.html.erb	html	GET /admin/action-logs	app/views/admin/action_logs/_live.html.erb app/views/admin/action_logs/_live_rows.html.erb app/views/admin/action_logs/_table.html.erb app/views/common/_checkbox_grid.html.erb app/views/common/_checkbox_tile.html.erb	
+app/views/admin/bug_reports/index.html.erb	html	GET /admin/bug-reports		
+app/views/admin/documents/body.html.erb	html	GET /admin/documents/:id/body		
+app/views/admin/documents/edit.html.erb	html	GET /admin/documents/:id/edit	app/views/admin/documents/_form.html.erb app/views/common/documents/_body_field.html.erb	
+app/views/admin/documents/index.html.erb	html	GET /admin/documents		
+app/views/admin/documents/new.html.erb	html	GET /admin/documents/new	app/views/admin/documents/_form.html.erb app/views/common/documents/_body_field.html.erb	
+app/views/admin/error_logs/index.html.erb	html	GET /admin/error-log		
+app/views/admin/event_dates/edit.html.erb	html	GET /admin/event-dates/:id/edit	app/views/admin/event_dates/_form.html.erb	
+app/views/admin/event_dates/index.html.erb	html	GET /admin/event-dates		
+app/views/admin/event_dates/new.html.erb	html	GET /admin/event-dates/new	app/views/admin/event_dates/_form.html.erb	
+app/views/admin/jobs/index.html.erb	html	GET /admin/jobs	app/views/admin/jobs/_job.html.erb	
+app/views/admin/legacy_log/index.html.erb	html	GET /admin/legacy-log	app/views/admin/action_logs/_table.html.erb app/views/common/_checkbox_grid.html.erb app/views/common/_checkbox_tile.html.erb	
+app/views/admin/mail_log/index.html.erb	html	GET /admin/mail-log	app/views/common/mail_log/_legend.html.erb app/views/common/mail_log/_table.html.erb	
+app/views/admin/oauth_clients/edit.html.erb	html	GET /admin/oauth-client/:id/edit	app/views/admin/oauth_clients/_form.html.erb	
+app/views/admin/oauth_clients/index.html.erb	html	GET /admin/oauth-client		
+app/views/admin/oauth_clients/new.html.erb	html	GET /admin/oauth-client/new	app/views/admin/oauth_clients/_form.html.erb	
+app/views/admin/online_courses/edit.html.erb	html	GET /admin/online-course/:id/edit	app/views/admin/online_courses/_form.html.erb	
+app/views/admin/online_courses/enrollment.html.erb	html	GET /admin/online-course/:id/enrollment	app/views/shared/_frame_spinner.html.erb	
+app/views/admin/online_courses/enrollment_roster.html.erb	html	GET /admin/online-course/:id/enrollment-roster	app/views/admin/online_courses/_moodle_error.html.erb	
+app/views/admin/online_courses/index.html.erb	html	GET /admin/online-course		
+app/views/admin/online_courses/moodle_catalog.html.erb	html	GET /admin/online-course/moodle-catalog	app/views/shared/_frame_spinner.html.erb	
+app/views/admin/online_courses/moodle_catalog_courses.html.erb	html	GET /admin/online-course/moodle-catalog-courses	app/views/admin/online_courses/_moodle_error.html.erb	
+app/views/admin/online_courses/new.html.erb	html	GET /admin/online-course/new	app/views/admin/online_courses/_form.html.erb	
+app/views/admin/passkeys/index.html.erb	html	GET /admin/passkeys		
+app/views/admin/permissions/edit.html.erb	html	GET /admin/permissions/:id/edit		
+app/views/admin/permissions/index.html.erb	html	GET /admin/permissions	app/views/admin/permissions/_row.html.erb	
+app/views/admin/permissions/new_art.html.erb	html	GET /admin/permissions/art		
+app/views/admin/rbs_alerts/edit.html.erb	html	GET /admin/rbs-alerts/:id/edit		
+app/views/admin/rbs_alerts/index.html.erb	html	GET /admin/rbs-alerts	app/views/admin/rbs_alerts/_group.html.erb	
+app/views/admin/request_logs/index.html.erb	html	GET /admin/request-logs	app/views/admin/request_logs/_live.html.erb app/views/admin/request_logs/_live_rows.html.erb	
+app/views/admin/salesforce_query/index.html.erb	html	GET /admin/salesforce-query		
+app/views/admin/settings/edit.html.erb	html	GET /admin/settings/:id/edit		
+app/views/admin/settings/index.html.erb	html	GET /admin/settings		
+app/views/admin/shift_coverage_groups/edit.html.erb	html	GET /admin/shift-coverage-management/:id/edit	app/views/admin/shift_coverage_groups/_form.html.erb app/views/common/_checkbox_row.html.erb	
+app/views/admin/shift_coverage_groups/index.html.erb	html	GET /admin/shift-coverage-management	app/views/common/_move_buttons.html.erb	
+app/views/admin/shift_coverage_groups/new.html.erb	html	GET /admin/shift-coverage-management/new	app/views/admin/shift_coverage_groups/_form.html.erb app/views/common/_checkbox_row.html.erb	
+app/views/admin/shift_coverage_groups/show.html.erb	html	GET /admin/shift-coverage-management/:id	app/views/common/_move_buttons.html.erb	
+app/views/admin/shift_coverage_positions/edit.html.erb	html	GET /admin/shift-coverage-management/:shift_coverage_group_id/posts/:id/edit	app/views/admin/shift_coverage_positions/_form.html.erb app/views/admin/shift_coverage_positions/_position_rows.html.erb	
+app/views/admin/shift_coverage_positions/new.html.erb	html	GET /admin/shift-coverage-management/:shift_coverage_group_id/posts/new	app/views/admin/shift_coverage_positions/_form.html.erb app/views/admin/shift_coverage_positions/_position_rows.html.erb	
+app/views/admin/sms_management/index.html.erb	html	GET /admin/sms-management	app/views/admin/sms_management/_lookup.html.erb app/views/shared/_frame_spinner.html.erb	
+app/views/admin/sms_management/lookup.html.erb	html	POST /admin/sms-management/lookup	app/views/admin/sms_management/_lookup.html.erb	
+app/views/admin/sms_management/messages.html.erb	html	GET /admin/sms-management/messages		
+app/views/admin/sms_management/twilio.html.erb	html	GET /admin/sms-management/twilio		
+app/views/alerts/edit.html.erb	html		app/views/alerts/_alert_group.html.erb	
+app/views/asset_management/asset_history/index.html.erb	html	GET /asset-management/asset-history		
+app/views/asset_management/assets_outstanding/index.html.erb	html	GET /asset-management/assets-outstanding		
+app/views/asset_management/radio_assets/index.html.erb	html	GET /asset-management/radio-assets		
+app/views/asset_management/radio_checkout/index.html.erb	html	GET /asset-management/radio-checkout	app/views/asset_management/radio_checkout/_checkout_table.html.erb	
+app/views/asset_management/records/edit.html.erb	html	GET /asset-management/records/:id/edit	app/views/asset_management/records/_form.html.erb	
+app/views/asset_management/records/index.html.erb	html	GET /asset-management/records		
+app/views/asset_management/records/new.html.erb	html	GET /asset-management/records/new	app/views/asset_management/records/_form.html.erb	
+app/views/asset_management/records/show.html.erb	html	GET /asset-management/records/:id	app/views/common/assets/_checkout_history.html.erb	
+app/views/asset_management/records/type.html.erb	html	GET /asset-management/records/type/:type		
+app/views/asset_management/search/index.html.erb	html	GET /asset-management/search	app/views/common/assets/_checkout_history.html.erb	
+app/views/bmid/badges/edit.html.erb	html	GET /bmid/manage/badges/:person_id/edit	app/views/bmid/manage/_meals_cell.html.erb app/views/bmid/manage/_showers_cell.html.erb app/views/common/bmids/_fields.html.erb app/views/common/bmids/_warnings.html.erb	
+app/views/bmid/export/create.html.erb	html	POST /bmid/export	app/views/bmid/export/_skipped.html.erb	
+app/views/bmid/export/index.html.erb	html	GET /bmid/export	app/views/bmid/export/_buckets.html.erb app/views/bmid/export/_filter_bar.html.erb app/views/bmid/export/_previous_exports.html.erb app/views/bmid/export/_selection_table.html.erb app/views/common/bmids/_flag_legend.html.erb	
+app/views/bmid/export/unsubmit.html.erb	html	DELETE /bmid/export/:id		
+app/views/bmid/manage/index.html.erb	html	GET /bmid/manage	app/views/bmid/manage/_edit_grid.html.erb app/views/bmid/manage/_filter_bar.html.erb app/views/bmid/manage/_meals_cell.html.erb app/views/bmid/manage/_showers_cell.html.erb app/views/bmid/manage/_table.html.erb app/views/common/bmids/_flag_legend.html.erb	
+app/views/bmid/provisions/edit.html.erb	html	GET /bmid/manage/provisions/:id/edit	app/views/bmid/provisions/_modal.html.erb app/views/common/provisions/_form.html.erb	
+app/views/bmid/provisions/index.html.erb	html	GET /bmid/manage/provisions	app/views/bmid/provisions/_list.html.erb app/views/common/provisions/_list.html.erb	
+app/views/bmid/provisions/new.html.erb	html	GET /bmid/manage/provisions/new	app/views/bmid/provisions/_modal.html.erb app/views/common/provisions/_form.html.erb	
+app/views/bmid/sanity_check/index.html.erb	html	GET /bmid/sanity-check		
+app/views/bmid/titles/apply.html.erb	html	POST /bmid/titles/set		
+app/views/bmid/titles/edit.html.erb	html	GET /bmid/titles/:id/edit	app/views/bmid/titles/_form.html.erb	
+app/views/bmid/titles/index.html.erb	html	GET /bmid/titles	app/views/common/_move_buttons.html.erb	
+app/views/bmid/titles/new.html.erb	html	GET /bmid/titles/new	app/views/bmid/titles/_form.html.erb	
+app/views/bmid/titles/set.html.erb	html	GET /bmid/titles/set	app/views/bmid/titles/_cell.html.erb	
+app/views/bookmarks/document.html.erb	html	GET /bookmark/:tag/document	app/views/bookmarks/_document.html.erb	
+app/views/bookmarks/not_found.html.erb	html			
+app/views/bookmarks/show.html.erb	html	GET /bookmark/:tag	app/views/bookmarks/_document.html.erb	
+app/views/bug_reports/new.html.erb	html	GET /bug-reports/new		
+app/views/certificates/certificates_report/index.html.erb	html	GET /certificates/certificates-report		
+app/views/certificates/certificates_report/show.html.erb	html	GET /certificates/certificates-report/:id		
+app/views/common/available_sign_ups/create.turbo_stream.erb	turbo_stream		app/views/common/_entry_card_grid.html.erb app/views/common/available_sign_ups/_slot.html.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/common/available_sign_ups/destroy.turbo_stream.erb	turbo_stream		app/views/common/_entry_card_grid.html.erb app/views/common/available_sign_ups/_slot.html.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/common/available_sign_ups/index.html.erb	html			
+app/views/common/available_sign_ups/show.html.erb	html		app/views/common/_entry_card_grid.html.erb app/views/common/_hours_not_eligible.html.erb app/views/common/available_sign_ups/_slot.html.erb app/views/common/available_sign_ups/_slots.html.erb app/views/common/scheduling/_alpha_shift_info.html.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_overlapping_sign_ups_list.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/common/bulk_upload/index.html.erb	html			advisory extra_fields formats
+app/views/common/bulk_upload/preview.html.erb	html			consequence
+app/views/common/mail_log/body.html.erb	html			
+app/views/common/mentoring/index.html.erb	html		app/views/common/_photo_none.html.erb app/views/common/mentoring/_art_section.html.erb app/views/common/mentoring/_mentee_card.html.erb	
+app/views/common/messages/index.html.erb	html		app/views/common/messages/_compose_buttons.html.erb app/views/common/messages/_conversation_list.html.erb app/views/common/messages/_conversation_summary.html.erb app/views/common/messages/_folder_selector.html.erb app/views/common/messages/_list_frame.html.erb app/views/common/messages/_message_card.html.erb app/views/common/messages/_messages_panel.html.erb app/views/common/messages/_messages_panel_header.html.erb app/views/common/messages/_pane.html.erb app/views/common/messages/_reply_form.html.erb app/views/common/messages/_search_field.html.erb app/views/common/messages/_thread.html.erb app/views/common/messages/_workspace.html.erb app/views/shared/_autocomplete.html.erb app/views/shared/_callsign_chip.html.erb app/views/shared/_frame_spinner.html.erb	
+app/views/common/messages/new.html.erb	html		app/views/common/messages/_compose.html.erb	
+app/views/common/messages/show.html.erb	html		app/views/common/messages/_compose_buttons.html.erb app/views/common/messages/_conversation_list.html.erb app/views/common/messages/_conversation_summary.html.erb app/views/common/messages/_folder_selector.html.erb app/views/common/messages/_list_frame.html.erb app/views/common/messages/_message_card.html.erb app/views/common/messages/_messages_panel.html.erb app/views/common/messages/_messages_panel_header.html.erb app/views/common/messages/_pane.html.erb app/views/common/messages/_reply_form.html.erb app/views/common/messages/_search_field.html.erb app/views/common/messages/_thread.html.erb app/views/common/messages/_workspace.html.erb app/views/shared/_autocomplete.html.erb app/views/shared/_callsign_chip.html.erb app/views/shared/_frame_spinner.html.erb	
+app/views/common/missing_requests/edit.html.erb	html		app/views/common/_timesheet_notes.html.erb app/views/common/missing_requests/_form.html.erb	
+app/views/common/missing_requests/index.html.erb	html		app/views/common/_timesheet_notes.html.erb app/views/common/missing_requests/_entry.html.erb	
+app/views/common/missing_requests/new.html.erb	html		app/views/common/_timesheet_notes.html.erb app/views/common/missing_requests/_form.html.erb	
+app/views/common/provisions/edit.html.erb	html		app/views/common/provisions/_form.html.erb	
+app/views/common/provisions/new.html.erb	html		app/views/common/provisions/_form.html.erb	
+app/views/common/qualifications/index.html.erb	html		app/views/common/qualifications/_qualification_row.html.erb app/views/common/qualifications/_track.html.erb	
+app/views/common/resource_documents/edit.html.erb	html		app/views/common/documents/_body_field.html.erb app/views/common/resource_documents/_form.html.erb	
+app/views/common/schedule/index.html.erb	html		app/views/common/available_sign_ups/_training_months.html.erb app/views/common/schedule/_export_warning.html.erb app/views/common/schedule/_signed_up_row.html.erb app/views/common/scheduling/_burn_weekend_shift_recommendation.html.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_overlapping_sign_ups_list.html.erb app/views/common/scheduling/_signup_blockers.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/common/schedule/signup_summary.html.erb	html			
+app/views/common/surveys/report.html.erb	html		app/views/common/surveys/_answers.html.erb app/views/common/surveys/_question.html.erb app/views/common/surveys/_ratings_table.html.erb app/views/common/surveys/_session_label.html.erb	
+app/views/common/surveys/trainer.html.erb	html		app/views/common/surveys/_answers.html.erb app/views/common/surveys/_question.html.erb app/views/common/surveys/_ratings_table.html.erb app/views/common/surveys/_session_label.html.erb	
+app/views/common/timesheet/edit.html.erb	html		app/views/common/_timesheet_notes.html.erb	
+app/views/common/timesheet/index.html.erb	html		app/views/common/_entry_card_grid.html.erb app/views/common/_icon_block.html.erb app/views/common/_timesheet_confirm.html.erb app/views/common/_timesheet_notes.html.erb app/views/common/timesheet/_entry_with_action.html.erb app/views/common/timesheet/_listing.html.erb app/views/common/timesheet/_listing_with_actions.html.erb	
+app/views/common/unified_flagging/detail.html.erb	html		app/views/common/unified_flagging/_history.html.erb app/views/common/unified_flagging/_note_buttons.html.erb app/views/person/unified_flagging/_note.html.erb	
+app/views/common/unified_flagging/index.html.erb	html		app/views/common/unified_flagging/_group_tiles.html.erb app/views/common/unified_flagging/_history.html.erb app/views/common/unified_flagging/_lead_legend.html.erb app/views/common/unified_flagging/_list_row.html.erb app/views/common/unified_flagging/_name_line.html.erb app/views/common/unified_flagging/_note_buttons.html.erb app/views/common/unified_flagging/_personnel_warning.html.erb app/views/common/unified_flagging/_rank_legend.html.erb app/views/common/unified_flagging/_review_legend.html.erb app/views/common/unified_flagging/_review_list.html.erb app/views/common/unified_flagging/_review_pane.html.erb app/views/common/unified_flagging/_review_workspace.html.erb app/views/common/unified_flagging/_signal_line.html.erb app/views/person/unified_flagging/_note.html.erb	
+app/views/common/work_history/entire_year.html.erb	html			
+app/views/common/work_history/position_all.html.erb	html			
+app/views/common/work_history/position_summary.html.erb	html			
+app/views/communication/announcements/edit.html.erb	html	GET /communication/announcements/:id/edit	app/views/communication/announcements/_form.html.erb	
+app/views/communication/announcements/index.html.erb	html	GET /communication/announcements	app/views/communication/announcements/_announcement.html.erb	
+app/views/communication/announcements/new.html.erb	html	GET /communication/announcements/new	app/views/communication/announcements/_form.html.erb	
+app/views/communication/mail_templates/edit.html.erb	html	GET /communication/mail-templates/:id/edit		
+app/views/communication/mail_templates/index.html.erb	html	GET /communication/mail-templates		
+app/views/communication/person_banners/index.html.erb	html	GET /communication/person-banners	app/views/communication/person_banners/_banner.html.erb	
+app/views/communication/rbs/index.html.erb	html	GET /communication/rbs	app/views/common/rbs/_sandbox_notice.html.erb app/views/communication/rbs/_type_card.html.erb	
+app/views/communication/rbs_broadcasts/new.html.erb	html	GET /communication/rbs/broadcasts/:type; POST /communication/rbs/broadcasts/:type/edit	app/views/common/_checkbox_grid.html.erb app/views/common/_checkbox_row.html.erb app/views/common/_checkbox_tile.html.erb app/views/common/rbs/_sandbox_notice.html.erb app/views/communication/rbs_broadcasts/_audience_fields.html.erb app/views/communication/rbs_broadcasts/_message_fields.html.erb app/views/communication/rbs_broadcasts/_notices.html.erb app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb app/views/communication/rbs_broadcasts/_simple_fields.html.erb	
+app/views/communication/rbs_broadcasts/review.html.erb	html	POST /communication/rbs/broadcasts/:type/review	app/views/common/rbs/_sandbox_notice.html.erb app/views/communication/rbs_broadcasts/_carried_values.html.erb app/views/communication/rbs_broadcasts/_recipients_table.html.erb	
+app/views/communication/rbs_broadcasts/sent.html.erb	html		app/views/common/rbs/_delivery_summary.html.erb app/views/common/rbs/_delivery_table.html.erb app/views/common/rbs/_sandbox_notice.html.erb	
+app/views/communication/rbs_history/index.html.erb	html	GET /communication/rbs/history		
+app/views/communication/rbs_history/retried.html.erb	html		app/views/common/rbs/_delivery_summary.html.erb app/views/common/rbs/_delivery_table.html.erb app/views/common/rbs/_sandbox_notice.html.erb	
+app/views/communication/rbs_history/show.html.erb	html	GET /communication/rbs/history/:id		
+app/views/communication/rbs_messages/index.html.erb	html	GET /communication/rbs/messages	app/views/common/_checkbox_grid.html.erb app/views/common/_checkbox_tile.html.erb	
+app/views/communication/rbs_phone_numbers/index.html.erb	html	GET /communication/rbs/phone-numbers	app/views/communication/rbs_phone_numbers/_list.html.erb	
+app/views/communication/survey_groups/edit.html.erb	html	GET /communication/survey-management/:survey_id/groups/:id/edit	app/views/communication/survey_groups/_form.html.erb	
+app/views/communication/survey_groups/new.html.erb	html	GET /communication/survey-management/:survey_id/groups/new	app/views/communication/survey_groups/_form.html.erb	
+app/views/communication/survey_questions/edit.html.erb	html	GET /communication/survey-management/:survey_id/questions/:id/edit	app/views/communication/survey_questions/_form.html.erb	
+app/views/communication/survey_questions/new.html.erb	html	GET /communication/survey-management/:survey_id/questions/new	app/views/communication/survey_questions/_form.html.erb	
+app/views/communication/surveys/edit.html.erb	html	GET /communication/survey-management/:id/edit	app/views/communication/surveys/_form.html.erb	
+app/views/communication/surveys/index.html.erb	html	GET /communication/survey-management	app/views/common/surveys/_survey_name.html.erb	
+app/views/communication/surveys/new.html.erb	html	GET /communication/survey-management/new	app/views/communication/surveys/_form.html.erb	
+app/views/communication/surveys/show.html.erb	html	GET /communication/survey-management/:id	app/views/common/_move_buttons.html.erb app/views/communication/surveys/_group.html.erb	
+app/views/hq/assets/index.html.erb	html	GET /hq/:person_id/assets	app/views/common/assets/_checkout_form.html.erb app/views/common/assets/_duration_label.html.erb app/views/common/assets/_radio_agreement_warning.html.erb app/views/common/assets/_table.html.erb	
+app/views/hq/available_sign_ups/create.turbo_stream.erb	turbo_stream	POST /hq/:person_id/schedule/sign-ups/position/:position_id/slot/:slot_id	app/views/common/_entry_card_grid.html.erb app/views/common/available_sign_ups/_slot.html.erb app/views/common/available_sign_ups/create.turbo_stream.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/hq/available_sign_ups/destroy.turbo_stream.erb	turbo_stream	DELETE /hq/:person_id/schedule/sign-ups/position/:position_id/slot/:slot_id	app/views/common/_entry_card_grid.html.erb app/views/common/available_sign_ups/_slot.html.erb app/views/common/available_sign_ups/destroy.turbo_stream.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/hq/available_sign_ups/index.html.erb	html	GET /hq/:person_id/schedule/sign-ups	app/views/common/available_sign_ups/index.html.erb	
+app/views/hq/available_sign_ups/show.html.erb	html	GET /hq/:person_id/schedule/sign-ups/position/:position_id	app/views/common/_entry_card_grid.html.erb app/views/common/_hours_not_eligible.html.erb app/views/common/available_sign_ups/_slot.html.erb app/views/common/available_sign_ups/_slots.html.erb app/views/common/available_sign_ups/show.html.erb app/views/common/scheduling/_alpha_shift_info.html.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_overlapping_sign_ups_list.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/hq/messages/index.html.erb	html	GET /hq/:person_id/messages	app/views/common/messages/_compose_buttons.html.erb app/views/common/messages/_conversation_list.html.erb app/views/common/messages/_conversation_summary.html.erb app/views/common/messages/_folder_selector.html.erb app/views/common/messages/_list_frame.html.erb app/views/common/messages/_message_card.html.erb app/views/common/messages/_messages_panel.html.erb app/views/common/messages/_messages_panel_header.html.erb app/views/common/messages/_pane.html.erb app/views/common/messages/_reply_form.html.erb app/views/common/messages/_search_field.html.erb app/views/common/messages/_thread.html.erb app/views/common/messages/_workspace.html.erb app/views/common/messages/index.html.erb app/views/shared/_autocomplete.html.erb app/views/shared/_callsign_chip.html.erb app/views/shared/_frame_spinner.html.erb	
+app/views/hq/messages/new.html.erb	html	GET /hq/:person_id/messages/new	app/views/common/messages/_compose.html.erb app/views/common/messages/new.html.erb	
+app/views/hq/messages/show.html.erb	html	GET /hq/:person_id/messages/:id	app/views/common/messages/_compose_buttons.html.erb app/views/common/messages/_conversation_list.html.erb app/views/common/messages/_conversation_summary.html.erb app/views/common/messages/_folder_selector.html.erb app/views/common/messages/_list_frame.html.erb app/views/common/messages/_message_card.html.erb app/views/common/messages/_messages_panel.html.erb app/views/common/messages/_messages_panel_header.html.erb app/views/common/messages/_pane.html.erb app/views/common/messages/_reply_form.html.erb app/views/common/messages/_search_field.html.erb app/views/common/messages/_thread.html.erb app/views/common/messages/_workspace.html.erb app/views/common/messages/show.html.erb app/views/shared/_autocomplete.html.erb app/views/shared/_callsign_chip.html.erb app/views/shared/_frame_spinner.html.erb	
+app/views/hq/missing_requests/edit.html.erb	html	GET /hq/:person_id/timesheets/missing-requests/:id/edit	app/views/common/_timesheet_notes.html.erb app/views/common/missing_requests/_form.html.erb app/views/common/missing_requests/edit.html.erb	
+app/views/hq/missing_requests/index.html.erb	html	GET /hq/:person_id/timesheets/missing-requests	app/views/common/_timesheet_notes.html.erb app/views/common/missing_requests/_entry.html.erb app/views/common/missing_requests/index.html.erb	
+app/views/hq/missing_requests/new.html.erb	html	GET /hq/:person_id/timesheets/missing-requests/new	app/views/common/_timesheet_notes.html.erb app/views/common/missing_requests/_form.html.erb app/views/common/missing_requests/new.html.erb	
+app/views/hq/scheduling/index.html.erb	html	GET /hq/:person_id/schedule	app/views/common/available_sign_ups/_training_months.html.erb app/views/common/schedule/_export_warning.html.erb app/views/common/schedule/_signed_up_row.html.erb app/views/common/schedule/index.html.erb app/views/common/scheduling/_burn_weekend_shift_recommendation.html.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_overlapping_sign_ups_list.html.erb app/views/common/scheduling/_signup_blockers.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/hq/scheduling/signup_summary.html.erb	html	GET /hq/:person_id/schedule/signup-summary	app/views/common/schedule/signup_summary.html.erb	
+app/views/hq/shift_manage/index.html.erb	html	GET /hq/:person_id/shift-manage	app/views/common/assets/_checkout_form.html.erb app/views/common/assets/_duration_label.html.erb app/views/common/assets/_radio_agreement_warning.html.erb app/views/common/shift_manage/_alerts.html.erb app/views/common/shift_manage/_converted_modal.html.erb app/views/common/shift_manage/_on_duty.html.erb app/views/common/shift_manage/_start_shift.html.erb app/views/hq/shared/_provision_info.html.erb app/views/hq/shift_manage/_asset_table.html.erb app/views/hq/shift_manage/_assets_section.html.erb app/views/hq/shift_manage/_correction_modal.html.erb app/views/hq/shift_manage/_other_entries.html.erb app/views/hq/shift_manage/_pogs.html.erb app/views/hq/shift_manage/_section.html.erb app/views/hq/shift_manage/_signal.html.erb app/views/hq/shift_manage/_todo_chip.html.erb app/views/hq/shift_manage/_todo_list.html.erb app/views/hq/shift_manage/_verification.html.erb	
+app/views/hq/site_registration/show.html.erb	html	GET /hq/:person_id/site-registration	app/views/common/assets/_checkout_form.html.erb app/views/common/assets/_duration_label.html.erb app/views/common/assets/_table.html.erb app/views/hq/shared/_provision_info.html.erb app/views/hq/site_registration/_radio_authorization_status.html.erb app/views/hq/site_registration/_radios_step.html.erb	
+app/views/hq/tickets_provisions/progress.html.erb	html		app/views/hq/tickets_provisions/_row.html.erb app/views/hq/tickets_provisions/_table.html.erb	
+app/views/hq/tickets_provisions/show.html.erb	html	GET /hq/:person_id/tickets-provisions		
+app/views/hq/timesheets/edit.html.erb	html	GET /hq/:person_id/timesheets/:id/edit	app/views/common/_timesheet_notes.html.erb app/views/common/timesheet/edit.html.erb	
+app/views/hq/timesheets/event_summary.html.erb	html	GET /hq/:person_id/timesheets/event-summary	app/views/common/_event_summary_breakdown.html.erb app/views/common/_event_summary_counts.html.erb	
+app/views/hq/timesheets/index.html.erb	html	GET /hq/:person_id/timesheets	app/views/common/_entry_card_grid.html.erb app/views/common/_icon_block.html.erb app/views/common/_timesheet_confirm.html.erb app/views/common/_timesheet_notes.html.erb app/views/common/timesheet/_entry_with_action.html.erb app/views/common/timesheet/_listing.html.erb app/views/common/timesheet/_listing_with_actions.html.erb app/views/common/timesheet/index.html.erb	
+app/views/hq/training/index.html.erb	html	GET /hq/:person_id/training	app/views/common/training/_education_detail.html.erb app/views/common/training/_online_course_status.html.erb app/views/common/training/_status_badge.html.erb	
+app/views/layouts/admin.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/agreements.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/application.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/asset_management.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/bmid.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/bookmark.html.erb	layout			
+app/views/layouts/certificates.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/communication.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/hq.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/common/_photo_none.html.erb app/views/hq/shared/_danger_notices.html.erb app/views/hq/shared/_header.html.erb app/views/hq/shared/_shell.html.erb app/views/hq/shared/_summary_column.html.erb app/views/hq/shared/_warning_modals.html.erb app/views/layouts/application.html.erb app/views/person/_banners.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/me.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/me/timesheet.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/layouts/me.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/mentoring.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/people.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/person.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/photo_board.html.erb	layout			
+app/views/layouts/pogs.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/print.html.erb	layout			
+app/views/layouts/quartermaster.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/scheduling.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/sessions.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/shift_operations.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/teams_positions.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/ticketing.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/timesheets.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/training.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/vc.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/layouts/vehicles.html.erb	layout		app/views/application/_dialog_status.html.erb app/views/application/_mega_menu.html.erb app/views/application/_navbar_messages.html.erb app/views/application/_public_menu.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/application/_theme_toggle.html.erb app/views/application/_top_menu.html.erb app/views/layouts/application.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/mail/layouts/mailer.html.erb	html			
+app/views/me/agreements/index.html.erb	html	GET /me/agreements	app/views/common/_status_medallion.html.erb	
+app/views/me/agreements/show.html.erb	html	GET /me/agreements/:id		
+app/views/me/announcements/index.html.erb	html	GET /me/announcements	app/views/me/announcements/_announcement.html.erb app/views/me/announcements/_unread_count.html.erb	
+app/views/me/available_sign_ups/create.turbo_stream.erb	turbo_stream	POST /me/schedule/sign-ups/position/:position_id/slot/:slot_id	app/views/common/_entry_card_grid.html.erb app/views/common/available_sign_ups/_slot.html.erb app/views/common/available_sign_ups/create.turbo_stream.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/me/available_sign_ups/destroy.turbo_stream.erb	turbo_stream	DELETE /me/schedule/sign-ups/position/:position_id/slot/:slot_id	app/views/common/_entry_card_grid.html.erb app/views/common/available_sign_ups/_slot.html.erb app/views/common/available_sign_ups/destroy.turbo_stream.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/me/available_sign_ups/index.html.erb	html	GET /me/schedule/sign-ups	app/views/common/available_sign_ups/index.html.erb	
+app/views/me/available_sign_ups/show.html.erb	html	GET /me/schedule/sign-ups/position/:position_id	app/views/common/_entry_card_grid.html.erb app/views/common/_hours_not_eligible.html.erb app/views/common/available_sign_ups/_slot.html.erb app/views/common/available_sign_ups/_slots.html.erb app/views/common/available_sign_ups/show.html.erb app/views/common/scheduling/_alpha_shift_info.html.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_overlapping_sign_ups_list.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/me/awards/index.html.erb	html	GET /me/awards	app/views/common/_trophies.html.erb	
+app/views/me/dashboard/index.html.erb	html	GET /me	app/views/common/_dashboard_group.html.erb app/views/common/_dashboard_progress.html.erb app/views/common/_dashboard_section_header.html.erb app/views/common/_dashboard_step.html.erb app/views/me/dashboard/_announcements_section.html.erb app/views/me/dashboard/_dashboard_bonked.html.erb app/views/me/dashboard/_dashboard_document.html.erb app/views/me/dashboard/_dashboard_past_prospective.html.erb app/views/me/dashboard/_onboarding.html.erb app/views/me/dashboard/_welcome_hero_stats.html.erb	
+app/views/me/directory/index.html.erb	html	GET /me/directory		
+app/views/me/event_info.html.erb	html			
+app/views/me/event_summary/index.html.erb	html	GET /me/timesheet/event-summary	app/views/common/_event_summary_breakdown.html.erb app/views/common/_event_summary_counts.html.erb	
+app/views/me/feedback/index.html.erb	html	GET /me/feedback	app/views/common/surveys/_answers.html.erb app/views/common/surveys/_session_label.html.erb app/views/me/feedback/_survey.html.erb	
+app/views/me/mentoring/index.html.erb	html	GET /me/mentoring	app/views/common/_photo_none.html.erb app/views/common/mentoring/_art_section.html.erb app/views/common/mentoring/_mentee_card.html.erb app/views/common/mentoring/index.html.erb	
+app/views/me/menu/show.html.erb	html	GET /me/menu	app/views/me/menu/_content.html.erb app/views/me/menu/_item.html.erb	
+app/views/me/messages/index.html.erb	html	GET /me/messages	app/views/common/messages/_compose_buttons.html.erb app/views/common/messages/_conversation_list.html.erb app/views/common/messages/_conversation_summary.html.erb app/views/common/messages/_folder_selector.html.erb app/views/common/messages/_list_frame.html.erb app/views/common/messages/_message_card.html.erb app/views/common/messages/_messages_panel.html.erb app/views/common/messages/_messages_panel_header.html.erb app/views/common/messages/_pane.html.erb app/views/common/messages/_reply_form.html.erb app/views/common/messages/_search_field.html.erb app/views/common/messages/_thread.html.erb app/views/common/messages/_workspace.html.erb app/views/common/messages/index.html.erb app/views/shared/_autocomplete.html.erb app/views/shared/_callsign_chip.html.erb app/views/shared/_frame_spinner.html.erb	
+app/views/me/messages/new.html.erb	html	GET /me/messages/new	app/views/common/messages/_compose.html.erb app/views/common/messages/new.html.erb	
+app/views/me/messages/show.html.erb	html	GET /me/messages/:id	app/views/common/messages/_compose_buttons.html.erb app/views/common/messages/_conversation_list.html.erb app/views/common/messages/_conversation_summary.html.erb app/views/common/messages/_folder_selector.html.erb app/views/common/messages/_list_frame.html.erb app/views/common/messages/_message_card.html.erb app/views/common/messages/_messages_panel.html.erb app/views/common/messages/_messages_panel_header.html.erb app/views/common/messages/_pane.html.erb app/views/common/messages/_reply_form.html.erb app/views/common/messages/_search_field.html.erb app/views/common/messages/_thread.html.erb app/views/common/messages/_workspace.html.erb app/views/common/messages/show.html.erb app/views/shared/_autocomplete.html.erb app/views/shared/_callsign_chip.html.erb app/views/shared/_frame_spinner.html.erb	
+app/views/me/missing_requests/edit.html.erb	html	GET /me/timesheet/missing-request/:id/edit	app/views/common/_timesheet_notes.html.erb app/views/common/missing_requests/_form.html.erb app/views/common/missing_requests/edit.html.erb	
+app/views/me/missing_requests/index.html.erb	html	GET /me/timesheet/missing-request	app/views/common/_timesheet_notes.html.erb app/views/common/missing_requests/_entry.html.erb app/views/common/missing_requests/index.html.erb	
+app/views/me/missing_requests/new.html.erb	html	GET /me/timesheet/missing-request/new	app/views/common/_timesheet_notes.html.erb app/views/common/missing_requests/_form.html.erb app/views/common/missing_requests/new.html.erb	
+app/views/me/online_course/index.html.erb	html	GET /me/online-course		
+app/views/me/operational_summary/index.html.erb	html	GET /me/operational-summary	app/views/me/operational_summary/_basic_driving.html.erb app/views/me/operational_summary/_certifications.html.erb app/views/me/operational_summary/_mvr.html.erb app/views/me/operational_summary/_provisions_and_radios.html.erb app/views/me/operational_summary/_teams_and_positions.html.erb app/views/me/operational_summary/_training.html.erb	
+app/views/me/passkeys/index.html.erb	html	GET /me/profile/passkeys		
+app/views/me/passkeys/new.html.erb	html	GET /me/profile/passkeys/new		
+app/views/me/password/edit.html.erb	html	GET /me/profile/password		
+app/views/me/personal_vehicles/edit.html.erb	html	GET /me/vehicles/personal/:id/edit	app/views/me/personal_vehicles/_form.html.erb	
+app/views/me/personal_vehicles/new.html.erb	html	GET /me/vehicles/personal/new	app/views/me/personal_vehicles/_form.html.erb	
+app/views/me/schedule/index.html.erb	html	GET /me/schedule	app/views/common/available_sign_ups/_training_months.html.erb app/views/common/schedule/_export_warning.html.erb app/views/common/schedule/_signed_up_row.html.erb app/views/common/schedule/index.html.erb app/views/common/scheduling/_burn_weekend_shift_recommendation.html.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_overlapping_sign_ups_list.html.erb app/views/common/scheduling/_signup_blockers.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/me/schedule/signup_summary.html.erb	html	GET /me/schedule/signup-summary	app/views/common/schedule/signup_summary.html.erb	
+app/views/me/shift_manage/index.html.erb	html	GET /me/shift-manage	app/views/common/shift_manage/_alerts.html.erb app/views/common/shift_manage/_check_in_out.html.erb app/views/common/shift_manage/_converted_modal.html.erb app/views/common/shift_manage/_on_duty.html.erb app/views/common/shift_manage/_start_shift.html.erb	
+app/views/me/surveys/show.html.erb	html	GET /me/surveys	app/views/me/surveys/_question.html.erb app/views/me/surveys/_question_group.html.erb app/views/me/surveys/_trainer_photo.html.erb	
+app/views/me/team_documents/show.html.erb	html	GET /me/teams/:id/document		
+app/views/me/tickets/gift.html.erb	html	GET /me/tickets/gift	app/views/me/tickets/_contact_ticketing.html.erb app/views/me/tickets/_status_chip.html.erb app/views/me/tickets/_ticket_gift_conditions.html.erb app/views/me/tickets/_wizard_nav.html.erb	
+app/views/me/tickets/index.html.erb	html	GET /me/tickets	app/views/common/_icon_block.html.erb app/views/me/tickets/_announce.html.erb app/views/me/tickets/_claimed_overview.html.erb app/views/me/tickets/_closed.html.erb app/views/me/tickets/_faqs_section.html.erb app/views/me/tickets/_item_details.html.erb app/views/me/tickets/_landing.html.erb app/views/me/tickets/_off_season.html.erb app/views/me/tickets/_section_detail.html.erb app/views/me/tickets/_status_chip.html.erb app/views/me/tickets/_ticket_gift_conditions.html.erb app/views/me/tickets/_ticket_overview_item.html.erb	
+app/views/me/tickets/provisions.html.erb	html	GET /me/tickets/provisions	app/views/me/tickets/_status_chip.html.erb app/views/me/tickets/_wizard_nav.html.erb	
+app/views/me/tickets/review.html.erb	html	GET /me/tickets/review	app/views/me/tickets/_wizard_nav.html.erb	
+app/views/me/tickets/sap.html.erb	html	GET /me/tickets/sap	app/views/me/tickets/_contact_ticketing.html.erb app/views/me/tickets/_section_header.html.erb app/views/me/tickets/_status_chip.html.erb app/views/me/tickets/_wizard_nav.html.erb	
+app/views/me/tickets/sap_so.html.erb	html	GET /me/tickets/sap-so	app/views/me/tickets/_contact_ticketing.html.erb app/views/me/tickets/_wizard_nav.html.erb	
+app/views/me/tickets/ticket.html.erb	html	GET /me/tickets/ticket	app/views/me/tickets/_claim_buttons.html.erb app/views/me/tickets/_contact_ticketing.html.erb app/views/me/tickets/_status_chip.html.erb app/views/me/tickets/_wizard_nav.html.erb	
+app/views/me/tickets/vehicle_pass.html.erb	html	GET /me/tickets/vehicle-pass	app/views/me/tickets/_status_chip.html.erb app/views/me/tickets/_wizard_nav.html.erb	
+app/views/me/timesheet/edit.html.erb	html	GET /me/timesheet/manage/:id/edit	app/views/common/_timesheet_notes.html.erb app/views/common/timesheet/edit.html.erb	
+app/views/me/timesheet/final_confirmation.html.erb	html	GET /me/timesheet/manage/final-confirmation		
+app/views/me/timesheet/index.html.erb	html	GET /me/timesheet; GET /me/timesheet/manage	app/views/common/_entry_card_grid.html.erb app/views/common/_icon_block.html.erb app/views/common/_timesheet_confirm.html.erb app/views/common/_timesheet_notes.html.erb app/views/common/timesheet/_entry_with_action.html.erb app/views/common/timesheet/_listing.html.erb app/views/common/timesheet/_listing_with_actions.html.erb app/views/common/timesheet/index.html.erb	
+app/views/me/vehicles_dashboard/index.html.erb	html	GET /me/vehicles	app/views/common/_status_medallion.html.erb app/views/me/vehicles_dashboard/_mvr_info.html.erb app/views/me/vehicles_dashboard/_mvr_status_approved.html.erb app/views/me/vehicles_dashboard/_mvr_status_eligible.html.erb app/views/me/vehicles_dashboard/_pvr_info.html.erb	
+app/views/me/vehicles_dashboard/mvr_submit.html.erb	html	GET /me/vehicles/mvr-submit		
+app/views/me/work_history/index.html.erb	html	GET /me/timesheet/work-history	app/views/common/work_history/_matrix.html.erb	
+app/views/mentoring/alpha_acceptance_sheets/index.html.erb	html	GET /mentoring/alpha-acceptance-sheets		
+app/views/mentoring/alpha_acceptance_sheets/print_sheets.html.erb	html	GET /mentoring/alpha-acceptance-sheets/print		
+app/views/mentoring/alpha_mentor_assignments/index.html.erb	html	GET /mentoring/alpha-mentor-assignments		
+app/views/mentoring/alpha_mentor_assignments/print_sheet.html.erb	html	GET /mentoring/alpha-mentor-assignments/print		
+app/views/mentoring/alpha_pods/index.html.erb	html	GET /mentoring/alpha-pods	app/views/common/mentoring/_alpha_shift_card.html.erb app/views/common/mentoring/_shift_card.html.erb	
+app/views/mentoring/alpha_pods/people/edit.html.erb	html	GET /mentoring/alpha-pods/:slot_id/pods/:pod_id/people/:person_id/edit		
+app/views/mentoring/alpha_pods/people/new.html.erb	html	GET /mentoring/alpha-pods/:slot_id/pods/:pod_id/people/new	app/views/mentoring/alpha_pods/people/_pool.html.erb	
+app/views/mentoring/alpha_pods/print_sheet.html.erb	html	GET /mentoring/alpha-pods/:slot_id/print		
+app/views/mentoring/alpha_pods/show.html.erb	html	GET /mentoring/alpha-pods/:slot_id	app/views/mentoring/alpha_pods/_board.html.erb app/views/mentoring/alpha_pods/_pod_card.html.erb	
+app/views/mentoring/alpha_pods/unavailable.html.erb	html			
+app/views/mentoring/alpha_schedule/apparel.html.erb	html	GET /mentoring/alpha-schedule/:slot_id/apparel	app/views/mentoring/alpha_schedule/_print_screen_nav.html.erb app/views/mentoring/alpha_schedule/_sheet_masthead.html.erb	
+app/views/mentoring/alpha_schedule/index.html.erb	html	GET /mentoring/alpha-schedule	app/views/common/mentoring/_alpha_shift_card.html.erb app/views/common/mentoring/_shift_card.html.erb	
+app/views/mentoring/alpha_schedule/info_sheet.html.erb	html	GET /mentoring/alpha-schedule/:slot_id/info-sheet	app/views/mentoring/alpha_schedule/_print_screen_nav.html.erb	
+app/views/mentoring/alpha_schedule/no_alphas.html.erb	html	GET /mentoring/alpha-schedule/:slot_id/no-alphas		
+app/views/mentoring/alpha_schedule/rosters/new.html.erb	html	GET /mentoring/alpha-schedule/:slot_id/people/new	app/views/mentoring/alpha_schedule/rosters/_dialog.html.erb	
+app/views/mentoring/alpha_schedule/show.html.erb	html	GET /mentoring/alpha-schedule/:slot_id		
+app/views/mentoring/alpha_schedule/signup_sheet.html.erb	html	GET /mentoring/alpha-schedule/:slot_id/signup-sheet	app/views/mentoring/alpha_schedule/_print_screen_nav.html.erb app/views/mentoring/alpha_schedule/_sheet_masthead.html.erb	
+app/views/mentoring/alpha_signout/index.html.erb	html	GET /mentoring/alpha-signout	app/views/common/mentoring/_alpha_shift_card.html.erb app/views/common/mentoring/_shift_card.html.erb app/views/mentoring/alpha_signout/_on_duty_table.html.erb	
+app/views/mentoring/alpha_status/index.html.erb	html	GET /mentoring/alpha-status	app/views/common/unified_flagging/_history.html.erb app/views/common/unified_flagging/_lead_legend.html.erb app/views/common/unified_flagging/_list_row.html.erb app/views/common/unified_flagging/_name_line.html.erb app/views/common/unified_flagging/_note_buttons.html.erb app/views/common/unified_flagging/_rank_legend.html.erb app/views/common/unified_flagging/_review_legend.html.erb app/views/common/unified_flagging/_review_list.html.erb app/views/common/unified_flagging/_review_pane.html.erb app/views/common/unified_flagging/_review_workspace.html.erb app/views/common/unified_flagging/_signal_line.html.erb app/views/person/unified_flagging/_note.html.erb	
+app/views/mentoring/alphas_convert/index.html.erb	html	GET /mentoring/alphas-convert	app/views/mentoring/alphas_convert/_section.html.erb	
+app/views/mentoring/convert_prospectives/index.html.erb	html	GET /mentoring/convert-prospectives	app/views/common/unified_flagging/_detail_frame.html.erb app/views/common/unified_flagging/_rank_legend.html.erb	
+app/views/mentoring/post_season_summary/index.html.erb	html	GET /mentoring/post-season-summary	app/views/common/unified_flagging/_history.html.erb app/views/common/unified_flagging/_lead_legend.html.erb app/views/common/unified_flagging/_list_row.html.erb app/views/common/unified_flagging/_name_line.html.erb app/views/common/unified_flagging/_note_buttons.html.erb app/views/common/unified_flagging/_personnel_warning.html.erb app/views/common/unified_flagging/_rank_legend.html.erb app/views/common/unified_flagging/_review_legend.html.erb app/views/common/unified_flagging/_review_list.html.erb app/views/common/unified_flagging/_review_pane.html.erb app/views/common/unified_flagging/_review_workspace.html.erb app/views/common/unified_flagging/_signal_line.html.erb app/views/person/unified_flagging/_note.html.erb	
+app/views/mentoring/potential_alphas/index.html.erb	html	GET /mentoring/potential-alphas	app/views/common/unified_flagging/_history.html.erb app/views/common/unified_flagging/_lead_legend.html.erb app/views/common/unified_flagging/_list_row.html.erb app/views/common/unified_flagging/_name_line.html.erb app/views/common/unified_flagging/_note_buttons.html.erb app/views/common/unified_flagging/_personnel_warning.html.erb app/views/common/unified_flagging/_rank_legend.html.erb app/views/common/unified_flagging/_review_legend.html.erb app/views/common/unified_flagging/_review_list.html.erb app/views/common/unified_flagging/_review_pane.html.erb app/views/common/unified_flagging/_review_workspace.html.erb app/views/common/unified_flagging/_signal_line.html.erb app/views/person/unified_flagging/_note.html.erb	
+app/views/mentoring/shift_report/index.html.erb	html	GET /mentoring/shift-report	app/views/common/mentoring/_alpha_shift_card.html.erb app/views/common/mentoring/_shift_card.html.erb app/views/mentoring/shift_report/_group_positions.html.erb app/views/mentoring/shift_report/_people_table.html.erb	
+app/views/mentoring/surveys/index.html.erb	html	GET /mentoring/surveys	app/views/common/surveys/_survey_name.html.erb app/views/common/surveys/_survey_table.html.erb	
+app/views/mentoring/surveys/report.html.erb	html	GET /mentoring/surveys/:survey_id/reports/:report_id	app/views/common/surveys/_answers.html.erb app/views/common/surveys/_question.html.erb app/views/common/surveys/_ratings_table.html.erb app/views/common/surveys/_session_label.html.erb app/views/common/surveys/report.html.erb	
+app/views/mentoring/surveys/trainer.html.erb	html	GET /mentoring/surveys/:survey_id/mentors/:person_id	app/views/common/surveys/_answers.html.erb app/views/common/surveys/_question.html.erb app/views/common/surveys/_ratings_table.html.erb app/views/common/surveys/_session_label.html.erb app/views/common/surveys/trainer.html.erb	
+app/views/people/bulk_lookup/index.html.erb	html	GET /people/bulk-lookup	app/views/people/bulk_lookup/_export_form.html.erb app/views/people/shared/_privacy_notice.html.erb	
+app/views/people/create_account/new.html.erb	html	GET /people/create-account	app/views/common/_legal_name_fields.html.erb app/views/common/_mailing_address_fields.html.erb	
+app/views/people/languages_known/index.html.erb	html	GET /people/languages-known	app/views/people/languages_known/_language_group.html.erb	
+app/views/people/languages_known/show.html.erb	html	GET /people/languages-known/*language		
+app/views/people/people_by_location/country.html.erb	html	GET /people/people-by-location/country/:country	app/views/common/_checkbox_grid.html.erb app/views/common/_checkbox_tile.html.erb app/views/people/people_by_location/_filter_fields.html.erb app/views/people/people_by_location/_people_table.html.erb app/views/people/people_by_location/_status_notice.html.erb app/views/people/shared/_privacy_notice.html.erb	
+app/views/people/people_by_location/index.html.erb	html	GET /people/people-by-location	app/views/common/_checkbox_grid.html.erb app/views/common/_checkbox_tile.html.erb app/views/people/people_by_location/_country_group.html.erb app/views/people/people_by_location/_filter_fields.html.erb app/views/people/people_by_location/_status_notice.html.erb app/views/people/shared/_privacy_notice.html.erb	
+app/views/people/people_by_status/index.html.erb	html	GET /people/people-by-status		
+app/views/people/people_by_status/show.html.erb	html	GET /people/people-by-status/:status		
+app/views/people/retention_report/index.html.erb	html	GET /people/retention-report	app/views/common/_skipped_years_pair.html.erb	
+app/views/people/search/index.html.erb	html	GET /people/search	app/views/common/_checkbox_grid.html.erb app/views/common/_checkbox_tile.html.erb	
+app/views/people/status_change_recommendations/index.html.erb	html	GET /people/status-change-recommendations		
+app/views/people/status_change_recommendations/show.html.erb	html	GET /people/status-change-recommendations/:group	app/views/people/status_change_recommendations/_filter_fields.html.erb app/views/people/status_change_recommendations/_table_head.html.erb app/views/people/status_change_recommendations/_table_row.html.erb	
+app/views/people/unified_flagging/index.html.erb	html	GET /people/unified-flagging	app/views/common/unified_flagging/_group_tiles.html.erb app/views/common/unified_flagging/_history.html.erb app/views/common/unified_flagging/_lead_legend.html.erb app/views/common/unified_flagging/_list_row.html.erb app/views/common/unified_flagging/_name_line.html.erb app/views/common/unified_flagging/_note_buttons.html.erb app/views/common/unified_flagging/_personnel_warning.html.erb app/views/common/unified_flagging/_rank_legend.html.erb app/views/common/unified_flagging/_review_legend.html.erb app/views/common/unified_flagging/_review_list.html.erb app/views/common/unified_flagging/_review_pane.html.erb app/views/common/unified_flagging/_review_workspace.html.erb app/views/common/unified_flagging/_signal_line.html.erb app/views/person/unified_flagging/_note.html.erb	
+app/views/person/access_documents/edit.html.erb	html	GET /person/:person_id/tickets-provisions/access-documents/:id/edit	app/views/person/access_documents/_form.html.erb	
+app/views/person/access_documents/history.html.erb	html	GET /person/:person_id/tickets-provisions/access-documents/:id/history		
+app/views/person/access_documents/new.html.erb	html	GET /person/:person_id/tickets-provisions/access-documents/new	app/views/person/access_documents/_form.html.erb	
+app/views/person/agreements/index.html.erb	html	GET /person/:person_id/agreements	app/views/person/agreements/_agreement_row.html.erb	
+app/views/person/applications/index.html.erb	html	GET /person/:person_id/applications		
+app/views/person/assets/index.html.erb	html	GET /person/:person_id/assets	app/views/common/assets/_checkout_form.html.erb app/views/common/assets/_duration_label.html.erb app/views/common/assets/_table.html.erb	
+app/views/person/available_sign_ups/create.turbo_stream.erb	turbo_stream	POST /person/:person_id/schedule/sign-ups/position/:position_id/slot/:slot_id	app/views/common/_entry_card_grid.html.erb app/views/common/available_sign_ups/_slot.html.erb app/views/common/available_sign_ups/create.turbo_stream.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/person/available_sign_ups/destroy.turbo_stream.erb	turbo_stream	DELETE /person/:person_id/schedule/sign-ups/position/:position_id/slot/:slot_id	app/views/common/_entry_card_grid.html.erb app/views/common/available_sign_ups/_slot.html.erb app/views/common/available_sign_ups/destroy.turbo_stream.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/person/available_sign_ups/index.html.erb	html	GET /person/:person_id/schedule/sign-ups	app/views/common/available_sign_ups/index.html.erb	
+app/views/person/available_sign_ups/show.html.erb	html	GET /person/:person_id/schedule/sign-ups/position/:position_id	app/views/common/_entry_card_grid.html.erb app/views/common/_hours_not_eligible.html.erb app/views/common/available_sign_ups/_slot.html.erb app/views/common/available_sign_ups/_slots.html.erb app/views/common/available_sign_ups/show.html.erb app/views/common/scheduling/_alpha_shift_info.html.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_overlapping_sign_ups_list.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/person/awards/edit.html.erb	html	GET /person/:person_id/awards/:id/edit	app/views/person/awards/_form.html.erb	
+app/views/person/awards/index.html.erb	html	GET /person/:person_id/awards	app/views/person/awards/_awards_table.html.erb	
+app/views/person/awards/new.html.erb	html	GET /person/:person_id/awards/new	app/views/person/awards/_form.html.erb	
+app/views/person/banners/edit.html.erb	html	GET /person/:person_id/banners/:id/edit	app/views/person/banners/_form.html.erb	
+app/views/person/banners/index.html.erb	html	GET /person/:person_id/banners		
+app/views/person/banners/new.html.erb	html	GET /person/:person_id/banners/new	app/views/person/banners/_form.html.erb	
+app/views/person/bmids/show.html.erb	html	GET /person/:person_id/bmid	app/views/common/bmids/_fields.html.erb app/views/common/bmids/_warnings.html.erb app/views/common/provisions/_list.html.erb app/views/person/provisions/_section.html.erb	
+app/views/person/callsigns/edit.html.erb	html	GET /person/:person_id/callsign/edit		
+app/views/person/certifications/edit.html.erb	html	GET /person/:person_id/certifications/:id/edit	app/views/person/certifications/_form.html.erb	
+app/views/person/certifications/index.html.erb	html	GET /person/:person_id/certifications		
+app/views/person/certifications/new.html.erb	html	GET /person/:person_id/certifications/new	app/views/person/certifications/_form.html.erb	
+app/views/person/certifications/show.html.erb	html	GET /person/:person_id/certifications/:id		
+app/views/person/dashboard/show.html.erb	html	GET /person/:person_id/dashboard	app/views/common/_dashboard_group.html.erb app/views/common/_dashboard_progress.html.erb app/views/common/_dashboard_section_header.html.erb app/views/common/_dashboard_step.html.erb app/views/me/dashboard/_dashboard_bonked.html.erb app/views/me/dashboard/_dashboard_document.html.erb app/views/me/dashboard/_dashboard_past_prospective.html.erb	
+app/views/person/external_ids/show.html.erb	html	GET /person/:person_id/external-ids		
+app/views/person/fka/edit.html.erb	html	GET /person/:person_id/fka/:id/edit	app/views/person/fka/_form.html.erb	
+app/views/person/fka/new.html.erb	html	GET /person/:person_id/fka/new	app/views/person/fka/_form.html.erb	
+app/views/person/intake_notes/edit.html.erb	html	GET /person/:person_id/unified-flagging/notes/:id/edit		
+app/views/person/intake_notes/new.html.erb	html	GET /person/:person_id/unified-flagging/notes/new	app/views/person/unified_flagging/_note.html.erb app/views/person/unified_flagging/_team_notes.html.erb	
+app/views/person/mail_log/index.html.erb	html	GET /person/:person_id/mail-log	app/views/common/mail_log/_legend.html.erb app/views/common/mail_log/_table.html.erb	
+app/views/person/membership_history/show.html.erb	html	GET /person/:person_id/membership/history		
+app/views/person/memberships/edit.html.erb	html	GET /person/:person_id/membership/edit	app/views/person/memberships/_position_checkbox.html.erb app/views/person/memberships/_position_group.html.erb app/views/person/memberships/_team_card.html.erb	
+app/views/person/mentoring/index.html.erb	html	GET /person/:person_id/mentoring	app/views/common/_photo_none.html.erb app/views/common/mentoring/_art_section.html.erb app/views/common/mentoring/_mentee_card.html.erb app/views/common/mentoring/index.html.erb	
+app/views/person/messages/index.html.erb	html	GET /person/:person_id/messages	app/views/common/messages/_compose_buttons.html.erb app/views/common/messages/_conversation_list.html.erb app/views/common/messages/_conversation_summary.html.erb app/views/common/messages/_folder_selector.html.erb app/views/common/messages/_list_frame.html.erb app/views/common/messages/_message_card.html.erb app/views/common/messages/_messages_panel.html.erb app/views/common/messages/_messages_panel_header.html.erb app/views/common/messages/_pane.html.erb app/views/common/messages/_reply_form.html.erb app/views/common/messages/_search_field.html.erb app/views/common/messages/_thread.html.erb app/views/common/messages/_workspace.html.erb app/views/common/messages/index.html.erb app/views/shared/_autocomplete.html.erb app/views/shared/_callsign_chip.html.erb app/views/shared/_frame_spinner.html.erb	
+app/views/person/messages/new.html.erb	html	GET /person/:person_id/messages/new	app/views/common/messages/_compose.html.erb app/views/common/messages/new.html.erb	
+app/views/person/messages/show.html.erb	html	GET /person/:person_id/messages/:id	app/views/common/messages/_compose_buttons.html.erb app/views/common/messages/_conversation_list.html.erb app/views/common/messages/_conversation_summary.html.erb app/views/common/messages/_folder_selector.html.erb app/views/common/messages/_list_frame.html.erb app/views/common/messages/_message_card.html.erb app/views/common/messages/_messages_panel.html.erb app/views/common/messages/_messages_panel_header.html.erb app/views/common/messages/_pane.html.erb app/views/common/messages/_reply_form.html.erb app/views/common/messages/_search_field.html.erb app/views/common/messages/_thread.html.erb app/views/common/messages/_workspace.html.erb app/views/common/messages/show.html.erb app/views/shared/_autocomplete.html.erb app/views/shared/_callsign_chip.html.erb app/views/shared/_frame_spinner.html.erb	
+app/views/person/missing_requests/edit.html.erb	html	GET /person/:person_id/timesheets/missing-requests/:id/edit	app/views/common/_time_warnings.html.erb app/views/common/_timesheet_notes.html.erb	
+app/views/person/missing_requests/new.html.erb	html	GET /person/:person_id/timesheets/missing-requests/new		
+app/views/person/missing_requests/show.html.erb	html	GET /person/:person_id/timesheets/missing-requests/:id	app/views/common/_timesheet_notes.html.erb	
+app/views/person/passkeys/index.html.erb	html	GET /person/:person_id/passkeys		
+app/views/person/passkeys/new.html.erb	html	GET /person/:person_id/passkeys/new		
+app/views/person/passwords/edit.html.erb	html	GET /person/:person_id/password		
+app/views/person/permissions/edit.html.erb	html	GET /person/:person_id/permissions		
+app/views/person/pogs/edit.html.erb	html	GET /person/:person_id/pogs/:id/edit	app/views/person/pogs/_form.html.erb	
+app/views/person/pogs/index.html.erb	html	GET /person/:person_id/pogs		
+app/views/person/pogs/new.html.erb	html	GET /person/:person_id/pogs/new	app/views/person/pogs/_form.html.erb	
+app/views/person/provisions/edit.html.erb	html	GET /person/:person_id/tickets-provisions/provisions/:id/edit	app/views/common/provisions/_form.html.erb app/views/common/provisions/edit.html.erb	
+app/views/person/provisions/new.html.erb	html	GET /person/:person_id/tickets-provisions/provisions/new	app/views/common/provisions/_form.html.erb app/views/common/provisions/new.html.erb	
+app/views/person/scheduling/index.html.erb	html	GET /person/:person_id/schedule	app/views/common/available_sign_ups/_training_months.html.erb app/views/common/schedule/_export_warning.html.erb app/views/common/schedule/_signed_up_row.html.erb app/views/common/schedule/index.html.erb app/views/common/scheduling/_burn_weekend_shift_recommendation.html.erb app/views/common/scheduling/_confirm_signup_removal.html.erb app/views/common/scheduling/_overlapping_sign_ups.html.erb app/views/common/scheduling/_overlapping_sign_ups_list.html.erb app/views/common/scheduling/_signup_blockers.html.erb app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/person/scheduling/log.html.erb	html	GET /person/:person_id/schedule/log	app/views/person/scheduling/_log_changes.html.erb	
+app/views/person/scheduling/signup_summary.html.erb	html	GET /person/:person_id/schedule/signup-summary	app/views/common/schedule/signup_summary.html.erb	
+app/views/person/sessions/index.html.erb	html	GET /person/:person_id/login-sessions		
+app/views/person/show.html.erb	html	GET /person/:id	app/views/common/_photo_none.html.erb app/views/person/_banners.html.erb app/views/person/_contact_details.html.erb app/views/person/_hero.html.erb app/views/person/_permissions.html.erb app/views/person/_photo.html.erb app/views/person/_summary_group_heading.html.erb app/views/person/_summary_strip.html.erb app/views/person/_teams_positions.html.erb app/views/person/_timestamp_value.html.erb	
+app/views/person/site_log/index.html.erb	html	GET /person/:person_id/site-log		
+app/views/person/status_history/index.html.erb	html	GET /person/:person_id/status-history		
+app/views/person/statuses/edit.html.erb	html	GET /person/:person_id/status/edit		
+app/views/person/swag/edit.html.erb	html	GET /person/:person_id/swag/:id/edit	app/views/person/swag/_form.html.erb	
+app/views/person/swag/index.html.erb	html	GET /person/:person_id/swag	app/views/common/_event_summary_counts.html.erb	
+app/views/person/swag/new.html.erb	html	GET /person/:person_id/swag/new	app/views/person/swag/_form.html.erb	
+app/views/person/tickets_provisions/dashboard.html.erb	html	GET /person/:person_id/tickets-provisions/dashboard	app/views/common/_icon_block.html.erb app/views/me/tickets/_announce.html.erb app/views/me/tickets/_claimed_overview.html.erb app/views/me/tickets/_closed.html.erb app/views/me/tickets/_faqs_section.html.erb app/views/me/tickets/_item_details.html.erb app/views/me/tickets/_landing.html.erb app/views/me/tickets/_off_season.html.erb app/views/me/tickets/_section_detail.html.erb app/views/me/tickets/_status_chip.html.erb app/views/me/tickets/_ticket_gift_conditions.html.erb app/views/me/tickets/_ticket_overview_item.html.erb	
+app/views/person/tickets_provisions/show.html.erb	html	GET /person/:person_id/tickets-provisions	app/views/common/provisions/_list.html.erb app/views/person/provisions/_section.html.erb	
+app/views/person/timesheets/backfill.html.erb	html	GET /person/:person_id/timesheets/backfill	app/views/common/_checkbox_tile.html.erb	
+app/views/person/timesheets/breakdown.html.erb	html	GET /person/:person_id/timesheets/breakdown	app/views/common/_event_summary_breakdown.html.erb app/views/common/_event_summary_counts.html.erb	
+app/views/person/timesheets/edit.html.erb	html	GET /person/:person_id/timesheets/:id/edit	app/views/common/_time_warnings.html.erb app/views/common/_timesheet_notes.html.erb app/views/person/timesheets/_desired_changes.html.erb app/views/person/timesheets/_log_entry_data.html.erb app/views/person/timesheets/_log_table.html.erb	
+app/views/person/timesheets/index.html.erb	html	GET /person/:person_id/timesheets	app/views/person/timesheets/_entries_table.html.erb app/views/person/timesheets/_missing_requests_table.html.erb	
+app/views/person/timesheets/log.html.erb	html	GET /person/:person_id/timesheets/log	app/views/person/timesheets/_log_entry_data.html.erb app/views/person/timesheets/_log_table.html.erb	
+app/views/person/timesheets/shift_manage.html.erb	html	GET /person/:person_id/shift-manage	app/views/common/shift_manage/_alerts.html.erb app/views/common/shift_manage/_check_in_out.html.erb app/views/common/shift_manage/_converted_modal.html.erb app/views/common/shift_manage/_on_duty.html.erb app/views/common/shift_manage/_start_shift.html.erb	
+app/views/person/training/index.html.erb	html	GET /person/:person_id/training	app/views/common/training/_education_detail.html.erb app/views/common/training/_online_course_status.html.erb app/views/common/training/_status_badge.html.erb app/views/person/training/_moodle_account.html.erb	
+app/views/person/unified_flagging/show.html.erb	html	GET /person/:person_id/unified-flagging	app/views/person/unified_flagging/_note.html.erb app/views/person/unified_flagging/_team_notes.html.erb app/views/person/unified_flagging/_training_notes.html.erb	
+app/views/person/vehicles/index.html.erb	html	GET /person/:person_id/vehicles	app/views/person/vehicles/_eligibility_list.html.erb	
+app/views/person/work_history/index.html.erb	html	GET /person/:person_id/work-history	app/views/common/work_history/_matrix.html.erb	
+app/views/pogs/administration/edit.html.erb	html	GET /pogs/administration/:id/edit		
+app/views/pogs/administration/index.html.erb	html	GET /pogs/administration		
+app/views/pogs/dashboard/index.html.erb	html	GET /pogs/dashboard	app/views/pogs/dashboard/_top_list.html.erb	
+app/views/profile/camp_edit.html.erb	html			
+app/views/profile/clothing_edit.html.erb	html			
+app/views/profile/emergency_contact_edit.html.erb	html			
+app/views/profile/identity_info_edit.html.erb	html			
+app/views/profile/mailing_address_edit.html.erb	html		app/views/common/_mailing_address_fields.html.erb	
+app/views/profile/show.html.erb	html		app/views/common/_photo_none.html.erb app/views/profile/_alerts.html.erb app/views/profile/_bmid.html.erb app/views/profile/_camp.html.erb app/views/profile/_clothing.html.erb app/views/profile/_emergency_contact.html.erb app/views/profile/_emergency_contact_denied.html.erb app/views/profile/_identity_info.html.erb app/views/profile/_languages.html.erb app/views/profile/_mailing_address.html.erb	
+app/views/profile_languages/edit.html.erb	html		app/views/profile_languages/_form.html.erb	
+app/views/profile_languages/index.html.erb	html			
+app/views/profile_languages/new.html.erb	html		app/views/profile_languages/_form.html.erb	
+app/views/profile_photos/crop.html.erb	html			
+app/views/profile_photos/new.html.erb	html			
+app/views/pwa/manifest.json.erb	json			
+app/views/quartermaster/alpha_shirts/index.html.erb	html	GET /quartermaster/alpha-shirts		
+app/views/quartermaster/events_rangered/index.html.erb	html	GET /quartermaster/events-rangered		
+app/views/quartermaster/freaking_years/index.html.erb	html	GET /quartermaster/freaking-years		
+app/views/quartermaster/freaking_years/show.html.erb	html	GET /quartermaster/freaking-years/:years		
+app/views/quartermaster/potential_shirts/index.html.erb	html	GET /quartermaster/potential-shirts		
+app/views/quartermaster/potential_swag/index.html.erb	html	GET /quartermaster/potential-swag		
+app/views/quartermaster/swag/edit.html.erb	html	GET /quartermaster/swag/:id/edit	app/views/quartermaster/swag/_form.html.erb	
+app/views/quartermaster/swag/index.html.erb	html	GET /quartermaster/swag		
+app/views/quartermaster/swag/new.html.erb	html	GET /quartermaster/swag/new	app/views/quartermaster/swag/_form.html.erb	
+app/views/quartermaster/swag/type.html.erb	html	GET /quartermaster/swag/type/:type		
+app/views/quartermaster/swag_distribution/index.html.erb	html	GET /quartermaster/swag-distribution	app/views/quartermaster/swag_distribution/_filters.html.erb	
+app/views/register/show.html.erb	html	GET /register	app/views/register/_questions.html.erb	
+app/views/scheduling/early_arrivals/index.html.erb	html	GET /scheduling/early-arrivals		
+app/views/scheduling/event_stats/index.html.erb	html	GET /scheduling/event-stats	app/views/scheduling/event_stats/_share_bar.html.erb	
+app/views/scheduling/flake_report/index.html.erb	html	GET /scheduling/flake-report		
+app/views/scheduling/flake_report/position.html.erb	html	GET /scheduling/flake-report/position/:position_id		
+app/views/scheduling/hq_forecast/burn_perimeters.html.erb	html	GET /scheduling/hq-forecast/burn-perimeters	app/views/scheduling/hq_forecast/_interval_field.html.erb app/views/scheduling/hq_forecast/_periods_table.html.erb	
+app/views/scheduling/hq_forecast/index.html.erb	html	GET /scheduling/hq-forecast	app/views/scheduling/hq_forecast/_interval_field.html.erb	
+app/views/scheduling/hq_forecast/people.html.erb	html	GET /scheduling/hq-forecast/people	app/views/scheduling/hq_forecast/_people_dialog.html.erb	
+app/views/scheduling/hq_forecast/shift.html.erb	html	GET /scheduling/hq-forecast/shifts/:slot_id	app/views/scheduling/hq_forecast/_people_dialog.html.erb	
+app/views/scheduling/no_shows_report/index.html.erb	html	GET /scheduling/no-shows-report		
+app/views/scheduling/no_shows_report/position.html.erb	html	GET /scheduling/no-shows-report/position/:position_id		
+app/views/scheduling/position_credit_copies/new.html.erb	html	GET /scheduling/position-credits/copy		
+app/views/scheduling/position_credits/edit.html.erb	html	GET /scheduling/position-credits/:id/edit	app/views/scheduling/position_credits/_form.html.erb	
+app/views/scheduling/position_credits/index.html.erb	html	GET /scheduling/position-credits		
+app/views/scheduling/position_credits/new.html.erb	html	GET /scheduling/position-credits/new	app/views/scheduling/position_credits/_form.html.erb	
+app/views/scheduling/position_credits/position.html.erb	html	GET /scheduling/position-credits/position/:position_id		
+app/views/scheduling/position_credits/timeline.html.erb	html	GET /scheduling/position-credits/position/:position_id/timeline		
+app/views/scheduling/sandman_qualified/index.html.erb	html	GET /scheduling/sandman-qualified		
+app/views/scheduling/schedule_by_callsign/index.html.erb	html	GET /scheduling/schedule-by-callsign		
+app/views/scheduling/schedule_by_callsign/person.html.erb	html	GET /scheduling/schedule-by-callsign/person/:person_id		
+app/views/scheduling/schedule_by_position/index.html.erb	html	GET /scheduling/schedule-by-position		
+app/views/scheduling/schedule_by_position/position.html.erb	html	GET /scheduling/schedule-by-position/position/:position_id		
+app/views/scheduling/shift_coverage/index.html.erb	html	GET /scheduling/shift-coverage		
+app/views/scheduling/shift_drop_report/index.html.erb	html	GET /scheduling/shift-drop	app/views/scheduling/shift_drop_report/_window_filter.html.erb	
+app/views/scheduling/shift_drop_report/position.html.erb	html	GET /scheduling/shift-drop/position/:position_id	app/views/scheduling/shift_drop_report/_window_filter.html.erb	
+app/views/scheduling/shift_lead/index.html.erb	html	GET /scheduling/shift-lead	app/views/scheduling/shift_lead/_below_min.html.erb app/views/scheduling/shift_lead/_callsign.html.erb app/views/scheduling/shift_lead/_filters.html.erb app/views/scheduling/shift_lead/_legend.html.erb app/views/scheduling/shift_lead/_picker.html.erb app/views/scheduling/shift_lead/_roster.html.erb app/views/scheduling/shift_lead/_sort_control.html.erb app/views/scheduling/shift_lead/_status_band.html.erb	
+app/views/scheduling/shift_lead/print_sheet.html.erb	html	GET /scheduling/shift-lead/print		
+app/views/scheduling/shift_signups/index.html.erb	html	GET /scheduling/shift-signups	app/views/scheduling/shift_signups/_fill_meter.html.erb app/views/scheduling/shift_signups/_legend.html.erb	
+app/views/scheduling/shift_signups/position.html.erb	html	GET /scheduling/shift-signups/position/:position_id	app/views/scheduling/shift_signups/_fill_meter.html.erb app/views/scheduling/shift_signups/_legend.html.erb	
+app/views/scheduling/slot_bulk_edits/new.html.erb	html	GET /scheduling/slots/position/:position_id/bulk-edit	app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/scheduling/slot_copies/new.html.erb	html	GET /scheduling/slots/copy		
+app/views/scheduling/slots/edit.html.erb	html	GET /scheduling/slots/:id/edit	app/views/scheduling/slots/_form.html.erb app/views/scheduling/slots/_link_fieldsets.html.erb	
+app/views/scheduling/slots/index.html.erb	html	GET /scheduling/slots		
+app/views/scheduling/slots/link_options.html.erb	html	GET /scheduling/slots/link-options	app/views/scheduling/slots/_link_fieldsets.html.erb	
+app/views/scheduling/slots/new.html.erb	html	GET /scheduling/slots/new	app/views/scheduling/slots/_form.html.erb app/views/scheduling/slots/_link_fieldsets.html.erb	
+app/views/scheduling/slots/position.html.erb	html	GET /scheduling/slots/position/:position_id	app/views/common/scheduling/_slot_additional_info.html.erb	
+app/views/sessions/forgot.html.erb	html	GET /forgot	app/views/sessions/_footer_link.html.erb app/views/sessions/_heading.html.erb	
+app/views/sessions/new.html.erb	html	GET /	app/views/sessions/_passkey_door.html.erb app/views/sessions/_password_form.html.erb app/views/sessions/_sso_door.html.erb	
+app/views/sessions/reset_password_confirmation.html.erb	html		app/views/sessions/_footer_link.html.erb app/views/sessions/_heading.html.erb	
+app/views/sessions/reset_token.html.erb	html	GET /reset-token	app/views/sessions/_footer_link.html.erb app/views/sessions/_heading.html.erb	
+app/views/shift_operations/bulk_sign_in_out/index.html.erb	html	GET /shift-operations/bulk-sign-in-out; POST /shift-operations/bulk-sign-in-out/edit	app/views/shift_operations/bulk_sign_in_out/_formats.html.erb	
+app/views/shift_operations/bulk_sign_in_out/preview.html.erb	html	POST /shift-operations/bulk-sign-in-out/preview		
+app/views/shift_operations/cruise_direction/index.html.erb	html	GET /shift-operations/cruise-direction	app/views/shift_operations/cruise_direction/_board.html.erb app/views/shift_operations/cruise_direction/_pickers.html.erb app/views/shift_operations/cruise_direction/_pod.html.erb app/views/shift_operations/cruise_direction/_stats.html.erb	
+app/views/shift_operations/cruise_direction/people/edit.html.erb	html	GET /shift-operations/cruise-direction/pods/:pod_id/people/:person_id/edit		
+app/views/shift_operations/cruise_direction/people/new.html.erb	html	GET /shift-operations/cruise-direction/pods/:pod_id/people/new	app/views/shift_operations/cruise_direction/people/_dialog.html.erb app/views/shift_operations/cruise_direction/people/_pool.html.erb	
+app/views/shift_operations/cruise_direction/pods/edit.html.erb	html	GET /shift-operations/cruise-direction/pods/:id/edit	app/views/shift_operations/cruise_direction/pods/_dialog.html.erb app/views/shift_operations/cruise_direction/pods/_form.html.erb	
+app/views/shift_operations/cruise_direction/pods/new.html.erb	html	GET /shift-operations/cruise-direction/pods/new	app/views/shift_operations/cruise_direction/pods/_form.html.erb	
+app/views/shift_operations/cruise_direction/unavailable.html.erb	html			
+app/views/shift_operations/mass_signout/index.html.erb	html	GET /shift-operations/mass-signout		
+app/views/shift_operations/payroll_export/index.html.erb	html	GET /shift-operations/payroll-export	app/views/common/_checkbox_row.html.erb app/views/shift_operations/payroll_export/_person.html.erb	
+app/views/shift_operations/payroll_missing_id/index.html.erb	html	GET /shift-operations/payroll-missing-id	app/views/shift_operations/payroll_missing_id/_section.html.erb	
+app/views/shift_operations/roc_photo_board/board.html.erb	html	GET /shift-operations/roc-photo-board/board	app/views/shift_operations/roc_photo_board/_board.html.erb app/views/shift_operations/roc_photo_board/_photo.html.erb	
+app/views/shift_operations/roc_photo_board/index.html.erb	html	GET /shift-operations/roc-photo-board	app/views/shift_operations/roc_photo_board/_board.html.erb app/views/shift_operations/roc_photo_board/_photo.html.erb	
+app/views/shift_operations/rollcall/index.html.erb	html	GET /shift-operations/rollcall		
+app/views/shift_operations/rollcall/sign_in.html.erb	html	GET /shift-operations/rollcall/sign-in	app/views/shift_operations/rollcall/_count.html.erb app/views/shift_operations/rollcall/_pickers.html.erb app/views/shift_operations/rollcall/_roster.html.erb app/views/shift_operations/rollcall/_row.html.erb app/views/shift_operations/rollcall/_set_time_dialog.html.erb	
+app/views/shift_operations/rollcall/sign_out.html.erb	html	GET /shift-operations/rollcall/sign-out	app/views/shift_operations/rollcall/_count.html.erb app/views/shift_operations/rollcall/_pickers.html.erb app/views/shift_operations/rollcall/_roster.html.erb app/views/shift_operations/rollcall/_row.html.erb	
+app/views/sso/hand_back.html.erb	html		app/views/sessions/_heading.html.erb	
+app/views/sso/invalid_request.html.erb	html		app/views/sessions/_footer_link.html.erb app/views/sessions/_heading.html.erb	
+app/views/teams_positions/bulk_positions/index.html.erb	html	GET /teams-positions/bulk-positions; POST /teams-positions/bulk-positions/edit		
+app/views/teams_positions/bulk_positions/preview.html.erb	html	POST /teams-positions/bulk-positions/preview		
+app/views/teams_positions/bulk_teams/index.html.erb	html	GET /teams-positions/bulk-teams; POST /teams-positions/bulk-teams/edit		
+app/views/teams_positions/bulk_teams/preview.html.erb	html	POST /teams-positions/bulk-teams/preview		
+app/views/teams_positions/membership_report/index.html.erb	html	GET /teams-positions/membership-report		
+app/views/teams_positions/membership_report/show.html.erb	html	GET /teams-positions/membership-report/:team_id	app/views/teams_positions/membership_report/_roster.html.erb	
+app/views/teams_positions/position_grants/index.html.erb	html	GET /teams-positions/position-grants		
+app/views/teams_positions/position_grants/show.html.erb	html	GET /teams-positions/position-grants/:position_id		
+app/views/teams_positions/position_lineups/edit.html.erb	html	GET /teams-positions/position-lineups/:id/edit	app/views/common/_checkbox_row.html.erb app/views/teams_positions/position_lineups/_form.html.erb	
+app/views/teams_positions/position_lineups/index.html.erb	html	GET /teams-positions/position-lineups		
+app/views/teams_positions/position_lineups/new.html.erb	html	GET /teams-positions/position-lineups/new	app/views/common/_checkbox_row.html.erb app/views/teams_positions/position_lineups/_form.html.erb	
+app/views/teams_positions/position_records/edit.html.erb	html	GET /teams-positions/position-records/:id/edit	app/views/common/_checkbox_row.html.erb app/views/teams_positions/position_records/_form.html.erb	
+app/views/teams_positions/position_records/index.html.erb	html	GET /teams-positions/position-records		
+app/views/teams_positions/position_records/new.html.erb	html	GET /teams-positions/position-records/new	app/views/common/_checkbox_row.html.erb app/views/teams_positions/position_records/_form.html.erb	
+app/views/teams_positions/position_sanity_checker/check.html.erb	html	GET /teams-positions/position-sanity-checker/:check	app/views/teams_positions/position_sanity_checker/_findings_table.html.erb app/views/teams_positions/position_sanity_checker/_results.html.erb	
+app/views/teams_positions/position_sanity_checker/index.html.erb	html	GET /teams-positions/position-sanity-checker		
+app/views/teams_positions/roster_management/index.html.erb	html	GET /teams-positions/roster-management		
+app/views/teams_positions/roster_management/preview.html.erb	html	POST /teams-positions/roster-management/:team_id/preview		
+app/views/teams_positions/roster_management/show.html.erb	html	GET /teams-positions/roster-management/:team_id		
+app/views/teams_positions/special_teams_hours/index.html.erb	html	GET /teams-positions/special-teams-hours	app/views/common/_checkbox_row.html.erb app/views/common/_skipped_years_pair.html.erb	
+app/views/teams_positions/team_documents/edit.html.erb	html	GET /teams-positions/team-documents/:team_id/edit	app/views/common/documents/_body_field.html.erb app/views/common/resource_documents/_form.html.erb app/views/common/resource_documents/edit.html.erb	
+app/views/teams_positions/team_documents/index.html.erb	html	GET /teams-positions/team-documents		
+app/views/teams_positions/team_documents/show.html.erb	html	GET /teams-positions/team-documents/:team_id	app/views/common/resource_documents/_document.html.erb	
+app/views/teams_positions/team_records/edit.html.erb	html	GET /teams-positions/team-records/:id/edit	app/views/common/_checkbox_row.html.erb app/views/teams_positions/team_records/_form.html.erb	
+app/views/teams_positions/team_records/index.html.erb	html	GET /teams-positions/team-records		
+app/views/teams_positions/team_records/new.html.erb	html	GET /teams-positions/team-records/new	app/views/common/_checkbox_row.html.erb app/views/teams_positions/team_records/_form.html.erb	
+app/views/test_harness/autocomplete_fixture.html.erb	html		app/views/shared/_autocomplete.html.erb	
+app/views/test_harness/search_bar_fixture.html.erb	html		app/views/application/_dialog_status.html.erb app/views/application/_search_bar_placeholder.html.erb app/views/shared/_autocomplete.html.erb	
+app/views/ticketing/access_documents/index.html.erb	html	GET /ticketing/access-documents	app/views/ticketing/access_documents/_summary_error.html.erb app/views/ticketing/access_documents/_summary_filter_bar.html.erb app/views/ticketing/access_documents/_summary_legend.html.erb app/views/ticketing/access_documents/_summary_missing.html.erb app/views/ticketing/access_documents/_summary_notes.html.erb app/views/ticketing/access_documents/_summary_special.html.erb app/views/ticketing/access_documents/_summary_value.html.erb	
+app/views/ticketing/access_documents/records.html.erb	html	GET /ticketing/access-documents/records	app/views/ticketing/access_documents/_records_filter_bar.html.erb	
+app/views/ticketing/claimed_with_no_signups/index.html.erb	html	GET /ticketing/claimed-with-no-signups	app/views/ticketing/claimed_with_no_signups/_filter_bar.html.erb	
+app/views/ticketing/expiring/index.html.erb	html	GET /ticketing/expiring	app/views/ticketing/expiring/_filter_bar.html.erb	
+app/views/ticketing/maintenance/index.html.erb	html	GET /ticketing/maintenance		
+app/views/ticketing/maintenance/preview.html.erb	html	GET /ticketing/maintenance/:task	app/views/common/ticketing_maintenance/_results_table.html.erb	
+app/views/ticketing/maintenance/results.html.erb	html		app/views/common/ticketing_maintenance/_results_table.html.erb	
+app/views/ticketing/provisions/edit.html.erb	html	GET /ticketing/provisions/:id/edit	app/views/common/provisions/_form.html.erb app/views/common/provisions/edit.html.erb	
+app/views/ticketing/provisions/index.html.erb	html	GET /ticketing/provisions	app/views/ticketing/provisions/_filter_bar.html.erb	
+app/views/ticketing/sap_candidates/index.html.erb	html	GET /ticketing/sap-candidates		
+app/views/ticketing/statistics/index.html.erb	html	GET /ticketing/statistics	app/views/ticketing/statistics/_pipeline_card.html.erb	
+app/views/ticketing/trs_export/export.html.erb	html	POST /ticketing/trs-export/export	app/views/ticketing/trs_export/_rows_table.html.erb app/views/ticketing/trs_export/_skipped.html.erb	
+app/views/ticketing/trs_export/index.html.erb	html	GET /ticketing/trs-export	app/views/ticketing/trs_export/_rows_table.html.erb	
+app/views/ticketing/trs_export/mark_submitted.html.erb	html	POST /ticketing/trs-export/mark-submitted	app/views/common/ticketing_maintenance/_results_table.html.erb app/views/ticketing/trs_export/_skipped.html.erb	
+app/views/ticketing/unclaimed_with_signups/index.html.erb	html	GET /ticketing/unclaimed-with-signups	app/views/ticketing/unclaimed_with_signups/_filter_bar.html.erb	
+app/views/ticketing/unsubmit_provisions/index.html.erb	html	GET /ticketing/unsubmit-provisions		
+app/views/ticketing/unsubmit_provisions/results.html.erb	html		app/views/common/ticketing_maintenance/_results_table.html.erb	
+app/views/timesheets/correction_requests/index.html.erb	html	GET /timesheets/correction-requests		
+app/views/timesheets/correction_stats/index.html.erb	html	GET /timesheets/correction-stats	app/views/timesheets/correction_stats/_decision_card.html.erb app/views/timesheets/correction_stats/_top_list.html.erb	
+app/views/timesheets/early_late_checkins/index.html.erb	html	GET /timesheets/early-late-checkins	app/views/timesheets/early_late_checkins/_section.html.erb	
+app/views/timesheets/forced_shift_start/index.html.erb	html	GET /timesheets/forced-shift-start		
+app/views/timesheets/hours_credits/index.html.erb	html	GET /timesheets/hours-credits		
+app/views/timesheets/on_duty/index.html.erb	html	GET /timesheets/on-duty		
+app/views/timesheets/sanity_checker/check.html.erb	html	GET /timesheets/sanity-checker/:check	app/views/timesheets/sanity_checker/_duplicate_alphas.html.erb app/views/timesheets/sanity_checker/_entries.html.erb app/views/timesheets/sanity_checker/_overlapping.html.erb	
+app/views/timesheets/sanity_checker/index.html.erb	html	GET /timesheets/sanity-checker		
+app/views/timesheets/timesheet_by_position/index.html.erb	html	GET /timesheets/timesheet-by-position		
+app/views/timesheets/timesheet_by_position/position.html.erb	html	GET /timesheets/timesheet-by-position/position/:position_id		
+app/views/timesheets/timesheet_slot_repair/index.html.erb	html	GET /timesheets/timesheet-slot-repair	app/views/timesheets/timesheet_slot_repair/_group.html.erb app/views/timesheets/timesheet_slot_repair/_results.html.erb app/views/timesheets/timesheet_slot_repair/_shift.html.erb	
+app/views/timesheets/timesheet_totals_report/index.html.erb	html	GET /timesheets/timesheet-totals-report		
+app/views/timesheets/timesheet_totals_report/person.html.erb	html	GET /timesheets/timesheet-totals-report/person/:person_id		
+app/views/timesheets/timesheet_unconfirmed/index.html.erb	html	GET /timesheets/timesheet-unconfirmed	app/views/timesheets/timesheet_unconfirmed/_group.html.erb	
+app/views/timesheets/timesheets_by_callsign/index.html.erb	html	GET /timesheets/timesheets-by-callsign		
+app/views/timesheets/timesheets_by_callsign/person.html.erb	html	GET /timesheets/timesheets-by-callsign/person/:person_id		
+app/views/timesheets/top_hour_earners/index.html.erb	html	GET /timesheets/top-hour-earners	app/views/common/_skipped_years_pair.html.erb	
+app/views/training/all_notes/index.html.erb	html	GET /training/:slug/all-notes	app/views/training/all_notes/_notes.html.erb app/views/training/all_notes/_session.html.erb	
+app/views/training/capacity/index.html.erb	html	GET /training/:slug/capacity	app/views/training/capacity/_fill_meter.html.erb	
+app/views/training/completed_training/index.html.erb	html	GET /training/:slug/completed-training		
+app/views/training/completed_training/show.html.erb	html	GET /training/:slug/completed-training/:slot_id	app/views/training/completed_training/_pager.html.erb app/views/training/completed_training/_people_table.html.erb	
+app/views/training/mentees/destroy.turbo_stream.erb	turbo_stream	DELETE /training/:slug/mentees/:person_id		
+app/views/training/mentees/index.html.erb	html	GET /training/:slug/mentees	app/views/training/mentees/_row.html.erb	
+app/views/training/mentees/restore.turbo_stream.erb	turbo_stream	POST /training/:slug/mentees/:person_id/restore		
+app/views/training/mentoring/assignments/index.html.erb	html	GET /training/:slug/mentoring/assignment	app/views/common/mentoring/_shift_card.html.erb app/views/training/mentoring/_missing_positions.html.erb app/views/training/mentoring/_shift_rule.html.erb app/views/training/mentoring/assignments/_shift_card.html.erb app/views/training/mentoring/assignments/_upcoming_card.html.erb	
+app/views/training/mentoring/assignments/show.html.erb	html	GET /training/:slug/mentoring/assignment/:key	app/views/training/mentoring/assignments/_general_notes.html.erb app/views/training/mentoring/assignments/_general_notes_list.html.erb app/views/training/mentoring/assignments/_grant_choices.html.erb app/views/training/mentoring/assignments/_other_shifts.html.erb app/views/training/mentoring/assignments/_pass_dialog.html.erb app/views/training/mentoring/assignments/_promote_dialog.html.erb app/views/training/mentoring/assignments/_roster.html.erb app/views/training/mentoring/assignments/_upcoming.html.erb	
+app/views/training/mentoring/general_notes/edit.html.erb	html	GET /training/:slug/mentoring/general-notes/:id/edit	app/views/training/mentoring/general_notes/_dialog.html.erb	
+app/views/training/mentoring/landing/index.html.erb	html	GET /training/:slug/mentoring	app/views/training/mentoring/_missing_positions.html.erb app/views/training/mentoring/_shift_rule.html.erb	
+app/views/training/mentoring/multiple_shifts/index.html.erb	html	GET /training/:slug/mentoring/multiple-shifts	app/views/training/mentoring/_missing_positions.html.erb	
+app/views/training/mentoring/verdicts/index.html.erb	html	GET /training/:slug/mentoring/verdicts	app/views/training/mentoring/_missing_positions.html.erb app/views/training/mentoring/verdicts/_mentor_shifts.html.erb	
+app/views/training/multiple_enrollments/index.html.erb	html	GET /training/:slug/multiple-enrollments		
+app/views/training/online_course_progress/index.html.erb	html	GET /training/:slug/online-course-progress		
+app/views/training/resources/edit.html.erb	html	GET /training/:slug/resources/edit	app/views/common/documents/_body_field.html.erb app/views/common/resource_documents/_form.html.erb app/views/common/resource_documents/edit.html.erb	
+app/views/training/resources/show.html.erb	html	GET /training/:slug/resources	app/views/common/resource_documents/_document.html.erb	
+app/views/training/sessions/graduations/show.html.erb	html	GET /training/:slug/session/:slot_id/graduation	app/views/training/sessions/graduations/_dialog.html.erb	
+app/views/training/sessions/index.html.erb	html	GET /training/:slug	app/views/training/sessions/_session_table.html.erb app/views/training/sessions/_trainer_slot_rule.html.erb	
+app/views/training/sessions/notes/edit.html.erb	html	GET /training/:slug/session/:slot_id/notes/:note_id/edit	app/views/training/sessions/notes/_dialog.html.erb	
+app/views/training/sessions/rosters/new.html.erb	html	GET /training/:slug/session/:slot_id/roster/new	app/views/training/sessions/rosters/_dialog.html.erb	
+app/views/training/sessions/scores/edit.html.erb	html	GET /training/:slug/session/:slot_id/score/:person_id	app/views/training/sessions/scores/_dialog.html.erb	
+app/views/training/sessions/show.html.erb	html	GET /training/:slug/session/:slot_id	app/views/training/sessions/_stats.html.erb app/views/training/sessions/_trainee_card.html.erb app/views/training/sessions/_trainees_section.html.erb app/views/training/sessions/_trainer_section.html.erb	
+app/views/training/sessions/signup_sheet.html.erb	html	GET /training/:slug/session/:slot_id/signup-sheet	app/views/training/sessions/_print_screen_nav.html.erb	
+app/views/training/sessions/trainers_report.html.erb	html	GET /training/:slug/session/:slot_id/trainers-report	app/views/training/sessions/_print_screen_nav.html.erb app/views/training/sessions/_trainer_slot_rule.html.erb	
+app/views/training/sessions/work_histories/show.html.erb	html	GET /training/:slug/session/:slot_id/work-history/:person_id		
+app/views/training/surveys/index.html.erb	html	GET /training/:slug/surveys	app/views/common/surveys/_survey_name.html.erb app/views/common/surveys/_survey_table.html.erb	
+app/views/training/surveys/report.html.erb	html	GET /training/:slug/surveys/:survey_id/reports/:report_id	app/views/common/surveys/_answers.html.erb app/views/common/surveys/_question.html.erb app/views/common/surveys/_ratings_table.html.erb app/views/common/surveys/_session_label.html.erb app/views/common/surveys/report.html.erb	
+app/views/training/surveys/trainer.html.erb	html	GET /training/:slug/surveys/:survey_id/trainers/:person_id	app/views/common/surveys/_answers.html.erb app/views/common/surveys/_question.html.erb app/views/common/surveys/_ratings_table.html.erb app/views/common/surveys/_session_label.html.erb app/views/common/surveys/trainer.html.erb	
+app/views/training/trained_no_work/index.html.erb	html	GET /training/:slug/trained-no-work		
+app/views/training/trainer_attendance/index.html.erb	html	GET /training/:slug/trainer-attendance	app/views/training/trainer_attendance/_session_line.html.erb	
+app/views/training/untrained_people/index.html.erb	html	GET /training/:slug/untrained-people		
+app/views/vc/application_import/index.html.erb	html	GET /vc/application-import	app/views/vc/application_import/_applications_table.html.erb app/views/vc/application_import/_failures_table.html.erb app/views/vc/application_import/_results.html.erb	
+app/views/vc/applications/dialogs/adjust_status.html.erb	html			
+app/views/vc/applications/dialogs/approve_callsign.html.erb	html		app/views/vc/applications/_account_created_warning.html.erb	
+app/views/vc/applications/dialogs/assign.html.erb	html			
+app/views/vc/applications/dialogs/edit_approved_handle.html.erb	html		app/views/vc/applications/_account_created_warning.html.erb	
+app/views/vc/applications/dialogs/edit_handles.html.erb	html		app/views/vc/applications/_account_created_warning.html.erb	
+app/views/vc/applications/dialogs/more_handles.html.erb	html		app/views/vc/applications/_account_created_warning.html.erb	
+app/views/vc/applications/dialogs/note_delete.html.erb	html			
+app/views/vc/applications/dialogs/note_form.html.erb	html			
+app/views/vc/applications/dialogs/problem_review.html.erb	html			
+app/views/vc/applications/dialogs/send_email.html.erb	html			
+app/views/vc/applications/dialogs/status_message.html.erb	html			
+app/views/vc/applications/edit_details.html.erb	html	GET /vc/applications/:id/edit-details		
+app/views/vc/applications/edit_personal_info.html.erb	html	GET /vc/applications/:id/edit-personal-info		
+app/views/vc/applications/extract_handles.html.erb	html	POST /vc/applications/:id/extract_handles	app/views/vc/applications/_account_created_warning.html.erb	
+app/views/vc/applications/index.html.erb	html	GET /vc/applications	app/views/vc/applications/_applications_table.html.erb	
+app/views/vc/applications/search.html.erb	html	GET /vc/applications/search		
+app/views/vc/applications/show.html.erb	html	GET /vc/applications/:id	app/views/vc/applications/_action_bar.html.erb app/views/vc/applications/_admin_section.html.erb app/views/vc/applications/_audit_log_section.html.erb app/views/vc/applications/_banners.html.erb app/views/vc/applications/_decision_stage.html.erb app/views/vc/applications/_mail_log_section.html.erb app/views/vc/applications/_notes_list.html.erb app/views/vc/applications/_rail.html.erb app/views/vc/applications/_stage_card.html.erb app/views/vc/applications/_status_actions.html.erb	
+app/views/vc/bpguid/index.html.erb	html	GET /vc/bpguid	app/views/common/_photo_none.html.erb app/views/person/_photo.html.erb	
+app/views/vc/create_prospectives/index.html.erb	html	GET /vc/create-prospectives	app/views/vc/create_prospectives/_group.html.erb app/views/vc/create_prospectives/_results.html.erb	
+app/views/vc/handle_checker/index.html.erb	html	GET /vc/handle-checker	app/views/common/_checkbox_grid.html.erb app/views/common/_checkbox_tile.html.erb app/views/vc/handle_checker/_result.html.erb	
+app/views/vc/maintenance/index.html.erb	html	GET /vc/maintenance		
+app/views/vc/maintenance/preview_past_prospectives.html.erb	html	GET /vc/maintenance/preview-past-prospectives	app/views/vc/maintenance/_results_table.html.erb	
+app/views/vc/maintenance/preview_pnvs.html.erb	html	GET /vc/maintenance/preview-pnvs	app/views/vc/maintenance/_results_table.html.erb	
+app/views/vc/maintenance/reset_past_prospectives.html.erb	html	POST /vc/maintenance/reset-past-prospectives	app/views/vc/maintenance/_results_table.html.erb	
+app/views/vc/maintenance/reset_pnvs.html.erb	html	POST /vc/maintenance/reset-pnvs	app/views/vc/maintenance/_results_table.html.erb	
+app/views/vc/photos/index.html.erb	html	GET /vc/photos	app/views/vc/photos_review/_attribution.html.erb	
+app/views/vc/photos_review/index.html.erb	html	GET /vc/photos-review	app/views/vc/photos_review/_attribution.html.erb app/views/vc/photos_review/_photo.html.erb app/views/vc/photos_review/_stats.html.erb	
+app/views/vc/photos_review/info.html.erb	html	GET /vc/photos-review/:id/info	app/views/vc/photos_review/_attribution.html.erb	
+app/views/vc/photos_review/reject_dialog.html.erb	html	GET /vc/photos-review/:id/reject		
+app/views/vc/reserved_handles/edit.html.erb	html	GET /vc/reserved-handles/:id/edit	app/views/vc/reserved_handles/_form.html.erb	
+app/views/vc/reserved_handles/index.html.erb	html	GET /vc/reserved-handles		
+app/views/vc/reserved_handles/new.html.erb	html	GET /vc/reserved-handles/new	app/views/vc/reserved_handles/_form.html.erb	
+app/views/vc/reserved_handles/upload.html.erb	html	GET /vc/reserved-handles/upload		
+app/views/vc/shiny_penny_report/index.html.erb	html	GET /vc/shiny-penny-report		
+app/views/vc/spigot_flow_report/index.html.erb	html	GET /vc/spigot-flow-report	app/views/vc/spigot_flow_report/_callsign_cell.html.erb	
+app/views/vc/thank_you_cards/index.html.erb	html	GET /vc/thank-you-cards	app/views/common/_checkbox_grid.html.erb app/views/common/_checkbox_tile.html.erb app/views/people/shared/_privacy_notice.html.erb	
+app/views/vehicles/paperwork/index.html.erb	html	GET /vehicles/paperwork		
+app/views/vehicles/registry/edit.html.erb	html	GET /vehicles/registry/:id/edit	app/views/person/vehicles/_eligibility_list.html.erb app/views/vehicles/registry/_form.html.erb	
+app/views/vehicles/registry/index.html.erb	html	GET /vehicles/registry		
+app/views/vehicles/registry/new.html.erb	html	GET /vehicles/registry/new	app/views/person/vehicles/_eligibility_list.html.erb app/views/vehicles/registry/_form.html.erb	
+app/views/vehicles/registry/permit.html.erb	html	GET /vehicles/registry/:id/permit		

@@ -1,0 +1,344 @@
+V || R13758 || COMPLIANT || BADGE-01 || - || 17 || Proficiency and On duty/Radio/Off site markers all built with ui_badge; each badge carries its label text, so colour is never the only carrier.
+V || R13757 || DIVERGENT || COLOR-06 || low || 15 || Rule says one neutral text utility per purpose (text-stone-muted for muted text); helper uses the /me hero-panel class me-muted outside /me, which renders the same colour.
+V || R00332 || DIVERGENT || TYPE-03 || medium || 49 || Rule says text-sm never for table content; the shift position a speaker is on (Right Now cell) is drawn me-muted text-sm.
+V || R13765 || COMPLIANT || A11Y-01 || - || 54 || Rangered years are a success ui_badge with a check icon, other years plain muted text: shape as well as colour separates them.
+V || R13785 || UNCOVERED || - || - || 23 || ambiguous DISC-01: the guide does not say how an icon joins a disclosure title; here a span.font-semibold wraps fa_icon(end: 2) plus text.
+V || R13750 || COMPLIANT || EMPTY-02 || - || 41 || Not vintage prints a muted "—"; the aria-label on a role-less span is likely ignored by assistive tech (see Q).
+V || R13613 || COMPLIANT || BADGE-01 || - || 30 || Verdict pill via ui_badge with label, semantic variant and icon; the table duplicates bulk_teams_helper's (an extraction question, not a rule departure).
+V || R13612 || COMPLIANT || BADGE-01 || - || 42 || Verdict pill via ui_badge with label, semantic variant and icon, so status is not colour alone.
+V || R13656 || COMPLIANT || LAYOUT-03 || - || 92 || Exception-only row badge "No managers", size base, with icon; class whitespace-nowrap breaks no rule.
+V || R13666 || COMPLIANT || LAYOUT-03 || - || 129 || Row badges only for exceptions (Inactive, N unassigned) at size base with icons; scope badge uses the documented :primary variant.
+V || R13690 || COMPLIANT || A11Y-01 || - || 183 || Count badge says "N findings" in text; success at zero, error otherwise.
+V || R13642 || COMPLIANT || ICON-01 || - || 175 || Category heading is fa_icon plus label text via safe_join; icon distinguishes groups besides colour.
+V || R13641 || COMPLIANT || TYPE-03 || - || 218 || The "since" grant date under the year is metadata in text-sm muted, a listed text-sm use; year carries a title tooltip (tooltips have no rule).
+V || R13639 || COMPLIANT || EMPTY-02 || - || 210 || An absent grant prints "—" (aria-hidden) with sr-only "Not granted".
+V || R00621 || COMPLIANT || TYPE-03 || - || 218 || text-sm on the grant date, which is metadata.
+V || R13640 || COMPLIANT || A11Y-01 || - || 234 || "NS" badge carries a distinct icon per meaning plus sr-only text repeating the title.
+V || R13707 || COMPLIANT || LAYOUT-03 || - || 24 || Drill-down row badges only exceptions (Document missing / Tag cannot be used, Inactive) at size base; ordinary "No document yet" stays in meta.
+V || R13728 || COMPLIANT || HELP-02 || - || 8 || About This Report card with class my-4 as the guide shows (1880), directly under the hero since there is no stat row.
+V || R02188 || COMPLIANT || LIST-01 || - || 9 || instruction-list Q&A inside the About card, not a table.
+V || R13729 || COMPLIANT || LAYOUT-03 || - || 17 || Level-1 page with no filter bar: Export All sits in a div.my-4 button_row, as the guide's level-1 example does.
+V || R13730 || COMPLIANT || LAYOUT-03 || - || 25 || One text-lg summary line on level 1, as the rule and its example specify.
+V || R13731 || COMPLIANT || LAYOUT-03 || - || 29 || Level-1 row list constrained to lg:w-3/4.
+V || R13732 || COMPLIANT || EMPTY-01 || - || 37 || ui_empty_state with icon.
+V || R13734 || UNCOVERED || - || - || 9 || ambiguous LAYOUT-03: level 2 should have two empty states, but this status filter is built from the roster and cannot empty the table, so the second state would be unreachable.
+V || R13733 || UNCOVERED || - || - || 41 || ambiguous TABLE-01: guide lists no class: option on ui_table; whole table whitespace-nowrap with Notes heading width 100% and cell opting back to whitespace-normal.
+V || R13735 || COMPLIANT || EMPTY-01 || - || 74 || ui_empty_state for a certification no one holds.
+V || R13791 || COMPLIANT || FORM-01 || - || 7 || One-button CSV export POST built with ui_form and f.submit :secondary, so the builder supplies the button.
+V || R13786 || COMPLIANT || ALERT-01 || - || 13 || Whole-list refusal shown as ui_callout_box :error; it is not a field error.
+V || R13787 || UNCOVERED || - || - || 18 || Form wrapped in div.lg:w-1/2 to cap the textarea width; no rule covers page-width wrappers around a form.
+V || R13788 || UNCOVERED || - || - || 51 || Not-found and ambiguous lines listed as plain stacked divs under a div.mb-2 explanatory sentence inside a ui_section; no rule for a plain value list.
+V || R13789 || UNCOVERED || - || - || 104 || ambiguous EMPTY-02: never-rangered shown as <em>never</em>, a word stating a fact, while other blanks use value_or_dash.
+V || R13790 || COMPLIANT || EMPTY-01 || - || 123 || ui_empty_state when nobody matched.
+V || R05849 || COMPLIANT || SPACE-02 || - || 17 || Bulleted list uses list-bulleted.
+V || R13773 || COMPLIANT || SPACE-02 || - || 17 || ul.list-bulleted inside a warning callout stating the consequence beside the confirm button.
+V || R13810 || COMPLIANT || HERO-04 || - || 11 || Back navigation via hero back_to :dashboard; cancel_link in the button row matches it.
+V || R13809 || COMPLIANT || FORM-06 || - || 16 || ui_form(@form) with the builder's default error summary.
+V || R05867 || COMPLIANT || LIST-01 || - || 19 || instruction-list mb-3 at the top of form sections, the visible form shown in the guide (2768).
+V || R13808 || COMPLIANT || LIST-01 || - || 19 || Q&A instruction-list mb-3 in each form section; forms keep these visible.
+V || M0145 || COMPLIANT || COPY-04 || - || 69 || pattern=buttons "Create Account" is the guide's own named exception: a submit that does more than store keeps its verb.
+V || R13756 || UNCOVERED || - || - || 5 || ambiguous CARD-03: ui_section_title used as a bare group heading (class mt-4, count badge) over drill rows, outside a ui_section; guide does not document ui_section_title.
+V || R13752 || UNCOVERED || - || - || 12 || Layout wrappers div.my-4 lg:w-3/4 around the search and filter bar, div.mt-4 around filter_bar; no rule covers wrapper spacing.
+V || M0315 || DIVERGENT || FORM-01 || medium || 13 || pattern=forms Rule says forms go through AppFormBuilder; code uses form_with without the builder for the language search box.
+V || R05886 || DIVERGENT || FORM-01 || medium || 13 || Rule says forms use AppFormBuilder via ui_form; search uses a plain form_with.
+V || R13751 || DIVERGENT || FORM-01 || medium || 13 || Rule says AppFormBuilder; code is raw form_with with f.search_field styled by hand (input w-full max-w-sm min-h-9) beside the page's filter_bar, an ad-hoc second filter form (TABLE-04).
+V || R05880 || DIVERGENT || FORM-01 || medium || 18 || Rule says field classes come from the builder; the search field writes daisyUI input classes by hand.
+V || R13754 || COMPLIANT || LAYOUT-03 || - || 56 || Level-1 text-lg summary line.
+V || R13753 || COMPLIANT || EMPTY-01 || - || 70 || Client-side no-match state is still ui_empty_state, revealed by list-filter.
+V || R13755 || COMPLIANT || EMPTY-01 || - || 78 || No-match and nothing-listed states both ui_empty_state.
+V || R13759 || UNCOVERED || - || - || 12 || ambiguous SPACE-01: filter_bar wrapped in div.my-4; guide sets no spacing around the bar.
+V || R13760 || COMPLIANT || EMPTY-01 || - || 65 || ui_empty_state when no speakers under the filter.
+V || R13801 || UNCOVERED || - || - || 4 || ambiguous CARD-03: ui_section_title class mt-4 as a bare group heading over drill rows; helper not in the guide.
+V || R05912 || DIVERGENT || FORM-05 || medium || 10 || Rule says checkbox groups are grouped with f.fieldset; code writes a raw <fieldset class="mt-3"> with a hand-styled legend (font-medium mb-2).
+V || R13803 || DIVERGENT || FORM-05 || medium || 10 || Rule says f.fieldset for checkbox groups; code uses raw fieldset, legend font-medium mb-2 and a p help line instead of the builder's fieldset and help text.
+V || R05917 || COMPLIANT || TYPE-03 || - || 12 || text-sm on help text under a group legend, a listed text-sm use.
+V || R13807 || COMPLIANT || EMPTY-02 || - || 29 || Blanks print a literal "—" via .presence, the right glyph (not via value_or_dash).
+V || R13802 || DIVERGENT || TYPE-05 || medium || 7 || Rule says clear heading hierarchy; the page-level callout title "Who These Counts Include" renders as the helper default h4 directly under the h1 (no heading_level: :h2).
+V || R13805 || UNCOVERED || - || - || 64 || ambiguous BTN-05: guide does not say whether a filter bar's Apply is primary or secondary; here default (primary), teams_positions siblings pass :secondary.
+V || R13804 || COMPLIANT || LAYOUT-03 || - || 70 || State drill rows constrained to lg:w-3/4.
+V || R13806 || COMPLIANT || EMPTY-01 || - || 79 || Filtered-empty and none states, both ui_empty_state with different messages.
+V || R13799 || UNCOVERED || - || - || 37 || ambiguous BTN-05: filter_bar Apply Filters left at the default primary variant; sibling pages use :secondary.
+V || R13798 || COMPLIANT || LAYOUT-03 || - || 42 || Country rows constrained to lg:w-3/4.
+V || R13800 || COMPLIANT || EMPTY-01 || - || 51 || Filtered-empty and no-addresses ui_empty_state.
+V || R13766 || COMPLIANT || LAYOUT-03 || - || 12 || Level-1 text-lg summary line.
+V || R13767 || COMPLIANT || LAYOUT-03 || - || 17 || Rows constrained to lg:w-3/4.
+V || R13768 || UNCOVERED || - || - || 26 || A status no one holds is a blocked ui_drill_down_row with meta "no one"; no rule covers zero-count rows on a drill index.
+V || R13769 || DIVERGENT || LAYOUT-03 || low || 12 || Rule gives level 2 a body ui_stat_row for totals; this level-2 page repeats the level-1 text-lg count line, which the section badge also states.
+V || R13771 || UNCOVERED || - || - || 16 || ambiguous EMPTY-01: no empty branch for a status with no people; the index blocks the link, so the case is unreachable from the page.
+V || R13770 || COMPLIANT || STYLE-01 || - || 17 || callsign-list is the documented component file components/callsign-list.css for multi-column callsign lists.
+V || R13762 || COMPLIANT || EMPTY-01 || - || 18 || Whole-report empty state via ui_empty_state.
+V || R13763 || COMPLIANT || HELP-02 || - || 29 || About card under the stat row and above the filter bar, class my-4 as documented.
+V || R05977 || COMPLIANT || LIST-01 || - || 30 || instruction-list inside the About card.
+V || R13764 || UNCOVERED || - || - || 62 || ambiguous BTN-05: Apply Filters at default primary variant; teams_positions siblings use :secondary.
+V || R13761 || COMPLIANT || EMPTY-01 || - || 69 || ui_empty_state inside a ui_section (div.px-4.pb-2 wrapper), the ruled compliant form.
+V || R13774 || COMPLIANT || ALERT-01 || - || 21 || Search error shown in ui_callout_box :error.
+V || R13775 || DIVERGENT || BTN-07 || low || 30 || Rule says buttons sit in a button_row; the "Search Anyway" button_link :warning sits bare inside the warning callout.
+V || R13776 || COMPLIANT || HELP-02 || - || 37 || About card above the filter bar (no stat row), class my-4.
+V || R06002 || COMPLIANT || LIST-01 || - || 38 || instruction-list inside the About card.
+V || R13779 || COMPLIANT || SPACE-01 || - || 70 || space-y-3 on the Tailwind scale stacks the four criteria disclosures.
+V || R06011 || COMPLIANT || TYPE-03 || - || 113 || text-sm only on the help notes (113, 135); line 80 is text-base.
+V || R13777 || DIVERGENT || FORM-05 || medium || 80 || Rule says a checkbox group is grouped with f.fieldset; the group label is a styled p and common/checkbox_grid adds no fieldset, so the checkboxes have no programmatic group name.
+V || R13778 || COMPLIANT || TYPE-03 || - || 113 || Muted text-sm notes inside the criteria disclosures are help text, a listed text-sm use.
+V || R13780 || COMPLIANT || BTN-07 || - || 145 || Search submit sits in a button_row; class mt-4 only spaces it from the disclosures.
+V || R13784 || COMPLIANT || EMPTY-01 || - || 153 || ui_empty_state with block text and a clear link.
+V || R13781 || UNCOVERED || - || - || 159 || Paging count line as p.mb-3.text-body.font-semibold "Showing x–y of z"; pagination has no rule.
+V || R13782 || UNCOVERED || - || - || 167 || ambiguous TABLE-01: ui_table container_class with arbitrary lg:max-h-[70vh] and pinned header classes (commented); guide documents neither option.
+V || R06000 || UNCOVERED || - || - || 167 || ambiguous SPACE-01: lg:max-h-[70vh] is a height cap, not spacing; the guide has no arbitrary-value rule. A comment explains it.
+V || R13783 || UNCOVERED || - || - || 188 || ui_pager with class my-4, role navigation and aria-label; pagination has no rule.
+V || R13772 || DIVERGENT || TYPE-05 || medium || 6 || Rule says clear heading hierarchy; the page-level "Personal Information" callout title renders as h4 directly under the h1 (no heading_level: :h2).
+V || R13749 || COMPLIANT || TABLE-01 || - || 8 || t.heading width: is documented (1467).
+V || R13748 || COMPLIANT || A11Y-01 || - || 12 || Converted row tinted state :success and also badged "Done" with an icon, so the tint is not the only carrier.
+V || R13736 || DIVERGENT || BTN-05 || medium || 14 || Rule reserves :primary for primary actions; the period switch paints the current choice :primary and the other :secondary, using a button variant as a selected-state toggle.
+V || R13737 || COMPLIANT || HELP-02 || - || 21 || About card under the control that picks the period (no stat row), class my-4.
+V || R06028 || COMPLIANT || LIST-01 || - || 22 || instruction-list inside the About card.
+V || R13738 || COMPLIANT || LAYOUT-03 || - || 35 || Level-1 text-lg summary line.
+V || R13740 || COMPLIANT || LAYOUT-03 || - || 40 || Rows constrained to lg:w-3/4.
+V || R13739 || UNCOVERED || - || - || 47 || Drill rows with blocked: at zero and a block body of muted meaning text; no rule covers blocked rows or row body text.
+V || R13741 || COMPLIANT || EMPTY-01 || - || 53 || ui_empty_state when nothing is proposed.
+V || R13742 || COMPLIANT || ALERT-01 || - || 21 || ui_callout_box with documented accent: true (success, warning, consequence); class my-4 spacing only.
+V || R06052 || COMPLIANT || SPACE-02 || - || 32 || Bulleted list uses list-bulleted.
+V || R13743 || COMPLIANT || SPACE-02 || - || 32 || ul.list-bulleted in the warning callout names each failure.
+V || R13744 || UNCOVERED || - || - || 67 || ambiguous BTN-05: Apply Filters at default primary variant; teams_positions siblings use :secondary.
+V || R13746 || UNCOVERED || - || - || 73 || ambiguous FORM-06: a bulk action with no model reports per-person failures in a warning callout after the 422 render; FORM-06 covers field errors only.
+V || R13745 || DIVERGENT || MODAL-02 || medium || 106 || Rule says a destructive confirm is red; the :error submit opens confirm_modal_dialog with no variant: :error (primary confirm button), and the message does not say the change cannot be undone.
+V || M0265 || COMPLIANT || COPY-10 || - || 105 || pattern=buttons False positive: "submit" is the checkbox_select_all target name; the button's label is the group title.
+V || R06047 || DIVERGENT || MODAL-02 || medium || 106 || Rule says destructive confirm passes variant: :error and states undo; status_change_confirm (group.confirm) passes no variant and its message omits whether the change can be undone.
+V || R06048 || DIVERGENT || MODAL-02 || medium || 106 || Same confirm: turbo_confirm opens confirm_modal_dialog without variant: :error for a status change the page says it cannot undo.
+V || R13747 || COMPLIANT || EMPTY-01 || - || 111 || Filtered-empty and none-proposed states, both ui_empty_state.
+V || R06061 || COMPLIANT || TYPE-03 || - || 10 || text-sm muted on a line's trailing note summary, metadata beside the row's main text.
+V || R13797 || COMPLIANT || TYPE-03 || - || 10 || Inline meta span text-sm text-stone-muted with a regular note icon; metadata use.
+V || R13793 || COMPLIANT || HERO-03 || - || 16 || Year selector inside the hero_panel block.
+V || R13795 || COMPLIANT || EMPTY-01 || - || 20 || Year-empty and filtered-empty states both ui_empty_state.
+V || R13794 || COMPLIANT || HELP-02 || - || 28 || About card under the group tiles and above the filter bar, class my-4.
+V || R06076 || COMPLIANT || LIST-01 || - || 29 || instruction-list inside the About card.
+V || R13796 || UNCOVERED || - || - || 82 || ambiguous BTN-05: Apply Filters at default primary variant; teams_positions siblings use :secondary.
+V || R13792 || UNCOVERED || - || - || 97 || ambiguous NAV-04: unwrapped text node "Jump to a callsign starting with the letter:" before dropdown_scroll_list; guide does not say whether the jump list takes a lead-in label.
+V || R13614 || COMPLIANT || ALERT-01 || - || 4 || Warning ui_callout_box with a strong lead and a conditional link.
+V || R13615 || COMPLIANT || FORM-07 || - || 20 || Select width w-full sm:w-96 passed as the html class, the way the guide shows select widths (2818-2824).
+V || M0045 || COMPLIANT || BP-01 || - || 20 || pattern=forms sm: appears only in a form field's width (select html class), the one sanctioned sm: use.
+V || R13605 || COMPLIANT || ALERT-01 || - || 11 || Outcome ui_callout_box :error or :success with matching icon; variants are documented.
+V || R13604 || UNCOVERED || - || - || 31 || ambiguous FORM-06: params form with no model; a refusal re-renders with flash.now[:error] and the template draws no error markup.
+V || M0046 || COMPLIANT || BP-01 || - || 37 || pattern=forms sm:w-96 only inside a select's width.
+V || R13602 || COMPLIANT || FORM-07 || - || 37 || Responsive select width w-full sm:w-96 via html class, as the guide's select example passes it.
+V || R13603 || DIVERGENT || HELP-02 || low || 54 || Rule says a consequence of the page's action stays visible as a callout beside the action; "Checking is always safe" is a plain p.mb-3 with a strong lead above the submit.
+V || R13606 || COMPLIANT || EMPTY-01 || - || 64 || ui_empty_state nil with block text.
+V || R13611 || COMPLIANT || ALERT-01 || - || 27 || Warning callout explains why no confirm button is offered; the entries table is not empty, so this is a notice, not an empty state.
+V || R13607 || COMPLIANT || A11Y-01 || - || 66 || Problem rows tinted state :error and also carry a "Problem" badge with an icon.
+V || R13608 || COMPLIANT || EMPTY-02 || - || 74 || Status cell prints "—" when no person matched.
+V || R08837 || COMPLIANT || BADGE-01 || - || 76 || bulk_position_badge builds through ui_badge.
+V || R13609 || UNCOVERED || - || - || 78 || Per-entry message in div.mt-1 under the verdict badge in a table cell; no rule for stacked cell content.
+V || R08835 || DIVERGENT || MODAL-02 || medium || 100 || Rule says a confirm asks with the action, states undo, and is red when destructive; dialog titled "Final Confirmation", no undo sentence, no variant: :error even on revoke.
+V || R08836 || DIVERGENT || MODAL-02 || medium || 100 || turbo_confirm with confirm_modal_dialog: generic title, no undo statement, primary confirm button on a revoke that also cancels sign-ups.
+V || R13610 || DIVERGENT || HERO-04 || medium || 110 || Rule says back navigation lives in the hero panel; preview has no back_to and returns via an f.submit "Go Back and Edit" with formaction (needed to re-post the list).
+V || R13593 || COMPLIANT || ALERT-01 || - || 15 || Outcome callout variant/icon from bulk_team_outcome_banner: error, warning or success, all documented variants.
+V || R13592 || UNCOVERED || - || - || 39 || ambiguous FORM-06: params form with no model; refusal is a flash.now[:error] toast and the template draws no error markup.
+V || M0047 || COMPLIANT || BP-01 || - || 45 || pattern=forms sm:w-96 only inside a select's width.
+V || R13590 || COMPLIANT || FORM-07 || - || 45 || Responsive select width via html class, as the guide's select example passes it; text fields use width:.
+V || R13591 || DIVERGENT || HELP-02 || low || 62 || Rule says an action's consequence stays visible as a callout beside the action; "Checking is always safe." is a plain p.mb-3 above the submit.
+V || R13594 || COMPLIANT || EMPTY-01 || - || 72 || ui_empty_state nil with block text and icon.
+V || R13600 || COMPLIANT || ALERT-01 || - || 27 || Warning callout says why no confirm button appears; the table below still lists every entry.
+V || R13601 || COMPLIANT || ALERT-01 || - || 54 || Variant chosen among documented :secondary/:info/:warning with matching icons.
+V || R13595 || COMPLIANT || A11Y-01 || - || 75 || Problem row tint plus a "Problem" badge with icon.
+V || R13596 || COMPLIANT || EMPTY-02 || - || 83 || Literal "—" when no person matched.
+V || R08871 || COMPLIANT || BADGE-01 || - || 85 || bulk_team_badge builds through ui_badge.
+V || R13597 || UNCOVERED || - || - || 87 || Per-entry message in div.mt-1 under the badge; no rule for stacked cell content.
+V || R13599 || COMPLIANT || BTN-05 || - || 107 || Confirm submit :success for grant, :error for revoke: variant follows the role.
+V || R08869 || DIVERGENT || MODAL-02 || medium || 109 || Rule says ask with the action, state undo, red when destructive; title "Final Confirmation", no undo sentence, no variant: :error on a revoke.
+V || R08870 || DIVERGENT || MODAL-02 || medium || 109 || turbo_confirm confirm_modal_dialog without variant: :error; a revoke's confirm button stays primary.
+V || R13598 || DIVERGENT || HERO-04 || medium || 119 || Rule says back navigation lives in the hero; no back_to here, back is an f.submit formaction "Go Back and Edit".
+V || R13661 || COMPLIANT || TABLE-01 || - || 7 || ui_table with documented t.heading width: to align the page's two tables.
+V || R13653 || COMPLIANT || HELP-02 || - || 16 || About card above the filter bar (no stat row), class my-4.
+V || R08891 || COMPLIANT || LIST-01 || - || 17 || instruction-list inside the About card.
+V || R13654 || COMPLIANT || LAYOUT-03 || - || 62 || Drill rows constrained to lg:w-3/4.
+V || R13655 || COMPLIANT || EMPTY-01 || - || 73 || Filtered-empty and no-teams states, both ui_empty_state.
+V || R13660 || COMPLIANT || COLOR-02 || - || 24 || Stat colour is semantic: error/warning only when there is a problem, secondary otherwise.
+V || R13657 || COMPLIANT || HELP-02 || - || 33 || About card under the stat row, class my-4.
+V || R08904 || COMPLIANT || LIST-01 || - || 34 || instruction-list inside the About card.
+V || R13658 || COMPLIANT || TYPE-01 || - || 42 || Count and overlap lines are text-base body copy.
+V || R13659 || UNCOVERED || - || - || 47 || ambiguous EMPTY-01: an empty managers list that is the report's finding is shown as an error callout; the rule does not say whether a finding outranks the empty state.
+V || R13662 || COMPLIANT || HELP-02 || - || 14 || About card above the filter bar, class my-4.
+V || R08922 || COMPLIANT || LIST-01 || - || 15 || instruction-list inside the About card.
+V || R13663 || COMPLIANT || NAV-04 || - || 64 || Quick navigation is dropdown_scroll_list.
+V || R13664 || COMPLIANT || LAYOUT-03 || - || 66 || Rows constrained to lg:w-3/4.
+V || R13665 || COMPLIANT || EMPTY-01 || - || 79 || Filtered-empty and none-found ui_empty_state.
+V || R13667 || COMPLIANT || HELP-02 || - || 35 || About card under the stat row, class my-4.
+V || R08943 || COMPLIANT || LIST-01 || - || 36 || instruction-list inside the About card.
+V || R13668 || COMPLIANT || BTN-07 || - || 43 || No filter bar on this page, so the export sits in a button_row (div.my-4 wrapper as in the guide's example).
+V || R13669 || COMPLIANT || TYPE-01 || - || 51 || Count sentence in text-base body text with an inline scope badge.
+V || R13670 || UNCOVERED || - || - || 66 || ambiguous TABLE-01: people roster as a div.grid (2 to 4 columns) of callsign plus muted status and On site badge, neither ui_table nor callsign-list; comment argues density.
+V || R13672 || COMPLIANT || EMPTY-01 || - || 80 || Filtered-empty and nobody-holds states inside the section.
+V || R13673 || COMPLIANT || ALERT-01 || - || 93 || Finding stated in ui_callout_box :error with strong lead.
+V || R13671 || COMPLIANT || A11Y-01 || - || 112 || On site is an icon-success check plus sr-only text; off site prints a muted "—" (no sr text, see Q).
+V || R08936 || COMPLIANT || COLOR-05 || - || 112 || Status icon takes icon-success.
+V || R13727 || COMPLIANT || FORM-06 || - || 1 || ui_form(@lineup) with default error summary.
+V || R08962 || COMPLIANT || LIST-01 || - || 12 || instruction-list mb-3 at the top of a form section.
+V || R13726 || UNCOVERED || - || - || 20 || Checkbox list laid out as div.grid grid-cols-1 lg:grid-cols-2 gap-x-1 of common/checkbox_row with muted italic "(in X)" / "(inactive)" notes; no rule for checkbox grid layout.
+V || R13721 || COMPLIANT || BTN-07 || - || 13 || Add Lineup in a button_row wrapped in div.my-4, as the guide's records example.
+V || R13722 || UNCOVERED || - || - || 32 || Row header text styled div.font-semibold.text-heading; does not outweigh a section title, so not a heading departure.
+V || R13724 || DIVERGENT || STYLE-03 || medium || 38 || Rule says use the helper where one exists; positions cell is a hand-built div.flex-col of divs while sibling record tables use value_list for multi-value cells.
+V || R13723 || DIVERGENT || EMPTY-02 || low || 49 || Rule says an empty value prints "—"; an empty positions cell shows italic muted "No positions linked yet" (line 43 "(inactive)" is a status note, not a blank).
+V || R13725 || COMPLIANT || EMPTY-01 || - || 61 || ui_empty_state when no lineups exist.
+V || R13720 || COMPLIANT || FORM-06 || - || 4 || ui_form(@position) default error summary and inline errors.
+V || M0048 || COMPLIANT || BP-01 || - || 19 || pattern=forms sm:w-44 only inside a select's width.
+V || R13713 || COMPLIANT || FORM-07 || - || 19 || Responsive select widths (sm:w-44/64/80) via html class as the guide's select example; text fields use width:.
+V || R09003 || COMPLIANT || LIST-01 || - || 39 || instruction-list mb-3 help at the top of form sections.
+V || R13715 || COMPLIANT || LIST-01 || - || 39 || Q&A instruction-list in form sections, the visible form allowed on forms.
+V || R13719 || COMPLIANT || ALERT-01 || - || 51 || Warning callouts in sections and an info callout explaining the missing delete button.
+V || R13714 || COMPLIANT || SPACE-01 || - || 57 || div.mt-3 wrappers on the Tailwind scale separate a callout from the checkboxes below.
+V || M0049 || COMPLIANT || BP-01 || - || 79 || pattern=forms sm:w-64 only inside a select's width.
+V || M0050 || COMPLIANT || BP-01 || - || 83 || pattern=forms sm:w-80 only inside a select's width.
+V || R13716 || UNCOVERED || - || - || 146 || Role checkboxes in div.grid grid-cols-1 lg:grid-cols-3 gap-x-1 mt-3 of common/checkbox_row; no rule for checkbox grid layout.
+V || R13717 || UNCOVERED || - || - || 162 || Read-only permission list as div.flex-col of plain divs (team form shows the same as badges); label/value displays have no rule.
+V || R13718 || DIVERGENT || EMPTY-01 || low || 168 || Rule says empty states always use ui_empty_state; "This position grants no permissions." is a p.mt-3 in muted italic.
+V || M0051 || COMPLIANT || BP-01 || - || 184 || pattern=forms sm:w-80 only inside a select's width.
+V || M0052 || COMPLIANT || BP-01 || - || 187 || pattern=forms sm:w-80 only inside a select's width.
+V || M0125 || COMPLIANT || COPY-01 || - || 220 || pattern=typography "Paycom Employee Code" is a Paycom payroll surface, a named COPY-01 exception.
+V || R13708 || COMPLIANT || BTN-07 || - || 14 || Add Position and Position Lineups in one button_row in div.my-4, as the guide's example.
+V || R13709 || UNCOVERED || - || - || 76 || Type and short title as a muted subtitle line joined by a literal middot, with empty ERB tags at 78-79 and 82-83; no rule for record subtitles.
+V || R09026 || COMPLIANT || ICON-01 || - || 80 || pattern=icons False positive: the middot is punctuation between two values, not an icon.
+V || R13710 || COMPLIANT || BADGE-01 || - || 87 || Inactive status via ui_badge sm; class whitespace-nowrap breaks no rule.
+V || R13711 || DIVERGENT || EMPTY-02 || low || 97 || Rule says an empty value prints "—"; the Team cell shows italic muted "No team".
+V || R13712 || COMPLIANT || EMPTY-01 || - || 121 || Filtered-empty and nothing-yet ui_empty_state.
+V || R13689 || COMPLIANT || A11Y-02 || - || 13 || Checkbox column heading has an sr-only name "Repair"; each checkbox has a specific aria_label.
+V || R13688 || DIVERGENT || TYPE-05 || medium || 14 || Rule says clear heading hierarchy; the page-level "N repairs made" callout title (and "Nothing Was Selected", 56) render as h4 directly under the h1.
+V || R09048 || UNCOVERED || - || - || 15 || Unbulleted ul.flex.flex-col.gap-1 result list inside a callout; SPACE-02 covers bulleted lists only.
+V || R13686 || UNCOVERED || - || - || 15 || Result list rows: fa_icon plus span.font-semibold callsign plus em-dash text inside a callout; no rule for result lists.
+V || R13687 || COMPLIANT || A11Y-01 || - || 23 || Error lines in text-error carry a circle-exclamation icon and the error text; success lines carry a check icon (its colour class is an F line).
+V || R13682 || DIVERGENT || HERO-04 || low || 67 || Rule says back navigation lives in the hero panel; besides hero back_to the page adds a second "Back to the Board" button_link in the form's button row.
+V || R13680 || UNCOVERED || - || - || 38 || Standalone findings-count badge in its own div.my-4 above the form; no rule for a free-standing count badge.
+V || R09062 || COMPLIANT || BADGE-01 || - || 38 || position_check_badge builds through ui_badge.
+V || R13685 || UNCOVERED || - || - || 41 || ambiguous FORM-06: no-model bulk form; "Nothing Was Selected" is reported by a results callout after the POST.
+V || R13681 || COMPLIANT || ALERT-01 || - || 59 || Repair consequence in ui_callout_box :info accent: true beside the button.
+V || R13683 || COMPLIANT || BTN-01 || - || 64 || Submit is ButtonHelper button_action :primary with type submit and icon.
+V || M0273 || COMPLIANT || COPY-10 || - || 65 || pattern=buttons False positive: type: "submit" attribute; the label is meta[:action].
+V || M0274 || COMPLIANT || COPY-10 || - || 66 || pattern=buttons False positive: checkbox_select_all target named "submit", not a label.
+V || R13684 || COMPLIANT || EMPTY-01 || - || 74 || ui_empty_state with the check's own empty text.
+V || R13679 || UNCOVERED || - || - || 67 || ambiguous EMPTY-01: when every check is clear only the Clear band renders; the rule does not say a board of always-present rows needs an empty state.
+V || R13678 || COMPLIANT || HELP-02 || - || 40 || About card under the stat row, class my-4.
+V || R09073 || COMPLIANT || LIST-01 || - || 41 || instruction-list inside the About card.
+V || R13676 || COMPLIANT || LAYOUT-03 || - || 50 || Drill rows constrained to lg:w-3/4 (bands stacked flex-col gap-6).
+V || R13674 || DIVERGENT || CARD-03 || medium || 52 || Rule says related content is grouped in ui_section; each band is a raw <section> with a hand-built border-b title bar and h2, imitating ui_section.
+V || R09076 || COMPLIANT || TYPE-04 || - || 54 || The h2s take heading-section (text-heading adds only colour).
+V || R13677 || UNCOVERED || - || - || 60 || Finding rows pass icon: "arrow-right", clear rows none; ui_drill_down_row icon use is not in the guide.
+V || R09080 || COMPLIANT || TYPE-03 || - || 71 || text-sm muted caption "N checks found nothing" is metadata.
+V || R13675 || UNCOVERED || - || - || 79 || ui_drill_down_row class opacity-75 dims clear checks; no rule on dimming, and contrast needs a rendered page.
+V || R13616 || COMPLIANT || LAYOUT-03 || - || 6 || Level-1 text-lg summary sentence.
+V || R13617 || COMPLIANT || LAYOUT-03 || - || 15 || Rows constrained to lg:w-3/4.
+V || R13618 || COMPLIANT || EMPTY-01 || - || 22 || ui_empty_state with icon.
+V || R13638 || COMPLIANT || HERO-04 || - || 10 || Back via hero back_to; cancel_link in the confirm button row.
+V || R13636 || DIVERGENT || ALERT-01 || high || 21 || Rule lists callout variants success/info/warning/error/secondary; roster_action_variant passes :primary for a grant, which the helper renders as a plain untinted box with a warning triangle.
+V || M0517 || COMPLIANT || TABLE-02 || - || 28 || pattern=tables-lists responsive: false on a three-column table, the "four columns or fewer" case the rule allows without a comment.
+V || R13634 || DIVERGENT || TYPE-03 || medium || 47 || Rule says text-sm never for table content; the cell's second line "and their X membership" (what the person loses) is text-sm muted.
+V || R09108 || DIVERGENT || TYPE-03 || medium || 47 || text-sm on table content stating part of the change being confirmed.
+V || R13637 || COMPLIANT || EMPTY-01 || - || 56 || ui_empty_state when no one needs the change.
+V || R13635 || UNCOVERED || - || - || 63 || Skipped people as a reason p.mb-2 and a p of callsigns joined by to_sentence; no rule for inline name lists.
+V || R09098 || DIVERGENT || MODAL-02 || medium || 80 || Rule says ask with the action, state undo, red when destructive; title "Final Confirmation", no undo sentence, no variant: :error though revoke and remove are destructive.
+V || R09099 || DIVERGENT || MODAL-02 || medium || 80 || turbo_confirm confirm_modal_dialog without variant: :error for revoke/remove-from-team.
+V || R13630 || DIVERGENT || HELP-02 || low || 93 || Rule says a rule goes in the page's one collapsed card or joins a fitting list or callout; who the roster lists stands as a loose p.my-3 paragraph (line 18 is a figure caption, fine).
+V || R13619 || DIVERGENT || LAYOUT-02 || low || 22 || Rule says columns are grid grid-cols-1 lg:grid-cols-N gap-4; the position card grid uses gap-2 lg:gap-3.
+V || R13620 || DIVERGENT || SPACE-01 || low || 24 || Rule says card padding p-4 or p-2 lg:p-4; ui_card here takes p-3.
+V || R09150 || DIVERGENT || TYPE-03 || medium || 149 || Rule says text-sm never for table content; the status under each callsign in the grid is text-sm (line 25 card eyebrow is metadata and fine).
+V || R13621 || UNCOVERED || - || - || 25 || Card eyebrow div.text-sm muted plus title div.font-semibold.text-heading rather than a heading tag; does not outweigh the section title.
+V || R09131 || COMPLIANT || ICON-01 || - || 32 || pattern=icons False positive: &middot; separates two counts; it is punctuation.
+V || R13622 || COMPLIANT || A11Y-01 || - || 33 || Amber font-semibold count says "N never rangered" in words, so colour is not the only carrier (contrast of text-warning needs a render, see Q).
+V || R13631 || DIVERGENT || HELP-02 || medium || 71 || Rule says a legend goes in one collapsed card (samples in the dd); the grid legend with sample NS badges is a visible info callout in the body.
+V || R13633 || UNCOVERED || - || - || 100 || ambiguous FORM-06: no-model selection form; buttons disabled until a box is ticked, no error output in the view.
+V || R13624 || COMPLIANT || STYLE-01 || - || 102 || roster-grid and roster-frozen-* classes live in components/roster-matrix.css (the file is not listed in the guide; PROC-01 is a process question).
+V || R13623 || UNCOVERED || - || - || 111 || ambiguous TABLE-01: two-row grouped header hand-built as raw thead/th with TableHelper constants inside ui_table, because t.header renders one row.
+V || R13625 || UNCOVERED || - || - || 132 || ambiguous TABLE-01: t.heading/t.cell class overrides (max-w-20, min-w-24 max-w-32, border-l-2 group dividers); no class: option documented.
+V || R13626 || DIVERGENT || TYPE-03 || medium || 149 || Rule says text-sm never for table content; callsign cell's status line is text-sm muted.
+V || R13627 || COMPLIANT || A11Y-01 || - || 153 || Member / Not a member badges carry text and distinct icons.
+V || R13628 || COMPLIANT || ALERT-01 || - || 188 || Warning callout accent: true beside the red action it explains.
+V || R13629 || COMPLIANT || BTN-01 || - || 193 || Three ButtonHelper button_action submits, variants primary/secondary/error by role, in a button_row.
+V || M0275 || COMPLIANT || COPY-10 || - || 194 || pattern=buttons False positive: type: "submit" attribute; label is "Grant Position".
+V || M0276 || COMPLIANT || COPY-10 || - || 196 || pattern=buttons False positive: select-all target name.
+V || M0277 || COMPLIANT || COPY-10 || - || 198 || pattern=buttons False positive: type: "submit"; label "Revoke Position".
+V || M0278 || COMPLIANT || COPY-10 || - || 200 || pattern=buttons False positive: select-all target name.
+V || M0279 || COMPLIANT || COPY-10 || - || 202 || pattern=buttons False positive: type: "submit"; label "Remove from Team".
+V || M0280 || COMPLIANT || COPY-10 || - || 204 || pattern=buttons False positive: select-all target name.
+V || R13632 || COMPLIANT || EMPTY-01 || - || 210 || Filtered-empty and truly-empty states, both ui_empty_state with different icons.
+V || R13643 || COMPLIANT || HELP-02 || - || 21 || About card directly under the hero, class my-4; the Report Parameters card at 47 uses the same documented class.
+V || R09169 || COMPLIANT || LIST-01 || - || 22 || instruction-list inside the About card.
+V || R13645 || COMPLIANT || LIST-01 || - || 22 || Q&A pairs in the collapsed About card.
+V || R13649 || COMPLIANT || FORM-06 || - || 49 || ui_form(@form) with default error summary.
+V || R13646 || DIVERGENT || BTN-07 || low || 66 || Rule says buttons sit in a button_row; ghost Select All/None sit in a div.flex with the live count span.
+V || R13647 || UNCOVERED || - || - || 74 || Team disclosures of checkbox rows in div.grid grid-cols-1 lg:grid-cols-3 items-start gap-x-6 inside a fieldset; no rule for checkbox grid layout.
+V || R13644 || UNCOVERED || - || - || 80 || ambiguous DISC-01: nested inline ui_disclosure with summary_class "font-semibold text-body"; the option is undocumented.
+V || R13652 || DIVERGENT || TYPE-05 || medium || 109 || Rule says clear heading hierarchy; the page-level truncation callout title renders as h4 directly under the h1.
+V || R13648 || DIVERGENT || BTN-07 || low || 123 || Rule says buttons sit in a button_row; export_csv_link sits in a div.lg:ms-auto beside the summary p in a hand-made flex row.
+V || R13651 || UNCOVERED || - || - || 169 || Totals as t.row state: :total with a spanning row_header colspan; row states are undocumented.
+V || R13650 || COMPLIANT || EMPTY-01 || - || 182 || ui_empty_state with helper-built message.
+V || R13704 || COMPLIANT || LAYOUT-03 || - || 12 || Level-1 text-lg summary sentence.
+V || R13705 || COMPLIANT || LAYOUT-03 || - || 21 || Rows constrained to lg:w-3/4.
+V || R13706 || COMPLIANT || EMPTY-01 || - || 27 || ui_empty_state with icon.
+V || R13702 || COMPLIANT || FORM-06 || - || 3 || ui_form(@team) with default error summary.
+V || R09202 || COMPLIANT || LIST-01 || - || 7 || instruction-list mb-3 at the top of form sections.
+V || R13698 || COMPLIANT || LIST-01 || - || 7 || Q&A help in form sections, visible as allowed on forms.
+V || M0053 || COMPLIANT || BP-01 || - || 25 || pattern=forms sm:w-44 only inside a select's width.
+V || R13697 || COMPLIANT || FORM-07 || - || 25 || Select width w-full sm:w-44 matches the guide's select row (2794) via html class.
+V || R13699 || UNCOVERED || - || - || 65 || Role checkboxes in div.grid grid-cols-1 lg:grid-cols-3 gap-x-1 of common/checkbox_row; no rule for checkbox grid layout.
+V || R13700 || COMPLIANT || BADGE-01 || - || 83 || Read-only role grants as ui_badge :secondary sm.
+V || R13701 || DIVERGENT || EMPTY-01 || low || 87 || Rule says empty states always use ui_empty_state; "This team grants no permissions." is a p.mt-3 in muted italic.
+V || R13703 || COMPLIANT || MODAL-02 || - || 96 || delete_button (red) with a message "Delete X? ... This cannot be undone."
+V || R13691 || COMPLIANT || BTN-07 || - || 15 || Add Team in a button_row in div.my-4, as the guide's example.
+V || R13695 || COMPLIANT || NAV-04 || - || 53 || Quick navigation is dropdown_scroll_list.
+V || R13692 || COMPLIANT || BADGE-01 || - || 71 || Type and Inactive via ui_badge sm; whitespace-nowrap breaks no rule.
+V || R13694 || COMPLIANT || EMPTY-02 || - || 92 || No managers prints value_or_dash(nil), the "—".
+V || R13693 || DIVERGENT || EMPTY-02 || low || 97 || Rule says an empty value prints "—"; missing email and document tag show italic muted "No email" / "No document tag" (101).
+V || R13696 || COMPLIANT || EMPTY-01 || - || 113 || Filtered-empty and nothing-yet ui_empty_state.
+F || app/views/people/languages_known/index.html.erb || 16 || forms || placeholder-only-search || DIVERGENT || FORM-02 || medium || Rule says every field has a visible label, never placeholder-only; the search field's label is sr-only and only the placeholder "Search languages" shows.
+F || app/views/people/languages_known/index.html.erb || 36 || navigation || level1-filter-bar || DIVERGENT || LAYOUT-03 || medium || Rule says level 1 of a drill-down gets no filter bar; the language index (rows open per-language pages) carries a filter_bar plus a search form.
+F || app/views/people/people_by_location/index.html.erb || 22 || navigation || level1-filter-bar || DIVERGENT || LAYOUT-03 || medium || Rule says level 1 gets no filter bar and counts as a text-lg line; the country index has a filter_bar whose count slot replaces the text-lg line.
+F || app/views/teams_positions/membership_report/index.html.erb || 28 || navigation || level1-filter-bar || DIVERGENT || LAYOUT-03 || medium || Rule says level 1 gets no filter bar and one text-lg count line; the team index uses a filter_bar and puts the summary in its count slot.
+F || app/views/teams_positions/position_grants/index.html.erb || 26 || navigation || level1-filter-bar || DIVERGENT || LAYOUT-03 || medium || Rule says level 1 gets no filter bar and one text-lg count line; the position index uses a filter_bar with the summary in its count slot.
+F || app/views/teams_positions/position_grants/show.html.erb || 18 || cards || level2-total-is-filtered || DIVERGENT || LAYOUT-03 || low || Rule says level-2 totals describe the category, not the filtered view; the first stat box "Shown" counts the filtered roster.
+F || app/views/teams_positions/position_sanity_checker/index.html.erb || 19 || cards || level1-stat-boxes || DIVERGENT || LAYOUT-03 || low || Rule says level-1 counts are plain text, not stat boxes; the board opens with a ui_stat_row of totals and no text-lg line.
+F || app/helpers/people/languages_known_helper.rb || 79 || other || non-exception-row-badge || DIVERGENT || LAYOUT-03 || low || Rule says badge only the exception count on a row; the index badges "N on duty" (a positive, ordinary state) beside the exception "Off site only".
+F || app/views/teams_positions/position_sanity_checker/check.html.erb || 28 || typography || callout-h4-under-h1 || DIVERGENT || TYPE-05 || medium || Rule says clear heading hierarchy; the page-level truncation callout title "Showing the First N" renders as h4 directly under the h1.
+F || app/views/teams_positions/position_sanity_checker/_results.html.erb || 30 || icons || text-success-icon || DIVERGENT || COLOR-05 || low || Rule says a status icon takes icon-success; the success line's circle-check uses fa_icon class "text-success".
+F || app/views/teams_positions/position_lineups/index.html.erb || 6 || toasts-alerts || explanation-callout || DIVERGENT || HELP-02 || low || Rule says a how-to goes in one collapsed card per page; how lineups drive the Sign-Ups button is a visible info callout above the list.
+F || app/views/teams_positions/bulk_positions/index.html.erb || 31 || forms || form-page-no-back-no-sections || DIVERGENT || FORM-08 || low || Rule says a form page is hero with back link, callouts, ui_form with sections, button row; the hero has no back_to and the fields sit in ui_form with no section.
+F || app/views/teams_positions/bulk_teams/index.html.erb || 39 || forms || form-page-no-back-no-sections || DIVERGENT || FORM-08 || low || Rule says hero with back link and ui_form with sections; no back_to, and the three fields sit directly in ui_form.
+F || app/views/teams_positions/position_lineups/_form.html.erb || 11 || typography || title-case-preposition || DIVERGENT || COPY-03 || low || Rule says Title Case lowercases prepositions of four letters or fewer; section title reads "Positions In This Lineup".
+F || app/helpers/teams_positions/position_sanity_checker_helper.rb || 22 || typography || sentence-case-titles || DIVERGENT || COPY-03 || low || Rule says hero titles are Title Case; CHECK_META labels used as check-page hero titles and row titles are sentence case ("Deactivated accounts with grants"), lines 22-99.
+F || app/helpers/teams_positions/position_sanity_checker_helper.rb || 30 || buttons || sentence-case-button-labels || DIVERGENT || COPY-03 || low || Rule says button labels are Title Case; the repair button labels are sentence case ("Revoke everything", "Reset to the new-user set"), lines 30-106.
+F || app/helpers/teams_positions/position_sanity_checker_helper.rb || 131 || tables-lists || sentence-case-table-headings || DIVERGENT || COPY-03 || low || Rule says table column headers are Title Case; COLUMNS headings are sentence case ("Still holds", "Missing positions", "Mentor year"), lines 131-139.
+S || HERO-01 || 41 || 0 || Every page template opens with hero_panel; team_documents/edit renders a common template outside scope.
+S || HERO-02 || 41 || 0 || All descriptions one sentence; edit pages describe the record rather than the page (Q).
+S || HERO-03 || 41 || 0 || Year selectors in the hero on People by Location and Unified Flagging; the status-change period switch is UNCOVERED-adjacent (row R13736).
+S || HERO-04 || 41 || 3 || bulk_positions/preview, bulk_teams/preview (formaction back button), position_sanity_checker/check (second back button).
+S || HELP-01 || 61 || 0 ||
+S || HELP-02 || 61 || 4 || bulk_positions/index, bulk_teams/index, roster_management/show (legend callout and loose rule paragraph), position_lineups/index.
+S || STAT-01 || 61 || 0 ||
+S || STAT-02 || 41 || 0 ||
+S || TABLE-02 || 61 || 0 || One responsive: false (three-column roster preview); retention comment contradicts its responsive table (Q).
+S || TABLE-04 || 61 || 1 || languages_known/index: raw search form beside the filter_bar (rows R13751, M0315).
+S || TABLE-05 || 61 || 0 || Every export on a filter_bar page rides actions:.
+S || BTN-03 || 61 || 0 ||
+S || BTN-04 || 41 || 0 ||
+S || BTN-05 || 61 || 1 || status_change_recommendations/index period toggle; Apply Filters variant split left UNCOVERED on 6 pages.
+S || BTN-07 || 61 || 2 || people/search/index (button in callout), special_teams_hours/index (select buttons, export row).
+S || MODAL-02 || 61 || 4 || bulk_positions/preview, bulk_teams/preview, roster_management/preview, status_change_recommendations/show: confirm_modal_dialog with no variant: :error and no undo sentence.
+S || FORM-02 || 61 || 1 || languages_known/index search field.
+S || FORM-03 || 61 || 0 ||
+S || FORM-07 || 61 || 0 || Select widths passed as html class, as the guide's select example does.
+S || FORM-08 || 9 || 2 || Form pages: create_account, bulk_positions, bulk_teams, lineup new/edit, position new/edit, team new/edit.
+S || TYPE-05 || 61 || 5 || Page-level ui_callout_box titles default to h4 under the h1: people/shared/_privacy_notice, people_by_location/_status_notice, sanity _results, sanity check, special_teams_hours.
+S || COLOR-02 || 61 || 0 ||
+S || COLOR-03 || 61 || 0 ||
+S || A11Y-01 || 61 || 0 ||
+S || A11Y-02 || 61 || 0 ||
+S || LAYOUT-03 || 19 || 7 || Applied to the drill-down index/detail pairs (the Records Management pattern's shape); departures: four level-1 filter bars, sanity stat row, grants Shown stat, people_by_status show, languages row badge.
+S || COPY-03 || 61 || 2 || position_lineups/_form and the sanity checker helper (titles, buttons, table headings); helpers checked alongside the views.
+S || COPY-04 || 61 || 0 || "Create Account" is the guide's named exception; hero titles "New Team" etc. noted in Q.
+S || COPY-10 || 61 || 0 || All "submit" grep hits are attribute values, not labels.
+Q || Retention Report's table comment says it "stays a table and scrolls sideways", but the ui_table call omits responsive: false, so it folds to cards; the comment or the call is stale.
+Q || Hero titles "New Position", "New Team" and "New Position Lineup" use the verb COPY-04 bans on buttons; the guide does not say whether a form page's title follows the Add verb.
+Q || Apply Filters is :secondary on every teams_positions page, certificates and languages_known, but default primary on people_by_location, retention, unified flagging and status change pages; the area disagrees with itself.
+Q || Level-1 drill indexes split two ways: text-lg count line (certificates, people_by_status, status change, roster, team documents) versus filter_bar count slot (membership, position grants, people_by_location).
+Q || status_change_vintage puts aria-label on a role-less span, which assistive tech usually ignores; roster_management_helper's NOT_GRANTED uses sr-only text for the same job.
+Q || Position Grants detail prints a bare "—" for not on site with no screen-reader text, while the on-site icon carries sr-only "On site".
+Q || The amber text-warning count on the roster cards, and the opacity-75 clear rows on the sanity board, need a rendered contrast check in both themes.
+Q || Special Teams Hours collects its report parameters in a ui_form inside a "Report Parameters" disclosure rather than a filter_bar; it reads as a run form, but it narrows the table the way filters do.
+Q || Edit-page hero descriptions ("Training #12 — 5 people granted it, 3 shifts.") describe the record, not what the page does.
+Q || Read-only permission grants show as plain divs on the position form and as secondary badges on the team form.

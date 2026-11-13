@@ -1,0 +1,286 @@
+V || R11981 || DIVERGENT || CARD-02 || medium || 6 || A left-border accent card is ui_accent_card; the slot card hand-builds box-accent box-accent-warning/success border-l-4 (or box box-default) on a content_tag div with its own p-3 mb-2.
+V || M0168 || COMPLIANT || COPY-07 || - || 16 || pattern=other False positive: "Signup.add" is a Ruby class name inside an ERB code comment, never printed.
+V || R11982 || COMPLIANT || A11Y-01 || - || 101 || Availability colour (error/warning/success) always rides with words ("Full - All N spots taken", "2 open spots of 10") plus an aria-label; colour is not the sole carrier.
+V || R11983 || COMPLIANT || BADGE-01 || - || 46 || Status badges come from ui_badge with an icon and words; the extra div/span wrappers are layout only.
+V || R11987 || UNCOVERED || - || - || 84 || Shared layout partial common/entry_card_grid (title, duration, credits, status slot) used as a card body; no rule names this grid.
+V || R02425 || COMPLIANT || BADGE-01 || - || 93 || slot_virtual_venue_badge (application_helper.rb:241) builds through ui_badge :secondary with a laptop icon.
+V || R11984 || COMPLIANT || BTN-01 || - || 109 || Toggle is button_action; the swapped label embeds fa_icon("minus") HTML, unlike the schedule row's plain "Hide Sign-Ups" (see Q).
+V || M0169 || COMPLIANT || COPY-07 || - || 112 || pattern=other False positive: "signups-<id>" is a DOM id for the turbo frame, not reader-facing text.
+V || R11985 || COMPLIANT || BTN-01 || - || 119 || Remove from Schedule and Add to Schedule are button_link :secondary with icons; verbs match COPY-04 ("Remove from [Group]").
+V || R02424 || DIVERGENT || MODAL-02 || low || 122 || A confirm asks with the action and says whether it can be undone; this red confirm says "Please confirm you wish to remove this shift…" with no question or undo statement.
+V || R11986 || UNCOVERED || - || - || 131 || Empty turbo frame "signups-<id>" filled on demand by the toggle controller; no loading placeholder (loading states have no rule).
+V || R11988 || UNCOVERED || - || - || 4 || Each slot card wrapped in turbo_frame_tag entry.slot as a turbo_stream.update target; a plumbing wrapper no rule covers.
+V || M0234 || DIVERGENT || COPY-08 || low || 8 || Dates come from DateTimeHelper, never strftime in a view; the month grouping key uses slot.begins.strftime("%B") and prints it as the card heading.
+V || R11989 || COMPLIANT || CARD-01 || - || 10 || ui_card with padding set at the call site (class "p-3"), as CARD-01 asks; cards in a lg:grid-cols-2 grid.
+V || R11990 || COMPLIANT || TYPE-04 || - || 11 || ui_subheading renders h3.heading-title; month plus a ui_badge count. Level placement is a TYPE-05 finding (F line).
+V || R02436 || COMPLIANT || SPACE-02 || - || 15 || ul.list-bulleted space-y-1, the documented list form; not a data table.
+V || R11991 || COMPLIANT || TOAST-01 || - || 13 || Result message streamed as a toast whose type comes from @status; explanations needing reading go to a modal instead.
+V || R02441 || COMPLIANT || TOAST-01 || - || 13 || ui_toast_stream for the sign-up result; type from @status.
+V || R11992 || COMPLIANT || TOAST-01 || - || 13 || Removal result streamed as a toast.
+V || R02442 || COMPLIANT || TOAST-01 || - || 13 || ui_toast_stream for the removal result.
+V || R11973 || COMPLIANT || LAYOUT-03 || - || 9 || Records-management level 1 count line is one text-lg summary ("Showing N positions"), as written.
+V || R11972 || COMPLIANT || LAYOUT-03 || - || 12 || Row list constrained to lg:w-3/4 as level 1 requires.
+V || R11974 || COMPLIANT || LAYOUT-03 || - || 18 || ui_drill_down_row with figures: (upcoming/past) and a size "base" badge omitted at zero; the red notice in the block is an F line (ALERT-01).
+V || R11975 || DIVERGENT || EMPTY-01 || medium || 33 || An empty state is always ui_empty_state; the no-positions case is a div "mt-4 text-error", red text for an empty list.
+V || R02457 || UNCOVERED || - || - || 5 || Arbitrary page-width cap max-w-[900px]; the guide sets no rule on arbitrary values or content max widths (SPACE-01 covers padding/margin scale only).
+V || R11976 || UNCOVERED || - || - || 5 || Content wrapper capping the page at max-w-[900px]; no written rule on page-width wrappers outside records management.
+V || R11977 || COMPLIANT || CARD-02 || - || 15 || ui_accent_card :info with heading_level :h2 at page level and options class "mb-4", exactly the documented form; rich text in .lexxy-content (FORM-09).
+V || R11978 || COMPLIANT || ALERT-01 || - || 22 || Training notices are ui_callout_box warning/error/info; one wrapped in a my-2 div, a trailing plain sentence div at 49-51.
+V || R11979 || COMPLIANT || TYPE-04 || - || 61 || Title comes from ui_section_title (role heading, aria-level 2); the ERB whitespace prints stray spaces before "," and ")" (see Q).
+V || R11980 || DIVERGENT || EMPTY-01 || medium || 75 || An empty state is always ui_empty_state; "No more upcoming shifts" (75) and "No past shifts" (90) are div "text-error px-4", red text.
+V || R12037 || COMPLIANT || BADGE-01 || - || 24 || Tally of passed/bonked/pending is ui_badge inside mentor_tally_row, a flex wrapper helper (mentor_helper.rb:103); cards inside mentor_card_row.
+V || R12038 || UNCOVERED || - || - || 34 || ambiguous EMPTY-01: cohort.rows has no empty branch; a cohort exists only with rows, so likely never empty, and the rule does not say every collection needs a branch.
+V || R12034 || DIVERGENT || TYPE-03 || medium || 24 || text-sm is never for primary information in cards; ui_card_body class "flex-grow text-sm" shrinks the whole body (Shift, Mentors, Last Rangered, FKAs).
+V || R12036 || UNCOVERED || - || - || 11 || Avatar through ui_card_image, or common/photo_none when missing; photos and avatars have no rule.
+V || R12035 || COMPLIANT || BADGE-01 || - || 21 || Badge is ui_badge markup (mentor_result_badge) centred in a text-center mb-2 wrapper.
+V || R02558 || DIVERGENT || TYPE-03 || medium || 24 || Same as R12034: text-sm on the card body, the card's primary information.
+V || R12033 || COMPLIANT || CARD-01 || - || 13 || Padding set at the call site on ui_card_body (py-3) and ui_card_footer (pb-3, justify-start), as CARD-01 allows.
+V || R02568 || COMPLIANT || TYPE-04 || - || 15 || h3 takes heading-title; text-heading is colour and grow is layout, no size or weight utilities.
+V || R12031 || COMPLIANT || TYPE-04 || - || 15 || h3.heading-title with colour/layout utilities only; the fixed level depends on the calling page (outside this group).
+V || R02571 || DIVERGENT || TYPE-03 || medium || 20 || text-sm is never for primary card information; the shift's time line (20) and the Sign-Ups count row above the meter (26) are text-sm.
+V || R12032 || UNCOVERED || - || - || 26 || Label/value row (flex justify-between, label muted, value semibold) above ui_progress_bar; label/value displays have no rule.
+V || R12040 || UNCOVERED || - || - || 11 || ambiguous EMPTY-01: @mentoring.mentors has no empty branch; with a year but no mentors the section shows only the status form. Page-level ui_empty_state covers the all-empty case.
+V || R12039 || DIVERGENT || BTN-07 || medium || 36 || A form's save sits in a button_row; f.submit "Save Status" is placed bare after form_row, outside any button_row.
+V || R12041 || UNCOVERED || - || - || 67 || ambiguous EMPTY-02: missing date prints italic "never" (a fact, not a blank). Mentors and FKAs are spans separated by <br>, a list pattern no rule covers.
+V || R12050 || UNCOVERED || - || - || 7 || Divided list row: grid div with border-t border-base-300 py-4, icon slot w-5, ms-7 alignment; not a container doing a card's job, and no rule covers list rows.
+V || R12051 || COMPLIANT || A11Y-01 || - || 9 || Settled rows step back to muted grey; the state is also said in words (Earned / On track / Not earned this year) and by qualification_icon.
+V || R12053 || UNCOVERED || - || - || 10 || Label/figure row above a progress bar (text-base tabular-nums, lead row in heading weight, figure text-lg); label/value displays have no rule. tabular-nums follows TYPE-07.
+V || R12052 || COMPLIANT || PROG-01 || - || 14 || ui_progress_bar with size :lg and label; bar_class progress-projected and a neutral ring-base-content/35 edge are call-site options on the helper.
+V || R12044 || COMPLIANT || CARD-02 || - || 34 || ui_accent_card variants match status (success all earned, secondary nothing open, primary next step); options class mb-4 is documented.
+V || R02831 || COMPLIANT || SPACE-02 || - || 16 || ul.list-bulleted space-y-2 text-base inside the accent card; documented list form.
+V || R12046 || DIVERGENT || COLOR-03 || medium || 25 || No coloured text for emphasis; the Non-transferable rule li is text-error while its sibling rules are plain, so red only emphasises.
+V || R12045 || COMPLIANT || BTN-01 || - || 53 || button_link :primary with class "mt-3" (margin only); class: on button_link is shown in the guide.
+V || R12047 || UNCOVERED || - || - || 59 || Local note_class string reused on three closing note paragraphs (border-t divider + muted text); a section-closing note with top rule has no rule.
+V || R12048 || UNCOVERED || - || - || 61 || Sections constrained to lg:w-7/10 in a grid; page-width constraint outside records management is unwritten.
+V || R12049 || COMPLIANT || CARD-03 || - || 62 || qualification_section (application_helper.rb:335) builds through ui_section with badge and badge_color.
+V || R12042 || DIVERGENT || ALERT-01 || medium || 91 || Inline notices are ui_callout_box; the Shiny Penny notice is a hand-made div "p-4 bg-warning/10 rounded-lg text-warning" with its own h4 and star icon.
+V || R02833 || COMPLIANT || TYPE-04 || - || 92 || h4 takes heading-title; extra classes are layout and margin only. Level skip is an F line (TYPE-05).
+V || R12043 || COMPLIANT || TYPE-04 || - || 92 || h4.heading-title flex items-center gap-2 mb-1: no size or weight override.
+V || R11920 || COMPLIANT || ALERT-01 || - || 2 || Two accent ui_callout_box (warning, info) inside a labelled region; inner mt-2 divs and a list-bulleted ul.
+V || R02880 || COMPLIANT || SPACE-02 || - || 18 || ul.list-bulleted space-y-1.
+V || R11926 || DIVERGENT || ALERT-01 || medium || 9 || Inline notices are ui_callout_box; the limit-reached warning is a div "text-error mt-1" (9, 23) nested in plain text.
+V || R11927 || UNCOVERED || - || - || 33 || Count lines ("N signups in this shift:") as div "font-semibold my-2"; heading-like but not outweighing a section title, so no rule decides it.
+V || R11929 || UNCOVERED || - || - || 36 || Callsigns as divs in .callsign-list (components/callsign-list.css, named in the guide's file index); no usage rule for it.
+V || R11928 || DIVERGENT || EMPTY-01 || low || 42 || An empty state is always ui_empty_state; empty lists are bare text (42, 98) or div "font-semibold my-2" (56, 73) styled like the count lines.
+V || R02902 || DIVERGENT || CARD-01 || low || 6 || A card has no shadow by default and adds shadow-xs if it needs one; this card-standard div carries shadow-sm (the button/dropdown shadow).
+V || R11912 || COMPLIANT || CARD-01 || - || 6 || card-standard with call-site padding is the guide's documented card markup; aria-labelledby sits on a div with no role (shadow covered by R02902).
+V || R02906 || COMPLIANT || TYPE-03 || - || 73 || text-base on title and description; the one text-sm is a short help line beside the actions ("Cannot remove after shift start"), an allowed use.
+V || R11913 || UNCOVERED || - || - || 10 || Card title as div "font-semibold text-base leading-snug"; heading-like but not outweighing the section title, so no rule decides it.
+V || R11914 || UNCOVERED || - || - || 15 || &bullet; glyph in its own muted div as a separator between title and description; no rule on separators.
+V || R11919 || COMPLIANT || BADGE-01 || - || 23 || ui_badge "overlapping shift" :error; the same state is :warning with an icon on the slot card (see Q).
+V || M0018 || DIVERGENT || BP-01 || medium || 31 || pattern=spacing sm: is only for a field width; sm:grid-cols-2 creates a tablet column tier between the phone stack and lg:grid-cols-4.
+V || M0019 || DIVERGENT || BP-01 || medium || 32 || pattern=spacing sm:col-span-2 belongs to the same sm: layout tier; sm: is sanctioned only in a field width.
+V || R11915 || UNCOVERED || - || - || 31 || Definition grid with lg:hidden inline labels (Time:, Duration:) that turns into a four-column row at lg; label/value displays have no rule (sm: tier in M0018).
+V || R02899 || COMPLIANT || BADGE-01 || - || 35 || slot_virtual_venue_badge builds through ui_badge.
+V || R11917 || UNCOVERED || - || - || 86 || Empty turbo frame filled by the toggle controller, no loading placeholder; loading states have no rule.
+V || M0170 || COMPLIANT || COPY-07 || - || 68 || pattern=other False positive: "signups-<id>" is a DOM id, not reader-facing text.
+V || R11916 || UNCOVERED || - || - || 73 || In place of a disabled Remove button, an explanatory span with info icon and min-h-9; no rule on replacing an unavailable action with text.
+V || R11918 || DIVERGENT || MODAL-02 || low || 81 || A confirm asks with the action and says whether it can be undone; the red confirm says "Please confirm you wish to remove this shift…", no question, no undo line.
+V || R02898 || DIVERGENT || MODAL-02 || low || 81 || Same confirm as R11918: variant :error is right, wording does not ask with the action or state reversibility.
+V || R11910 || COMPLIANT || HERO-03 || - || 19 || Year selector via panel.year_selector and back link via back_to, both in the hero.
+V || R11911 || COMPLIANT || ALERT-01 || - || 28 || ui_callout_box :info shown only in the training-preview state, a state notice HELP-02 allows to stay visible.
+V || R11909 || COMPLIANT || EMPTY-01 || - || 121 || All three empty lists use ui_empty_state (135 without an icon).
+V || R11904 || DIVERGENT || BTN-01 || medium || 47 || Buttons come from ButtonHelper, not btn classes by hand; the ui_disclosure summary is styled with button_classes(:primary) plus py-3 my-4 and a marker-hiding variant.
+V || R02916 || UNCOVERED || - || - || 47 || Arbitrary variant [&::-webkit-details-marker]:hidden on a summary; the guide has no rule on arbitrary values.
+V || M0020 || DIVERGENT || BP-01 || medium || 52 || pattern=spacing md: only for button-row stacking and its spacer; md:hidden here shows the phone action stack only below md.
+V || R11907 || UNCOVERED || - || - || 52 || Same action set rendered twice: phone stack of full-width button_link and desktop rail of button_link plus action_box; duplication itself has no rule (md: split under BP-01).
+V || R11903 || COMPLIANT || BTN-01 || - || 59 || button_link with layout/size classes (text-base py-3, w-full); class: on button_link is shown in the guide, and no colour is overridden.
+V || M0021 || DIVERGENT || BP-01 || medium || 80 || pattern=spacing md:hidden on the export wrapper is show/hide by md, which the guide forbids.
+V || R02913 || UNCOVERED || - || - || 85 || ambiguous MODAL-02: export confirm (method :get, "Calendar Export Warning", "Download Schedule") is not destructive; the rule's wording guidance is written for destructive confirms.
+V || M0022 || DIVERGENT || BP-01 || medium || 102 || pattern=spacing md:flex-row md:gap-6 makes md the two-column fold; lg is the one structural fold.
+V || R11906 || DIVERGENT || LAYOUT-02 || medium || 102 || Columns are flex flex-col lg:flex-row gap-4; this is flex-col md:flex-row md:gap-6 with a md:w-60 lg:w-72 sticky rail and order swaps.
+V || M0023 || DIVERGENT || BP-01 || medium || 103 || pattern=spacing md:order-1 reorders columns at md, part of the md layout tier.
+V || R11908 || UNCOVERED || - || - || 109 || ui_section_title wrapped in a flex/lg:flex-row div that holds nothing else; an inert layout wrapper no rule covers.
+V || M0024 || DIVERGENT || BP-01 || medium || 140 || pattern=spacing md:w-60 md:sticky md:top-4 sizes and pins the rail at md, a layout tier.
+V || M0025 || DIVERGENT || BP-01 || medium || 141 || pattern=spacing hidden md:block shows the rail title by md breakpoint.
+V || M0026 || DIVERGENT || BP-01 || medium || 145 || pattern=spacing hidden md:flex shows the desktop action rail by md breakpoint.
+V || R11905 || DIVERGENT || COLOR-02 || medium || 170 || Colour carries meaning, never decoration; action_box gets ring-2 ring-warning to highlight the Sign-Ups box, with no warning to signal.
+V || R11921 || DIVERGENT || STAT-01 || medium || 8 || Summary tiles are ui_stat_box inside ui_stat_row, never a hand-rolled grid; here three stat boxes sit in "grid grid-cols-3 gap-2 lg:gap-4 my-4".
+V || R11923 || DIVERGENT || HELP-02 || medium || 28 || On a report the legend lives in one collapsed About This Report card; the Earned/Scheduled legend is a visible muted line under the stats.
+V || R11922 || UNCOVERED || - || - || 44 || "Breakdown by Period" as div font-medium text-heading with an icon; heading-like but lighter than a section title, so no rule decides it.
+V || M0487 || DIVERGENT || TABLE-02 || low || 49 || pattern=tables-lists responsive: false fits ~4 columns or fewer, or a matrix with a call-site comment; this 5-column period matrix has no comment.
+V || R11924 || COMPLIANT || TABLE-01 || - || 49 || ui_table with t.heading/t.cell and text-end alignment; blank first heading and Hrs/Cr abbreviations below lg (responsive flag judged in M0487).
+V || R11925 || COMPLIANT || ALERT-01 || - || 84 || ui_callout_box :warning with a margin class; a state message (excluded hours) may stay visible.
+V || R11930 || DIVERGENT || ALERT-01 || medium || 16 || Inline notices are ui_callout_box; the arrive-early warning is p "text-error mb-2" written in capitals among plain paragraphs.
+V || R02945 || COMPLIANT || LIST-01 || - || 4 || Explanatory Q&A is dl.instruction-list (dt classes judged in M0428-M0430).
+V || R11931 || DIVERGENT || SPACE-03 || low || 5 || No classes on an instruction-list dt; each dt carries font-bold (5, 12, 15), one with a trailing space.
+V || M0428 || DIVERGENT || SPACE-03 || low || 5 || pattern=typography instruction-list dt has class "font-bold "; the rule allows no classes on dt.
+V || M0429 || DIVERGENT || SPACE-03 || low || 12 || pattern=typography instruction-list dt has class "font-bold".
+V || M0430 || DIVERGENT || SPACE-03 || low || 15 || pattern=typography instruction-list dt has class "font-bold".
+V || R11932 || UNCOVERED || - || - || 5 || Label/value rows with leading icons (Shift:, Time:) in a confirm body; label/value displays have no rule.
+V || R02961 || DIVERGENT || LIST-01 || medium || 5 || Explanatory Q&A is a dl.instruction-list; this dl is "space-y-2 text-body" with dt "font-bold text-heading", a hand-styled Q&A list.
+V || R11933 || DIVERGENT || LIST-01 || medium || 5 || Same dl as R02961: Q&A explanation built from utilities instead of the instruction-list component.
+V || R02962 || COMPLIANT || SPACE-02 || - || 15 || ul.list-bulleted space-y-1.
+V || R11935 || DIVERGENT || LIST-01 || medium || 3 || Instructional content is a Q&A instruction-list, not paragraphs; three prose paragraphs (rules, Note:) with a bare mail_to line explain the Online Course requirement.
+V || R02969 || COMPLIANT || SPACE-02 || - || 22 || ul.list-bulleted.
+V || R11934 || DIVERGENT || MODAL-01 || low || 7 || A modal footer is a button_row holding modal_close_button; here m.footer holds modal_close_button bare (one control, so little visible change).
+V || R11936 || DIVERGENT || MODAL-01 || medium || 10 || Modals have m.title, m.body and a button_row footer with modal_close_button; this one has title and body only, unlike its sibling result modals.
+V || R02978 || COMPLIANT || SPACE-02 || - || 14 || ul list-bulleted (with mb-2 font-semibold).
+V || R11937 || COMPLIANT || ALERT-01 || - || 3 || Three accent ui_callout_box (success, info with instruction-list, error deadline); text-sm on the deadline note judged in R02992.
+V || R02984 || COMPLIANT || LIST-01 || - || 10 || dl.instruction-list with no classes on dt/dd (space-y-3 on the dl).
+V || R02985 || COMPLIANT || SPACE-02 || - || 31 || ul.list-bulleted mt-1 space-y-1.
+V || R02992 || DIVERGENT || TYPE-03 || medium || 52 || text-sm is never for paragraph content; the deadline's "No exceptions." is a p "text-sm" (49 is text-base, fine).
+V || R11939 || COMPLIANT || ALERT-01 || - || 4 || ui_callout_box :warning with a margin class; p margins inside.
+V || R02994 || COMPLIANT || SPACE-02 || - || 16 || ul.list-bulleted.
+V || R11938 || COMPLIANT || ALERT-01 || - || 3 || Accent ui_callout_box :warning; conflict heads as semibold divs with list-bulleted lists.
+V || R03000 || COMPLIANT || SPACE-02 || - || 10 || ul.list-bulleted mb-2.
+V || R11940 || DIVERGENT || COLOR-05 || low || 40 || A status icon takes icon-error/icon-warning/icon-info; the ban icon wrapper uses text-error (40), while siblings use icon-error (9) and icon-warning (20).
+V || R03008 || COMPLIANT || COLOR-05 || - || 9 || Status icon wrapper uses icon-error, drawn with fa_icon.
+V || R03019 || COMPLIANT || TYPE-04 || - || 13 || h4.heading-title with margin only (13, 24, 44); hierarchy skip is an F line (TYPE-05).
+V || R11941 || COMPLIANT || TYPE-04 || - || 13 || h4 heading-title mb-1/mb-2: no size or weight override.
+V || R03009 || COMPLIANT || COLOR-05 || - || 20 || icon-warning on the training caveat icon (20) is a status icon; the warning-coloured mail link at 60 is judged in R11943.
+V || R11944 || COMPLIANT || CARD-02 || - || 31 || ui_accent_card :info (help/explanation variant) for the waiting-for-completion note; a notice keeps the default div title.
+V || R03015 || COMPLIANT || SPACE-02 || - || 49 || ul.list-bulleted space-y-1 (colour judged in R11942).
+V || R11942 || DIVERGENT || COLOR-03 || medium || 49 || No coloured text for emphasis; the requirement list is font-medium text-error inside an error banner that already signals the state.
+V || R11945 || DIVERGENT || FORM-10 || low || 58 || A sub-group divider is mt-4 pt-3 border-t border-line; this one is mt-4 pt-4 border-t border-line.
+V || R11943 || DIVERGENT || COLOR-02 || medium || 60 || Colour carries meaning, never decoration; the Contact Training Academy mail link is coloured with icon-warning, a status colour on a plain link.
+V || R11949 || UNCOVERED || - || - || 12 || Inline "Details:" label span font-semibold text-body before the value; label/value displays have no rule.
+V || R11948 || COMPLIANT || DISC-01 || - || 14 || Long text truncates and expands through the read-more controller, as DISC-01 asks; collapsed: true uses ui_disclosure.
+V || R11947 || DIVERGENT || BTN-01 || medium || 27 || Btn classes are not written by hand; btn-link font-normal align-baseline is added over button_action :ghost to turn it into an inline text link.
+V || R03024 || DIVERGENT || BTN-01 || medium || 27 || pattern=buttons Same as R11947: hand-applied btn-link variant on a ButtonHelper button.
+V || R11946 || DIVERGENT || MODAL-01 || medium || 1 || Modals have m.title, m.body and a button_row footer with modal_close_button; this modal has m.body only, no title and no footer.
+V || R11950 || COMPLIANT || ALERT-01 || - || 10 || ui_alert_banner :error and ui_callout_box info/warning/secondary/error with titles and icons; <code> prints the stored status.
+V || R11951 || DIVERGENT || COLOR-03 || medium || 82 || No coloured text for emphasis; the no-privilege sentence is strong text-error while the parallel can-force sentence (77) is plain strong.
+V || R11952 || COMPLIANT || MODAL-01 || - || 3 || ModalHelper modal_dialog with modal_form_footer, or button_row > modal_close_button "Close".
+V || R11953 || DIVERGENT || ALERT-01 || medium || 4 || Inline notices are ui_callout_box; the blocked statement (4) and the logging notice (19) are p "font-semibold text-error" paragraphs.
+V || R03049 || COMPLIANT || SPACE-02 || - || 8 || ul.list-bulleted mb-3.
+V || R11954 || UNCOVERED || - || - || 27 || ui_form(nil) with f.text_area required: true (FORM-03 met); with no model, how a server-side rejection is shown cannot be told from the template.
+V || R11955 || UNCOVERED || - || - || 24 || hidden_field_tag inside ui_form carrying original params; a hidden field is not a form field in FORM-01's sense.
+V || R11956 || DIVERGENT || MODAL-01 || medium || 6 || Modals have a button_row footer with modal_close_button; the converted modal has title and body, no footer.
+V || R11958 || COMPLIANT || MODAL-01 || - || 3 || modal_dialog with ui_form and modal_form_footer "Save Position".
+V || R11957 || DIVERGENT || FORM-07 || low || 21 || Field widths fit content and are responsive (selects w-full sm:w-44 via width:); the select gets class "w-full" at every width.
+V || R11959 || UNCOVERED || - || - || 6 || ui_label_value with label_width "8rem"; label/value displays have no rule.
+V || R03066 || COMPLIANT || COLOR-05 || - || 12 || fa_icon ban with icon-warning beside words saying the hours do not count; a status icon in a status class.
+V || R11960 || COMPLIANT || COLOR-05 || - || 12 || Same icon as R03066: status icon, icon-warning, paired with text.
+V || R11961 || COMPLIANT || ALERT-01 || - || 20 || ui_callout_box :info with margin class; button_row sticky with margin class (BTN-07).
+V || R11962 || COMPLIANT || BTN-05 || - || 35 || End Shift :primary size lg, the two exception paths :secondary, all ButtonHelper in one button_row.
+V || R11963 || COMPLIANT || BTN-01 || - || 15 || button_link full_width with text-base py-3 (layout/size classes, no colour override).
+V || R11964 || COMPLIANT || TABLE-01 || - || 25 || ui_table striped false with t.row_header and a colspan info row; three columns, responsive default kept.
+V || R11965 || COMPLIANT || EMPTY-01 || - || 63 || ui_empty_state inside ui_section.
+V || R11966 || DIVERGENT || FORM-07 || low || 75 || Field widths come through the responsive width: pattern (w-full sm:w-44 for selects); this select uses class "w-full lg:w-96".
+V || R11967 || DIVERGENT || MODAL-01 || low || 61 || A modal footer is a button_row holding the controls; m.footer holds modal_close_button "Cancel" bare.
+V || R11971 || DIVERGENT || ALERT-01 || medium || 6 || Inline notices are ui_callout_box; "The shift has NOT been ended…" is p "font-semibold text-error mb-3".
+V || R11968 || DIVERGENT || CARD-02 || low || 12 || A title that labels the card's content takes heading_level:; the three option cards (12, 23, 44) label their options but render div titles. Variant :secondary is correct.
+V || R11969 || COMPLIANT || BTN-01 || - || 20 || button_link / delete_button with text-base py-3 layout classes; the delete variant is an F line (BTN-05).
+V || R11970 || DIVERGENT || MODAL-02 || low || 38 || A confirm asks "<Verb> <thing>?" and says whether it can be undone, not "Are you sure"; this reads "Are you absolutely sure you want to delete the entry?"
+V || R12005 || COMPLIANT || BADGE-01 || - || 7 || Badge hashes are rendered by entry_card_grid through ui_badge with an icon (_entry_card_grid.html.erb:32); labels lowercase, one "STATUS BUG!".
+V || R12010 || DIVERGENT || SPACE-01 || low || 25 || Card padding is p-4 or p-2 lg:p-4; the inner wrapper pads the frame card with px-3 py-2.
+V || R03170 || COMPLIANT || TYPE-03 || - || 42 || text-sm on metadata lines (verified timestamp 42, last-note sender and time 91), an allowed use.
+V || R12006 || DIVERGENT || ALERT-01 || medium || 59 || Inline notices are ui_callout_box; pending, rejected, bug and in-progress explanations are div "text-warning"/"text-error" lines (59, 63, 75, 80).
+V || R03161 || DIVERGENT || COLOR-06 || low || 91 || The same neutral text utility serves the same purpose (text-stone-muted); this line uses .me-muted, a hero-panel alias of it.
+V || R12007 || DIVERGENT || COLOR-06 || low || 91 || Same as R03161: me-muted alias instead of the text-stone-muted ladder utility.
+V || R12009 || COMPLIANT || BTN-07 || - || 115 || Secondary button_link and button_action grouped in a button_row.
+V || R12008 || UNCOVERED || - || - || 129 || aria_hidden: "true" passed as a plain key to button_action; button_tag likely prints an inert aria_hidden attribute, so not a confirmed A11Y-02 barrier. Needs the rendered HTML.
+V || R03172 || DIVERGENT || CARD-01 || medium || 4 || One card utility, card-standard via ui_card; the entry card is a div with the section box classes box box-default plus its own border, radius, padding.
+V || R03173 || DIVERGENT || CARD-01 || medium || 4 || Same container as R03172: box-default used to hand-build a card.
+V || R03179 || DIVERGENT || CARD-01 || low || 4 || A card has no shadow (shadow-xs if needed); this one adds rounded-xl shadow-sm.
+V || R12002 || DIVERGENT || CARD-01 || medium || 4 || Cards are card-standard via ui_card; this is div "box box-default mb-3 p-4 rounded-xl border border-line shadow-sm" with aria-labelledby and no role.
+V || R03174 || DIVERGENT || COLOR-06 || low || 20 || Neutral muted text is text-stone-muted; this note uses the hero-panel alias .me-muted.
+V || R12003 || DIVERGENT || COLOR-06 || low || 20 || Same as R03174: .me-muted outside a hero panel.
+V || R12004 || COMPLIANT || EMPTY-01 || - || 27 || ui_empty_state with icon clipboard-list.
+V || R03183 || DIVERGENT || CARD-01 || medium || 4 || Cards are card-standard via ui_card; the turbo frame is styled as a card with box box-default.
+V || R03184 || DIVERGENT || CARD-01 || medium || 4 || Same container as R03183: box-default used as a card.
+V || R03187 || DIVERGENT || CARD-01 || low || 4 || Card shadow is none (shadow-xs if needed); the frame card carries rounded-xl shadow-sm.
+V || R12001 || DIVERGENT || CARD-01 || medium || 4 || Cards are card-standard via ui_card; turbo_frame_tag itself is the card: "box box-default mb-3 rounded-xl border border-line shadow-sm".
+V || R12015 || COMPLIANT || HERO-04 || - || 5 || Back link in the hero via back_to, label chosen by area.
+V || R12012 || COMPLIANT || FORM-06 || - || 7 || ui_form @entry with builder fields; ui_form supplies the error summary, so no form_error_summary call is needed in the template.
+V || R03202 || UNCOVERED || - || - || 15 || ambiguous LIST-01: instruction-list whose dt states the current value ("Current position: X") rather than a question; the rule does not settle a non-question dt.
+V || R12011 || UNCOVERED || - || - || 15 || ambiguous LIST-01: dl.instruction-list mb-3 used as a value-plus-instruction pair (15, 22, 29), not Q&A.
+V || R03203 || COMPLIANT || SPACE-02 || - || 37 || ul.list-bulleted at 37; the ul at 58 holds ui_icon_item rows, no bullets.
+V || R12013 || DIVERGENT || FORM-10 || low || 80 || A sub-group divider is mt-4 pt-3 border-t border-line; the callout's footer line uses mt-3 pt-3 border-t border-warning.
+V || R12014 || DIVERGENT || BTN-07 || medium || 86 || A form's save and cancel are f.submit + cancel_link in one button_row; the cancel here is a back_to text link ("Entries").
+V || M0143 || DIVERGENT || COPY-04 || low || 85 || pattern=buttons Submitting a form says "Save [Entity]", never "Submit"; the submit reads "Submit Correction" (hero title 4 too).
+V || R11993 || DIVERGENT || COPY-03 || low || 24 || Labels are Title Case; stat labels are written in capitals ("ENTRIES", "VERIFIED", "UNVERIFIED", "PENDING").
+V || R12000 || COMPLIANT || ALERT-01 || - || 41 || ui_callout_box :success for the all-verified state.
+V || M0027 || DIVERGENT || BP-01 || medium || 50 || pattern=spacing md:hidden shows the phone quick-action stack below md; md is not for show/hide.
+V || R11998 || UNCOVERED || - || - || 50 || Phone button_link stack duplicating the desktop action_box rail; duplication itself has no rule (md: split under BP-01).
+V || R11996 || COMPLIANT || BTN-01 || - || 57 || button_link full_width with text-base py-3 layout classes; no colour override.
+V || M0028 || DIVERGENT || BP-01 || medium || 87 || pattern=spacing md:flex-row md:gap-4 makes md the two-column fold.
+V || R11997 || DIVERGENT || LAYOUT-02 || medium || 87 || Columns are flex flex-col lg:flex-row gap-4; this is flex-col md:flex-row md:gap-4 with a sticky md:w-60 lg:w-72 rail (schedule/index uses md:gap-6).
+V || M0029 || DIVERGENT || BP-01 || medium || 89 || pattern=spacing md:order-1 reorders the columns at md.
+V || R11994 || COMPLIANT || A11Y-01 || - || 93 || Section title coloured text-warning carries a real status with an icon and words; fa_icon interpolated via html_safe. Casing is an F line.
+V || R11999 || COMPLIANT || EMPTY-01 || - || 109 || ui_empty_state in the corrections branch; the other branch's _listing has its own.
+V || M0030 || DIVERGENT || BP-01 || medium || 117 || pattern=spacing md:w-60 md:sticky sizes and pins the rail at md.
+V || M0031 || DIVERGENT || BP-01 || medium || 118 || pattern=spacing hidden md:block shows the rail title by md.
+V || M0032 || DIVERGENT || BP-01 || medium || 122 || pattern=spacing hidden md:flex shows the desktop rail by md.
+V || R11995 || DIVERGENT || COLOR-02 || medium || 131 || Colour carries meaning, never decoration; action_box gets ring-2 ring-warning for highlight. Descriptions also inject <br> via html_safe (147, 156).
+V || R12029 || UNCOVERED || - || - || 14 || Label/value lines (When:, Where:, Required for:) as div text-body with font-medium labels; label/value displays have no rule.
+V || R12030 || UNCOVERED || - || - || 22 || ambiguous EMPTY-02: "Not signed up for a session." and "Not signed up yet." state a fact rather than leave a blank.
+V || R12028 || UNCOVERED || - || - || 6 || Inline label span before a ui_badge; label/value displays have no rule.
+V || R12027 || COMPLIANT || BADGE-01 || - || 5 || Every status maps to ui_badge with an icon and words.
+V || R12018 || COMPLIANT || EMPTY-01 || - || 5 || ui_empty_state.
+V || R12016 || COMPLIANT || TABLE-01 || - || 7 || ui_table with right-aligned numbers, total row state, link drill-downs; responsive default kept.
+V || R12017 || COMPLIANT || EMPTY-02 || - || 39 || Empty matrix cell prints "—" (muted).
+V || M0109 || COMPLIANT || COPY-01 || - || 1 || pattern=other "work" occurs only in the DOM id work-history-breakdown-header; the Work History page name is an exception anyway.
+V || R12019 || DIVERGENT || STAT-01 || medium || 10 || Summary numbers are ui_stat_box in ui_stat_row; entry count, total hours and credits are a row of ui_badge in a flex div.
+V || M0488 || COMPLIANT || TABLE-02 || - || 16 || pattern=tables-lists responsive: false on a four-column table, within the "about four columns or fewer" allowance.
+V || R12020 || UNCOVERED || - || - || 16 || ambiguous EMPTY-01: ui_table over @entries has no empty branch; reached by a matrix link that exists only when entries do, so an empty table needs a hand-typed URL.
+V || R03340 || DIVERGENT || TYPE-03 || medium || 29 || Table content is text-base; the "(as Echelon volunteer)" note in a cell is text-sm.
+V || R12021 || DIVERGENT || TYPE-03 || medium || 29 || Same as R03340: text-sm sub-note inside a table cell.
+V || M0110 || COMPLIANT || COPY-01 || - || 1 || pattern=other "work" only in a DOM id; Work History is the excepted page name.
+V || R12022 || DIVERGENT || STAT-01 || medium || 7 || Summary numbers are ui_stat_box in ui_stat_row; year count and total hours are ui_badge in a flex div (mb-4, siblings mb-3).
+V || R12024 || UNCOVERED || - || - || 13 || ambiguous EMPTY-01: @position.years and event.entries have no empty branch; the page is reached only from a non-empty matrix cell.
+V || R03353 || DIVERGENT || TYPE-03 || medium || 33 || Table content is text-base; the Echelon note in a cell is text-sm (33); 17 is a muted text-sm hours aside next to the year heading.
+V || R12023 || DIVERGENT || TYPE-04 || medium || 15 || Nothing in a section outweighs its title; the per-year div is text-lg font-semibold, heavier than the base-size section title below lg.
+V || M0489 || COMPLIANT || TABLE-02 || - || 21 || pattern=tables-lists responsive: false on a three-column table, inside the four-column allowance.
+V || M0111 || COMPLIANT || COPY-01 || - || 1 || pattern=other "work" only in a DOM id; Work History is the excepted page name.
+V || R12025 || DIVERGENT || STAT-01 || medium || 10 || Summary numbers are ui_stat_box in ui_stat_row; entries, hours, credits are a ui_badge row in a flex div.
+V || M0490 || COMPLIANT || TABLE-02 || - || 16 || pattern=tables-lists responsive: false on a three-column table, inside the four-column allowance.
+V || R12026 || UNCOVERED || - || - || 16 || ambiguous EMPTY-01: ui_table over @entries has no empty branch; reached only from a non-empty matrix cell.
+V || R03364 || DIVERGENT || TYPE-03 || medium || 28 || Table content is text-base; the Echelon note in a cell is text-sm.
+F || app/views/common/available_sign_ups/index.html.erb || 25 || toasts-alerts || plain-text-alert || DIVERGENT || ALERT-01 || medium || Inline notices are ui_callout_box; the Online Course preview notice inside each drill-down row is a div "text-error".
+F || app/views/common/qualifications/index.html.erb || 14 || other || reference-callout-visible || DIVERGENT || HELP-02 || medium || On a report, reference info lives in one collapsed About This Report card; the always-open accent card lists reference rules (estimates, verification) beside the one warning.
+F || app/views/common/scheduling/_alpha_shift_info.html.erb || 1 || other || howto-paragraphs-visible || DIVERGENT || HELP-02 || medium || A how-to goes in the one collapsed card (or a footer ui_section announced from the top); six visible paragraphs of Alpha instructions sit open on available_sign_ups/show.
+F || app/views/common/scheduling/_alpha_shift_info.html.erb || 5 || other || long-paragraph || DIVERGENT || COPY-10 || low || Paragraphs are two or three sentences at most; the shift-length paragraph runs to five sentences.
+F || app/views/common/shift_manage/_start_shift.html.erb || 42 || buttons || multiple-primary || DIVERGENT || BTN-04 || medium || One clear primary action per view; every imminent-shift row has a :primary Start Shift (42) and the form adds a primary lg submit_button (78).
+F || app/views/common/timesheet/index.html.erb || 135 || buttons || multiple-primary || DIVERGENT || BTN-04 || medium || One primary per view; action_box defaults to :primary, so the desktop rail shows up to four primary buttons (124, 135, 145, 154).
+F || app/views/common/shift_manage/_too_short_modal.html.erb || 32 || buttons || destructive-secondary || DIVERGENT || BTN-05 || medium || Destructive actions take :error; the Delete Entry delete_button is forced to variant :secondary, grey like the safe options.
+F || app/views/common/available_sign_ups/_slot.html.erb || 108 || buttons || flex-not-button-row || DIVERGENT || BTN-07 || medium || Buttons sit in a button_row; the card's Show Sign-Ups and Add/Remove buttons sit in a hand-made "flex flex-wrap items-center gap-2 mt-2" div.
+F || app/views/common/schedule/_signed_up_row.html.erb || 63 || buttons || flex-not-button-row || DIVERGENT || BTN-07 || medium || Buttons sit in a button_row; Show Sign-Ups and Remove from Schedule sit in a hand-made "flex flex-wrap items-center gap-2 mt-2" div.
+F || app/views/common/timesheet/edit.html.erb || 57 || forms || callout-order || DIVERGENT || FORM-08 || low || A form page is hero, optional callouts, ui_form sections, then the button row; the Grounds for Denial callout sits after the sections inside the form.
+F || app/views/common/scheduling/_signup_blockers.html.erb || 13 || typography || heading-level-skip || DIVERGENT || TYPE-05 || medium || Hierarchy goes h1 > h2 > h3; these h4s (13, 24, 44) follow the schedule page's h1 directly, since the alert banner's title is a div.
+F || app/views/common/qualifications/index.html.erb || 92 || typography || heading-level-skip || DIVERGENT || TYPE-05 || medium || Hierarchy goes h1 > h2 > h3; the Shiny Penny h4 sits directly under a level-2 section title, skipping h3.
+F || app/views/common/available_sign_ups/_training_months.html.erb || 11 || typography || heading-level-skip || DIVERGENT || TYPE-05 || medium || Hierarchy goes h1 > h2 > h3; the month h3s render under schedule/index's h1 with no h2 between (the preview callout title is a div).
+F || app/views/common/timesheet/index.html.erb || 93 || typography || title-case-conjunction || DIVERGENT || COPY-03 || low || Title Case lowercases coordinating conjunctions; the section title reads "Action Required Or Pending Correction Review".
+F || app/views/common/timesheet/_entry_with_action.html.erb || 110 || buttons || submit-verb || DIVERGENT || COPY-04 || low || One verb per action, never "Submit"; the correction link reads "Submit Appeal" when rejected.
+F || app/views/common/shift_manage/_on_duty.html.erb || 39 || buttons || submit-verb || DIVERGENT || COPY-04 || low || One verb per action, never "Submit"; the button reads "End Shift & Submit Correction".
+F || app/views/common/schedule/signup_summary.html.erb || 29 || icons || coloured-info-icon || DIVERGENT || COLOR-05 || low || Icons are neutral unless they carry status; the legend's circle-info icon is text-primary.
+F || app/views/common/scheduling/_missing_requirements_modal.html.erb || 3 || typography || sign-up-noun || DIVERGENT || COPY-07 || low || "sign-up" as a noun takes the hyphen; the modal title reads "Missing Sign Up Prerequisite(s)".
+F || app/views/common/schedule/_people_signed_up.html.erb || 34 || typography || signup-noun || DIVERGENT || COPY-07 || low || Never "signup"; counts read "N signups in this shift" (34, 47, 64, 88).
+S || HERO-01 || 11 || 0 || all 11 pages open with hero_panel; fragments and modals not applicable
+S || HERO-02 || 11 || 0 || 5 pages take description_text from the caller (wrappers outside this group), not judged; the rest are one sentence or absent
+S || HERO-03 || 11 || 0 || year selector in the hero where a page has one
+S || HERO-04 || 11 || 0 || every page's back link is in the hero
+S || HELP-01 || 11 || 0 || no help section further down any page
+S || HELP-02 || 11 || 3 || signup_summary legend (R11923), qualifications reference card, Alpha how-to on available_sign_ups/show
+S || STAT-01 || 11 || 4 || signup_summary grid; three work_history badge rows
+S || STAT-02 || 11 || 0 ||
+S || TABLE-02 || 6 || 1 || templates with ui_table; signup_summary 5-column matrix without comment
+S || TABLE-04 || 11 || 0 || no page in scope filters a table
+S || TABLE-05 || 11 || 0 || no CSV export in scope
+S || BTN-03 || 53 || 0 || no xs buttons
+S || BTN-04 || 53 || 2 || _start_shift, timesheet/index rail
+S || BTN-05 || 53 || 1 || _too_short_modal delete as :secondary
+S || BTN-07 || 53 || 4 || mentoring/index, timesheet/edit, _slot, _signed_up_row
+S || MODAL-02 || 4 || 3 || templates with a confirm; export confirm ambiguous
+S || FORM-02 || 5 || 0 || templates with a form
+S || FORM-03 || 5 || 0 ||
+S || FORM-07 || 5 || 2 || builder defaults on timesheet/edit and mentoring fields not judged
+S || FORM-08 || 1 || 1 || timesheet/edit is the only form page
+S || TYPE-05 || 53 || 3 || mentoring/_shift_card h3 depends on callers outside the group
+S || COLOR-02 || 53 || 3 || schedule/index and timesheet/index rings, _signup_blockers link
+S || COLOR-03 || 53 || 3 || qualifications li, _alerts strong, _signup_blockers list
+S || A11Y-01 || 53 || 0 ||
+S || A11Y-02 || 53 || 0 || _entry_with_action aria_hidden key needs the rendered HTML (R12008)
+S || LAYOUT-03 || 1 || 0 || available_sign_ups/index is the one level-1 page; its empty state is EMPTY-01
+S || COPY-03 || 53 || 1 || timesheet/index stat labels and section title
+S || COPY-04 || 53 || 3 || timesheet/edit, _entry_with_action, _on_duty
+S || COPY-10 || 53 || 1 || _alpha_shift_info
+Q || The overlapping-shift badge differs between siblings: lowercase :error with no icon on the schedule row, "Overlapping shift" :warning with an icon on the slot card.
+Q || The Show/Hide Sign-Ups toggle swaps in a minus icon on available sign-up cards but a plain "Hide Sign-Ups" on schedule rows.
+Q || available_sign_ups/show's Upcoming Shifts title prints stray spaces from ERB whitespace ("(3 shifts , 2 sign-ups )").
+Q || schedule/index's phone button reads "Available Sign-Up" (singular) while the desktop box says "Available Sign-Ups".
+Q || Work history pages format credits with "%.2f" while the timesheet and schedule pages use credit_format.
+Q || signup_summary's three stat boxes match the guide's own ui_stat_row example word for word but are not wrapped in ui_stat_row.
+Q || schedule/index and timesheet/index share the same two-column md/rail layout with gap-6 vs gap-4; a shared helper or partial would stop the drift.
+Q || timesheet/edit text-area labels are sentences ending in a colon ("Enter your brief explanation below:") rather than short field names.
