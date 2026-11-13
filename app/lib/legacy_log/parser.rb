@@ -17,14 +17,14 @@ module LegacyLog::Parser
   OPERATIONS = { "+" => "insert", "=" => "update", "-" => "delete" }.freeze
 
   # Every table the first Clubhouse wrote to (ddl/ddl.sql and the ddlchanges
-  # files), less the ones never converted: `log` itself, `sessions`, and
-  # `person_xfield` by ruling 7.
+  # files), less the ones never converted: `log` itself, `sessions`, and the
+  # custom-field tables (LegacyLog::Converter::SKIPPED_TABLES).
   TABLES = %w[
     access_document access_document_changes access_document_delivery alert alert_person asset
     asset_attachment asset_person bmid broadcast broadcast_message contact_log event_dates feedback
     manual_review mentee_status person person_language person_mentor person_message person_position
     person_role person_slot position position_credit radio_eligible role slot ticket
-    timesheet timesheet_log timesheet_missing trainee_status training xfield xgroup xoption
+    timesheet timesheet_log timesheet_missing trainee_status training
   ].freeze
 
   # The shorthand dropped underscores: `person_slot` reads `personslot`.

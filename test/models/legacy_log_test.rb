@@ -12,7 +12,7 @@ class LegacyLogTest < ActiveSupport::TestCase
   end
 
   def ids(result)
-    result[:legacy_logs].map(&:id)
+    result[:action_logs].map(&:id)
   end
 
   test "nothing may be written through a record" do
@@ -22,46 +22,35 @@ class LegacyLogTest < ActiveSupport::TestCase
     assert_raises(ActiveRecord::ReadOnlyRecord) { row.update!(event: "changed") }
   end
 
-  test "data is kept as JSON" do
-    row = create_legacy_log(data: { "target_source" => "session" })
+  test "data is kept as JSON, with the first Clubhouse's material under legacy" do
+    row = create_legacy_log(data: { "slot_id" => 386 }, legacy: { "truncated" => true })
 
-    assert_equal "session", row.data["target_source"]
-    assert_equal "=person.status=alpha@id=1", row.data["event"]
+    assert_equal 386, row.data["slot_id"]
+    assert_equal "=person.status=alpha@id=1", row.data["legacy"]["event"]
+    assert_predicate row, :truncated?
+    assert_nil row.session_person_id
   end
 
-  test "the summary pairs an insert's columns with its values" do
-    row = create_legacy_log(event: "person-slot-add", data: { "columns" => "personid,slotid", "values" => "687,386" })
+  test "is the Action Log query on its own table" do
+    ActionLog.delete_all
+    ActionLog.record(@actor, "person-update", "an action log row")
+    row = create_legacy_log(event: "person-update", data: { "position_ids" => [positions(:mentor_lead).id] })
 
-    assert_equal "personid=687, slotid=386", row.summary
-  end
+    result = LegacyLog.find_for_query(events: ["person-update"])
 
-  test "the summary leaves the values alone when a comma inside one breaks the pairing" do
-    row = create_legacy_log(event: "person-message-create",
-                 data: { "columns" => "personid,subject", "values" => "687,Hey,there" })
-
-    assert_equal "687,Hey,there", row.summary
-  end
-
-  test "the summary reads an update's assignments and conditions, and a delete's conditions" do
-    update = create_legacy_log(event: "person-update", data: { "set" => "status=alpha", "where" => "id=1578&status=prospective" })
-    delete = create_legacy_log(event: "person-slot-remove", data: { "where" => "personid=687&slotid=15" })
-
-    assert_equal "status=alpha where id=1578 and status=prospective", update.summary
-    assert_equal "where personid=687 and slotid=15", delete.summary
-  end
-
-  test "the summary of an unknown row is the raw event" do
-    row = create_legacy_log(statement: "=traineestatus.passed=0,notes=@id=LIMIT1")
-
-    assert_equal "=traineestatus.passed=0,notes=@id=LIMIT1", row.summary
+    assert_equal [row.id], ids(result)
+    assert_instance_of LegacyLog, result[:action_logs].first
+    assert_equal [positions(:mentor_lead)], result[:action_logs].first.positions
+    assert_not LegacyLog.column_names.include?("message")
+    assert_equal ["an action log row"], ActionLog.find_for_query[:action_logs].map(&:message)
   end
 
   test "loads the session's people a page at a time" do
-    create_legacy_log(event: "timesheet-update", data: { "session_person_id" => @subject.id })
-    create_legacy_log(event: "timesheet-update", data: { "session_person_id" => 999_999 })
-    create_legacy_log(event: "timesheet-update", data: { "set" => "offduty=NOW()" })
+    create_legacy_log(event: "timesheet-update", legacy: { "session_person_id" => @subject.id })
+    create_legacy_log(event: "timesheet-update", legacy: { "session_person_id" => 999_999 })
+    create_legacy_log(event: "timesheet-update", legacy: {})
 
-    rows = LegacyLog.find_for_query[:legacy_logs]
+    rows = LegacyLog.find_for_query[:action_logs]
 
     assert_equal [nil, nil, @subject], rows.map(&:session_person)
   end
@@ -111,10 +100,10 @@ class LegacyLogTest < ActiveSupport::TestCase
     first_page = LegacyLog.find_for_query(page_size: 2)
     last_page = LegacyLog.find_for_query(page: 2, page_size: 2)
 
-    assert_equal 2, first_page[:legacy_logs].size
+    assert_equal 2, first_page[:action_logs].size
     assert_equal 2, first_page[:pagy].next
     assert_nil first_page[:pagy].previous
-    assert_equal 1, last_page[:legacy_logs].size
+    assert_equal 1, last_page[:action_logs].size
     assert_nil last_page[:pagy].next
     assert_equal 1, last_page[:pagy].previous
   end
@@ -138,7 +127,7 @@ class LegacyLogTest < ActiveSupport::TestCase
 
     result = LegacyLog.find_for_query(page: 3)
 
-    assert_empty result[:legacy_logs]
+    assert_empty result[:action_logs]
     assert_equal 2, result[:pagy].previous
   end
 end

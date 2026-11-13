@@ -59,17 +59,6 @@ module Admin::ActionLogsHelper
   # rest, "Deleted #id" for a person removed since, and "-" for none.
   def action_log_person_label(person, person_id) = person_display_link(person, person_id, blank: "-")
 
-  def action_log_toggle_label(timestamp, expanded: false)
-    icon = expanded ? "chevron-up" : "chevron-down"
-
-    content_tag(:span, class: "inline-flex items-center gap-1") do
-      safe_join([
-                  content_tag(:span, timestamp, class: "truncate"),
-                  fa_icon(icon, :solid, class: "shrink-0 text-xs")
-                ])
-    end
-  end
-
   def action_log_ip(row)
     row.ip.presence || "server"
   end
@@ -137,10 +126,8 @@ module Admin::ActionLogsHelper
     lines
   end
 
-  # message: the text to show when it is not the row's message column, as
-  # the Legacy Clubhouse 1 Log's summary is.
-  def action_log_message_cell(row, message: row.message)
-    message = message.to_s
+  def action_log_message_cell(row)
+    message = row.message.to_s
     return "-" if message.blank?
     return message if message.length <= ACTION_LOG_MESSAGE_TRUNCATE_LENGTH
 

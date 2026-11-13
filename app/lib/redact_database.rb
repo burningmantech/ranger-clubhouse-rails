@@ -51,7 +51,6 @@ class RedactDatabase
     email_history
     error_logs
     legacy_log
-    log
     mail_log
     manual_review
     mentee_status

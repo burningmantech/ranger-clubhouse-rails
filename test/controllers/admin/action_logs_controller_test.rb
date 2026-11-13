@@ -137,6 +137,15 @@ class Admin::ActionLogsControllerTest < ActionDispatch::IntegrationTest
                   text: /Next Page/
   end
 
+  test "the category checkboxes are named so the search actually receives them" do
+    sign_in_as(@admin)
+
+    get admin_action_logs_path
+
+    assert_response :success
+    assert_select "input[type=checkbox][name=?][value=?]", "filter[event_filters][]", "auth-login"
+  end
+
   test "event checkboxes and event name are combined as an or query" do
     ActionLog.create!(
       event: "auth-login",

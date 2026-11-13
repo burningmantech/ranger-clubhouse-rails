@@ -1724,13 +1724,8 @@ Rails.application.routes.draw do
       end
     end
 
-    # The audit log kept by the first version of the Clubhouse. Frozen in
-    # October 2019 and read-only; it is here for historical and investigative
-    # purposes.
-    get "clubhouse1-log", to: "clubhouse1_log#index", as: :clubhouse1_log
-
-    # The same log converted to Action Log form (legacy_log), filled once by
-    # bin/rails legacy_log:convert and read-only like the log itself.
+    # The first Clubhouse's audit log (2008 to 2019) converted to Action Log
+    # form (legacy_log), filled by bin/rails legacy_log:convert and read-only.
     get "legacy-log", to: "legacy_log#index", as: :legacy_log
 
     # The documents the Clubhouse displays: agreements, dashboard links, contact

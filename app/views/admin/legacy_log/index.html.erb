@@ -7,8 +7,8 @@
     <dt>Where do these entries come from?</dt>
     <dd>
       Each one is a database change the first Clubhouse logged between 2008 and 2019, given an Action Log
-      event name. The <%= link_to "Clubhouse 1 Log", admin_clubhouse1_log_path %> shows the same entries as
-      they were written.
+      event name and data. It is kept apart from the Action Logs because it is not accurate in
+      places. An entry as the first Clubhouse wrote it is in its data, under the legacy key.
     </dd>
     <dt>Who are User and Target?</dt>
     <dd>
@@ -21,9 +21,15 @@
       The conversion could not read that entry with confidence, so it is kept as written, with the
       session's person as its target.
     </dd>
+    <dt>How does the data differ from an Action Log entry's?</dt>
+    <dd>
+      The first Clubhouse wrote no message, and logged the new value of a change and never the old one.
+      Open an entry to read what it changed. Its own material, such
+      as the entry as written, is under the legacy key.
+    </dd>
     <dt>What is left out?</dt>
     <dd>
-      Logins, requests, errors, session housekeeping and custom-field values, none of which has an
+      Logins, requests, errors, session housekeeping and custom fields, none of which has an
       Action Log equivalent.
     </dd>
   </dl>
@@ -103,53 +109,7 @@
       <%= pager %>
     </div>
 
-    <%= ui_table striped: false do |t| %>
-      <%= t.header do %>
-        <%= t.heading "Timestamp" %>
-        <%= t.heading "User" %>
-        <%= t.heading "Target" %>
-        <%= t.heading "Event" %>
-        <%= t.heading "Details" %>
-      <% end %>
-      <%= t.body do %>
-        <% @legacy_logs.each do |row| %>
-          <% detail_dom_id = "legacy-log-detail-#{row.id}" %>
-          <% timestamp = log_time_format(row.created_at) %>
-          <%= t.row class: "align-middle" do %>
-            <%= t.cell class: "align-top" do %>
-              <%= t.detail_row_toggle timestamp, id: detail_dom_id, describing: "Clubhouse 1 entry" %>
-            <% end %>
-            <%# person_display_link: a Tech Ninja reads this page but not the
-                person pages, so they get the callsign without a link that
-                would bounce them to /me. %>
-            <%= t.cell class: log_text_class("align-middle") do %>
-              <%= person_display_link(row.person, row.person_id, blank: "-") %>
-            <% end %>
-            <%= t.cell class: log_text_class("align-middle") do %>
-              <%= person_display_link(row.target_person, row.target_person_id, blank: "-") %>
-            <% end %>
-            <%= t.cell class: log_text_class("align-middle", Admin::ActionLogsHelper::ACTION_LOG_EVENT_MAX_WIDTH) do %>
-              <%= log_truncated(row.event) %>
-            <% end %>
-            <%= t.cell class: log_text_class("align-middle") do %>
-              <%= action_log_message_cell(row, message: row.summary) %>
-            <% end %>
-          <% end %>
-
-          <%= t.detail_row id: detail_dom_id, label: timestamp do %>
-            <div class="py-2">
-              <div class="<%= log_heading_class %>">Data</div>
-              <%= action_log_pretty_data_block(row) %>
-              <%= ui_label_value label_width: "10rem", class: "mt-4" do |list| %>
-                <% legacy_log_detail_items(row).each do |label, value| %>
-                  <%= list.row label, value %>
-                <% end %>
-              <% end %>
-            </div>
-          <% end %>
-        <% end %>
-      <% end %>
-    <% end %>
+    <%= render "admin/action_logs/table", rows: @legacy_logs, legacy: true %>
 
     <div class="mt-4">
       <%= pager %>

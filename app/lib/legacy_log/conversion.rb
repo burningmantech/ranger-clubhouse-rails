@@ -3,8 +3,9 @@
 # The run behind `bin/rails legacy_log:convert`: walks the Clubhouse 1 log in
 # id order, a batch at a time, and upserts what LegacyLog::Converter makes of
 # each row. The rows are keyed by log_id, so a rerun rewrites the same rows
-# and a grammar fix needs only a rerun. It reads `log` and writes
-# `legacy_log`, and deletes nothing. The report at the end is the evidence the
+# and a grammar fix needs only a rerun. It reads `log`, which exists only in
+# a database the maintainer restored it to (DropLog), and writes `legacy_log`,
+# and deletes nothing. The report at the end is the evidence the
 # conversion is judged by: rows read, skipped by reason, converted, unknown,
 # how many targets differed from the session's person, and each family with a
 # few of its unknown rows.
@@ -46,7 +47,7 @@ class LegacyLog::Conversion
 
   def report
     written = @counts[:converted] + @counts[:unknown]
-    skipped = LegacyLog::Converter::SKIP_REASONS.map { |reason, opening| "#{delimited(@counts[reason])} #{reason} (#{opening})" }
+    skipped = LegacyLog::Converter::SKIP_REASONS.map { |reason, opening| "#{delimited(@counts[reason])} #{reason} (#{Array(opening).join(", ")})" }
     lines = ["Legacy log conversion#{" (dry run)" if @dry_run}: #{delimited(@counts[:read])} rows read"]
     lines << "  Skipped: #{skipped.join(", ")}"
     lines << "  Converted: #{delimited(@counts[:converted])}#{share(@counts[:converted], written)}"
@@ -75,7 +76,7 @@ class LegacyLog::Conversion
     tally = @families[family || "other"]
     @counts[result] += 1
     tally[result] += 1
-    @counts[:session_disagreements] += 1 if row[:target_person_id] && row[:data]["session_person_id"]
+    @counts[:session_disagreements] += 1 if row[:target_person_id] && row[:data].dig("legacy", "session_person_id")
     if result == :unknown && tally[:examples].size < EXAMPLES
       tally[:examples] << "##{values.first} #{values.last.truncate(EXAMPLE_LENGTH)}"
     end
