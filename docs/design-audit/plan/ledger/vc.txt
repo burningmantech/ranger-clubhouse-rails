@@ -77,7 +77,7 @@ R14691 || FIXED || app/views/vc/photos_review/_photo.html.erb:78 || Now ui_empty
 F0281 || FIXED || app/views/vc/photos_review/_photo.html.erb:90 || Missing rejection message prints the dash.
 R14684 || FIXED || app/views/vc/photos_review/index.html.erb:8 || Empty queue is ui_empty_state.
 F0282 || FIXED || app/views/vc/photos_review/info.html.erb:23 || Dimensions, reasons and message print the dash.
-R14699 || BLOCKED || app/views/vc/photos_review/reject_dialog.html.erb:3 || Needs app/controllers/vc/photos_review_controller.rb (reject, ~line 43) to add a reject_reasons error and re-render 422 instead of the toast.
+R14699 || FIXED || app/views/vc/photos_review/reject_dialog.html.erb:14 || No reason re-renders the dialog at 422 (stream replaces the modal frame) with the builder error_message under the reasons fieldset; message kept.
 F0291 || FIXED || app/views/vc/photos_review/reject_dialog.html.erb:10 || Legend Title Case (dt labels too).
 F0267 || FIXED || app/views/vc/reserved_handles/edit.html.erb:2 || Description says what the page does.
 F0272 || FIXED || app/views/vc/reserved_handles/index.html.erb:71 || Apply Filters secondary (R7).

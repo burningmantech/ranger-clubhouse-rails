@@ -36,14 +36,7 @@ class Vc::PhotosReviewController < ApplicationController
 
   def reject
     reasons = permitted_reasons
-    if reasons.empty?
-      message = "Mark one or more reasons why the photo is being rejected."
-      respond_to do |format|
-        format.html { redirect_to vc_photos_review_path, error: message }
-        format.turbo_stream { render turbo_stream: ui_toast_stream(message, :error) }
-      end
-      return
-    end
+    return refuse_reject if reasons.empty?
 
     review(PersonPhoto::REJECTED, reject_reasons: reasons,
                                   reject_message: reject_params[:reject_message].presence)
@@ -102,6 +95,22 @@ class Vc::PhotosReviewController < ApplicationController
                                                   locals: { total: PersonPhoto.submitted.count }),
       ui_toast_stream(message, :success)
     ]
+  end
+
+  # The dialog comes back open with the reasons flagged and the typed message
+  # kept, rather than closing behind a toast. In memory only: nothing is saved.
+  # The error sits on :base because the dialog draws it once under the reasons
+  # fieldset; on :reject_reasons every checkbox would repeat it.
+  def refuse_reject
+    @person_photo.reject_message = reject_params[:reject_message]
+    @person_photo.errors.add(:base, "Mark one or more reasons why the photo is being rejected.")
+    respond_to do |format|
+      format.html { render :reject_dialog, layout: false, status: :unprocessable_content }
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace("modal", template: "vc/photos_review/reject_dialog"),
+               status: :unprocessable_content
+      end
+    end
   end
 
   def reject_params = scoped_params(:person_photo, :reject_message, reject_reasons: [])

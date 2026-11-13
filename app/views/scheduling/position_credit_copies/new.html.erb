@@ -24,6 +24,14 @@
   </div>
 <% end %>
 
+<% if @refusal %>
+  <div class="my-2">
+    <%= ui_callout_box :error, role: "alert" do %>
+      <%= @refusal %>
+    <% end %>
+  </div>
+<% end %>
+
 <%= ui_form nil, scheduling_position_credit_copies_path(year: @year, position_id: @source_position_id), method: :post do |f| %>
   <%= ui_section "Times for the New Credits", icon: "clock", icon_type: :solid do %>
     <p class="mb-3">

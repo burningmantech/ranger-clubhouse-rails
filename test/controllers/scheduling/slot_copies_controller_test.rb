@@ -197,7 +197,8 @@ class Scheduling::SlotCopiesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select "body", text: /Multiple positions cannot be copied into a single position/
+    assert_select ".box-error", text: /Multiple positions cannot be copied into a single position/
+    assert_nil flash[:error]
   end
 
   test "copy with nothing selected fails" do
@@ -207,7 +208,8 @@ class Scheduling::SlotCopiesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select "body", text: /Select at least one slot to copy/
+    assert_select ".box-error", text: /Select at least one slot to copy/
+    assert_nil flash[:error]
   end
 
   # to_i read "#{id}x" as the id and copied that slot.
@@ -219,7 +221,8 @@ class Scheduling::SlotCopiesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select "body", text: /Select at least one slot to copy/
+    assert_select ".box-error", text: /Select at least one slot to copy/
+    assert_nil flash[:error]
   end
 
   test "ineligible slots are ignored even when submitted" do

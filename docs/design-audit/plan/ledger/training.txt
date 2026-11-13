@@ -11,7 +11,7 @@ R14372 || FIXED || app/views/training/mentees/destroy.turbo_stream.erb:6 || Toas
 R14373 || FIXED || app/views/training/mentees/restore.turbo_stream.erb:5 || Toast reads "X's mentee positions restored."
 R14535 || FIXED || app/views/training/mentoring/assignments/_general_notes.html.erb:14 || Box is a builder text_area via fields "general_notes" with label and help_text; ids now builder ids, tests updated.
 R14533 || COMPLIANT || app/views/training/mentoring/assignments/_general_notes_list.html.erb:19 || Edit and Delete are one note's record actions, which BTN-07 exempts from button_row.
-R14543 || NEEDS-APPROVAL || app/views/training/mentoring/assignments/_roster.html.erb:33 || ui_form nil has no errors object; the summary needs the save result exposed as ActiveModel errors (conflict, denial, rows) for ui_form. Callout kept.
+R14543 || FIXED || app/views/training/mentoring/assignments/_roster.html.erb:35 || Kept the ui_callout_box :error above the form; the per-row refusal now names the failed mentees, copying the alpha sheet. Test added.
 R10180 || FIXED || app/views/training/mentoring/assignments/_roster.html.erb:173 || Result select is wf.select via fields "walks[id]", hide_label with aria-label; names unchanged, ids now builder ids.
 R14546 || FIXED || app/views/training/mentoring/assignments/_roster.html.erb:210 || Mentor selects and labels are mf.select with builder labels via fields "walks[id][mentors][i]"; tests updated to new ids.
 R10181 || FIXED || app/views/training/mentoring/assignments/_roster.html.erb:213 || Mentor notes are mf.text_area with builder label.

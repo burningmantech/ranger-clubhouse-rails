@@ -23,6 +23,12 @@
   <% end %>
 <% end %>
 
+<% if @refusal %>
+  <%= ui_callout_box :error, icon: "triangle-exclamation", id: "bulk-teams-refusal", role: "alert" do %>
+    <%= @refusal %>
+  <% end %>
+<% end %>
+
 <% if manageable_teams.any? %>
   <%# The consequence the form cannot show on its face: the reader picks a team,
       and positions move with it. %>

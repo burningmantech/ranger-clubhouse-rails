@@ -20,19 +20,19 @@ class Scheduling::SlotBulkEditsController < ApplicationController
     slots = @slots.select { |slot| @selected_ids.include?(slot.id) }
 
     if slots.empty?
-      flash.now[:error] = "Select at least one slot to update."
+      @refusal = "Select at least one slot to update."
       return render :new, status: :unprocessable_entity
     end
 
     if columns.empty?
-      flash.now[:error] = "Fill in at least one field to apply."
+      @refusal = "Fill in at least one field to apply."
       return render :new, status: :unprocessable_entity
     end
 
     begin
       Slot.transaction { slots.each { |slot| slot.update!(columns) } }
     rescue ActiveRecord::RecordInvalid => e
-      flash.now[:error] =
+      @refusal =
         "Could not update slot ##{e.record.id}: #{e.record.errors.full_messages.join(" ")} No slots were changed."
       return render :new, status: :unprocessable_entity
     end

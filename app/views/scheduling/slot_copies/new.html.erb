@@ -15,6 +15,14 @@
   </div>
 <% end %>
 
+<% if @refusal %>
+  <div class="my-2">
+    <%= ui_callout_box :error, role: "alert" do %>
+      <%= @refusal %>
+    <% end %>
+  </div>
+<% end %>
+
 <% if @total_count.positive? %>
   <%= filter_bar id: "copy-slot-filters",
                  chips: slot_copy_filter_chips(@source_position_id, @year, @filter),

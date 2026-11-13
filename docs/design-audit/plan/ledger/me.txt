@@ -87,7 +87,7 @@ F0110 || FIXED || app/views/me/personal_vehicles/new.html.erb:2 || Hero title ->
 R12656 || FIXED || app/views/me/surveys/_question.html.erb:7 || Red badge removed; required: passed to the builder, which prints the visible "(required)".
 R12657 || FIXED || app/views/me/surveys/_question.html.erb:23 || Fallback now led by an error icon, sentence case (ALERT-01 status line in a card).
 R12661 || FIXED || app/views/me/surveys/show.html.erb:6 || Description is one sentence, no text-lg or ml-4 span.
-R12664 || BLOCKED || app/views/me/surveys/show.html.erb:40 || Summary would list "A response is required." N times; app/controllers/me/surveys_controller.rb:238,244 must name the question first.
+R12664 || FIXED || app/views/me/surveys/show.html.erb:40 || Each required-answer error names its question (and trainer); ui_form shows its error summary; the duplicate toast is gone.
 M0144 || FIXED || app/views/me/surveys/show.html.erb:82 || "Submit Feedback" -> "Send Feedback" (Sending…).
 R12672 || FIXED || app/views/me/tickets/_claimed_overview.html.erb:27 || Both red lines now led by a warning icon (ALERT-01).
 R12678 || FIXED || app/views/me/tickets/_item_details.html.erb:14 || Hand-made bordered box dropped; ui_icon_item list stands alone.

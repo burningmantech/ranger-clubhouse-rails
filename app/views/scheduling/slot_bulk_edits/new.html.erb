@@ -9,6 +9,14 @@
   <% end %>
 <% end %>
 
+<% if @refusal %>
+  <div class="my-2">
+    <%= ui_callout_box :error, role: "alert" do %>
+      <%= @refusal %>
+    <% end %>
+  </div>
+<% end %>
+
 <%# Above the bulk-edit form, as on Copy Slots: filter_bar renders a form of its
     own, and a form inside another ends the outer one at its </form>, which left
     Save Selected Slots outside any form and made Apply Filters post the edit. %>

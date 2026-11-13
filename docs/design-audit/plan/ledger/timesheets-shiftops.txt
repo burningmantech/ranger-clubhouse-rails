@@ -57,7 +57,7 @@ R14267 || FIXED || app/views/shift_operations/rollcall/index.html.erb:16 || Mode
 R14266 || FIXED || app/views/shift_operations/rollcall/index.html.erb:18 || py-4 text-lg override replaced by size: "lg" and full_width:; labels and icons via options.
 F0257 || FIXED || app/views/shift_operations/rollcall/sign_in.html.erb:57 || Lone button wrapped in button_row.
 F0258 || FIXED || app/views/shift_operations/rollcall/sign_in.html.erb:24 || Card moved directly under the hero (shown once a roster exists).
-R14275 || BLOCKED || app/views/shift_operations/rollcall/sign_in.html.erb:84 || Opening via modal frame needs a set-time action in app/controllers/shift_operations/rollcall_controller.rb rendering into the modal frame; outside my paths.
+R14275 || FIXED || app/views/shift_operations/rollcall/sign_in.html.erb:61 || Button opens the dialog in the modal frame; sign_in renders set_time.html.erb for that frame request, as graduations#show does. ?set_time=1 page fallback kept.
 F0259 || FIXED || app/views/shift_operations/rollcall/sign_out.html.erb:26 || Card moved directly under the hero (shown once a position is picked).
 M0458 || FIXED || app/views/timesheets/correction_stats/_decision_card.html.erb:30 || Segments set --stat-meter-share; stat-meter.css reads it for width. No inline width left.
 R14020 || FIXED || app/views/timesheets/correction_stats/_decision_card.html.erb:60 || Zero case uses ui_empty_state.

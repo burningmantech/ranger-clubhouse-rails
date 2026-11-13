@@ -194,7 +194,8 @@ class TeamsPositions::BulkPositionsControllerTest < ActionDispatch::IntegrationT
          params: { position_id: @position.id, callsigns: @newcomer.callsign }
 
     assert_response :unprocessable_entity
-    assert_match(/grant or revoke/i, flash[:error])
+    assert_select "#bulk-positions-refusal", /grant or revoke/i
+    assert_nil flash[:error], "the refusal is on the page, not in a toast"
     assert_select "textarea[name=callsigns]", text: /#{@newcomer.callsign}/
   end
 
@@ -202,7 +203,7 @@ class TeamsPositions::BulkPositionsControllerTest < ActionDispatch::IntegrationT
     post teams_positions_preview_bulk_positions_path, params: preview_params("   \n  ")
 
     assert_response :unprocessable_entity
-    assert_match(/at least one callsign/i, flash[:error])
+    assert_select "#bulk-positions-refusal", /at least one callsign/i
   end
 
   test "a team manager cannot preview a position they do not manage" do
@@ -211,7 +212,7 @@ class TeamsPositions::BulkPositionsControllerTest < ActionDispatch::IntegrationT
          params: preview_params(@newcomer.callsign, position: @other_position)
 
     assert_response :unprocessable_entity
-    assert_match(/choose a position/i, flash[:error])
+    assert_select "#bulk-positions-refusal", /choose a position/i
   end
 
   # ---------------------------------------------------------------- apply
@@ -290,7 +291,7 @@ class TeamsPositions::BulkPositionsControllerTest < ActionDispatch::IntegrationT
     end
 
     assert_response :unprocessable_entity
-    assert_match(/choose a position/i, flash[:error])
+    assert_select "#bulk-positions-refusal", /choose a position/i
   end
 
   test "someone who manages no team cannot apply" do
@@ -334,7 +335,7 @@ class TeamsPositions::BulkPositionsControllerTest < ActionDispatch::IntegrationT
     end
 
     assert_response :unprocessable_entity
-    assert_match(/cannot be handed out here/i, flash[:error])
+    assert_select "#bulk-positions-refusal", /cannot be handed out here/i
   end
 
   test "revoking a position that carries Admin is still allowed for an admin" do
@@ -351,7 +352,7 @@ class TeamsPositions::BulkPositionsControllerTest < ActionDispatch::IntegrationT
          params: { position_id: [@position.id], direction: "grant", callsigns: @newcomer.callsign }
 
     assert_response :unprocessable_entity
-    assert_match(/choose a position/i, flash[:error])
+    assert_select "#bulk-positions-refusal", /choose a position/i
   end
 
   test "an array-shaped position_id on the form page does not raise" do

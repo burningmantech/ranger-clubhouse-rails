@@ -180,6 +180,8 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
 
     assert_response :unprocessable_entity
     assert_select "tr#walk-#{@tinsel.id}-error", text: /This row could not be read, so it shows what is saved now\./
+    # Above the form, the refusal names the mentee whose row failed.
+    assert_select "[role=alert]", text: /Nothing Was Recorded\s*1 row below still needs fixing: #{@tinsel.person.callsign}\./
     assert_select "select#walks_#{@tinsel.id}_mentors_0_id option[selected][value=?]", @ferrous.id.to_s
     assert_select "textarea#walks_#{@tinsel.id}_mentors_0_notes", text: /Ready\./
     assert PersonMentor.exists?(timesheet_id: @tinsel.id, mentor_id: @ferrous.id)

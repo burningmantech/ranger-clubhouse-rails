@@ -1,12 +1,5 @@
 <%= turbo_frame_tag "sms-twilio" do %>
-  <%# An incoming-address update answers into this frame, so its outcome is
-      shown here rather than as a toast the frame could not draw. %>
-  <% if flash[:success] %>
-    <%= ui_callout_box :success do %><%= flash[:success] %><% end %>
-  <% end %>
-  <% if flash[:error] %>
-    <%= ui_callout_box :error do %><%= flash[:error] %><% end %>
-  <% end %>
+  <%= render "incoming_error", message: @incoming_error %>
   <% if Current.is_ghd_server? %>
     <%= ui_callout_box :info do %>
       Live Twilio account reads are not available on the Groundhog Day Server.

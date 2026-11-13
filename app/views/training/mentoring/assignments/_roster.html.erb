@@ -20,13 +20,16 @@
 <%# What a recorded pass can still grant, for the rows already passed. %>
 <% pass_left = editable ? @shifts.pass.offers(group.passed) : {} %>
 
+<%# The mentees whose rows were refused, named as the alpha sheet names them. %>
+<% failed = group.mentee_entries.filter_map { |entry| entry.person.callsign if row_errors.key?(entry.id) }.uniq %>
 <% refusal = if result&.conflict
                "Someone else saved this shift at the same moment. Check the rows below, then save again to record " \
                  "your changes."
              elsif result&.denied
                "#{result.denied} Choose again without that grant, or ask someone who may make it."
              elsif row_errors.any?
-               "#{pluralize(row_errors.size, "row")} below still #{row_errors.one? ? "needs" : "need"} fixing. " \
+               "#{pluralize(row_errors.size, "row")} below still #{row_errors.one? ? "needs" : "need"} fixing" \
+                 "#{": #{failed.to_sentence}" if failed.any?}. " \
                  "The shift is saved as a whole, so no part of it was written."
              end %>
 <% if refusal %>

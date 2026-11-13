@@ -43,16 +43,11 @@
     This cannot be undone.
   <% end %>
 
-  <%= ui_form(nil, ticketing_maintenance_commit_path(@task.slug), method: :post) do |f| %>
+  <%# scope: "" keeps the field's name a bare `reason`, as the commit reads it. %>
+  <%= ui_form(@form, ticketing_maintenance_commit_path(@task.slug), method: :post, scope: "",
+              no_error_summary: true) do |f| %>
     <% if @task.requires_reason? %>
-      <% if @reason_error %>
-        <p class="text-error font-medium mb-2" role="alert">
-          <%= fa_icon "triangle-exclamation", :solid, end: 2 %>
-          Error: <%= @reason_error %>
-        </p>
-      <% end %>
       <%= f.text_area :reason, label: "Reason", required: true,
-                      value: params[:reason],
                       help_text: @task.reason_prompt %>
     <% end %>
     <%= button_row do %>

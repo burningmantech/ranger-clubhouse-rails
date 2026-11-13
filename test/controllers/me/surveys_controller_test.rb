@@ -42,6 +42,21 @@ class Me::SurveysControllerTest < ActionDispatch::IntegrationTest
     assert SurveyAnswer.exists?(@old_answer.id)
   end
 
+  test "a required question left blank is named in the summary above the form and nothing is saved" do
+    required = create_survey_question(@survey, @question.survey_group, description: "What would you change?",
+                                                                       is_required: true)
+
+    post me_surveys_path(type: Survey::ALPHA, year: YEAR),
+         params: { survey: { "question_#{@question.id}" => "Loved it." } }
+
+    assert_response :unprocessable_content
+    assert_nil flash[:error]
+    assert_select "#form-error-summary li", text: %(A response is required for "What would you change?".)
+    assert SurveyAnswer.exists?(@old_answer.id)
+    assert_not SurveyAnswer.exists?(survey_question_id: required.id)
+    assert_equal 1, SurveyAnswer.where(person_id: @alpha_person.id).count
+  end
+
   # lexxy-content is what gives a saved list its markers and a table its borders.
   # The management page's preview has it, so without it here the people
   # answering saw something the person who wrote the survey never did.

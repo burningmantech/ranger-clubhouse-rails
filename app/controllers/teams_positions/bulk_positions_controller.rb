@@ -133,9 +133,10 @@ class TeamsPositions::BulkPositionsController < ApplicationController
   end
 
   # Re-renders rather than redirects: a redirect would drop the pasted list, and
-  # re-typing it is the whole cost of getting this page wrong.
+  # re-typing it is the whole cost of getting this page wrong. The view draws the
+  # message in an error callout above the form, so it stays until the reader acts.
   def refuse(message)
-    flash.now[:error] = message
+    @refusal = message
     render :index, status: :unprocessable_entity
     nil
   end

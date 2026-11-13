@@ -17,6 +17,12 @@
   <% end %>
 <% end %>
 
+<% if @refusal %>
+  <%= ui_callout_box :error, icon: "triangle-exclamation", id: "bulk-positions-refusal", role: "alert" do %>
+    <%= @refusal %>
+  <% end %>
+<% end %>
+
 <% if manageable_positions.any? %>
   <%= ui_callout_box :warning, icon: "triangle-exclamation", icon_type: :solid do %>
     <strong>This does not change team membership.</strong>

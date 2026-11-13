@@ -61,7 +61,7 @@ R01494 || BLOCKED || app/views/admin/shift_coverage_positions/_position_rows.htm
 R01492 || BLOCKED || app/views/admin/shift_coverage_positions/_position_rows.html.erb:38 || Same as R11633: text_field_tag needs an indexed-row f.text_field in app/helpers/form_helper.rb.
 R11642 || FIXED || app/views/admin/sms_management/index.html.erb:87 || Edit Twilio Settings now in a button_row.
 F0002 || FIXED || app/views/admin/sms_management/index.html.erb:125 || Apply Filters is :secondary (R7); Look Up and Update Incoming Address each stay their own form's one primary.
-R01563 || BLOCKED || app/views/admin/sms_management/twilio.html.erb:4 || The frame cannot draw a layout toast; the PATCH in app/controllers/admin/sms_management controller would need to answer with a streamed toast.
+R01563 || FIXED || app/views/admin/sms_management/twilio.html.erb:2 || update_incoming answers with streams: refusals in an error callout atop the panel (_incoming_error), a change as a streamed toast; no flash read in the view.
 R11652 || FIXED || app/views/admin/sms_management/twilio.html.erb:105 || Dialog asks "Send every text … to the address entered?" and says to undo it by updating the address back.
 R11651 || FIXED || app/views/admin/sms_management/twilio.html.erb:113 || Lock reason is now ui_callout_box :info. Two test selectors updated.
 R11650 || COMPLIANT || app/views/admin/sms_management/twilio.html.erb:117 || BTN-07 exempts a toolbar shared with a status line (the "Checked …" time).

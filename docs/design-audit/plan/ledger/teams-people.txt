@@ -31,11 +31,11 @@ R13746 || COMPLIANT || app/views/people/status_change_recommendations/show.html.
 R13745 || FIXED || app/helpers/people/status_change_recommendations_helper.rb:74 || Confirm now variant: :error and adds "This page cannot undo the change." Titles ("Confirm Inactive Status") live in app/lib, left.
 R13796 || COMPLIANT || app/views/people/unified_flagging/index.html.erb:82 || BTN-05/R7: no other primary action on the page, so Apply Filters stays primary.
 R13792 || FIXED || app/views/people/unified_flagging/index.html.erb:97 || Jump-list lead-in wrapped in its own <p>, no longer a bare text node.
-R13604 || BLOCKED || app/views/teams_positions/bulk_positions/index.html.erb:31 || Needs app/controllers/teams_positions/bulk_positions_controller.rb#refuse to set @refusal (not flash.now) so the view draws an error callout, as bulk_lookup does.
+R13604 || FIXED || app/views/teams_positions/bulk_positions/index.html.erb:20 || refuse sets @refusal instead of flash.now; the view draws it in an error callout above the form (bulk_lookup shape), still 422.
 R13603 || FIXED || app/views/teams_positions/bulk_positions/index.html.erb:55 || "Checking is always safe" is now an info callout beside the submit.
 R08835 || FIXED || app/views/teams_positions/bulk_positions/preview.html.erb:100 || Dialog titled "<action>?", message adds whether it can be undone (bulk_position_undo), red on revoke.
 R13610 || COMPLIANT || app/views/teams_positions/bulk_positions/preview.html.erb:111 || HERO-04 new wording: a body link back is allowed for a re-post; "Go Back and Edit" re-posts the list.
-R13592 || BLOCKED || app/views/teams_positions/bulk_teams/index.html.erb:39 || Needs app/controllers/teams_positions/bulk_teams_controller.rb#refuse to set @refusal (not flash.now) so the view draws an error callout, as bulk_lookup does.
+R13592 || FIXED || app/views/teams_positions/bulk_teams/index.html.erb:26 || refuse sets @refusal instead of flash.now; the view draws it in an error callout above the form (bulk_lookup shape), still 422.
 R13591 || FIXED || app/views/teams_positions/bulk_teams/index.html.erb:63 || "Checking is always safe" is now an info callout beside the submit.
 R08869 || FIXED || app/views/teams_positions/bulk_teams/preview.html.erb:109 || Dialog titled "<action>?", message adds whether it can be undone (bulk_team_undo), red on revoke.
 R13598 || COMPLIANT || app/views/teams_positions/bulk_teams/preview.html.erb:120 || HERO-04 new wording: a body link back is allowed for a re-post; "Go Back and Edit" re-posts the list.

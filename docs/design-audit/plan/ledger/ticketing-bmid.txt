@@ -38,7 +38,7 @@ F0245 || FIXED || app/views/ticketing/expiring/index.html.erb:52 || Label now Ti
 R13869 || COMPLIANT || app/views/ticketing/maintenance/index.html.erb:23 || V EMPTY-01: @groups is a fixed task catalogue, which may render no empty state.
 R13866 || COMPLIANT || app/views/ticketing/maintenance/index.html.erb:38 || V ALERT-01: one-line status text inside a card, led by the error badge with its triangle icon.
 R13868 || FIXED || app/views/ticketing/maintenance/index.html.erb:45 || Task card launch buttons now :secondary, so no section carries a row of primaries (R7).
-R13870 || BLOCKED || app/views/ticketing/maintenance/preview.html.erb:48 || Builder flags only object errors; needs app/controllers/ticketing/maintenance_controller.rb to pass a model with a :reason error instead of @reason_error.
+R13870 || FIXED || app/views/ticketing/maintenance/preview.html.erb:50 || Controller passes a ReasonForm with a :reason error; ui_form flags the textarea and draws the message under it. Hand-built p removed.
 R13890 || COMPLIANT || app/views/ticketing/provisions/index.html.erb:52 || V BTN-06: the id link is a row link reading the record ref, never "Edit".
 R13811 || FIXED || app/views/ticketing/statistics/_pipeline_card.html.erb:23 || Hand card-standard div replaced by ui_card (gains the default shadow-xs, R2).
 M0457 || FIXED || app/views/ticketing/statistics/_pipeline_card.html.erb:33 || stat-meter.css takes width from --stat-meter-share; segment passes the percent as that custom property, no inline width.

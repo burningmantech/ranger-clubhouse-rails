@@ -58,7 +58,7 @@
                             shift_operations_rollcall_sign_in_path(position_id: @group.id,
                                                                    slot_id: @slot.id,
                                                                    set_time: 1),
-                            icon: "clock", icon_type: :solid %>
+                            icon: "clock", icon_type: :solid, data: { turbo_frame: "modal" } %>
           <% end %>
         <% end %>
       </div>
@@ -78,8 +78,9 @@
   <% end %>
 <% end %>
 
-<%# The Set Time dialog, opened by ?set_time=1 so it survives a reload. The
-    layout supplies the "modal" turbo-frame, so this renders outside one. %>
+<%# The Set Time dialog. The button opens it in the layout's "modal" frame
+    (set_time.html.erb); a page loaded with ?set_time=1 -- a reload, or no
+    Turbo -- draws it here, outside that frame. %>
 <% if params[:set_time].present? && @slot %>
   <%= render "shift_operations/rollcall/set_time_dialog" %>
 <% end %>

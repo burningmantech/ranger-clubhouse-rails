@@ -28,7 +28,7 @@ class Scheduling::SlotCopiesController < ApplicationController
       redirect_to scheduling_slots_path(year: @year),
                   success: "#{result.slots.size} #{"slot".pluralize(result.slots.size)} copied."
     else
-      flash.now[:error] = result.errors.join(" ")
+      @refusal = result.errors.join(" ")
       render :new, status: :unprocessable_entity
     end
   end

@@ -69,28 +69,42 @@ class Admin::SmsManagementController < ApplicationController
 
   # Points every incoming text at another address, starting with the next
   # one: this server's at the cutover from Clubhouse 2, or back again. Never
-  # the training server or staging (SmsManagement.incoming_changes_allowed?). The
-  # account panel's frame then reloads past its cache to show the change.
+  # the training server or staging (SmsManagement.incoming_changes_allowed?).
+  # The form posts inside the account panel's frame, which cannot draw a
+  # layout toast, so the answer is a stream. An address refused before Twilio
+  # is asked fills the error callout at the panel's top; otherwise the panel
+  # comes again, past its cache, with a refusal in that callout and a change
+  # made as a toast. A 200 either way, as on lookup: RequestLogger keeps a
+  # 422's page, the account's balance among it, in request_log.
   def update_incoming
     url = params.expect(twilio_incoming: [:url])[:url].to_s.strip
     problem = SmsManagement.incoming_url_problem(url)
     if problem
-      redirect_to admin_sms_management_twilio_path, error: "Twilio was not changed: #{problem}."
+      render turbo_stream: turbo_stream.replace("sms-incoming-error", partial: "admin/sms_management/incoming_error",
+                                                                      locals: { message: "Twilio was not changed: #{problem}." })
       return
     end
 
+    success = nil
     result = SmsManagement.point_incoming_texts(url)
     if result.nil?
-      flash[:error] = "Twilio was not changed: the Account SID and Auth Token are not set."
+      @incoming_error = "Twilio was not changed: the Account SID and Auth Token are not set."
     else
       record_incoming_change(url, result)
-      flash[:success] = incoming_changed_message(url, result[:changed]) if result[:changed].any?
-      flash[:error] = incoming_problem_message(result) if result[:error]
+      @incoming_error = incoming_problem_message(result) if result[:error]
+      success = incoming_changed_message(url, result[:changed]) if result[:changed].any?
     end
-    redirect_to admin_sms_management_twilio_path(refresh: 1)
+    render_twilio_panel(success:)
   end
 
   private
+
+  def render_twilio_panel(success: nil)
+    @status = TwilioStatus.fetch(refresh: true)
+    streams = [turbo_stream.replace("sms-twilio", template: "admin/sms_management/twilio")]
+    streams << helpers.ui_toast_stream(success, :success) if success
+    render turbo_stream: streams
+  end
 
   # The action log keeps how each service handled incoming texts until now, so
   # the change can be put back, ids masked and addresses as the page shows

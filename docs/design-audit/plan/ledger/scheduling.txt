@@ -26,7 +26,7 @@ R13329 || COMPLIANT || app/views/scheduling/hq_forecast/_people_dialog.html.erb:
 R13319 || FIXED || app/helpers/scheduling/hq_forecast_helper.rb:123 || The lone sibling-report button now sits in button_row(class: "mb-4") instead of a bare div (BTN-07).
 M0237 || FIXED || app/views/scheduling/hq_forecast/people.html.erb:2 || Dialog title uses hq_forecast_time(@period); no strftime in the view.
 R13184 || FIXED || app/views/scheduling/no_shows_report/position.html.erb:34 || Lone export moved from div.my-4 into button_row class: "my-4".
-R13410 || BLOCKED || app/views/scheduling/position_credit_copies/new.html.erb:27 || Needs app/controllers/scheduling/position_credit_copies_controller.rb:28 to pass result.errors to the view (not flash.now) so the view can show an error callout.
+R13410 || FIXED || app/views/scheduling/position_credit_copies/new.html.erb:27 || Controller sets @refusal instead of flash.now; the 422 re-render shows it in a ui_callout_box :error above the form. Tests assert the callout.
 R07814 || COMPLIANT || app/views/scheduling/position_credit_copies/new.html.erb:83 || → marks before/after in text: punctuation under ICON-01's new wording.
 M0239 || FIXED || app/views/scheduling/position_credit_copies/new.html.erb:83 || Original and shifted start times use datetime_format(..., year: true).
 M0241 || FIXED || app/views/scheduling/position_credit_copies/new.html.erb:89 || Original and shifted end times use datetime_format(..., year: true).
@@ -77,9 +77,9 @@ R13351 || COMPLIANT || app/views/scheduling/shift_signups/_fill_meter.html.erb:8
 R13344 || FIXED || app/views/scheduling/shift_signups/index.html.erb:80 || Empty-shift count prints 0, not "—" (R14). Test updated.
 R13347 || FIXED || app/views/scheduling/shift_signups/position.html.erb:46 || Who Signed Up and export moved into button_row class: "my-4".
 M0244 || FIXED || app/views/scheduling/slot_bulk_edits/new.html.erb:40 || Option labels via new slot_start_option_label (slots_helper, DateTimeHelper::MONTH_DAY_TIME); no strftime in the view.
-R13403 || BLOCKED || app/views/scheduling/slot_bulk_edits/new.html.erb:51 || Needs app/controllers/scheduling/slot_bulk_edits_controller.rb (23, 28, 35) to hand errors to the view, not flash.now, for an error callout.
+R13403 || FIXED || app/views/scheduling/slot_bulk_edits/new.html.erb:12 || All three refusals set @refusal instead of flash.now; the 422 re-render shows a ui_callout_box :error under the hero. Tests assert the callout.
 M0245 || FIXED || app/views/scheduling/slot_copies/new.html.erb:44 || Option labels via slot_start_option_label.
-R13309 || BLOCKED || app/views/scheduling/slot_copies/new.html.erb:54 || Needs app/controllers/scheduling/slot_copies_controller.rb:31 to pass result.errors to the view instead of flash.now[:error].
+R13309 || FIXED || app/views/scheduling/slot_copies/new.html.erb:18 || Controller sets @refusal instead of flash.now; the 422 re-render shows a ui_callout_box :error under the hero, above the filters and form. Tests assert the callout.
 R13307 || COMPLIANT || app/views/scheduling/slot_copies/new.html.erb:124 || → marks before/after in text: punctuation under ICON-01's new wording.
 M0247 || FIXED || app/views/scheduling/slot_copies/new.html.erb:124 || Begins and shifted begins via datetime_format(..., tz: slot.timezone, year: true).
 M0249 || FIXED || app/views/scheduling/slot_copies/new.html.erb:130 || Ends and shifted ends via datetime_format(..., tz: slot.timezone, year: true).

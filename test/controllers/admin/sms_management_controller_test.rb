@@ -535,18 +535,20 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     with_fake_twilio(fake) do
       patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: here } }
 
-      assert_redirected_to admin_sms_management_twilio_path(refresh: 1)
+      assert_response :success
       # The service in TwilioMessagingServiceId, read and changed; no Notify
-      # service is asked.
-      assert_equal [:messaging_service, :messaging_update], fake.asked
-      follow_redirect!
+      # service is asked. The panel drawn after it asks again, past its cache.
+      assert_equal [:messaging_service, :messaging_update], fake.asked.first(2)
     end
 
     assert_equal({ inbound_request_url: here, inbound_method: "POST", fallback_url: "", use_inbound_webhook_on_number: false },
                  fake.params[:messaging_update])
-    assert_select "turbo-frame#sms-twilio" do
-      assert_select "[role=alert]", text: "Twilio now sends incoming texts to #{here}. " \
-                                          "It sent them to #{FakeTwilioClient::CLUBHOUSE2_INCOMING} until now."
+    # The frame cannot draw a layout toast, so the change is streamed as one.
+    assert_select "turbo-stream[action=append][target=toast-container] template [role=status]",
+                  text: "Twilio now sends incoming texts to #{here}. " \
+                        "It sent them to #{FakeTwilioClient::CLUBHOUSE2_INCOMING} until now."
+    assert_select "turbo-stream[action=replace][target=sms-twilio] template turbo-frame#sms-twilio" do
+      assert_select "#sms-incoming-error [role=alert]", 0
       assert_select "dd", text: /This server.*#{Regexp.escape(here)}/m
     end
     log = ActionLog.find_by!(event: "twilio-incoming-update")
@@ -575,9 +577,9 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
       patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
     end
 
-    assert_equal "Twilio now sends incoming texts to https://clubhouse.example.org/in. It sent them to " \
-                 "#{FakeTwilioClient::CLUBHOUSE2_INCOMING} until now. The fallback address #{fallback} is cleared.",
-                 flash[:success]
+    assert_select "turbo-stream[target=toast-container] template [role=status]",
+                  text: "Twilio now sends incoming texts to https://clubhouse.example.org/in. It sent them to " \
+                        "#{FakeTwilioClient::CLUBHOUSE2_INCOMING} until now. The fallback address #{fallback} is cleared."
     assert_equal "", fake.messaging_service(FakeTwilioClient::MESSAGING_SERVICE_SID).fallback_url
     # Everything the change replaced, so it can be put back.
     assert_equal({ "url" => FakeTwilioClient::CLUBHOUSE2_INCOMING, "method" => "GET", "fallback_url" => fallback,
@@ -599,8 +601,10 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
      "https://clubhouse.example.org/in?token=s3cret", "https://clubhouse.example.org/in#top"].each do |url|
       with_fake_twilio(fake) { patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: } } }
 
-      assert_redirected_to admin_sms_management_twilio_path
-      assert_match(/\ATwilio was not changed: /, flash[:error], url)
+      assert_response :success
+      assert_select "turbo-stream[action=replace][target=sms-incoming-error] template #sms-incoming-error [role=alert]",
+                    { text: /\ATwilio was not changed: / }, url
+      assert_select "turbo-stream[target=toast-container]", 0
     end
     assert_empty fake.asked
     assert_not ActionLog.exists?(event: "twilio-incoming-update")
@@ -618,9 +622,9 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
       patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
     end
 
-    assert_redirected_to admin_sms_management_twilio_path(refresh: 1)
-    assert_equal "Twilio was not changed: Authenticate (Twilio error 20003).", flash[:error]
-    assert_nil flash[:success]
+    assert_response :success
+    assert_incoming_error "Twilio was not changed: Authenticate (Twilio error 20003)."
+    assert_select "turbo-stream[target=toast-container]", 0
     assert_not ActionLog.exists?(event: "twilio-incoming-update")
   end
 
@@ -659,8 +663,8 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    assert_redirected_to admin_sms_management_twilio_path(refresh: 1)
-    assert_match "staging server cannot change", flash[:error]
+    assert_response :success
+    assert_incoming_error(/staging server cannot change/)
     assert_not_includes fake.asked, :messaging_update
   end
 
@@ -702,11 +706,11 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
       patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
     end
 
-    assert_redirected_to admin_sms_management_twilio_path(refresh: 1)
-    assert_nil flash[:success]
-    assert_equal "Twilio did not confirm the change, so it may or may not have been made " \
-                 "(Could not reach Twilio: Net::ReadTimeout with #<TCPSocket:(closed)>). " \
-                 "The address below shows where Twilio sends incoming texts now.", flash[:error]
+    assert_response :success
+    assert_select "turbo-stream[target=toast-container]", 0
+    assert_incoming_error "Twilio did not confirm the change, so it may or may not have been made " \
+                          "(Could not reach Twilio: Net::ReadTimeout with #<TCPSocket:(closed)>). " \
+                          "The address below shows where Twilio sends incoming texts now."
     logged = ActionLog.find_by!(event: "twilio-incoming-update").data["services"].sole
     assert logged["unanswered"]
     assert_equal FakeTwilioClient::CLUBHOUSE2_INCOMING, logged["before"]["url"]
@@ -731,8 +735,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
       patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
     end
 
-    assert_equal "Twilio was not changed: The requested resource /Services/MG…3210 was not found (Twilio error 20404).",
-                 flash[:error]
+    assert_incoming_error "Twilio was not changed: The requested resource /Services/MG…3210 was not found (Twilio error 20404)."
     assert_not_includes fake.asked, :messaging_update
     assert_not ActionLog.exists?(event: "twilio-incoming-update")
   end
@@ -758,7 +761,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
         patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
       end
 
-      assert_equal "Twilio was not changed: #{problem}.", flash[:error]
+      assert_incoming_error "Twilio was not changed: #{problem}."
       assert_not_includes fake.asked, :messaging_service
       assert_not_includes fake.asked, :messaging_update
     end
@@ -801,5 +804,12 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
       assert_select "form[action=?]", admin_sms_management_incoming_path
     end
     assert_not_includes response.body, "ISfedcba9876543210fedcba9876543210"
+  end
+
+  private
+
+  # The panel a change answers with, past its cache, and the refusal at its top.
+  def assert_incoming_error(text)
+    assert_select "turbo-stream[action=replace][target=sms-twilio] template #sms-incoming-error [role=alert]", text:
   end
 end
