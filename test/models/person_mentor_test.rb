@@ -59,9 +59,25 @@ class PersonMentorTest < ActiveSupport::TestCase
     PersonMentor.create!(person: @mentee, mentor: first, mentor_year: YEAR, status: PersonMentor::STATUS_PASS)
     PersonMentor.create!(person: @mentee, mentor: second, mentor_year: YEAR, status: PersonMentor::STATUS_BONK)
 
-    passing = PersonMentor.retrieve_passing_for_person(@mentee.id, position_id: Position::ALPHA)
+    years = PersonMentor.retrieve_mentor_years_for_person(@mentee.id, position_id: Position::ALPHA,
+                                                          statuses: PersonMentor::ALPHA_VERDICTS)
 
-    assert_equal PersonMentor::STATUS_BONK, passing.current_status
+    assert_equal [PersonMentor::STATUS_BONK], years.map(&:current_status)
+    assert_empty PersonMentor.retrieve_mentor_years_for_person(@mentee.id, position_id: Position::ALPHA,
+                                                               statuses: [PersonMentor::STATUS_PASS])
+  end
+
+  # mentor_id has no key, so a mentor's row outlives their account. The year
+  # must not vanish with them: Person › Mentoring keeps its status form there.
+  test "a year whose only mentor was deleted is still listed, with no mentor cards" do
+    PersonMentor.insert_all!([
+      { person_id: @mentee.id, mentor_id: 999_999_002, mentor_year: YEAR, status: PersonMentor::STATUS_BONK }
+    ])
+
+    years = PersonMentor.retrieve_mentor_years_for_person(@mentee.id, position_id: Position::ALPHA,
+                                                          statuses: PersonMentor::ALPHA_VERDICTS)
+
+    assert_equal [[YEAR, PersonMentor::STATUS_BONK, []]], years.map { |y| [y.year, y.current_status, y.mentors] }
   end
 
   # A deleted account takes its own walks with it (Person's person_mentors);

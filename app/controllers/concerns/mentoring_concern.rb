@@ -8,12 +8,17 @@ module MentoringConcern
   end
 
   def index
-    @mentoring = PersonMentor.retrieve_passing_for_person(@person.id, position_id: Position::ALPHA)
+    @mentoring = PersonMentor.retrieve_mentor_years_for_person(@person.id, position_id: Position::ALPHA,
+                                                                statuses: mentor_year_statuses)
     @mentee_events = PersonMentor.retrieve_mentees_for_person(@person.id, position_id: Position::ALPHA)
     @art_history = ArtMentoring::PersonHistory.new(@person.id)
   end
 
   private
+
+  # Which Alpha years the page lists, by verdict. A person sees only a year
+  # they passed; Person::MentoringController widens it to the bonks.
+  def mentor_year_statuses = [PersonMentor::STATUS_PASS]
 
   def ensure_person_for_mentoring
     @person ||= current_user

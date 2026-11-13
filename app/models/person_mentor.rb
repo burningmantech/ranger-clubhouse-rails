@@ -22,6 +22,9 @@ class PersonMentor < ApplicationRecord
 
   # What an Alpha walk records, and all the Alpha pages offer or accept.
   ALPHA_STATUSES = [STATUS_PASS, STATUS_BONK, STATUS_SELF_BONK, STATUS_PENDING].freeze
+  # The verdicts that end an Alpha walk: the years Person › Mentoring lists and
+  # what its status form records. A year still pending is neither.
+  ALPHA_VERDICTS = (ALPHA_STATUSES - [STATUS_PENDING]).freeze
   # What the column holds, and what an ART walk records.
   STATUSES = (ALPHA_STATUSES + [STATUS_ABSTAIN, STATUS_NOT_COMPLETED]).freeze
 
@@ -54,7 +57,7 @@ class PersonMentor < ApplicationRecord
   MentorWithAvatar = Data.define(:id, :callsign, :avatar, :can_message?)
   MenteeInfo = Data.define(:id, :callsign, :avatar, :status, :can_message?, :mentor_status, :last_worked, :fkas, :mentors)
   YearCohort = Data.define(:year, :alphas, :passed, :bonked)
-  PassingResult = Data.define(:year, :current_status, :mentors)
+  MentorYear = Data.define(:year, :current_status, :mentors)
 
   # Associations
   belongs_to :person
@@ -177,36 +180,33 @@ class PersonMentor < ApplicationRecord
       end.sort_by(&:year).reverse
     end
 
-    # Find the most recent year of mentor records for a person, returning
-    # the year, its shared status, and the mentor list. Status is not filtered,
-    # so callers can distinguish between passing and non-passing years.
-    def retrieve_passing_for_person(person_id, position_id:)
-      walks = where(person_id:, position_id:)
-      most_recent_year = walks.maximum(:mentor_year)
-      return PassingResult.new(year: nil, current_status: nil, mentors: []) unless most_recent_year
+    # One person's mentor records, newest year first: each year whose verdict
+    # (year_verdict of its rows) is one of `statuses`, with the mentor list.
+    # Me › Mentoring asks for passes alone; Person › Mentoring for
+    # ALPHA_VERDICTS, the bonks included.
+    #
+    # No join on mentor: nothing removes a person_mentor row when its mentor's
+    # account goes, and that row still counts toward the year and its verdict
+    # (the status form restates it too). Only the card is left out, so a year
+    # whose mentors are all gone is listed with none.
+    def retrieve_mentor_years_for_person(person_id, position_id:, statuses:)
+      rows = where(person_id:, position_id:).includes(mentor: :photo)
 
-      rows = walks.select("person_mentor.*")
-               .joins(:mentor)
-               .where(mentor_year: most_recent_year)
-               .order("mentor.callsign")
-               .includes(mentor: :photo)
+      rows.group_by(&:mentor_year).filter_map do |year, year_rows|
+        status = year_verdict(year_rows.map(&:status))
+        next unless statuses.include?(status)
 
-      mentors = rows.map do |row|
-        MentorWithAvatar.new(
-          id: row.mentor_id,
-          callsign: row.mentor.callsign,
-          avatar: row.mentor.avatar_photo,
-          can_message?: can_message?(row.mentor)
-        )
-      end
+        mentors = year_rows.filter_map(&:mentor).sort_by { |mentor| mentor.callsign.downcase }.map do |mentor|
+          MentorWithAvatar.new(
+            id: mentor.id,
+            callsign: mentor.callsign,
+            avatar: mentor.avatar_photo,
+            can_message?: can_message?(mentor)
+          )
+        end
 
-      PassingResult.new(
-        year: most_recent_year,
-        # The year's verdict, settled like every other reader's: the rows can
-        # disagree, and the first by callsign is just whichever sorts first.
-        current_status: year_verdict(rows.map(&:status)),
-        mentors: mentors
-      )
+        MentorYear.new(year:, current_status: status, mentors:)
+      end.sort_by(&:year).reverse
     end
 
     # Which years each person bonked or self-bonked, ascending -- the "Prior

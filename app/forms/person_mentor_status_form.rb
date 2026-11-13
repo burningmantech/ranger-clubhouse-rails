@@ -9,8 +9,10 @@ class PersonMentorStatusForm
 
   validates :mentor_year, presence: true, numericality: { only_integer: true }
   # The only guard on this path: save's update_all skips PersonMentor's own,
-  # which refuses an ART-only verdict on an Alpha row.
-  validates :status, presence: true, inclusion: { in: PersonMentor::ALPHA_STATUSES }
+  # which refuses an ART-only verdict on an Alpha row. Pending is refused too:
+  # Person › Mentoring lists no pending year, so a year set back to pending
+  # would leave the page with no form to change it again.
+  validates :status, presence: true, inclusion: { in: PersonMentor::ALPHA_VERDICTS }
   validate :records_must_exist
 
   def persisted? = false

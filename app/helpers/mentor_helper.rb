@@ -37,8 +37,9 @@ module MentorHelper
   def mentor_result_label(status) = RESULT_LABELS[status] || status.to_s
 
   # A result select's options, in RESULT_LABELS' order, for the verdicts its
-  # page records: PersonMentor::ALPHA_STATUSES on an Alpha page, STATUSES on an
-  # ART roster. No default, so a new page has to say which.
+  # page records: PersonMentor::ALPHA_STATUSES on an Alpha page (ALPHA_VERDICTS
+  # on Person › Mentoring, which lists no pending year), STATUSES on an ART
+  # roster. No default, so a new page has to say which.
   def mentor_result_options(statuses)
     RESULT_LABELS.filter_map { |value, label| [label, value] if statuses.include?(value) }
   end
@@ -60,7 +61,9 @@ module MentorHelper
              icon: RESULT_ICONS.fetch(status, "circle-question"), icon_type: :solid
   end
 
-  # Both descriptions are one sentence whichever halves apply -- a hero
+  # `mentoring` is the page's list of Alpha years
+  # (PersonMentor.retrieve_mentor_years_for_person). Both descriptions are one
+  # sentence whichever halves apply -- a hero
   # description says one thing (design-rules > Hero Panel Description Rule) --
   # and both return a plain String. They used to safe_join: that escaped the
   # apostrophe in "you've" and in a callsign, common/mentoring/index then
@@ -68,9 +71,7 @@ module MentorHelper
   # second time, so the page printed "you&#39;ve" as text.
   def me_mentoring_description(mentoring, mentee_events, art_shifts: 0)
     parts = []
-    if mentoring.year && mentoring.current_status == PersonMentor::STATUS_PASS
-      parts << "your Alpha Shift mentors for #{mentoring.year}"
-    end
+    parts << "your Alpha Shift mentors#{alpha_years_suffix(mentoring)}" if mentoring.any?
     parts << "the #{mentored_tally(mentee_events, "you've")}" if mentee_events.any?
     parts << "your #{art_tally(art_shifts)}" if art_shifts.positive?
     parts.any? ? "View #{parts.to_sentence}." : ""
@@ -82,8 +83,8 @@ module MentorHelper
     tally = "the #{mentored_tally(mentee_events, "#{person.callsign} has")}" if mentee_events.any?
     art = "#{person.callsign}'s #{art_tally(art_shifts)}" if art_shifts.positive?
 
-    if mentoring.year
-      mentors = "#{person.callsign}'s Alpha Shift mentors for #{mentoring.year}"
+    if mentoring.any?
+      mentors = "#{person.callsign}'s Alpha Shift mentors#{alpha_years_suffix(mentoring)}"
       "#{[mentors, tally, art].compact.to_sentence}."
     elsif tally || art
       "#{[tally, art].compact.to_sentence.upcase_first}."
@@ -114,6 +115,10 @@ module MentorHelper
   end
 
   private
+
+  # " for 2019" for the usual single Alpha year; nothing for several, which
+  # would put a second list inside the sentence.
+  def alpha_years_suffix(mentor_years) = mentor_years.one? ? " for #{mentor_years.first.year}" : ""
 
   # "4 ART mentoring shifts": walked or mentored, both sides.
   def art_tally(count) = pluralize(count, "ART mentoring shift")
