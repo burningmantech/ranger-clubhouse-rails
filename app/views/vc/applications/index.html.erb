@@ -13,15 +13,18 @@
 <% end %>
 
 <%# The VC's own email reference, out of the hero. Not tied to the rows, so it
-    shows whether or not the year has applications. %>
-<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
-  <dl class="instruction-list">
-    <dt>What is my assignment id?</dt>
-    <dd>
-      For application emails, your assignment id is <strong><%= current_user.id %></strong> with
-      the first letter of your callsign &ldquo;<strong><%= current_user.callsign.first %></strong>&rdquo;.
-    </dd>
-  </dl>
+    shows whether or not the year has applications: under the stat row when
+    there is one, above the empty state when there is not. %>
+<% about_card = capture do %>
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What is my assignment id?</dt>
+      <dd>
+        For application emails, your assignment id is <strong><%= current_user.id %></strong> with
+        the first letter of your callsign &ldquo;<strong><%= current_user.callsign.first %></strong>&rdquo;.
+      </dd>
+    </dl>
+  <% end %>
 <% end %>
 
 <%= form_with url: search_vc_applications_path, method: :get, builder: AppFormBuilder,
@@ -48,50 +51,55 @@
     <% end %>
   <% end %>
 
-  <%# Workflow presets %>
+  <%= about_card %>
+
+  <%# Workflow presets. The active one says so in words to a screen reader
+      (aria-current) and with a check icon, not by its colour alone. %>
   <div class="flex flex-wrap gap-2 mb-4 print:hidden">
     <% Vc::ApplicationFilterForm::PRESETS.each do |preset, meta| %>
-      <%= button_link meta[:label], (@active_preset == preset ? :primary : :secondary),
+      <% active = @active_preset == preset %>
+      <%= button_link meta[:label], (active ? :primary : :secondary),
                       vc_applications_path(year: @year, preset:),
-                      icon: meta[:icon], icon_type: :solid %>
+                      icon: (active ? "check" : meta[:icon]), icon_type: :solid,
+                      aria: { current: ("true" if active) } %>
     <% end %>
     <% unless @filter.default? %>
       <%= button_link "Reset Filters", :ghost, vc_applications_path(year: @year), icon: "rotate-left", icon_type: :solid %>
     <% end %>
   </div>
 
-  <%# Filter bar %>
-  <%= form_with url: vc_applications_path, method: :get, builder: AppFormBuilder,
-                data: { controller: "form" }, class: "mb-4" do |f| %>
+  <%# The export carries the filters, so the file holds exactly the rows the bar counts. %>
+  <%= filter_bar id: "vc-application-filters",
+                 chips: application_filter_chips(@filter, @vcs, @year),
+                 clear_url: vc_applications_path(year: @year, Vc::ApplicationFilterForm::PARAM_SCOPE => { status: UiComponents::FilterBarHelper::ALL_FILTER }),
+                 count: "Showing #{pluralize(@filtered_applications.size, "application")}",
+                 actions: (export_csv_link(vc_applications_path(year: @year, format: :csv, **@filter.query_params)) if @filtered_applications.any?),
+                 url: vc_applications_path do |f| %>
     <%= hidden_field_tag :year, @year %>
-    <div class="flex flex-wrap gap-2 lg:gap-4">
+    <%= form_row do %>
       <%= f.select "filter[status]", grouped_filter_options(@filter.status_options, @filter.status),
-                   label: "Status", width: "w-full sm:w-56", data: { action: "change->form#submit" } %>
+                   label: "Status", width: "w-full sm:w-56" %>
       <%= f.select "filter[assigned_to]", grouped_filter_options(@filter.assigned_to_options(@vcs), @filter.assigned_to),
-                   label: "Assigned To", width: "w-full sm:w-44", data: { action: "change->form#submit" } %>
+                   label: "Assigned To", width: "w-full sm:w-44" %>
       <%= f.select "filter[name]", options_for_select(@filter.name_options(@applications), @filter.name),
-                   label: "Last Name", width: "w-24", data: { action: "change->form#submit" } %>
+                   label: "Last Name", width: "w-24" %>
       <%= f.select "filter[experience]", options_for_select(Vc::ApplicationFilterForm::EXPERIENCE_OPTIONS, @filter.experience),
-                   label: "BRC Experience", width: "w-full sm:w-40", data: { action: "change->form#submit" } %>
+                   label: "BRC Experience", width: "w-full sm:w-40" %>
       <%= f.select "filter[age]", options_for_select(Vc::ApplicationFilterForm::AGE_OPTIONS, @filter.age),
-                   label: "Age", width: "w-full sm:w-32", data: { action: "change->form#submit" } %>
-    </div>
+                   label: "Age", width: "w-full sm:w-32" %>
+    <% end %>
+    <%= button_row do %>
+      <%# name: nil keeps commit= out of the GET URL. %>
+      <%= f.submit "Apply Filters", variant: :secondary, name: nil %>
+    <% end %>
   <% end %>
 
-  <%= ui_section "Applications", border: false do %>
-    <%# The export carries the filters, so the file holds exactly the rows this line counts. %>
-    <div class="flex flex-wrap items-center gap-2 px-4 py-2">
-      <p class="mb-0 text-stone-muted">
-        Showing <%= pluralize(@filtered_applications.size, "application") %> &mdash; <%= @filter.description(@vcs) %>.
-        Least recently updated appear first.
-      </p>
-      <% if @filtered_applications.any? %>
-        <%= export_csv_link vc_applications_path(year: @year, format: :csv, **@filter.query_params), class: "ms-auto" %>
-      <% end %>
-    </div>
+  <%= ui_section "Applications" do %>
+    <p class="mb-0 px-4 py-2 text-stone-muted">Least recently updated appear first.</p>
     <%= render "applications_table", applications: @filtered_applications %>
   <% end %>
 <% else %>
+  <%= about_card %>
   <%= ui_empty_state "No applications have been imported for #{@year}.",
                      icon: "inbox", icon_type: :solid %>
 <% end %>

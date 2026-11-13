@@ -50,8 +50,8 @@ class Person::BmidsControllerTest < ActionDispatch::IntegrationTest
     get person_bmid_path(@target)
 
     assert_response :success
-    assert_match "provisions-toggle", response.body
-    assert_select "#provisions-collapsible-body.hidden"
+    assert_select "#provisions details:not([open]) > summary", text: "Edit Provisions"
+    assert_select "#provisions details:not([open]) > #provisions-collapsible-body"
   end
 
   test "show renders an update form when a BMID exists" do

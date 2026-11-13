@@ -37,11 +37,8 @@
                     help_text: "One or two sentences saying what a Ranger will be told.",
                     width: "w-full" %>
     <%= f.check_box :on_playa, label: "Sent while the event is running",
-                    aria: { describedby: "on-playa-note" } %>
-    <p id="on-playa-note" class="text-sm mt-1">
-      Ticked, this alert is listed under On Playa Alerts. Unticked, it is listed under
-      Pre &amp; Post Event Alerts. Nothing else changes.
-    </p>
+                    help_text: "Ticked, this alert is listed under On Playa Alerts. Unticked, it is listed " \
+                               "under Pre & Post Event Alerts. Nothing else changes." %>
   <% end %>
 
   <%= button_row do %>

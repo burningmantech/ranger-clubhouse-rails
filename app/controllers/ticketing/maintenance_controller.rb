@@ -23,14 +23,24 @@ class Ticketing::MaintenanceController < ApplicationController
     @groups = TicketingMaintenance::GROUPS
   end
 
+  # The commit form's one field, held as a model so a missing reason shows
+  # through the form builder: flagged, with its message under the field.
+  class ReasonForm
+    include ActiveModel::Model
+
+    attr_accessor :reason
+  end
+
   def preview
     @task = find_task
+    @form = ReasonForm.new
     @blocked = @task.blocked_reason
     @rows = @task.execute(commit: false) unless @blocked
   end
 
   def commit
     @task = find_task
+    @form = ReasonForm.new(reason: params[:reason])
 
     # A blank required setting or a missing reason re-renders the preview: the
     # operator fixes the problem where the form is.
@@ -38,7 +48,7 @@ class Ticketing::MaintenanceController < ApplicationController
     return render :preview, status: :unprocessable_entity if @blocked
 
     if @task.requires_reason? && params[:reason].blank?
-      @reason_error = "Enter a reason -- it goes into each record's audit trail."
+      @form.errors.add(:reason, "Enter a reason -- it goes into each record's audit trail.")
       @rows = @task.execute(commit: false)
       return render :preview, status: :unprocessable_entity
     end

@@ -81,10 +81,8 @@
       <%= ui_section section[:title], icon: section[:icon], icon_type: :solid,
                      badge: groups.values.sum(&:size).to_s, badge_color: section[:badge_color] do %>
         <% if groups.empty? %>
-          <p class="text-stone-muted">
-            <%= potential_alpha_empty_message(section, filtering: @filtering,
-                                              cohort_total: @cohort_totals[section[:cohort]]) %>
-          </p>
+          <%= ui_empty_state potential_alpha_empty_message(section, filtering: @filtering,
+                                                           cohort_total: @cohort_totals[section[:cohort]]) %>
         <% else %>
           <% section[:groups].each do |group| %>
             <% rows = groups[group] || [] %>

@@ -6,13 +6,13 @@
   <% end %>
 <% end %>
 
-<%= ui_section "Hours Breakdown", icon: "clock", icon_type: :solid do %>
-  <div class="flex flex-wrap gap-3 mb-3">
-    <%= ui_badge "#{pluralize @entries.size, 'entry'}", :secondary %>
-    <%= ui_badge "#{hour_format(@entries.sum(&:duration))} total", :primary %>
-    <%= ui_badge "#{'%.2f' % @entries.sum(&:credits)} credits", :success %>
-  </div>
+<%= ui_stat_row do %>
+  <%= ui_stat_box @entries.size.to_s, (@entries.size == 1 ? "Entry" : "Entries") %>
+  <%= ui_stat_box hour_format(@entries.sum(&:duration)), "Total Hours" %>
+  <%= ui_stat_box "%.2f" % @entries.sum(&:credits), "Credits" %>
+<% end %>
 
+<%= ui_section "Hours Breakdown", icon: "clock", icon_type: :solid do %>
   <%= ui_table responsive: false do |t| %>
     <%= t.header do %>
       <%= t.heading "Position" %>

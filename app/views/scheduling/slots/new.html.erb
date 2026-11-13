@@ -1,7 +1,7 @@
 <%= hero_panel icon: "calendar-plus", heading_level: :h1, id: "scheduling-slot-form-header",
-               description: "The slot's year is set by its start time, regardless of the year being viewed.",
+               description: "Add a shift to a position's schedule.",
                back_to: ["#{@year} Slots", scheduling_slots_path(year: @year)] do |panel| %>
-  <% panel.title do %>Create Slot for <%= @year %><% end %>
+  <% panel.title do %>Add Slot for <%= @year %><% end %>
 <% end %>
 
 <% unless @is_current_year %>

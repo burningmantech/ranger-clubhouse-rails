@@ -19,12 +19,12 @@
   <%= ui_stat_box @alerts.count { |alert| !alert.on_playa }.to_s, "Pre & Post Event" %>
 <% end %>
 
-<%= ui_section "On Playa Alerts", icon: "sun", icon_type: :solid, border: false do %>
+<%= ui_section "On Playa Alerts", icon: "sun", icon_type: :solid do %>
   <%= render "group", alerts: @alerts.select(&:on_playa), can_manage: can_manage,
                       blurb: "Sent while the event is running." %>
 <% end %>
 
-<%= ui_section "Pre & Post Event Alerts", icon: "calendar-days", icon_type: :solid, border: false do %>
+<%= ui_section "Pre & Post Event Alerts", icon: "calendar-days", icon_type: :solid do %>
   <%= render "group", alerts: @alerts.reject(&:on_playa), can_manage: can_manage,
                       blurb: "Sent before or after the event." %>
 <% end %>

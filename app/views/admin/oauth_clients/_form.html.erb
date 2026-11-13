@@ -2,7 +2,7 @@
 
 <%= ui_form(@client,
             persisted ? admin_oauth_client_path(@client) : admin_oauth_clients_path) do |f| %>
-  <%= f.fieldset "Client details", icon: "key", icon_type: :solid do %>
+  <%= f.fieldset "Client Details", icon: "key", icon_type: :solid do %>
     <dl class="instruction-list mb-3">
       <dt>Where do these values go?</dt>
       <dd>Into the website's own sign-in settings. Change them there too, or it stops signing people in.</dd>
@@ -41,8 +41,8 @@
                    data: {
                      turbo_confirm: confirm_modal_dialog(
                        title: "Confirm New Secret",
-                       message: "The Clubhouse will make a new secret and save it now, " \
-                         "replacing whatever the Secret box holds. The website keeps " \
+                       message: "Make a new secret and save it now? It replaces whatever the Secret " \
+                         "box holds, and the old secret cannot be brought back. The website keeps " \
                          "signing people in only after its settings get the new one.",
                        confirm_label: "Save with New Secret"
                      )

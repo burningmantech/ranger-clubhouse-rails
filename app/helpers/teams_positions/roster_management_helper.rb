@@ -155,6 +155,15 @@ module TeamsPositions
       end
     end
 
+    # Whether the confirmed action can be taken back, for the final
+    # confirmation. A grant can be revoked from the roster again; what the other
+    # two take away does not come back by itself.
+    def roster_action_undo(action)
+      return "You can revoke it again from this roster." if action.grant?
+
+      "This page cannot undo it."
+    end
+
     def roster_position_filter_label(value, report)
       holds, position_id = parse_position_filter(value)
       title = report.column(position_id)&.title || "position ##{position_id}"

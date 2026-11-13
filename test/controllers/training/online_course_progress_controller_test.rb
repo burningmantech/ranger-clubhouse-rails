@@ -76,7 +76,7 @@ class Training::OnlineCourseProgressControllerTest < ActionDispatch::Integration
     # Angeles in January, when Pacific runs an hour behind Phoenix.
     assert_match "Sun Jan 18 @ 08:14", response.body
     # Read off the row, not the page: the card says "direct enrollment" too.
-    assert_select "td", text: /direct enrollment/, count: 1
+    assert_select "td", text: /Direct enrollment/, count: 1
   end
 
   # What the mark in the Enrolled column means is in the card under the stat

@@ -207,7 +207,7 @@ module IntakeHelper
 
   def mentee_status_badge(account_status, mentor_status, have_alpha_shift)
     return ui_badge("UBERBONKED", :error) if account_status == Person::UBERBONKED
-    return "no alpha sign-up" unless have_alpha_shift
+    return ui_badge("no alpha sign-up", :secondary) unless have_alpha_shift
     return ui_badge("has alpha sign-up", :success) if mentor_status == "none"
 
     info = MENTEE_STATUS_BADGE[mentor_status] || { label: mentor_status.to_s, variant: :warning }

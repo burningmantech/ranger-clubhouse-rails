@@ -86,8 +86,8 @@
                                          aria_label: "Select credit ##{credit.id} #{credit.description}" %>
               <% end %>
               <%= t.cell credit.id, right: true %>
-              <%= t.cell credit.start_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
-              <%= t.cell credit.end_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+              <%= t.cell datetime_format(credit.start_time, year: true) %>
+              <%= t.cell datetime_format(credit.end_time, year: true) %>
               <%= t.cell credit_format_short(credit.credits_per_hour), right: true %>
               <%= t.cell credit.description %>
               <%= t.cell do %>

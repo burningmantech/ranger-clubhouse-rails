@@ -1,0 +1,26 @@
+/*
+ * Print Page
+ * The paper every print view shares: Letter with fixed margins. Linked by
+ * layouts/print alone, never imported into the tailwind bundle -- @page cannot
+ * be scoped by selector, so a bare rule there would reach every screen page's
+ * print output.
+ *
+ * Margin boxes (page numbers, footers) never go on this bare rule: it reaches
+ * every print view, including the sign-up sheet, which carries no page numbers
+ * on purpose. A view that wants them names its own @page rule through
+ * content_for :page_rules.
+ */
+
+@page {
+    size: letter;
+    margin: 0.5in;
+}
+
+/* The html box below the last sheet's content: daisyUI paints :root with
+   base-100, and the body's print:bg-paper cannot reach it. Paper is white.
+   --color-paper comes from the tailwind bundle, which this layout also links. */
+@media print {
+    :root {
+        background: var(--color-paper);
+    }
+}

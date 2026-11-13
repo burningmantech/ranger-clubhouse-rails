@@ -35,7 +35,9 @@ module Vc::ReservedHandlesHelper
     end
   end
 
+  # "January 8, 2026", the running-copy date, built from DateTimeHelper.
   def reserved_handle_twii_default_date
-    HandleReservation.default_twii_expires_on.strftime("%B %-d, %Y")
+    date = HandleReservation.default_twii_expires_on
+    "#{month_day_format(date)}, #{date.year}"
   end
 end

@@ -1,0 +1,35 @@
+C0085 || FIXED || app/assets/stylesheets/accessibility.css:42 || animate-spin added to the reduced-motion guard beside animate-pulse (C2).
+C0160 || COMPLIANT || app/assets/stylesheets/components/autocomplete.css:81 || Current guide (ac-option-active entry) describes the success tint and 3px success bar the CSS draws; no brand ring asked.
+C0161 || FIXED || app/assets/stylesheets/components/autocomplete.css:102 || ac-group-header text-xs to text-sm (C1).
+C0163 || FIXED || app/assets/stylesheets/components/autocomplete.css:130 || ac-filter-chip text-xs to text-sm (C1). Active-hover black mix left as theme look.
+C0164 || FIXED || app/assets/stylesheets/components/autocomplete.css:160 || ac-empty empty state text-sm to text-base (R4). ac-error and ac-loading untouched.
+C0150 || WAIVED || app/assets/stylesheets/components/boxes.css:37 || R2
+C0151 || WAIVED || app/assets/stylesheets/components/boxes.css:46 || R2
+C0152 || WAIVED || app/assets/stylesheets/components/boxes.css:74 || R2
+C0094 || COMPLIANT || app/assets/stylesheets/components/buttons.css:32 || Current guide: button-row gaps are the row's own (button_row) and the sticky-row section names its 1.5vh gaps.
+C0096 || FIXED || app/assets/stylesheets/accessibility.css:63 || btn-copy-success bounce and icon zoom-fade stop under prefers-reduced-motion (C2); the guide now approves the bounce.
+C0174 || FIXED || app/assets/stylesheets/components/camera.css:1 || camera-capture-btn and camera-select deleted: the view uses button_action and a daisyUI select; nothing else references them.
+C0104 || COMPLIANT || app/assets/stylesheets/components/flex-patterns.css:13 || Guide no longer documents inline-flex-center; it lists inline-flex-center-gap-2, which exists here.
+C0158 || FIXED || app/assets/stylesheets/components/hero-panel.css:57 || hero-stat-label 0.75rem to var(--text-sm) (C1). Flame and award hues are C0064.
+C0064 || WAIVED || app/assets/stylesheets/components/hero-panel.css:48 || approved exception 2026-11-12: award and flame hues stay
+C0089 || FIXED || app/assets/stylesheets/components/hq-window.css:41 || md..lg media band replaced by a container query on the summary's parent (below lg), laid across at 40rem. Threshold not rendered yet.
+C0175 || FIXED || app/assets/stylesheets/components/label-value.css:33 || (width >= 1024px) to (width >= theme(--breakpoint-lg)).
+C0137 || FIXED || app/assets/stylesheets/components/mega-menu.css:20 || (min-width: 1024px) to (width >= theme(--breakpoint-lg)); dialog look otherwise left.
+M0059 || FIXED || app/assets/stylesheets/components/mega-menu.css:20 || Same edit as C0137.
+C0141 || COMPLIANT || app/assets/stylesheets/components/mega-menu.css:86 || Guide Heading Levels: surfaces with their own stylesheet, the mega menu named, keep their heading styles.
+C0142 || FIXED || app/assets/stylesheets/components/mega-menu.css:113 || mega-menu-item-link min-h-8 to min-h-9 (C1).
+C0120 || WAIVED || app/assets/stylesheets/components/modals.css:13 || R2
+C0171 || COMPLIANT || app/assets/stylesheets/components/progress.css:7 || Flat-by-default binds new components; the sticky VC bar is existing and its shadow separates a pinned bar from scrolling content.
+C0172 || WAIVED || app/assets/stylesheets/components/progress.css:24 || R2
+C0127 || WAIVED || app/assets/stylesheets/components/sidebar.css:13 || R15: the guide composition is deleted; sidebar-section-header is live (SIDEBAR_SECTION_HEADER), so nothing to match.
+C0128 || WAIVED || app/assets/stylesheets/components/sidebar.css:18 || R15: docs gone; the sidebar-badge utility is left for the agent deleting sidebar_badge, per lead.
+C0123 || FIXED || app/assets/stylesheets/accessibility.css:47 || Toast slide becomes an in-place fade under prefers-reduced-motion (C2).
+C0124 || FIXED || app/assets/stylesheets/accessibility.css:56 || Countdown bar hidden under prefers-reduced-motion; JS sets its duration inline, so stopping it otherwise needs !important.
+C0177 || FIXED || app/assets/stylesheets/components/vc-applications.css:8 || vc-progress-item text-xs to text-sm (C1). Neutral pill text-base-content/60 left (look).
+C0209 || WAIVED || app/assets/stylesheets/login.css:26 || R9
+C0212 || WAIVED || app/assets/stylesheets/login.css:137 || R9
+C0214 || FIXED || app/assets/stylesheets/login.css:163 || Labels 0.8125rem to text-base, rule hiding the required asterisk deleted, forgot-password link to text-sm (R9).
+C0217 || WAIVED || app/assets/stylesheets/login.css:254 || R9
+C0220 || FIXED || app/assets/stylesheets/login.css:340 || Type floor only (R9): doors lede 0.8125rem and descriptions 0.85rem to text-base. Amber look waived R9.
+C0023 || WAIVED || app/assets/tailwind/application.css:56 || R2
+C0031 || FIXED || app/assets/tailwind/application.css:107 || ui-monospace and monospace unquoted in --font-mono.

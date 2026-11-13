@@ -51,7 +51,7 @@
   <% if @pogs.empty? %>
     <%= ui_empty_state "No pogs match the current filters.", icon: "filter", icon_type: :solid %>
   <% else %>
-    <%= ui_section "Pogs Issued in #{@year}", icon: "utensils", icon_type: :solid, border: false do %>
+    <%= ui_section "Pogs Issued in #{@year}", icon: "utensils", icon_type: :solid do %>
       <%# Shown on a single page too: it is where the list's total reads. %>
       <% pager = ui_pager(@pagy, noun: "pog") { |page| pogs_administration_path(year: @year, **@form.query_params(page:)) } %>
       <%= pager %>

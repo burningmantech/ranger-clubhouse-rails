@@ -9,7 +9,7 @@
 <% slot = @training_session.slot %>
 <% session_title = "#{slot.begins_year} #{slot.description}" %>
 <% session_when = training_session_time(slot) %>
-<% doc_label = "#{@training.title} · Sign-up sheet" %>
+<% doc_label = "#{@training.title} · Sign-Up Sheet" %>
 <% trainees = @training_session.trainees %>
 
 <%# Page numbers come from CSS counters in a margin box (Chrome renders these
@@ -24,7 +24,7 @@
       @bottom-right {
         content: "Page " counter(page) " of " counter(pages);
         font-size: 7.5pt;
-        color: #444;
+        color: #69625d; /* --color-body-subtle, light; a margin box cannot be trusted to resolve var() */
         font-family: "Atkinson Hyperlegible", sans-serif;
       }
     }
@@ -52,7 +52,7 @@
     <table>
       <thead>
       <tr class="signup-running-head">
-        <th colspan="4"><%= session_title %> &middot; Sign-up sheet</th>
+        <th colspan="4"><%= session_title %> &middot; Sign-Up Sheet</th>
       </tr>
       <tr>
         <th><span class="sr-only">Row</span></th>

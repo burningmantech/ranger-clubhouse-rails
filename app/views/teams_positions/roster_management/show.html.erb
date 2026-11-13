@@ -14,6 +14,28 @@
 <% end %>
 
 <% if @report.people.any? %>
+  <%# The legend and who the roster lists, out of the body: one card under the
+      stat row, samples in the answers. %>
+  <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Who is on this roster?</dt>
+      <dd>
+        Team members and anyone holding a Recommended or Optional position. People whose only tie is a
+        Public position are left out.
+      </dd>
+      <dt>What does a cell show?</dt>
+      <dd>
+        One position grant. The year is the last year that person rangered, trained at, or taught it.
+        &ldquo;Since&rdquo; is the date the position was granted, shown when the Clubhouse recorded it — most
+        older grants predate the record. A dash means the position is not granted.
+      </dd>
+      <dt>What does <%= ui_badge "NS", :warning, size: "sm", icon: "circle-half-stroke" %> mean?</dt>
+      <dd>Granted but never used.</dd>
+      <dt>What does <%= ui_badge "NS", :error, size: "sm", icon: "ban" %> mean in the Last Rangered column?</dt>
+      <dd>No activity on any position on this team.</dd>
+    </dl>
+  <% end %>
+
   <%= ui_section "Positions on This Team", icon: "list-check", icon_type: :solid do %>
     <p class="mb-3">
       Counts cover the <%= pluralize @report.people.size, "person" %> on this roster,
@@ -68,20 +90,6 @@
     <% end %>
   <% end %>
 
-  <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
-    <p class="mb-1">
-      <strong>Each cell is one position grant.</strong> The year is the last year that person
-      rangered, trained at, or taught it. "Since" is the date the position was granted, shown
-      when the Clubhouse recorded it — most older grants predate the record.
-    </p>
-    <p>
-      <%= ui_badge "NS", :warning, size: "sm", icon: "circle-half-stroke" %> means granted but
-      never used.
-      <%= ui_badge "NS", :error, size: "sm", icon: "ban" %> in the Last Rangered column means no
-      activity on any position on this team. A dash means the position is not granted.
-    </p>
-  <% end %>
-
   <% if @blocked_roles.any? %>
     <%= ui_callout_box :warning, icon: "lock", icon_type: :solid do %>
       <strong>This roster is read-only for you.</strong>
@@ -89,11 +97,6 @@
       someone would take that away. Only a person who holds it can do that.
     <% end %>
   <% end %>
-
-  <p class="my-3">
-    This roster lists team members and anyone holding a Recommended or Optional position.
-    People whose only tie is a Public position are left out.
-  </p>
 <% end %>
 
 <% if @people.any? %>

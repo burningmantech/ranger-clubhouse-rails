@@ -10,19 +10,22 @@
     filter still decides who counts. %>
 <div data-controller="list-filter">
   <div class="my-4 lg:w-3/4">
-    <%= form_with url: people_languages_known_path, method: :get, data: { turbo_action: "replace" } do |f| %>
-      <div class="flex flex-row gap-2 items-center">
-        <%= f.label :q, "Search languages", class: "sr-only" %>
-        <%= f.search_field :q, value: @query, placeholder: "Search languages",
-                           autocomplete: "off",
-                           class: "input w-full max-w-sm min-h-9",
+    <%= form_with url: people_languages_known_path, method: :get, builder: AppFormBuilder,
+                  data: { turbo_action: "replace" } do |f| %>
+      <%= form_row do %>
+        <%= f.search_field :q, label: "Search Languages", value: @query, autocomplete: "off",
+                           width: "w-full sm:w-96",
                            data: { list_filter_target: "input", action: "input->list-filter#apply" } %>
-        <%= submit_button "Search" %>
-        <% if @query.present? %>
-          <%= button_link "Clear", :ghost,
-                          people_languages_known_path(site: languages_known_carried_site(@site)) %>
-        <% end %>
-      </div>
+        <%# lg:mt-6 drops the buttons level with the field under its label, as
+            the VC applications search does. %>
+        <div class="flex gap-2 lg:mt-6">
+          <%= submit_button "Search" %>
+          <% if @query.present? %>
+            <%= button_link "Clear", :ghost,
+                            people_languages_known_path(site: languages_known_carried_site(@site)) %>
+          <% end %>
+        </div>
+      <% end %>
       <%# Searching keeps the filter. No id: the filter below names the same
           field, and two elements sharing one id let Turbo quietly drop one. %>
       <% if languages_known_carried_site(@site) %>

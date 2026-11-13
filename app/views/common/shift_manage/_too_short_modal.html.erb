@@ -4,12 +4,13 @@
   <%= m.title "Timesheet Entry Might Be Too Short" %>
   <%= m.body do %>
     <p class="font-semibold text-error mb-3">
+      <%= fa_icon "circle-exclamation", :solid, end: 1 %>
       The shift has NOT been ended. The timesheet entry might be too short at
       <%= hour_minute_words entry.duration %>.
     </p>
     <p class="mb-3">Pick one of the following options:</p>
 
-    <%= ui_accent_card "The Position (#{entry.position.title}) Is Wrong", variant: :secondary do %>
+    <%= ui_accent_card "The Position (#{entry.position.title}) Is Wrong", variant: :secondary, heading_level: :h4 do %>
       <p class="mb-2">
         Use this option if the wrong position was selected at check-in and needs to be fixed.
         The shift will NOT be ended.
@@ -20,7 +21,7 @@
                       full_width: true, class: "text-base py-3" %>
     <% end %>
 
-    <%= ui_accent_card "The Shift Was Started by Mistake", variant: :secondary do %>
+    <%= ui_accent_card "The Shift Was Started by Mistake", variant: :secondary, heading_level: :h4 do %>
       <p class="mb-2">
         Use this option if the shift was started by mistake and <%= shift_person.callsign %> is
         not on a shift at this moment. The timesheet entry will be deleted.
@@ -29,25 +30,24 @@
           turbo-frame — without it the redirects are trapped by the frame. %>
       <%= delete_button shift_delete_mistake_path(entry_id: entry.id),
                         "Accidental Shift Start — Delete Entry",
-                        variant: :secondary,
                         icon: "trash", icon_type: :solid,
                         full_width: true, class: "text-base py-3",
                         data: { turbo_frame: "_top" },
                         confirm_modal: {
                           title: "Confirm Timesheet Entry Deletion",
-                          message: "Are you absolutely sure you want to delete the entry?",
+                          message: "Delete this timesheet entry? This cannot be undone.",
                           confirm_label: "Delete Entry",
                           method: :delete
                         } %>
     <% end %>
 
-    <%= ui_accent_card "The Duration Is Actually Correct", variant: :secondary do %>
+    <%= ui_accent_card "The Duration Is Actually Correct", variant: :secondary, heading_level: :h4 do %>
       <p class="mb-2">
         Use this option if the shift really was this short. The shift will be ended.
       </p>
       <%# submit_correction rides through: this modal renders inside the same
           request as the End Shift POST, so dropping it here would silently turn
-          "End Shift & Submit Correction" into a plain end on a short entry —
+          "End Shift & Request Correction" into a plain end on a short entry —
           exactly when a time correction is most likely. %>
       <%= button_link "Duration Is Correct — End Shift", :secondary,
                       shift_end_path(entry_id: entry.id, confirmed: 1,

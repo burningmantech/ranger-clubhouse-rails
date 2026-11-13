@@ -1,4 +1,5 @@
 import {Controller} from "@hotwired/stimulus"
+import {Turbo} from "@hotwired/turbo-rails"
 import {confirmChecked} from "controllers/confirm_checkbox"
 
 /**
@@ -26,24 +27,44 @@ export default class extends Controller {
     const cb = event.currentTarget
     if (!cb.checked || cb.dataset.granted !== "true") return
 
-    confirmChecked(cb,
-      `${cb.dataset.roleTitle} is already granted through a team membership and/or a position.\n\n` +
-      "Grant it manually as well?"
-    )
+    const title = cb.dataset.roleTitle
+    confirmChecked(cb, {
+      title: "Role Already Granted",
+      message: [
+        `Grant ${title} manually as well?`,
+        `${title} is already granted through a team membership, a position, or both.`
+      ],
+      confirmLabel: "Grant Manually"
+    })
   }
 
-  submit(event) {
+  // Asks in the app's dialog, so the submit is held and sent again on yes.
+  async submit(event) {
+    if (this.allowSubmit) {
+      this.allowSubmit = false
+      return
+    }
+
     const added = this.checkboxTargets.filter(
       cb => cb.dataset.council === "true" && cb.checked && this.originalCouncil.get(cb) === false
     )
     if (added.length === 0) return
 
+    event.preventDefault()
+
     const titles = added.map(cb => cb.dataset.roleTitle).join(" and ")
-    const ok = confirm(
-      `WARNING: ${titles} require prior approval by the Ranger Council.\n\n` +
-      "This person will gain access to sensitive information and administrative functions.\n\n" +
-      `Grant ${titles} anyway?`
-    )
-    if (!ok) event.preventDefault()
+    const confirmed = await Turbo.config.forms.confirm({
+      title: "Council Approval Required",
+      message: [
+        `Grant ${titles}?`,
+        `${titles} ${added.length === 1 ? "requires" : "require"} prior approval by the Ranger Council. ` +
+          "This person will gain access to sensitive information and administrative functions."
+      ],
+      confirmLabel: "Grant"
+    }, this.element, event.submitter)
+    if (!confirmed) return
+
+    this.allowSubmit = true
+    this.element.requestSubmit(event.submitter)
   }
 }

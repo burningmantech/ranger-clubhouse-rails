@@ -42,15 +42,15 @@
       <div class="font-semibold text-heading mb-1">
         Prologue <span class="text-stone-muted font-normal">(shown first)</span>
       </div>
-      <div class="lexxy-content text-body bg-default rounded-base border border-line p-3 max-h-64 overflow-y-auto mb-3">
-        <%= @survey.prologue.present? ? rich_text(@survey.prologue) : tag.span("None given.", class: "italic text-stone-muted") %>
-      </div>
+      <%= ui_text_box max_height: "max-h-64", label: "Prologue", class: "lexxy-content text-body mb-3" do %>
+        <%= @survey.prologue.present? ? rich_text(@survey.prologue) : "—" %>
+      <% end %>
       <div class="font-semibold text-heading mb-1">
         Epilogue <span class="text-stone-muted font-normal">(shown last)</span>
       </div>
-      <div class="lexxy-content text-body bg-default rounded-base border border-line p-3 max-h-64 overflow-y-auto">
-        <%= @survey.epilogue.present? ? rich_text(@survey.epilogue) : tag.span("None given.", class: "italic text-stone-muted") %>
-      </div>
+      <%= ui_text_box max_height: "max-h-64", label: "Epilogue", class: "lexxy-content text-body" do %>
+        <%= @survey.epilogue.present? ? rich_text(@survey.epilogue) : "—" %>
+      <% end %>
     </div>
   </div>
 <% end %>

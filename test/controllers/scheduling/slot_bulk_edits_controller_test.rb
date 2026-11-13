@@ -124,7 +124,9 @@ class Scheduling::SlotBulkEditsControllerTest < ActionDispatch::IntegrationTest
          params: { description: "Renamed" }
 
     assert_response :unprocessable_entity
-    assert_select "body", text: /Select at least one slot to update/
+    assert_select ".box-error", text: /Select at least one slot to update/
+    assert_nil flash[:error]
+    assert_equal "First shift", @first.reload.description
   end
 
   # to_i read "#{id}x" as the id and updated that slot.
@@ -133,7 +135,8 @@ class Scheduling::SlotBulkEditsControllerTest < ActionDispatch::IntegrationTest
          params: { description: "Renamed", slot_ids: ["", "abc", "#{@first.id}x"] }
 
     assert_response :unprocessable_entity
-    assert_select "body", text: /Select at least one slot to update/
+    assert_select ".box-error", text: /Select at least one slot to update/
+    assert_nil flash[:error]
     assert_equal "First shift", @first.reload.description
   end
 
@@ -142,7 +145,9 @@ class Scheduling::SlotBulkEditsControllerTest < ActionDispatch::IntegrationTest
          params: { slot_ids: [@first.id] }
 
     assert_response :unprocessable_entity
-    assert_select "body", text: /Fill in at least one field to apply/
+    assert_select ".box-error", text: /Fill in at least one field to apply/
+    assert_nil flash[:error]
+    assert_equal "First shift", @first.reload.description
   end
 
   test "filters the listing by status" do
@@ -226,6 +231,8 @@ class Scheduling::SlotBulkEditsControllerTest < ActionDispatch::IntegrationTest
     }
 
     assert_response :unprocessable_entity
+    assert_select ".box-error", text: /Could not update slot #\d+: .* No slots were changed\./m
+    assert_nil flash[:error]
     assert_equal "First shift", @first.reload.description
     assert_equal "Second shift", @second.reload.description
   end

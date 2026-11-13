@@ -45,8 +45,7 @@
   <% end %>
 
   <% @detail.slot_details.each do |detail| %>
-    <%= ui_section flake_report_shift(detail.slot), icon: "clock", icon_type: :solid,
-                   border: false do %>
+    <%= ui_section flake_report_shift(detail.slot), icon: "clock", icon_type: :solid do %>
       <%# The sign-up count sits here rather than in a section badge: the badge
           shares one flex row with the shift's date range and gets squeezed to
           an unreadable two lines on a phone. %>

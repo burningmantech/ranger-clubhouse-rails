@@ -293,10 +293,12 @@ module Bmid::ManageHelper
       label = "Manage #{noun} for #{callsign}"
       url = bmid_provisions_path(context)
       icon = "pen"
+      word = "Manage"
     else
       label = "Add #{noun} for #{callsign}"
       url = new_bmid_provision_path(context)
       icon = "plus"
+      word = "Add"
     end
 
     # The icon rides in as the label rather than through the :icon option,
@@ -306,7 +308,7 @@ module Bmid::ManageHelper
     # for a mouse. Spacing is .btn's own gap; nothing here spells a margin.
     face = safe_join([fa_icon(icon, :solid, "aria-hidden": "true"),
                       tag.span(label, class: "sr-only"),
-                      "Manage"
+                      word
                      ])
 
     button_link(face, :secondary, url, title: label, size: "sm", data: { turbo_frame: "modal" })

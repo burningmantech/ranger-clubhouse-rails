@@ -63,7 +63,7 @@
       marked on site and off site about once a year, so each year reads as the
       pair it usually is. %>
   <% @rows.group_by { it.created_at.year }.each do |year, rows| %>
-    <%= ui_section year.to_s, border: false do %>
+    <%= ui_section year.to_s do %>
       <%= ui_table do |t| %>
         <%= t.header do %>
           <%= t.heading "When" %>

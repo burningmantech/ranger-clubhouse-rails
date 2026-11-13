@@ -44,7 +44,7 @@ class Person::PhotosControllerTest < ActionDispatch::IntegrationTest
     get new_person_photo_path(@target)
     assert_response :success
 
-    assert_select "#tab-camera", count: 0
+    assert_select "#panel-camera-tab", count: 0
     assert_select "#panel-camera", count: 0
   end
 

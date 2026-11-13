@@ -18,7 +18,7 @@
 <%= render partial: "common/event_summary_counts", locals: { summary: @summary } %>
 
 <% if swag_manager? %>
-  <div class="my-3 flex flex-wrap gap-2" role="group" aria-label="Add swag for <%= @person.callsign %>">
+  <%= button_row class: "my-3", role: "group", aria: { label: "Add swag for #{@person.callsign}" } do %>
     <% [["T-Shirt", "t-shirt", "shirt"],
         ["Long Sleeve Shirt", "long-sleeve", "shirt"],
         ["Ranger Pin", "dept-pin", "map-pin"],
@@ -26,14 +26,14 @@
         ["Org Patch", "org-patch", "location-dot"],
         ["Org Pin", "org-pin", "location-dot"],
         ["Other Swag", "other", "star"]].each do |label, swag_type, icon| %>
-      <%= button_link label, :primary, new_person_swag_path(@person, swag_type:), icon:, icon_type: "solid" %>
+      <%= button_link label, :secondary, new_person_swag_path(@person, swag_type:), icon:, icon_type: "solid" %>
     <% end %>
-  </div>
+  <% end %>
 <% end %>
 
 
 <%= ui_section "Swag History", icon: "shirt", icon_type: :solid do %>
-  <div class="mb-2 text-base-content/80">
+  <div class="mb-2 me-muted">
     Showing <%= pluralize(@person_swags.size, "item") %>
   </div>
   <% if @person_swags.any? %>
@@ -53,9 +53,9 @@
           <%= t.row do %>
             <%= t.row_header(swag_name) %>
             <%= t.cell(swag_type_label(ps.swag)) %>
-            <%= t.cell(ps.year_issued.presence || "-", right: true) %>
+            <%= t.cell(ps.year_issued.presence || "—", right: true) %>
             <%= t.cell class: "whitespace-pre-line" do %>
-              <%= ps.notes.presence || "-" %>
+              <%= ps.notes.presence || "—" %>
             <% end %>
             <% if swag_manager? %>
               <%= t.cell right: true do %>

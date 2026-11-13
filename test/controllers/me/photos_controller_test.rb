@@ -35,7 +35,7 @@ class Me::PhotosControllerTest < ActionDispatch::IntegrationTest
     get new_me_profile_photo_url
     assert_response :success
 
-    assert_select "#tab-camera", text: /Take Selfie/
+    assert_select "#panel-camera-tab", text: /Take Selfie/
   end
 
   # Create tests

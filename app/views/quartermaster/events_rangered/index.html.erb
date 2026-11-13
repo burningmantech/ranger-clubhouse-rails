@@ -42,7 +42,7 @@
     </dl>
   <% end %>
 
-  <%= ui_section "Service Length", icon: "chart-simple", icon_type: :solid, border: false do %>
+  <%= ui_section "Service Length", icon: "chart-simple", icon_type: :solid do %>
     <%= ui_table full_width: true, striped: true, id: "events-rangered-distribution" do |t| %>
       <%= t.header do %>
         <%= t.heading "Years" %>
@@ -101,7 +101,7 @@
     <% end %>
   <% end %>
 
-  <%= ui_section "Roster", icon: "users", icon_type: :solid, border: false do %>
+  <%= ui_section "Roster", icon: "users", icon_type: :solid do %>
     <% if @filtered.empty? %>
       <div class="px-4 pb-2">
         <%= ui_empty_state "No one matched the current filters.",

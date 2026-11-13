@@ -15,7 +15,9 @@
 <% end %>
 
 <%= ui_stat_row do %>
-  <%= ui_stat_box number_with_delimiter(@members.size), "Shown",
+  <%# The whole category, not the filtered roster: the line above the roster
+      already says "Showing X of Y". %>
+  <%= ui_stat_box number_with_delimiter(@total_members), "Holders",
                   icon: "users", icon_type: :solid %>
   <%# Dropped while the on-site filter is applied, where it could only repeat
       the box beside it -- the same call the index row meta makes. %>
@@ -46,7 +48,7 @@
   <% end %>
 </div>
 
-<%= ui_section "Roster", icon: "users", icon_type: :solid, border: false do %>
+<%= ui_section "Roster", icon: "users", icon_type: :solid do %>
   <% if @members.any? %>
     <p class="text-base text-body mb-2">
       <%# "of N people on site" while that filter is applied: it narrows the
@@ -85,7 +87,7 @@
 <% end %>
 
 <% if @unassigned.any? %>
-  <%= ui_section "Unassigned", icon: "triangle-exclamation", icon_type: :solid, border: false do %>
+  <%= ui_section "Unassigned", icon: "triangle-exclamation", icon_type: :solid do %>
     <%# Not an empty state and not a filtered list: these are the people the
         position's own flag says should hold it and do not, which is the finding
         this report exists to surface. The status filter deliberately does not

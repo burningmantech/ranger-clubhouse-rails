@@ -16,7 +16,8 @@
     <%= f.text_field :description, label: "Description", required: true,
                      maxlength: 40, show_counter: true, width: "w-full sm:w-64" %>
     <%= form_row do %>
-      <%= f.datetime_field :begins, label: "Start Time", required: true %>
+      <%= f.datetime_field :begins, label: "Start Time", required: true,
+                         help_text: "The start time sets the slot's year, whatever year is being viewed." %>
       <%= f.datetime_field :ends, label: "Ending Time", required: true %>
       <%= f.select :timezone, slot_timezone_choices(@slot), { label: "Timezone", width: "w-full sm:w-56" } %>
     <% end %>

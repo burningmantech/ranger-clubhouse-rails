@@ -68,7 +68,7 @@ module Scheduling::PositionCreditsHelper
     ticks = timeline.y_ticks.map { |tick|
       tag.div(class: "ct-tick absolute inset-x-0", style: "--y: #{tick}") do
         tag.span(credit_format_short(tick),
-                 class: "absolute right-full top-0 -translate-y-1/2 pr-2 text-xs text-stone-subtle tabular-nums")
+                 class: "absolute right-full top-0 -translate-y-1/2 pr-2 text-sm text-stone-subtle tabular-nums")
       end
     }
     steps = tag.div(class: "absolute inset-0 flex items-stretch") do
@@ -108,14 +108,14 @@ module Scheduling::PositionCreditsHelper
                   tag.div(class: "flex") do
                     safe_join(days.map { |day|
                       tag.span((day.day if number_every_day || day.sunday?),
-                               class: class_names("ct-axis-day flex-1 min-w-0 text-center text-xs leading-5 text-stone-subtle",
+                               class: class_names("ct-axis-day flex-1 min-w-0 text-center text-sm leading-5 text-stone-subtle",
                                                   "font-semibold": day.sunday?))
                     })
                   end,
                   tag.div(class: "flex") do
                     safe_join(days.chunk_while { |a, b| a.month == b.month }.map { |month|
-                      tag.span((month.first.strftime("%B") if month.size >= 4),
-                               class: "ct-axis-month min-w-0 text-center text-xs leading-5 whitespace-nowrap",
+                      tag.span((Date::MONTHNAMES[month.first.month] if month.size >= 4),
+                               class: "ct-axis-month min-w-0 text-center text-sm leading-5 whitespace-nowrap",
                                style: "--w: #{month.size}")
                     })
                   end

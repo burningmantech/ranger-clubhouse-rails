@@ -137,7 +137,7 @@ class Vehicles::PaperworkControllerTest < ActionDispatch::IntegrationTest
 
     # The three "via" columns moved into the detail row. If a heading for one
     # comes back, it is a column again and the collapse has been undone.
-    ["Record eligible via", "Eligible sign-ups", "Personal vehicle eligible via"].each do |heading|
+    ["Record Eligible Via", "Eligible Sign-Ups", "Personal Vehicle Eligible Via"].each do |heading|
       assert_select "thead th", { text: heading, count: 0 }, "#{heading} is a column again"
     end
     assert_select "thead th", text: "Why Eligible"

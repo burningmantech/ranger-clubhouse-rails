@@ -142,7 +142,8 @@ class Ticketing::MaintenanceControllerTest < ActionDispatch::IntegrationTest
     post ticketing_maintenance_commit_path("bump-expiration"), params: { reason: "  " }
 
     assert_response :unprocessable_entity
-    assert_match "Enter a reason", response.body
+    assert_select "textarea[name=reason][aria-invalid=true][aria-describedby=reason_hint]"
+    assert_select "#reason_hint[role=alert]", /Enter a reason/
     assert_equal Date.new(YEAR + 1, 9, 15), ticket.reload.expiry_date
   end
 

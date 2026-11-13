@@ -24,6 +24,10 @@ module Scheduling::SlotsHelper
     end
   end
 
+  # A start time as a select option's text, where datetime_format's tooltip
+  # span cannot go.
+  def slot_start_option_label(time) = time.strftime(DateTimeHelper::MONTH_DAY_TIME)
+
   def slot_status_badge(slot)
     if slot.active
       ui_badge "Active", :success, icon: "circle-check", icon_type: :solid

@@ -15,7 +15,7 @@
 <% end %>
 
 <% if @results.any? %>
-  <%= ui_section "Found #{pluralize(@results.size, "application")}", border: false do %>
+  <%= ui_section "Found #{pluralize(@results.size, "Application")}" do %>
     <%= ui_table do |t| %>
       <%= t.header do %>
         <%= t.heading "Year" %>

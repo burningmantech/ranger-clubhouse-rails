@@ -65,11 +65,11 @@
   <div class="my-4">
     <%= button_row do %>
       <% if @summary_view %>
-        <%= button_link "Full Roster", :primary,
+        <%= button_link "Full Roster", :secondary,
                         asset_management_radio_assets_path(@index_params.except(:view)),
                         icon: "list", icon_type: :solid %>
       <% else %>
-        <%= button_link "Summarized View", :primary,
+        <%= button_link "Summarized View", :secondary,
                         asset_management_radio_assets_path(
                           @index_params.merge(view: AssetManagement::RadioAssetsController::SUMMARY_VIEW)
                         ),

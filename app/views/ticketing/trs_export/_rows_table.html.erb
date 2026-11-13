@@ -41,7 +41,7 @@
         <% end %>
         <%= t.row_header do %>
           <% unless row.selectable? %>
-            <%= fa_icon "triangle-exclamation", :solid, class: "text-error me-1" %>
+            <%= fa_icon "triangle-exclamation", :solid, class: "icon-error", end: 1 %>
             <span class="sr-only">Has problems:</span>
           <% end %>
           <%= callsign_link row.person, person_tickets_provisions_path(row.person) %>

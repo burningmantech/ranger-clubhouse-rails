@@ -106,7 +106,8 @@
       that stops without saying so reads as "this is all there is". %>
   <% if truncated %>
     <%= ui_callout_box :warning, icon: "list-ol",
-                       title: "Showing the First #{number_with_delimiter(@rows.size)}" do %>
+                       title: "Showing the First #{number_with_delimiter(@rows.size)}",
+                       heading_level: :h2 do %>
       More people matched than one page can carry, so the list stops in callsign
       order and its totals still count all <%= number_with_delimiter(@report.rows.size) %>.
       Export the CSV to see everyone.

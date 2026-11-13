@@ -1,0 +1,74 @@
+R13757 || WAIVED || app/helpers/people/languages_known_helper.rb:15 || R2: me-muted renders the same muted ink as text-stone-muted; guide follows code, no visual change.
+R00332 || FIXED || app/helpers/people/languages_known_helper.rb:49 || The shift position in the Right Now cell is inline cell content, not a second line: dropped text-sm, now text-base.
+F0231 || WAIVED || app/helpers/people/languages_known_helper.rb:79 || approved exception 2026-11-12: on-duty badge marks hunted rows
+R13785 || COMPLIANT || app/helpers/people/search_helper.rb:23 || DISC-01 new wording: a title's icon goes inside it; the icon sits inside the title span.
+F0238 || FIXED || app/helpers/teams_positions/position_sanity_checker_helper.rb:22 || CHECK_META labels now Title Case ("Deactivated Accounts with Grants", etc.).
+F0239 || FIXED || app/helpers/teams_positions/position_sanity_checker_helper.rb:30 || Repair button labels now Title Case ("Revoke Everything", "Reset to the New-User Set", etc.).
+F0240 || FIXED || app/helpers/teams_positions/position_sanity_checker_helper.rb:131 || COLUMNS headings now Title Case ("Still Holds", "Missing Positions", "Mentor Year", etc.).
+R13789 || FIXED || app/views/people/bulk_lookup/index.html.erb:104 || EMPTY-02: "never" is a fact word: muted plain text, no longer italic <em>. Test selector updated.
+R13756 || COMPLIANT || app/views/people/languages_known/_language_group.html.erb:5 || CARD-03 new wording: ui_section_title may head a group of rows.
+R13751 || FIXED || app/views/people/languages_known/index.html.erb:16 || Search form now form_with builder: AppFormBuilder, f.search_field inside form_row, as the VC applications search does.
+F0224 || FIXED || app/views/people/languages_known/index.html.erb:16 || Visible "Search Languages" label from the builder; sr-only label and placeholder removed.
+R05880 || FIXED || app/views/people/languages_known/index.html.erb:16 || Field classes now come from the builder (width: option), no hand-written input classes.
+F0225 || WAIVED || app/views/people/languages_known/index.html.erb:39 || approved exception 2026-11-12: level-1 bar sets row counts
+R13759 || COMPLIANT || app/views/people/languages_known/show.html.erb:12 || SPACE-01 new wording: scale spacing (my-4) around the bar is fine.
+R13801 || COMPLIANT || app/views/people/people_by_location/_country_group.html.erb:4 || CARD-03 new wording: ui_section_title may head a group of rows.
+R13803 || FIXED || app/views/people/people_by_location/_filter_fields.html.erb:10 || Raw fieldset replaced by f.fieldset "Also Include"; help line uses the builder's help-text classes and aria-describedby.
+R13802 || FIXED || app/views/people/people_by_location/_status_notice.html.erb:7 || Callout title passes heading_level: :h2 (page level, under the h1).
+R13805 || COMPLIANT || app/views/people/people_by_location/country.html.erb:64 || BTN-05/R7: the page has no primary action of its own (export is secondary), so Apply Filters stays primary.
+F0226 || WAIVED || app/views/people/people_by_location/index.html.erb:22 || approved exception 2026-11-12: level-1 bar sets row counts
+R13799 || COMPLIANT || app/views/people/people_by_location/index.html.erb:37 || BTN-05/R7: no other primary action on the page, so Apply Filters stays primary.
+R13769 || FIXED || app/views/people/people_by_status/show.html.erb:12 || Level-2 count is now a body ui_stat_row ("People") in place of the level-1 text-lg line.
+R13771 || COMPLIANT || app/views/people/people_by_status/show.html.erb:16 || EMPTY-01 new wording: a list that cannot be empty where drawn may render nothing.
+R13764 || COMPLIANT || app/views/people/retention_report/index.html.erb:62 || BTN-05/R7: no other primary action on the page, so Apply Filters stays primary.
+R13775 || COMPLIANT || app/views/people/search/index.html.erb:30 || BTN-07 new wording: a button in a callout is exempt from button_row.
+R13777 || WAIVED || app/views/people/search/index.html.erb:81 || approved exception 2026-11-12: criteria panel is not fieldset
+R06000 || COMPLIANT || app/views/people/search/index.html.erb:167 || SPACE-01 new wording: arbitrary value allowed with a comment; the comment above explains the cap.
+R13772 || FIXED || app/views/people/shared/_privacy_notice.html.erb:6 || Callout title passes heading_level: :h2; every caller renders it at page level under the h1.
+R13736 || COMPLIANT || app/views/people/status_change_recommendations/index.html.erb:14 || BTN-05 new wording: a two-button view toggle shows the current view as :primary, the other :secondary.
+R13744 || COMPLIANT || app/views/people/status_change_recommendations/show.html.erb:67 || BTN-05 judged compliant in vague-rules.md (only R12699, R12704 to fix).
+R13746 || COMPLIANT || app/views/people/status_change_recommendations/show.html.erb:31 || FORM-06 judged compliant in vague-rules.md: per-person failures are named one by one in a callout.
+R13745 || FIXED || app/helpers/people/status_change_recommendations_helper.rb:74 || Confirm now variant: :error and adds "This page cannot undo the change." Titles ("Confirm Inactive Status") live in app/lib, left.
+R13796 || COMPLIANT || app/views/people/unified_flagging/index.html.erb:82 || BTN-05/R7: no other primary action on the page, so Apply Filters stays primary.
+R13792 || FIXED || app/views/people/unified_flagging/index.html.erb:97 || Jump-list lead-in wrapped in its own <p>, no longer a bare text node.
+R13604 || FIXED || app/views/teams_positions/bulk_positions/index.html.erb:20 || refuse sets @refusal instead of flash.now; the view draws it in an error callout above the form (bulk_lookup shape), still 422.
+R13603 || FIXED || app/views/teams_positions/bulk_positions/index.html.erb:55 || "Checking is always safe" is now an info callout beside the submit.
+R08835 || FIXED || app/views/teams_positions/bulk_positions/preview.html.erb:100 || Dialog titled "<action>?", message adds whether it can be undone (bulk_position_undo), red on revoke.
+R13610 || COMPLIANT || app/views/teams_positions/bulk_positions/preview.html.erb:111 || HERO-04 new wording: a body link back is allowed for a re-post; "Go Back and Edit" re-posts the list.
+R13592 || FIXED || app/views/teams_positions/bulk_teams/index.html.erb:26 || refuse sets @refusal instead of flash.now; the view draws it in an error callout above the form (bulk_lookup shape), still 422.
+R13591 || FIXED || app/views/teams_positions/bulk_teams/index.html.erb:63 || "Checking is always safe" is now an info callout beside the submit.
+R08869 || FIXED || app/views/teams_positions/bulk_teams/preview.html.erb:109 || Dialog titled "<action>?", message adds whether it can be undone (bulk_team_undo), red on revoke.
+R13598 || COMPLIANT || app/views/teams_positions/bulk_teams/preview.html.erb:120 || HERO-04 new wording: a body link back is allowed for a re-post; "Go Back and Edit" re-posts the list.
+F0227 || WAIVED || app/views/teams_positions/membership_report/index.html.erb:28 || approved exception 2026-11-12: level-1 bar sets row counts
+R13659 || COMPLIANT || app/views/teams_positions/membership_report/show.html.erb:48 || EMPTY-01: the missing manager is the report's finding, stated as an error callout, not an empty list the reader came for.
+F0228 || WAIVED || app/views/teams_positions/position_grants/index.html.erb:26 || approved exception 2026-11-12: level-1 bar sets row counts
+F0229 || FIXED || app/views/teams_positions/position_grants/show.html.erb:20 || "Shown" box now "Holders" from @total_members. On Site still counts the filtered roster: a category-wide figure needs the controller.
+F0237 || FIXED || app/views/teams_positions/position_lineups/_form.html.erb:11 || Section title now "Positions in This Lineup".
+F0234 || FIXED || app/views/teams_positions/position_lineups/index.html.erb:6 || Info callout replaced by one collapsed "How This Page Works" card with Q&A.
+R13724 || FIXED || app/views/teams_positions/position_lineups/index.html.erb:42 || Positions cell now value_list.
+R13723 || FIXED || app/views/teams_positions/position_lineups/index.html.erb:42 || Empty positions cell prints "—" through value_list; the italic "No positions linked yet" is gone.
+R13718 || FIXED || app/views/teams_positions/position_records/_form.html.erb:168 || "This position grants no permissions." now ui_empty_state.
+R13711 || FIXED || app/views/teams_positions/position_records/index.html.erb:94 || Team cell prints value_or_dash; italic "No team" gone.
+R13688 || FIXED || app/views/teams_positions/position_sanity_checker/_results.html.erb:15 || Both page-level callout titles ("N repairs made", "Nothing Was Selected") pass heading_level: :h2.
+F0233 || FIXED || app/views/teams_positions/position_sanity_checker/_results.html.erb:31 || Success icon uses icon-success.
+F0232 || FIXED || app/views/teams_positions/position_sanity_checker/check.html.erb:29 || Truncation callout title passes heading_level: :h2.
+R13685 || COMPLIANT || app/views/teams_positions/position_sanity_checker/check.html.erb:41 || FORM-06 new wording: the refusal is reported in a callout on the page, not a flash alone.
+R13682 || FIXED || app/views/teams_positions/position_sanity_checker/check.html.erb:63 || Removed "Back to the Board" button; the hero back link is the one way back.
+F0230 || FIXED || app/views/teams_positions/position_sanity_checker/index.html.erb:19 || Stat row replaced by one text-lg summary line ("N findings in total, with X of 9 checks clear").
+R13674 || FIXED || app/views/teams_positions/position_sanity_checker/index.html.erb:49 || Hand-built title bars and h2s replaced by ui_section_title over each band's rows (allowed by CARD-03). Test now asserts role=heading.
+R13679 || COMPLIANT || app/views/teams_positions/position_sanity_checker/index.html.erb:61 || EMPTY-01 new wording: a fixed catalogue may render nothing; every check always appears, under Clear when clean.
+R13636 || FIXED || app/views/teams_positions/roster_management/preview.html.erb:21 || Callout is :info with circle-info for a grant and :warning for revoke/remove; no more untinted :primary box.
+R13634 || WAIVED || app/views/teams_positions/roster_management/preview.html.erb:48 || R4: a muted second line under a cell's main value may be text-sm.
+R09098 || FIXED || app/views/teams_positions/roster_management/preview.html.erb:81 || Dialog titled "<action>?", message adds undo sentence (roster_action_undo), red for revoke and remove.
+R13619 || COMPLIANT || app/views/teams_positions/roster_management/show.html.erb:44 || LAYOUT-02 new wording: item grids inside a section pick their own scale gap.
+R13620 || COMPLIANT || app/views/teams_positions/roster_management/show.html.erb:46 || SPACE-01 new wording: p-3 is a listed default for a dense repeated card.
+R13631 || FIXED || app/views/teams_positions/roster_management/show.html.erb:19 || Legend moved from the info callout into one collapsed "How This Page Works" card, NS badges in the questions.
+R13630 || FIXED || app/views/teams_positions/roster_management/show.html.erb:19 || "Who is on this roster?" joins the same card; the loose paragraph is gone.
+R13633 || COMPLIANT || app/views/teams_positions/roster_management/show.html.erb:103 || FORM-06: buttons stay disabled until a box is ticked, so the form has no refusal to report.
+R09150 || WAIVED || app/views/teams_positions/roster_management/show.html.erb:152 || R4: the status is a muted second line under the callsign, which may be text-sm.
+R13646 || COMPLIANT || app/views/teams_positions/special_teams_hours/index.html.erb:66 || BTN-07 new wording: a toolbar shared with a count is exempt; Select All/None share the row with the live count.
+R13644 || COMPLIANT || app/views/teams_positions/special_teams_hours/index.html.erb:80 || DISC-01 new wording: summary_class may set weight and ink; it sets only those.
+R13652 || FIXED || app/views/teams_positions/special_teams_hours/index.html.erb:109 || Truncation callout title passes heading_level: :h2.
+R13648 || COMPLIANT || app/views/teams_positions/special_teams_hours/index.html.erb:123 || BTN-07 new wording: a toolbar shared with a count is exempt; the export shares the row with the summary.
+R13701 || FIXED || app/views/teams_positions/team_records/_form.html.erb:87 || "This team grants no permissions." now ui_empty_state.
+R13693 || FIXED || app/views/teams_positions/team_records/index.html.erb:97 || Missing email and document tag print value_or_dash; italic "No email" / "No document tag" gone.

@@ -107,7 +107,8 @@ class Admin::RbsAlertsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "input[name=?]", "alert[title]"
     assert_select "textarea[name=?]", "alert[description]"
-    assert_select "input[type=checkbox][name=?]", "alert[on_playa]"
+    assert_select "input[type=checkbox][name=?][aria-describedby=alert_on_playa_hint]", "alert[on_playa]"
+    assert_select "#alert_on_playa_hint", text: /listed under On Playa Alerts/
   end
 
   test "the edit form names the channels the alert may use" do

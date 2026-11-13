@@ -24,7 +24,7 @@
   <% end %>
 
   <%= f.text_field :subject, label: "Subject", maxlength: RbsBroadcastForm::SUBJECT_LIMIT,
-                   show_counter: true, width: "w-full lg:w-[40rem]" %>
+                   show_counter: true, width: "w-full max-w-2xl" %>
   <%= f.text_area :message, label: "Message", rows: 8,
                   maxlength: RbsBroadcastForm::MESSAGE_LIMIT, width: "w-full" %>
   <%= f.datetime_field :expires_at, label: "No Longer Relevant After",

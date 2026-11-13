@@ -34,7 +34,7 @@
         <%= nl2br info.pickup_locations %>
       </div>
     <% else %>
-      <p class="font-bold text-error mt-1">Pickup locations aren't set yet. Contact the Ranger Ticketing Team.</p>
+      <p class="font-bold text-error mt-1"><%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %> Pickup locations aren't set yet. Contact the Ranger Ticketing Team.</p>
     <% end %>
   <% elsif presenter.ticket %>
     <%

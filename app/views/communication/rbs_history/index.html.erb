@@ -19,10 +19,14 @@
                   icon: "triangle-exclamation", icon_type: :solid %>
 <% end %>
 
-<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
-  <strong>Most rows are message alerts, not broadcasts.</strong>
-  The Clubhouse sends one every time a Ranger receives a message, so the list starts with the
-  broadcasts someone sent to a group. Use the Kind filter to see the rest.
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Why are most records message alerts?</dt>
+    <dd>
+      The Clubhouse sends one every time a Ranger receives a message, so the list starts with the
+      broadcasts someone sent to a group. Use the Kind filter to see the rest.
+    </dd>
+  </dl>
 <% end %>
 
 <%= filter_bar id: "rbs-history-filters",
@@ -32,12 +36,12 @@
                url: communication_rbs_history_path do |f| %>
   <%= hidden_field_tag :year, @year %>
   <%= form_row do %>
-    <%= f.select :kind, rbs_kind_options, { label: "Kind", selected: @filters[:kind] },
-                 { class: "w-full" } %>
-    <%= f.select :delivery, rbs_delivery_options, { label: "Delivery", selected: @filters[:delivery] },
-                 { class: "w-full" } %>
+    <%= f.select :kind, rbs_kind_options,
+                 { label: "Kind", selected: @filters[:kind], width: "w-full", wrapper_class: "flex-1" } %>
+    <%= f.select :delivery, rbs_delivery_options,
+                 { label: "Delivery", selected: @filters[:delivery], width: "w-full", wrapper_class: "flex-1" } %>
     <%= f.select :alert_id, rbs_alert_filter_options(@alerts),
-                 { label: "Alert Type", selected: @filters[:alert_id] }, { class: "w-full" } %>
+                 { label: "Alert Type", selected: @filters[:alert_id], width: "w-full", wrapper_class: "flex-1" } %>
   <% end %>
   <%= button_row do %>
     <%= f.submit "Apply Filters" %>

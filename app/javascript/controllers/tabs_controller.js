@@ -12,6 +12,32 @@ export default class extends Controller {
     connect() {
         // Set initial ARIA states
         this.updateARIA()
+
+        this.handleKeydown = this.handleKeydown.bind(this)
+        this.element.addEventListener("keydown", this.handleKeydown)
+    }
+
+    disconnect() {
+        this.element.removeEventListener("keydown", this.handleKeydown)
+    }
+
+    // The tablist keys: only the selected tab is in the Tab order (roving
+    // tabindex), and the arrows, Home and End move along the list, selecting
+    // the tab they land on as a click would.
+    handleKeydown(event) {
+        // A tablist nested in this one has answered already.
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+
+        const tab = event.target.closest("[role=\"tab\"]")
+        const list = tab?.closest("[role=\"tablist\"]")
+        if (!list) return
+
+        const next = tablistKeyTarget(event.key, tab, list)
+        if (!next) return
+
+        event.preventDefault()
+        next.focus()
+        next.click()
     }
 
     get activeClassList() {
@@ -91,5 +117,20 @@ export default class extends Controller {
         inactiveTabs.forEach(tab => {
             tab.setAttribute("tabindex", "-1")
         })
+    }
+}
+
+// The tab a tablist key moves to from +tab+, or null for any other key.
+// Left and Right wrap around the ends.
+export function tablistKeyTarget(key, tab, list) {
+    const tabs = [...list.querySelectorAll("[role=\"tab\"]")].filter((each) => each.closest("[role=\"tablist\"]") === list)
+    const index = tabs.indexOf(tab)
+
+    switch (key) {
+        case "ArrowLeft": return tabs[(index - 1 + tabs.length) % tabs.length]
+        case "ArrowRight": return tabs[(index + 1) % tabs.length]
+        case "Home": return tabs[0]
+        case "End": return tabs[tabs.length - 1]
+        default: return null
     }
 }

@@ -21,14 +21,14 @@
 <% end %>
 
 <%= ui_stat_row do %>
-  <%= ui_stat_box @timesheets.size, "ENTRIES" %>
+  <%= ui_stat_box @timesheets.size, "Entries" %>
   <% if @corrections_enabled %>
-    <%= ui_stat_box @timesheets_verified, "VERIFIED" %>
+    <%= ui_stat_box @timesheets_verified, "Verified" %>
     <%= ui_stat_box @timesheets_unverified,
-                    "UNVERIFIED",
+                    "Unverified",
                     variant: (@timesheets_unverified.positive? ? :warning : :secondary) %>
     <%= ui_stat_box @timesheets_pending,
-                    "PENDING",
+                    "Pending",
                     variant: (@timesheets_pending.positive? ? :warning : :secondary) %>
   <% end %>
 <% end %>
@@ -46,8 +46,8 @@
   <% end %>
 <% end %>
 
-<%# Quick Actions - visible on mobile only (hidden on desktop where sidebar appears) %>
-<div class="md:hidden mt-4 flex flex-row flex-wrap gap-3">
+<%# Quick Actions - below lg only (the desktop rail carries them from lg up) %>
+<div class="lg:hidden my-4 flex flex-row flex-wrap gap-3">
   <% if @corrections_enabled %>
     <%= button_link "Missing Requests",
                     :secondary,
@@ -84,13 +84,13 @@
 </div>
 
 <%# Main two-column layout: Entries (left/primary) | Quick Actions (right/sidebar) %>
-<div class="flex flex-col md:flex-row md:gap-4">
-  <%# LEFT COLUMN: Primary content - Timesheet Entries (wider, appears first on desktop) %>
-  <div class="flex-1 min-w-0 order-2 md:order-1">
+<div class="flex flex-col lg:flex-row gap-4">
+  <%# LEFT COLUMN: Primary content - Timesheet Entries %>
+  <div class="flex-1 min-w-0">
     <% if @corrections_enabled %>
       <% if @timesheets_unverified.positive? || @timesheets_pending.positive? %>
         <div class="mb-3">
-          <%= ui_section_title "#{fa_icon "circle-exclamation", :solid, end: 2}Action Required Or Pending Correction Review".html_safe, class: "text-warning" %>
+          <%= ui_section_title "#{fa_icon "circle-exclamation", :solid, end: 2}Action Required or Pending Correction Review".html_safe, class: "text-warning" %>
         </div>
         <% if @timesheets_unverified.positive? %>
           <%= render partial: "common/timesheet/listing_with_actions", locals: { entries: @unverified_entries } %>
@@ -113,13 +113,13 @@
     <% end %>
   </div>
 
-  <%# RIGHT COLUMN: Quick Actions sidebar (fixed width, appears first on mobile via order) %>
-  <div class="md:w-60 lg:w-72 shrink-0 order-1 md:order-2 mb-4 md:mb-0 md:sticky md:top-4 md:self-start">
-    <div class="hidden md:block mb-3">
+  <%# RIGHT COLUMN: Quick Actions sidebar, lg up only (fixed width) %>
+  <div class="hidden lg:block lg:w-72 shrink-0 lg:sticky lg:top-4 lg:self-start">
+    <div class="mb-3">
       <%= ui_section_title "Quick Actions" %>
     </div>
 
-    <div class="hidden md:flex flex-col gap-3">
+    <div class="flex flex-col gap-3">
       <% if @corrections_enabled %>
         <%= action_box(
               title: "Missing Timesheet Requests",
@@ -127,8 +127,7 @@
               url: timesheet_missing_requests_path,
               icon: "file-circle-question",
               icon_type: :solid,
-              button_label: "View / Submit",
-              options: { class: "ring-2 ring-warning" }
+              button_label: "View / Submit"
             ) %>
       <% end %>
 
@@ -137,26 +136,29 @@
             description: "Detailed breakdown of hours & credits",
             url: timesheet_event_summary_path,
             icon: "chart-bar",
-            icon_type: :solid
+            icon_type: :solid,
+            button_variant: (@corrections_enabled ? :secondary : :primary)
           ) %>
 
       <% if timesheet_self_serve? %>
         <% if @is_current_year %>
           <%= action_box(
                 title: "Qualifications",
-                description: "Tickets, Provisions,<br>& Appreciations progress".html_safe,
+                description: "Tickets, Provisions & Appreciations progress",
                 url: me_timesheet_dashboard_qualifications_path(year: @year),
                 icon: "ticket",
-                icon_type: :solid
+                icon_type: :solid,
+                button_variant: :secondary
               ) %>
         <% end %>
 
         <%= action_box(
               title: "Work History",
-              description: "Hours breakdown by<br> event and position".html_safe,
+              description: "Hours breakdown by event and position",
               url: me_work_history_path,
               icon: "clock-rotate-left",
-              icon_type: :solid
+              icon_type: :solid,
+              button_variant: :secondary
             ) %>
       <% end %>
     </div>

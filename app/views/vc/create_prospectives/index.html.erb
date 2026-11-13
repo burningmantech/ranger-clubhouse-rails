@@ -13,6 +13,10 @@
   <% end %>
 <% end %>
 
+<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+  Questions about this page? See <%= link_to "How This Page Behaves", "#create-help", class: "underline font-semibold" %> below.
+<% end %>
+
 <% if @auth_error %>
   <%= ui_callout_box :error, accent: true, title: "Could Not Sign In to Salesforce" do %>
     <p><%= @auth_error %></p>

@@ -27,8 +27,8 @@
       </ul>
       <% documented = @membership.teams.select { |team| @team_documents.key?(team.resource_tag) } %>
       <% if documented.any? %>
-        <div class="flex flex-wrap items-center gap-2 mt-3 px-3 py-2 rounded-box bg-base-200">
-          <span class="text-sm text-stone-subtle me-1">Team documents</span>
+        <div class="flex flex-wrap items-center gap-2 mt-3">
+          <span class="font-semibold text-heading me-1">Team Documents</span>
           <% documented.each do |team| %>
             <%= button_link nil, :secondary, me_team_document_path(team), icon: "file-lines", icon_type: :solid do %>
               <%= team.title %><span class="sr-only"> document</span>

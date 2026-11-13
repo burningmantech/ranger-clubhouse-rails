@@ -74,10 +74,12 @@
           <%= pluralize history.years.size, "year" %> ·
           <%= pluralize history.positions.size, "position" %>
           <% if history.has_echelon_work %>
-            · <strong class="text-error">includes Echelon volunteer entries</strong>
+            · <strong>includes Echelon volunteer entries</strong>
           <% end %>
         </p>
 
+        <%# responsive: false -- a position-by-year matrix, read sideways; the
+            labeled-row fold would scatter one position's years down the page. %>
         <%= ui_table full_width: true, responsive: false do |t| %>
           <%= t.header do %>
             <%= t.heading "Position" %>
@@ -93,7 +95,7 @@
               <% history.years.each do |year| %>
                 <%= t.cell right: true do %>
                   <%= link_to hour_format(history.year_totals[year].duration), path.call(nil, year),
-                              data: { turbo_frame: "wh-detail" } %>
+                              class: LinkHelper::TABLE_LINK_CLASSES, data: { turbo_frame: "wh-detail" } %>
                 <% end %>
               <% end %>
             <% end %>
@@ -102,14 +104,14 @@
                 <%= t.row_header row.title %>
                 <%= t.cell right: true do %>
                   <%= link_to hour_format(row.duration), path.call(row.id, nil),
-                              data: { turbo_frame: "wh-detail" } %>
+                              class: LinkHelper::TABLE_LINK_CLASSES, data: { turbo_frame: "wh-detail" } %>
                 <% end %>
                 <% history.years.each do |year| %>
                   <%= t.cell right: true do %>
                     <% cell = row.years[year] %>
                     <% if cell %>
                       <%= link_to hour_format(cell.duration), path.call(row.id, year),
-                                  data: { turbo_frame: "wh-detail" } %>
+                                  class: LinkHelper::TABLE_LINK_CLASSES, data: { turbo_frame: "wh-detail" } %>
                     <% else %>
                       <span class="text-stone-muted">—</span>
                     <% end %>

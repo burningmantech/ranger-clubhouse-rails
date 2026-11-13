@@ -3,8 +3,8 @@
 require "application_system_test_case"
 
 class Me::AwardsTest < ApplicationSystemTestCase
-  # Each trophy card is a plain bordered div (see app/views/common/_trophies.html.erb)
-  CARD = ".border.rounded"
+  # Each trophy is a ui_card (see app/views/common/_trophies.html.erb)
+  CARD = ".card-standard"
 
   setup do
     @person = person(:active_ranger)
@@ -75,7 +75,7 @@ class Me::AwardsTest < ApplicationSystemTestCase
 
     within award_card("OOD (Officer of the Day)") do
       assert_text "2023"
-      assert_text "no service years"
+      assert_text "—"
     end
   end
 
@@ -93,7 +93,7 @@ class Me::AwardsTest < ApplicationSystemTestCase
 
     within award_card("Volunteer Excellence") do
       assert_text "2022"
-      assert_text "no service years"
+      assert_text "—"
     end
   end
 
@@ -130,8 +130,8 @@ class Me::AwardsTest < ApplicationSystemTestCase
       # Title
       assert_text "Khaki Delegation"
 
-      # Award years, prominently styled
-      assert_selector ".font-bold", text: "2020 - 2021, 2023"
+      # Award years, semibold at the body size
+      assert_selector ".font-semibold", text: "2020 - 2021, 2023"
 
       # Service years block
       assert_text(/service years/i)
@@ -180,11 +180,11 @@ class Me::AwardsTest < ApplicationSystemTestCase
     end
   end
 
-  test "awards without service years show muted text" do
+  test "awards without service years show a dash" do
     visit me_awards_path
 
     within award_card("Volunteer Excellence") do
-      assert_selector ".me-muted.italic", text: "no service years"
+      assert_selector ".text-body", text: "—"
     end
   end
 
@@ -206,11 +206,12 @@ class Me::AwardsTest < ApplicationSystemTestCase
     assert_equal team_titles.sort, team_titles, "Team awards should be sorted alphabetically"
   end
 
-  test "awards show correct background styling" do
+  test "award icons are neutral" do
     visit me_awards_path
 
-    # Icon badges carry the amber award styling
-    assert_selector ".ring-signature-edge", minimum: 1
+    # An award is not a status, so its icon takes no status colour or backdrop
+    assert_selector "i.fa-award.text-stone-icon", minimum: 1, visible: :all
+    assert_no_selector ".ring-signature-edge"
   end
 
   test "empty category sections show appropriate message" do

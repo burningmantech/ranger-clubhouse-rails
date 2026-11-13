@@ -47,6 +47,22 @@ class ModalHelperTest < ActionView::TestCase
     assert_includes dialog, "turbo-cancel-button"
   end
 
+  test "a dialog is named by its title and announced as modal" do
+    html = modal(id: "edit-note") { |m| m.title("Edit Note") + m.body { "Body" } }
+    dialog = Nokogiri::HTML5.fragment(html).at_css("dialog")
+
+    assert_equal "edit-note-title", dialog["aria-labelledby"]
+    assert_equal "true", dialog["aria-modal"]
+    assert_equal "Edit Note", Nokogiri::HTML5.fragment(html).at_css("h3#edit-note-title").text
+    assert_equal "Close Dialog", Nokogiri::HTML5.fragment(html).at_css(".modal-backdrop button").text
+  end
+
+  test "a dialog without a title points at nothing" do
+    dialog = Nokogiri::HTML5.fragment(modal { |m| m.body { "Body" } }).at_css("dialog")
+
+    assert_nil dialog["aria-labelledby"]
+  end
+
   test "confirm_modal carries the dialog plus the verb" do
     data = confirm_modal(title: "Confirm", message: "Sure?", method: :delete)
 

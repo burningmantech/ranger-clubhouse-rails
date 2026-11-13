@@ -1,4 +1,4 @@
-<%= ui_table full_width: false, size: "sm" do |t| %>
+<%= ui_table full_width: false do |t| %>
   <%= t.header do %>
     <%= t.heading "Status" %>
     <%= t.heading "Time" %>
@@ -37,7 +37,7 @@
         <% end %>
         <%= t.cell right: true do %>
           <% unless entry.position.count_hours %>
-            <%= fa_icon "ban", :solid, class: "icon-warning" %>
+            <%= fa_icon "ban", :solid, class: "icon-warning", label: "Hours do not count toward provisions" %>
           <% end %>
           <%= hour_minute_words entry.duration %>
         <% end %>
@@ -54,9 +54,11 @@
                                 size: "sm",
                                 data: confirm_modal(
                                   title: "End Shift",
-                                  message: "End the #{entry.position.title} shift for #{@person.callsign}?",
+                                  message: "End the #{entry.position.title} shift for #{@person.callsign}? " \
+                                           "Its times can be corrected afterwards by editing the entry.",
                                   confirm_label: "End Shift",
-                                  method: :post
+                                  method: :post,
+                                  variant: :error
                                 ) %>
               <% end %>
             <% elsif can?(:manage_timesheets) %>

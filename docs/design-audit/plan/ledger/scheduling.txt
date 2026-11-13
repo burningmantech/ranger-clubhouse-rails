@@ -1,0 +1,90 @@
+R00413 || FIXED || app/helpers/scheduling/early_arrivals_helper.rb:130 || Radio lines are the cell's content, not a muted second line: dropped text-sm (R4). "None issued" stays text-sm muted.
+M0216 || FIXED || app/helpers/scheduling/hq_forecast_helper.rb:9 || Literal "%H:%M" replaced by DateTimeHelper::HOUR_MINS.
+R00445 || FIXED || app/helpers/scheduling/hq_forecast_helper.rb:230 || Bar's signed-up count raised to text-base (R4). Hour axis and legend kept text-sm as chart metadata; check bar fit in the rendered pass.
+R00439 || COMPLIANT || app/helpers/scheduling/hq_forecast_helper.rb:272 || style= carries only computed custom properties (--start, --span, --share); STYLE-01's new wording allows it.
+M0437 || COMPLIANT || app/helpers/scheduling/position_credits_helper.rb:32 || style= holds the computed --ymax custom property only; allowed by STYLE-01's new wording.
+M0438 || COMPLIANT || app/helpers/scheduling/position_credits_helper.rb:69 || style= holds the computed --y custom property only; allowed by STYLE-01.
+R00466 || FIXED || app/helpers/scheduling/position_credits_helper.rb:71 || Y-axis ticks, day numbers and month names text-xs -> text-sm (matches the legend). Rendered check: 31 day numbers at phone width.
+M0439 || COMPLIANT || app/helpers/scheduling/position_credits_helper.rb:84 || style= holds the computed --h custom property only; allowed by STYLE-01.
+M0440 || COMPLIANT || app/helpers/scheduling/position_credits_helper.rb:88 || style= holds the computed --w custom property only; allowed by STYLE-01.
+R13257 || FIXED || app/helpers/scheduling/position_credits_helper.rb:111 || Same cause as R00466: axis tick, day and month labels raised from text-xs to text-sm.
+M0221 || FIXED || app/helpers/scheduling/position_credits_helper.rb:117 || Month axis label is Date::MONTHNAMES[month], a name rather than a date format; no strftime left.
+M0441 || COMPLIANT || app/helpers/scheduling/position_credits_helper.rb:119 || style= holds the computed --w day count only; allowed by STYLE-01.
+R13178 || FIXED || app/helpers/scheduling/sandman_qualified_helper.rb:87 || sandman_qualified_scoreboard_columns deleted; the scoreboard now sits in ui_stat_row (see R13164).
+M0222 || FIXED || app/helpers/scheduling/schedule_by_callsign_helper.rb:89 || Uses DateTimeHelper::SHORT_MONTH_DAY ("%b %-d"), added to date_time_helper.rb.
+M0223 || FIXED || app/helpers/scheduling/schedule_by_position_helper.rb:136 || Year branch is DateTimeHelper::DATE, the other SHORT_MONTH_DAY.
+R13318 || COMPLIANT || app/helpers/scheduling/shift_coverage_helper.rb:100 || The window time is a muted metadata line, not the cell's main value (the callsigns are); text-sm allowed for metadata.
+F0183 || FIXED || app/helpers/scheduling/shift_lead_helper.rb:190 || GTR/Veh empty cell prints value_or_dash(nil) "—" instead of "-" (screen and print).
+R13298 || FIXED || app/helpers/scheduling/shift_lead_helper.rb:247 || ON DUTY / SCHEDULED lose text-error / text-success; bold only. Words unchanged (tests pin them).
+R13356 || COMPLIANT || app/views/scheduling/early_arrivals/index.html.erb:135 || Filter selects are w-full + flex-1 in form_rows: what FORM-07's new wording asks.
+R07668 || FIXED || app/views/scheduling/early_arrivals/index.html.erb:190 || Shift time line drops text-sm (not muted); the muted description line stays text-sm under R4.
+R13364 || COMPLIANT || app/views/scheduling/event_stats/index.html.erb:75 || Item grids inside a section, folding at lg: LAYOUT-02 lets them pick their own gap.
+R13368 || FIXED || app/views/scheduling/event_stats/index.html.erb:101 || "n/a" -> value_or_dash, so no flag prints "—" and a zero still prints 0.
+R13365 || FIXED || app/views/scheduling/event_stats/index.html.erb:102 || Both paired-tile grids (Turnout, Alphas) replaced by ui_stat_row.
+M0236 || FIXED || app/views/scheduling/hq_forecast/_people_dialog.html.erb:25 || strftime moved out of the view into hq_forecast_time (helper, DateTimeHelper::MONTH_DAY_TIME); plain text kept for a cell.
+R13329 || COMPLIANT || app/views/scheduling/hq_forecast/_people_dialog.html.erb:45 || "No years at an HQ desk" is a muted recorded fact, a value under EMPTY-02's new wording.
+R13319 || FIXED || app/helpers/scheduling/hq_forecast_helper.rb:123 || The lone sibling-report button now sits in button_row(class: "mb-4") instead of a bare div (BTN-07).
+M0237 || FIXED || app/views/scheduling/hq_forecast/people.html.erb:2 || Dialog title uses hq_forecast_time(@period); no strftime in the view.
+R13184 || FIXED || app/views/scheduling/no_shows_report/position.html.erb:34 || Lone export moved from div.my-4 into button_row class: "my-4".
+R13410 || FIXED || app/views/scheduling/position_credit_copies/new.html.erb:27 || Controller sets @refusal instead of flash.now; the 422 re-render shows it in a ui_callout_box :error above the form. Tests assert the callout.
+R07814 || COMPLIANT || app/views/scheduling/position_credit_copies/new.html.erb:83 || → marks before/after in text: punctuation under ICON-01's new wording.
+M0239 || FIXED || app/views/scheduling/position_credit_copies/new.html.erb:83 || Original and shifted start times use datetime_format(..., year: true).
+M0241 || FIXED || app/views/scheduling/position_credit_copies/new.html.erb:89 || Original and shifted end times use datetime_format(..., year: true).
+F0177 || FIXED || app/views/scheduling/position_credits/edit.html.erb:2 || Fragment replaced by one sentence naming the position and credit.
+F0173 || FIXED || app/views/scheduling/position_credits/new.html.erb:4 || Hero title "Create Position Credit for <year>" -> "Add Position Credit for <year>".
+R13240 || FIXED || app/views/scheduling/position_credits/position.html.erb:89 || From/To cells use datetime_format(..., year: true).
+R13245 || FIXED || app/views/scheduling/position_credits/timeline.html.erb:21 || Both how-to paragraphs moved into an About This Report card (instruction-list) under the stat row.
+R13164 || FIXED || app/views/scheduling/sandman_qualified/index.html.erb:32 || Scoreboard grid replaced by ui_stat_row; tiles and links unchanged.
+R13169 || COMPLIANT || app/views/scheduling/sandman_qualified/index.html.erb:94 || Lone filter select is w-full + flex-1 in a form_row, per FORM-07's new wording.
+R13218 || COMPLIANT || app/views/scheduling/schedule_by_callsign/index.html.erb:32 || Filter text field and select both w-full + flex-1 sharing a form_row, per FORM-07.
+R13223 || FIXED || app/views/scheduling/schedule_by_callsign/person.html.erb:24 || Positions tile no longer :success; default secondary.
+R13224 || FIXED || app/views/scheduling/schedule_by_callsign/person.html.erb:32 || Account, Schedule and export moved from a hand-made div into button_row class: "my-4".
+R13210 || FIXED || app/views/scheduling/schedule_by_position/position.html.erb:31 || Manage Slots and export moved into button_row class: "my-4".
+R13211 || COMPLIANT || app/views/scheduling/schedule_by_position/position.html.erb:58 || Muted second line under the cell's main value (the time); text-sm allowed by R4.
+R13313 || FIXED || app/views/scheduling/shift_coverage/index.html.erb:62 || Both filter selects now width: "w-full", wrapper_class: "flex-1" to fill their share (FORM-07).
+R13421 || COMPLIANT || app/views/scheduling/shift_drop_report/_window_filter.html.erb:17 || Single filter select fills the panel at w-full; FORM-07's new wording is met.
+F0180 || FIXED || app/views/scheduling/shift_lead/_below_min.html.erb:21 || Column heading "Signed Up"/"On Duty"; disclosure heading "N Positions Below Minimum". Test updated.
+R13286 || COMPLIANT || app/views/scheduling/shift_lead/_below_min.html.erb:26 || One-line success status inside a section, led by its status icon: allowed by ALERT-01's new wording.
+R13279 || FIXED || app/views/scheduling/shift_lead/_callsign.html.erb:7 || Not-on-site ban icon class text-error -> icon-error.
+R13280 || COMPLIANT || app/views/scheduling/shift_lead/_filters.html.erb:24 || Five filter selects are w-full + flex-1 in form_rows, per FORM-07's new wording.
+F0179 || FIXED || app/views/scheduling/shift_lead/_picker.html.erb:32 || Disclosure heading "Shift period" -> "Shift Period".
+R13264 || FIXED || app/views/scheduling/shift_lead/_picker.html.erb:37 || Picker is now form_with(url: false, builder: AppFormBuilder) + f.select with label "<year> Shift"; same id, name and auto-submit.
+R08044 || FIXED || app/views/scheduling/shift_lead/_picker.html.erb:41 || Same fix as R13264: f.select replaces select_tag borrowing SELECT_CLASSES.
+R13271 || WAIVED || app/views/scheduling/shift_lead/_roster.html.erb:36 || approved exception 2026-11-12: roster keeps hand-built phone list
+R13274 || FIXED || app/views/scheduling/shift_lead/_roster.html.erb:58 || Pronouns, gender and positions print value_or_dash ("—") instead of "-".
+F0182 || FIXED || app/views/scheduling/shift_lead/_roster.html.erb:72 || Both award icons take fa_icon label: "Certification".
+R13270 || WAIVED || app/views/scheduling/shift_lead/_roster.html.erb:92 || approved exception 2026-11-12: roster keeps hand-built phone list
+R13272 || FIXED || app/views/scheduling/shift_lead/_roster.html.erb:107 || Positions and certification lines to text-base; muted years and pronouns/gender lines keep text-sm under R4.
+R08066 || FIXED || app/views/scheduling/shift_lead/_roster.html.erb:114 || Same fix as R13272 (positions and certifications text-base).
+R13260 || FIXED || app/views/scheduling/shift_lead/_sort_control.html.erb:16 || Sort control is form_with + AppFormBuilder f.select; same id, name, hidden fields and auto-submit.
+R08070 || FIXED || app/views/scheduling/shift_lead/_sort_control.html.erb:25 || Builder label replaces label_tag ("Sort By" plus sr-only roster name).
+R13262 || FIXED || app/views/scheduling/shift_lead/_sort_control.html.erb:25 || The label is the builder's text-base label, no longer text-sm muted.
+R13276 || FIXED || app/views/scheduling/shift_lead/_status_band.html.erb:13 || Raw card-standard div replaced by ui_card (role and aria-label kept).
+R08081 || FIXED || app/views/scheduling/shift_lead/_status_band.html.erb:13 || Hand-added shadow-xs gone; the shadow is now ui_card's default, which R2 keeps.
+R13277 || COMPLIANT || app/views/scheduling/shift_lead/_status_band.html.erb:19 || Print shares a toolbar with the mode summary line: a title-row/toolbar button BTN-07 exempts.
+R13278 || FIXED || app/views/scheduling/shift_lead/_status_band.html.erb:26 || Six size :sm tiles moved from grid-cols-3/6 into ui_stat_row. Check spacing inside the card in the rendered pass.
+F0178 || FIXED || app/views/scheduling/shift_lead/index.html.erb:47 || Roster titles Title Case: "Dirt / Green Dots", "Command Staff", "Special Teams".
+R13289 || WAIVED || app/views/scheduling/shift_lead/print_sheet.html.erb:34 || R10
+R08089 || FIXED || app/views/scheduling/shift_lead/print_sheet.html.erb:41 || Footer margin boxes use var(--color-body, #444): the token, falling back to the old ink if @page cannot inherit it (R10 colour tokens).
+R13290 || WAIVED || app/views/scheduling/shift_lead/print_sheet.html.erb:60 || R10
+F0181 || FIXED || app/views/scheduling/shift_lead/print_sheet.html.erb:103 || Title Case on bands, roster titles, "Decoder Ring" and "On Duty"/"Signed Up" headings (R10). Tests updated.
+R13296 || WAIVED || app/views/scheduling/shift_lead/print_sheet.html.erb:104 || R10
+R08124 || WAIVED || app/views/scheduling/shift_lead/print_sheet.html.erb:109 || R10
+R13293 || WAIVED || app/views/scheduling/shift_lead/print_sheet.html.erb:171 || R10
+R13294 || WAIVED || app/views/scheduling/shift_lead/print_sheet.html.erb:215 || R10
+F0184 || FIXED || app/views/scheduling/shift_lead/print_sheet.html.erb:221 || Fixed anyway to match the shared GTR/Veh cell: "-" -> value_or_dash, legend says "— not stated".
+R13351 || COMPLIANT || app/views/scheduling/shift_signups/_fill_meter.html.erb:8 || "No limit" is a muted recorded fact, a value under EMPTY-02's new wording.
+R13344 || FIXED || app/views/scheduling/shift_signups/index.html.erb:80 || Empty-shift count prints 0, not "—" (R14). Test updated.
+R13347 || FIXED || app/views/scheduling/shift_signups/position.html.erb:46 || Who Signed Up and export moved into button_row class: "my-4".
+M0244 || FIXED || app/views/scheduling/slot_bulk_edits/new.html.erb:40 || Option labels via new slot_start_option_label (slots_helper, DateTimeHelper::MONTH_DAY_TIME); no strftime in the view.
+R13403 || FIXED || app/views/scheduling/slot_bulk_edits/new.html.erb:12 || All three refusals set @refusal instead of flash.now; the 422 re-render shows a ui_callout_box :error under the hero. Tests assert the callout.
+M0245 || FIXED || app/views/scheduling/slot_copies/new.html.erb:44 || Option labels via slot_start_option_label.
+R13309 || FIXED || app/views/scheduling/slot_copies/new.html.erb:18 || Controller sets @refusal instead of flash.now; the 422 re-render shows a ui_callout_box :error under the hero, above the filters and form. Tests assert the callout.
+R13307 || COMPLIANT || app/views/scheduling/slot_copies/new.html.erb:124 || → marks before/after in text: punctuation under ICON-01's new wording.
+M0247 || FIXED || app/views/scheduling/slot_copies/new.html.erb:124 || Begins and shifted begins via datetime_format(..., tz: slot.timezone, year: true).
+M0249 || FIXED || app/views/scheduling/slot_copies/new.html.erb:130 || Ends and shifted ends via datetime_format(..., tz: slot.timezone, year: true).
+R13395 || FIXED || app/views/scheduling/slots/_link_fieldsets.html.erb:21 || "Warning:" red paragraph replaced by a ui_callout_box :warning.
+F0176 || FIXED || app/views/scheduling/slots/edit.html.erb:2 || Fragment replaced by one sentence naming the position and slot description.
+F0175 || FIXED || app/views/scheduling/slots/new.html.erb:2 || Description now says what the page does; the year caveat moved to the Start Time field's help text in slots/_form.
+F0174 || FIXED || app/views/scheduling/slots/new.html.erb:4 || Hero title "Create Slot for <year>" -> "Add Slot for <year>".
+R08300 || FIXED || app/views/scheduling/slots/position.html.erb:116 || "+24h" span loses text-xs; it takes the button's text-sm.

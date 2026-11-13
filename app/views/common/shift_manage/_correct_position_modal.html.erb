@@ -17,8 +17,7 @@
     <%= hidden_field_tag :entry_id, entry.id %>
     <%= f.select :position_id, positions.map { |position| [position.title, position.id] },
                  { label: "Correct Position", required: true,
-                   selected: entry.position_id },
-                 { class: "w-full" } %>
+                   selected: entry.position_id, width: "w-full sm:w-96" } %>
     <%= modal_form_footer submit: "Save Position" %>
   <% end %>
 <% end %>

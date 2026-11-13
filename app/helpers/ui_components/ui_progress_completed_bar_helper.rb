@@ -27,17 +27,19 @@ module UiComponents
                              valuemax: 100,
                              label: final_aria_label
                            }) do
+          # The width is a computed number: a custom property that
+          # w-(--progress-fill) reads, not an inline width.
           concat(content_tag(:div, "",
-                             { class: PROGRESS_BAR,
-                               style: "width: #{progress_percent}%",
+                             { class: "#{PROGRESS_BAR} w-(--progress-fill)",
+                               style: "--progress-fill: #{progress_percent}%",
                                aria: { hidden: true }
                              }
                  ))
 
           if progress_percent > 0 && progress_percent < 100
             concat(content_tag(:div, "",
-                               class: PROGRESS_BAR_PULSE,
-                               style: "width: #{progress_percent}%",
+                               class: "#{PROGRESS_BAR_PULSE} w-(--progress-fill)",
+                               style: "--progress-fill: #{progress_percent}%",
                                aria: { hidden: true }
                    ))
           end

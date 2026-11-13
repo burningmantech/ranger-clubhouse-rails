@@ -40,7 +40,7 @@
 <% end %>
 
 <% if @is_current_year %>
-  <%= ui_section "On Shift Now", icon: "person-walking", icon_type: :solid, border: false,
+  <%= ui_section "On Shift Now", icon: "person-walking", icon_type: :solid,
                  badge: @shifts.in_progress.size.to_s, badge_color: :success do %>
     <% if @shifts.in_progress.empty? %>
       <%= ui_empty_state "No mentee is on shift right now.", icon: "person-walking", icon_type: :solid %>
@@ -54,7 +54,7 @@
   <% end %>
 <% end %>
 
-<%= ui_section "Completed Shifts", icon: "clipboard-check", icon_type: :solid, border: false, class: "mt-6",
+<%= ui_section "Completed Shifts", icon: "clipboard-check", icon_type: :solid, class: "mt-6",
                badge: @shifts.completed.size.to_s do %>
   <% if @shifts.completed.empty? %>
     <%= ui_empty_state "No mentee shift has ended in #{@year}.", icon: "clipboard-check", icon_type: :solid %>
@@ -69,7 +69,7 @@
 <% end %>
 
 <% if @is_current_year %>
-  <%= ui_section "Upcoming Sign-Ups", icon: "calendar", icon_type: :solid, border: false, class: "mt-6",
+  <%= ui_section "Upcoming Sign-Ups", icon: "calendar", icon_type: :solid, class: "mt-6",
                  badge: @shifts.upcoming.size.to_s do %>
     <% if @shifts.upcoming.empty? %>
       <%= ui_empty_state "No one has signed up for a mentee shift still to come.", icon: "calendar", icon_type: :solid %>

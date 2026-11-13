@@ -58,14 +58,14 @@
         <%= @person.callsign %> has
         <%= pluralize(@unread_message_count, "unread Clubhouse message") %>.
       </p>
-      <%= button_link "Read #{pluralize(@unread_message_count, "Message")}", :primary,
+      <%= button_link "Read #{pluralize(@unread_message_count, "Message")}", :secondary,
                       hq_messages_path(@person) %>
     <% end %>
   <% end %>
 
   <%= render layout: "hq/shift_manage/section",
              locals: { id: "hq-shift-section",
-                       title: @on_duty_entry ? "End The Shift" : "Start A Shift",
+                       title: @on_duty_entry ? "End the Shift" : "Start a Shift",
                        state: @section_states[:shift],
                        summary: hq_shift_summary(@on_duty_entry, @ended_entry,
                                                  @unreviewed_count) } do %>

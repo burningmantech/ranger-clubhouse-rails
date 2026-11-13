@@ -179,7 +179,7 @@ class Me::ProfileAccessibilityTest < ApplicationSystemTestCase
     within_section "Name & Contact" do
       assert_text "Gender:"
       assert_text "Pronouns:"
-      assert_text "not stated"
+      assert_text "None stated"
     end
   end
 

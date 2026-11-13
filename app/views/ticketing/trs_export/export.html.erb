@@ -45,7 +45,7 @@
 <%= ui_form(nil, ticketing_trs_export_mark_submitted_path, method: :post) do |f| %>
   <%= hidden_field_tag :filter, @filter.slug %>
   <%= bulk_select do %>
-    <%= ui_section "Exported Items", icon: "table-list", icon_type: :solid, border: false do %>
+    <%= ui_section "Exported Items", icon: "table-list", icon_type: :solid do %>
       <%= render "rows_table", rows: @result[:rows], selectable: true, checked: true %>
     <% end %>
 
@@ -55,7 +55,8 @@
                            turbo_confirm: confirm_modal_dialog(
                              title: "Confirm Mark Submitted",
                              message: "Mark the selected items as submitted? " \
-                                      "Only do this after TRS has accepted them.",
+                                      "Only do this after TRS has accepted them. Undoing it " \
+                                      "means changing each item's status back by hand.",
                              confirm_label: "Mark Submitted"
                            ) } %>
       <%= cancel_button ticketing_trs_export_path(filter: @filter.slug) %>

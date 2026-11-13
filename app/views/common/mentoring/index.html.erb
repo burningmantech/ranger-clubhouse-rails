@@ -7,6 +7,9 @@
 <%# Nothing here works without an Alpha year: the status form needs one too. %>
 <% if @mentoring.year %>
 <%= ui_section "#{@mentoring.year} Alpha Shift Mentors", icon: "person-walking", icon_type: :solid do %>
+  <% if @mentoring.mentors.empty? %>
+    <%= ui_empty_state "No Alpha shift mentors were recorded for #{@mentoring.year}." %>
+  <% else %>
   <%= mentor_card_row do %>
     <% @mentoring.mentors.each do |mentor| %>
       <%= render "common/mentoring/mentee_card",
@@ -15,6 +18,7 @@
                  message_path: (send_message_path_builder.call(mentor.callsign) if send_message_path_builder && mentor.can_message?) do %>
       <% end %>
     <% end %>
+  <% end %>
   <% end %>
 
   <% if status_form_path_builder && can_edit_status %>
@@ -33,7 +37,9 @@
                        {},
                        label: "Status (applies to all Alpha mentor records for #{@mentoring.year})" %>
         <% end %>
-        <%= f.submit "Save Status" %>
+        <%= button_row do %>
+          <%= f.submit "Save Status" %>
+        <% end %>
       <% end %>
     </div>
   <% end %>
@@ -64,7 +70,7 @@
             <% if alpha.last_worked.present? %>
               <%= alpha.last_worked %>
             <% else %>
-              <i>never</i>
+              Never
             <% end %>
           <% end %>
           <% if alpha.fkas.any? %>

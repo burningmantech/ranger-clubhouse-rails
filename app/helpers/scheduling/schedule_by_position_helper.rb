@@ -133,6 +133,6 @@ module Scheduling::ScheduleByPositionHelper
   # these -- a plucked MIN()/MAX() is not type-cast and arrives in the host's
   # zone -- and Time.zone is the clock every rendered surface here reads.
   def schedule_by_position_day(time, year = false)
-    time.strftime(year ? "%b %-d, %Y" : "%b %-d")
+    time.strftime(year ? DateTimeHelper::DATE : DateTimeHelper::SHORT_MONTH_DAY)
   end
 end

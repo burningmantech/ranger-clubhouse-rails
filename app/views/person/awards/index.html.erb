@@ -15,11 +15,19 @@
   <%= year_range(@years_of_awards) %>.
 </p>
 
-<%= ui_callout_box :info, title: "What These Awards Recognize" do %>
-  Service Recognition Awards honor the year-round contributions of Cadre, Delegation, and selected Team members, as
-  well as acknowledge individuals in special roles or events. These awards are purely honorary and do not count toward
-  earning tickets, appreciations (such as Ranger shirts), or provisions (like meal passes). They also have no impact on
-  Ranger status.
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What do these awards recognize?</dt>
+    <dd>
+      The year-round contributions of Cadre, Delegation, and selected Team members, and individuals in special
+      roles or events.
+    </dd>
+    <dt>Do awards earn anything?</dt>
+    <dd>
+      No. They are purely honorary: they do not count toward earning tickets, appreciations (such as Ranger
+      shirts), or provisions (like meal passes), and have no impact on Ranger status.
+    </dd>
+  </dl>
 <% end %>
 
 <%= ui_callout_box :warning, title: "Awards May Be Incomplete" do %>
@@ -29,17 +37,17 @@
 <% end %>
 
 <% if @can_manage %>
-  <div class="mb-3">
+  <%= button_row class: "mb-3" do %>
     <%= button_link "Rebuild Awards", :secondary, rebuild_person_awards_path(@person),
                     icon: "arrows-rotate", icon_type: :solid,
                     data: confirm_modal(
                       title: "Rebuild Awards",
-                      message: "Rebuild re-checks #{@person.callsign}'s team and position history and grants any " \
-                               "awards that are missing. Awards already granted are left alone.",
+                      message: "Rebuild #{@person.callsign}'s awards? Their team and position history is re-checked " \
+                               "and any missing awards are granted. Awards already granted are left alone.",
                       confirm_label: "Rebuild Awards",
                       method: :post
                     ) %>
-  </div>
+  <% end %>
 <% else %>
   <%= ui_callout_box :info do %>
     Contact a Clubhouse Admin or Award Manager to grant or edit service recognition awards.
@@ -52,7 +60,7 @@
            icon: "users",
            awards: @team_awards,
            award_type: "team",
-           new_label: "Grant team award",
+           new_label: "Add Team Award",
            can_manage: @can_manage %>
 
 <%= render "awards_table",
@@ -61,7 +69,7 @@
            icon: "star",
            awards: @special_awards,
            award_type: "special",
-           new_label: "Grant special award",
+           new_label: "Add Special Award",
            can_manage: @can_manage %>
 
 <%= render "awards_table",
@@ -70,6 +78,6 @@
            icon: "person-walking",
            awards: @position_awards,
            award_type: "position",
-           new_label: "Grant position award",
+           new_label: "Add Position Award",
            can_manage: @can_manage %>
 

@@ -13,6 +13,9 @@
   are (shared/_callsign_chips): the suggestions hang from the box, across all
   of it, and a press anywhere in it but a button puts the caret in the text.
 %>
+<%# The visible name the field must have; the box below is not a builder
+    field, so its label is paired by hand with the builder's classes. %>
+<label for="messages-search-autocomplete-input" class="<%= AppFormBuilder::LABEL_CLASSES %>">Search Messages</label>
 <div class="<%= AppFormBuilder::INPUT_CLASSES %> relative w-full h-auto flex flex-wrap items-center gap-2 py-1"
      data-action="mousedown->message-search#focus">
   <%= fa_icon "magnifying-glass", :solid, class: "text-stone-muted" %>

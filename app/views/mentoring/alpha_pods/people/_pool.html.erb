@@ -13,10 +13,10 @@
 
 <% if candidates.empty? %>
   <% if empty %>
-    <p class="text-sm text-stone-muted"><%= empty %></p>
+    <%= ui_empty_state empty %>
   <% end %>
 <% else %>
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-4">
     <% candidates.each do |candidate| %>
       <% person = candidate.person %>
       <% note = alpha_pod_candidate_note(candidate) %>

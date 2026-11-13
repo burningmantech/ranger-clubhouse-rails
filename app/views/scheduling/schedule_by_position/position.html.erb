@@ -28,7 +28,7 @@
                   icon: "user-slash", icon_type: :solid %>
 <% end %>
 
-<div class="my-4 flex flex-wrap gap-2">
+<%= button_row class: "my-4" do %>
   <% if schedule_by_position_can_manage_slots? %>
     <%= button_link "Manage Slots", :secondary,
                     scheduling_slots_position_path(@position.id, year: @year),
@@ -39,7 +39,7 @@
                           @position.id, year: @year, format: :csv
                         )) %>
   <% end %>
-</div>
+<% end %>
 
 <% if @detail.shifts.any? %>
   <%= ui_table full_width: true, striped: true do |t| %>

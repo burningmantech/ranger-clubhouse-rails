@@ -127,7 +127,7 @@ module Scheduling::EarlyArrivalsHelper
 
     lines += if row.radios.any?
                row.radios.map { |radio|
-                 tag.div("#{radio.barcode} (#{radio.label})", class: "text-sm text-body")
+                 tag.div("#{radio.barcode} (#{radio.label})", class: "text-body")
                }
              else
                [tag.div("None issued", class: "text-sm text-stone-muted")]

@@ -1,18 +1,18 @@
 <%# locals: (step:,facts:)%>
 <p><%= fa_icon "book", :solid %> Read: <a href="<%= facts.alpha_shift_prep_link %>" target="_blank" rel="noopener noreferrer">Becoming a Ranger: On-playa Alpha Shifts</a></p>
 
-<div class="my-2 p-3 bg-default dark:bg-default rounded">
-  <p class="font-bold text-lg">
-    <%= fa_icon "calendar", :solid %> <%= datetime_format facts.alpha_shift[:begins], tz: facts.alpha_shift[:timezone] %>
-  </p>
-  <p class="text-error font-bold">
-    <%= fa_icon "clock", :solid, class: "icon-error" %> ARRIVE 20 MIN EARLY — late = turned away
-  </p>
-  <p class="mt-1">
-    <%= fa_icon "location-dot", :solid %> <b>The Hat Rack</b> (right of HQ Windows)<br>
+<ul class="my-2 space-y-1">
+  <%= ui_icon_item "calendar" do %>
+    <b class="text-lg"><%= datetime_format facts.alpha_shift[:begins], tz: facts.alpha_shift[:timezone] %></b>
+  <% end %>
+  <%= ui_icon_item "clock", tone: "icon-error" do %>
+    <span class="text-error font-bold">Arrive 20 minutes early. Late arrivals are turned away.</span>
+  <% end %>
+  <%= ui_icon_item "location-dot" do %>
+    <b>The Hat Rack</b> (right of HQ Windows)<br>
     <span class="text-sm">Ranger HQ: Esplanade &amp; 6:31</span>
-  </p>
-</div>
+  <% end %>
+</ul>
 
 <p class="font-semibold">What to expect (~10 hours):</p>
 <ul class="list-bulleted mb-2">

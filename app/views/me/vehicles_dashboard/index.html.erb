@@ -27,25 +27,18 @@
       </div>
     </div>
   <% else %>
-    <div class="bg-error/10 border border-line rounded-xl shadow-sm p-8 text-center max-w-2xl mx-auto my-12"
-         role="region"
-         aria-labelledby="agreement-required-title">
-      <%= render "common/status_medallion", icon: "file-signature", state: :error, size: :lg %>
-
-      <h2 id="agreement-required-title" class="heading-section text-heading mb-4">
-        Action Required: Vehicle Use Protocol Signature
-      </h2>
-
-      <p class="text-lg me-muted mb-8 max-w-md mx-auto">
+    <%= ui_callout_box :error, accent: true, title: "Action Required: Vehicle Use Protocol Signature",
+                       heading_level: :h2, role: "region",
+                       aria: { label: "Vehicle Use Protocol signature required" } do %>
+      <p class="mb-3">
         You must sign the <strong>Vehicle Use Agreement</strong> before you can submit any MVR Requests or Personal
         Vehicle Requests.
       </p>
 
-      <%= button_link nil, :error, me_agreements_path,
-                      size: "lg",
+      <%= button_link nil, :primary, me_agreements_path,
                       "aria-label": "Review and sign the Vehicle Use Protocol Agreement" do %>
         Review and Sign Agreement <%= fa_icon "arrow-right", :solid %>
       <% end %>
-    </div>
+    <% end %>
   <% end %>
 </div>

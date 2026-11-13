@@ -4,7 +4,7 @@
   is tinted -- the shading needs the important flag because row striping is set
   on the same property and would otherwise win.
 %>
-<%= ui_section payroll_person_heading(person), border: false,
+<%= ui_section payroll_person_heading(person),
                id: "payroll-person-#{person.id}" do %>
   <%# responsive: six columns squeezed into a phone wrap into rows hundreds of
       pixels tall; folded into labelled cards each entry stays readable. %>

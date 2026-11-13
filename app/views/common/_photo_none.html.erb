@@ -1,3 +1,6 @@
+<%# Inline style on purpose: the box takes its size from PersonPhoto's avatar
+    constants, so the placeholder can never differ from the photo it stands in
+    for. A utility would restate the two numbers by hand. %>
 <div class="flex flex-col items-center justify-center rounded-2xl border border-line text-stone-muted"
      style="width: <%= PersonPhoto::AVATAR_WIDTH %>px; height: <%= PersonPhoto::AVATAR_HEIGHT %>px;">
   <%= fa_icon(:user, :solid, class: "fa-4x") %>

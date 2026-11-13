@@ -2,10 +2,10 @@
 <%# Missing-timesheet-request dialog (Ember Me::TimesheetMissingEdit hosted
     by hq-timesheet-verification). Turbo-streamed into the "modal" frame;
     mirrors Me::MissingRequestsController#create's param surface. %>
-<%= modal_dialog id: "hq-missing-request-modal", size: :lg, title: "New Missing Timesheet Request", frame: false do %>
+<%= modal_dialog id: "hq-missing-request-modal", size: :lg, title: "Add Missing Timesheet Request", frame: false do %>
   <%= ui_callout_box :warning do %>
     Use this form only for a shift with no timesheet entry at all. To fix an existing
-    entry, use its <em>Submit Correction</em> button instead.
+    entry, use its <em>Request Correction</em> button instead.
   <% end %>
   <%# _top: escape the "modal" turbo-frame so the success redirect renders
       the page. %>
@@ -26,6 +26,6 @@
                     label: "Brief Explanation",
                     help_text: "1 to 3 sentences on why the entry is missing.",
                     maxlength: 1500 %>
-    <%= modal_form_footer f, submit: "Submit Request" %>
+    <%= modal_form_footer f, submit: "Save Missing Timesheet Request" %>
   <% end %>
 <% end %>

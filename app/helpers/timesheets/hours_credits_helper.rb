@@ -4,11 +4,6 @@
 # prefix: view helpers share one namespace across the whole application, so a
 # plain name here would answer for every other page too.
 module Timesheets::HoursCreditsHelper
-  # Stands in for a zero inside the three period groups. A page of "0.00"s reads
-  # as data the eye has to check; a rule reads as nothing to see, which is what a
-  # ranger who did not turn out for that part of the season means.
-  BLANK_VALUE = "—"
-
   def hours_credits_chips(filter_params, year)
     filter_chips(filter_params, { status: "Status", years: "Years" },
                  value_label: ->(key, value) {
@@ -40,11 +35,10 @@ module Timesheets::HoursCreditsHelper
     "%.2f" % credits.to_f
   end
 
-  def hours_credits_hours(seconds)
-    seconds.to_i.zero? ? BLANK_VALUE : hour_format(seconds)
-  end
+  # A zero is a value and prints as a number, in a period column as in a total:
+  # "—" would say nothing was recorded, which is not what a quiet part of the
+  # season means.
+  def hours_credits_hours(seconds) = hour_format(seconds.to_i)
 
-  def hours_credits_credits(credits)
-    credits.to_f.zero? ? BLANK_VALUE : credit_format_short(credits)
-  end
+  def hours_credits_credits(credits) = hours_credits_total_credits(credits)
 end

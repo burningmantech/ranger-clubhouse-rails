@@ -20,13 +20,16 @@
 <%# What a recorded pass can still grant, for the rows already passed. %>
 <% pass_left = editable ? @shifts.pass.offers(group.passed) : {} %>
 
+<%# The mentees whose rows were refused, named as the alpha sheet names them. %>
+<% failed = group.mentee_entries.filter_map { |entry| entry.person.callsign if row_errors.key?(entry.id) }.uniq %>
 <% refusal = if result&.conflict
                "Someone else saved this shift at the same moment. Check the rows below, then save again to record " \
                  "your changes."
              elsif result&.denied
                "#{result.denied} Choose again without that grant, or ask someone who may make it."
              elsif row_errors.any?
-               "#{pluralize(row_errors.size, "row")} below still #{row_errors.one? ? "needs" : "need"} fixing. " \
+               "#{pluralize(row_errors.size, "row")} below still #{row_errors.one? ? "needs" : "need"} fixing" \
+                 "#{": #{failed.to_sentence}" if failed.any?}. " \
                  "The shift is saved as a whole, so no part of it was written."
              end %>
 <% if refusal %>
@@ -113,7 +116,7 @@
   <% end %>
 <% end %>
 
-<%= ui_section "Mentors on Shift", icon: "user-check", icon_type: :solid, border: false do %>
+<%= ui_section "Mentors on Shift", icon: "user-check", icon_type: :solid do %>
   <% if group.mentor_entries.empty? %>
     <%= ui_empty_state "No mentor has signed in around this shift.", icon: "user-check", icon_type: :solid %>
   <% else %>
@@ -140,7 +143,7 @@
 <% end %>
 
 <% mentees = capture do %>
-  <%= ui_section "Mentees", icon: "person-walking", icon_type: :solid, border: false, class: "mt-6",
+  <%= ui_section "Mentees", icon: "person-walking", icon_type: :solid, class: "mt-6",
                  badge: group.mentee_entries.size.to_s do %>
     <%# Not striped: an error row follows the row it describes. %>
     <%= ui_table full_width: true, striped: false do |t| %>
@@ -169,12 +172,13 @@
             <%= t.cell datetime_format(entry.on_duty), class: "whitespace-nowrap" %>
             <%= t.cell art_mentoring_duration(entry), right: true, class: "whitespace-nowrap" %>
             <%= t.cell do %>
-              <%= select_tag "walks[#{entry.id}][status]",
-                             options_for_select(result_options,
-                                                typed ? typed.status : walk&.status || PersonMentor::STATUS_PENDING),
-                             id: "walk-#{entry.id}-status", disabled: !editable,
-                             class: "#{AppFormBuilder::SELECT_CLASSES} min-w-32",
-                             aria: { label: "Result for #{callsign}" } %>
+              <%= fields "walks[#{entry.id}]", builder: AppFormBuilder do |wf| %>
+                <%= wf.select :status,
+                              options_for_select(result_options,
+                                                 typed ? typed.status : walk&.status || PersonMentor::STATUS_PENDING),
+                              { hide_label: true, wrapper: false, width: "w-auto min-w-32" },
+                              { disabled: !editable, aria: { label: "Result for #{callsign}" } } %>
+              <% end %>
               <%# A recorded pass that has not yet joined them to the team or
                   revoked the mentee position: a graduate can finish it here. %>
               <% if editable && pass_left.key?(entry.id) %>
@@ -203,22 +207,17 @@
                                    typed&.was || ArtMentoring::Assignment.stored_fingerprint(walk) %>
               <div class="stack-to-row-lg">
                 <% ArtMentoring::Assignment::MENTOR_SLOTS.times do |i| %>
-                  <% mentor_id = "walk-#{entry.id}-mentor-#{i + 1}" %>
-                  <% notes_id = "#{mentor_id}-notes" %>
                   <div class="lg:flex-1">
                     <%= hidden_field_tag "walks[#{entry.id}][mentors][#{i}][loaded_id]", slots[i]&.id %>
-                    <%= label_tag mentor_id, "Mentor #{i + 1}", class: AppFormBuilder::LABEL_CLASSES %>
-                    <%= select_tag "walks[#{entry.id}][mentors][#{i}][id]",
-                                   art_mentor_choices(group, @shifts.mentor_holders, entry, slots[i]&.id),
-                                   id: mentor_id, disabled: !editable,
-                                   class: "#{AppFormBuilder::SELECT_CLASSES} w-full",
-                                   aria: { label: "Mentor #{i + 1} for #{callsign}" } %>
-                    <%= label_tag notes_id, "Mentor #{i + 1} Notes", class: "#{AppFormBuilder::LABEL_CLASSES} mt-3" %>
-                    <%= text_area_tag "walks[#{entry.id}][mentors][#{i}][notes]", slots[i]&.notes,
-                                      id: notes_id, rows: 3, disabled: !editable,
-                                      maxlength: ArtMentoring::Assignment::NOTES_MAX,
-                                      class: AppFormBuilder::TEXTAREA_CLASSES,
-                                      aria: { label: "Mentor #{i + 1} notes for #{callsign}" } %>
+                    <%= fields "walks[#{entry.id}][mentors][#{i}]", builder: AppFormBuilder do |mf| %>
+                      <%= mf.select :id, art_mentor_choices(group, @shifts.mentor_holders, entry, slots[i]&.id),
+                                    { label: "Mentor #{i + 1}", width: "w-full" },
+                                    { disabled: !editable, aria: { label: "Mentor #{i + 1} for #{callsign}" } } %>
+                      <%= mf.text_area :notes, value: slots[i]&.notes, rows: 3, disabled: !editable,
+                                               maxlength: ArtMentoring::Assignment::NOTES_MAX,
+                                               label: "Mentor #{i + 1} Notes", wrapper_class: "",
+                                               aria: { label: "Mentor #{i + 1} notes for #{callsign}" } %>
+                    <% end %>
                   </div>
                 <% end %>
               </div>
@@ -228,7 +227,7 @@
           <% if error %>
             <%= t.row id: "walk-#{entry.id}-error", state: :error do %>
               <%= t.cell colspan: 4 do %>
-                <span class="text-error"><%= fa_icon "triangle-exclamation", :solid, end: 2 %><%= error %></span>
+                <span class="text-error" role="alert"><%= fa_icon "triangle-exclamation", :solid, end: 2 %><%= error %></span>
               <% end %>
             <% end %>
           <% end %>

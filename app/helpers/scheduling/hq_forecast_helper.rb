@@ -6,7 +6,7 @@
 module Scheduling::HqForecastHelper
   # The hour a row stands for. The burn's name and night head the section, so
   # the row only has to say the time.
-  def hq_forecast_period_label(period) = period.begins.strftime("%H:%M")
+  def hq_forecast_period_label(period) = period.begins.strftime(DateTimeHelper::HOUR_MINS)
 
   # Rows needing attention are tinted and flagged, never tinted alone.
   def hq_forecast_row_state(period)
@@ -49,7 +49,11 @@ module Scheduling::HqForecastHelper
   # The hour a row stands for, said with its date. For anything naming one
   # moment out of the whole report -- the busiest period, say -- the time alone
   # could be any of a dozen days, and the weekday alone any of three weeks.
-  def hq_forecast_moment_label(period) = period.begins.strftime(DateTimeHelper::MONTH_DAY_TIME)
+  def hq_forecast_moment_label(period) = hq_forecast_time(period.begins)
+
+  # A moment as plain text, for a dialog title or a cell where
+  # datetime_format's tooltip span has no place.
+  def hq_forecast_time(time) = time.strftime(DateTimeHelper::MONTH_DAY_TIME)
 
   # What a gap is, in the words every mark and row uses for one. A runner is
   # an HQ volunteer, but not one who answers the window.
@@ -97,7 +101,7 @@ module Scheduling::HqForecastHelper
 
   # The shift a dialog lists, with its day and its hours.
   def hq_forecast_shift_title(shift)
-    "#{shift.desk.title} — #{shift.begins.strftime(DateTimeHelper::MONTH_DAY_TIME)} to " \
+    "#{shift.desk.title} — #{hq_forecast_time(shift.begins)} to " \
       "#{hq_forecast_clock(shift.ends, shift.begins.to_date)}"
   end
 
@@ -116,7 +120,7 @@ module Scheduling::HqForecastHelper
         ["Burn Perimeters", "fire", scheduling_hq_forecast_burn_perimeters_path(year:, interval:)]
       end
 
-    tag.div(button_link(label, :secondary, path, icon:, icon_type: :solid), class: "mb-4")
+    button_row(class: "mb-4") { button_link(label, :secondary, path, icon:, icon_type: :solid) }
   end
 
   def hq_forecast_day_options(report)
@@ -223,7 +227,7 @@ module Scheduling::HqForecastHelper
     count = shift.max.positive? ? "#{shift.signups}/#{shift.max}" : shift.signups.to_s
     label = hq_forecast_shift_label(shift, count, day)
     text = tag.span(count, class: class_names("hq-gantt-bar-text px-1", "hq-gantt-bar-text-long": count.size > 3))
-    bar = tag.span(text, class: class_names("hq-gantt-bar absolute inset-x-px inset-y-2 flex items-center rounded-sm text-sm tabular-nums",
+    bar = tag.span(text, class: class_names("hq-gantt-bar absolute inset-x-px inset-y-2 flex items-center rounded-sm text-base tabular-nums",
                                             "@container",
                                             shift.signups.zero? ? "hq-gantt-vacant" : "bg-base-content/80 text-base-100",
                                             "rounded-s-none": shift.begins < day.starts,

@@ -13,15 +13,14 @@
      else
        question.option_list.map { |o| [o, o] }
      end %>
-  <% question_label = question.is_required ?
-       safe_join([question.description, " ", ui_badge("required", :error, icon: "asterisk", icon_type: :solid)]) :
-       question.description %>
   <%= form.collection_radio_buttons field_attr, collection, :last, :first,
-      { label: question_label, label_position: :stacked, layout: :auto }, question.is_required ? { required: true } : {} %>
+      { label: question.description, label_position: :stacked, layout: :auto, required: question.is_required },
+      question.is_required ? { required: true } : {} %>
 
 <% else %>
-  <div class="text-error">
-    Uh oh, question #<%= question.id %> has an unknown type "<%= question.type %>".
-    This is a bug, please report this to the tech team.
-  </div>
+  <p class="text-error">
+    <%= fa_icon "bug", :solid, class: "icon-error" %>
+    Question #<%= question.id %> has an unknown type "<%= question.type %>".
+    This is a bug, please report it to the tech team.
+  </p>
 <% end %>

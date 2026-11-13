@@ -94,7 +94,7 @@
       one person to choose between. %>
   <% scroll_items = people_unified_flagging_scroll_items(@rows) %>
   <% if scroll_items.many? %>
-    Jump to a callsign starting with the letter:
+    <p>Jump to a callsign starting with the letter:</p>
     <%= dropdown_scroll_list scroll_items %>
   <% end %>
 

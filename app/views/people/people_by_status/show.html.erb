@@ -9,11 +9,11 @@
                description: "The people who hold this status right now.",
                back_to: ["People by Status", people_by_status_path] %>
 
-<div class="text-lg my-4">
-  <%= pluralize(number_with_delimiter(@people.length), "person") %> with this status
-</div>
+<%= ui_stat_row do %>
+  <%= ui_stat_box number_with_delimiter(@people.length), "People", icon: "users", icon_type: :solid %>
+<% end %>
 
-<%= ui_section @status, badge: @people.size.to_s, border: false do %>
+<%= ui_section @status, badge: @people.size.to_s do %>
   <div class="callsign-list">
     <% @people.each do |person| %>
       <%= callsign_link(person) %>

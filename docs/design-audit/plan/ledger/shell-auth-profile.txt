@@ -1,0 +1,114 @@
+R13448 || COMPLIANT || app/views/application/_dialog_status.html.erb:19 || New ALERT-01: class: on a callout is margin and width; mx-4 mt-4 w-auto is exactly that.
+R13449 || COMPLIANT || app/views/application/_mega_menu.html.erb:5 || MODAL-01 exempts the dialog controller's on-demand dialogs; the guide names the mega menu as one.
+R13454 || FIXED || app/views/application/_public_menu.html.erb:9 || Brand link is button_link :ghost, size "base" (same btn-md as before), class text-xl.
+M0005 || FIXED || app/views/application/_search_bar_placeholder.html.erb:62 || Search label and kbd chip show from lg:, not md:, as the comment above already said.
+R01650 || COMPLIANT || app/views/application/_search_bar_placeholder.html.erb:84 || MODAL-01 exempts the dialog controller's on-demand dialogs; the guide names search as one.
+R13440 || COMPLIANT || app/views/application/_search_bar_placeholder.html.erb:84 || Same exemption as R01650: search is the guide's named on-demand dialog.
+R13441 || FIXED || app/views/application/_search_bar_placeholder.html.erb:80 || New SPACE-01 allows an arbitrary value with a comment; comment now explains mt-[15vh] and w-[calc(100%-2rem)].
+R01655 || FIXED || app/views/application/_search_bar_placeholder.html.erb:102 || "Mode" label text-sm dropped to text-base (R4).
+R01638 || WAIVED || app/views/application/_search_bar_placeholder.html.erb:107 || approved exception 2026-11-12: segmented control one-off until reused
+R01644 || COMPLIANT || app/views/application/_search_bar_placeholder.html.erb:118 || FORM-01 exempts browser-only inputs; the mode select is in no form and only drives the Stimulus controller.
+R01659 || FIXED || app/views/application/_top_menu.html.erb:38 || Desktop brand is button_link :ghost, size "base".
+M0064 || FIXED || app/views/application/_top_menu.html.erb:65 || Phone brand is button_link :ghost, size "base", keeps px-1 and @min-brand classes.
+F0210 || FIXED || app/views/application/_top_menu.html.erb:92 || "Switch to Dark Theme" / "Switch to Light Theme"; top_menu_test updated.
+R01869 || FIXED || app/views/autocomplete/_item.html.erb:27 || Meta lines text-xs to text-sm: a muted second line under the main value (R4).
+R13428 || FIXED || app/views/layouts/print.html.erb:35 || @page and print :root rule moved to app/assets/stylesheets/print-page.css, linked by this layout alone (media print).
+R04479 || FIXED || app/assets/stylesheets/print-page.css:24 || :root print background #fff is now var(--color-paper), the new white print token in application.css (A17).
+M0092 || FIXED || app/views/layouts/print.html.erb:52 || print:bg-white is now print:bg-paper (--color-paper token, A17).
+R13520 || FIXED || app/views/profile/_alerts.html.erb:18 || Italic "No number on file" is now none_stated (R6, profile label/value).
+R13516 || FIXED || app/views/profile/_alerts.html.erb:35 || Group header rows are t.row with t.cell colspan 3, not raw tr/td (35, 76).
+R13521 || COMPLIANT || app/views/profile/_alerts.html.erb:39 || New EMPTY-01: alerts are a fixed catalogue, which may render nothing.
+R13525 || COMPLIANT || app/views/profile/_bmid.html.erb:18 || BTN-07 exempts one card's record actions; Withdraw/Adjust/Upload act on the photo in this section.
+R13524 || FIXED || app/views/profile/_bmid.html.erb:20 || Withdraw (DELETE) is now :error.
+F0197 || COMPLIANT || app/views/profile/_bmid.html.erb:26 || R7: one primary per section; Adjust is the BMID section's only primary.
+R13534 || COMPLIANT || app/views/profile/_camp.html.erb:11 || none_stated on a profile is R6's allowed form; Phase 2 made it non-italic.
+R13527 || COMPLIANT || app/views/profile/_clothing.html.erb:10 || none_stated on a profile label/value (R6); fixed by Phase 2 (no italic).
+R13535 || COMPLIANT || app/views/profile/_emergency_contact.html.erb:6 || none_stated on a profile (R6); fixed by Phase 2 (no italic).
+R13533 || COMPLIANT || app/views/profile/_mailing_address.html.erb:25 || none_stated on a profile label/value (R6); fixed by Phase 2 (no italic).
+R13536 || FIXED || app/views/profile/_emergency_contact_denied.html.erb:4 || Standalone italic notice is now ui_callout_box :info with the lock icon.
+R13529 || FIXED || app/views/profile/_identity_info.html.erb:8 || Callsign text-lg dropped to text-base semibold, under the section title.
+R13530 || FIXED || app/views/profile/_identity_info.html.erb:29 || Italic "no preferred first name given"/"not stated" now none_stated (29, 37, 47); two system tests updated.
+R13537 || FIXED || app/views/profile/_languages.html.erb:33 || Empty languages is ui_empty_state, as on profile_languages/index.
+M0431 || FIXED || app/views/profile/camp_edit.html.erb:21 || Removed class="italic" from the instruction-list dd.
+R13547 || FIXED || app/views/profile/camp_edit.html.erb:36 || Submit reads "Save Camp Location".
+R13508 || FIXED || app/views/profile/show.html.erb:19 || Change Password / Manage Passkeys sit in button_row class "my-2".
+R13509 || FIXED || app/views/profile/show.html.erb:80 || Removed text-error from the dt/dd; the strong items carry the emphasis.
+M0432 || FIXED || app/views/profile/show.html.erb:80 || Same edit as R13509: no classes on instruction-list dt/dd.
+R13511 || FIXED || app/views/profile/show.html.erb:99 || Fact words "never updated"/"never reviewed" print muted, not italic (99, 107).
+R13512 || FIXED || app/views/profile/show.html.erb:114 || All three column rows are "flex flex-col lg:flex-row gap-4".
+R13513 || FIXED || app/views/profile/show.html.erb:160 || "My Information Is Correct" sits in button_row class "mt-4".
+R13551 || FIXED || app/views/profile_languages/index.html.erb:39 || Row Delete is delete_button (red) with the existing "Delete <language>? You can add it again." confirm.
+R13552 || FIXED || app/views/profile_languages/index.html.erb:54 || Foot Cancel removed: the hero's back link to Profile is the way out (HERO-04); row shows only for editors.
+R13571 || FIXED || app/views/profile_photos/crop.html.erb:21 || bg-primary/10 highlight replaced by <strong>.
+R13570 || FIXED || app/views/profile_photos/crop.html.erb:27 || Hand-made card-standard Quick Guide replaced by ui_disclosure variant :card.
+F0196 || FIXED || app/views/profile_photos/crop.html.erb:27 || How-to is one collapsed ui_disclosure :card "How This Page Works", same desktop slot.
+F0219 || FIXED || app/views/profile_photos/crop.html.erb:27 || Primary lightbulb icon went with the hand-made heading.
+R07339 || FIXED || app/views/profile_photos/crop.html.erb:34 || text-sm dropped from button legend list and review reminder.
+R07319 || FIXED || app/views/profile_photos/crop.html.erb:60 || form_with now passes builder: AppFormBuilder.
+R13572 || FIXED || app/views/profile_photos/crop.html.erb:93 || Crop tools take max-lg:btn-square while icon-only; labelled from lg keep width.
+R13573 || REJECTED || app/views/profile_photos/crop.html.erb:101 || AGENTS.md Hard Rules: the two palette colours in profile_photos/crop are a deliberate exception.
+M0453 || FIXED || app/views/profile_photos/crop.html.erb:102 || Canvas size passed as --photo-crop-width/height on the wrapper; photo-cropper.css sizes the canvas and zoom from them.
+R13578 || FIXED || app/views/profile_photos/crop.html.erb:140 || Mobile tip text-sm removed.
+R13575 || FIXED || app/views/profile_photos/crop.html.erb:145 || button_row overrides (gap-3, flex-col, margins) removed.
+M0041 || FIXED || app/views/profile_photos/crop.html.erb:145 || sm:flex-row/sm:justify-between removed with the overrides.
+M0146 || FIXED || app/views/profile_photos/crop.html.erb:158 || "Submit Photo" now "Save Photo" (fits uploader and VC reviewer, who share this page).
+R13574 || FIXED || app/views/profile_photos/crop.html.erb:165 || <style> block moved to components/photo-cropper.css; !important kept with its reason (CropperJS inline styles).
+R07315 || FIXED || app/assets/stylesheets/components/photo-cropper.css:39 || Checkerboard literals moved to named properties in photo-cropper.css, commented as functional; gray palette pair kept per AGENTS.md.
+R13556 || FIXED || app/views/profile_photos/new.html.erb:23 || Photo Requirements is ui_section with camera icon, not a hand-made card.
+R13558 || FIXED || app/views/profile_photos/new.html.erb:175 || Tabs are tab_navigation; camera_controller follows the tab clicks to start/stop the camera.
+M0537 || FIXED || app/views/profile_photos/new.html.erb:175 || Same as R13558: hand-built tab buttons replaced by tab_navigation.
+M0067 || FIXED || app/views/profile_photos/new.html.erb:175 || Same as R13558.
+R13559 || WAIVED || app/views/profile_photos/new.html.erb:129 || approved exception 2026-11-12: dropzone one-off until second use
+R07367 || FIXED || app/views/profile_photos/new.html.erb:128 || lg:w-[50%] to lg:w-1/2; border-[3px] spinners to border-3.
+R13568 || FIXED || app/views/profile_photos/new.html.erb:136 || "Click to upload" line text-lg removed.
+R07350 || WAIVED || app/views/profile_photos/new.html.erb:147 || approved exception 2026-11-12: dropzone one-off until second use
+R13560 || FIXED || app/views/profile_photos/new.html.erb:159 || Selected-file box is ui_callout_box :success inside the hidden target wrapper.
+R13565 || FIXED || app/views/profile_photos/new.html.erb:266 || Camera picker is a daisyUI select (handed-down); browser-only control, outside FORM-01.
+R07340 || FIXED || app/views/profile_photos/new.html.erb:290 || Capture is button_action :primary, xl, btn-circle; camera-select and camera-capture-btn utilities now unused.
+R07379 || FIXED || app/views/profile_photos/new.html.erb:293 || text-sm to base in file info, callout steps, camera label, capture hint; file size text-xs to text-sm.
+R13505 || COMPLIANT || app/views/register/_acknowledge.html.erb:19 || New HERO-04 allows a body link back for a step back; "Back to Start" is one.
+R08306 || WAIVED || app/views/sessions/_footer_link.html.erb:7 || R9
+M0042 || WAIVED || app/views/sessions/_heading.html.erb:6 || R9
+F0203 || WAIVED || app/views/sessions/_passkey_door.html.erb:13 || R9
+F0204 || WAIVED || app/views/sessions/_password_form.html.erb:7 || R9
+F0220 || WAIVED || app/views/sessions/_password_form.html.erb:17 || R9
+F0198 || WAIVED || app/views/sessions/_password_form.html.erb:60 || R9
+R13473 || WAIVED || app/views/sessions/_password_form.html.erb:62 || R9
+F0201 || WAIVED || app/views/sessions/_sso_door.html.erb:10 || R9
+R13476 || WAIVED || app/views/sessions/_sso_door.html.erb:10 || R9
+R13483 || WAIVED || app/views/sessions/forgot.html.erb:3 || R9
+F0205 || WAIVED || app/views/sessions/forgot.html.erb:14 || R9
+F0221 || WAIVED || app/views/sessions/forgot.html.erb:24 || R9
+F0199 || WAIVED || app/views/sessions/forgot.html.erb:32 || R9
+R13485 || WAIVED || app/views/sessions/forgot.html.erb:34 || R9
+F0223 || WAIVED || app/views/sessions/new.html.erb:18 || R9
+R08389 || WAIVED || app/views/sessions/new.html.erb:45 || R9
+F0211 || WAIVED || app/views/sessions/new.html.erb:45 || R9 (copy on the brand surface; "be" would capitalise under Title Case if the maintainer wants it)
+F0206 || WAIVED || app/views/sessions/reset_token.html.erb:29 || R9
+F0222 || WAIVED || app/views/sessions/reset_token.html.erb:40 || R9
+F0200 || WAIVED || app/views/sessions/reset_token.html.erb:63 || R9
+R13488 || WAIVED || app/views/sessions/reset_token.html.erb:64 || R9
+F0217 || FIXED || app/views/shared/_autocomplete.html.erb:1 || Default placeholder is "Search…".
+R13458 || COMPLIANT || app/views/shared/_autocomplete.html.erb:54 || autocomplete_controller.js draws an ac-empty role=status line when a search finds nothing.
+F0202 || WAIVED || app/views/sso/hand_back.html.erb:17 || R9
+R13492 || WAIVED || app/views/sso/hand_back.html.erb:18 || R9
+R13582 || FIXED || app/views/test_harness/autocomplete_fixture.html.erb:10 || Body bg-primary to bg-base-100 (R10: colour tokens apply).
+M0191 || FIXED || app/views/test_harness/autocomplete_fixture.html.erb:20 || Placeholders use "…" (20, 68, 101).
+R09246 || FIXED || app/views/test_harness/autocomplete_fixture.html.erb:37 || All four h2s take heading-section.
+M0193 || FIXED || app/views/test_harness/autocomplete_fixture.html.erb:43 || "Search with recents…".
+R09240 || COMPLIANT || app/views/test_harness/autocomplete_fixture.html.erb:86 || Focus sinks sit in no form and submit nothing: browser-only inputs, outside FORM-01.
+F0218 || FIXED || app/views/test_harness/autocomplete_fixture.html.erb:85 || Both focus sinks have a visible <label for>.
+M0456 || FIXED || app/views/test_harness/autocomplete_fixture.html.erb:112 || Inline style spacer is min-h-[90vh] under its explaining comment.
+M0195 || FIXED || app/views/test_harness/autocomplete_fixture.html.erb:120 || "Search near bottom…".
+R13583 || FIXED || app/views/test_harness/search_bar_fixture.html.erb:10 || Body bg-primary to bg-base-100; h1 styling is the page's own (R10).
+R09251 || FIXED || app/views/test_harness/search_bar_fixture.html.erb:18 || min-h-[100px] to min-h-25 (same 100px, on the scale).
+R13586 || WAIVED || public/400.html:12 || R10
+F0212 || FIXED || public/400.html:153 || h1 Title Case: "The Clubhouse Couldn’t Read That Request".
+R13585 || WAIVED || public/404.html:12 || R10
+F0213 || FIXED || public/404.html:153 || h1 "That Page Isn’t Here".
+R13589 || FIXED || public/406-unsupported-browser.html:16 || Added the ES5 saved-theme script and [data-theme] dark rules; hex values kept for old engines.
+F0214 || FIXED || public/406-unsupported-browser.html:103 || h1 "This Browser Is Too Old for the Clubhouse".
+R13587 || WAIVED || public/422.html:12 || R10
+F0215 || FIXED || public/422.html:153 || h1 "That Change Was Rejected".
+R13588 || WAIVED || public/500.html:12 || R10
+F0216 || FIXED || public/500.html:153 || h1 "Something Broke on Our End".

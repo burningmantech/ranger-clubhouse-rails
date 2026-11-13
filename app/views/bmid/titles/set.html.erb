@@ -36,7 +36,7 @@
 
   <%= ui_form(nil, apply_bmid_titles_path, method: :post) do |f| %>
     <%= ui_section "Review the Titles", icon: "table-list", icon_type: :solid,
-                   badge: @rows.size.to_s, badge_color: :primary, border: false do %>
+                   badge: @rows.size.to_s, badge_color: :primary do %>
       <%= ui_table striped: true, responsive: false do |t| %>
         <%= t.header do %>
           <%= t.heading "Person" %>

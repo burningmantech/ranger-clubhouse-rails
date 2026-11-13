@@ -63,7 +63,7 @@
             <%= t.cell class: log_text_class("align-middle") do %>
               <%= error_log_person_label(row.person, row.person_id) %>
             <% end %>
-            <%= t.cell class: "align-middle text-sm leading-snug" do %>
+            <%= t.cell class: log_text_class("align-middle") do %>
               <%= log_truncated(row.error_type) %>
             <% end %>
             <%= t.cell class: log_text_class("align-middle") do %>

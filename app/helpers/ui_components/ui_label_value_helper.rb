@@ -22,7 +22,7 @@ module UiComponents
     # ==== Options
     # * <tt>label_width</tt> - CSS value for label column width on desktop (e.g., "6rem", "150px", "max-content").
     #   Sets the --label-width custom property. Defaults to "auto".
-    # * <tt>size</tt> - Text size: :sm (default) or :base
+    # * <tt>size</tt> - Text size: :base (default) or :sm
     # * Additional HTML attributes are passed through to the <dl> element.
     #
     # ==== Example
@@ -33,7 +33,7 @@ module UiComponents
     #       Multi-line content here
     #     <% end %>
     #   <% end %>
-    def ui_label_value(label_width: nil, size: :sm, **options, &block)
+    def ui_label_value(label_width: nil, size: :base, **options, &block)
       builder = LabelValueBuilder.new(self, size:)
       capture(builder, &block)
 

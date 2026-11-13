@@ -19,6 +19,16 @@
   <% end %>
 <% end %>
 
+<%# Under the hero, and only once there is a roster for it to be about. %>
+<% if @slot && @rows.present? %>
+  <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What if someone is already on duty?</dt>
+      <dd>Tapping someone who is already on duty signs them out instead.</dd>
+    </dl>
+  <% end %>
+<% end %>
+
 <% if @groups.empty? %>
   <%= ui_empty_state "No shifts are starting or running right now. Roll call offers shifts " \
                      "that began within the last four hours or start within the next two.",
@@ -43,11 +53,13 @@
                         class: "underline font-semibold" %>.
           <% end %>
         <% else %>
-          <%= button_link "Set Check-In Time", :secondary,
-                          shift_operations_rollcall_sign_in_path(position_id: @group.id,
-                                                                 slot_id: @slot.id,
-                                                                 set_time: 1),
-                          icon: "clock", icon_type: :solid %>
+          <%= button_row do %>
+            <%= button_link "Set Check-In Time", :secondary,
+                            shift_operations_rollcall_sign_in_path(position_id: @group.id,
+                                                                   slot_id: @slot.id,
+                                                                   set_time: 1),
+                            icon: "clock", icon_type: :solid, data: { turbo_frame: "modal" } %>
+          <% end %>
         <% end %>
       </div>
     <% end %>
@@ -60,22 +72,15 @@
     <%= ui_empty_state "No one signed up for this shift.",
                        icon: "user-slash", icon_type: :solid %>
   <% else %>
-    <%# Out of the hero, and only above the roster it is about. %>
-    <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
-      <dl class="instruction-list">
-        <dt>What if someone is already on duty?</dt>
-        <dd>Tapping someone who is already on duty signs them out instead.</dd>
-      </dl>
-    <% end %>
-
     <%= render "shift_operations/rollcall/roster",
                rows: @rows, counts: @counts, mode: :sign_in, position_id: @group.id,
                slot_id: @slot.id, start_time: @start_time %>
   <% end %>
 <% end %>
 
-<%# The Set Time dialog, opened by ?set_time=1 so it survives a reload. The
-    layout supplies the "modal" turbo-frame, so this renders outside one. %>
+<%# The Set Time dialog. The button opens it in the layout's "modal" frame
+    (set_time.html.erb); a page loaded with ?set_time=1 -- a reload, or no
+    Turbo -- draws it here, outside that frame. %>
 <% if params[:set_time].present? && @slot %>
   <%= render "shift_operations/rollcall/set_time_dialog" %>
 <% end %>

@@ -1,7 +1,9 @@
 <%# locals: (entries:) %>
 
 <% entries.each do |entry| %>
-  <%= turbo_frame_tag "entry-#{entry.id}", class: "box box-default mb-3 rounded-xl border border-line shadow-sm" do %>
+  <%# The card is inside the partial, so a turbo_stream.update of this frame
+      (TimesheetCorrectionsConcern) redraws it whole. %>
+  <%= turbo_frame_tag "entry-#{entry.id}" do %>
     <%= render partial: "common/timesheet/entry_with_action", locals: { entry: } %>
   <% end %>
 <% end %>

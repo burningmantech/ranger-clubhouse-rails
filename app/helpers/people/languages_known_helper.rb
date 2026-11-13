@@ -46,7 +46,7 @@ module People::LanguagesKnownHelper
 
     if speaker.on_duty?
       parts << ui_badge("On duty", :success, icon: "clock", icon_type: :solid) unless narrowed_to_on_duty?(site)
-      parts << tag.span(speaker.position, class: "me-muted text-sm")
+      parts << tag.span(speaker.position, class: "me-muted")
     end
 
     parts << ui_badge("Radio", :primary, icon: "walkie-talkie", icon_type: :solid) if speaker.radio?

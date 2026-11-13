@@ -316,7 +316,7 @@ class Training::SessionPageTest < ActionDispatch::IntegrationTest
     assert_match "inactive@example.com", body
 
     # Stat tiles agree with the bands.
-    assert_select ".report-stat", text: "4/20 Signed up"
+    assert_select ".report-stat", text: "4/20 Signed Up"
     assert_select ".report-stat", text: "2 Veterans"
     assert_select ".report-stat", text: "1 Binaries"
     assert_select ".report-stat", text: "1 Prospective"
@@ -393,7 +393,7 @@ class Training::SessionPageTest < ActionDispatch::IntegrationTest
     assert_select ".report-status", text: "inactive", count: 1
 
     # ART tile row: no Binaries/Prospective tiles.
-    assert_select ".report-stat", text: "3/20 Signed up"
+    assert_select ".report-stat", text: "3/20 Signed Up"
     assert_select ".report-stat", text: "1 Veterans"
     assert_select ".report-stat", text: "1 ART Prospectives"
     assert_select ".report-stat", text: "1 Auditors"

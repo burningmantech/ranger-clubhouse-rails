@@ -1,0 +1,103 @@
+R11899 || WAIVED || app/helpers/messages_helper.rb:35 || approved exception 2026-11-12: mailbox folder switch keeps tabs
+M0212 || FIXED || app/helpers/messages_helper.rb:75 || This year's stamp uses DateTimeHelper::DAY_LABEL ("Thu Jan 8") instead of a hand-written "%b %-d"; helper test updated.
+R11837 || FIXED || app/helpers/survey_report_helper.rb:57 || "Anonymous" is a fact word: muted, no longer italic.
+R11685 || FIXED || app/views/common/_checkbox_grid.html.erb:10 || md:grid-cols-2 tier replaced by lg:grid-cols-2 (md is not for grid columns).
+R11686 || BLOCKED || app/views/common/_checkbox_grid.html.erb:13 || Needs an array-param checkbox field in app/helpers/form_helper.rb (AppFormBuilder has only attribute-bound check_box); then the partial and its 12 callers can move to it.
+R02216 || FIXED || app/views/common/_checkbox_grid.html.erb:17 || Checkbox label text-sm -> text-base.
+R02218 || BLOCKED || app/views/common/_checkbox_row.html.erb:15 || Same as R11686: needs a free-name/array checkbox field in app/helpers/form_helper.rb.
+R11688 || BLOCKED || app/views/common/_checkbox_tile.html.erb:15 || Same as R11686: the tile wraps callers' raw check_box_tag; needs a builder field in app/helpers/form_helper.rb first.
+R11691 || COMPLIANT || app/views/common/_dashboard_progress.html.erb:11 || A progress summary, not a collection; EMPTY-01 asks no empty branch of it.
+R11698 || COMPLIANT || app/views/common/_dropdown_scroll_list.html.erb:20 || The rewritten guide leaves same-page fragments to application.js turbo:click, as the partial's comment says (shared-helpers ruled the same on C0286).
+C0385 || FIXED || app/views/common/_error_summary.html.erb:1 || Deleted: the second error summary had no caller but the dead _form_wrapper.
+R02259 || FIXED || app/views/common/_error_summary.html.erb:5 || Deleted with _form_wrapper; ui_form's form_error_summary is the only summary left.
+R02265 || FIXED || app/views/common/_event_summary_breakdown.html.erb:4 || Both sections' Q&A moved into one collapsed About This Report card at the top of the partial (under the callers' stat row).
+R11705 || FIXED || app/views/common/_event_summary_breakdown.html.erb:4 || Same card; the "(hours excluded)" info callout folded into it too.
+R02272 || FIXED || app/views/common/_event_summary_breakdown.html.erb:52 || "(hours excluded)" annotation drops text-sm.
+R02281 || COMPLIANT || app/views/common/_event_summary_counts.html.erb:16 || The new TYPE-03 wording allows text-sm for a footnote marker.
+R02283 || FIXED || app/views/common/_form_wrapper.html.erb:2 || Deleted: no caller anywhere.
+M0445 || FIXED || app/views/common/_photo_none.html.erb:5 || Inline size kept with a written reason: it comes from PersonPhoto's avatar constants so the placeholder matches the photo.
+R02309 || COMPLIANT || app/views/common/_photo_none.html.erb:7 || TYPE-03 now allows text-sm for a caption inside an image placeholder.
+R11724 || FIXED || app/views/common/_time_warnings.html.erb:12 || Red shouted spans become <strong> in lower case ("is before"/"is after"); the warning callout carries the colour.
+R11730 || FIXED || app/views/common/_timesheet_confirm.html.erb:31 || Rejected missing requests keep the review open but had no task, so the list could be empty: added that task; render test covers it.
+F0015 || FIXED || app/views/common/_timesheet_confirm.html.erb:44 || Summary "Need help?" -> "Common Questions"; the questions stay in the body.
+R11726 || FIXED || app/views/common/_timesheet_confirm.html.erb:44 || summary_class removed from both accordions (no focus ring/layout rewrite); the icon sits inside with end: 2.
+R02331 || FIXED || app/views/common/_timesheet_confirm.html.erb:47 || Help Q&A is now a classless dl.instruction-list.
+R11729 || FIXED || app/views/common/_timesheet_confirm.html.erb:64 || circle-check text-success -> icon-success.
+R11727 || FIXED || app/views/common/_timesheet_confirm.html.erb:74 || Divider now mt-4 pt-3 border-t border-line.
+R02339 || FIXED || app/views/common/_timesheet_confirm.html.erb:79 || text-sm removed from the help list and the three paragraphs.
+R11733 || COMPLIANT || app/views/common/_timesheet_notes.html.erb:2 || Shared partial leaves the empty state to its caller (guide allows it); missing-request callers guard with notes.any?.
+R11732 || FIXED || app/views/common/_timesheet_notes.html.erb:9 || Note body is ui_card class "p-3 mb-1".
+R11734 || FIXED || app/views/common/_toast.html.erb:9 || Close is button_action :ghost btn-circle with xmark and aria-label "Close"; .btn-toast-close in buttons.css/accessibility.css now has no user.
+R11737 || FIXED || app/views/common/_trophies.html.erb:4 || ui_empty_state replaces the hand-written empty-state div.
+R02354 || FIXED || app/views/common/_trophies.html.erb:12 || Award icon neutral text-stone-icon.
+R11739 || FIXED || app/views/common/_trophies.html.erb:12 || bg-warning/10 ring badge removed; one icon per trophy, not two.
+R11738 || FIXED || app/views/common/_trophies.html.erb:10 || Trophy card is ui_card p-3; awards system/controller tests updated.
+R11740 || FIXED || app/views/common/_trophies.html.erb:15 || Title and years are font-semibold at body size, never above the h3.
+R02362 || FIXED || app/views/common/_trophies.html.erb:18 || "Service Years" label text-base, text-stone-muted (was text-sm uppercase me-muted).
+F0030 || FIXED || app/views/common/_trophies.html.erb:19 || Missing service years print "—" under the label.
+R11743 || FIXED || app/views/common/_years_breakdown.html.erb:17 || Italic "none" -> "—" (lines 17, 34).
+R11865 || FIXED || app/views/common/assets/_checkout_form.html.erb:14 || Hand label uses AppFormBuilder::LABEL_CLASSES and the builder's visible "(required)" word; badge gone. Custom id stays for hq_shift_controller.
+R11871 || COMPLIANT || app/views/common/assets/_table.html.erb:21 || Every caller guards with .any? (hq/assets, person/assets, site_registration).
+F0023 || FIXED || app/views/common/assets/_table.html.erb:68 || Row "Check In" is :secondary.
+R11874 || FIXED || app/views/common/bmids/_fields.html.erb:10 || Status and SAP Date widths go through width: (w-full sm:w-60 / sm:w-72), not html class.
+F0014 || FIXED || app/views/common/bmids/_warnings.html.erb:17 || Callout titles Title Case: "No Sign-Ups Found", "No Claimed Ticket or In-Person Training Sign-Up".
+R11858 || COMPLIANT || app/views/common/bulk_upload/index.html.erb:50 || Refusals re-render with an outcome callout; vague-rules lists no fix for this case.
+R11857 || FIXED || app/views/common/bulk_upload/index.html.erb:57 || Action select width via width: "w-full sm:w-96".
+R02508 || FIXED || app/views/common/bulk_upload/preview.html.erb:100 || Dialog title asks with the action ("Set as Active for 3 people?"); message adds there is no undo.
+R11846 || FIXED || app/views/common/mail_log/_legend.html.erb:13 || Legend icons icon-error / icon-warning.
+R11845 || COMPLIANT || app/views/common/mail_log/_table.html.erb:17 || Both pages render it inside if @logs.any?.
+R02526 || FIXED || app/views/common/mail_log/_table.html.erb:35 || Blank sender prints muted "Clubhouse", not italic "- Clubhouse -".
+F0029 || FIXED || app/views/common/mail_log/_table.html.erb:39 || Missing recipient prints "—". "(no subject)" kept: it is the row toggle's button text, which cannot be a dash.
+R11747 || FIXED || app/views/common/messages/_compose.html.erb:7 || Compose form sits in ui_card, not a hand-made bordered div.
+R11751 || FIXED || app/views/common/messages/_compose_buttons.html.erb:5 || Page compose buttons in button_row class "mt-2".
+R02616 || FIXED || app/views/common/messages/_conversation_list.html.erb:10 || Search status line drops text-sm.
+R11752 || FIXED || app/views/common/messages/_conversation_list.html.erb:17 || A search with no hits shows its summary in ui_empty_state (role=status kept); Clear Search stays above it.
+F0025 || FIXED || app/views/common/messages/_find_recipient_form.html.erb:6 || Callsign field width w-full sm:w-64.
+R11763 || COMPLIANT || app/views/common/messages/_find_recipient_form.html.erb:2 || No match is not silent: MessagesConcern#search_callsigns adds NO_CALLSIGNS_MATCHED to the field, shown as its error.
+R02648 || FIXED || app/views/common/messages/_find_recipient_form.html.erb:16 || Each result is a ui_card p-3 inside its li.
+R11762 || BLOCKED || app/views/common/messages/_find_recipient_form.html.erb:32 || ButtonHelper has no one-button POST form helper (button_to); needs one in app/helpers/button_helper.rb. aria-label now holds the visible text ("Select Recipient: X").
+F0022 || FIXED || app/views/common/messages/_find_recipient_form.html.erb:35 || Result "Select" buttons are :secondary; the modal's own submit stays primary.
+R11766 || WAIVED || app/views/common/messages/_folder_selector.html.erb:5 || approved exception 2026-11-12: mailbox folder switch keeps tabs
+R11778 || COMPLIANT || app/views/common/messages/_messages_panel_header.html.erb:55 || gap-1 is on the scale and it is not a button_row; SPACE-01 fixes only arbitrary values.
+R02676 || BLOCKED || app/views/common/messages/_messages_panel_header.html.erb:59 || Same as R11762: Mark Read/Archive must stay forms (button_to); needs a ButtonHelper form-button method in app/helpers/button_helper.rb.
+R11786 || FIXED || app/views/common/messages/_reply_form.html.erb:24 || Reply label visible (hide_label and aria-label removed); Lexxy names the box from it. System test updated.
+R11785 || FIXED || app/views/common/messages/_reply_form.html.erb:31 || Send Reply sits in button_row class "justify-end".
+F0024 || FIXED || app/views/common/messages/_search_field.html.erb:18 || Visible "Search Messages" label paired with the autocomplete input, builder label classes.
+R11792 || WAIVED || app/views/common/messages/_workspace.html.erb:48 || approved exception 2026-11-12: tabs-lift panel stays with tabs
+F0018 || FIXED || app/views/common/messages/new.html.erb:22 || Hero "New Message" -> "Write Message", matching the button; system test updated.
+R11890 || FIXED || app/views/common/missing_requests/_entry.html.erb:3 || Entry is a ui_card (overflow-hidden) instead of a hand-made div.
+R02739 || FIXED || app/views/common/missing_requests/_entry.html.erb:3 || shadow-lg gone; ui_card's default shadow-xs.
+F0020 || FIXED || app/views/common/missing_requests/_entry.html.erb:53 || "Submit Appeal" -> "Add Appeal"; bare "Delete" -> "Delete Request".
+R11892 || FIXED || app/views/common/missing_requests/_entry.html.erb:56 || delete_button (red, confirm "this request"). Show Notes toggle converted to ui_disclosure (Phase 3 hand-down).
+R11895 || FIXED || app/views/common/missing_requests/_form.html.erb:2 || text-xl lead replaced by the callout's title: "Missing Entries Only".
+M0142 || FIXED || app/views/common/missing_requests/_form.html.erb:53 || "Submit Request" -> "Save Request".
+R11887 || FIXED || app/views/common/missing_requests/index.html.erb:7 || Lone page button in button_row.
+R11888 || FIXED || app/views/common/missing_requests/index.html.erb:30 || No requests -> ui_empty_state.
+F0016 || FIXED || app/views/common/missing_requests/new.html.erb:2 || Hero "Add Missing Timesheet Request".
+R11879 || FIXED || app/views/common/provisions/_form.html.erb:16 || Type and Status widths via width:, not html class.
+M0016 || FIXED || app/views/common/provisions/_form.html.erb:23 || Source Year width via width:.
+M0017 || FIXED || app/views/common/provisions/_form.html.erb:26 || Expires After width via width:.
+R11877 || FIXED || app/views/common/provisions/_form.html.erb:37 || Meal periods grouped in f.fieldset "Meal Periods".
+R02779 || FIXED || app/views/common/provisions/_form.html.erb:38 || me-muted -> text-stone-muted on the meal note.
+R11880 || FIXED || app/views/common/provisions/_form.html.erb:66 || "No comments yet." -> "—".
+F0021 || FIXED || app/views/common/provisions/_form.html.erb:94 || delete_button label "Delete Provision".
+F0017 || FIXED || app/views/common/provisions/new.html.erb:5 || Hero "Add Provision — callsign"; person provisions test updated.
+R11850 || COMPLIANT || app/views/common/rbs/_delivery_table.html.erb:11 || A sent broadcast always has people; retried page guards with ui_empty_state. Not in vague-rules' fix list.
+R02857 || FIXED || app/views/common/resource_documents/_document.html.erb:20 || me-muted -> text-stone-muted; team documents test updated.
+R11852 || FIXED || app/views/common/resource_documents/_document.html.erb:20 || Same line as R02857.
+R02870 || FIXED || app/views/common/resource_documents/_form.html.erb:19 || me-muted -> text-stone-muted.
+R11855 || FIXED || app/views/common/resource_documents/_form.html.erb:19 || Same line as R02870.
+F0019 || FIXED || app/views/common/resource_documents/edit.html.erb:1 || Browser title "Write Document", matching the hero's "Write".
+R11827 || FIXED || app/views/common/surveys/_question.html.erb:32 || Only sessions with comments are listed; with none the question falls through to the existing ui_empty_state.
+R11829 || FIXED || app/views/common/surveys/_ratings_table.html.erb:10 || Empty rows show ui_empty_state "No one gave a rating." instead of a header-only table.
+F0031 || FIXED || app/views/common/surveys/_session_label.html.erb:7 || Missing description prints "—".
+R11833 || COMPLIANT || app/views/common/surveys/_survey_table.html.erb:16 || Callers guard: training/surveys/index shows ui_empty_state for an empty section.
+R11819 || COMPLIANT || app/views/common/surveys/report.html.erb:20 || Guide (Button Variants): a view toggle shows the current view :primary, the others :secondary; aria-current marks it.
+R11886 || COMPLIANT || app/views/common/ticketing_maintenance/_results_table.html.erb:16 || Shared ledger; callers state the count above it and reach it only after a run.
+R11885 || FIXED || app/views/common/ticketing_maintenance/_results_table.html.erb:33 || Italic "unknown" person -> "—".
+F0028 || FIXED || app/views/common/unified_flagging/_history.html.erb:46 || Team headings h4 -> h3 (46, 112); vc unified flagging test updated.
+R11801 || FIXED || app/views/common/unified_flagging/_history.html.erb:50 || The four plain-text empties are ui_empty_state.
+R11804 || FIXED || app/views/common/unified_flagging/_history.html.erb:59 || Status printed bare (no &lt; &gt;); "*imported*" italic -> plain "imported".
+R03262 || FIXED || app/views/common/unified_flagging/_history.html.erb:88 || text-sm off the feedback paragraph; "No trainer notes." is ui_empty_state. State words (29, 31) are metadata, allowed.
+R11808 || COMPLIANT || app/views/common/unified_flagging/_list_row.html.erb:35 || TYPE-03 now allows text-sm for state words on a review or list line.
+R11810 || COMPLIANT || app/views/common/unified_flagging/_note_buttons.html.erb:11 || Record actions for the pane's one person; BTN-07 exempts a card's record actions.

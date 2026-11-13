@@ -70,12 +70,14 @@ module UiComponents
 
     # Options:
     #   :size - title size (:sm, :md, :lg, :xl) - default: :lg
+    #   :heading_level - render the title as this heading (:h2, :h3, :h4) - default: a div
     def ui_card_title(title, options = {}, &block)
       size = options.delete(:size) || :lg
+      title_tag = options.delete(:heading_level) || :div
       size_class = TITLE_SIZE_CLASSES[size.to_sym] || TITLE_SIZE_CLASSES[:lg]
 
       title_classes = "#{size_class} #{CARD_TITLE} #{options[:class]}".squish
-      title_div = content_tag :div, title, class: title_classes
+      title_div = content_tag title_tag, title, class: title_classes
 
       return title_div unless block_given?
 
@@ -85,7 +87,7 @@ module UiComponents
 
     def ui_card_section(title, options = {}, &block)
       section_classes = "#{CARD_SECTION_TITLE} #{options[:class]}".squish
-      section_title = content_tag :h6, title, class: section_classes
+      section_title = content_tag :h3, title, class: section_classes
       section_text = content_tag :div, class: CARD_SECTION_BODY, &block
       safe_join([section_title, section_text])
     end

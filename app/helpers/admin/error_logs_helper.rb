@@ -25,7 +25,7 @@ module Admin::ErrorLogsHelper
   end
 
   def error_log_person_label(person, person_id)
-    person_display_link(person, person_id, blank: "-")
+    person_display_link(person, person_id)
   end
 
   # A record with no IP came from background work rather than from a browser,
@@ -119,11 +119,11 @@ module Admin::ErrorLogsHelper
     data = error_log_filtered_data(row)
     # A row that never held valid JSON cannot be hidden field by field, so it
     # is shown as stored -- the only way its contents stay readable at all.
-    return row.data_before_type_cast.to_s.presence || "(no data)" if data.nil?
+    return row.data_before_type_cast.to_s.presence || "—" if data.nil?
 
     JSON.pretty_generate(data)
   rescue JSON::GeneratorError, TypeError
-    "(unreadable data)"
+    "Unreadable data"
   end
 
   # Reuses the app's own configured filter_parameters list (config/initializers/

@@ -4,7 +4,7 @@
 <% hidden = people_by_location_hidden_statuses(@statuses) %>
 
 <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid,
-                   title: "Who These Counts Include" do %>
+                   title: "Who These Counts Include", heading_level: :h2 do %>
   <% if hidden.any? %>
     <p>
       <strong><%= pluralize(hidden.size, "status") %> hidden.</strong>

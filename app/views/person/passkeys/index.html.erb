@@ -7,16 +7,16 @@
 <% end %>
 
 <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
-  Lost or stolen device? Remove its passkey here, then revoke the device under
+  Lost or stolen device? Delete its passkey here, then revoke the device under
   <%= link_to "Login Sessions", person_sessions_path(@person), class: "underline font-semibold" %>.
-  Removing a passkey does not sign anyone out.
+  Deleting a passkey does not sign anyone out.
 <% end %>
 
 <%# Nothing where this Clubhouse offers no passkeys: a key enrolled there could never sign in. %>
 <% if Passkeys.enabled?(request) %>
-  <div class="my-4">
+  <%= button_row class: "my-4" do %>
     <%= button_link "Add Security Key", :primary, new_person_passkey_path(@person), icon: "plus", icon_type: :solid %>
-  </div>
+  <% end %>
 <% end %>
 
 <%= ui_section "Registered Passkeys", icon: "fingerprint", icon_type: :solid, badge: @passkeys.size.to_s do %>

@@ -49,6 +49,18 @@ class UiAccentCardHelperTest < ActionView::TestCase
     assert_select "article h3", count: 0
   end
 
+  test "the body is spaced from a title" do
+    render inline: %(<%= ui_accent_card "Sign Up for Shifts" do %>Body<% end %>)
+
+    assert_select "article > div.mt-2", text: "Body"
+  end
+
+  test "a card without a title or badge has no gap above its body" do
+    render inline: %(<%= ui_accent_card do %>Body<% end %>)
+    assert_select "article > div", text: "Body"
+    assert_select "article > div.mt-2", count: 0
+  end
+
   test "heading_level refuses a level a card cannot take" do
     error = assert_raises(ArgumentError) { ui_accent_card("Sign Up for Shifts", heading_level: :h1) }
 

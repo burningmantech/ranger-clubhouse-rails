@@ -300,7 +300,7 @@ export default class extends UnsavedChanges {
         this.leaving = false;
     }
 
-    // The unsaved-changes guard: {key, message} for the first one that
+    // The unsaved-changes guard: {key, question} for the first one that
     // applies, or null. The unhandled shift is checked before the barcode,
     // matching upstream (port/routes/hq/shift.js aborts on noShiftHandled
     // first) — the reverse order let a stray barcode hide the more important
@@ -312,17 +312,32 @@ export default class extends UnsavedChanges {
         if (!this.shiftHandled) {
             return {
                 key: "shift",
-                message: (this.offDutyValue
-                    ? "It looks like a shift was not started."
-                    : "It looks like a shift was not ended.") +
-                    " Leave this page anyway?"
+                question: this.offDutyValue ? {
+                    title: "No Shift Started",
+                    message: "Leave this page without starting a shift? The person stays off duty.",
+                    confirmLabel: "Leave Page",
+                    cancelLabel: "Stay on Page"
+                } : {
+                    title: "No Shift Ended",
+                    message: "Leave this page without ending the shift? The person stays on duty.",
+                    confirmLabel: "Leave Page",
+                    cancelLabel: "Stay on Page"
+                }
             };
         }
         if (this.barcodeValue() !== "") {
             return {
                 key: "barcode",
-                message: "A barcode was entered but not checked out. Check out the asset or " +
-                    "clear the barcode field before leaving this page. Navigate away anyway?"
+                question: {
+                    title: "Barcode Not Checked Out",
+                    message: [
+                        "Leave this page without checking out the asset?",
+                        "A barcode was entered but not checked out. Stay on the page to check out " +
+                            "the asset or clear the barcode field."
+                    ],
+                    confirmLabel: "Leave Page",
+                    cancelLabel: "Stay on Page"
+                }
             };
         }
         return null;

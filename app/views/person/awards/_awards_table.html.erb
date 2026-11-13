@@ -1,11 +1,11 @@
 <%# locals: (person:, title:, icon:, awards:, award_type:, new_label:, can_manage:) %>
 <%= ui_section title, icon: icon, icon_type: :solid, badge: awards.size.to_s do %>
   <% if can_manage %>
-    <div class="my-4">
+    <%= button_row class: "my-4" do %>
       <%= button_link new_label, :primary,
                       new_person_award_path(person, type: award_type),
                       icon: "plus", icon_type: :solid %>
-    </div>
+    <% end %>
   <% end %>
 
   <% if awards.any? %>

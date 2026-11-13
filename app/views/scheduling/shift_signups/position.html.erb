@@ -43,7 +43,7 @@
   <% end %>
 <% end %>
 
-<div class="my-4 flex flex-wrap gap-2">
+<%= button_row class: "my-4" do %>
   <%# This page counts the sign-ups; the schedule report names the people behind
       the counts. %>
   <% if shift_signups_can_view_schedule? %>
@@ -55,7 +55,7 @@
     <%= export_csv_link(scheduling_shift_signups_position_path(@position.id, year: @year,
                         format: :csv)) %>
   <% end %>
-</div>
+<% end %>
 
 <% if @detail.shifts.any? %>
   <%= ui_table full_width: true, striped: true do |t| %>

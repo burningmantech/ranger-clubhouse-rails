@@ -12,28 +12,23 @@ export default class extends Controller {
     }
 
     /**
-     * Move focus to the validation feedback and scroll it into view.
-     * Prefer the error summary (role="alert") so screen readers announce the
-     * full list of errors; otherwise focus the first errored field.
+     * Move focus to the first field with an error and scroll it into view, so it
+     * can be corrected at once. The error summary (role="alert") is announced
+     * on its own; it takes the focus only when no field is marked, as when every
+     * error is on the record rather than on one field.
      */
     focusFirstError() {
+        const firstError = this.element.querySelector(
+            '.input-error, .select-error, .textarea-error, .radio-error, .checkbox-error, .file-input-error'
+        );
         // The summary is rendered as a sibling of the form, outside this element.
-        const summary = this.element.parentElement?.querySelector('#form-error-summary')
+        const target = firstError
+            || this.element.parentElement?.querySelector('#form-error-summary')
             || document.getElementById('form-error-summary');
 
-        if (summary) {
-            summary.focus();
-            summary.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
-            return;
-        }
-
-        const firstError = this.element.querySelector(
-            '.input-error, .select-error, .textarea-error, .radio-error, .file-input-error'
-        );
-
-        if (firstError) {
-            firstError.focus();
-            firstError.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+        if (target) {
+            target.focus();
+            target.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
         }
     }
 }

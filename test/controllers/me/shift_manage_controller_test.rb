@@ -70,7 +70,7 @@ class Me::ShiftManageControllerTest < ActionDispatch::IntegrationTest
     # allow_correction_on_end? is false here: only the HQ Window's return path
     # carries ctx_correction, so the button would end the shift and silently
     # drop the correction.
-    assert_select "a", text: /End Shift & Submit Correction/, count: 0
+    assert_select "a", text: /End Shift & Request Correction/, count: 0
   end
 
   test "start shift checks the person in and logs the check-in" do

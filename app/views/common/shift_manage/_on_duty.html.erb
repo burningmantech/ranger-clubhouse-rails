@@ -36,7 +36,7 @@
                   method: :post, icon: "bed", icon_type: :solid, size: "lg",
                   full_width: true %>
   <% if allow_correction_on_end? %>
-    <%= button_link "End Shift & Submit Correction", :secondary,
+    <%= button_link "End Shift & Request Correction", :secondary,
                     shift_end_path(entry_id: entry.id, submit_correction: 1),
                     method: :post, icon: "pen-to-square",
                     full_width: true %>

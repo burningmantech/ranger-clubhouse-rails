@@ -94,12 +94,8 @@
           <% end %>
 
           <%= t.cell do %>
-            <div><%= team.email.presence || tag.span("No email", class: "text-stone-muted italic") %></div>
-            <% if team.resource_tag.present? %>
-              <div class="text-stone-muted"><%= team.resource_tag %></div>
-            <% else %>
-              <div class="text-stone-muted italic">No document tag</div>
-            <% end %>
+            <div><%= value_or_dash(team.email) %></div>
+            <div class="text-stone-muted"><%= value_or_dash(team.resource_tag) %></div>
           <% end %>
 
           <%= t.cell right: true do %>

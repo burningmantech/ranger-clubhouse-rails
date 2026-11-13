@@ -139,7 +139,7 @@ class Training::AllNotesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_no_match(/rank change/, response.body)
-    assert_match "no notes", response.body
+    assert_select "td", text: "—"
   end
 
   test "another year's sessions are not included" do

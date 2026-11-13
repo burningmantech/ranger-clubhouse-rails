@@ -7,9 +7,9 @@
   New to passkeys? Read <%= link_to "About Passkeys", "#about-passkeys", class: "underline font-semibold" %> below.
 <% end %>
 
-<div class="my-4">
+<%= button_row do %>
   <%= button_link "Add Passkey", :primary, new_me_profile_passkey_path, icon: "plus", icon_type: :solid %>
-</div>
+<% end %>
 
 <%= ui_section "Your Passkeys", icon: "fingerprint", icon_type: :solid, badge: @passkeys.size.to_s do %>
   <% if @passkeys.any? %>

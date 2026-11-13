@@ -1,0 +1,20 @@
+C0423 || FIXED || app/javascript/application.js:198 || Escape now closes every open details.dropdown and returns focus to its summary when focus was inside; outside click and item click already closed it.
+C0437 || COMPLIANT || app/javascript/controllers/autocomplete_controller.js:894 || No JS change needed: shared-css's reduced-motion guard for .animate-spin (accessibility.css) stops this spinner.
+C0439 || FIXED || app/javascript/controllers/bookmark_controller.js:32 || Kiosk clock passes hourCycle "h23": 24-hour in every locale.
+C0442 || FIXED || app/javascript/controllers/camera_controller.js:46 || Upload/Camera tabs answer Left/Right/Home/End (shared tablistKeyTarget), focusing and selecting the tab; roving tabindex kept by selectTab.
+M0417 || FIXED || app/javascript/controllers/confirm_checkbox.js:6 || confirmChecked is async and asks through Turbo.config.forms.confirm (app dialog) with a {title, message, confirmLabel} question.
+C0446 || FIXED || app/javascript/controllers/country_state_controller.js:62 || Blank state option is "—" (both places). Label opacity-60 for a disabled field left as is: no rule covers it.
+C0452 || FIXED || app/javascript/controllers/hq_shift_controller.js:315 || Leave guards ask in the app dialog via the unsaved-changes base, reworded "Leave this page without starting a shift?". animate-pulse chip is upstream blink; reduced-motion guard covers it.
+C0454 || FIXED || app/javascript/controllers/input_counter_controller.js:19 || Counter gets an id and joins the field's aria-describedby (existing ids kept); not a live region, per FORM-04's new text.
+C0464 || FIXED || app/javascript/controllers/membership_editor_controller.js:95 || Dangerous-grant and manager confirms use the app dialog, "<Verb> <thing>?" first; teamToggle awaits the answer before ticking positions.
+C0470 || FIXED || app/javascript/controllers/permission_editor_controller.js:56 || Toggle and submit confirms use the app dialog; submit is held and re-sent with requestSubmit on yes (status_warning pattern); "requires" for one role.
+C0472 || FIXED || app/views/profile_photos/crop.html.erb:74 || The error box landed in Phase 3; the controller's error/errorMessage targets now resolve.
+M0419 || FIXED || app/javascript/controllers/photo_cropper_controller.js:246 || Shown inline in crop.html.erb's error box (C0472).
+M0420 || FIXED || app/javascript/controllers/photo_cropper_controller.js:252 || Shown inline in crop.html.erb's error box (C0472).
+M0421 || FIXED || app/javascript/controllers/photo_cropper_controller.js:271 || Shown inline in crop.html.erb's error box (C0472).
+C0473 || FIXED || app/javascript/controllers/photo_upload_controller.js:56 || "Select an image." and "The file must be smaller than N MB." end with periods. Thumbnail shadow-xs left: SHADOW-01 not in this finding's rule.
+C0490 || FIXED || app/javascript/controllers/tabs_controller.js:30 || keydown on the controller: Left/Right (wrapping), Home/End move focus and select the tab via click; nested tablists and modified keys ignored.
+C0493 || COMPLIANT || app/javascript/controllers/toast_controller.js:12 || No JS change needed: shared-css's reduced-motion rules in accessibility.css stop the slide and hide the countdown bar.
+C0494 || BLOCKED || app/javascript/controllers/toggle_controller.js:55 || Fix is markup: replace the toggle controller in its 7 views (hq/shift_manage/_pog_guideline, person/provisions/_section, common/schedule/_signed_up_row, etc.) with ui_disclosure, then delete toggle_controller.js.
+C0495 || FIXED || app/javascript/controllers/unsaved_changes_controller.js:101 || before-visit is stopped, asked in the app dialog ("Leave this page?", red Leave Page), resumed with Turbo.visit keeping action/form response; beforeunload kept, skipped after a yes.
+C0496 || WAIVED || app/javascript/controllers/vanilla_calendar_controller.js:177 || approved exception 2026-11-12: 768px is a touch swap

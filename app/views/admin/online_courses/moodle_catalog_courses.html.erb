@@ -22,11 +22,11 @@
                   <div><%= linked[:year] %> &middot; <%= linked[:title] %> (<%= course_for_label(linked[:course_for]) %>)</div>
                 <% end %>
               <% else %>
-                <span class="text-stone-subtle">— none —</span>
+                —
               <% end %>
             <% end %>
             <%= t.cell do %>
-              <%= button_link "Add Course", :primary,
+              <%= button_link "Add Course", :secondary,
                               new_admin_online_course_path(year: @year, course_id: course.id, course_name: course.fullname),
                               size: "sm" %>
             <% end %>

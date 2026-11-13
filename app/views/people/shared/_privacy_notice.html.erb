@@ -3,7 +3,8 @@
     gets the reminder.
     Locals: shows (String) -- the fields the page displays, e.g.
     "home addresses and email addresses". %>
-<%= ui_callout_box :warning, icon: "hand", title: "Personal Information" do %>
+<%= ui_callout_box :warning, icon: "hand", title: "Personal Information",
+                   heading_level: :h2 do %>
   This report shows <%= shows %>.
   Contact information is only for The BRC Ranger department use.
 <% end %>

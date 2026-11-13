@@ -10,6 +10,8 @@
 #   Day label                       Thu Jan 8                 wday_month_day_format
 #   Day label in another year       Thu Jan 8, 2026           wday_month_day_format(year: true)
 #   In running copy                 January 8                 month_day_format
+#   A day in a tight report column  Jan 8                     SHORT_MONTH_DAY
+#   A month heading                 January                   month_name_format
 #   Long form                       Thursday, January 8, 2026 mdy_format(full: true)
 #   Long form with the time         ... 2026 @ 14:30          full_datetime_format
 #   A chip with no room             Thu 1/8 14:30             short_datetime_format
@@ -24,6 +26,10 @@ module DateTimeHelper
   MONTH_DAY_TIME_YEAR = "%a %b %-d, %Y @ %H:%M"
   DAY_LABEL = "%a %b %-d"
   DATE = "%b %-d, %Y"
+  # A day in a report column with no room for the weekday or year: "Jan 8".
+  # The year is DATE's job when a range crosses one.
+  SHORT_MONTH_DAY = "%b %-d"
+  MONTH_NAME = "%B"
   LONG_DATE = "%A, %B %-d, %Y"
   HOUR_MINS = "%H:%M"
   HOUR_MIN_DAY = "%a @ %H:%M"
@@ -197,6 +203,11 @@ module DateTimeHelper
     d ? d.strftime("%B %-d") : ""
   rescue ArgumentError
     ""
+  end
+
+  # "July" — a month on its own, as a heading over that month's entries.
+  def month_name_format(date)
+    date ? date.strftime(MONTH_NAME) : ""
   end
 
   # "Wed Jul 30" — compact day labels for schedule filters; "Wed Jul 30, 2025"

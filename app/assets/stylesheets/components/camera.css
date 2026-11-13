@@ -1,7 +1,7 @@
 /*
  * Camera Selfie Capture Styles
  * Custom utilities for the camera preview and capture interface
- * Used in: app/views/me/photos/new.html.erb
+ * Used in: app/views/profile_photos/new.html.erb
  */
 
 /* Camera preview container - maintains 4:3 aspect ratio, centers content */
@@ -14,19 +14,4 @@
 @utility camera-video {
   @apply w-full h-full object-cover;
   transform: scaleX(-1);
-}
-
-/* Circular capture button - large touch target for mobile accessibility (min 36px) */
-@utility camera-capture-btn {
-  @apply w-16 h-16 rounded-full border-4 border-line shadow-sm;
-  @apply bg-primary hover:brightness-90;
-  @apply active:scale-95 transition-transform;
-  @apply flex items-center justify-center;
-}
-
-/* Camera selector dropdown */
-@utility camera-select {
-  @apply w-full max-w-md mx-auto block rounded-lg border border-line;
-  @apply bg-base-100;
-  @apply text-body text-base p-2;
 }

@@ -15,10 +15,9 @@
             data: { controller: "permission-editor", action: "submit->permission-editor#submit" }) do |f| %>
   <%= hidden_field_tag "#{param_key}[role_ids][]", "" %>
 
-  <%= ui_section "Permissions", icon: "shield-halved", icon_type: :solid, border: false do %>
+  <%= ui_section "Permissions", icon: "shield-halved", icon_type: :solid do %>
     <%= ui_table responsive: false do |t| %>
       <%= t.header do %>
-        <%= t.heading "Grant", width: "1%" %>
         <%= t.heading "Permission" %>
         <%= t.heading "Assigned Through Team(s)" %>
         <%= t.heading "Assigned Through Position(s)" %>
@@ -27,24 +26,16 @@
         <% @permission_presenter.role_items.each do |role| %>
           <%= t.row do %>
             <%= t.cell do %>
-              <%= check_box_tag "#{param_key}[role_ids][]",
-                                role.id,
-                                role.selected,
-                                id: "role-#{role.id}",
-                                disabled: role.disabled,
-                                class: AppFormBuilder::CHECKBOX_CLASSES,
-                                data: {
-                                  permission_editor_target: "checkbox",
-                                  action: "permission-editor#toggle",
-                                  role_title: role.title,
-                                  granted: role.granted_elsewhere?,
-                                  council: role.council_approval?
-                                } %>
-            <% end %>
-            <%= t.cell do %>
-              <label for="role-<%= role.id %>" class="inline-flex items-center min-h-9 cursor-pointer font-medium text-heading">
-                <%= role.title %>
-              </label>
+              <%= f.check_box :role_ids, { label: role.title, multiple: true, checked: role.selected, id: "role-#{role.id}",
+                                           disabled: role.disabled, wrapper: false,
+                                           data: {
+                                             permission_editor_target: "checkbox",
+                                             action: "permission-editor#toggle",
+                                             role_title: role.title,
+                                             granted: role.granted_elsewhere?,
+                                             council: role.council_approval?
+                                           } },
+                              role.id, nil %>
             <% end %>
             <% if role.disabled %>
               <%= t.cell colspan: 2, class: "text-stone-muted italic" do %>
@@ -56,7 +47,7 @@
                   <% if titles.any? %>
                     <%= safe_join(titles, tag.br) %>
                   <% else %>
-                    <span class="text-stone-muted italic">None</span>
+                    —
                   <% end %>
                 <% end %>
               <% end %>

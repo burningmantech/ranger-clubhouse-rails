@@ -1,4 +1,5 @@
 <%= modal do |m| %>
+  <%= m.title "Shift Added" %>
   <%= m.body do %>
     <% if slot.url.present? %>
       <%= ui_callout_box :info, icon: "hand-point-right", icon_type: :regular, title: "Additional Shift Information" do %>

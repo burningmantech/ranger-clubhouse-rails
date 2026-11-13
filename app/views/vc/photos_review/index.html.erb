@@ -5,9 +5,7 @@
 <%= render "stats", total: @total %>
 
 <% if @photos.empty? %>
-  <%= ui_callout_box :success do %>
-    <strong>Congratulations! All photos have been reviewed.</strong>
-  <% end %>
+  <%= ui_empty_state "All photos have been reviewed.", icon: "circle-check", icon_type: :solid %>
 <% else %>
   <% if @total > @photos.size %>
     <%= ui_callout_box :info do %>

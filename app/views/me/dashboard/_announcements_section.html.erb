@@ -6,15 +6,13 @@
   has_more = unread.size > max_display
 %>
 <% if unread.any? %>
-  <div class="mb-6 card-standard p-3" role="region" aria-label="Clubhouse Announcements">
+  <%= ui_card class: "mb-6 p-4", role: "region", aria: { label: "Clubhouse Announcements" } do %>
     <%# Header: title, unread count, and a quiet link to the full list %>
     <div class="flex items-center justify-between gap-3 mb-1">
       <div class="flex-center-gap-2 flex-wrap min-w-0">
         <%= fa_icon "bullhorn", :solid, class: "icon-warning" %>
         <h2 class="heading-section text-heading">Clubhouse Announcements</h2>
-        <span class="inline-flex items-center justify-center min-w-[1.5rem] px-2 py-1 font-bold rounded-full bg-warning text-warning-content" aria-label="<%= unread.size %> unread">
-          <%= unread.size %>
-        </span>
+        <%= ui_badge unread.size.to_s, :warning, size: "sm", aria: { label: "#{unread.size} unread" } %>
       </div>
       <%= link_to me_announcements_path, class: "inline-flex-center-gap-2 shrink-0 min-h-9 font-medium text-stone-muted hover:text-heading transition-colors" do %>
         View All
@@ -22,17 +20,17 @@
       <% end %>
     </div>
 
-    <%# Each unread announcement is the call to action: subject, then status and dates on one line, and a Read button.
-        The row is the link and its text is its name -- no aria-label, so a screen reader hears the subject, the
-        status and the action, and "Read Announcement" can be spoken to voice control. %>
+    <%# Each unread announcement: subject, then status and dates on one line, and a Read Announcement button --
+        the row's one link. The button keeps its visible words as its name, so voice control can speak it, and
+        points at the subject for a screen reader that asks which announcement it opens. %>
     <div class="divide-y divide-line">
       <% display_announcements.each do |announcement| %>
         <% is_expired = announcement.expired? %>
-        <%= link_to me_announcements_path(anchor: dom_id(announcement)),
-                    class: "flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-4 py-2 px-2 -mx-2 rounded-md hover:bg-base-200 transition-colors no-decoration" do %>
+        <% subject_id = dom_id(announcement, :subject) %>
+        <div class="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-4 py-2">
           <div class="flex-1 min-w-0">
             <%# Tracks heading-section's scale so the subject never outweighs the section title %>
-            <p class="text-base lg:text-lg font-semibold text-heading <%= "line-through opacity-60" if is_expired %>">
+            <p id="<%= subject_id %>" class="text-base lg:text-lg font-semibold text-heading <%= "line-through opacity-60" if is_expired %>">
               <%= announcement.subject %>
             </p>
             <%# Status in words and an icon, on every screen size, ahead of the dates %>
@@ -51,13 +49,12 @@
             </div>
           </div>
 
-          <%# The span wears the button so the action reads at a glance; pointer-events-none leaves the row's
-              hover as the one hover state on the link %>
-          <span class="<%= button_classes({ class: "btn-outline pointer-events-none" }, :primary) %>">
+          <%= button_link nil, :primary, me_announcements_path(anchor: dom_id(announcement)),
+                          class: "btn-outline", full_width: true, aria: { describedby: subject_id } do %>
             Read Announcement
             <%= fa_icon "arrow-right", :solid %>
-          </span>
-        <% end %>
+          <% end %>
+        </div>
       <% end %>
     </div>
 
@@ -69,5 +66,5 @@
         <% end %>
       </div>
     <% end %>
-  </div>
+  <% end %>
 <% end %>

@@ -80,7 +80,7 @@
           <% SpigotFlowReport::STAGES.each do |stage| %>
             <% if stage == :imported %>
               <%# Imported can include applicants with no account, so it is a count only. %>
-              <%= t.cell day[:imported]&.size || "-", center: true %>
+              <%= t.cell day[:imported]&.size || value_or_dash(nil), center: true %>
             <% elsif day[stage].present? %>
               <%= t.cell center: true do %>
                 <%= render "callsign_cell", people: day[stage],
@@ -88,7 +88,7 @@
                            label: "#{SpigotFlowReport::STAGE_LABELS[stage]} — #{day_label}" %>
               <% end %>
             <% else %>
-              <%= t.cell "-", center: true %>
+              <%= t.cell value_or_dash(nil), center: true %>
             <% end %>
           <% end %>
         <% end %>

@@ -59,16 +59,16 @@ class Me::AwardsControllerTest < ActionDispatch::IntegrationTest
     get me_awards_url
     assert_response :success
 
-    # Should have service years text
-    assert_match /service years/, response.body
+    # Should have the Service Years label
+    assert_match /Service Years/, response.body
   end
 
   test "index shows no service years for awards without service year flag" do
     get me_awards_url
     assert_response :success
 
-    # Should have "no service years" text for awards that don't grant service years
-    assert_match /no service years/, response.body
+    # An award that grants no service years prints a dash under the label
+    assert_select ".card-standard .text-body", text: "—"
   end
 
   test "index shows informational alert about awards" do

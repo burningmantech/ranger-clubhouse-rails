@@ -10,13 +10,13 @@
   <% end %>
   <% if application.reviewed_at %>
     <span class="text-sm text-stone-muted">
-      Reviewed <%= datetime_format application.reviewed_at %> by <%= application.review_person&.callsign || "- unknown -" %>
+      Reviewed <%= datetime_format application.reviewed_at %> by <%= application.review_person&.callsign || value_or_dash(nil) %>
     </span>
   <% end %>
 </div>
 <div class="mb-2"><%= simple_format application.why_volunteer %></div>
 
-<div class="flex flex-wrap items-center gap-2 mb-3">
+<%= button_row class: "mb-3" do %>
   <% unless application.why_volunteer_review == ProspectiveApplication::WHY_VOLUNTEER_REVIEW_OKAY %>
     <%= form_with url: vc_application_path(application), method: :patch, builder: AppFormBuilder, class: "inline-block" do %>
       <%= hidden_field_tag "prospective_application[why_volunteer_review]", ProspectiveApplication::WHY_VOLUNTEER_REVIEW_OKAY %>
@@ -33,10 +33,10 @@
                                                status: ProspectiveApplication::STATUS_HOLD_WHY_RANGER_QUESTION, ask_for_message: 1),
                     data: { turbo_frame: "modal" } %>
   <% end %>
-</div>
+<% end %>
 
 <%= ui_label_value label_width: "12rem", size: :base do |list| %>
-  <% list.row "Regional experience" do %>
+  <% list.row "Regional Experience" do %>
     <% if application.regional_experience.present? %>
       <%= simple_format application.regional_experience %>
       <div class="mt-1">Regional callsign: <%= application.regional_callsign.presence || content_tag(:span, "none stated", class: "text-stone-muted") %></div>

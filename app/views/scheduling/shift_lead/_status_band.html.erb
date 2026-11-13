@@ -10,8 +10,7 @@
   The band is the same block at every width, and it is not pinned at any of
   them: it scrolls away with the page.
 %>
-<div class="mb-3 card-standard p-2 shadow-xs lg:p-3"
-     role="region" aria-label="Shift summary">
+<%= ui_card class: "mb-3 p-2 lg:p-3", role: "region", aria: { label: "Shift summary" } do %>
   <div class="flex flex-wrap items-center gap-2 mb-2">
     <p class="text-base"><%= shift_lead_mode_summary(report) %></p>
     <span class="grow"></span>
@@ -22,11 +21,11 @@
                     icon: "print", icon_type: :solid %>
   </div>
 
-  <%# Three across on a phone, six on a desktop. Never a horizontal scroller:
-      a number the reader has to swipe to reach is a number they will not read. %>
-  <div class="grid grid-cols-3 lg:grid-cols-6 gap-2">
+  <%# A wrapping row, never a horizontal scroller: a number the reader has to
+      swipe to reach is a number they will not read. %>
+  <%= ui_stat_row do %>
     <% shift_lead_headline_numbers(report).each do |value, label, variant| %>
       <%= ui_stat_box value.to_s, label, size: :sm, variant: variant %>
     <% end %>
-  </div>
-</div>
+  <% end %>
+<% end %>

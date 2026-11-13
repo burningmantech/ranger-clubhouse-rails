@@ -100,6 +100,34 @@ class Vc::ApplicationsControllerTest < ActionDispatch::IntegrationTest
     ], response.body.split("\n")
   end
 
+  test "index filters through the filter bar, one chip per narrowing filter" do
+    sign_in_as(@vc)
+
+    get vc_applications_path(year: 2026, filter: { status: "_callsign" })
+
+    assert_response :success
+    assert_select "#vc-application-filters a[aria-label='Remove filter: Status: Callsign Processing']"
+    assert_select "#vc-application-filters-panel select[name='filter[status]']"
+    # The export rides the bar, carrying the filters it was built from.
+    assert_select "#vc-application-filters a[href*='.csv'][href*='_callsign']"
+    # The table links each id to its review page; no Edit control opens the read view.
+    assert_select "tbody th a[href='#{vc_application_path(prospective_application(:handle_check))}']"
+    assert_select "tbody a", text: "Edit", count: 0
+  end
+
+  test "edit details lists every event year as a builder checkbox in a fieldset" do
+    sign_in_as(@vc)
+
+    get edit_details_vc_application_path(@application)
+
+    assert_response :success
+    assert_select "fieldset legend", text: "Events Attended"
+    assert_select "input[type=checkbox][name='prospective_application[event_years][]'][value='1986']", count: 1
+    @application.all_events.each do |year|
+      assert_select "input[type=checkbox][name='prospective_application[event_years][]'][value='#{year}'][checked]"
+    end
+  end
+
   test "show accepts an A- prefixed id" do
     sign_in_as(@vc)
 

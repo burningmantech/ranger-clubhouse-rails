@@ -1,7 +1,7 @@
 <%# One group of questions: its heading, and how its answers are reported. %>
 <%= ui_form(@group,
             @group.persisted? ? communication_survey_group_path(@survey, @group) : communication_survey_groups_path(@survey)) do |f| %>
-  <%= f.fieldset "What people see", icon: "layer-group", icon_type: :solid do %>
+  <%= f.fieldset "What People See", icon: "layer-group", icon_type: :solid do %>
     <dl class="instruction-list mb-3">
       <dt>What is a group?</dt>
       <dd>A heading with its own questions under it. A survey is answered a group at a time.</dd>
@@ -15,7 +15,7 @@
                     help_text: "Optional. Shown under the heading. Simple HTML is kept - <b>text</b> comes out bold." %>
   <% end %>
 
-  <%= f.fieldset "How the answers are reported", icon: "chart-simple", icon_type: :solid do %>
+  <%= f.fieldset "How the Answers Are Reported", icon: "chart-simple", icon_type: :solid do %>
     <%= f.collection_radio_buttons :type, survey_group_type_options, :last, :first,
                                    { label: "Group Type", required: true } %>
 
@@ -24,7 +24,7 @@
   <% end %>
 
   <%= button_row do %>
-    <%= f.submit @group.persisted? ? "Save Group" : "Add Group" %>
+    <%= f.submit "Save Group" %>
     <%= cancel_link communication_survey_path(@survey, group: @group.id) %>
     <% if @group.persisted? %>
       <%= delete_button communication_survey_group_path(@survey, @group), "Delete Group",

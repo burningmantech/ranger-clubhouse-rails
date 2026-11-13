@@ -92,7 +92,7 @@
               <%= t.row_header do %><%= person_display_link person, person.id %><% end %>
               <%= t.cell do %><%= person_status_badge person.status %><% end %>
               <%= t.cell value_or_dash(person.lms_username) %>
-              <%= t.cell online_course_progress_time(poc.enrolled_at, tag.i("— direct enrollment —")) %>
+              <%= t.cell online_course_progress_time(poc.enrolled_at, tag.span("Direct enrollment", class: "text-stone-muted")) %>
               <%= t.cell online_course_progress_time(poc.completed_at) %>
             <% end %>
           <% end %>

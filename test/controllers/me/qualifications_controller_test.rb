@@ -95,7 +95,7 @@ class Me::QualificationsControllerTest < ActionDispatch::IntegrationTest
       assert_select "a.btn-primary[href=?]", me_available_sign_up_path, text: /View Available Sign-Ups/
     end
     assert_select "article#qualifications-important[class~='border-warning/30']",
-                  text: /Important: Read Before Checking Your Progress/
+                  text: /Important: Items Are Non-Transferable/
   end
 
   test "with every goal earned the card says so, offers no sign-ups, and every section is earned" do

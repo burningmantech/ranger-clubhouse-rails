@@ -94,7 +94,7 @@ class Admin::BugReportsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     # Not "Other · Other", which is what the parser makes of nothing.
-    assert_select "td[data-label=Browser]", text: "-"
+    assert_select "td[data-label=Browser]", text: "—"
   end
 
   test "a log longer than one page says how much of it is showing" do

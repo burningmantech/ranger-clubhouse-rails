@@ -2,19 +2,12 @@
 <%
   is_read = announcement.has_read
   is_expired = announcement.expired?
-
-  # Card styling based on read status
-  if is_expired
-    card_classes = "bg-base-200 border border-base-300 opacity-60"
-  else
-    card_classes = "bg-base-200 border border-base-300"
-  end
 %>
 <%# Not a Turbo Frame. Mark as Read answers with a stream that replaces this by
     its id, which any element has. A frame would also take over the links in the
     message: one that points at another Clubhouse page asks that page for the
     frame, finds none, and the reader gets an error instead of the page. %>
-<%= tag.div id: dom_id(announcement), class: "rounded-lg p-4 mb-3 #{card_classes}", role: "article" do %>
+<%= ui_card id: dom_id(announcement), class: class_names("p-4 mb-3", "opacity-60": is_expired), role: "article" do %>
   <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 mb-2">
     <div class="flex-center-gap-2">
       <% if is_expired %>
@@ -24,9 +17,9 @@
       <% else %>
         <%= fa_icon "bell", :solid, class: "icon-warning", fixed: true %>
       <% end %>
-      <h3 class="heading-title <%= is_read ? 'text-body' : 'text-heading' %>">
+      <h2 class="heading-title <%= is_read ? 'text-body' : 'text-heading' %>">
         <%= announcement.subject %>
-      </h3>
+      </h2>
     </div>
     <%# Status indicator with icon + color + text (WCAG compliant) %>
     <div class="shrink-0">

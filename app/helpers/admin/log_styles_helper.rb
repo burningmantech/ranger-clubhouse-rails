@@ -8,7 +8,7 @@ module Admin
     # The ink a log cell and the text inside it share. Alignment and wrapping
     # stay with the caller: a cell in the Clubhouse 1 log aligns to the top
     # where the others centre, and only some columns refuse to wrap.
-    LOG_TEXT = "text-sm leading-snug text-body"
+    LOG_TEXT = "text-base leading-snug text-body"
 
     # The label above a block in an expanded detail row -- "Metadata", "Data",
     # "What was sent".

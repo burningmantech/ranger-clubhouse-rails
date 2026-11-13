@@ -134,7 +134,7 @@ class Timesheets::TimesheetSlotRepairControllerTest < ActionDispatch::Integratio
     get timesheets_timesheet_slot_repair_path(year: YEAR)
 
     assert_response :success
-    assert_select "button[data-turbo-confirm*=?]", "turbo-confirm-button"
+    assert_select "input[type=submit][data-turbo-confirm*=?]", "turbo-confirm-button"
   end
 
   test "reading the page changes nothing" do

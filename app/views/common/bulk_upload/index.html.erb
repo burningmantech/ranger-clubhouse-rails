@@ -54,8 +54,7 @@
 
   <%= f.select :bulk_action,
                bulk_upload_action_options(bulk_actions, params[:bulk_action]),
-               { label: config[:action_label], required: true, prompt: config[:action_prompt] },
-               { class: "w-full sm:w-96" } %>
+               { label: config[:action_label], required: true, prompt: config[:action_prompt], width: "w-full sm:w-96" } %>
 
   <%= f.text_area :records, label: config[:records_label], required: true,
                   value: params[:records], rows: 10,

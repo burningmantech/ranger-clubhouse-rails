@@ -6,6 +6,9 @@
 <% by_trainer = summary.trainers.present? %>
 <% rows = by_trainer ? summary.trainers : summary.slots %>
 
+<% if rows.blank? %>
+  <%= ui_empty_state "No one gave a rating.", icon: "star", icon_type: :regular %>
+<% else %>
 <%= ui_table full_width: true, striped: true do |t| %>
   <%= t.header do %>
     <%= t.heading by_trainer ? survey_subject_label(@survey) : "Session" %>
@@ -33,4 +36,5 @@
       <% end %>
     <% end %>
   <% end %>
+<% end %>
 <% end %>

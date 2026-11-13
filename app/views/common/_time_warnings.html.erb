@@ -9,10 +9,10 @@
         <li>
           The <%= label %> time <%= datetime_format time %>
           <% if status == "before-begins" %>
-            <span class="text-error font-semibold">is BEFORE the very first shift of the event</span>
+            <strong>is before the very first shift of the event</strong>
             starting on <%= datetime_format warnings.begins %>.
           <% else %>
-            <span class="text-error font-semibold">is AFTER the very last shift of the event</span>
+            <strong>is after the very last shift of the event</strong>
             ending on <%= datetime_format warnings.ends %>.
           <% end %>
         </li>

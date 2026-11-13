@@ -79,6 +79,9 @@ class Person::PermissionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "input[type=checkbox]#role-#{Role::TRAINER}[checked]"
     assert_select "input[type=checkbox]#role-#{Role::ADMIN}:not([checked])"
+    assert_select "label[for=role-#{Role::TRAINER}] > input[name=?][value=?]",
+                  "person_permission_form[role_ids][]", Role::TRAINER.to_s
+    assert_select "input[type=hidden][name=?]", "person_permission_form[role_ids][]", count: 1
   end
 
   test "tech ninja checkbox is disabled for a non tech ninja editor" do

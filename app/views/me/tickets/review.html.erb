@@ -42,7 +42,7 @@
       <% end %>
     </ul>
   <% else %>
-    <p class="text-body"><strong>Nothing claimed.</strong> You're not using any ticketing items this year.</p>
+    <%= ui_empty_state do %><strong>Nothing claimed.</strong> You're not using any ticketing items this year.<% end %>
   <% end %>
 
   <% if presenter.has_paid_items? %>
@@ -86,7 +86,7 @@
     All set? <strong>Confirming records your choices</strong> so the Ranger Ticketing Team knows you're done.
     You can still come back and adjust anything before the deadline.
   </p>
-  <%= button_link "Confirm My Choices", :success, me_tickets_finish_path, method: :post,
+  <%= button_link "Confirm My Choices", :primary, me_tickets_finish_path, method: :post,
                   size: "lg", icon: "check", icon_type: :solid %>
 <% end %>
 

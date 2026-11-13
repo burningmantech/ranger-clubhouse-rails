@@ -1,0 +1,91 @@
+R12905 || FIXED || app/helpers/intake_helper.rb:210 || "no alpha sign-up" is now a :secondary ui_badge like every other state of mentee_status_badge.
+R12747 || FIXED || app/views/mentoring/alpha_acceptance_sheets/index.html.erb:111 || Training and Mentor Shift cells print "—" in place of muted "None" (111, 120).
+R12750 || FIXED || app/views/mentoring/alpha_acceptance_sheets/print_sheets.html.erb:16 || Inline back block replaced by the area's print nav partial (now takes label:, url:, hint:); back link reads "Alpha Acceptance Sheets".
+F0134 || WAIVED || app/views/mentoring/alpha_acceptance_sheets/print_sheets.html.erb:26 || R10
+F0133 || FIXED || app/views/mentoring/alpha_acceptance_sheets/print_sheets.html.erb:165 || Sign-off headings and legend terms in Title Case ("Mentor Name", "Accept", "Accept w/Reserv.", "Reject"); test updated.
+R12756 || WAIVED || app/views/mentoring/alpha_acceptance_sheets/print_sheets.html.erb:141 || R10
+R12755 || FIXED || app/views/mentoring/alpha_acceptance_sheets/print_sheets.html.erb:212 || Dash-prefixed note lines are now ul.list-bulleted lists in all three notes boxes.
+R12757 || COMPLIANT || app/views/mentoring/alpha_acceptance_sheets/print_sheets.html.erb:227 || EMPTY-01 new wording: a supplementary box may render nothing; the box keeps its min-height for handwriting.
+F0119 || FIXED || app/views/mentoring/alpha_mentor_assignments/index.html.erb:34 || Dropped the title-repeating question; body is three sentences.
+R12849 || FIXED || app/views/mentoring/alpha_mentor_assignments/index.html.erb:41 || Error callout now names the failed rows by callsign (FORM-06 new wording: callout naming failed rows).
+R12854 || FIXED || app/views/mentoring/alpha_mentor_assignments/index.html.erb:154 || "Mark Selected as Passed" and "Print This Sheet" now sit in a button_row.
+F0118 || FIXED || app/views/mentoring/alpha_mentor_assignments/index.html.erb:174 || Pod shift picker has a visible label "Fill Mentors from Shift".
+R12855 || FIXED || app/views/mentoring/alpha_mentor_assignments/index.html.erb:174 || Pod shift picker is f.select :pod_slot_id through the builder.
+F0117 || COMPLIANT || app/views/mentoring/alpha_mentor_assignments/index.html.erb:176 || BTN-07 new wording exempts a toolbar shared with a field; the submit sits beside its select.
+R12857 || FIXED || app/views/mentoring/alpha_mentor_assignments/index.html.erb:213 || Prior years text-xs to text-sm (R4 muted second line); html_safe <br> strings replaced by escaped divs.
+R12861 || FIXED || app/views/mentoring/alpha_mentor_assignments/index.html.erb:223 || No shift sign-up prints "—".
+R12856 || FIXED || app/views/mentoring/alpha_mentor_assignments/index.html.erb:251 || Per-row mentor and result selects are builder f.select (wrapper: false, width:), same names and ids.
+M0305 || FIXED || app/views/mentoring/alpha_mentor_assignments/index.html.erb:260 || Result select is builder f.select; same fix as R12856.
+R12850 || FIXED || app/views/mentoring/alpha_mentor_assignments/index.html.erb:272 || Row error message now carries role="alert".
+R12863 || FIXED || app/views/mentoring/alpha_mentor_assignments/print_sheet.html.erb:9 || Inline copy replaced by the shared print nav partial; back link "Alpha Mentor Assignments".
+R12876 || FIXED || app/views/mentoring/alpha_pods/_pod_card.html.erb:24 || Group divider is "mt-4 pt-3 border-t border-line" with the first: resets kept.
+F0120 || COMPLIANT || app/views/mentoring/alpha_pods/_pod_card.html.erb:33 || BTN-07 new wording exempts a title-row button.
+R12880 || FIXED || app/views/mentoring/alpha_pods/_pod_card.html.erb:41 || Empty group uses ui_empty_state.
+R05388 || FIXED || app/views/mentoring/alpha_pods/_pod_card.html.erb:41 || text-sm gone with the ui_empty_state change.
+R12878 || FIXED || app/views/mentoring/alpha_pods/_pod_card.html.erb:54 || Member links min-h-8 to min-h-9.
+R12882 || FIXED || app/views/mentoring/alpha_pods/_pod_card.html.erb:93 || Dropped variant: :ghost; Delete Pod takes delete_button's default :error.
+R12899 || FIXED || app/views/mentoring/alpha_pods/people/_pool.html.erb:16 || Empty pool message uses ui_empty_state (still nothing when empty is nil, a folded supplementary pool).
+R05412 || FIXED || app/views/mentoring/alpha_pods/people/_pool.html.erb:16 || text-sm gone with the ui_empty_state change.
+M0033 || FIXED || app/views/mentoring/alpha_pods/people/_pool.html.erb:19 || sm:grid-cols-2 to lg:grid-cols-2.
+R12890 || FIXED || app/views/mentoring/alpha_pods/people/edit.html.erb:15 || Lead is f.check_box, pod is f.select with help_text; same param names, select id kept.
+R05418 || FIXED || app/views/mentoring/alpha_pods/people/edit.html.erb:19 || Raw labels gone; the builder labels both fields.
+R12891 || FIXED || app/views/mentoring/alpha_pods/people/edit.html.erb:28 || Divider is "mt-4 pt-3 border-t border-line".
+R05428 || FIXED || app/views/mentoring/alpha_pods/people/edit.html.erb:29 || Walk-order paragraph drops text-sm.
+F0121 || FIXED || app/views/mentoring/alpha_pods/people/edit.html.erb:42 || "Take out of Pod N" to "Remove from Pod N", with confirm_message "Remove X from Pod N? Adding them back undoes it."; header comment updated.
+R12893 || FIXED || app/views/mentoring/alpha_pods/people/new.html.erb:21 || Callout frame removed; the checkbox stands alone as a builder field.
+R05437 || FIXED || app/views/mentoring/alpha_pods/people/new.html.erb:21 || check_box_tag replaced by f.check_box :is_lead.
+R05446 || FIXED || app/views/mentoring/alpha_pods/people/new.html.erb:44 || Not Checked In explanation drops text-sm.
+R12883 || WAIVED || app/views/mentoring/alpha_pods/print_sheet.html.erb:18 || R10
+R05448 || FIXED || app/views/mentoring/alpha_pods/print_sheet.html.erb:25 || Page counter colour #444 to var(--color-body) (print layout pins the light theme).
+R12884 || FIXED || app/views/mentoring/alpha_pods/print_sheet.html.erb:33 || Inline copy replaced by the shared print nav partial with its landscape hint.
+R05462 || WAIVED || app/views/mentoring/alpha_pods/print_sheet.html.erb:60 || R10
+R12886 || WAIVED || app/views/mentoring/alpha_pods/print_sheet.html.erb:64 || R10
+R12888 || WAIVED || app/views/mentoring/alpha_pods/print_sheet.html.erb:81 || R10
+F0122 || WAIVED || app/views/mentoring/alpha_pods/print_sheet.html.erb:103 || R10
+R12889 || FIXED || app/views/mentoring/alpha_pods/unavailable.html.erb:11 || Paragraph drops text-sm.
+R12802 || COMPLIANT || app/views/mentoring/alpha_schedule/_print_screen_nav.html.erb:5 || HERO-04 new wording: print sheets use the area's print nav; this is it (now shared by all six Mentoring sheets).
+R12811 || WAIVED || app/views/mentoring/alpha_schedule/apparel.html.erb:23 || R10
+R12809 || WAIVED || app/views/mentoring/alpha_schedule/apparel.html.erb:30 || R10
+M0468 || WAIVED || app/views/mentoring/alpha_schedule/apparel.html.erb:75 || R10
+R12810 || WAIVED || app/views/mentoring/alpha_schedule/apparel.html.erb:85 || R10
+R12813 || WAIVED || app/views/mentoring/alpha_schedule/info_sheet.html.erb:18 || R10
+R05516 || FIXED || app/views/mentoring/alpha_schedule/info_sheet.html.erb:24 || Page counter colour #444 to var(--color-body).
+R05535 || WAIVED || app/views/mentoring/alpha_schedule/info_sheet.html.erb:44 || R10
+R12817 || WAIVED || app/views/mentoring/alpha_schedule/info_sheet.html.erb:89 || R10
+R12816 || WAIVED || app/views/mentoring/alpha_schedule/info_sheet.html.erb:101 || R10
+R12818 || FIXED || app/views/mentoring/alpha_schedule/info_sheet.html.erb:123 || Mentor note lines are a ul.list-bulleted; "source : note" reads "source: note".
+R12820 || FIXED || app/views/mentoring/alpha_schedule/rosters/_dialog.html.erb:15 || Search is f.text_field :q with builder label "Callsign, Name, or Email".
+F0126 || COMPLIANT || app/views/mentoring/alpha_schedule/rosters/_dialog.html.erb:17 || BTN-07 new wording exempts a toolbar shared with a field.
+F0127 || FIXED || app/views/mentoring/alpha_schedule/rosters/_dialog.html.erb:46 || Per-row "Add X" buttons are :secondary; Search stays the form's one primary (R7).
+R12824 || COMPLIANT || app/views/mentoring/alpha_schedule/rosters/_dialog.html.erb:49 || EMPTY-02 new wording: a fact word is a value, plain or muted.
+R05572 || FIXED || app/views/mentoring/alpha_schedule/rosters/_dialog.html.erb:49 || "Not an Alpha or Prospective" drops text-sm.
+R12822 || FIXED || app/views/mentoring/alpha_schedule/rosters/_dialog.html.erb:57 || No match is a ui_empty_state, not error-coloured text.
+R12823 || FIXED || app/views/mentoring/alpha_schedule/rosters/_dialog.html.erb:60 || Too-short query is reported in an :error callout with role="alert".
+R05592 || FIXED || app/views/mentoring/alpha_schedule/show.html.erb:82 || Flag year text-xs to text-sm (R4 second line under the callsign).
+R12799 || FIXED || app/views/mentoring/alpha_schedule/show.html.erb:101 || No training prints "—".
+F0123 || FIXED || app/views/mentoring/alpha_schedule/show.html.erb:104 || Training lines drop text-sm (a cell's main text).
+F0124 || FIXED || app/views/mentoring/alpha_schedule/show.html.erb:112 || "Remove" to "Remove from Shift".
+F0125 || FIXED || app/views/mentoring/alpha_schedule/show.html.erb:116 || Confirm adds "They can be added back."
+R12807 || WAIVED || app/views/mentoring/alpha_schedule/signup_sheet.html.erb:28 || R10
+R12804 || WAIVED || app/views/mentoring/alpha_schedule/signup_sheet.html.erb:30 || R10
+R05593 || FIXED || app/views/mentoring/alpha_schedule/signup_sheet.html.erb:48 || Literal ⚑ replaced by fa_icon "flag" with label "Flagged", as the information sheet does.
+R12840 || WAIVED || app/views/mentoring/alpha_signout/index.html.erb:97 || approved exception 2026-11-12: red live-data banner is approved
+F0128 || FIXED || app/views/mentoring/alpha_signout/index.html.erb:102 || Chosen-shift callout :success to :info (neutral information).
+R05633 || FIXED || app/views/mentoring/alpha_signout/index.html.erb:162 || Sign-out confirm_modal_dialog passes variant: :error.
+R12763 || FIXED || app/views/mentoring/alpha_status/index.html.erb:97 || Empty section uses ui_empty_state.
+R12837 || COMPLIANT || app/views/mentoring/alphas_convert/_section.html.erb:65 || EMPTY-02 new wording: "No mentor on record" is a fact, muted plain.
+R05682 || FIXED || app/views/mentoring/alphas_convert/index.html.erb:105 || Bonk confirm passes variant: :error and says this page cannot undo it.
+F0132 || FIXED || app/views/mentoring/alphas_convert/index.html.erb:76 || Section title "N Shiny Penny Candidates"; test updated.
+R12779 || COMPLIANT || app/views/mentoring/convert_prospectives/index.html.erb:115 || R4: a muted second line under a cell's main value may be text-sm; status and FKA lines are that.
+R12780 || COMPLIANT || app/views/mentoring/convert_prospectives/index.html.erb:145 || EMPTY-02 new wording: "Nothing raised" is a fact, muted plain.
+R05718 || FIXED || app/views/mentoring/convert_prospectives/index.html.erb:175 || Confirm adds "This page cannot undo it."
+R12772 || COMPLIANT || app/views/mentoring/post_season_summary/_list_extra.html.erb:6 || TYPE-03 new wording allows text-sm for a list line's metadata.
+R05731 || COMPLIANT || app/views/mentoring/post_season_summary/_list_extra.html.erb:6 || TYPE-03 new wording allows text-sm for a list line's metadata.
+R12768 || FIXED || app/views/mentoring/post_season_summary/index.html.erb:100 || Empty section uses ui_empty_state.
+R12485 || FIXED || app/views/mentoring/potential_alphas/index.html.erb:84 || Empty cohort section uses ui_empty_state.
+R12790 || FIXED || app/views/mentoring/shift_report/_group_positions.html.erb:8 || All three empty cases use ui_empty_state (8, 12, 26).
+F0131 || FIXED || app/views/mentoring/shift_report/index.html.erb:30 || "Currently On Duty" to "Currently on Duty" (button and empty-state copy).
+R12787 || WAIVED || app/views/mentoring/shift_report/index.html.erb:54 || approved exception 2026-11-12: red live-data banner is approved
+F0129 || FIXED || app/views/mentoring/shift_report/index.html.erb:59 || Scheduled-shift callout :success to :info.
+F0130 || FIXED || app/views/mentoring/shift_report/index.html.erb:92 || Counting window moved from the banner into the About This Report card (scheduled mode only).
+R12829 || FIXED || app/views/mentoring/surveys/index.html.erb:25 || Section badge is a bare count in :secondary, like sibling sections.

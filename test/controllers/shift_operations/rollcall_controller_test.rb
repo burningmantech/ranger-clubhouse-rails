@@ -223,7 +223,7 @@ class ShiftOperations::RollcallControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal Mime[:turbo_stream], response.media_type
     assert_select "turbo-stream[action=update][target=modal]"
-    assert_select "turbo-stream[target=modal] template", /Check In Is Blocked/
+    assert_select "turbo-stream[target=modal] template", /Check-In Is Blocked/
     # No force affordance on this page, for anyone.
     assert_select "turbo-stream[target=modal] template textarea[name=?]",
                   "signin_force_reason", count: 0
@@ -437,6 +437,21 @@ class ShiftOperations::RollcallControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "#rollcall-set-time-modal"
     assert_select "input[type=time][name=start_time]"
+  end
+
+  test "the set time button opens its dialog in the modal frame, without the roster" do
+    get shift_operations_rollcall_sign_in_path(position_id: @position.id, slot_id: @slot.id)
+
+    assert_select "a[data-turbo-frame=modal][href=?]",
+                  shift_operations_rollcall_sign_in_path(position_id: @position.id, slot_id: @slot.id, set_time: 1),
+                  text: /Set Check-In Time/
+
+    get shift_operations_rollcall_sign_in_path(position_id: @position.id, slot_id: @slot.id, set_time: 1),
+        headers: { "Turbo-Frame" => "modal" }
+
+    assert_response :success
+    assert_select "turbo-frame#modal #rollcall-set-time-modal input[type=time][name=start_time]"
+    assert_select "#rollcall-count", 0
   end
 
   # The set time has to survive a row that passes through a sign-out, or the

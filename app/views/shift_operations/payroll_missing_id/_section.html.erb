@@ -5,7 +5,7 @@
   question was never asked. No Paycom ID column -- every row in a half holds the
   same value, and the heading already says which.
 %>
-<%= ui_section title, id:, badge: rows.size.to_s, border: false do %>
+<%= ui_section title, id:, badge: rows.size.to_s do %>
   <% if rows.any? %>
     <%= ui_table full_width: true, striped: true do |t| %>
       <%= t.header do %>

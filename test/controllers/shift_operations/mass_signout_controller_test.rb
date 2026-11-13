@@ -107,7 +107,7 @@ class ShiftOperations::MassSignoutControllerTest < ActionDispatch::IntegrationTe
     get shift_operations_mass_signout_path
 
     assert_select "input[type=submit][data-checkbox-select-all-target=submit]"
-    assert_select "input[type=submit][data-turbo-confirm*=?]", "Confirm Mass Sign-Out"
+    assert_select "input[type=submit][data-turbo-confirm*=?]", "Sign Out Selected Rangers"
     assert_select "[data-controller=checkbox-select-all] [data-checkbox-select-all-target=toggle]"
   end
 

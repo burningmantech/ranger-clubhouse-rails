@@ -33,14 +33,14 @@
 
 <%= ui_form(@mail_template, communication_mail_template_path(@mail_template)) do |f| %>
   <% unless @mail_template.shared_piece? %>
-    <%= f.fieldset "Subject line", icon: "tag", icon_type: :solid do %>
+    <%= f.fieldset "Subject Line", icon: "tag", icon_type: :solid do %>
       <%= f.text_field :subject, label: "Subject", required: true,
                        maxlength: MailTemplate::SUBJECT_COLUMN_LIMIT, width: "w-full",
                        help_text: "What the reader sees before opening the message." %>
     <% end %>
   <% end %>
 
-  <%= f.fieldset "Template text", icon: "file-lines", icon_type: :solid do %>
+  <%= f.fieldset "Template Text", icon: "file-lines", icon_type: :solid do %>
     <dl class="instruction-list mb-3">
       <dt>Why is this HTML and not a text editor?</dt>
       <dd>

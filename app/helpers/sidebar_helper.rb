@@ -13,7 +13,6 @@ module SidebarHelper
   # Sidebar utility class references
   SIDEBAR_NAV_ITEM = "sidebar-nav-item"
   SIDEBAR_SECTION_HEADER = "sidebar-section-header"
-  SIDEBAR_BADGE = "sidebar-badge"
 
   # Theme configuration hash - colors from old_sidebar.scss
   THEME_CONFIGS = {
@@ -37,19 +36,10 @@ module SidebarHelper
     }
   }.freeze
 
-  # Badge variant color configurations
-  SIDEBAR_BADGE_VARIANTS = {
-    error: "text-error bg-error/10 border border-error/30",
-    success: "text-success bg-success/10 border border-success/30",
-    warning: "text-warning bg-warning/10 border border-warning/30",
-    info: "bg-primary/10 border border-primary/30",
-    default: "text-neutral-content bg-neutral border border-neutral-content/30"
-  }.freeze
-
   # DaisyUI drawer-based sidebar menu
   # Options:
   #   :id - drawer id (default: 'sidebar-drawer')
-  #   :width - drawer width class (default: 'w-65 lg:w-55')
+  #   :width - drawer width class (default: 'w-65 lg:w-50')
   #
   # Theme options: 'me' (person theme), 'admin' (hq theme), 'default'
   def sidebar_menu(theme = "me", id: "sidebar-drawer", width: "w-65 lg:w-50", **_options, &block)
@@ -115,19 +105,16 @@ module SidebarHelper
     safe_join([header, content])
   end
 
-  # Submenu title with theme-aware styling
-  def sidebar_submenu(title, icon: nil, icon_type: "regular", theme: "me")
-    tag.div(
-      class: section_header_classes(theme),
-      "aria-expanded": "false"
-    ) do
-      render_icon_with_title(title, icon, icon_type, title_class: "flex-1", icon_class: "shrink-0 w-5 h-5 me-2")
+  # Submenu title with theme-aware styling. A grouping title, not a disclosure:
+  # nothing opens or closes it.
+  def sidebar_submenu(title, theme: "me")
+    tag.div(class: section_header_classes(theme)) do
+      tag.span(title, class: "flex-1")
     end
   end
 
   # Individual sidebar navigation item
-  def sidebar_item(title, url, icon: nil, icon_type: "regular", badge: nil, badge_variant: :error,
-                   use_turbo: false, active: nil, active_prefix: false, theme: "me", root: false, **html_options)
+  def sidebar_item(title, url, active: nil, active_prefix: false, theme: "me", root: false, **html_options)
     item_classes = sidebar_item_theme_classes(theme)
     html_options[:class] = class_names(SIDEBAR_NAV_ITEM, item_classes, html_options[:class])
     item_is_active = active.nil? ? menu_item_active?(url, root:, active_prefix:) : active
@@ -151,20 +138,7 @@ module SidebarHelper
 
     html_options[:class] = class_names(html_options[:class], "no-decoration", active: item_is_active)
 
-    if use_turbo
-      html_options[:data] ||= {}
-      html_options[:data][:action] = "click->stream-nav#follow"
-    end
-
     link_to title, url, html_options
-  end
-
-  # Sidebar item as list element (for use within sidebar_submenu)
-  def sidebar_submenu_item(title, url, **options)
-    options[:class] = class_names("pl-4", options[:class])
-    tag.li do
-      sidebar_item(title, url, **options)
-    end
   end
 
   # Render menu for sidebar using hash-based menu definitions
@@ -234,32 +208,5 @@ module SidebarHelper
   # Theme-specific item/link colors
   def sidebar_item_theme_classes(theme)
     theme_colors(theme)[:item]
-  end
-
-  # Generate badge for sidebar items
-  def sidebar_badge(text, variant)
-    variant_class = SIDEBAR_BADGE_VARIANTS[variant] || SIDEBAR_BADGE_VARIANTS[:default]
-    tag.span(text, class: class_names(SIDEBAR_BADGE, variant_class))
-  end
-
-  # Render icon with title
-  def render_icon_with_title(title, icon_name, icon_type, title_class:, icon_class: "inline-block w-5 h-5 mr-2")
-    if icon_name
-      safe_join([fa_icon(icon_name, icon_type, class: icon_class), tag.span(title, class: title_class)])
-    else
-      tag.span(title, class: title_class)
-    end
-  end
-
-  # Render sidebar item content (icon, title, badge)
-  def render_sidebar_content(title, icon_name, icon_type, badge_text, badge_variant)
-    content = render_icon_with_title(title, icon_name, icon_type,
-                                     title_class: "flex-1 whitespace-nowrap hover:underline")
-
-    if badge_text
-      safe_join([content, sidebar_badge(badge_text, badge_variant)])
-    else
-      content
-    end
   end
 end

@@ -108,7 +108,7 @@
                 <%= t.cell person.desired_full_name %>
                 <%= t.cell do %>
                   <% if entry.trainings.empty? %>
-                    <span class="text-stone-muted">None</span>
+                    &mdash;
                   <% else %>
                     <% entry.trainings.each do |training| %>
                       <div><%= alpha_acceptance_training_label(training) %></div>
@@ -117,7 +117,7 @@
                 <% end %>
                 <%= t.cell do %>
                   <% if entry.alpha_slots.empty? %>
-                    <span class="text-stone-muted">None</span>
+                    &mdash;
                   <% else %>
                     <% entry.alpha_slots.each do |slot| %>
                       <div><%= alpha_acceptance_slot_label(slot) %></div>

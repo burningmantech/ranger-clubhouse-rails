@@ -51,7 +51,7 @@
   <%= render "consequence", batch: @batch %>
 <% end %>
 
-<%= ui_section "Every Line You Entered", icon: "list-check", icon_type: :solid, border: false do %>
+<%= ui_section "Every Line You Entered", icon: "list-check", icon_type: :solid do %>
   <%= ui_table full_width: true, striped: true do |t| %>
     <%= t.header do %>
       <%= t.heading "Callsign" %>
@@ -96,8 +96,8 @@
       <%= f.submit bulk_upload_confirm_label(@batch), variant: :success,
                    data: {
                      turbo_confirm: confirm_modal_dialog(
-                       title: "Final Confirmation",
-                       message: bulk_upload_consequence(@batch),
+                       title: "#{@batch.action.label} for #{pluralize(@batch.changing.size, "person")}?",
+                       message: "#{bulk_upload_consequence(@batch)} There is no undo: each change is reversed by hand.",
                        confirm_label: bulk_upload_confirm_label(@batch)
                      )
                    } %>

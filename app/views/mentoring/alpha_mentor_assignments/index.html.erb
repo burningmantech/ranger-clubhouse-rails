@@ -31,16 +31,18 @@
 
   <% if @confirm_bonks %>
     <%= ui_callout_box :warning, accent: true, title: "No Bonks on This Sheet" do %>
-      No bonks on this sheet? You are passing <%= pluralize(@passed_count, "Alpha") %> and bonking no one. If that is right, use
-      <strong>Save, No Bonks</strong> at the bottom of the sheet. If it is not, change the results first.
+      You are passing <%= pluralize(@passed_count, "Alpha") %> and bonking no one. If that is right, use
+      <strong>Save, No Bonks</strong> at the bottom of the sheet; if not, change the results first.
       Nothing has been recorded yet.
     <% end %>
   <% end %>
 
   <% if @result && !@result.ok? %>
     <%= ui_callout_box :error, accent: true, title: "Nothing Was Recorded" do %>
+      <% failed = @entries.filter_map { |entry| entry.person.callsign if @result.row_errors.key?(entry.person.id) } %>
       <%= pluralize(@result.row_errors.size, "row") %> below still <%= @result.row_errors.one? ? "needs" : "need" %>
-      fixing. The whole sheet is saved together, so no part of it was written.
+      fixing<% if failed.any? %>: <%= failed.to_sentence %><% end %>. The whole sheet is saved together, so no part
+      of it was written.
     <% end %>
   <% end %>
 
@@ -149,14 +151,14 @@
       <%= bulk_select do %>
         <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
           <%= bulk_select_all label: "Select every Alpha listed" %>
-          <div class="flex flex-wrap items-center gap-2">
+          <%= button_row do %>
             <%= button_action "Mark Selected as Passed", :secondary,
                               data: { action: "mark-result#apply",
                                       checkbox_select_all_target: "submit" } %>
             <%= button_link "Print This Sheet", :secondary,
                             mentoring_alpha_mentor_assignments_print_path(@filter_params),
                             icon: "print", icon_type: :solid %>
-          </div>
+          <% end %>
         </div>
 
         <%# Second submit target on the same form: the sheet is posted as it
@@ -169,10 +171,9 @@
             look missing, which is how it read before pods were formed. %>
         <% if pod_slots.any? %>
           <div class="flex flex-wrap items-end gap-2 mb-3">
-            <%= select_tag :pod_slot_id,
-                           options_for_select(pod_slots, @prefill_slot&.id),
-                           class: "#{AppFormBuilder::SELECT_CLASSES} w-full lg:w-auto",
-                           aria: { label: "Alpha shift to fill mentors from" } %>
+            <%= f.select :pod_slot_id, options_for_select(pod_slots, @prefill_slot&.id),
+                         { label: "Fill Mentors from Shift", width: "w-full lg:w-auto",
+                           wrapper_class: "w-full lg:w-auto" } %>
             <%= f.submit "Assign Mentors from Pods", variant: :secondary,
                          formaction: mentoring_alpha_mentor_assignments_pod_prefill_path %>
           </div>
@@ -208,17 +209,18 @@
                 <%= t.row_header do %>
                   <%= callsign_link person %>
                   <% if entry.prior_years.any? %>
-                    <span class="block text-xs text-stone-muted">
+                    <div class="text-sm text-stone-muted">
                       Prior:
-                      <%= entry.prior_years.map { |year|
-                            "#{year[:year]} #{mentor_result_label(year[:status]).downcase}<br>#{year[:mentors].to_sentence}".html_safe
-                          }.join("<br>").html_safe %>
-                    </span>
+                      <% entry.prior_years.each do |year| %>
+                        <div><%= year[:year] %> <%= mentor_result_label(year[:status]).downcase %></div>
+                        <div><%= year[:mentors].to_sentence %></div>
+                      <% end %>
+                    </div>
                   <% end %>
                 <% end %>
                 <%= t.cell do %>
                   <% if entry.alpha_slots.empty? %>
-                    <span class="text-stone-muted">None</span>
+                    &mdash;
                   <% else %>
                     <% entry.alpha_slots.each do |slot| %>
                       <div><%= alpha_mentor_slot_label(slot) %></div>
@@ -246,28 +248,28 @@
                     <%# min-w keeps the picked callsign readable: without it the
                         nine columns squeeze every select down to "2Ste". The
                         table scrolls inside its own container below that. %>
-                    <%= select_tag "alphas[#{person.id}][mentor_ids][]",
-                                   mentor_choices(mentor_groups, picked[index]),
-                                   id: "assignment-#{person.id}-mentor-#{index + 1}",
-                                   class: "#{AppFormBuilder::SELECT_CLASSES} w-full min-w-36",
-                                   aria: { label: "Mentor #{index + 1} for #{person.callsign}" } %>
+                    <%= f.select "alphas[#{person.id}][mentor_ids][]",
+                                 mentor_choices(mentor_groups, picked[index]),
+                                 { wrapper: false, width: "w-full min-w-36" },
+                                 { id: "assignment-#{person.id}-mentor-#{index + 1}",
+                                   aria: { label: "Mentor #{index + 1} for #{person.callsign}" } } %>
                   <% end %>
                 <% end %>
 
                 <%= t.cell do %>
-                  <%= select_tag "alphas[#{person.id}][status]",
-                                 options_for_select(mentor_result_options(PersonMentor::ALPHA_STATUSES), status),
-                                 id: "assignment-#{person.id}-result",
-                                 class: "#{AppFormBuilder::SELECT_CLASSES} w-full min-w-32",
+                  <%= f.select "alphas[#{person.id}][status]",
+                               options_for_select(mentor_result_options(PersonMentor::ALPHA_STATUSES), status),
+                               { wrapper: false, width: "w-full min-w-32" },
+                               { id: "assignment-#{person.id}-result",
                                  data: { result_select: true },
-                                 aria: { label: "Result for #{person.callsign}" } %>
+                                 aria: { label: "Result for #{person.callsign}" } } %>
                 <% end %>
               <% end %>
 
               <% if row_error %>
                 <%= t.row id: "assignment-error-#{person.id}", state: :error do %>
                   <%= t.cell colspan: 9 do %>
-                    <span class="text-error font-semibold">
+                    <span class="text-error font-semibold" role="alert">
                       <%= fa_icon "triangle-exclamation", :solid, end: 2 %><%= row_error %>
                     </span>
                   <% end %>

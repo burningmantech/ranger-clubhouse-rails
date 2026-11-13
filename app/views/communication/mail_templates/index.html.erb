@@ -10,7 +10,7 @@
 <% end %>
 
 <% if @mail_templates.any? %>
-  <%= ui_section pluralize(@mail_templates.size, "template"), border: false do %>
+  <%= ui_section pluralize(@mail_templates.size, "Template") do %>
     <p class="mb-3">
       <strong>Pieces shared by several messages are listed too.</strong>
       Those have no subject of their own: they are included wherever they are needed.

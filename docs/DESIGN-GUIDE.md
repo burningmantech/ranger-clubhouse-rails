@@ -168,7 +168,7 @@ creating visual noise.
 | Primary CTAs        | Brand color (Signal Blue)                           | `bg-primary` with `btn-primary`               |
 | Status indicators   | Semantic (green/amber/red) only where status exists | `text-success`, `bg-warning/10`               |
 | Decorative elements | **AVOID** colored decoration                        | No colored borders/backgrounds for aesthetics |
-| Icons               | Neutral unless conveying status                     | `text-stone-muted` or status icon classes     |
+| Icons               | Neutral unless conveying status; the hero's own icon is its gold | `text-stone-muted` or status icon classes |
 
 **AVOID:**
 
@@ -185,7 +185,8 @@ twin. The outline is worn by four things, only two of which are hero panels: `co
 the hero stat tiles, the trophy badge in `common/_trophies.html.erb`, and the dashboard progress badge in
 `ui_progress_box_helper.rb`. That badge's warm gradient is still raw palette on purpose, because turning it
 into a theme-derived mix repaints it. Last is the sidebar's active-item marker, now the
-`sidebar-active` token (`#ffc107`), kept as hex because its oklch does not round-trip bit-exactly. Treat all of it as documented legacy, not as a palette to extend.
+`sidebar-active` token (`#ffc107`), kept as hex because its oklch does not round-trip bit-exactly. Treat all of it as documented legacy, not as a palette to extend. The hero's own look is the one other
+place: its icon gold and its stats' award and flame hues (see [Hero Panels](#hero-panels)).
 
 ---
 
@@ -223,6 +224,10 @@ explicit user confirmation before implementation.
     - Code examples with ERB helper syntax
     - Accessibility considerations
     - Styling details (Tailwind classes, dark mode support)
+
+**Approved one-offs:** the search bar's segmented radio control (`application/_search_bar_placeholder`, `btn`
+classes on radio labels in a `join`) and the profile photo upload's drag-and-drop dropzone (`profile_photos/new`)
+stay as one-off markup. Either becomes a helper on its second use.
 
 **Example approval request:**
 
@@ -330,6 +335,8 @@ implementation: `app/views/training/multiple_enrollments/index.html.erb`.
 ### Hero Panel Description Rule
 
 **CRITICAL**: `panel.description` is **one sentence** saying what the page does. Nothing else.
+The person page's hero (`person/_hero`) is the one exception: it is an identity strip, and its description
+holds the person's status, vintage and site badges, name, pronouns and callsign pronunciation instead of a sentence.
 
 The hero is the page's first fixation and is size-constrained on mobile; a paragraph there pushes the actual content
 below the fold. Background, caveats, eligibility rules, and especially step-by-step instructions go in the main
@@ -357,7 +364,9 @@ how far back a log or a history goes is said again by its empty state. An icon w
 says its meaning itself: `fa_icon … label:` gives it a tooltip and a screen-reader sentence, and the legend's pair
 carries the label's own words; a `title:` on a heading or a figure is said in the card too. On a page the reader
 operates, a sentence joins a visible list, callout or section that fits, and a consequence of the page's action stays
-visible as a callout beside the action. The Hero Panels component section has the snippet;
+visible as a callout beside the action. A form page may keep the Q&A that explains its form open, in a `ui_section`
+above the form, and the steps of one action may sit in an info callout beside it. The Hero Panels component section
+has the snippet;
 `test/views/hero_description_test.rb` guards the one-sentence rule.
 
 ### Styling Mechanism
@@ -367,7 +376,11 @@ visible as a callout beside the action. The Hero Panels component section has th
 - Custom CSS lives in `app/assets/stylesheets/components/<component>.css`, one component per file, imported from
   `components.css` or `utilities.css`
 - Extract an `@utility` only when the same 3+ classes recur in 3+ places (see Custom Utility Classes)
-- No inline `style=` attributes, no scoped or per-view CSS, no CSS outside `components/`
+- No inline `style=` attributes, no scoped or per-view CSS, no CSS outside `components/`. Three things are not
+  exceptions to this: element base styles live in `base.css`; a component only one page uses still gets its own
+  `components/<name>.css`; and a computed number travels as a CSS custom property, which a helper or a Stimulus
+  controller may set in `style=` (`--button-row-controls`, `--dropdown-fit-shift`)
+- No arbitrary value (`p-[13px]`, `min-w-[1.5rem]`) without a comment at the call site giving the reason
 - A new component or colour treatment still needs approval first, whether built from utilities or a component file
 
 ---
@@ -400,6 +413,7 @@ semantic token exists (e.g., `text-body`).
 | `bg-base-100`   | Primary card and panel surfaces | Warm off-white    | Deep neutral      |
 | `bg-base-200`   | Secondary/selected surfaces     | Light neutral     | Raised neutral    |
 | `bg-base-300`   | Form fills and progress tracks  | Mid neutral       | Strong neutral    |
+| `bg-paper`, `print:bg-paper` | Print surfaces only (`--color-paper`): the one place a page is white whatever the theme | White | White |
 | `bg-primary`    | Brand emphasis and CTAs         | Brand tone        | Brand tone        |
 | `bg-primary/10` | Soft brand emphasis             | Subtle brand tint | Subtle brand tint |
 | `bg-success`    | Success state                   | Green             | Green             |
@@ -482,9 +496,10 @@ spacing with padding, not leading.
 - Button size variants (`btn-xs`)
 - Badges (`ui_badge` defaults to `text-xs`; pass `size:` where a badge sits in a headline)
 - Mobile-only labels in responsive tables
-- Icon sizing within links
+- Icon sizing (an icon beside text)
 - Decorative/non-essential footer text
 - Progress bar labels inside the bar element
+- Keyboard-shortcut hints (`<kbd>` chips, the autocomplete's key-help footer), which repeat what a control already does
 
 **CRITICAL - Never use `text-xs` for:**
 
@@ -505,15 +520,16 @@ spacing with padding, not leading.
 - Button size variants (`btn-sm`)
 - Status badges and pills
 - Form help text and error messages (secondary/supporting info)
-- Metadata (timestamps, "Posted by", etc.)
-- Fine print or legal text
+- Metadata (timestamps, "Posted by", etc.), including the state words on a review or list line
+- Fine print or legal text, a footnote marker, a caption inside an image placeholder ("No Photo")
+- A muted second line under a table cell's or a card's main value
 
 **CRITICAL - Never use `text-sm` for:**
 
 - Body text or main content
-- Table content (use `text-base`)
-- Tab labels
-- Form labels
+- A table cell's main value (use `text-base`)
+- Tab labels, and the summary label of a disclosure or accordion
+- Form labels, and the labels and values of a label/value display (`ui_label_value`)
 - Primary information in cards
 - Empty state messages
 - Paragraph content
@@ -524,7 +540,7 @@ spacing with padding, not leading.
 |-----------------|--------|-------------------------|
 | `font-normal`   | 400    | Body text               |
 | `font-medium`   | 500    | Labels, slight emphasis |
-| `font-semibold` | 600    | Headings, buttons       |
+| `font-semibold` | 600    | Headings, buttons, a total row or grand-total cell |
 | `font-bold`     | 700    | Strong emphasis         |
 
 #### Heading Levels
@@ -532,6 +548,9 @@ spacing with padding, not leading.
 One style per level, one utility each (`components/headings.css`): `<h2>` takes `heading-section`
 (`text-base lg:text-lg font-semibold`, the `ui_section` title's); `<h3>` and `<h4>` take
 `heading-title` (`text-base font-semibold`). Nothing inside a section outweighs its title.
+Inside the app shell the `<h1>` is the hero's (`hero_panel heading_level: :h1`); a page outside it
+(sign-in, a print sheet, a kiosk page, the test harness) styles its own `<h1>` from its own
+stylesheet or masthead.
 The full rule and its exemptions are in `design-foundations` > Heading Levels.
 
 ### Spacing
@@ -546,11 +565,11 @@ Follow Tailwind spacing conventions consistently:
 | `6`   | 1.5rem  | Section spacing                |
 | `8`   | 2rem    | Large section spacing          |
 
-**Common patterns:**
+**Defaults** (any other value comes from the same scale, never an arbitrary one without a comment):
 
-- Card padding: `p-4` or `p-2 lg:p-4`
+- Card padding: `p-4` or `p-2 lg:p-4`; `p-3` for a dense card repeated in a list or grid
 - Section margin: `mb-4`
-- Button row gaps: `gap-2` or `gap-4`
+- Button row gaps: the row's own (`button_row`); never a `gap-*` passed to it
 - Form field spacing: `mb-3` (the builder's wrapper)
 
 **Lists:** a bulleted list is `list-bulleted`, a numbered one `list-numbered`
@@ -565,7 +584,8 @@ writes nothing else for the inline-start side:
 Never `list-disc` or `list-decimal` on their own, never a numeric indent (`ms-5`, `pl-4`) and
 never `list-inside`: the marker hangs outside, so a wrapped line lines up with the text, and
 the gutter scales with the list's type size. Rich text (`lexxy-content`) indents by the same
-token. Guarded by `test/views/list_indent_test.rb`.
+token. Guarded by `test/views/list_indent_test.rb`. Lines that each start with a typed marker
+(`—`, `•`, `*`) are a list: write the `<ul>`, not the marker.
 
 ### Touch Targets
 
@@ -585,11 +605,12 @@ token. Guarded by `test/views/list_indent_test.rb`.
 
 | Class          | Value   | Usage                       |
 |----------------|---------|-----------------------------|
-| `rounded-base` | 12px    | Buttons, inputs             |
+| `rounded-field` | 8px    | Buttons, inputs, selects: daisyUI draws every `btn` and `input` at `--radius-field` (0.5rem) |
+| `rounded-base` | 12px    | Cards (`card-standard` is daisyUI's `--radius-box`, the same 12px) |
 | `rounded-lg`   | 16px    | Modals, panels not cards    |
 | `rounded-xl`   | 12px    | Alias of `rounded-base`     |
-| `rounded-2xl`  | 16px    | Alias of `rounded-lg`       |
-| `rounded-full` | 9999px  | Badges, avatars, pills      |
+| `rounded-2xl`  | 16px    | Alias of `rounded-lg`; a full profile photo (`photo_tag`) |
+| `rounded-full` | 9999px  | Badges, small avatars, pills |
 
 ### Shadows
 
@@ -598,7 +619,7 @@ token. Guarded by `test/views/list_indent_test.rb`.
 | `shadow-xs` | Cards, subtle elevation |
 | `shadow-sm` | Buttons, dropdowns      |
 | `shadow-md` | Modals, overlays        |
-| `shadow-lg` | Popovers, menus         |
+| `shadow-lg` | Popovers, menus; a pinned bar that content scrolls beneath (the HQ window's checklist strip) |
 | `shadow-xl` | Prominent overlays      |
 
 **Custom shadow (hero panels):**
@@ -607,8 +628,9 @@ token. Guarded by `test/views/list_indent_test.rb`.
 shadow-[0px_0px_6px_4px_rgba(0,0,0,0.1)]
 ```
 
-**Flat by default** (DESIGN.md): a new component gets no shadow. Region lift belongs to `.box` and the hero panel;
-hover is a colour change, never a lift.
+**Flat by default** (DESIGN.md): a new component gets no shadow. Region lift belongs to `.box`, the hero panel and
+`ui_card`'s default `shadow-xs`; a panel that floats over the page (a popover, a dropdown, a menu) casts the shadow
+the table gives it. Hover is a colour change, never a lift.
 
 ### Custom Utility Classes
 
@@ -645,11 +667,10 @@ Those four are the only `icon-*` utilities that exist (see
 <div class="inline-flex-center-gap-2">Badge content</div>
 ```
 
-**Maps to:**
+**Maps to** (`components/flex-patterns.css`, the only three):
 
 - `flex-center` → `flex items-center`
 - `flex-center-gap-2` → `flex items-center gap-2`
-- `inline-flex-center` → `inline-flex items-center`
 - `inline-flex-center-gap-2` → `inline-flex items-center gap-2`
 
 #### Instruction Lists (ADHD-Friendly)
@@ -694,7 +715,8 @@ because `*` does not match them.
 
 **Purpose:** Provides clear visual hierarchy for instructional or informational content in a scannable Q&A format,
 optimized for users with ADHD or those who prefer structured information presentation. The prefixes make it
-immediately obvious which text is the question and which is the answer.
+immediately obvious which text is the question and which is the answer, so every `<dt>` is a question: a current
+value with what to do about it ("Current position: X") is a label/value line and a sentence, not a pair.
 
 #### Card Patterns
 
@@ -708,9 +730,9 @@ There is one card utility, and `ui_card` renders it, so markup and the helper na
 (`--radius-box`) and a flex column, both from daisyUI's `card`.
 
 Not `card-border`: it resolves to base-200, which against a base-100 card is invisible in light
-mode, so a card's edge is `border-line` like every other container. No shadow, per DESIGN.md's
-flat-by-default rule; a card that genuinely needs one adds `shadow-xs` at the call site. No
-padding either — the call site keeps its own `p-*`. A card on another surface overrides the
+mode, so a card's edge is `border-line` like every other container. The utility carries no
+shadow; `ui_card` adds `shadow-xs` by default (`shadow:` picks another step, `shadow: :none`
+leaves it off). No padding either — the call site keeps its own `p-*`. A card on another surface overrides the
 background at the call site (`card-standard bg-base-200`), which works because Tailwind emits its
 utilities after the component block.
 
@@ -802,10 +824,10 @@ away the raw Tailwind classes, making code more readable and maintainable.
 ##### Modal Utilities
 
 ```erb
-<%# DaisyUI modal structure %>
+<%# DaisyUI modal structure; ModalHelper writes it, with the title in modal-title-text (text-xl) %>
 <dialog class="modal modal-middle" open>
   <div class="modal-box">
-    <h3 class="text-lg font-semibold">Title</h3>
+    <h3 class="modal-title-text">Title</h3>
     <div class="py-4">Content</div>
     <div class="modal-action">
       <button class="btn btn-secondary">Close</button>
@@ -897,29 +919,29 @@ error variants.
 ##### Sidebar/Drawer Utilities
 
 ```erb
-<%# Sidebar structure %>
-<div class="sidebar-backdrop"></div>
-<aside class="sidebar-drawer">
-  <%# Header row, below lg only: the title, and Close from button_action (see Sidebar > Drawer Header Row) %>
-  <div class="flex items-center justify-between h-16 shrink-0 z-10 ps-3 pe-2 bg-chrome border-b border-sidebar-divider lg:hidden">
-    <span id="sidebar-drawer-label" class="text-base font-semibold text-sidebar-content">Sidebar</span>
-    <%= button_action "Close", :ghost, icon: "xmark", icon_type: :solid,
-                      data: { action: "click->sidebar#closeDrawer" },
-                      aria: { label: "Close sidebar" } %>
-  </div>
-  <h6 class="sidebar-section-header">Section</h6>
-  <a class="sidebar-nav-item">Link</a>
-  <span class="sidebar-badge">5</span>
-</aside>
+<%# Sidebar structure: daisyUI's drawer, which sidebar_menu writes %>
+<div class="drawer-side z-50 lg:h-full">
+  <label for="sidebar-drawer" class="drawer-overlay" aria-label="Close sidebar"></label>
+  <aside id="sidebar-drawer-content" class="w-65 lg:w-50 h-full bg-chrome flex flex-col relative">
+    <%# Header row, below lg only: the title, and Close from button_action (see Sidebar > Drawer Header Row) %>
+    <div class="flex items-center justify-between h-16 shrink-0 z-10 ps-3 pe-2 bg-chrome border-b border-sidebar-divider lg:hidden">
+      <span id="sidebar-drawer-label" class="text-base font-semibold text-sidebar-content">Sidebar</span>
+      <%= button_action "Close", :ghost, icon: "xmark", icon_type: :solid,
+                        data: { action: "click->sidebar#closeDrawer" },
+                        aria: { label: "Close sidebar" } %>
+    </div>
+    <h6 class="sidebar-section-header sidebar-group-title-default">Section</h6>
+    <a class="sidebar-nav-item sidebar-link-default">Link</a>
+  </aside>
+</div>
 ```
 
-| Utility                  | Description                               |
-|--------------------------|-------------------------------------------|
-| `sidebar-backdrop`       | Semi-transparent overlay                  |
-| `sidebar-drawer`         | Main drawer container (fixed, transition) |
-| `sidebar-nav-item`       | Navigation link item                      |
-| `sidebar-section-header` | Section title styling                     |
-| `sidebar-badge`          | Notification count badge                  |
+| Class                    | Description                                                    |
+|--------------------------|----------------------------------------------------------------|
+| `drawer-side`, `drawer-overlay` | daisyUI's drawer and the overlay that closes it below `lg` |
+| `sidebar-nav-item`       | Navigation link item                                           |
+| `sidebar-section-header` | Section title styling                                          |
+| `sidebar-link-*`, `sidebar-group-title-*` | Theme colours of an item and a section title  |
 
 **PREFERRED:** Use these utility classes through helpers (`ModalHelper`, `NavigationHelper`, etc.) or DaisyUI-native
 markup patterns rather than ad-hoc custom wrappers. Helpers ensure accessibility and consistency.
@@ -1060,6 +1082,9 @@ rather than a palette to extend. The surface under it is base-200/base-300 so it
 }
 ```
 
+`me-muted` is a legacy alias. Markup you write or touch says `text-stone-muted`, the ladder's name for the
+same step.
+
 ---
 
 ## Component Library
@@ -1068,7 +1093,11 @@ rather than a palette to extend. The surface under it is base-200/base-300 so it
 
 **Helper**: `ButtonHelper` (`app/helpers/button_helper.rb`)
 
-**CRITICAL:** Always use `ButtonHelper` methods for buttons. Never write raw button HTML.
+**CRITICAL:** Always use `ButtonHelper` methods for buttons. Never write raw button HTML. The ruled
+exceptions are helpers' own raw `<button>`s: the client-side sort heading, `clipboard_button`'s copy icon, and
+`dropdown_button`, the menu row that acts on the page inside a `dropdown_menu`; and the roll call roster row
+(`shift_operations/rollcall/_row`), one whole-row `button_to` whose full width is the tap target on a tablet. A
+link inside a list row that reads as a button is a real `button_link`, never `btn` classes on a span.
 
 Buttons are daisyUI `btn` components. `ButtonHelper` emits `btn` + a variant class + a size class; there is no custom
 base class.
@@ -1096,11 +1125,18 @@ Example output: `class="btn btn-primary btn-sm"` for a default primary button.
 | `:dark`      | `btn-neutral` — dark-chrome contexts only |
 | `:ghost`     | Minimal buttons                           |
 
+The main action of a form, dialog or section is `:primary`, a positive one included ("Claim Ticket",
+"Confirm My Choices"); `:success` is for a positive action that is not the main one. Apply Filters is
+`:secondary` when the page has a primary action of its own, and the default primary otherwise. A two-button
+view toggle shows the current view as `:primary` and the other as `:secondary`.
+
 **Styling Details:**
 
 Variants are daisyUI `btn-*` classes, emitted by `ButtonHelper::VARIANT_CLASSES`
 (`app/helpers/button_helper.rb`). Colour, hover and focus ring all come from the
-daisyUI component — do not hand-apply `bg-*`/`ring-*` utilities to a button.
+daisyUI component — do not hand-apply `bg-*`/`ring-*` utilities to a button. `class:` on a button carries
+width and margin only: never `btn-link`, padding or a text size. A link that should read as text is `link_to`;
+a bigger button is `size:`.
 
 | Variant (symbol) | Emitted class            |
 |------------------|--------------------------|
@@ -1127,7 +1163,7 @@ daisyUI component — do not hand-apply `bg-*`/`ring-*` utilities to a button.
 <%= submit_button "Save" %>
 <%= cancel_button url %>    <%# or cancel_link (alias) %>
 <%= edit_link url %>        <%# the one edit control: secondary + pen-to-square %>
-<%= delete_button url %>    <%# includes confirmation %>
+<%= delete_button url %>    <%# confirms first: "Delete <thing>?" in the red dialog; confirm: false to skip %>
 
 <%# Button row container %>
 <%= button_row do %>
@@ -1141,6 +1177,19 @@ daisyUI component — do not hand-apply `bg-*`/`ring-*` utilities to a button.
 <%= cancel_button some_path %>
 <% end %>
 ```
+
+**Where buttons sit.** Every page or form action sits in a `button_row`, a lone button included, and a form's
+submit and its cancel (`f.submit` + `cancel_link`) share one. Four places take no row: the record actions on one
+table row, list line or record card (`edit_link`, `delete_button` and the like in a `flex gap-2` group); a button
+inside a callout; a button in a section's or card's title row; and a toolbar line where buttons share the row
+with a pager, a count or a field.
+
+**`delete_button` confirms by default**: the red dialog asks "Delete <thing>?" and says whether it can be
+undone. Pass `confirm: false` only where a confirmation is already given another way.
+
+`edit_link` is the edit control among a row's or a section's actions. A record's id or name linking to its page
+from a table is a row link (`LinkHelper::TABLE_LINK_CLASSES`), not an edit control, and reads as the record, never
+"Edit".
 
 #### Button Sizes
 
@@ -1210,7 +1259,7 @@ Buttons should **never be smaller than `text-sm`**. The `xs` size exists for exc
 
 **Options:**
 
-- `shadow:` - Shadow size (`:xs`, `:sm`, `:md`, `:lg`, `:xl`, `:none`)
+- `shadow:` - Shadow size (`:xs`, `:sm`, `:md`, `:lg`, `:xl`, `:none`); default `:xs`
 - `width:` / `height:` - Custom dimensions in pixels
 
 ### Accent Cards
@@ -1295,6 +1344,24 @@ Step details.
 - Schedule item cards with visual priority
 - Any content requiring left-border accent for visual hierarchy
 
+### Text Boxes
+
+**Helper**: `UiTextBoxHelper` (`app/helpers/ui_components/ui_text_box_helper.rb`)
+
+A bordered, tinted, padded box for a block of quoted text: a message preview, a survey's prologue. Given
+`max_height:` (a Tailwind scale class such as `"max-h-48"`) it scrolls, and `label:` names the scrolling box for
+keyboard and screen-reader users. Never hand-build the box.
+
+```erb
+<%= ui_text_box do %><%= @broadcast.sms_message %><% end %>
+
+<%= ui_text_box max_height: "max-h-64", label: "Prologue", class: "lexxy-content" do %>
+  <%= rich_text(@survey.prologue) %>
+<% end %>
+```
+
+API: `docs/UI-COMPONENTS.md` > `ui_text_box`.
+
 ### Stat Boxes
 
 **Helper**: `UiStatBoxHelper` (`app/helpers/ui_components/ui_stat_box_helper.rb`)
@@ -1347,8 +1414,12 @@ performance indicators.
 - `icon:` - FontAwesome icon name (optional)
 - `icon_type:` - Icon style (`:solid`, `:regular`) - default `:solid`
 - `size:` - Size variant (`:sm`, `:md`, `:lg`) - default `:md`
-- `class:` - Additional CSS classes
+- `class:` - Additional CSS classes (width and margin only)
 - `aria:` - ARIA attributes hash
+
+A tile's value is a short figure or word: a count, an amount, a status. A tile takes a status variant only
+when its value is a status (something to act on, a goal met) and falls back to `:secondary` when that count is
+zero.
 
 **When to use:**
 
@@ -1371,6 +1442,12 @@ Never hand-roll the wrapper; a grid of stat boxes is a different pattern and nee
 
 Tables are rendered with a responsive wrapper container that includes shadow, border, and horizontal scroll handling.
 The table uses opaque backgrounds for proper visual hierarchy in both light and dark modes.
+
+Every data table is `ui_table`. `class:` on the table, `t.heading`, `t.row_header` and `t.cell` carries layout
+only: margin, width caps (`max-w-*`, `min-w-*`), wrapping (`whitespace-nowrap`), a column-group divider in
+`border-line`, a total's weight, or a hook into the table's own component CSS; `container_class:` caps the box.
+A two-row grouped header that `t.header` cannot draw may be built inside `ui_table` from `TableHelper`'s
+constants. Not data tables: a print sheet's blank fill-in grid, a list of record cards, a roster grid of names.
 
 #### Standard Table
 
@@ -1518,6 +1595,9 @@ A fit-width table (`full_width: false`, the default) is no reason to opt out. It
 its content but capped at its parent (`max-w-full`), so a value wider than a phone — an address, an
 id list, a nowrap cell — scrolls inside the box like any plain table's overflow.
 
+The Shift Lead roster (`scheduling/shift_lead/_roster`) is the one table with its own phone shape: a table from
+`lg` up and a hand-built list of one block per Ranger below it, in place of the fold. The partial says why.
+
 **Key Differences:**
 
 | Feature         | `ui_table responsive: false` | `ui_table` (the default)                            |
@@ -1577,7 +1657,9 @@ finds both in one place. The 36px touch floor comes from `btn-sm` itself
 straight through (`actions: (export if @rows.any?)`); a blank action renders
 nothing. An export whose file is the whole year rather than the filtered view
 still rides the bar and says so in its label ("Export All to CSV"); a second
-export describing a different table on the page stays beside that table.
+export describing a different table on the page stays beside that table. On a
+page with no filter bar the export sits in the page's `button_row` above the
+table.
 
 See `docs/UI-COMPONENTS.md` → `filter_bar` for the full API.
 
@@ -1602,6 +1684,10 @@ See `docs/UI-COMPONENTS.md` → `filter_bar` for the full API.
 
 **Opening modals**: Use Stimulus controller `data-controller="modal"`
 
+The title is `modal-title-text` (`text-xl font-semibold`, `components/modals.css`). Two dialogs open themselves
+instead: the on-demand `dialog_controller.js` behind search and the mega menu, and the HQ window's step-by-step
+wizard (`hq_wizard_controller.js`, one native `<dialog>`). A new dialog uses `ModalHelper`.
+
 ### Accordions & Disclosures
 
 Both helpers render native `<details>` / `<summary>` markup:
@@ -1622,6 +1708,13 @@ Both helpers render native `<details>` / `<summary>` markup:
   ...
 <% end %>
 ```
+
+`summary_class:` sets the weight, size and ink of the summary's text, nothing else: never its focus ring,
+outline or layout, which the helpers own. An icon in a title goes inside it as `fa_icon … end: 2`.
+
+The HQ window's guided-flow sections (`hq/shift_manage/_section`, a hand-built `collapse` whose border shows its
+state) and its pinned checklist strip (`hq/shift_manage/_todo_list`, a sticky strip, not a card, with the
+`shadow-lg` of a pinned bar) are purpose-built and keep their own markup.
 
 ### Match Stepper
 
@@ -1672,6 +1765,11 @@ Stimulus controller of the page's own counts, moves and scrolls.
 ```
 
 The helper renders the DaisyUI `tabs tabs-border` markup with the ARIA roles wired up; do not hand-write it.
+Tabs show panes of one page in place. A switch that loads another view of the page (a log's Search and Live
+modes, the mega menu's panels) is a group of buttons, not tabs; the current one is told to a screen reader
+(`aria-current`, or an sr-only "(current view)"). The mailbox's folder switch (`messages_folder_tab`,
+`tabs tabs-lift`) is the one exception: it loads another list, yet keeps the tabs look as the mailbox's own
+adaptation.
 
 ### Toasts & Notifications
 
@@ -1702,6 +1800,11 @@ How long a toast stays, and how a screen reader hears it, follows its type (`TOA
 | `success`, `notice`, `info` | Six seconds; hovering pauses it | `role="status"`: read once it finishes what it is reading |
 | `warning` | Six seconds; hovering pauses it | `role="alert"`: interrupts |
 | `error`, `alert` | Until closed; no countdown bar | `role="alert"`: interrupts |
+
+A toast shown without a page load — streamed from a Turbo Stream view with `ui_toast_render` or
+`ui_toast_stream`, or cloned from a `<template>` by a controller — is the same toast, with the same types,
+timing and roles. Every toast slides in and out, and the slide and the countdown bar stop under
+`prefers-reduced-motion`.
 
 #### Unread Messages Envelope (navbar)
 
@@ -1744,6 +1847,20 @@ Pro tip: You can do this faster.
 
 **Variants**: `:success`, `:info`, `:warning`, `:error`, `:secondary`
 
+**Tints** (`components/boxes.css`): success and error are `bg-*/5` on a `border-*/20` edge, in the status ink;
+info is `bg-info/10` on `border-info/30` in body ink; warning is `bg-warning/10` on a full `border-warning`, and
+everything inside it takes the amber ink except buttons and badges; secondary is `bg-base-300/90`.
+
+**When a notice is a callout.** A notice in the page body is a `ui_callout_box` or a `ui_alert_banner`. Inside a
+card, a dashboard step, a table cell, a label/value row or a dialog body, a one-line status message may instead
+be a line of status-coloured text (`text-error`, `text-warning`, `text-success`) that starts with its status
+icon (`fa_icon … class: "icon-error"`), at `text-base` and in sentence case: never in capitals, never without
+the icon. A callout holds a notice, never a control alone, and its `class:` carries margin and width only.
+
+`:error` marks an error, with one approved exception: the red "live data" callout (`:error, accent: true`, the
+`tower-broadcast` icon) on the mentoring Shift Report and Alpha Sign-Out pages, which flags a list of who is on
+duty right now.
+
 #### Alert Banners
 
 ```erb
@@ -1766,7 +1883,8 @@ toast — a toast answers in the corner of the page, away from the thing just pr
 ```
 
 - **Styling**: `.copy-tip` in `components/buttons.css`, dressed as a daisyUI tooltip (`bg-neutral`,
-  `text-neutral-content`, `text-sm`) with no tail. No entrance or exit animation.
+  `text-neutral-content`, `text-sm`) with no tail. No entrance or exit animation. The control's icon bounces
+  once when the copy lands, and holds still under `prefers-reduced-motion`.
 - **Placement**: a popover anchored to the control — above it, centred, shifted to stay inside the window,
   below when there is no room above. The top layer keeps a table or a scrolling box from clipping it. A
   browser without CSS anchor positioning gets a plain box above the control instead.
@@ -1779,10 +1897,13 @@ API and the full-button form: `docs/UI-COMPONENTS.md` > `clipboard_button`.
 
 **Helper**: `UiHeroPanelHelper` (`app/helpers/ui_components/ui_hero_panel_helper.rb`)
 
-Hero panels are the standardized page header component used across all /me routes. They provide a consistent, visually
+Hero panels are the standardized page header of every page inside the app shell (pages outside it: see
+[Pages Outside the App Shell](#pages-outside-the-app-shell)). They provide a consistent, visually
 distinctive header: a warm neutral surface (`bg-base-200 dark:bg-base-300`) inside a soft amber ring
-(`ring-signature-edge`, the token holding amber-200/40 and its dark amber-700/30 twin). That ring is the one place
-amber survives as decoration rather than as a warning signal.
+(`ring-signature-edge`, the token holding amber-200/40 and its dark amber-700/30 twin). The ring, the gold
+(`icon-warning`) of the hero's icon and of `action_box`'s icon, and the hero stats' award gold and flame gradient
+(`hero-stat-award`, `hero-stat-flame` in `components/hero-panel.css`) are the hero's own look and stay; a
+decorative icon anywhere else is neutral.
 
 **Structure:**
 
@@ -1823,8 +1944,10 @@ amber survives as decoration rather than as a warning signal.
 
 **Panel Methods:**
 
-- `title` - Main page title (required)
-- `description` - Page description — **one sentence only**, see below
+- `title` - Main page title (required); it may carry a status or a badge beside the words
+- `description` - Page description — **one sentence only**, see below. Every hero has one except a new or edit
+  form page, whose title already says what it does. It takes the panel's own style: no classes, no status colour.
+  The person page's identity strip (badges, name, pronouns) is the one exception
 - `back_to` - Back navigation link
 - `year_selector` - Year dropdown (desktop: compact, mobile: full)
 - `hero_stats` - Statistics badges (beside the title on desktop, beneath it on mobile) — **approval required**, see below
@@ -1934,13 +2057,6 @@ Section content.
 Profile content.
 <% end %>
 
-<%# Without border padding %>
-<%= ui_section "Table Section", border: false do %>
-<%= ui_table do |t| %>
-<%# Table content %>
-<% end %>
-<% end %>
-
 <%# With custom ID for anchor links %>
 <%= ui_section "Team Members", id: "team-123" do %>
 Member content.
@@ -1959,16 +2075,19 @@ Member content.
 
 **Styling:**
 
-- Base: `.box` class with `rounded-xl`, border, shadow
-- Body: `bg-base-100` with `rounded-b-xl` (matches parent corners)
-- Default padding: `px-4 pb-2` (omitted when `border: false`)
-- Section title: `px-4 py-2` with responsive text sizing
+- Base: `.box` class with `rounded-lg`, border, shadow
+- Body: `text-body rounded-xl` on the box's `bg-base-100` (`box-default`)
+- Body padding: `px-4 pb-2`
+- Section title: `px-4 pt-2 mb-1` with responsive text sizing
+
+A section normally has a title; an untitled one may box a page's whole body or a form. Icons are optional, but
+sibling sections on one page either all carry one or none do. `ui_section_title` may head a group of rows outside
+a section.
 
 **Options:**
 
 - `icon:` - FontAwesome icon name
 - `icon_type:` - Icon style (`:solid`, `:regular`)
-- `border:` - Set to `false` to remove padding (useful for tables)
 - `id:` - Custom ID for the section
 - `badge:` / `badge_color:` - Badge in the title row
 - `edit_link:` - Path for an edit button in the title row
@@ -2002,8 +2121,11 @@ Member content.
 - `icon:` - FontAwesome icon name (optional)
 - `icon_type:` - Icon style (`:solid`, `:regular`) - default `:solid`
 - `size:` - Text size (`"xs"`, `"sm"`, `"base"`) - default `"xs"`; `"md"` is not a Tailwind text size
-- `class:` - Additional CSS classes
+- `class:` - Additional CSS classes: layout only (`shrink-0`, margin), never opacity or colour
 - `aria:` - ARIA attributes hash
+
+Every state of a badge set is a badge: a helper that returns `ui_badge` for some states does not return plain
+text for another.
 
 ### Sidebar
 
@@ -2011,45 +2133,44 @@ Member content.
 
 The sidebar is a DaisyUI-inspired drawer component that serves as the primary navigation for the application. It
 features a mobile-responsive design that slides in from the left, with dark theme-specific styling and support for
-sections, submenus, and badges.
+sections and submenus.
 
 #### Basic Usage
 
-```erb
-<%= sidebar_menu "me" do %>
-<%= sidebar_section "Navigation", theme: "me" do %>
-<%= sidebar_item "Dashboard", me_root_path, icon: "home", theme: "me", root: true %>
-<%= sidebar_item "Schedule", me_schedule_path, icon: "calendar", theme: "me" %>
-<% end %>
+Every layout builds its sidebar from a menu definition in `app/lib/menus.rb` (see `docs/MENUS.md`):
 
-<%# A submenu is a heading followed by indented items -- it takes no block %>
-<%= sidebar_submenu "Settings", icon: "gear", icon_type: :solid, theme: "me" %>
-<%= sidebar_submenu_item "Profile", me_profile_path, theme: "me" %>
-<%= sidebar_submenu_item "Password", me_password_path, theme: "me" %>
+```erb
+<%# app/views/layouts/me.html.erb %>
+<% sidebar_menu :me do %>
+  <%= sidebar_render_menu(Menus::ME, @menu_context) %>
 <% end %>
 ```
+
+`sidebar_render_menu` builds the rest: a top-level section becomes a `sidebar_section` (an `<h6>` title over its
+items), a nested section or one marked `submenu:` becomes a `sidebar_submenu` title, and each item a
+`sidebar_item`. No view calls those three directly.
 
 #### Sidebar Structure
 
 The sidebar is composed of several key components:
 
-1. **Backdrop** - Semi-transparent overlay (mobile only)
-2. **Drawer** - Main sidebar container with navigation items
+1. **Overlay** - daisyUI's `drawer-overlay`, a label that closes the drawer (below `lg`)
+2. **Drawer** - Main sidebar container with navigation items (daisyUI's `drawer-side`)
 3. **Header row** - Title and Close button for mobile (hidden from `lg`)
 4. **Toggle button** - Hamburger menu button (placed in navbar)
 5. **Sections** - Titled groups of navigation items
 6. **Items** - Individual navigation links
-7. **Submenus** - Collapsible groups of related links
-8. **Badges** - Notification counts on items
+7. **Submenus** - Titled groups of related links inside a section
 
 **HTML Structure:**
 
 ```erb
-<%# Backdrop (mobile only) %>
-<div class="sidebar-backdrop"></div>
+<%# Drawer side, with its overlay (closes the drawer below lg) %>
+<div class="drawer-side z-50 lg:h-full">
+  <label for="sidebar-drawer" class="drawer-overlay" aria-label="Close sidebar"></label>
 
 <%# Drawer container %>
-<aside class="sidebar-drawer">
+<aside id="sidebar-drawer-content" class="w-65 lg:w-50 h-full bg-chrome flex flex-col relative">
 <%# Header row (mobile only): title and Close %>
   <div class="flex items-center justify-between h-16 shrink-0 z-10 ps-3 pe-2 bg-chrome border-b border-sidebar-divider lg:hidden">
     <span id="sidebar-drawer-label" class="text-base font-semibold text-sidebar-content">Sidebar</span>
@@ -2058,13 +2179,13 @@ The sidebar is composed of several key components:
                       aria: { label: "Close sidebar" } %>
   </div>
 
-<%# Section with header %>
-  <div>
-    <h6 class="sidebar-section-header">Section Title</h6>
-    <a class="sidebar-nav-item">Link</a>
-    <span class="sidebar-badge">5</span>
+<%# Menu area: a section header, then its items %>
+  <div class="flex-1 min-h-0 overflow-y-auto pb-4 z-10">
+    <h6 class="sidebar-section-header sidebar-group-title-default">Section Title</h6>
+    <a class="sidebar-nav-item sidebar-link-default">Link</a>
   </div>
 </aside>
+</div>
 ```
 
 #### Drawer Header Row
@@ -2107,14 +2228,14 @@ Two palettes are in use (`components/sidebar.css`).
 - Drawer background: `bg-chrome` (`#000000`)
 - Border: `border-sidebar-divider` (`#101010`)
 - Text: `text-sidebar-content` (`#f0f0f0`)
-- Active state: `!text-sidebar-active` (`#ffc107`) with a 5px right border
+- Active state: `text-sidebar-active` (`#ffc107`) with a 5px right border, from the `.sidebar-nav-item.active` rule
 
 #### Sidebar Options
 
 **`sidebar_menu` options:**
 
 ```erb
-<%= sidebar_menu theme, id: "sidebar-drawer", width: "w-65 lg:w-45" do %>
+<%= sidebar_menu theme, id: "sidebar-drawer", width: "w-65 lg:w-50" do %>
 ...
 <% end %>
 ```
@@ -2123,43 +2244,34 @@ Two palettes are in use (`components/sidebar.css`).
 |--------------|---------|--------------------|------------------------------------------------|
 | `theme`      | String  | `"me"`             | Color theme: `"me"`, `"admin"`, or `"hq"`      |
 | `id:`        | String  | `"sidebar-drawer"` | Drawer ID for CSS toggle                       |
-| `width:`     | String  | `"w-65 lg:w-45"`   | Drawer width classes                           |
+| `width:`     | String  | `"w-65 lg:w-50"`   | Drawer width classes                           |
 
 **`sidebar_item` options:**
 
 ```erb
-<%= sidebar_item "Title", url, 
-    icon: "icon-name", 
-    icon_type: :solid, 
-    badge: "5", 
-    badge_variant: :error,
+<%= sidebar_item "Title", url,
     theme: "me",
     root: false,
     active_prefix: false,
-    use_turbo: false,
     active: nil %>
 ```
 
 | Option           | Type    | Default    | Description                                            |
 |------------------|---------|------------|--------------------------------------------------------|
-| `icon:`          | String  | `nil`      | FontAwesome icon name                                  |
-| `icon_type:`     | Symbol  | `:regular` | Icon style (`:solid`, `:regular`)                      |
-| `badge:`         | String  | `nil`      | Badge text/number to display                           |
-| `badge_variant:` | Symbol  | `:error`   | Badge color: `:error`, `:success`, `:warning`, `:info`, `:default` |
 | `theme:`         | String  | `"me"`     | Color theme for styling                                |
 | `root:`          | Boolean | `false`    | Root path for active state detection                   |
 | `active_prefix:` | Boolean | `false`    | Keep the item active for descendant routes with the same path prefix |
-| `use_turbo:`     | Boolean | `false`    | Enable Turbo navigation                                |
 | `active:`        | Boolean | `nil`      | Manually set active state (auto-detects if `nil`)      |
 
 #### Active State Styling
 
 Active navigation items receive distinctive amber styling:
 
-**Active item classes:**
+**Active item** (`.sidebar-nav-item.active` in `sidebar.css`, keyed on the `active` class the helper and
+`active_links_controller` set, plus `aria-current="true"`):
 
-- Text color: `!text-sidebar-active` (`#ffc107`) with `!important`
-- Right border: `5px` solid `!border-r-sidebar-active` (`#ffc107`)
+- Text color: `--color-sidebar-active` (`#ffc107`)
+- Right border: `5px` solid in the same colour
 - Background: Same as theme (no change)
 
 ```erb
@@ -2178,78 +2290,48 @@ Active navigation items receive distinctive amber styling:
 Submenus are rendered as section titles to group related navigation items:
 
 ```erb
-<%= sidebar_submenu "Settings", icon: "gear", icon_type: :solid, theme: "me" %>
+<%= sidebar_submenu "Settings", theme: "me" %>
 ```
 
 **Submenu features:**
 
-- Renders the title with optional FontAwesome icon
+- Renders the title
 - Applies theme-aware text and background styling
 - Designed for simple grouping (no interactive disclosure)
 
-#### Badge Variants
-
-Badges display notification counts on sidebar items:
-
-```erb
-<%# Danger badge (red) - default %>
-<%= sidebar_item "Messages", messages_path, badge: "5", badge_variant: :error %>
-
-<%# Success badge (green) %>
-<%= sidebar_item "Completed", tasks_path, badge: "12", badge_variant: :success %>
-
-<%# Warning badge (amber) %>
-<%= sidebar_item "Pending", pending_path, badge: "3", badge_variant: :warning %>
-
-<%# Info badge (blue) %>
-<%= sidebar_item "New", new_items_path, badge: "2", badge_variant: :info %>
-```
-
-**Badge styling:**
-
-- Danger: Red text, red background, red border
-- Success: Green text, green background, green border
-- Warning: Amber text, amber background, amber border
-- Info: Brand text, background, and border in Signal Blue
-
 #### Mobile Behavior
 
-The sidebar uses a CSS-only toggle mechanism with progressive enhancement:
+The sidebar is daisyUI's drawer: the layout (`layouts/application.html.erb`) writes
+`<div class="drawer lg:drawer-open">` and its `drawer-toggle` checkbox (`#sidebar-drawer`), and `sidebar_menu`
+fills `content_for(:sidebar)` with the `drawer-side`.
 
 **Mobile (< 1024px):**
 
-- Drawer is hidden by default (`-translate-x-full`)
-- Backdrop appears when drawer is open
+- Drawer is hidden until the checkbox is checked; daisyUI slides it in
+- The `drawer-overlay` covers the page while the drawer is open, and a click on it closes the drawer
 - Header row (title and Close) visible at the top of the drawer
-- Checkbox state controls visibility (`peer-checked:translate-x-0`)
+- The drawer side is `z-50`, the navbar's level, and as the later sibling paints over the navbar
 
 **Desktop (≥ 1024px):**
 
-- Drawer is always visible (`lg:translate-x-0`)
-- Backdrop is hidden (`lg:hidden`)
+- Drawer is always open (`lg:drawer-open`)
+- `lg:h-full` on the drawer side replaces daisyUI's `100dvh`, so it fits below the navbar
 - Header row is hidden (`lg:hidden`)
 - Toggle button is hidden (`lg:hidden`)
 
-**Positioning:**
-
-- Drawer starts below navbar: `top-[64px]`
-- Height: `calc(100vh - 64px)` (full viewport minus navbar)
-- Fixed positioning on mobile
-- Z-index: `40` (drawer), `30` (backdrop)
-
 #### Utility Classes
 
-Custom utility classes defined in `app/assets/stylesheets/components/sidebar.css`, and the header row, whose classes
-`sidebar_menu` writes inline:
+Custom utility classes defined in `app/assets/stylesheets/components/sidebar.css`, and the classes `sidebar_menu`
+writes inline:
 
 | Utility                  | CSS Composition                                                                                                                             | Usage                    |
 |--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|
-| `sidebar-backdrop`       | `fixed inset-0 top-[64px] bg-gray-900/50 dark:bg-gray-900/80 z-30 hidden peer-checked:block lg:hidden`                                      | Semi-transparent overlay |
-| `sidebar-drawer`         | `fixed z-40 overflow-y-auto transition-transform top-[64px] h-[calc(100vh-64px)]`                                                           | Main drawer container    |
+| Drawer side              | `drawer-side z-50 lg:h-full`                                                                                                                | daisyUI drawer, overlay inside |
+| Drawer aside             | `w-65 lg:w-50 h-full bg-chrome flex flex-col relative` (the width is the `width:` option)                                                   | Main drawer container    |
 | Drawer header row        | `flex items-center justify-between h-16 shrink-0 z-10 ps-3 pe-2 bg-chrome border-b border-sidebar-divider lg:hidden`                        | Title and Close          |
+| Menu area                | `flex-1 min-h-0 overflow-y-auto pb-4 z-10`                                                                                                  | Scrolls over the logo    |
 | `sidebar-nav-item`       | `block h-10 flex items-center p-3 text-sm transition-colors no-underline border-t border-sidebar-divider`                                   | Navigation link base     |
-| `sidebar-section-header` | `p-3 font-semibold uppercase tracking-wider overflow-hidden text-ellipsis`                                                                  | Section title styling    |
-| `sidebar-badge`          | `inline-flex items-center justify-center w-auto min-w-[1.125rem] h-4.5 ms-2 px-1.5 text-xs font-medium rounded-full`                        | Notification count badge |
+| `sidebar-section-header` | `px-3 py-1 text-sm uppercase overflow-hidden text-ellipsis`                                                                                 | Section title styling    |
 
 #### Logo Area
 
@@ -2257,12 +2339,10 @@ The sidebar includes a footer logo area at the bottom:
 
 **Features:**
 
-- Ranger logo image: `180px × 180px`
+- Ranger logo image: `140px × 140px` (`h-[140px] w-[140px]`) at `opacity-30`, `mb-5`
 - Top border: `1px solid border-sidebar-divider` (`#101010`)
-- Top padding/margin: `10px` (pt-10, mt-10)
 - Centered alignment
-- Bottom margin: `10px` (mb-10)
-- Does not scroll (uses `shrink-0`)
+- Pinned behind the menu (`absolute bottom-0 inset-x-0`): the menu area's `z-10` paints a long list over it
 
 #### Toggle Button Placement
 
@@ -2270,9 +2350,8 @@ The sidebar toggle button should be placed in the navbar/header:
 
 ```erb
 <%# In application/_top_menu.html.erb %>
-<label for="sidebar-drawer" class="inline-flex items-center p-2 text-sm ...">
-<%= fa_icon "bars", :solid %>
-<span class="ms-1 text-sidebar-content">Sidebar</span>
+<label for="sidebar-drawer" id="sidebar-toggle" class="btn btn-ghost btn-sm lg:hidden" aria-label="Open sidebar">
+  <%= fa_icon "bars", :solid %> Sidebar
 </label>
 ```
 
@@ -2323,6 +2402,13 @@ No upcoming shifts found. <%= link_to "Browse available shifts", available_shift
 <% end %>
 ```
 
+**When a collection needs one.** A list, table or section that the reader came for, and a search's results,
+show `ui_empty_state` when empty: never a header-only table or an empty box. A collection may render nothing
+when it cannot be empty where it is drawn (its caller or controller guards it, or the only link to it needs rows;
+say so in a comment), when it is a fixed catalogue, or when it is supplementary (an optional bucket, a group or a
+dashboard step shown only when it has items) and the page gives its count elsewhere. A shared partial may leave
+the empty state to its caller.
+
 ### Navigation Dropdowns
 
 **Helper**: `NavigationHelper` (`app/helpers/navigation_helper.rb`)
@@ -2340,7 +2426,12 @@ No upcoming shifts found. <%= link_to "Browse available shifts", available_shift
 
 <%# Disabled item %>
 <%= dropdown_item_disabled "Coming Soon" %>
+
+<%# A row that acts on the page instead of going somewhere %>
+<%= dropdown_button "Label", data: { action: "controller#method" } %>
 ```
+
+An open dropdown closes on Escape, on a click outside it, and when an item is chosen.
 
 ### Autocomplete Component
 
@@ -2348,7 +2439,8 @@ CSS utility classes for autocomplete dropdowns:
 
 - `ac-results` - Results dropdown container
 - `ac-option` - Individual selectable option (36px min-height for touch targets)
-- `ac-option-active` - Keyboard-selected option with brand ring
+- `ac-option-active` - Keyboard-selected option: a success tint (18%, 26% on hover) with a 3px success bar on
+  its start edge (an inset `box-shadow`)
 - `ac-group` - Group container with separator
 - `ac-group-header` - Uppercase group label
 - `ac-filter-bar` - Filter chips container
@@ -2397,7 +2489,7 @@ The form builder balances accessibility with compact layouts to minimize scrolli
 - **Compact spacing**: `mb-3` between fields, `mb-1` label gap, `space-y-1` for radio groups
 - **Clear visual hierarchy**: Prominent labels always visible (never placeholder-only)
 - **Strong focus states**: 2px ring with offset for keyboard navigation (WCAG 2.4.7)
-- **Required field indicators**: Red asterisk with screen reader text "(required)"
+- **Required field indicators**: the word "(required)" after the label, visible, `text-sm` in the error colour
 - **Smooth transitions**: 150ms transitions for state changes
 - **Immediate feedback**: Inline validation with role="alert" for screen readers
 - **Semantic grouping**: Fieldsets with legends for related fields
@@ -2422,6 +2514,11 @@ The form builder balances accessibility with compact layouts to minimize scrolli
 <%= f.text_field :name, label: "Name" %>
 <% end %>
 ```
+
+Every form that collects input uses the builder. Two things are not such forms: a fieldless carrier form (a hidden
+`form_tag` that only gives buttons somewhere to submit) and a filter input that never submits
+(`search_field_tag` filtering a list in the browser), which still has a visible label or an `aria-label`. The
+autocomplete component builds its own input from `AppFormBuilder::INPUT_CLASSES`.
 
 ### Layout Modes
 
@@ -2459,9 +2556,8 @@ All fields support these common options:
 | Option           | Type    | Description                                                 |
 |------------------|---------|-------------------------------------------------------------|
 | `label:`         | String  | Label text (always use - never placeholder-only)            |
-| `required:`      | Boolean | Shows red asterisk and adds `required` attribute            |
+| `required:`      | Boolean | Shows "(required)" after the label and adds the `required` attribute; every field, `check_box` included |
 | `help_text:`     | String  | Supportive text below the field                             |
-| `help_mode:`     | Symbol  | `:inline` (default) or `:tooltip` for help text display     |
 | `layout:`        | Symbol  | `:vertical`, `:horizontal`, or `:auto`                      |
 | `wrapper_class:` | String  | Custom classes for wrapper div                              |
 | `wrapper_id:`    | String  | ID for wrapper div                                          |
@@ -2490,17 +2586,12 @@ All fields support these common options:
 <%# Text input with responsive width %>
 <%= f.text_field :preferred_name, label: "Preferred Name", width: "w-full sm:w-48" %>
 
-<%# Text input with tooltip help text %>
-<%= f.email_field :email, label: "Email", 
-    help_text: "We'll never share your email with third parties", 
-    help_mode: :tooltip %>
-
 <%# Date/Time (with Vanilla Calendar Pro on desktop) %>
 <%= f.datetime_field :starts_at, label: "Start Time" %>
 <%= f.date_field :birth_date, label: "Birth Date" %>
 <%= f.time_field :reminder, label: "Reminder Time" %>
 
-<%# Textarea (120px minimum height) %>
+<%# Textarea (daisyUI's 80px minimum height, full width by default) %>
 <%= f.text_area :bio, label: "Biography", help_text: "Tell us about yourself" %>
 
 <%# Rich text -- formatted body copy stored as HTML (Lexxy) %>
@@ -2508,6 +2599,7 @@ All fields support these common options:
 
 <%# Textarea with character counter (already supported) %>
 <%= f.text_area :reason, label: "Reason", maxlength: 1000, data: input_counter_data %>
+<%# The counter line is help text: the field's aria-describedby names it %>
 
 <%# Select %>
 <%= f.select :role, [["Admin", "admin"], ["User", "user"]], { label: "Role" } %>
@@ -2568,8 +2660,8 @@ and the server checks each callsign on submit.
 **When not to use:** exactly one person, chosen from a list (`autocomplete_field`), or a person
 the form must know is valid before submit.
 
-**Accessibility:** the label targets the input, whose `aria-label` is "Add a callsign" and whose
-`aria-describedby` names the help and error line. Each chip's remove button is 36px and labelled
+**Accessibility:** the label targets the input, so the field's visible label ("To", "From") is its name (it
+carries no `aria-label`, which would outrank the label), and its `aria-describedby` names the help and error line. Each chip's remove button is 36px and labelled
 "Remove ‹callsign›"; removing returns the focus to the input. Enter makes a chip, never a submit. A
 press anywhere else in the box puts the caret in the text, as on a plain field.
 
@@ -2593,6 +2685,15 @@ Best for semantic grouping of form controls with compact layout:
 
 **Caution:** Screen readers announce the legend text for every input when tabbing through the fieldset. Avoid overuse
 with many text inputs.
+
+**Exception:** the People Search criteria panel (`people/search`) is not a fieldset. Its criteria sit in
+`ui_disclosure variant: :card` categories laid out with `form_row`, and its status checkboxes are one flat list with
+no group wrapper; `test/controllers/people/search_controller_test.rb` pins both.
+
+**Styling** (`components/forms.css`, on every `form fieldset`): a 4px `border-primary` rule on the start edge over a
+`from-primary/5` gradient, `rounded-r-lg`, `ps-4`; the legend is `text-lg font-semibold` over a `border-base-200`
+underline. This is the theme's look for a group of fields; with the hero stats' flame (the hero's own look), the
+only place outside progress components a gradient appears.
 
 **Basic usage:**
 
@@ -2697,6 +2798,11 @@ Errors are automatically displayed with ADHD-friendly prominence:
 <% end %>
 ```
 
+**Forms without one model.** A form with no model, or one that acts on many records (a bulk tool, an editable
+grid, a paste-then-review flow), reports a refusal in a `ui_callout_box :error` above the form or in its results
+(`:warning` when only some rows failed), naming the rows that failed; a flash alone is not enough. A per-line
+review table counts as that report.
+
 **Error Focus Management:**
 
 Forms automatically focus the first error field on validation failure, scrolling it into view for immediate correction.
@@ -2706,8 +2812,10 @@ This behavior is implemented via the `form` Stimulus controller.
 
 The form builder includes built-in accessibility:
 
-- **Labels**: Always visible, properly associated with inputs via `for` attribute
-- **Required fields**: Visual indicator (asterisk) plus screen reader text "(required)"
+- **Labels**: Always visible, properly associated with inputs via `for` attribute. In a grid of rows the column
+  heading is the visible label; each field takes `hide_label:` and an `aria-label` naming its row and column
+- **Required fields**: the visible word "(required)" in the label (`text-sm`, error colour), which screen readers
+  read with it, and the `required` attribute
 - **Help text**: Connected via `aria-describedby`
 - **Error messages**: Use `role="alert"` for screen reader announcement
 - **Focus states**: High-contrast 2px ring with offset, meets WCAG 2.4.7
@@ -2721,7 +2829,11 @@ with the field-level patterns above.
 
 #### Form Page Structure
 
-Standard structure for edit form pages:
+Standard structure for edit form pages. The order is fixed: hero (title, and a back link when the reader came from a
+page in the app; a description is optional on a new or edit page), optional callouts, `ui_form`, and the button row
+last. The rest is free: a short form may put its fields straight in `ui_form` with no section, a `ui_section` may box
+the whole form, a callout that explains one group of fields may sit inside the form beside them, and an edit form
+may have a stat row above it.
 
 ```erb
 <%# 1. Hero Panel with description and back navigation %>
@@ -2802,6 +2914,10 @@ classes** to ensure proper display on mobile devices.
 - Add `sm:` prefix for desktop widths (640px and above)
 - Fields narrower than `w-32` don't need responsive classes
 - `sm:` is otherwise an AVOID breakpoint (see Responsive Breakpoints); field `width:` is its one sanctioned use
+- The table is for a field standing alone. In a `filter_bar` panel or a `form_row` of fields side by side, each
+  field fills its share (`width: "w-full"`, `wrapper_class: "flex-1"`) or keeps the builder's default
+- A width goes through `width:`, never the input's `class:`, and turns at `sm:` on a scale step: never `lg:`
+  (`lg:w-96`) or an arbitrary value (`lg:w-[40rem]`)
 
 ```erb
 <%# Responsive width for better mobile UX %>
@@ -2840,6 +2956,9 @@ Use border dividers to separate related field groups within a section:
 <%# Related fields %>
 </div>
 ```
+
+The same `pt-3 border-t border-line` sets off a card's footer row above its `button_row`, where the top margin
+may be `mt-3`.
 
 #### Sticky Save Button (Mobile)
 
@@ -2960,6 +3079,10 @@ show/hide. It marks exactly one fact: **below 768px, controls cannot sit side by
 
 Anything else wanting a tablet tier should use the content-driven patterns above.
 
+The date picker's swap to the browser's native control at 768px and below (`vanilla_calendar_controller.js`, which
+also swaps on a mobile user agent) is not a layout fold: it is a touch-device swap, so it stays at 768px and is not
+an `lg` matter.
+
 #### The one sanctioned use of `sm`
 
 Form field widths. `AppFormBuilder`'s `width:` option takes `w-full sm:w-48` and friends: full width on a phone so the
@@ -3024,8 +3147,8 @@ For grids that need more columns on larger screens:
 
 ### Page Headers
 
-All pages use the `hero_panel` component for consistent page headers (see Hero Panels section above for full
-documentation).
+Every page inside the app shell uses the `hero_panel` component for its header (see Hero Panels section above for
+full documentation). The pages in the next two sections do not.
 
 **Standard pattern:**
 
@@ -3035,6 +3158,22 @@ documentation).
 <% panel.description do %>Page description<% end %>
 <% end %>
 ```
+
+### Sign-In Pages
+
+Sign-in and its door pages (`sessions/*`, the SSO hand-back pages) are the brand surface: their look is
+`login.css` and `sessions/_heading`, not the component library, and they take no `hero_panel`, `button_row` or
+`ui_card`. Their access is not exempt: labels at `text-base`, the visible "(required)" word every form shows (sign-in
+and register alike), nothing under the type floor (`text-xs` for content) or the 36px touch floor.
+
+### Pages Outside the App Shell
+
+Print sheets, kiosk and bookmark pages, wall displays (the ROC photo board), the `public/` error pages and the test
+harness have no app shell. Colour tokens, the type floor and Title Case apply to them as to any page (printed paper
+is `bg-paper` / `print:bg-paper`, never `bg-white`); `hero_panel`,
+`button_row`, the layout patterns and the page-structure rules (hero, back link, sections) do not. Each heads itself
+with its own `<h1>` or masthead. A print sheet's way back sits above the sheet, `print:hidden`, in its area's
+`_print_screen_nav` partial where one exists.
 
 ### Year Selector
 
@@ -3074,6 +3213,11 @@ Back links are integrated into hero panels using the `back_to` method:
 - Uses text link style with left arrow icon
 - Muted color with hover state
 
+The hero's link is the page's one way back: never repeat it at the foot of the page. A link in the body may go back
+only when it does what the hero's cannot: a step back in a multi-step flow, a way back that re-posts a form, or the
+only action left on an empty result. The `back_to` slot may hold a link that switches interface ("Switch to HQ
+Interface") in place of a back link. A page with no hero (a print sheet): see Pages Outside the App Shell.
+
 ### Responsive Columns
 
 ```erb
@@ -3091,9 +3235,15 @@ Back links are integrated into hero panels using the `back_to` method:
 </div>
 ```
 
+Page columns (regions side by side) are one of these two, folding at `lg` with `gap-4` in both directions; a fixed
+rail may be a track list (`lg:grid-cols-[1fr_20rem]`). Never `md:` for columns. A grid of items inside a section
+(checkboxes, cards, label/value pairs) picks its own gap from the spacing scale and may instead use CSS
+`columns-*`, an `xl:` refinement, or a content-driven wrap (`flex flex-wrap`, `basis-*`).
+
 ### Empty States
 
-Always use the helper — never a hand-rolled dashed box:
+Always use the helper — never a hand-rolled dashed box (when a collection needs one: Component Library > Empty
+States):
 
 ```erb
 <%= ui_empty_state "No items found." %>
@@ -3124,6 +3274,15 @@ The list is generated from the font by `node bin/fontawesome_regular_icons.js`, 
 
 When SVG data URIs are unavoidable (e.g., CSS `background-image` for form controls), use the official FontAwesome icon
 paths from Free v7.1. See `AppFormBuilder` for examples of properly sourced FontAwesome SVG paths.
+
+**Glyphs in text are punctuation, not icons.** "·" and "—" as separators, "→" for "then" or between a value's
+before and after, and "×" naming a close control in a sentence stay as typed characters. A glyph that stands in
+for a word on its own (a ✓ or ✗ as a status, a ★ as a rating) is an icon and goes through `fa_icon`.
+
+**An icon that means something says so.** An icon with no word beside it that carries meaning (a status, a channel,
+a ban) takes `fa_icon … label:`, which gives it a tooltip and a screen-reader sentence, wherever its explanation
+lives: the page's card, a visible legend, or nowhere. An `sr-only` name alone leaves a sighted reader with the icon
+only.
 
 ### Basic Usage
 
@@ -3183,7 +3342,8 @@ The Clubhouse serves users with varying attention profiles. These guidelines are
 ### Visual Hierarchy
 
 - **CRITICAL:** Use clear, consistent heading hierarchy (h1 > h2 > h3)
-- **CRITICAL:** Ensure a single, clear primary action per view
+- **CRITICAL:** One clear primary action per form, dialog or section; a row of several primaries is wrong, and so
+  is a primary on every row of a table. The same action may repeat above and below a long table
 - **PREFERRED:** Highlight the most important action on each screen
 - **PREFERRED:** Group related information visually with cards and sections
 - **PREFERRED:** Use whitespace to reduce cognitive load
@@ -3216,7 +3376,9 @@ The Clubhouse serves users with varying attention profiles. These guidelines are
 ### Reducing Distractions
 
 - **CRITICAL:** Motion is functional only. The approved set: `animate-spin` loading spinners, the progress-bar pulse,
-  `animate-pulse` on urgent badges, and the sidebar drill-down slide. All of it must honor `prefers-reduced-motion`
+  `animate-pulse` on urgent badges, the sidebar drill-down slide, a toast's slide in and out and its countdown bar,
+  and the copy control's bounce when a copy lands (Copy Confirmation). Every one of them stops under
+  `prefers-reduced-motion`
 - **AVOID:** Decorative motion — hover lifts, entrance animations, parallax
 - **AVOID:** Auto-playing media or carousels
 - **AVOID:** Flashing or blinking content
@@ -3272,7 +3434,9 @@ Pattern 6 is the admin records shape and applies to management sections outside 
 <% end %>
 
 <div class="mb-4">
-<%= button_link "Primary Action", :primary, path %>
+  <%= button_row do %>
+    <%= button_link "Primary Action", :primary, path %>
+  <% end %>
 </div>
 
 <%= ui_section "Section Title" do %>
@@ -3302,7 +3466,8 @@ Content...
 ```
 
 Its links are plain fragments (`data-turbo="false"`): Turbo would treat each as a full
-visit of the same URL, refetching the page and dropping any unapplied filter text.
+visit of the same URL, refetching the page and dropping any unapplied filter text. A lead-in
+before the list ("Jump to a callsign starting with:") is in its own element, never a bare text node.
 
 **Existing pages:** Directory, Announcements, Agreements, Messages
 
@@ -3383,8 +3548,8 @@ levels; do not put both on one page.
 records, or when the reader's real question spans categories ("who still has gear checked
 out?"). Those are flat reports — use a single filtered `ui_table` page instead.
 
-**Level 1 — category index.** No filter bar, no table. Just the categories and how big each
-one is.
+**Level 1 — category index.** No table, and no filter bar but one that sets what every row
+counts. Just the categories and how big each one is.
 
 ```erb
 <%= hero_panel icon: "icon", heading_level: :h1, id: "page-header",
@@ -3472,20 +3637,24 @@ one is.
   removable chip — a chip that drops it has nowhere to land. Build every chip URL against
   the category page so removing one keeps both the year and the category.
 - **Drop the category column** from the level-2 table. Every row has the same value.
-- **Level 1 gets no filter bar.** Filters narrow rows, and there are no rows here.
+- **Level 1 gets no filter bar.** Filters narrow rows, and there are no rows here. A bar that
+  sets what every row counts (site, year, type, status) is the exception and stays; its
+  export rides it in `filter_bar actions:`.
 - **Counts on level 1 are plain text**, not stat boxes: one `text-lg` summary line, plus
   `meta:` on each row — or `figures:` when the count splits into what is still owed and
   what is done (Available Sign-Ups' upcoming/past), never both. Constrain the row list to
-  `lg:w-3/4`.
+  `lg:w-3/4`, as any list of drill-down rows or roster of one-line rows may be.
 - **Badge only the exception count** on a row (`N expired`, `N inactive`), `size: "base"`,
-  and omit it entirely at zero. A badge on every row is noise.
+  and omit it entirely at zero. A badge on every row is noise. A count that marks the rows a
+  reader hunts for (`N on duty`) is badged the same way.
 - **Level-2 totals describe the category, not the filtered view** — `filter_bar count:`
   already reports the filtered slice as "Showing X of Y".
-- **The export follows the filters.** Level 1 has no bar, so its Export CSV sits in the
+- **The export follows the filters.** A level 1 with no bar keeps its Export CSV in the
   `button_row` beside Add Record. Level 2 has one, so its export moves into
   `filter_bar actions:` and that `button_row` keeps only Add Record.
 - **Two empty states on level 2**, and they say different things: filters matched nothing
-  vs. the category is empty for this year. One message for both strands the reader.
+  vs. the category is empty for this year. One message for both strands the reader. A page
+  whose filters are built from its own rows, and so cannot empty the table, needs only the second.
 - **Return links follow the category.** Detail, edit, and delete all come back to the
   category page the reader came from with its filters intact, not to level 1. Resolve the
   path from the record's own category so a create lands on the category it created.
@@ -3550,7 +3719,7 @@ kind of record gets its own line and pane partials in the same shape.
 
 - **One line per record**: name, what stands out, one coloured chip. Status, former
   handles, mentors and the history wait in the pane. A line that wraps on a laptop has too
-  much on it.
+  much on it. The mailbox's lines are the exception: party, subject and snippet, three lines each.
 - **The pane's header is the record's own**: the shared `_name_line` with the chips, the
   gray `_signal_line`, the Personnel warning when a flag is raised, the Add-note buttons
   (`_note_buttons`), then `_history`, its team sections in the gray line's team order. A
@@ -3609,8 +3778,10 @@ and the partial locals are in `docs/UI-COMPONENTS.md` › review-pane.
 
 ```erb
 <div class="mb-4">
-<%= button_link "Primary", :primary, path, icon: "icon" %>
-<%= button_link "Secondary", :secondary, path %>
+  <%= button_row do %>
+    <%= button_link "Primary", :primary, path, icon: "icon" %>
+    <%= button_link "Secondary", :secondary, path %>
+  <% end %>
 </div>
 ```
 
@@ -3725,6 +3896,8 @@ what its own select spelled disagrees with the control that set it.
 <%= t.cell row.status.titleize %>          <%# ❌ %>
 ```
 
+Print it bare, too: no brackets, quotes or italics around it.
+
 A status stored as a code rather than a word — badge status is `in_prep`,
 `do_not_print` — is the exception: print it through its label map
 (`Bmid::ManageHelper::STATUS_LABELS.fetch(status, status)`), never through
@@ -3785,6 +3958,8 @@ question down:
   carries its own casing
 - Body copy, help text, form hints, error messages, empty-state sentences and
   `panel.description` — these are prose and stay sentence case
+- Badge text keeps the casing it has, and checkbox and radio-option labels are
+  statements in sentence case (`design-content` > Title Case lists every label that does take it)
 
 ### One Verb per Action
 
@@ -3801,7 +3976,9 @@ question down:
 **Delete or Remove?** Ask whether the thing still exists afterwards. A deleted passkey is gone:
 "Delete Passkey". A shift you leave is still on the schedule: "Remove from Schedule". A submit
 that does more than store the record keeps its own verb: "Send Message", "Claim Ticket",
-"Create Account".
+"Create Account". A save names what it saves ("Save Camp Location"), never a bare "Save" or
+"Save Changes", and one action reads the same on every button that does it ("Bank Ticket", not
+"Bank It" on one page and "Bank for Later" on the next).
 
 ### Flash Messages
 
@@ -3823,8 +4000,15 @@ error flash follows [Validation and Error Messages](#validation-and-error-messag
 
 Ask with the action, then say what follows from it: `<Verb> <thing>?` plus a sentence on whether
 it can be undone. "Delete this note? This cannot be undone.", not "Are you sure you want to delete
-this note?" or "Really delete this note?". `delete_button` makes the confirm button red; a dialog
-built from `confirm_modal` passes `variant: :error`.
+this note?" or "Really delete this note?". `delete_button` asks this by default and makes the
+confirm button red; a dialog built from `confirm_modal` passes `variant: :error`. A confirm that
+destroys nothing (a sign-out, a download) asks with its action the same way, says what follows, and
+keeps its action's own variant.
+
+Every confirm is the app's dialog: `data-turbo-confirm`, or a controller that calls
+`Turbo.config.forms.confirm` as `status_warning_controller.js` does. Never `window.confirm`, leave-page
+guards included. Only closing or reloading the tab keeps the browser's own prompt, which a page
+cannot replace.
 
 ### Validation and Error Messages
 
@@ -3850,7 +4034,14 @@ end in a period, so join them with a space (`full_messages.join(" ")`), never `"
 - **Ellipsis** is one character, `…`, never three periods, placeholders included.
 - **Noun with a hyphen, verb in two words:** "your sign-up", "sign up for a shift"; "the check-in",
   "check in the radio". Never "signup" or "checkin".
-- **"un-submit"**, not "unsubmit". **An empty value** prints "—".
+- **"un-submit"**, not "unsubmit".
+- **An empty value** (nothing recorded) prints "—" through `value_or_dash`, in a table cell and anywhere else. A
+  label/value display on a profile may say "None stated" instead, through `none_stated` only. No hyphen, "none",
+  "unknown", "Not specified", "(blank)" or other wording of nothing. A word that states a fact the data records is
+  a value, not an empty one, and stays: "Never" for something that has not happened, "Self", "Anonymous",
+  "imported" for a record brought in without one, "hidden", "No limit", "Shift deleted". It prints plain or in
+  `text-stone-muted`, never in italics or wrapped in asterisks, hyphens or brackets. "—" means nothing recorded; a
+  zero is a value and prints as a number, in a grid cell as in a total.
 - **No exclamation marks** in flash messages or error messages.
 
 ### Dates, Times and Prices
@@ -3866,7 +4057,8 @@ end in a period, so join them with a space (`full_messages.join(" ")`), never `"
 | In running copy | `January 8`, `January 8, 2026` |
 | Long form | `Thursday, January 8, 2026` |
 | A chip with no room | `Thu 1/8 14:30` |
-| Admin logs, CSV, form field values | `2026-01-08 14:30:00`, `2026-01-08` |
+| Admin logs | `2026-01-08 14:30:00` (`LOG_TIME`) |
+| CSV, filter-bar chips, printed forms, form field values | `2026-01-08 14:30` (`CSV_TIME`, `CHIP_TIME`), `2026-01-08` |
 
 Never zero-pad the day. The year goes after the date, before the time. 24-hour clock everywhere. A
 timestamp already written into stored text (a record's comments column) keeps its format.

@@ -1,0 +1,4 @@
+id	severity	rule	ruling	file	line	pattern	note
+C0069	-	STYLE-01	V	app/assets/stylesheets/base.css	44	other	ambiguous STYLE-01: the rule bans CSS outside components/, yet 3944 lists base.css for exactly these element styles. Layered display:block.
+C0165	-	TYPE-02	V	app/assets/stylesheets/components/autocomplete.css	180	other	ambiguous TYPE-02: allows text-xs for non-essential footer text (486) but bans it for instructions (493); keyboard-shortcut footer at text-xs subtle, kbd chips text-xs mono.
+C0213	-	COLOR-03	R9	app/assets/stylesheets/login.css	144	typography	ambiguous COLOR-03: the playa-time line sets its <strong> in text-warning; the code does not show whether that marks a status or is emphasis.

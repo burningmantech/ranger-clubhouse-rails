@@ -35,7 +35,7 @@ class PartialsRenderTest < ActionView::TestCase
 
     { "action needed" => [PvrDashboard.for(potential: true), "Agreement Required"],
       "pending" => [PvrDashboard.for(eligible: true, mvr_approved: false), "MVR Approval Required First"],
-      "eligible to submit" => [PvrDashboard.for(eligible: true, signed: true), "New Vehicle Request"],
+      "eligible to submit" => [PvrDashboard.for(eligible: true, signed: true), "Add Vehicle Request"],
       "not yet eligible" => [PvrDashboard.for(potential: true, signed: true), "Not Yet Eligible"],
       "not permitted" => [PvrDashboard.for(signed: true), "Not Authorized"] }.each do |word, (dashboard, body)|
       render partial: "me/vehicles_dashboard/pvr_info", locals: { dashboard: }
@@ -75,9 +75,11 @@ class PartialsRenderTest < ActionView::TestCase
     @timesheets_unverified = 2
     @timesheets_pending = 1
     @missing_requests_pending = 1
+    @missing_requests_rejected = 1
 
     @have_outstanding = true
     render partial: "common/timesheet_confirm"
+    assert_match "1 rejected missing entry request", rendered
     @have_outstanding = false
     @final_confirmation = true
     render partial: "common/timesheet_confirm"

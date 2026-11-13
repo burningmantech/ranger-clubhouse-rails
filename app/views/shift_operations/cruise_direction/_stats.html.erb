@@ -9,7 +9,7 @@
   The wrapper renders even with no shift picked, so the stream has a target to
   land on once one is.
 %>
-<div id="cruise-direction-stats" class="flex flex-row flex-wrap gap-2 lg:gap-4">
+<%= ui_stat_row id: "cruise-direction-stats" do %>
   <% if board %>
     <%= ui_stat_box board.pod_count.to_s, "Pods", icon: "people-group", icon_type: :solid %>
     <%= ui_stat_box board.member_count.to_s, "Rangers Out",
@@ -20,4 +20,4 @@
                     variant: board.unassigned_count.positive? ? :warning : :secondary,
                     icon: "user-clock", icon_type: :solid %>
   <% end %>
-</div>
+<% end %>

@@ -59,7 +59,7 @@ export default class extends Controller {
         // The blank option first, then the country's, with the previous selection
         // kept where it exists among them; the blank one is selected otherwise.
         stateField.replaceChildren(
-            new Option("-", ""),
+            new Option("—", ""),
             ...this.stateOptions[countryCode].map((option) =>
                 new Option(option.label, option.value, false, option.value === currentValue))
         )
@@ -77,7 +77,7 @@ export default class extends Controller {
         stateField.disabled = true
 
         // Only the blank option
-        stateField.replaceChildren(new Option("-", ""))
+        stateField.replaceChildren(new Option("—", ""))
 
         this.addClearedStateField()
     }

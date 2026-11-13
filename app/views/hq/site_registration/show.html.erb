@@ -24,14 +24,14 @@
              event_info: @event_info, callsign: @person.callsign %>
   <% if @person_event.signed_motorpool_agreement %>
     <h3 class="heading-title text-success">
-      <%= fa_icon "check", :solid, end: 2 %>The Vehicle Use Protocol has been signed.
+      <%= fa_icon "check", :solid, end: 2 %>Vehicle Use Protocol Signed
     </h3>
   <% else %>
     <h3 class="heading-title text-warning">
-      <%= fa_icon "triangle-exclamation", :solid, end: 2 %>Vehicle Use Protocol <strong>not signed</strong>
-      &mdash; <%= @person.callsign %> may not drive Ranger gators, UTVs, or golf carts.
+      <%= fa_icon "triangle-exclamation", :solid, end: 2 %>Vehicle Use Protocol Not Signed
     </h3>
     <p>
+      <strong><%= @person.callsign %> may not drive Ranger gators, UTVs, or golf carts.</strong>
       Ask <%= @person.callsign %> whether they will drive Ranger gators, UTVs, or golf
       carts while on duty. If yes, send them to a kiosk to agree to the Vehicle Use
       Protocol.
@@ -43,25 +43,26 @@
   <%= render "hq/site_registration/radio_authorization_status",
              variant: :summary, person_event: @person_event,
              event_info: @event_info, callsign: @person.callsign %>
-  <hr class="my-4 border-base-300">
-  <%= render "hq/shared/provision_info",
-             event_periods: @event_periods, showers: @event_info.showers %>
+  <div class="mt-4 pt-3 border-t border-line">
+    <%= render "hq/shared/provision_info",
+               event_periods: @event_periods, showers: @event_info.showers %>
+  </div>
 <% end %>
 
 <%= turbo_frame_tag "site-registration-wizard" do %>
   <% if @person.on_site %>
-    <div class="my-4">
-      <%= button_action "Begin On-Site Registration", :primary,
+    <%= button_row class: "my-4" do %>
+      <%= button_action "Begin On-Site Registration", :secondary,
                         size: "lg", class: "w-full", disabled: true %>
-    </div>
+    <% end %>
   <% else %>
     <div data-controller="hq-wizard"
          data-action="click@document->hq-wizard#documentClick">
-      <div class="my-4">
+      <%= button_row class: "my-4" do %>
         <%= button_action "Begin On-Site Registration", :primary,
                           size: "lg", class: "w-full",
                           data: { action: "hq-wizard#start" } %>
-      </div>
+      <% end %>
       <%# Driven by hq-wizard, not the modal controller — that one auto-opens
           on connect and removes itself from the DOM on close, while this
           dialog opens on Begin and must survive a close to be reopenable.

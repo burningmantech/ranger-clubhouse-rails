@@ -47,7 +47,7 @@ class Admin::ActionLogsHelperTest < ActionView::TestCase
     # The table link, with its touch floor (LinkHelper::TABLE_LINK_CLASSES).
     assert_includes linked, "min-h-5"
     assert_equal "Deleted #123", action_log_person_label(nil, 123)
-    assert_equal "-", action_log_person_label(nil, nil)
+    assert_equal "—", action_log_person_label(nil, nil)
   end
 
   test "action_log_metadata_items renders browser details as a summary" do

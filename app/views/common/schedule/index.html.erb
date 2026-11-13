@@ -25,7 +25,7 @@
 <% end %>
 
 <% if training_preview %>
-  <%= ui_callout_box :info, title: "In-Person Training Sessions" do %>
+  <%= ui_callout_box :info, title: "In-Person Training Sessions", heading_level: :h2 do %>
     Training months and locations are listed to help you plan ahead. Once you complete the Online Course,
     you’ll be able to see exact training dates and sign up for a session.
   <% end %>
@@ -49,7 +49,7 @@
       <%= render partial: "common/scheduling/burn_weekend_shift_recommendation" %>
     <% end %>
 
-    <div class="<%= token_list "mt-4 flex flex-row flex-wrap gap-3", { "md:hidden": sidebar_actions } %>">
+    <div class="<%= token_list "mt-4 flex flex-row flex-wrap gap-3", { "lg:hidden": sidebar_actions } %>">
       <% if (@person.can_work? || !sidebar_actions) && !training_preview %>
         <%= button_link "#{@is_current_year ? "Available" : "Past"} Sign-Up",
                         :primary,
@@ -77,7 +77,7 @@
                         full_width: true, class: "text-base py-3" %>
       <% end %>
     </div>
-    <div class="<%= token_list "my-4", { "md:hidden": sidebar_actions } %>">
+    <div class="<%= token_list "my-4", { "lg:hidden": sidebar_actions } %>">
       <%= button_link "Export to Calendar", :secondary, schedule_export_path_builder.call(format: :ics),
                       icon: "download",
                       icon_type: :solid,
@@ -99,8 +99,10 @@
       <% end %>
     </div>
 
-    <div class="flex flex-col md:flex-row md:gap-6">
-      <div class="flex-1 min-w-0 order-2 md:order-1">
+    <%# The rail is desktop-only, so it needs no reordering: below lg the action
+        stack above stands in for it. %>
+    <div class="flex flex-col lg:flex-row gap-4">
+      <div class="flex-1 min-w-0">
         <% if @is_current_year %>
           <% if @overlapping_entries.any? %>
             <%= render partial: "common/scheduling/overlapping_sign_ups_list", locals: { overlapping_entries: @overlapping_entries } %>
@@ -137,12 +139,12 @@
       </div>
 
       <% if sidebar_actions %>
-        <div class="md:w-60 lg:w-72 shrink-0 order-1 md:order-2 mb-4 md:mb-0 md:sticky md:top-4 md:self-start">
-          <div class="hidden md:block mb-3">
+        <div class="hidden lg:block lg:w-72 shrink-0 lg:sticky lg:top-4 lg:self-start">
+          <div class="mb-3">
             <%= ui_section_title "Scheduling Actions" %>
           </div>
 
-          <div class="hidden md:flex flex-col gap-3">
+          <div class="flex flex-col gap-3">
             <% if @schedule_entries.any? %>
               <%= button_link "Export to Calendar", :secondary, schedule_export_path_builder.call(format: :ics),
                               icon: "download",
@@ -166,8 +168,7 @@
                     url: available_sign_ups_path_builder.call(year: @year),
                     icon: "calendar-plus",
                     icon_type: :solid,
-                    button_label: @is_current_year ? "View & Sign Up" : "View Past",
-                    options: { class: "ring-2 ring-warning" }
+                    button_label: @is_current_year ? "View & Sign Up" : "View Past"
                   ) %>
             <% end %>
 

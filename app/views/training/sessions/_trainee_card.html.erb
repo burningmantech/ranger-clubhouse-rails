@@ -18,7 +18,7 @@
 
   <div class="grow min-w-0">
     <div>
-      <span class="text-lg font-semibold"><%= person_display_link person, person.id %></span>
+      <span class="text-base lg:text-lg font-semibold"><%= person_display_link person, person.id %></span>
       <span class="text-stone-muted">· <%= trainee.status %></span>
       <% if trainee.is_active || trainee.is_retired || trainee.is_inactive %>
         <span class="text-stone-muted">· <%= pluralize trainee.years, "year" %></span>
@@ -32,8 +32,8 @@
     </div>
 
     <% if !session.art? && (trainee.is_inactive || trainee.is_retired) %>
-      <div class="font-semibold">
-        <%= fa_icon "person-walking-arrow-loop-left", :solid %>
+      <div class="text-warning font-semibold">
+        <%= fa_icon "triangle-exclamation", :solid, class: "icon-warning" %>
         As <%= trainee.is_retired ? "a retired" : "an inactive" %> Ranger, a full day's training is required.
       </div>
     <% end %>
@@ -50,15 +50,14 @@
       <% end %>
     </div>
 
-    <div class="mt-1">
-      <% if trainee.trainer_notes.any? %>
+    <%# A supplementary list: a card with no notes shows none. %>
+    <% if trainee.trainer_notes.any? %>
+      <div class="mt-1">
         <% trainee.trainer_notes.each do |note| %>
           <div><%= note.note %></div>
         <% end %>
-      <% else %>
-        <span class="text-stone-muted italic">No notes yet.</span>
-      <% end %>
-    </div>
+      </div>
+    <% end %>
 
     <div class="text-stone-muted text-sm mt-1">
       Signed up <%= zoned_datetime_format trainee.signed_up_at, tz: session.slot.timezone,
@@ -68,7 +67,7 @@
 
   <div class="shrink-0 flex flex-col items-end gap-2">
     <% if can_manage_session? %>
-      <%= button_link "Score", :primary,
+      <%= button_link "Score", :secondary,
                       training_session_edit_score_path(training_slug, session.slot.id, person.id),
                       icon: "pen-to-square", icon_type: :solid, data: { turbo_frame: "modal" } %>
     <% end %>

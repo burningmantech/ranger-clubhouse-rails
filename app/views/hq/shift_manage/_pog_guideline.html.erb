@@ -1,4 +1,4 @@
-<%# locals: (icon:, id:, heading:, emphasis: nil) %>
+<%# locals: (icon:, id:, heading:) %>
 <%# One meal pog guideline row: icon, headline, and a "Read more" expander whose
     body comes from the caller's block. Rendered with `render layout:` (same
     pattern as hq/shift_manage/_section). The read-more controller rewrites the
@@ -8,10 +8,9 @@
      data-read-more-more-text-value="Read More" data-read-more-less-text-value="Hide">
   <div class="pt-0.5"><%= fa_icon icon, :solid %></div>
   <div>
-    <div class="font-semibold <%= emphasis %>">
+    <div class="font-semibold">
       <%= heading %>
       <%= button_action "Read More", :ghost,
-                        class: "btn-link font-normal align-baseline",
                         "aria-expanded": "false", "aria-controls": id,
                         data: { read_more_target: "toggle",
                                 action: "click->read-more#toggle" } %>

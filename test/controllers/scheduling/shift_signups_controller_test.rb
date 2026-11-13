@@ -173,7 +173,7 @@ class Scheduling::ShiftSignupsControllerTest < ActionDispatch::IntegrationTest
 
     get scheduling_shift_signups_path(year: YEAR)
     assert_response :success
-    assert_equal [@dirt.title, "1", "1", "—", "No limit"], index_row(@dirt)
+    assert_equal [@dirt.title, "1", "1", "0", "No limit"], index_row(@dirt)
   end
 
   # A position can hold both kinds of shift at once. The sign-ups on the
@@ -190,7 +190,7 @@ class Scheduling::ShiftSignupsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     # Five people over four seats: everyone counted, the unlimited shift adding
     # none of its own.
-    assert_equal [@dirt.title, "2", "5 of 4", "—", "125%"], index_row(@dirt)
+    assert_equal [@dirt.title, "2", "5 of 4", "0", "125%"], index_row(@dirt)
   end
 
   test "only the chosen year is counted" do

@@ -139,6 +139,15 @@ module TeamsPositions
         "Everyone else on your list is left alone."
     end
 
+    # Whether the confirmed change can be taken back. A grant can be revoked
+    # here again; a revoke cancels sign-ups, and granting the team again does
+    # not bring them back.
+    def bulk_team_undo(change)
+      return "You can revoke it again from this page." if change.grant?
+
+      "This cannot be undone: granting it again does not restore cancelled sign-ups."
+    end
+
     # The colour and icon the results banner wears, per verdict. Kept out of the
     # view because "did this work?" has three answers, not two: a write that
     # raised, a list where nothing could be used, and a clean run.

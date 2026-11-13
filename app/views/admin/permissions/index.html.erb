@@ -22,13 +22,13 @@
 <% if can_manage %>
   <div class="my-4">
     <%= button_row do %>
-      <%= button_link "Create ART Permissions", :secondary, new_art_admin_permissions_path,
+      <%= button_link "Add ART Permissions", :secondary, new_art_admin_permissions_path,
                       icon: "wand-magic-sparkles", icon_type: :solid %>
     <% end %>
   </div>
 <% end %>
 
-<%= ui_section "System Permissions", icon: "shield-halved", icon_type: :solid, border: false do %>
+<%= ui_section "System Permissions", icon: "shield-halved", icon_type: :solid do %>
   <%= ui_table striped: true do |t| %>
     <%= t.header do %>
       <%= t.heading "ID", right: true %>

@@ -24,7 +24,7 @@
 <% if @event_dates.empty? %>
   <%= ui_empty_state "No event dates recorded yet.", icon: "calendar-days", icon_type: :regular %>
 <% else %>
-  <%= ui_section pluralize(@event_dates.size, "event date"), border: false do %>
+  <%= ui_section pluralize(@event_dates.size, "event date") do %>
     <%= ui_table striped: true do |t| %>
       <%= t.header do %>
         <%= t.heading "Year" %>

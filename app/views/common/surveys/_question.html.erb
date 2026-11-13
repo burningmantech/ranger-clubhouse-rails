@@ -29,10 +29,11 @@
   <% else %>
     <%= ui_empty_state "No one answered this question.", icon: "comment-slash", icon_type: :solid %>
   <% end %>
-<% elsif question.respond_to?(:slots) && question.slots.present? %>
+<% elsif question.respond_to?(:slots) && (answered = question.slots.select { |slot| slot.responses.present? }).any? %>
+  <%# Sessions no one commented on are left out; with none left the question
+      falls through to the empty state below. %>
   <div class="flex flex-col gap-6">
-    <% question.slots.each do |slot_response| %>
-      <% next if slot_response.responses.blank? %>
+    <% answered.each do |slot_response| %>
       <div>
         <%# ui_section's title is aria-level 2 under the page's h1, so a
             session heading inside it is an h3. %>

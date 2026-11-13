@@ -9,23 +9,27 @@
 <% all_earned = @qualifications.all_earned? %>
 <% closed_out = @qualifications.closed_out? %>
 
-<%# A notice, so its title stays a div (no heading_level).
-    text-base: the rows' secondary text size, so the card does not out-size what it caveats. %>
-<%= ui_accent_card "Important: Read Before Checking Your Progress", variant: :warning, icon: "circle-info",
-                   options: { id: "qualifications-important", class: "mb-4" } do %>
-  <ul class="list-bulleted space-y-2 text-base">
-    <li><strong>Hours are estimates:</strong> Sign-ups show potential hours. Actual earnings are based on time on duty.</li>
+<%# Reference goes in the page's one collapsed card; the warning stays visible. %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Are these hours final?</dt>
+    <dd>No. Sign-ups show potential hours. Actual earnings are based on time on duty.</dd>
     <% if @ineligible_duration.present? %>
-      <li>
-        <strong>Ineligible hours:</strong> <%= hour_minute_words @ineligible_duration %> of your volunteer hours do not
-        count toward provisions (e.g. training sessions).
-      </li>
+      <dt>Do all my hours count?</dt>
+      <dd>
+        No. <%= hour_minute_words @ineligible_duration %> of your volunteer hours do not count toward provisions
+        (e.g. training sessions).
+      </dd>
     <% end %>
-    <li><strong>Verification required:</strong> Final eligibility is confirmed after all timesheets are verified.</li>
-    <li class="text-error">
-      <strong>Non-transferable:</strong> Items cannot be sold or transferred. Attempting to do so results in revocation.
-    </li>
-  </ul>
+    <dt>When is eligibility final?</dt>
+    <dd>Final eligibility is confirmed after all timesheets are verified.</dd>
+  </dl>
+<% end %>
+
+<%# A notice, so its title stays a div (no heading_level). %>
+<%= ui_accent_card "Important: Items Are Non-Transferable", variant: :warning, icon: "circle-info",
+                   options: { id: "qualifications-important", class: "mb-4" } do %>
+  Items cannot be sold or transferred. Attempting to do so results in revocation.
 <% end %>
 
 <%# Green once every goal is earned, even while an upper tier still offers a step;
@@ -88,12 +92,9 @@
 
   <%= qualification_section "Ranger Clothing", @qualifications.section_state(:ranger_clothing) do %>
     <% if @qualifications.shiny_penny? %>
-      <div class="p-4 bg-warning/10 rounded-lg text-warning">
-        <h4 class="heading-title flex items-center gap-2 mb-1">
-          <%= fa_icon "star", :solid %> Welcome, Shiny Penny!
-        </h4>
-        <p>You are not eligible for additional clothing this year. You will be eligible starting next year.</p>
-      </div>
+      <%= ui_callout_box :warning, title: "Welcome, Shiny Penny!", icon: "star", heading_level: :h3 do %>
+        You are not eligible for additional clothing this year. You will be eligible starting next year.
+      <% end %>
     <% else %>
       <%= render "common/qualifications/qualification_row", item: @qualifications[:t_shirt],
                  subtext: "combined Pre-Event & Event Week hours only" %>

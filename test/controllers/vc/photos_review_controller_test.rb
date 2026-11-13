@@ -157,8 +157,12 @@ class Vc::PhotosReviewControllerTest < ActionDispatch::IntegrationTest
     assert_emails 0 do
       patch vc_photos_review_reject_path(photo), params: { person_photo: { reject_message: "nope" } }
     end
-    assert_redirected_to vc_photos_review_path
+    assert_response :unprocessable_content
     assert_equal PersonPhoto::SUBMITTED, photo.reload.status
+    assert_nil flash[:error]
+    assert_select "fieldset[aria-describedby=reject-reasons-error] #reject-reasons-error[role=alert]",
+                  /Mark one or more reasons/
+    assert_select "textarea[name=?]", "person_photo[reject_message]", text: "nope"
   end
 
   test "a non-hash person_photo param is read as no reasons rather than raising" do
@@ -168,7 +172,7 @@ class Vc::PhotosReviewControllerTest < ActionDispatch::IntegrationTest
     assert_emails 0 do
       patch vc_photos_review_reject_path(photo), params: { person_photo: "x" }
     end
-    assert_redirected_to vc_photos_review_path
+    assert_response :unprocessable_content
     assert_equal PersonPhoto::SUBMITTED, photo.reload.status
 
     get vc_photos_review_reject_preview_path(photo), params: { person_photo: "x" }
@@ -213,15 +217,19 @@ class Vc::PhotosReviewControllerTest < ActionDispatch::IntegrationTest
     assert_no_match vc_photos_review_reject_dialog_path(photo), response.body
   end
 
-  test "reject over turbo stream without reasons only reports the error" do
+  test "reject over turbo stream without reasons re-opens the dialog with the error" do
     photo = create_photo
     sign_in_as(@vc)
 
     patch vc_photos_review_reject_path(photo), params: { person_photo: { reject_message: "nope" } }, as: :turbo_stream
-    assert_response :success
+    assert_response :unprocessable_content
     assert_equal PersonPhoto::SUBMITTED, photo.reload.status
+    # Only the dialog comes back: the card stays as it was.
+    assert_select "turbo-stream", count: 1
+    assert_select "turbo-stream[action=?][target=?]", "replace", "modal"
     assert_match "Mark one or more reasons", response.body
-    assert_select "turbo-stream[action=?]", "replace", count: 0
+    assert_match "reject-reasons-error", response.body
+    assert_match "nope", response.body
   end
 
   # Dialogs and preview

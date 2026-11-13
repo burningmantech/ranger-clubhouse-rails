@@ -25,9 +25,9 @@
   <%= ui_stat_box number_with_delimiter(@report.corrections.decided), "Corrections Decided" %>
   <%= ui_stat_box number_with_delimiter(@report.missing.decided), "Missing Entries Decided" %>
   <%# The one count that is not a decision: an entry that no longer exists.
-      Amber because it is the number a reader is most likely to want to
-      explain, not because it is bad. %>
-  <%= ui_stat_box number_with_delimiter(@report.entries_deleted), "Entries Deleted", variant: :warning %>
+      Uncoloured like its neighbours: it is not a warning, and colour here
+      would only be emphasis. %>
+  <%= ui_stat_box number_with_delimiter(@report.entries_deleted), "Entries Deleted" %>
 <% end %>
 
 <% if @report.empty? %>

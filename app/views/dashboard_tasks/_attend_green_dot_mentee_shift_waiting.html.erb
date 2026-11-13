@@ -4,4 +4,4 @@
 <% if gd&.mentee_slot %>
   <p class="my-2"><%= fa_icon "clock", :solid %> <%= datetime_format gd.mentee_slot.begins, tz: gd.mentee_slot.timezone %></p>
 <% end %>
-<p class="text-sm text-stone-muted">Can't make it? <%= link_to "Schedule", me_schedule_path %></p>
+<p class="text-stone-muted">Can't make it? <%= link_to "Schedule", me_schedule_path %></p>

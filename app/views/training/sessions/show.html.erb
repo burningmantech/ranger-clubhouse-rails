@@ -6,7 +6,7 @@
     <%= @training.title %> — <%= training_session_time slot %>
   <% end %>
   <% panel.description do %>
-    <%= slot.description %> · <%= slot.begins_year %>
+    The roster, scores and trainers for the <%= slot.description %> session in <%= slot.begins_year %>.
   <% end %>
   <% panel.back_to do %>
     <%= back_to "#{slot.begins_year} Sessions", training_path(training_slug, year: slot.begins_year) %>

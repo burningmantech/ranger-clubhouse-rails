@@ -164,7 +164,7 @@ class Timesheets::TimesheetUnconfirmedControllerTest < ActionDispatch::Integrati
 
     assert_response :success
     assert_select "td[data-label=Email]", text: ApplicationController.helpers.value_or_dash(nil)
-    assert_select "td", text: /No phone/
+    assert_select "td[data-label=Phone]", text: ApplicationController.helpers.value_or_dash(nil)
     # Nothing to copy for that group, so only the other group keeps its button.
     assert_select "[data-controller='copy-to-clipboard']", count: 1
   end

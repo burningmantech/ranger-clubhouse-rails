@@ -32,19 +32,20 @@
              name: "MVR",
              is_position: true
   %>
-  <hr class="my-4 border-base-300">
-  <%= render "eligibility_list",
-             list: @pvr_teams,
-             title: "Personal Vehicle Eligible Team",
-             name: "Personal Vehicle"
-  %>
-  <%= render "eligibility_list",
-             list: @pvr_positions,
-             title: "Personal Vehicle Eligible Position",
-             name: "Personal Vehicle",
-             is_position: true,
-             no_advisory: true
-  %>
+  <div class="mt-4 pt-3 border-t border-line">
+    <%= render "eligibility_list",
+               list: @pvr_teams,
+               title: "Personal Vehicle Eligible Team",
+               name: "Personal Vehicle"
+    %>
+    <%= render "eligibility_list",
+               list: @pvr_positions,
+               title: "Personal Vehicle Eligible Position",
+               name: "Personal Vehicle",
+               is_position: true,
+               no_advisory: true
+    %>
+  </div>
 <% end %>
 
 <%= ui_section "Motor Vehicle Record (MVR) Flags", icon: "id-card", icon_type: :solid do %>

@@ -57,7 +57,7 @@
     </dl>
   <% end %>
 
-  <%= ui_section "Pogs by Type", icon: "utensils", icon_type: :solid, border: false do %>
+  <%= ui_section "Pogs by Type", icon: "utensils", icon_type: :solid do %>
     <%# Redeemed shows only in a year that holds a redeemed pog. %>
     <% show_redeemed = @report.redeemed.positive? %>
     <%= ui_table full_width: true, striped: true, caption: "Pogs issued in #{@year}, by type" do |t| %>
@@ -88,7 +88,7 @@
     <% end %>
   <% end %>
 
-  <%= ui_section "Pogs Issued by Day", icon: "calendar-day", icon_type: :solid, border: false do %>
+  <%= ui_section "Pogs Issued by Day", icon: "calendar-day", icon_type: :solid do %>
     <%# Empty when every pog the year holds was cancelled. %>
     <% if @report.days.empty? %>
       <%= ui_empty_state "No pogs were issued in #{@year}: every pog recorded was cancelled.",

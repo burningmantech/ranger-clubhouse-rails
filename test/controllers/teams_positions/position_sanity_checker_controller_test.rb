@@ -81,7 +81,7 @@ class TeamsPositions::PositionSanityCheckerControllerTest < ActionDispatch::Inte
   test "the card says what is under a band on the board, and a clear board has none" do
     get INDEX
 
-    assert_select "h2", text: "Clear"
+    assert_select "[role=heading]", text: "Clear"
     assert_report_card count: 0
 
     bonked = person(:bonked_ranger)

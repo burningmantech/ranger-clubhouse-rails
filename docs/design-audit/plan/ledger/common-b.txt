@@ -1,0 +1,95 @@
+R11981 || FIXED || app/views/common/available_sign_ups/_slot.html.erb:127 || Signed-up slot is ui_accent_card (success, warning on overlap); helper drops body mt-2 with no header. Open slot stays box box-default.
+F0039 || COMPLIANT || app/views/common/available_sign_ups/_slot.html.erb:108 || BTN-07 exempts one card's record actions; Show Sign-Ups and Add/Remove act on this slot only.
+R02424 || FIXED || app/views/common/scheduling/_confirm_signup_removal.html.erb:2 || Confirm now asks "Remove this shift from the schedule?" and says it can be added back while it has open spots.
+M0234 || FIXED || app/views/common/available_sign_ups/_training_months.html.erb:8 || Groups by month_name_format(begins), new in date_time_helper.rb (MONTH_NAME "%B").
+F0044 || FIXED || app/views/common/schedule/index.html.erb:28 || The preview callout's title is now an h2 (heading_level: :h2), so the month h3s sit under it.
+F0032 || FIXED || app/views/common/available_sign_ups/index.html.erb:26 || Online Course line inside the drill-down row is led by a circle-exclamation status icon.
+R11975 || FIXED || app/views/common/available_sign_ups/index.html.erb:34 || No-positions case is ui_empty_state.
+R11980 || FIXED || app/views/common/available_sign_ups/show.html.erb:75 || Both empty shift lists (75, 88) are ui_empty_state.
+R12038 || COMPLIANT || app/views/common/mentoring/_art_section.html.erb:34 || EMPTY-01: a cohort exists only with rows, so the list cannot be empty where drawn.
+R12034 || FIXED || app/views/common/mentoring/_mentee_card.html.erb:24 || Card body text-sm removed; body is text-base (R4).
+R02571 || FIXED || app/views/common/mentoring/_shift_card.html.erb:26 || Meter label/value row now text-base; the muted time line under the title stays text-sm (R4 second line).
+R12040 || FIXED || app/views/common/mentoring/index.html.erb:11 || Empty mentors list shows ui_empty_state inside the section.
+R12039 || FIXED || app/views/common/mentoring/index.html.erb:40 || Save Status sits in a button_row.
+R12041 || FIXED || app/views/common/mentoring/index.html.erb:73 || Italic "never" is now plain "Never" (a fact word, EMPTY-02).
+F0033 || FIXED || app/views/common/qualifications/index.html.erb:13 || Estimates, ineligible hours and verification moved into a collapsed "About This Report" card as Q&A; only the non-transferable warning stays visible.
+R12046 || FIXED || app/views/common/qualifications/index.html.erb:30 || Non-transferable is now the warning card's own text, no text-error emphasis; test updated for the new title.
+R12042 || FIXED || app/views/common/qualifications/index.html.erb:95 || Shiny Penny notice is ui_callout_box :warning with the star icon.
+F0043 || FIXED || app/views/common/qualifications/index.html.erb:95 || Callout title is an h3 under the section's h2.
+R11926 || FIXED || app/views/common/schedule/_people_signed_up.html.erb:10 || Limit-reached lines (10, 25) led by a circle-exclamation status icon.
+F0050 || FIXED || app/views/common/schedule/_people_signed_up.html.erb:36 || All four counts read "N sign-ups".
+R11928 || FIXED || app/views/common/schedule/_people_signed_up.html.erb:44 || All four empty lists are ui_empty_state.
+R02902 || FIXED || app/views/common/schedule/_signed_up_row.html.erb:6 || shadow-sm to shadow-xs; comment updated.
+M0018 || FIXED || app/views/common/schedule/_signed_up_row.html.erb:31 || sm:grid-cols-2 tier replaced by a flex-wrap below lg (time basis-full), lg grid unchanged.
+F0040 || COMPLIANT || app/views/common/schedule/_signed_up_row.html.erb:63 || BTN-07 exempts one card's record actions.
+R11918 || FIXED || app/views/common/scheduling/_confirm_signup_removal.html.erb:2 || Same shared partial as R02424: question plus whether it can be undone.
+R11904 || REJECTED || app/views/common/schedule/index.html.erb:47 || design-components: button_classes is the ButtonHelper call "for a <summary> that replaces" a button; marker hiding is needed on an inline summary.
+M0020 || FIXED || app/views/common/schedule/index.html.erb:52 || md:hidden to lg:hidden.
+M0021 || FIXED || app/views/common/schedule/index.html.erb:80 || md:hidden to lg:hidden.
+M0022 || FIXED || app/views/common/schedule/index.html.erb:104 || flex flex-col lg:flex-row gap-4; order swaps dropped (rail is lg-only).
+R11906 || FIXED || app/views/common/schedule/index.html.erb:104 || Page columns fold at lg with gap-4.
+M0024 || FIXED || app/views/common/schedule/index.html.erb:142 || Rail is hidden lg:block lg:w-72 lg:sticky.
+M0026 || FIXED || app/views/common/schedule/index.html.erb:142 || hidden md:flex/md:block inside the rail removed; the rail itself shows at lg.
+R11905 || FIXED || app/views/common/schedule/index.html.erb:171 || ring-2 ring-warning removed from the action_box.
+R11921 || FIXED || app/views/common/schedule/signup_summary.html.erb:8 || Three stat boxes in ui_stat_row.
+R11923 || FIXED || app/views/common/schedule/signup_summary.html.erb:28 || Earned/Scheduled legend moved into a collapsed "About This Report" card as Q&A.
+F0048 || FIXED || app/views/common/schedule/signup_summary.html.erb:28 || The text-primary info icon went with the legend line.
+M0487 || FIXED || app/views/common/schedule/signup_summary.html.erb:51 || Call-site comment added for responsive: false (period matrix read across).
+F0034 || FIXED || app/views/common/scheduling/_alpha_shift_info.html.erb:7 || Six paragraphs became a collapsed "How This Page Works" Q&A card; the arrive-early rule stays visible.
+F0035 || FIXED || app/views/common/scheduling/_alpha_shift_info.html.erb:15 || Shift-length paragraph split across two Q&A pairs, two sentences or fewer each.
+R11930 || FIXED || app/views/common/scheduling/_alpha_shift_info.html.erb:4 || Arrive-early warning is a ui_callout_box :error in sentence case, not capitals.
+R11931 || FIXED || app/views/common/scheduling/_burn_weekend_shift_recommendation.html.erb:5 || Classes removed from all three dt.
+M0429 || FIXED || app/views/common/scheduling/_burn_weekend_shift_recommendation.html.erb:15 || Same edit as R11931.
+R02961 || FIXED || app/views/common/scheduling/_linked_slots_full.html.erb:5 || dl is instruction-list, no dt classes, every dt a question.
+R11935 || FIXED || app/views/common/scheduling/_missing_requirements.html.erb:3 || Paragraphs and bare mail_to became a three-pair instruction-list; the address sits in its answer.
+F0049 || FIXED || app/views/common/scheduling/_missing_requirements_modal.html.erb:3 || "Missing Sign-Up Prerequisite(s)"; test updated.
+R02992 || FIXED || app/views/common/scheduling/_mvr_eligible.html.erb:45 || "No exceptions." paragraph is text-base.
+F0042 || FIXED || app/views/common/scheduling/_signup_blockers.html.erb:13 || The three h4s are h2s (the banner title is a div; the page h1 is above).
+R11940 || FIXED || app/views/common/scheduling/_signup_blockers.html.erb:9 || Ban icon wrapper uses icon-error like its siblings.
+R11942 || FIXED || app/views/common/scheduling/_signup_blockers.html.erb:49 || text-error dropped from the requirement list.
+R11945 || FIXED || app/views/common/scheduling/_signup_blockers.html.erb:58 || Divider is mt-4 pt-3 border-t border-line.
+R11943 || FIXED || app/views/common/scheduling/_signup_blockers.html.erb:60 || icon-warning removed from the mail link.
+R11947 || BLOCKED || app/views/common/scheduling/_slot_additional_info.html.erb:27 || ButtonHelper has no text-link variant. Needs `link: "btn-link"` in button_helper.rb VARIANT_CLASSES; then button_action ..., :link without the class override.
+R11946 || FIXED || app/views/common/scheduling/_slot_additional_info_modal.html.erb:2 || Modal has m.title "Shift Added" (it opens after a successful sign-up); helper still appends the Close footer.
+R11951 || FIXED || app/views/common/shift_manage/_alerts.html.erb:83 || text-error removed from the no-privilege strong, matching its sibling.
+R11953 || FIXED || app/views/common/shift_manage/_blocked_modal.html.erb:21 || "logged and reviewed" line now led by a status icon; line 4 already had its icon.
+R11957 || FIXED || app/views/common/shift_manage/_correct_position_modal.html.erb:20 || Width through width: "w-full sm:w-96" (position titles run long), class removed.
+F0047 || FIXED || app/views/common/shift_manage/_on_duty.html.erb:39 || "End Shift & Request Correction", matching the entry card's "Request Correction"; test updated.
+F0036 || FIXED || app/views/common/shift_manage/_start_shift.html.erb:43 || Per-row Start Shift buttons are :secondary; the form's submit is the section's one primary (R7).
+R11966 || FIXED || app/views/common/shift_manage/_start_shift.html.erb:75 || Width through width: "w-full sm:w-96".
+R11971 || FIXED || app/views/common/shift_manage/_too_short_modal.html.erb:7 || "NOT ended" line led by a circle-exclamation status icon.
+R11968 || FIXED || app/views/common/shift_manage/_too_short_modal.html.erb:13 || The three option cards take heading_level: :h4 under the modal's h3.
+F0038 || FIXED || app/views/common/shift_manage/_too_short_modal.html.erb:31 || variant: :secondary removed; delete_button is :error.
+R11970 || FIXED || app/views/common/shift_manage/_too_short_modal.html.erb:38 || "Delete this timesheet entry? This cannot be undone."
+R12010 || COMPLIANT || app/views/common/timesheet/_entry_with_action.html.erb:25 || SPACE-01: px-3 py-2 are scale steps with no arbitrary value; dense repeated card.
+R12006 || FIXED || app/views/common/timesheet/_entry_with_action.html.erb:60 || Pending, rejected, bug and in-progress lines each led by a status icon.
+R03161 || FIXED || app/views/common/timesheet/_entry_with_action.html.erb:95 || .me-muted to text-stone-muted.
+F0046 || FIXED || app/views/common/timesheet/_entry_with_action.html.erb:114 || "Submit Appeal" to "Appeal Decision".
+R03172 || FIXED || app/views/common/timesheet/_listing.html.erb:4 || Entry card is ui_card (aria-labelledby kept).
+R03174 || FIXED || app/views/common/timesheet/_listing.html.erb:20 || .me-muted to text-stone-muted.
+R12001 || FIXED || app/views/common/timesheet/_listing_with_actions.html.erb:6 || Frame carries no classes; the ui_card is inside _entry_with_action so the turbo_stream.update redraws it.
+R03202 || FIXED || app/views/common/timesheet/edit.html.erb:16 || Each dt is a question ("Is the position correct?"); the current value moved into the dd.
+R12011 || FIXED || app/views/common/timesheet/edit.html.erb:16 || Same edit for all three pairs (16, 23, 30).
+R12013 || FIXED || app/views/common/timesheet/edit.html.erb:80 || Divider is mt-4 pt-3 border-t border-line.
+M0143 || FIXED || app/views/common/timesheet/edit.html.erb:85 || Submit and hero title read "Request Correction".
+R12014 || FIXED || app/views/common/timesheet/edit.html.erb:86 || back_to "Entries" replaced by cancel_link to the same path.
+R11993 || FIXED || app/views/common/timesheet/index.html.erb:24 || Stat labels Title Case: Entries, Verified, Unverified, Pending.
+M0027 || FIXED || app/views/common/timesheet/index.html.erb:50 || md:hidden to lg:hidden.
+M0028 || FIXED || app/views/common/timesheet/index.html.erb:87 || flex flex-col lg:flex-row gap-4; order swaps dropped.
+R11997 || FIXED || app/views/common/timesheet/index.html.erb:87 || Page columns fold at lg with gap-4.
+F0045 || FIXED || app/views/common/timesheet/index.html.erb:93 || "Action Required or Pending Correction Review".
+M0030 || FIXED || app/views/common/timesheet/index.html.erb:117 || Rail is hidden lg:block lg:w-72 lg:sticky.
+M0032 || FIXED || app/views/common/timesheet/index.html.erb:117 || Inner hidden md:flex/md:block removed; the rail shows at lg.
+R11995 || FIXED || app/views/common/timesheet/index.html.erb:130 || ring-2 ring-warning removed; the two <br> html_safe descriptions are plain strings.
+F0037 || FIXED || app/views/common/timesheet/index.html.erb:140 || Rail keeps one primary: Missing Requests, or Hours & Credits when corrections are off; the rest :secondary.
+R12030 || COMPLIANT || app/views/common/training/_education_detail.html.erb:22 || EMPTY-02: "Not signed up for a session." states a recorded fact, plain text.
+R12019 || FIXED || app/views/common/work_history/entire_year.html.erb:9 || Badge row became ui_stat_row with three ui_stat_box above the section; test updated.
+R12020 || COMPLIANT || app/views/common/work_history/entire_year.html.erb:16 || EMPTY-01: reached only from a non-empty matrix cell; the controller answers 422 for no entries.
+R03340 || COMPLIANT || app/views/common/work_history/entire_year.html.erb:29 || R4: muted text-sm second line under the cell's main value.
+R12022 || FIXED || app/views/common/work_history/position_all.html.erb:6 || Badge row became ui_stat_row with two ui_stat_box.
+R12024 || COMPLIANT || app/views/common/work_history/position_all.html.erb:13 || EMPTY-01: reached only from a non-empty matrix cell.
+R12023 || FIXED || app/views/common/work_history/position_all.html.erb:15 || Per-year label is ui_subheading (h3, title weight) under the section h2.
+R03353 || FIXED || app/views/common/work_history/position_all.html.erb:15 || Hours aside is base size inside the subheading; the Echelon note (31) is an R4 second line.
+R12025 || FIXED || app/views/common/work_history/position_summary.html.erb:9 || Badge row became ui_stat_row with three ui_stat_box.
+R12026 || COMPLIANT || app/views/common/work_history/position_summary.html.erb:16 || EMPTY-01: reached only from a non-empty matrix cell.
+R03364 || COMPLIANT || app/views/common/work_history/position_summary.html.erb:28 || R4: muted text-sm second line under the cell's main value.

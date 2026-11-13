@@ -1,7 +1,6 @@
 <%# locals: (entry:,position_options:) %>
-<%= ui_callout_box :warning do %>
-  <div class="text-xl font-semibold mb-1">Use this form only for missing timesheet entries.</div>
-  If <%= timesheet_self_serve? ? "you need" : "#{timesheet_person.callsign} needs" %> to correct an existing entry,
+<%= ui_callout_box :warning, title: "Missing Entries Only" do %>
+  Use this form only for missing timesheet entries. If <%= timesheet_self_serve? ? "you need" : "#{timesheet_person.callsign} needs" %> to correct an existing entry,
   return to the Timesheet Listing and click Request Correction.
 <% end %>
 
@@ -51,7 +50,7 @@
   <% end %>
 
   <%= button_row class: "mt-4" do %>
-    <%= f.submit "Submit Request" %>
+    <%= f.submit "Save Request" %>
     <%= cancel_link timesheet_missing_requests_path %>
   <% end %>
 <% end %>

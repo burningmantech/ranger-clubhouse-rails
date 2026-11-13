@@ -18,7 +18,7 @@
   The count says "none" rather than "0": zero is the number a shift lead is
   scanning for, and a word carries it to a reader who is not seeing the colour.
 %>
-<% have_heading = report.on_duty? ? "On duty" : "Signed up" %>
+<% have_heading = report.on_duty? ? "On Duty" : "Signed Up" %>
 <div id="shift-lead-below-min" class="mb-4 lg:max-w-3xl">
   <% if report.fully_staffed? %>
     <%= ui_section "Below Minimum", icon: "circle-check", icon_type: :solid,
@@ -38,7 +38,7 @@
         outline while the fully-staffed branch below kept its heading. The role
         goes inside the summary so the summary keeps its own button semantics. %>
     <%= ui_disclosure safe_join([fa_icon("triangle-exclamation", :solid, class: "icon-warning", end: 1),
-                                 tag.span("#{pluralize(report.below_min.size, "position")} below minimum",
+                                 tag.span("#{pluralize(report.below_min.size, "Position")} Below Minimum",
                                           class: "font-semibold", role: "heading", "aria-level": "2")]),
                       variant: :card, class: "mb-4" do %>
       <%= ui_table full_width: true, striped: true, responsive: false do |t| %>

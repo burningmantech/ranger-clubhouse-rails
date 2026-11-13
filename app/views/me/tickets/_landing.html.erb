@@ -34,12 +34,12 @@
 
   section_meta = {
     ticket: { title: ticket_label, icon: "ticket", path: me_tickets_ticket_path },
-    gift: { title: "Gift tickets", icon: "gift", path: me_tickets_gift_path },
+    gift: { title: "Gift Tickets", icon: "gift", path: me_tickets_gift_path },
     vehicle_pass: { title: "Vehicle Pass", icon: "car-side", path: me_tickets_vehicle_pass_path },
     provisions: { title: "Provisions", icon: "gear", path: me_tickets_provisions_path },
     sap: { title: "Setup Access Pass (SAP)", icon: "passport", path: me_tickets_sap_path },
-    sap_so: { title: "SAPs for significant others", icon: "people-group", path: me_tickets_sap_so_path },
-    review: { title: "Confirm your choices", icon: "flag-checkered", path: me_tickets_review_path }
+    sap_so: { title: "SAPs for Significant Others", icon: "people-group", path: me_tickets_sap_so_path },
+    review: { title: "Confirm Your Choices", icon: "flag-checkered", path: me_tickets_review_path }
   }
 
 
@@ -149,7 +149,7 @@
         <div class="two-column-lg">
           <% checklist.each do |sec| %>
             <% meta = section_meta[sec.key] %>
-            <div class="flex flex-col gap-3 rounded-lg border border-line p-4">
+            <%= ui_card class: "gap-3 p-4" do %>
               <div class="flex items-start justify-between gap-3">
                 <div class="flex items-start gap-2 min-w-0">
                   <%= fa_icon meta[:icon], :solid, class: "text-stone-icon mt-1 shrink-0" %>
@@ -167,7 +167,7 @@
                   <% end %>
                 </div>
               <% end %>
-            </div>
+            <% end %>
           <% end %>
         </div>
       <% end %>
@@ -185,7 +185,7 @@
       <%= ui_section "Your Ticketing Steps", icon: "clipboard-list", icon_type: :solid do %>
         <% unless admin_view %>
           <div class="mb-4">
-            <%= button_link (@ticket_package.started_at ? "Continue ticketing" : "Start ticketing"), :primary,
+            <%= button_link (@ticket_package.started_at ? "Continue Ticketing" : "Start Ticketing"), :primary,
                             section_meta[presenter.next_undecided_step][:path],
                             size: "lg", icon: "arrow-right", icon_type: :solid %>
           </div>

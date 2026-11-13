@@ -372,7 +372,7 @@ class Admin::OnlineCoursesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "body", text: /2026 · Training \(Everyone\)/
-    assert_select "body", text: /— none —/
+    assert_select "tr", text: /2027 Draft Course.*—/m
     assert_select "a[href=?]", new_admin_online_course_path(year: 2026, course_id: 77, course_name: "2027 Draft Course")
   end
 end

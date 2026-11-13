@@ -1,0 +1,69 @@
+R12355 || COMPLIANT || app/helpers/asset_management/radio_checkout_helper.rb:19 || New BTN-05 wording: a view toggle marks the current view :primary, the other :secondary. This pair does exactly that.
+R12440 || FIXED || app/helpers/vehicles/paperwork_helper.rb:118 || Dropped opacity-60 from zero-count chips (BADGE-01: class is layout only); each chip already states its count, e.g. "0 teams".
+R00900 || FIXED || app/helpers/vehicles/paperwork_helper.rb:134 || Detail-group body is primary content: removed text-sm so it renders at text-base (R4).
+R12443 || FIXED || app/helpers/vehicles/paperwork_helper.rb:157 || Both italic "- none -" lines (paperwork_sources, paperwork_signups) now print value_or_dash(nil), "—" (R6).
+R00910 || COMPLIANT || app/helpers/vehicles/registry_helper.rb:173 || R4: a muted second line under the cell's main value (owner, status) may be text-sm; this one is text-sm text-stone-muted.
+R12448 || FIXED || app/helpers/vehicles/registry_helper.rb:189 || vehicle_eligibility_sources returns value_or_dash(nil) instead of the word "none" (R6).
+R12350 || FIXED || app/views/asset_management/radio_assets/index.html.erb:68 || The single view-switch link (Full Roster / Summarized View) is navigation, not the main action: now :secondary.
+F0093 || COMPLIANT || app/views/asset_management/records/_form.html.erb:20 || Guide FORM-07 now: in a form_row of side-by-side fields each fills its share (w-full + flex-1). Every flagged field is in a form_row.
+F0074 || FIXED || app/views/asset_management/records/new.html.erb:2 || Hero title New Asset -> Add Asset.
+R12381 || COMPLIANT || app/views/asset_management/records/type.html.erb:100 || BTN-07 exempts one row's record actions; these are a table row's Details/Edit pair.
+R12249 || FIXED || app/views/hq/shared/_danger_notices.html.erb:23 || Removed text-error from the strong "Do not start their Alpha shift." inside the error callout; weight carries it.
+F0097 || FIXED || app/views/hq/shared/_header.html.erb:12 || Description is now one sentence of purpose: "Help <callsign> at the HQ Window: on-site registration, shifts, assets, and provisions."
+R12254 || COMPLIANT || app/views/hq/shared/_provision_info.html.erb:9 || LAYOUT-02: an item grid inside a section picks its own gap and may use a content wrap; this is the meals/showers item wrap.
+F0091 || COMPLIANT || app/views/hq/shared/_summary_column.html.erb:21 || BTN-07 exempts a card's record actions; the button belongs to the person summary card. A button_row would also left-align it in the centred column on phones.
+R12260 || FIXED || app/views/hq/shared/_warning_modals.html.erb:13 || Removed text-warning/text-error from the three emphasised strongs (lines 13, 25, 38); weight and icon remain.
+F0088 || FIXED || app/views/hq/shift_manage/_asset_table.html.erb:36 || Row Check In buttons are now :secondary; the section's checkout submit stays its one primary (R7).
+F0077 || FIXED || app/views/hq/shift_manage/_correction_modal.html.erb:31 || Title Request Timesheet Correction, submit Request Correction (matches HQ timesheets page's "Request Correction").
+F0076 || FIXED || app/views/hq/shift_manage/_missing_request_modal.html.erb:5 || Title Add Missing Timesheet Request (matches its opener), submit Save Missing Timesheet Request; callout copy now names Request Correction.
+R12282 || FIXED || app/views/hq/shift_manage/_other_entries.html.erb:11 || Divider now mt-4 pt-3 border-t border-line.
+R12301 || FIXED || app/views/hq/shift_manage/_pog_cancel_modal.html.erb:22 || modal_form_footer passes variant: :error, so the cancel-pog submit is red.
+R12298 || FIXED || app/views/hq/shift_manage/_pog_guideline.html.erb:11 || Removed the emphasis local (text-error) from the partial and its one caller in _pog_guidelines.
+R04274 || FIXED || app/views/hq/shift_manage/_pog_guideline.html.erb:13 || Dropped class "btn-link font-normal align-baseline" from the Read More button_action; plain :ghost button.
+R12296 || FIXED || app/views/hq/shift_manage/_pog_guideline.html.erb:13 || Same fix as R04274: no btn-link restyling on the ButtonHelper button (BTN-02).
+F0087 || FIXED || app/views/hq/shift_manage/_pogs.html.erb:57 || Record Full Meal Pog stays :primary; Record 1/2 Meal Pog, Record Shower Pog and the row Redeem are :secondary (R7).
+R04300 || FIXED || app/views/hq/shift_manage/_pogs.html.erb:104 || Message now "Redeem this 1/2 Meal Pog for a Full Meal Pog? This cannot be undone." (no un-redeem op exists).
+R12266 || WAIVED || app/views/hq/shift_manage/_section.html.erb:30 || approved exception 2026-11-12: HQ guided-flow section is purpose-built
+F0096 || FIXED || app/views/hq/shift_manage/_section.html.erb:36 || Section title is now an h2 inside the summary (same size/weight/ink), so the h3s inside follow h1 > h2.
+R04320 || FIXED || app/views/hq/shift_manage/_todo_chip.html.erb:32 || Chip glyph drawn by fa_icon (ban/check solid, circle regular); hq-shift JS still repaints the i className.
+R12275 || FIXED || app/views/hq/shift_manage/_todo_chip.html.erb:32 || Same fix as R04320: raw i replaced with fa_icon.
+R12269 || WAIVED || app/views/hq/shift_manage/_todo_list.html.erb:23 || approved exception 2026-11-12: pinned checklist strip is purpose-built
+R04328 || WAIVED || app/views/hq/shift_manage/_todo_list.html.erb:23 || approved exception 2026-11-12: pinned bar keeps its shadow-lg
+R12272 || FIXED || app/views/hq/shift_manage/_todo_list.html.erb:65 || Template icon is now fa_icon "circle" (same classes the JS clones).
+R12281 || COMPLIANT || app/views/hq/shift_manage/_verification.html.erb:25 || EMPTY-01: a supplementary review list inside the shift section may render nothing; the section's own actions remain.
+F0078 || FIXED || app/views/hq/shift_manage/_verification.html.erb:92 || Row button Submit Correction -> Request Correction.
+F0089 || FIXED || app/views/hq/shift_manage/index.html.erb:61 || Read N Messages is now :secondary; Begin On-Site Registration stays the page's one primary (the blocking gate).
+F0084 || FIXED || app/views/hq/shift_manage/index.html.erb:68 || Section titles End the Shift / Start a Shift (comment in _other_entries updated). HqTodo labels in app/lib are not mine and still read "End The Shift".
+F0082 || FIXED || app/views/hq/site_registration/_radio_authorization_status.html.erb:11 || h3s are Title Case labels (Radio Checkout Agreement Signed/Not Signed, Shift Radios Only); the instructions moved into body text.
+R04402 || NEEDS-APPROVAL || app/views/hq/site_registration/_radios_step.html.erb:10 || The step lives in a top-layer dialog where a layout toast is dimmed behind it; a toast would need a top-layer toast region (shared JS/layout) and a controller change.
+R12319 || COMPLIANT || app/views/hq/site_registration/_radios_step.html.erb:24 || EMPTY-01: supplementary table under the checkout form; with nothing checked out it may render nothing.
+F0090 || FIXED || app/views/hq/site_registration/show.html.erb:54 || The disabled Begin On-Site Registration shown when already on site is now :secondary; Start Shift Check-In is the one primary.
+F0083 || FIXED || app/views/hq/site_registration/show.html.erb:27 || h3s Vehicle Use Protocol Signed / Not Signed; the may-not-drive sentence moved into the paragraph as strong text.
+R04421 || FIXED || app/views/hq/site_registration/show.html.erb:46 || hr replaced by a div with mt-4 pt-3 border-t border-line around provision_info.
+F0092 || FIXED || app/views/hq/site_registration/show.html.erb:54 || Both Begin On-Site Registration buttons now sit in button_row class: "my-4".
+R12308 || COMPLIANT || app/views/hq/site_registration/show.html.erb:70 || Guide MODAL-01 now exempts the HQ wizard from ModalHelper.
+R04418 || COMPLIANT || app/views/hq/site_registration/show.html.erb:78 || Part of the exempt HQ wizard: each step carries its own title bar, which m.title cannot do.
+R04417 || COMPLIANT || app/views/hq/site_registration/show.html.erb:83 || Part of the exempt HQ wizard, as R04418.
+R12330 || COMPLIANT || app/views/hq/tickets_provisions/_row.html.erb:6 || EMPTY-01: a nil item is a provision that does not apply; one row of a fixed list, not a list the reader came for.
+F0098 || FIXED || app/views/pogs/administration/edit.html.erb:8 || Description now "Change the type, status, or notes of the pog issued <date> by <name>." Test updated.
+R12390 || COMPLIANT || app/views/quartermaster/alpha_shirts/index.html.erb:49 || LAYOUT-02: an item grid of size runs picks its own gap; not page columns.
+R12392 || FIXED || app/views/quartermaster/alpha_shirts/index.html.erb:53 || Empty size run now ui_empty_state "No sizes recorded for this shirt."
+R07404 || FIXED || app/views/quartermaster/alpha_shirts/index.html.erb:124 || Email line is not a muted second line, so text-sm removed (R4).
+R12406 || COMPLIANT || app/views/quartermaster/freaking_years/show.html.erb:35 || EMPTY-01: cannot be empty where drawn; the controller redirects an empty group.
+R12408 || COMPLIANT || app/views/quartermaster/potential_shirts/index.html.erb:65 || LAYOUT-02: an item grid inside the page picks its own gap.
+R12410 || FIXED || app/views/quartermaster/potential_shirts/index.html.erb:69 || A kind with no lines now shows ui_empty_state "No order lines for this shirt." instead of a header-only table.
+F0095 || FIXED || app/views/quartermaster/swag/index.html.erb:14 || Replaced the Items stat box with the level-1 text-lg line "Showing N swag types with M items".
+R12430 || COMPLIANT || app/views/quartermaster/swag/index.html.erb:18 || EMPTY-01: a fixed catalogue; every TYPE_LABELS type is always listed, zero counts included.
+F0075 || FIXED || app/views/quartermaster/swag/new.html.erb:4 || Hero title New Swag -> Add Swag.
+F0085 || FIXED || app/views/vehicles/paperwork/index.html.erb:175 || Detail headings Record Eligible Via, Eligible Sign-Ups, Personal Vehicle Eligible Via. Test updated.
+M0057 || FIXED || app/views/vehicles/registry/_form.html.erb:49 || Class select width moved from html class: to width: "w-full sm:w-56".
+M0058 || FIXED || app/views/vehicles/registry/_form.html.erb:61 || License state select width moved from html class: to width:.
+R11445 || FIXED || app/views/vehicles/registry/_form.html.erb:84 || hr replaced by a div with mt-4 pt-3 border-t border-line around the personal-vehicle lists.
+F0080 || FIXED || app/views/vehicles/registry/_form.html.erb:132 || Labels Save Vehicle and Delete Vehicle in Title Case.
+F0079 || FIXED || app/views/vehicles/registry/_form.html.erb:132 || Submit reads Save Vehicle for new and edit alike.
+F0099 || FIXED || app/views/vehicles/registry/edit.html.erb:3 || Description "Change the details, permit, and request status of <vehicle> for <year>."
+R11480 || COMPLIANT || app/views/vehicles/registry/index.html.erb:130 || R4: a muted second line under the cell's main value may be text-sm; this is text-sm text-stone-muted under the description.
+R12451 || COMPLIANT || app/views/vehicles/registry/index.html.erb:136 || BTN-07 exempts one row's record actions (Edit, Permit).
+F0086 || FIXED || app/views/vehicles/registry/index.html.erb:150 || Detail headings Motor Vehicle Record Eligible Via / Eligible Sign-Ups, Personal Vehicle Eligible Via. Test updated.
+F0100 || FIXED || app/views/vehicles/registry/permit.html.erb:5 || Description "Check the permit and items for <vehicle>."
+F0081 || FIXED || app/views/vehicles/registry/permit.html.erb:49 || Section titles Approved Items / Requested Items.

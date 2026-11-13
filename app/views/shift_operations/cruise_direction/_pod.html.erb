@@ -48,7 +48,7 @@
       </div>
 
       <% if card.empty? %>
-        <p class="text-stone-subtle italic py-2">No one is in this pod yet.</p>
+        <%= ui_empty_state "No one is in this pod yet." %>
       <% end %>
 
       <%# The list is a drop target even when empty, so a Ranger can be dragged

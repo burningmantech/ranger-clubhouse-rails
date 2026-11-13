@@ -35,14 +35,16 @@
 <% end %>
 
 <% if Current.admin? && @is_current_year %>
-  <%= ui_section "Asset Authorization" do %>
+  <%= ui_section "Asset Authorization", icon: "file-signature", icon_type: :solid do %>
     <%= ui_callout_box :warning, title: "Before You Save" do %>
       Recording a signature on someone else's behalf may expose the organization to legal liability.
     <% end %>
 
     <%= ui_form(@person_event, authorization_person_assets_path(@person, year: @year), method: :patch) do |f| %>
       <%= f.check_box :asset_authorized, label: "#{Current.year} Asset Authorization Agreement signed" %>
-      <%= f.submit "Save" %>
+      <%= button_row do %>
+        <%= f.submit "Save" %>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>

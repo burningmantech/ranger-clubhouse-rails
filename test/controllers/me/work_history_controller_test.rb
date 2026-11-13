@@ -122,7 +122,7 @@ class Me::WorkHistoryControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     # Active ranger has 2 OOD entries in 2023
-    assert_match /2 entries/, response.body
+    assert_select "div", text: /\A\s*2\s*Entries\s*\z/
   end
 
   test "position_summary returns unprocessable_entity for invalid position" do

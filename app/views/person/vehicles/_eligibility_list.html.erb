@@ -31,13 +31,13 @@
         <% end %>
       <% end %>
     <% else %>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <% list.each do |item| %>
           <div><%= item.title %></div>
         <% end %>
       </div>
     <% end %>
   <% else %>
-    No <%= title %>s
+    <%= ui_empty_state "No #{title}s" %>
   <% end %>
 </div>

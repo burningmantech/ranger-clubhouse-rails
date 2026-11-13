@@ -240,7 +240,7 @@ class Training::TrainedNoWorkControllerTest < ActionDispatch::IntegrationTest
 
     @shift.update!(active: false)
     get training_trained_no_work_path("in-person", year: YEAR)
-    assert_match(/no working positions/, response.body)
+    assert_match(/no shift positions/, response.body)
   end
 
   test "the view gate matches the interface: ART trainers get their ART only" do

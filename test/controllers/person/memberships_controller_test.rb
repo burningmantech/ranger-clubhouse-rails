@@ -50,7 +50,7 @@ class Person::MembershipsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1, h2", text: /Manage Teams & Positions .* TestRanger/i
-    assert_select "h3", text: /General Positions/i, count: 1
+    assert_select "h2", text: /General Positions/i, count: 1
     assert_select "span", text: /General Support/
     assert_select "span", text: /All Accounts/
     assert_select "article#team-box-#{teams(:council_cadre).id}", text: /Council Cadre/
@@ -58,6 +58,11 @@ class Person::MembershipsControllerTest < ActionDispatch::IntegrationTest
     # The permission list is a native <details> dropdown named for assistive tech.
     assert_select "details.dropdown > summary", text: /1 Permission/
     assert_select "ul[aria-label='Granted Permissions'] li", text: "Admin"
+    council = teams(:council_cadre).id
+    assert_select "label[for=team-#{council}] > input#team-#{council}[name=?][value=?]",
+                  "person_membership_form[team_ids][]", council.to_s
+    assert_select "label[for=team-manager-#{council}]", text: "Is Team Manager"
+    assert_select "input[type=hidden][name=?]", "person_membership_form[team_ids][]", count: 1
   end
 
   test "non-admin edit only shows manageable teams" do
@@ -66,7 +71,7 @@ class Person::MembershipsControllerTest < ActionDispatch::IntegrationTest
     get edit_person_membership_path(@target)
 
     assert_response :success
-    assert_select "h3", text: /General Positions/i, count: 0
+    assert_select "h2", text: /General Positions/i, count: 0
     assert_select "article#team-box-#{teams(:mentor_cadre).id}", text: /Mentor Cadre/
     assert_select "article#team-box-#{teams(:green_dot_cadre).id}", text: /Green Dot Cadre/
     assert_select "article#team-box-#{teams(:council_cadre).id}", count: 0

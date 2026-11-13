@@ -37,7 +37,7 @@
                     <% if note.person_source %>
                       <%= note.person_source.callsign %>
                     <% else %>
-                      <i>*imported*</i>
+                      imported
                     <% end %>
                   </div>
                   <div class="text-body"><%= simple_format(note.note) %></div>
@@ -45,10 +45,10 @@
               <% end %>
             </ul>
           <% else %>
-            <p class="text-body">No training notes.</p>
+            <%= ui_empty_state "No training notes." %>
           <% end %>
 
-          <p class="mt-2 text-sm">
+          <p class="mt-2">
             <% if training.feedback_delivered %>
               <span class="text-success">
                 <%= fa_icon("check", :solid, end: 1) %>Lead trainer delivered feedback to trainee.

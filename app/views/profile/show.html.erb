@@ -16,7 +16,7 @@
 <% end %>
 
 <% if viewing_self? %>
-  <div class="my-2 flex flex-wrap gap-2">
+  <%= button_row class: "my-2" do %>
     <%= button_link "Change Password",
                     :secondary,
                     profile_password_edit_path,
@@ -33,7 +33,7 @@
                       icon_type: :solid,
                       class: "whitespace-nowrap" %>
     <% end %>
-  </div>
+  <% end %>
 <% end %>
 
 <% if can_view_bmid? && person.has_submitted_photo? %>
@@ -77,8 +77,8 @@
         <dd>Review your personal information below and confirm it's correct.</dd>
 
         <% unless current_user.is_auditor? %>
-          <dt class="text-error">Pay special attention to:</dt>
-          <dd class="text-error">
+          <dt>Pay special attention to:</dt>
+          <dd>
             <strong>Mailing Address</strong> and <strong>Shirt Sizes</strong> — critical for budget and Quartermaster
             inventory.
           </dd>
@@ -96,7 +96,7 @@
         <%= datetime_format @person.reviewed_pi_at %>
         <span class="text-stone-muted">(<%= relative_time_in_words @person.reviewed_pi_at %>)</span>
       <% else %>
-        <i>never updated</i>
+        <span class="text-stone-muted">never updated</span>
       <% end %>
     <% end %>
     <%= list.row "Last PII Review" do %>
@@ -104,14 +104,14 @@
         <%= datetime_format @person.pi_reviewed_for_dashboard_at %>
         <span class="text-stone-muted">(<%= relative_time_in_words @person.pi_reviewed_for_dashboard_at %>)</span>
       <% else %>
-        <i>never reviewed</i>
+        <span class="text-stone-muted">never reviewed</span>
       <% end %>
     <% end %>
   <% end %>
 <% end %>
 
 <div class="w-full">
-  <div class="flex flex-col lg:flex-row lg:gap-x-4">
+  <div class="flex flex-col lg:flex-row gap-4">
     <% if can_view_bmid? && person.is_contributor_or_applicant? %>
       <%= render partial: "profile/bmid", locals: { person: } %>
     <% end %>
@@ -126,7 +126,7 @@
 
 <% if person.is_contributor_or_applicant? %>
   <div class="w-full">
-    <div class="flex flex-col lg:flex-row gap-y-4 lg:gap-x-4">
+    <div class="flex flex-col lg:flex-row gap-4">
       <% if can_view_camp? %>
         <%= render partial: "profile/camp", locals: { person: } %>
       <% end %>
@@ -139,7 +139,7 @@
   </div>
 
   <div class="w-full">
-    <div class="flex flex-col lg:flex-row gap-y-4 lg:gap-x-4">
+    <div class="flex flex-col lg:flex-row gap-4">
       <% if can_view_languages? %>
         <%= render partial: "profile/languages", locals: { person: } %>
       <% end %>
@@ -157,7 +157,7 @@
 <% end %>
 
 <% if viewing_self? && !@person_event.pii_started_at %>
-  <div class="mt-4">
+  <%= button_row class: "mt-4" do %>
     <%= button_link "My Information Is Correct",
                     :primary,
                     profile_mark_reviewed_path,
@@ -165,5 +165,5 @@
                     method: :patch,
                     icon: "circle-check",
                     icon_type: :solid %>
-  </div>
+  <% end %>
 <% end %>

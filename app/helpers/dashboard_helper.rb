@@ -38,7 +38,8 @@ module DashboardHelper
     config = STEP_BADGES[result]
     return "" unless config
 
-    extra_class = (result == DashboardTask::STATUS_ACTION_NEEDED) ? "animate-pulse" : ""
+    # The guide's approved motion pulses the urgent badge only.
+    extra_class = (result == DashboardTask::STATUS_URGENT) ? "animate-pulse" : ""
     ui_badge(config[:text], config[:variant], size: "sm", class: extra_class, "aria-label": config[:aria_label])
   end
 

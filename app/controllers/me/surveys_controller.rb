@@ -23,7 +23,6 @@ class Me::SurveysController < ApplicationController
       @survey_response = SurveyResponseForm.new(survey: @survey, trainers: @trainers, values: params[:survey])
       @survey_response.assign_errors(errors)
       @trainer_name = determine_trainer_name
-      flash.now[:error] = "Please answer all required questions before submitting."
       render :show, status: :unprocessable_entity
       return
     end
@@ -225,6 +224,8 @@ class Me::SurveysController < ApplicationController
     )
   end
 
+  # Each message names its question, and its trainer where the question is
+  # asked once per trainer, so the summary above the form tells them apart.
   def validate_survey_responses
     errors = {}
     survey_params = params[:survey] || {}
@@ -235,13 +236,15 @@ class Me::SurveysController < ApplicationController
         @trainers.each do |trainer|
           group.survey_questions.select(&:is_required).each do |question|
             field_name = "question_#{question.id}_#{trainer.id}"
-            errors[field_name] = "A response is required." if survey_params[field_name].blank?
+            next if survey_params[field_name].present?
+
+            errors[field_name] = %(A response is required for "#{question.description.truncate(80)}" (#{trainer.callsign}).)
           end
         end
       else
         group.survey_questions.select(&:is_required).each do |question|
           field_name = "question_#{question.id}"
-          errors[field_name] = "A response is required." if survey_params[field_name].blank?
+          errors[field_name] = %(A response is required for "#{question.description.truncate(80)}".) if survey_params[field_name].blank?
         end
       end
     end

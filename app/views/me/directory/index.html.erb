@@ -23,31 +23,26 @@
       </div>
     <% end %>
 
-    <% if team.email.present? %>
-      <div class="mb-4">
-        <strong class="text-heading">Contact:</strong>
-        <%= mail_to team.email, team.email %>
-      </div>
-    <% else %>
-      <div class="mb-4 text-body italic">No contact email on file.</div>
-    <% end %>
+    <div class="mb-4">
+      <strong class="text-heading">Contact:</strong>
+      <%= team.email.present? ? mail_to(team.email, team.email) : value_or_dash(nil) %>
+    </div>
 
     <div class="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 mt-4"
          role="list"
          aria-label="<%= team.title %> members">
       <% team.members.each do |member| %>
         <% person = member.person %>
-        <div role="listitem"
-             class="border border-line rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+        <%# The photo height travels as a custom property (a computed number, not a style) %>
+        <%= ui_card role: "listitem", class: "overflow-hidden",
+                    style: "--avatar-height: #{PersonPhoto::AVATAR_HEIGHT}px" do %>
           <% if person.avatar_photo %>
             <%= image_tag person.avatar_photo,
-                          class: "w-full object-cover",
-                          style: "height: #{PersonPhoto::AVATAR_HEIGHT}px;",
+                          class: "w-full h-(--avatar-height) object-cover",
                           loading: "lazy",
                           alt: "Photo of #{person.callsign}#{member.overseer_positions.present? ? ", #{member.overseer_positions.first.title}" : ""}" %>
           <% else %>
-            <div class="flex items-center justify-center bg-secondary-content"
-                 style="height: <%= PersonPhoto::AVATAR_HEIGHT %>px;">
+            <div class="flex items-center justify-center h-(--avatar-height) bg-secondary-content">
               <div class="text-center">
                 <%= fa_icon :user, :solid, class: "fa-4x mb-2" %>
                 <div class="text-sm text-body">No Photo</div>
@@ -56,19 +51,19 @@
           <% end %>
 
           <div class="p-4 text-center">
-            <div class="text-xl font-semibold text-heading mb-2 leading-tight">
+            <div class="heading-title text-heading mb-2">
               <%= person.callsign %>
             </div>
 
             <% if member.overseer_positions.present? %>
-              <div class="text-sm text-body space-y-1">
+              <div class="text-body space-y-1">
                 <% member.overseer_positions.each do |position| %>
                   <div class="leading-snug"><%= position.title %></div>
                 <% end %>
               </div>
             <% end %>
           </div>
-        </div>
+        <% end %>
       <% end %>
     </div>
   <% end %>

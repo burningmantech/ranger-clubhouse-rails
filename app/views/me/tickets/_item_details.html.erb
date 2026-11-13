@@ -11,13 +11,11 @@
      error: "icon-error",
      info: "icon-info"
    }.freeze %>
-<div class="mt-2 p-2 border border-line rounded">
-  <ul class="space-y-1">
+<ul class="mt-2 space-y-1">
     <% details.each do |detail| %>
       <%= ui_icon_item detail[:icon], (detail[:style] || :solid),
                        tone: (icon_class.fetch(detail[:color].to_sym) if detail[:color]) do %>
         <%= detail[:text] %>
       <% end %>
     <% end %>
-  </ul>
-</div>
+</ul>

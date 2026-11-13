@@ -22,10 +22,10 @@
       <%= f.text_area "prospective_application[handles]", label: "Extracted Handles (editable)",
                       required: true, rows: 10, value: @extracted_handles %>
       <div>
-        <div class="font-medium mb-1">Original handles</div>
-        <div class="border border-line rounded-lg p-3 bg-base-200 min-h-40">
+        <h3 class="font-medium mb-1">Original Handles</h3>
+        <%= ui_card shadow: :none, class: "p-3 bg-base-200 min-h-40" do %>
           <%= simple_format @application.handles %>
-        </div>
+        <% end %>
       </div>
     </div>
     <p class="text-sm text-stone-muted mt-2">

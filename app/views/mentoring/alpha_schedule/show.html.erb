@@ -79,7 +79,7 @@
             <% if entry.flagged? %>
               <div class="flex flex-wrap gap-1 mt-1">
                 <% entry.flags.each do |flag| %>
-                  <span class="inline-flex items-center gap-1 text-xs">
+                  <span class="inline-flex items-center gap-1 text-sm">
                     <span class="text-stone-muted"><%= flag[:year] %></span>
                     <%= intake_rank_badge(flag[:rank]) %>
                   </span>
@@ -98,10 +98,10 @@
           <% end %>
           <%= t.cell do %>
             <% if entry.trainings.empty? %>
-              <span class="text-stone-muted">None</span>
+              &mdash;
             <% else %>
               <% entry.trainings.each do |training| %>
-                <div class="text-sm">
+                <div>
                   <%= mdy_format(training.slot_begins) %> &mdash; <%= training.slot_description %>
                 </div>
               <% end %>
@@ -109,11 +109,11 @@
           <% end %>
           <%= t.cell [person.city, person.state, person.country].compact_blank.join(" ") %>
           <%= t.cell do %>
-            <%= delete_button mentoring_alpha_schedule_roster_person_path(slot, person), "Remove",
+            <%= delete_button mentoring_alpha_schedule_roster_person_path(slot, person), "Remove from Shift",
                               variant: :secondary, size: "sm",
                               confirm_modal: {
                                 title: "Remove Sign-Up",
-                                message: "Remove #{person.callsign} from #{alpha_shift_title_text(slot)}?",
+                                message: "Remove #{person.callsign} from #{alpha_shift_title_text(slot)}? They can be added back.",
                                 confirm_label: "Remove #{person.callsign}",
                                 method: "delete"
                               } %>

@@ -1,0 +1,92 @@
+R14583 || FIXED || app/helpers/vc/applications_helper.rb:6 || info and neutral map to :secondary through a frozen table; no variant ui_badge lacks.
+R14584 || FIXED || app/helpers/vc/applications_helper.rb:132 || To do badge uses :secondary, a variant ui_badge has.
+M0233 || FIXED || app/helpers/vc/reserved_handles_helper.rb:41 || Date built from DateTimeHelper#month_day_format plus year; no strftime.
+R14722 || COMPLIANT || app/views/vc/application_import/_failures_table.html.erb:6 || EMPTY-01 new text: a supplementary list may render nothing; the stat box above shows the 0.
+R14720 || FIXED || app/views/vc/application_import/_results.html.erb:38 || Hand-rolled grid replaced by ui_stat_row.
+R10701 || FIXED || app/views/vc/application_import/index.html.erb:53 || Confirm asks with the action and says it cannot be undone but re-running is safe.
+R14717 || FIXED || app/views/vc/application_import/index.html.erb:17 || Foot help is now a ui_section (id import-help), as on create_prospectives.
+F0268 || FIXED || app/views/vc/application_import/index.html.erb:17 || Info callout at the top links to the foot help section.
+F0283 || FIXED || app/views/vc/applications/_action_bar.html.erb:20 || Menu items Title Case: Assign to Self, Clear Assignment.
+R14631 || FIXED || app/views/vc/applications/_admin_section.html.erb:17 || Message now asks Delete application X? and says it cannot be undone.
+F0279 || FIXED || app/views/vc/applications/_applications_table.html.erb:44 || Missing Last Updated prints value_or_dash.
+R14574 || FIXED || app/views/vc/applications/_applications_table.html.erb:23 || Id is now a row link to the review page; Edit column removed.
+F0280 || FIXED || app/views/vc/applications/_audit_log_section.html.erb:17 || Unknown author prints the dash.
+R10748 || FIXED || app/views/vc/applications/_audit_log_section.html.erb:29 || Blank from/to print the dash, not italic blank.
+F0285 || FIXED || app/views/vc/applications/_callsign_stage.html.erb:13 || Row labels and handle menu items Title Case.
+R14617 || FIXED || app/views/vc/applications/_callsign_stage.html.erb:15 || Dropped text-success on the approved callsign.
+R14623 || FIXED || app/views/vc/applications/_callsign_stage.html.erb:46 || Three empty cases use ui_empty_state.
+R14624 || FIXED || app/views/vc/applications/_callsign_stage.html.erb:105 || Disclosure summary no longer text-sm.
+R10779 || FIXED || app/views/vc/applications/_callsign_stage.html.erb:109 || Now ui_empty_state, no text-sm.
+F0286 || FIXED || app/views/vc/applications/_eligibility_stage.html.erb:3 || Row labels BRC Events, Experience Type.
+R14611 || FIXED || app/views/vc/applications/_eligibility_stage.html.erb:40 || Edit Details and the two ask buttons sit in a button_row.
+R10816 || FIXED || app/views/vc/applications/_notes_list.html.erb:5 || Explanation paragraph is text-base muted.
+R14605 || FIXED || app/views/vc/applications/_notes_list.html.erb:7 || No notes renders ui_empty_state.
+R14603 || FIXED || app/views/vc/applications/_notes_list.html.erb:12 || Each note is a ui_card (no shadow) in the li.
+F0275 || COMPLIANT || app/views/vc/applications/_notes_list.html.erb:21 || Edit/Delete are one list line's record actions, exempt from button_row per guide Where buttons sit.
+R14604 || FIXED || app/views/vc/applications/_notes_list.html.erb:23 || Delete uses the :error variant, no class override.
+R14616 || FIXED || app/views/vc/applications/_paragraph_stage.html.erb:13 || Unknown reviewer prints the dash.
+F0273 || FIXED || app/views/vc/applications/_paragraph_stage.html.erb:19 || Mark Okay and the two warning links sit in a button_row.
+F0287 || FIXED || app/views/vc/applications/_paragraph_stage.html.erb:39 || Row label Title Case.
+R14613 || FIXED || app/views/vc/applications/_personal_info_stage.html.erb:32 || not stated wordings replaced by none_stated (R6).
+F0288 || FIXED || app/views/vc/applications/_personal_info_stage.html.erb:42 || Row label Title Case.
+R14600 || FIXED || app/views/vc/applications/_rail.html.erb:5 || Known People blanks use none_stated (R6).
+R14601 || FIXED || app/views/vc/applications/_rail.html.erb:13 || Notes sections titled through ui_section (h2); partial's raw h3 removed.
+F0274 || FIXED || app/views/vc/applications/_status_actions.html.erb:4 || Decision actions sit in a button_row.
+F0284 || FIXED || app/views/vc/applications/_status_actions.html.erb:15 || Reject and Hold menu items Title Case.
+R14642 || FIXED || app/views/vc/applications/dialogs/send_email.html.erb:9 || size: 70 replaced by width w-full.
+F0294 || FIXED || app/views/vc/applications/dialogs/status_message.html.erb:4 || Dialog titled Application Status; body says Set the status.
+R10955 || FIXED || app/views/vc/applications/edit_details.html.erb:20 || Raw fieldset/legend replaced by f.fieldset.
+F0292 || FIXED || app/views/vc/applications/edit_details.html.erb:20 || Legend Title Case.
+R14634 || FIXED || app/views/vc/applications/edit_details.html.erb:23 || Year grid uses builder check_box (multiple, explicit checked).
+F0276 || FIXED || app/views/vc/applications/edit_details.html.erb:30 || Experience Type width responsive.
+F0277 || FIXED || app/views/vc/applications/edit_personal_info.html.erb:25 || Country, City, State widths responsive.
+R14638 || FIXED || app/views/vc/applications/extract_handles.html.erb:26 || Original handles box is a ui_card with an h3 label.
+F0269 || FIXED || app/views/vc/applications/index.html.erb:54 || About This Report moved under the stat row, above presets and filters.
+R14562 || FIXED || app/views/vc/applications/index.html.erb:64 || Active preset carries aria-current and a check icon.
+R14563 || FIXED || app/views/vc/applications/index.html.erb:72 || Filters moved into filter_bar with chips, count, clear-all, export in actions; Apply submit replaces auto-submit.
+F0290 || FIXED || app/views/vc/applications/search.html.erb:18 || Section title Found N Applications.
+R14580 || FIXED || app/views/vc/applications/show.html.erb:8 || application_assignment_note returns plain sentence text; ink, weight and size removed.
+F0270 || COMPLIANT || app/views/vc/applications/show.html.erb:13 || R7: each primary sits in its own section (action bar, three stage cards).
+R14577 || COMPLIANT || app/views/vc/applications/show.html.erb:19 || LAYOUT-02 new text: page columns fold at lg, a fixed rail may be a track list.
+R11043 || COMPLIANT || app/views/vc/applications/show.html.erb:19 || Same: a fixed 20rem rail track list is allowed; folds at lg with gap-4.
+R14578 || FIXED || app/views/vc/applications/show.html.erb:47 || Foot back_to removed; the hero's back link is the one way back.
+R14666 || FIXED || app/views/vc/bpguid/_results.html.erb:76 || Empty email/phone cells print the dash (R6); test updated.
+R14668 || FIXED || app/views/vc/bpguid/_results.html.erb:104 || Replace confirm says it can be replaced again, only an Admin removes it.
+F0271 || FIXED || app/views/vc/bpguid/index.html.erb:11 || Row buttons secondary (R7: no row of primaries).
+R14659 || COMPLIANT || app/views/vc/bpguid/index.html.erb:35 || LAYOUT-02 new text: an item grid inside a section may use a content wrap.
+R11065 || COMPLIANT || app/views/vc/bpguid/index.html.erb:40 || R6 allows none_stated on a profile label/value; Phase 2 made it plain muted.
+R11070 || FIXED || app/views/vc/bpguid/index.html.erb:67 || Fact word now plain muted span, not italic.
+R14710 || FIXED || app/views/vc/create_prospectives/_results.html.erb:41 || Hand-rolled grid replaced by ui_stat_row.
+R11101 || FIXED || app/helpers/vc/create_prospectives_helper.rb:124 || Confirm (create_prospectives_helper.rb) asks with the action and says it cannot be undone.
+R14708 || FIXED || app/views/vc/create_prospectives/index.html.erb:17 || Info callout at top links to the help section.
+R14680 || FIXED || app/views/vc/handle_checker/_result.html.erb:8 || No conflicts renders ui_empty_state.
+R14679 || COMPLIANT || app/views/vc/handle_checker/_result.html.erb:34 || R4: a muted second line under a cell's main value may be text-sm.
+R11116 || FIXED || app/views/vc/handle_checker/_result.html.erb:42 || Rowspan Rule cell no longer text-sm; Reason line kept per R4.
+R14676 || COMPLIANT || app/views/vc/handle_checker/index.html.erb:11 || FORM-06 new text concerns refusals; this GET checker refuses nothing.
+R14671 || FIXED || app/views/vc/handle_checker/index.html.erb:18 || Field/button row folds at lg, not sm.
+R14672 || FIXED || app/views/vc/handle_checker/index.html.erb:63 || Vintage checkbox goes through AppFormBuilder.
+R11135 || FIXED || app/views/vc/handle_checker/index.html.erb:63 || Label now the builder's text-base label; help line as help_text.
+R14677 || COMPLIANT || app/views/vc/handle_checker/index.html.erb:94 || LAYOUT-02 new text: item grids inside a section may use a content wrap.
+R14728 || FIXED || app/views/vc/maintenance/index.html.erb:41 || Preview links :primary, not :error; the commit buttons stay red.
+R14734 || COMPLIANT || app/views/vc/maintenance/preview_past_prospectives.html.erb:42 || HERO-04 new text allows a body link back as an empty result's one action.
+R14731 || COMPLIANT || app/views/vc/maintenance/preview_pnvs.html.erb:41 || Same: empty result's one action.
+R14694 || FIXED || app/views/vc/photos_review/_attribution.html.erb:4 || Unknown person prints the dash; never prints plain Never.
+F0278 || FIXED || app/views/vc/photos_review/_photo.html.erb:9 || Card callsign heading is h2 under the page h1.
+R14693 || FIXED || app/views/vc/photos_review/_photo.html.erb:47 || Approve confirm says the decision can still be reversed.
+R14691 || FIXED || app/views/vc/photos_review/_photo.html.erb:78 || Now ui_empty_state.
+F0281 || FIXED || app/views/vc/photos_review/_photo.html.erb:90 || Missing rejection message prints the dash.
+R14684 || FIXED || app/views/vc/photos_review/index.html.erb:8 || Empty queue is ui_empty_state.
+F0282 || FIXED || app/views/vc/photos_review/info.html.erb:23 || Dimensions, reasons and message print the dash.
+R14699 || FIXED || app/views/vc/photos_review/reject_dialog.html.erb:14 || No reason re-renders the dialog at 422 (stream replaces the modal frame) with the builder error_message under the reasons fieldset; message kept.
+F0291 || FIXED || app/views/vc/photos_review/reject_dialog.html.erb:10 || Legend Title Case (dt labels too).
+F0267 || FIXED || app/views/vc/reserved_handles/edit.html.erb:2 || Description says what the page does.
+F0272 || FIXED || app/views/vc/reserved_handles/index.html.erb:71 || Apply Filters secondary (R7).
+R14646 || FIXED || app/views/vc/reserved_handles/index.html.erb:38 || Trigger is :error.
+R14647 || FIXED || app/views/vc/reserved_handles/index.html.erb:62 || Filter selects responsive width, no flex-1 stretch.
+F0295 || FIXED || app/views/vc/reserved_handles/new.html.erb:4 || Title Add Reserved Handle.
+F0289 || FIXED || app/views/vc/reserved_handles/upload.html.erb:18 || Section titles Title Case.
+R14755 || FIXED || app/views/vc/spigot_flow_report/_callsign_cell.html.erb:4 || Written reason added: anchor names are per element, no utility can carry them.
+R14753 || FIXED || app/views/vc/spigot_flow_report/index.html.erb:83 || Empty matrix cells print the dash.
+F0293 || FIXED || app/views/vc/thank_you_cards/index.html.erb:31 || Legend Title Case.
+R14742 || FIXED || app/views/vc/thank_you_cards/index.html.erb:31 || Raw legend replaced by f.fieldset.
+R14743 || FIXED || app/views/vc/thank_you_cards/index.html.erb:65 || Fallback uses text-stone-muted.

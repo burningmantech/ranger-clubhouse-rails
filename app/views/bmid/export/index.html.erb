@@ -62,7 +62,7 @@
     <%= hidden_field_tag :year, @year, id: nil %>
     <%= hidden_field_tag :filter, @category_filter, id: nil %>
     <%= bulk_select do %>
-      <%= ui_section "Review and Select", icon: "table-list", icon_type: :solid, border: false do %>
+      <%= ui_section "Review and Select", icon: "table-list", icon_type: :solid do %>
         <%= render "common/bmids/flag_legend" %>
         <%= render "selection_table", rows: @rows %>
       <% end %>
@@ -88,7 +88,9 @@
                                title: "Confirm Export",
                                message: "Download the selected badges as a CSV and mark every one " \
                                         "of them as Submitted? Their meal and shower provisions " \
-                                        "will be consumed.",
+                                        "will be consumed. " +
+                                        (@is_current_year ? "Un-Submit under Previous Exports reverses it." :
+                                                            "A previous year's export cannot be un-submitted."),
                                confirm_label: "Export"
                              ) } %>
       <% end %>

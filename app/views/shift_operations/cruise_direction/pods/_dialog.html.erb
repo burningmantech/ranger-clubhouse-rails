@@ -27,7 +27,7 @@
              url: shift_operations_cruise_direction_pod_path(pod, year: year),
              method: :patch, submit: "Save Changes" %>
 
-  <div class="border-t border-base-300 mt-4 pt-3">
+  <div class="border-t border-line mt-4 pt-3">
     <p class="text-stone-muted mb-2">
       <%= pod_name %> is <%= position %> of <%= pod_count %> in the line.
       Dragging a card by its grip does the same thing.
@@ -48,7 +48,7 @@
                       data: { turbo_frame: "_top" },
                       aria: { label: "Move #{pod_name} later in the line" } %>
       <%= delete_button shift_operations_cruise_direction_pod_path(pod, year: year),
-                        "Delete pod", variant: :error, size: "sm",
+                        "Delete Pod", variant: :error, size: "sm",
                         data: { turbo_frame: "_top" },
                         confirm_modal: {
                           title: "Delete #{pod_name}",

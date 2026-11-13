@@ -96,25 +96,29 @@
         tables, so they should look like controls -- boxed, with a chevron --
         not like a line of text. %>
     <%= ui_disclosure "Totals by Ranger (#{@people.size})", variant: :card do %>
-      <%= ui_table full_width: true, striped: true do |t| %>
-        <%= t.header do %>
-          <%= t.heading "Ranger" %>
-          <%= t.heading "Flagged", right: true %>
-          <%= t.heading "Positions" %>
-        <% end %>
-        <%= t.body do %>
-          <% @people.each do |person| %>
-            <%= t.row do %>
-              <%= t.row_header do %>
-                <%= person_display_link person.person, person.person_id %>
-              <% end %>
-              <%= t.cell person.total, right: true %>
-              <%= t.cell do %>
-                <div class="flex flex-col gap-y-1">
-                  <% person.positions.each do |position| %>
-                    <div><%= position.title %> (<%= position.total %>)</div>
-                  <% end %>
-                </div>
+      <% if @people.empty? %>
+        <%= ui_empty_state "No Ranger has a flagged check-in#{" matching these filters" if @filters.any?}." %>
+      <% else %>
+        <%= ui_table full_width: true, striped: true do |t| %>
+          <%= t.header do %>
+            <%= t.heading "Ranger" %>
+            <%= t.heading "Flagged", right: true %>
+            <%= t.heading "Positions" %>
+          <% end %>
+          <%= t.body do %>
+            <% @people.each do |person| %>
+              <%= t.row do %>
+                <%= t.row_header do %>
+                  <%= person_display_link person.person, person.person_id %>
+                <% end %>
+                <%= t.cell person.total, right: true %>
+                <%= t.cell do %>
+                  <div class="flex flex-col gap-y-1">
+                    <% person.positions.each do |position| %>
+                      <div><%= position.title %> (<%= position.total %>)</div>
+                    <% end %>
+                  </div>
+                <% end %>
               <% end %>
             <% end %>
           <% end %>
@@ -123,16 +127,20 @@
     <% end %>
 
     <%= ui_disclosure "Totals by Position (#{@positions.size})", variant: :card do %>
-      <%= ui_table full_width: true, striped: true do |t| %>
-        <%= t.header do %>
-          <%= t.heading "Position" %>
-          <%= t.heading "Flagged", right: true %>
-        <% end %>
-        <%= t.body do %>
-          <% @positions.each do |position| %>
-            <%= t.row do %>
-              <%= t.row_header position.title %>
-              <%= t.cell position.total, right: true %>
+      <% if @positions.empty? %>
+        <%= ui_empty_state "No position has a flagged check-in#{" matching these filters" if @filters.any?}." %>
+      <% else %>
+        <%= ui_table full_width: true, striped: true do |t| %>
+          <%= t.header do %>
+            <%= t.heading "Position" %>
+            <%= t.heading "Flagged", right: true %>
+          <% end %>
+          <%= t.body do %>
+            <% @positions.each do |position| %>
+              <%= t.row do %>
+                <%= t.row_header position.title %>
+                <%= t.cell position.total, right: true %>
+              <% end %>
             <% end %>
           <% end %>
         <% end %>

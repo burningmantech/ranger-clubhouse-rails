@@ -15,7 +15,7 @@
 
 <% if @report.no_positions %>
   <%= ui_callout_box :warning do %>
-    <%= @training.title %> has no working positions that require it, so there is nothing to
+    <%= @training.title %> has no shift positions that require it, so there is nothing to
     compare against. The position is most likely still being set up.
   <% end %>
 <% elsif @report.no_slots %>

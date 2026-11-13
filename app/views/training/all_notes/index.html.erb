@@ -19,7 +19,7 @@
   <%# Season totals: the whole report, not the filtered view. %>
   <%= ui_stat_row do %>
     <%= ui_stat_box @report.size.to_s, "People" %>
-    <%= ui_stat_box @report.count(&:notes?).to_s, "With Notes", variant: :warning %>
+    <%= ui_stat_box @report.count(&:notes?).to_s, "With Notes" %>
     <%= ui_stat_box @report.sum(&:note_count).to_s, "Notes" %>
     <% Training::TraineeNotesReport::STANDINGS.each do |standing| %>
       <% count = @standing_counts.fetch(standing, 0) %>

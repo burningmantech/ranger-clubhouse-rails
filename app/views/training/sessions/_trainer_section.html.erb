@@ -28,44 +28,39 @@
           <% session.trainer_groups.each do |group| %>
             <% group.trainers.each do |trainer| %>
               <% row_key = "#{group.slot.id}-#{trainer.person.id}" %>
-              <%= t.row do %>
-                <%= t.row_header do %>
-                  <%= person_display_link trainer.person, trainer.person.id %>
-                  <%= hidden_field_tag "trainers[#{row_key}][person_id]", trainer.person.id %>
-                  <%= hidden_field_tag "trainers[#{row_key}][trainer_slot_id]", group.slot.id %>
-                <% end %>
-                <%= t.cell group.position_title %>
-                <%= t.cell do %>
-                  <%= select_tag "trainers[#{row_key}][status]",
-                                 options_for_select(
-                                   [["Pending", TrainerStatus::STATUS_PENDING],
-                                    ["Attended", TrainerStatus::STATUS_ATTENDED],
-                                    ["No Show", TrainerStatus::STATUS_NO_SHOW]],
-                                   trainer.status
-                                 ),
-                                 class: AppFormBuilder::SELECT_CLASSES,
-                                 aria: { label: "Attendance for #{trainer.person.callsign}" } %>
-                <% end %>
-                <%= t.cell do %>
-                  <label class="inline-flex items-center gap-2 min-h-9 cursor-pointer">
-                    <%= hidden_field_tag "trainers[#{row_key}][is_lead]", "0", id: nil %>
-                    <%= check_box_tag "trainers[#{row_key}][is_lead]", "1", trainer.is_lead,
-                                      class: AppFormBuilder::CHECKBOX_CLASSES,
-                                      aria: { label: "#{trainer.person.callsign} is a lead trainer" } %>
-                    <span>Lead</span>
-                  </label>
-                <% end %>
-                <% if can_adjust_roster? %>
+              <%= fields "trainers[#{row_key}]", builder: AppFormBuilder do |tf| %>
+                <%= t.row do %>
+                  <%= t.row_header do %>
+                    <%= person_display_link trainer.person, trainer.person.id %>
+                    <%= hidden_field_tag "trainers[#{row_key}][person_id]", trainer.person.id %>
+                    <%= hidden_field_tag "trainers[#{row_key}][trainer_slot_id]", group.slot.id %>
+                  <% end %>
+                  <%= t.cell group.position_title %>
                   <%= t.cell do %>
-                    <%= delete_button training_session_remove_roster_path(training_slug, session.slot.id, trainer.person.id,
-                                                                          kind: "trainer", trainer_slot_id: group.slot.id),
-                                      "Remove",
-                                      variant: :secondary, size: "sm",
-                                      confirm_modal: {
-                                        title: "Remove Trainer",
-                                        message: "Remove #{trainer.person.callsign} from this session's trainer roster? They can be added back.",
-                                        confirm_label: "Remove #{trainer.person.callsign}"
-                                      } %>
+                    <%= tf.select :status,
+                                  options_for_select([["Pending", TrainerStatus::STATUS_PENDING],
+                                                      ["Attended", TrainerStatus::STATUS_ATTENDED],
+                                                      ["No Show", TrainerStatus::STATUS_NO_SHOW]],
+                                                     trainer.status),
+                                  { hide_label: true, wrapper: false },
+                                  { aria: { label: "Attendance for #{trainer.person.callsign}" } } %>
+                  <% end %>
+                  <%= t.cell do %>
+                    <%= tf.check_box :is_lead, label: "Lead", checked: trainer.is_lead, wrapper: false,
+                                               aria: { label: "#{trainer.person.callsign} is a lead trainer" } %>
+                  <% end %>
+                  <% if can_adjust_roster? %>
+                    <%= t.cell do %>
+                      <%= delete_button training_session_remove_roster_path(training_slug, session.slot.id, trainer.person.id,
+                                                                            kind: "trainer", trainer_slot_id: group.slot.id),
+                                        "Remove",
+                                        variant: :secondary, size: "sm",
+                                        confirm_modal: {
+                                          title: "Remove Trainer",
+                                          message: "Remove #{trainer.person.callsign} from this session's trainer roster? They can be added back.",
+                                          confirm_label: "Remove #{trainer.person.callsign}"
+                                        } %>
+                    <% end %>
                   <% end %>
                 <% end %>
               <% end %>

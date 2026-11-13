@@ -1,28 +1,30 @@
 <%# locals: (application:, note_type:, title:, add_label:, explanation:) %>
+<%# The caller's ui_section carries the title as its heading; title here only names the empty state. %>
 <% notes = application.notes.select { |note| note.type == note_type } %>
 <div>
-  <h3 class="heading-title text-heading mb-1"><%= title %></h3>
-  <p class="text-sm text-stone-muted mb-2"><%= explanation %></p>
+  <p class="text-stone-muted mb-2"><%= explanation %></p>
   <% if notes.empty? %>
-    <p class="text-stone-muted mb-2">No <%= title.downcase %> yet.</p>
+    <%= ui_empty_state "No #{title.downcase} yet.", class: "mb-2" %>
   <% else %>
     <ul class="space-y-2 mb-2">
       <% notes.each do |note| %>
-        <li class="border border-line rounded-lg p-3">
-          <div class="flex flex-wrap items-center gap-2 text-sm text-stone-muted mb-1">
-            <%= datetime_format note.created_at, year: true %>
-            <% if note.person %>
-              by <strong><%= note.person.callsign %></strong>
-            <% else %>
-              <em>imported from Salesforce</em>
-            <% end %>
-            <span class="grow"></span>
-            <%= button_link "Edit", :ghost, dialog_vc_application_path(application, dialog: "note_form", note_id: note.id, note_type:),
-                            data: { turbo_frame: "modal" } %>
-            <%= button_link "Delete", :ghost, dialog_vc_application_path(application, dialog: "note_delete", note_id: note.id),
-                            class: "text-error", data: { turbo_frame: "modal" } %>
-          </div>
-          <%= simple_format note.note %>
+        <li>
+          <%= ui_card shadow: :none, class: "p-3" do %>
+            <div class="flex flex-wrap items-center gap-2 text-sm text-stone-muted mb-1">
+              <%= datetime_format note.created_at, year: true %>
+              <% if note.person %>
+                by <strong><%= note.person.callsign %></strong>
+              <% else %>
+                <em>imported from Salesforce</em>
+              <% end %>
+              <span class="grow"></span>
+              <%= button_link "Edit", :ghost, dialog_vc_application_path(application, dialog: "note_form", note_id: note.id, note_type:),
+                              data: { turbo_frame: "modal" } %>
+              <%= button_link "Delete", :error, dialog_vc_application_path(application, dialog: "note_delete", note_id: note.id),
+                              data: { turbo_frame: "modal" } %>
+            </div>
+            <%= simple_format note.note %>
+          <% end %>
         </li>
       <% end %>
     </ul>

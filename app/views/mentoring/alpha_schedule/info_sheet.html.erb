@@ -21,7 +21,7 @@
       @bottom-right {
         content: "Page " counter(page) " of " counter(pages);
         font-size: 8pt;
-        color: #444;
+        color: #4c4742; /* --color-body, light; a margin box cannot be trusted to resolve var() */
         font-family: "Atkinson Hyperlegible", sans-serif;
       }
     }
@@ -119,14 +119,15 @@
                 <div class="alpha-value">
                   <%= team_year[:year] %> <%= intake_rank_badge(team_year[:rank]) %>:
                 </div>
-                <% team_year[:notes].each do |note| %>
-                  <div class="alpha-note-line">
-                    &mdash;
-                    <span class="alpha-note-source">
-                      <% if note.person_source %><%= note.person_source.callsign %><% else %><em>Unknown</em><% end %>
-                    </span>
-                    : <%= note.note %>
-                  </div>
+                <% if team_year[:notes].any? %>
+                  <ul class="list-bulleted">
+                    <% team_year[:notes].each do |note| %>
+                      <li class="alpha-note-line">
+                        <span class="alpha-note-source"><% if note.person_source %><%= note.person_source.callsign %><% else %><em>Unknown</em><% end %></span>:
+                        <%= note.note %>
+                      </li>
+                    <% end %>
+                  </ul>
                 <% end %>
               <% end %>
             <% end %>

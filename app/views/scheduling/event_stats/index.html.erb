@@ -98,13 +98,13 @@
                    caption: "#{number_with_delimiter(turnout.shiny_pennies_not_rangered)} " \
                             "passed their Alpha shift and never took a shift of their own." %>
 
-        <% on_site = turnout.on_site ? number_with_delimiter(turnout.on_site) : "n/a" %>
-        <div class="grid grid-cols-2 gap-2 mb-4">
+        <% on_site = value_or_dash(turnout.on_site && number_with_delimiter(turnout.on_site)) %>
+        <%= ui_stat_row do %>
           <%= ui_stat_box number_with_delimiter(turnout.timesheet_entries), "Timesheet Entries",
                           icon: "clipboard-list", icon_type: :solid %>
           <%= ui_stat_box on_site, "Still Marked On Site",
                           icon: "location-dot", icon_type: :solid %>
-        </div>
+        <% end %>
       </div>
     </div>
   <% end %>
@@ -134,11 +134,13 @@
         <% end %>
       </div>
 
-      <div class="grid grid-cols-2 gap-2 mb-4 content-start">
-        <%= ui_stat_box number_with_delimiter(alphas.timesheet_entries), "Alpha Timesheet Entries",
-                        icon: "clipboard-list", icon_type: :solid %>
-        <%= ui_stat_box number_with_delimiter(alphas.walked), "Alphas Who Walked",
-                        icon: "shoe-prints", icon_type: :solid %>
+      <div>
+        <%= ui_stat_row do %>
+          <%= ui_stat_box number_with_delimiter(alphas.timesheet_entries), "Alpha Timesheet Entries",
+                          icon: "clipboard-list", icon_type: :solid %>
+          <%= ui_stat_box number_with_delimiter(alphas.walked), "Alphas Who Walked",
+                          icon: "shoe-prints", icon_type: :solid %>
+        <% end %>
       </div>
     </div>
   <% end %>

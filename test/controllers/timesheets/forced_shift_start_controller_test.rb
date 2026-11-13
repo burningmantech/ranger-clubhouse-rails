@@ -112,12 +112,12 @@ class Timesheets::ForcedShiftStartControllerTest < ActionDispatch::IntegrationTe
     assert_no_escaped_markup
   end
 
-  test "a missing reason and a missing audit log each say what is not known" do
+  test "a missing reason prints a dash and a missing audit log says so" do
     create_forced(reason: nil)
 
     get timesheets_forced_shift_start_path(year: YEAR)
 
-    assert_select "*", text: /No reason given/
+    assert_select "td[data-label='Reason Given']", text: ApplicationController.helpers.value_or_dash(nil)
     assert_select "*", text: /Not recorded/
   end
 

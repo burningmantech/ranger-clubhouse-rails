@@ -30,20 +30,13 @@
       only when something actually asks for them. %>
   <link rel="preload" href="<%= asset_path("atkinson-latin.woff2") %>" as="font" type="font/woff2" crossorigin>
   <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
-  <%# Letter with fixed margins for every print view. Lives here, not in the
-      tailwind bundle -- @page cannot be scoped by selector, so a bare rule
-      there would apply to every screen page's print output. %>
-  <%# The :root rule covers the html box below the last sheet's content --
-      daisyUI paints :root with base-100, and the body's print:bg-white
-      cannot reach it. %>
-  <style>
-    @page { size: letter; margin: 0.5in; }
-    @media print { :root { background: #fff; } }
-  </style>
+  <%# Letter with fixed margins for every print view, in its own sheet: @page
+      cannot be scoped by selector, so it stays out of the tailwind bundle. %>
+  <%= stylesheet_link_tag "print-page", media: "print" %>
   <%# Named per-view @page rules land here via content_for :page_rules (the
       trainer's report emits its footer margin boxes with the dynamic session
       title; Chrome renders them -- verified in 151). CRITICAL: margin boxes
-      must stay on a NAMED rule, never on the bare @page above -- that one
+      must stay on a NAMED rule, never on the bare @page in print-page.css -- that one
       reaches every print view, including the sign-up sheet, which carries no
       page numbers on purpose. %>
   <%= yield :page_rules %>
@@ -54,9 +47,9 @@
   <link rel="modulepreload" href="<%= asset_path("controllers/index.js") %>">
   <link rel="modulepreload" href="<%= asset_path("controllers/application.js") %>">
 </head>
-<%# print:bg-white -- paper is white regardless of the screen theme; the
+<%# print:bg-paper -- paper is white regardless of the screen theme; the
     themed bg-base-100 tinted the trailing area of a report's final sheet. %>
-<body class="bg-base-100 text-base-content text-base p-4 print:p-0 print:bg-white" data-controller="local-time">
+<body class="bg-base-100 text-base-content text-base p-4 print:p-0 print:bg-paper" data-controller="local-time">
 <%= yield %>
 </body>
 </html>

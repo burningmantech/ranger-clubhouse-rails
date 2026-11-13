@@ -45,13 +45,13 @@
 <%# The copy button is all that is left here -- the export moved into the filter
     bar below, which is what scopes it. %>
 <% if @emails.any? %>
-  <p class="my-4">
-    <%# Upstream printed the whole address list on the page. One button that
-        copies it keeps the same job off the screen. %>
+  <%# Upstream printed the whole address list on the page. One button that
+      copies it keeps the same job off the screen. %>
+  <%= button_row class: "my-4" do %>
     <%= clipboard_button @emails.join(", ") do %>
-      Copy <%= pluralize(@emails.size, "email address") %>
+      Copy <%= @emails.size %> <%= "Email Address".pluralize(@emails.size) %>
     <% end %>
-  </p>
+  <% end %>
 <% end %>
 
 <%= render "filter_bar",

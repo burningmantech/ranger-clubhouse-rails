@@ -41,7 +41,7 @@
 <% end %>
 
 <% if @clients.any? %>
-  <%= ui_section pluralize(@clients.size, "client"), border: false do %>
+  <%= ui_section pluralize(@clients.size, "client") do %>
     <%= ui_table striped: true do |t| %>
       <%= t.header do %>
         <%= t.heading "Client ID" %>

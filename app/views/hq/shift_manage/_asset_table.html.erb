@@ -33,7 +33,7 @@
                      .compact_blank.join(" — ").presence || "—" %>
         <%= t.cell datetime_format(person_asset.checked_out) %>
         <%= t.cell do %>
-          <%= button_link "Check In", :primary,
+          <%= button_link "Check In", :secondary,
                           assets_check_in_path(person_asset),
                           method: :patch, icon: "rotate-left", icon_type: :solid %>
         <% end %>

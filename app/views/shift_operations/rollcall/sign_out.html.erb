@@ -21,6 +21,16 @@
   <% end %>
 <% end %>
 
+<%# Under the hero, and only once there is a roster for it to be about. %>
+<% if @groups.any? && @group %>
+  <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>Tapped someone by mistake?</dt>
+      <dd>Tap them again to put them back on shift.</dd>
+    </dl>
+  <% end %>
+<% end %>
+
 <% if @groups.empty? %>
   <%= ui_empty_state "No one is on duty right now.", icon: "circle-check", icon_type: :solid %>
 <% else %>
@@ -34,14 +44,6 @@
     <%= ui_empty_state "Pick a position to see who is on duty.",
                        icon: "hand-pointer", icon_type: :solid %>
   <% else %>
-    <%# Out of the hero, and only above the roster it is about. %>
-    <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
-      <dl class="instruction-list">
-        <dt>Tapped someone by mistake?</dt>
-        <dd>Tap them again to put them back on shift.</dd>
-      </dl>
-    <% end %>
-
     <%= render "shift_operations/rollcall/roster",
                rows: @rows, counts: @counts, mode: :sign_out, position_id: @group.id %>
   <% end %>

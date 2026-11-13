@@ -1,9 +1,9 @@
 <%# One document, rendered the same way the page that displays it does, so the
     preview shows what readers actually get. %>
 <%= turbo_frame_tag "document-body-frame-#{@document.id}", target: "_top" do %>
-  <div class="border border-line rounded-base p-4 my-2">
+  <%= ui_card class: "p-4 my-2" do %>
     <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-line">
-      <div class="me-muted">
+      <div class="text-stone-muted">
         Last updated <%= datetime_format(@document.updated_at, year: true) %>
         by <%= person_display_link(@document.person_update, @document.person_update_id) %>
       </div>
@@ -13,7 +13,7 @@
     <%# lexxy-content carries the spacing and list markers a saved document needs;
         without it the preview would read differently from the real page. %>
     <div class="lexxy-content">
-      <%= @document.body.html_safe %>
+      <%= rich_text(@document.body) %>
     </div>
-  </div>
+  <% end %>
 <% end %>

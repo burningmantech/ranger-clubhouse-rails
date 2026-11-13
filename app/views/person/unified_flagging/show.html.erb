@@ -90,12 +90,14 @@
         <% end %>
       <% end %>
     <% else %>
-      <dl class="instruction-list mb-3">
-        <dt>Known Rangers</dt>
-        <dd><%= @person.known_rangers.presence || "None" %></dd>
-        <dt>Known Fellow Applicants</dt>
-        <dd><%= @person.known_pnvs.presence || "None" %></dd>
-      </dl>
+      <%= ui_label_value class: "mb-3" do |list| %>
+        <% list.row "Known Rangers" do %>
+          <%= @person.known_rangers.presence || none_stated %>
+        <% end %>
+        <% list.row "Known Fellow Applicants" do %>
+          <%= @person.known_pnvs.presence || none_stated %>
+        <% end %>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>

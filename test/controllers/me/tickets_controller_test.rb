@@ -325,7 +325,7 @@ class Me::TicketsControllerTest < ActionDispatch::IntegrationTest
     get me_tickets_url
 
     assert_response :success
-    assert_match "Start ticketing", response.body
+    assert_match "Start Ticketing", response.body
     # The compact step list links every step, including the confirmation row.
     assert_select "a[href=?]", me_tickets_review_path
     assert_no_match "Adjust Your Choices", response.body
@@ -336,7 +336,7 @@ class Me::TicketsControllerTest < ActionDispatch::IntegrationTest
     get me_tickets_url
 
     assert_response :success
-    assert_match "Continue ticketing", response.body
+    assert_match "Continue Ticketing", response.body
   end
 
   # --- Vehicle pass ----------------------------------------------------------

@@ -62,8 +62,8 @@ class TopMenuTest < ActionDispatch::IntegrationTest
     assert_select "nav.navbar [data-action='click->theme#toggle']", count: 2
     assert_select "ul[aria-label='User menu'] > li > button[type=button][data-action='click->theme#toggle']",
                   count: 2 do
-      assert_select "span.dark\\:hidden", text: "Switch To Dark Theme"
-      assert_select "span.hidden.dark\\:inline", text: "Switch To Light Theme"
+      assert_select "span.dark\\:hidden", text: "Switch to Dark Theme"
+      assert_select "span.hidden.dark\\:inline", text: "Switch to Light Theme"
     end
   end
 

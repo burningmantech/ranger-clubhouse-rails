@@ -73,7 +73,7 @@
   <% end %>
 
   <%= render "section",
-             title: pluralize(@mint_rows.size, "Shiny Penny candidate"),
+             title: pluralize(@mint_rows.size, "Shiny Penny Candidate"),
              rows: @mint_rows,
              target: Person::ACTIVE,
              group: "mint",
@@ -101,8 +101,8 @@
              consequence: bonk_consequence,
              confirm: { title: "Confirm Bonking",
                         message: "Move the selected Alphas to bonked status? Every position they hold and every " \
-                                 "future shift sign-up is removed.",
-                        confirm_label: "Bonk Alphas" },
+                                 "future shift sign-up is removed. This page cannot undo it.",
+                        confirm_label: "Bonk Alphas", variant: :error },
              empty_message: "No Alpha was bonked or self-bonked in #{@year}.",
              empty_icon: "circle-check",
              converted_ids: @converted_ids %>

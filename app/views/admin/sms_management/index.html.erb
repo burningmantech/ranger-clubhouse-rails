@@ -83,10 +83,10 @@
 
     <%# Settings is an Admin page, and its Twilio settings also need Tech Ninja. %>
     <% if has_role?(Role::ADMIN) %>
-      <div class="mt-3">
+      <%= button_row class: "mt-3" do %>
         <%= button_link "Edit Twilio Settings", :secondary, admin_settings_path(filter: "twilio"),
                         icon: "gear", icon_type: :solid %>
-      </div>
+      <% end %>
     <% end %>
   <% end %>
 
@@ -122,7 +122,7 @@
   <% end %>
 
   <%= button_row class: "mt-4" do %>
-    <%= f.submit "Apply Filters" %>
+    <%= f.submit "Apply Filters", variant: :secondary %>
   <% end %>
 <% end %>
 

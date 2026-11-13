@@ -13,12 +13,8 @@
 %>
 <% content_for :title, "#{@year} Alpha Acceptance Sheets" %>
 
-<div class="print:hidden mb-4">
-  <%= back_to "Alpha selection", mentoring_alpha_acceptance_sheets_path(@back_params) %>
-  <p class="text-stone-muted mt-1">
-    Use your browser's print command. This message and the navigation are left off the paper.
-  </p>
-</div>
+<%= render "mentoring/alpha_schedule/print_screen_nav",
+           label: "Alpha Acceptance Sheets", url: mentoring_alpha_acceptance_sheets_path(@back_params) %>
 
 <% @entries.each_with_index do |entry, index| %>
   <% person = entry.person %>
@@ -166,10 +162,10 @@
       <thead>
         <tr>
           <th>&nbsp;</th>
-          <th><%= @year %> MENTOR NAME</th>
-          <th>ACCEPT</th>
-          <th>ACCEPT W/RESERV.</th>
-          <th>REJECT</th>
+          <th><%= @year %> Mentor Name</th>
+          <th>Accept</th>
+          <th>Accept w/Reserv.</th>
+          <th>Reject</th>
         </tr>
       </thead>
       <tbody>
@@ -184,9 +180,9 @@
         <% end %>
         <tr>
           <td colspan="5" class="acceptance-legend">
-            Legend: <b>ACCEPT</b> = Accept Alpha into the Rangers.
-            <b>ACCEPT W/RESERV.</b> = Accept Alpha into the Rangers. Other feedback outweighs my concerns.
-            <b>REJECT</b> = Bonk Alpha
+            Legend: <b>Accept</b> = Accept Alpha into the Rangers.
+            <b>Accept w/Reserv.</b> = Accept Alpha into the Rangers. Other feedback outweighs my concerns.
+            <b>Reject</b> = Bonk Alpha
           </td>
         </tr>
       </tbody>
@@ -212,8 +208,12 @@
       <% else %>
         <% entry.vc_team.each do |team_year| %>
           <div>Year <%= team_year[:year] %> <%= intake_rank_badge(team_year[:rank]) %></div>
-          <% team_year[:notes].each do |note| %>
-            <div class="acceptance-note-line">&mdash; <%= note.note %></div>
+          <% if team_year[:notes].any? %>
+            <ul class="list-bulleted">
+              <% team_year[:notes].each do |note| %>
+                <li class="acceptance-note-line"><%= note.note %></li>
+              <% end %>
+            </ul>
           <% end %>
         <% end %>
       <% end %>
@@ -241,9 +241,11 @@
           <% if notes.empty? %>
             <div class="acceptance-note-line"><i>No notes given.</i></div>
           <% else %>
-            <% notes.each do |note| %>
-              <div class="acceptance-note-line">&mdash; <%= note.note %></div>
-            <% end %>
+            <ul class="list-bulleted">
+              <% notes.each do |note| %>
+                <li class="acceptance-note-line"><%= note.note %></li>
+              <% end %>
+            </ul>
           <% end %>
         </div>
       <% end %>
@@ -258,8 +260,12 @@
             with a rank and no note still tells a mentor something. %>
         <% entry.mentor_team.each do |team_year| %>
           <div><%= team_year[:year] %> <%= intake_rank_badge(team_year[:rank]) %></div>
-          <% team_year[:notes].each do |note| %>
-            <div class="acceptance-note-line">&mdash; <%= note.note %></div>
+          <% if team_year[:notes].any? %>
+            <ul class="list-bulleted">
+              <% team_year[:notes].each do |note| %>
+                <li class="acceptance-note-line"><%= note.note %></li>
+              <% end %>
+            </ul>
           <% end %>
         <% end %>
       <% end %>

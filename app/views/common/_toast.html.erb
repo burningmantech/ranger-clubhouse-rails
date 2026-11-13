@@ -6,9 +6,8 @@
   <div class="ms-3 text-base font-normal w-full">
     <%= toast_message %>
   </div>
-  <button type="button" class="btn-toast-close" data-action="click->toast#close" aria-label="Close">
-    <%= fa_icon "xmark", :solid %>
-  </button>
+  <%= button_action "", :ghost, icon: "xmark", icon_type: :solid, class: "btn-circle",
+                    aria: { label: "Close" }, data: { action: "click->toast#close" } %>
   <% if countdown %>
     <div class="toast-progress" data-toast-target="progress"></div>
   <% end %>

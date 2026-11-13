@@ -16,7 +16,7 @@
 <% end %>
 
 <% if @documents.any? %>
-  <%= ui_section pluralize(@documents.size, "document"), border: false do %>
+  <%= ui_section pluralize(@documents.size, "document") do %>
     <p class="mb-3">
       <strong>Expand a document to see how it reads.</strong>
       The preview shows it the same way the page that displays it does.

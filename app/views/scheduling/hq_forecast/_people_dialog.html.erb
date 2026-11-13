@@ -22,7 +22,7 @@
         <% people.each do |signup| %>
           <%= t.row do %>
             <% if starts %>
-              <%= t.cell signup.begins.strftime(DateTimeHelper::MONTH_DAY_TIME) %>
+              <%= t.cell hq_forecast_time(signup.begins) %>
             <% end %>
             <%= t.cell person_display_link(signup, signup.person_id, path: person_path(signup.person_id), in_turbo_frame: true) %>
             <%= t.cell do %>

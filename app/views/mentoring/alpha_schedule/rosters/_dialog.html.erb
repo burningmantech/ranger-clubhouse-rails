@@ -10,15 +10,10 @@
 
   <%= form_with url: mentoring_new_alpha_schedule_roster_path(@slot),
                 method: :get, builder: AppFormBuilder,
-                data: { turbo_frame: "modal" } do %>
+                data: { turbo_frame: "modal" } do |f| %>
     <div class="flex flex-wrap items-end gap-2 mb-3">
-      <div class="grow">
-        <label for="alpha-roster-search" class="font-medium block mb-1">
-          Callsign, name, or email
-        </label>
-        <%= text_field_tag :q, query, id: "alpha-roster-search", autofocus: true,
-                           class: "#{AppFormBuilder::INPUT_CLASSES} w-full" %>
-      </div>
+      <%= f.text_field :q, label: "Callsign, Name, or Email", value: query, autofocus: true,
+                       width: "w-full", wrapper_class: "grow" %>
       <%= submit_button "Search" %>
     </div>
   <% end %>
@@ -48,10 +43,10 @@
                                 method: :post, builder: AppFormBuilder,
                                 data: { turbo_frame: "_top" } do %>
                     <%= hidden_field_tag :person_id, found.id, id: nil %>
-                    <%= submit_button "Add #{found.callsign}" %>
+                    <%= submit_button "Add #{found.callsign}", variant: :secondary %>
                   <% end %>
                 <% else %>
-                  <span class="text-stone-muted text-sm">Not an Alpha or Prospective</span>
+                  <span class="text-stone-muted">Not an Alpha or Prospective</span>
                 <% end %>
               <% end %>
             <% end %>
@@ -59,10 +54,12 @@
         <% end %>
       <% end %>
     <% else %>
-      <p class="text-error font-semibold">No one matched "<%= query %>".</p>
+      <%= ui_empty_state "No one matched \"#{query}\".", icon: "magnifying-glass", icon_type: :solid %>
     <% end %>
   <% elsif query.present? %>
-    <p class="text-stone-muted">Type at least <%= PersonSearch::MIN_QUERY_LENGTH %> characters and search.</p>
+    <%= ui_callout_box :error, accent: true, role: "alert" do %>
+      Type at least <%= PersonSearch::MIN_QUERY_LENGTH %> characters and search.
+    <% end %>
   <% end %>
 
   <%= button_row do %>

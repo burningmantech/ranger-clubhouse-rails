@@ -4,25 +4,6 @@
  <div class="mb-2">
    <%= description  %>
  </div>
-  <%# Channel Legend %>
-  <div class="mb-4 card-standard bg-base-200 p-3">
-    <div class="font-semibold text-heading mb-2">Alert Channels:</div>
-    <div class="flex flex-col sm:flex-row sm:flex-wrap gap-x-4 gap-y-2">
-      <div class="flex-center-gap-2">
-        <%= ui_badge "Required", :secondary %>
-        <span class="text-stone-muted">Must receive this alert</span>
-      </div>
-      <div class="flex-center-gap-2">
-        <%= ui_badge "Email only", :secondary %>
-        <span class="text-stone-muted">Only available via email</span>
-      </div>
-      <div class="flex-center-gap-2">
-        <%= ui_badge "SMS only", :secondary %>
-        <span class="text-stone-muted">Only available via SMS</span>
-      </div>
-    </div>
-  </div>
-
   <% alerts.each_with_index do |alert, idx| %>
     <% field_idx = index_offset + idx %>
     <% unless idx.zero? %>
@@ -49,12 +30,11 @@
             <%= ui_badge "Email only", :secondary %>
           <% elsif !sms_available %>
             <% unavailable_id = "sms_unavailable_#{field_idx}" %>
-            <div class="inline-flex items-center opacity-50 cursor-not-allowed" role="group" aria-describedby="<%= unavailable_id %>">
-              <input type="checkbox"
-                     disabled
-                     class="<%= AppFormBuilder::CHECKBOX_CLASSES %> cursor-not-allowed"
-                     aria-label="SMS (unavailable)">
-              <span class="ms-2 text-base text-heading select-none leading-tight">SMS</span>
+            <div class="opacity-50">
+              <%= fields "alerts[#{field_idx}]", builder: AppFormBuilder do |af| %>
+                <%= af.check_box :use_sms, { label: "SMS", checked: false, disabled: true, include_hidden: false,
+                                             wrapper: false, aria: { describedby: unavailable_id } } %>
+              <% end %>
               <span id="<%= unavailable_id %>" class="sr-only">
                 SMS is unavailable because <%= sms_reason %>. <%=
                   if person.sms_number.blank?
@@ -68,12 +48,9 @@
               </span>
             </div>
           <% else %>
-            <input type="hidden" name="alerts[<%= field_idx %>][use_sms]" value="0">
-            <label class="inline-flex items-center min-h-9 cursor-pointer">
-              <%= tag.input type: "checkbox", name: "alerts[#{field_idx}][use_sms]", value: "1", checked: alert.use_sms,
-                            class: AppFormBuilder::CHECKBOX_CLASSES %>
-              <span class="ms-2 text-base text-heading select-none leading-tight">SMS</span>
-            </label>
+            <%= fields "alerts[#{field_idx}]", builder: AppFormBuilder do |af| %>
+              <%= af.check_box :use_sms, label: "SMS", checked: alert.use_sms, wrapper: false %>
+            <% end %>
           <% end %>
         </div>
       </div>
@@ -87,12 +64,9 @@
           <% elsif alert.sms_only %>
             <%= ui_badge "SMS only", :secondary %>
           <% else %>
-            <input type="hidden" name="alerts[<%= field_idx %>][use_email]" value="0">
-            <label class="inline-flex items-center min-h-9 cursor-pointer">
-              <%= tag.input type: "checkbox", name: "alerts[#{field_idx}][use_email]", value: "1", checked: alert.use_email,
-                            class: AppFormBuilder::CHECKBOX_CLASSES %>
-              <span class="ms-2 text-base text-heading select-none">Email</span>
-            </label>
+            <%= fields "alerts[#{field_idx}]", builder: AppFormBuilder do |af| %>
+              <%= af.check_box :use_email, label: "Email", checked: alert.use_email, wrapper: false %>
+            <% end %>
           <% end %>
         </div>
       </div>

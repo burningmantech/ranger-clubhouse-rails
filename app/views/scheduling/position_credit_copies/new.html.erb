@@ -24,6 +24,14 @@
   </div>
 <% end %>
 
+<% if @refusal %>
+  <div class="my-2">
+    <%= ui_callout_box :error, role: "alert", tabindex: "-1", data: { refusal: true } do %>
+      <%= @refusal %>
+    <% end %>
+  </div>
+<% end %>
+
 <%= ui_form nil, scheduling_position_credit_copies_path(year: @year, position_id: @source_position_id), method: :post do |f| %>
   <%= ui_section "Times for the New Credits", icon: "clock", icon_type: :solid do %>
     <p class="mb-3">
@@ -78,15 +86,15 @@
                                                aria_label: "Copy credit ##{credit.id} #{credit.description}" %>
                     <% end %>
                     <%= t.cell do %>
-                      <%= credit.start_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      <%= datetime_format(credit.start_time, year: true) %>
                       <div class="text-stone-subtle">
-                        &rarr; <%= Scheduling::SlotCopier.adjust_time(credit.start_time, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                        &rarr; <%= datetime_format(Scheduling::SlotCopier.adjust_time(credit.start_time, @delta), year: true) %>
                       </div>
                     <% end %>
                     <%= t.cell do %>
-                      <%= credit.end_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      <%= datetime_format(credit.end_time, year: true) %>
                       <div class="text-stone-subtle">
-                        &rarr; <%= Scheduling::SlotCopier.adjust_time(credit.end_time, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                        &rarr; <%= datetime_format(Scheduling::SlotCopier.adjust_time(credit.end_time, @delta), year: true) %>
                       </div>
                     <% end %>
                     <%= t.cell credit_format_short(credit.credits_per_hour), right: true %>

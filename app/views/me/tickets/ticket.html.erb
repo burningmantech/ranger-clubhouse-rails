@@ -59,7 +59,7 @@
                              "Available"
                            end
           %>
-          <div class="flex flex-col rounded-lg border border-line p-4">
+          <%= ui_card class: "p-4" do %>
             <div class="flex items-start justify-between gap-1">
               <div class="min-w-0">
                 <h3 class="<%= token_list "heading-title text-heading", {"text-success": claimed} %>"><%= t.type_label %> - <%= status_label %></h3>
@@ -88,12 +88,12 @@
                                 method: :patch, params: { status: AccessDocument::BANKED },
                                 icon: "box-archive", icon_type: :solid %>
               <% elsif t.is_qualified? %>
-                <%= button_link "Bank It", :secondary, me_tickets_document_status_path(t),
+                <%= button_link "Bank This Ticket", :secondary, me_tickets_document_status_path(t),
                                 method: :patch, params: { status: AccessDocument::BANKED },
                                 icon: "box-archive", icon_type: :solid %>
               <% end %>
             </div>
-          </div>
+          <% end %>
         <% end %>
       </div>
       <p class="text-body mt-3">Want none of these this year? Bank each ticket to set them all aside.</p>
@@ -142,7 +142,7 @@
       <% end %>
       <%= render "claim_buttons", ticket: t %>
       <%= button_row do %>
-        <%= button_link "Bank for Later", :secondary, me_tickets_document_status_path(t),
+        <%= button_link "Bank This Ticket", :secondary, me_tickets_document_status_path(t),
                         method: :patch, params: { status: AccessDocument::BANKED },
                         icon: "box-archive", icon_type: :solid %>
       <% end %>

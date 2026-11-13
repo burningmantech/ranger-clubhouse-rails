@@ -2,20 +2,16 @@
             @vehicle.new_record? ? me_vehicles_personal_vehicles_path : me_vehicles_personal_vehicle_path(@vehicle),
             id: "vehicle-form" do |f| %>
 
-  <%= ui_callout_box :warning do %>
-    All fields are required.
-  <% end %>
-
   <%= ui_section "Vehicle Description", icon: "car", icon_type: :solid do %>
     <%= form_row do %>
       <%= f.select :vehicle_class, Vehicle::CLASS_OPTIONS, label: "Vehicle Class" %>
     <% end %>
 
     <%= form_row do %>
-      <%= f.text_field :vehicle_year, label: "Vehicle Year", width: "w-24", maxlength: 4 %>
-      <%= f.text_field :vehicle_make, label: "Make", help_text: "e.g., Ford, GMC, etc." %>
-      <%= f.text_field :vehicle_model, label: "Model", help_text: "e.g., F-350, Tacoma, etc." %>
-      <%= f.text_field :vehicle_color, label: "Color" %>
+      <%= f.text_field :vehicle_year, label: "Vehicle Year", width: "w-full sm:w-24", maxlength: 4 %>
+      <%= f.text_field :vehicle_make, label: "Make", required: true, help_text: "e.g., Ford, GMC, etc." %>
+      <%= f.text_field :vehicle_model, label: "Model", required: true, help_text: "e.g., F-350, Tacoma, etc." %>
+      <%= f.text_field :vehicle_color, label: "Color", required: true %>
     <% end %>
 
     <%= form_row do %>
@@ -23,7 +19,7 @@
                    CountryStateHelper::US_CANADA_OPTIONS,
                    label: "Vehicle License State or Province"
                     %>
-      <%= f.text_field :license_number, label: "Vehicle License Number", width: "w-40" %>
+      <%= f.text_field :license_number, label: "Vehicle License Number", width: "w-full sm:w-40" %>
     <% end %>
   <% end %>
 
@@ -65,11 +61,11 @@
     <% end %>
 
     <%= form_row do %>
-      <%= f.text_area :request_comment, label: "Comments for the Approver", rows: 2, cols: 40 %>
+      <%= f.text_area :request_comment, label: "Comments for the Approver", rows: 2 %>
     <% end %>
   <% end %>
   <%= button_row do %>
-    <%= f.submit @vehicle.new_record? ? "Submit Request" : "Save Request" %>
+    <%= f.submit "Save Request" %>
     <%= cancel_link me_vehicles_dashboard_path %>
   <% end %>
 <% end %>

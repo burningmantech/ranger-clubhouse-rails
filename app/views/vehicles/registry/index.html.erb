@@ -147,13 +147,13 @@
           <% if vehicle_eligibility_details?(row, enriched: @result.enriched?) %>
             <%= t.detail_row id: vehicle_eligibility_detail_id(row), label: row.person&.callsign do %>
               <div class="flex flex-col gap-y-3">
-                <%= paperwork_detail_group "Motor Vehicle Record eligible via" do %>
+                <%= paperwork_detail_group "Motor Vehicle Record Eligible Via" do %>
                   <%= vehicle_eligibility_sources teams: row.mvr_teams, positions: row.mvr_positions %>
                 <% end %>
-                <%= paperwork_detail_group "Motor Vehicle Record eligible sign-ups" do %>
+                <%= paperwork_detail_group "Motor Vehicle Record Eligible Sign-Ups" do %>
                   <%= paperwork_signups row.mvr_signups %>
                 <% end %>
-                <%= paperwork_detail_group "Personal vehicle eligible via" do %>
+                <%= paperwork_detail_group "Personal Vehicle Eligible Via" do %>
                   <%= vehicle_eligibility_sources teams: row.pvr_teams, positions: row.pvr_positions %>
                 <% end %>
               </div>

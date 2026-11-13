@@ -61,7 +61,7 @@
   <% end %>
 <% end %>
 
-<%= ui_section "Every Callsign You Entered", icon: "list-check", icon_type: :solid, border: false do %>
+<%= ui_section "Every Callsign You Entered", icon: "list-check", icon_type: :solid do %>
   <%= ui_table full_width: true, striped: true do |t| %>
     <%= t.header do %>
       <%= t.heading "Callsign" %>
@@ -107,9 +107,10 @@
                    variant: @change.grant? ? :success : :error,
                    data: {
                      turbo_confirm: confirm_modal_dialog(
-                       title: "Final Confirmation",
-                       message: bulk_team_consequence(@change),
-                       confirm_label: bulk_team_preview_title(@change)
+                       title: "#{bulk_team_preview_title(@change)}?",
+                       message: "#{bulk_team_consequence(@change)} #{bulk_team_undo(@change)}",
+                       confirm_label: bulk_team_preview_title(@change),
+                       variant: @change.grant? ? :primary : :error
                      )
                    } %>
     <% end %>

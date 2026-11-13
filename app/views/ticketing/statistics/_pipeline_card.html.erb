@@ -20,7 +20,7 @@
       { label: "Submitted", icon: "paper-plane", bar: "bg-secondary", text: "text-secondary" }
   }
 %>
-<div class="card-standard p-4">
+<%= ui_card class: "p-4" do %>
   <div class="flex flex-wrap items-baseline justify-between gap-x-3 mb-2">
     <h3 class="heading-title text-heading"><%= type_count.label %></h3>
     <span class="text-base text-stone-muted">
@@ -30,7 +30,7 @@
 
   <div class="stat-meter mb-3" aria-hidden="true">
     <% type_count.segments.each do |status, percent| %>
-      <span class="stat-meter-segment <%= tints[status][:bar] %>" style="width: <%= percent %>%"></span>
+      <span class="stat-meter-segment <%= tints[status][:bar] %>" style="--stat-meter-share: <%= percent %>%"></span>
     <% end %>
   </div>
 
@@ -44,4 +44,4 @@
       </span>
     <% end %>
   </div>
-</div>
+<% end %>

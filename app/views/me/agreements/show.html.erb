@@ -10,7 +10,7 @@
     spacing and list markers a saved document needs, as the bookmark and admin
     preview pages give it. %>
 <div class="lexxy-content">
-  <%= @document.body.html_safe %>
+  <%= rich_text(@document.body) %>
 </div>
 
 <div class="mt-4 <%= "text-success" if @agreement.signed %>">
@@ -18,11 +18,8 @@
     <%= fa_icon "check", :solid, { end: 2 } %> Agreement has been signed.
   <% else %>
     <div class="flex gap-4">
-      <%= button_to sign_me_agreement_path(@agreement.tag),
-                    method: :patch,
-                    class: button_classes({}, :primary), form: { data: { turbo_stream: true } } do %>
-        <%= fa_icon "pencil", :solid, { end: 2 } %> I Agree / Sign Agreement
-      <% end %>
+      <%= button_link "I Agree / Sign Agreement", :primary, sign_me_agreement_path(@agreement.tag),
+                      method: :patch, icon: "pencil", icon_type: :solid, data: { turbo_stream: true } %>
       <%= back_to "Agreements", me_agreements_path %>
     </div>
   <% end %>

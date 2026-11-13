@@ -28,7 +28,7 @@
   <% end %>
 
   <%= ui_section "Lifetime Agreements", icon: "infinity", icon_type: :solid do %>
-    <p class="text-sm text-base-content/70 mb-3">Signed once and applies to every event year.</p>
+    <p class="text-stone-muted mb-3">Signed once and applies to every event year.</p>
     <% if @lifetime_agreements.any? %>
       <%= render partial: "agreement_row", collection: @lifetime_agreements, as: :agreement,
                  locals: { f:, can_edit: @can_edit, show_availability: @is_current_year } %>

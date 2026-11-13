@@ -216,7 +216,7 @@ class Mentoring::AlphasConvertControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "div.text-center", text: /1\s*Ready to Mint/
     assert_select "#mint-row-#{@passed.id}"
-    assert_match "2 Shiny Penny candidates", response.body
+    assert_match "2 Shiny Penny Candidates", response.body
     assert_select "#mint-section .badge", text: "Converted"
   end
 

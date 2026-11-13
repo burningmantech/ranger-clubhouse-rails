@@ -86,6 +86,6 @@ module Scheduling::ScheduleByCallsignHelper
   # midnight. The CSV builders format the same values the same way, for the same
   # reason.
   def schedule_by_callsign_day(time)
-    time.strftime("%b %-d")
+    time.strftime(DateTimeHelper::SHORT_MONTH_DAY)
   end
 end

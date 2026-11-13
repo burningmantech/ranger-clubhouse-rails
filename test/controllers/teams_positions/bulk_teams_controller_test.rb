@@ -139,7 +139,7 @@ class TeamsPositions::BulkTeamsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_match(/choose a team/i, flash[:error])
+    assert_select "#bulk-teams-refusal", /choose a team/i
   end
 
   test "an inactive team is offered but labelled" do
@@ -260,7 +260,8 @@ class TeamsPositions::BulkTeamsControllerTest < ActionDispatch::IntegrationTest
          params: { team_id: @team.id, callsigns: @newcomer.callsign }
 
     assert_response :unprocessable_entity
-    assert_match(/grant or revoke/i, flash[:error])
+    assert_select "#bulk-teams-refusal", /grant or revoke/i
+    assert_nil flash[:error], "the refusal is on the page, not in a toast"
     assert_select "textarea[name=callsigns]", text: /#{@newcomer.callsign}/
   end
 
@@ -268,7 +269,7 @@ class TeamsPositions::BulkTeamsControllerTest < ActionDispatch::IntegrationTest
     post teams_positions_preview_bulk_teams_path, params: preview_params("   \n  ")
 
     assert_response :unprocessable_entity
-    assert_match(/at least one callsign/i, flash[:error])
+    assert_select "#bulk-teams-refusal", /at least one callsign/i
   end
 
   test "a team manager cannot preview a team they do not manage" do
@@ -277,7 +278,7 @@ class TeamsPositions::BulkTeamsControllerTest < ActionDispatch::IntegrationTest
          params: preview_params(@newcomer.callsign, team: @other_team)
 
     assert_response :unprocessable_entity
-    assert_match(/choose a team/i, flash[:error])
+    assert_select "#bulk-teams-refusal", /choose a team/i
   end
 
   # ----------------------------------------------------------------- apply
@@ -394,7 +395,7 @@ class TeamsPositions::BulkTeamsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_match(/cannot be handed out here/i, flash[:error])
+    assert_select "#bulk-teams-refusal", /cannot be handed out here/i
   end
 
   # Moving a role grant is moving a real permission in either direction. Revoke
@@ -410,7 +411,7 @@ class TeamsPositions::BulkTeamsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_match(/do not hold it yourself/i, flash[:error])
+    assert_select "#bulk-teams-refusal", /do not hold it yourself/i
   end
 
   # The ban stated on reject_guarded would be trivially bypassable otherwise:
@@ -425,7 +426,7 @@ class TeamsPositions::BulkTeamsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_match(/cannot be handed out here/i, flash[:error])
+    assert_select "#bulk-teams-refusal", /cannot be handed out here/i
   end
 
   # Revoking is the mirror of Roster Management's rule: allowed to whoever holds
@@ -474,7 +475,7 @@ class TeamsPositions::BulkTeamsControllerTest < ActionDispatch::IntegrationTest
          params: { team_id: [@team.id], direction: "grant", callsigns: @newcomer.callsign }
 
     assert_response :unprocessable_entity
-    assert_match(/choose a team/i, flash[:error])
+    assert_select "#bulk-teams-refusal", /choose a team/i
   end
 
   test "an array-shaped team_id on the form page does not raise" do

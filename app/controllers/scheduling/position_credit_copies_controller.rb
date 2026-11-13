@@ -25,7 +25,7 @@ class Scheduling::PositionCreditCopiesController < ApplicationController
       redirect_to scheduling_position_credits_path(year: @year),
                   success: "#{result.credits.size} position #{"credit".pluralize(result.credits.size)} copied."
     else
-      flash.now[:error] = result.errors.join(" ")
+      @refusal = result.errors.join(" ")
       render :new, status: :unprocessable_entity
     end
   end

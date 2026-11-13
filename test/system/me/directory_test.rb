@@ -36,10 +36,10 @@ class Me::DirectoryTest < ApplicationSystemTestCase
     assert_selector "a[href^='mailto:']", minimum: 0
   end
 
-  test "displays no contact email message for teams without email" do
+  test "prints a dash for teams without a contact email" do
     visit me_directory_path
 
-    assert_text "No contact email on file."
+    assert_text "Contact: —"
   end
 
   test "displays member cards" do

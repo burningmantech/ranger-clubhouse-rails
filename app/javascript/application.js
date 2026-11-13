@@ -2,6 +2,7 @@
 import "@hotwired/turbo-rails"
 import "controllers";
 import { session } from "controllers/storage"
+import { reveal } from "controllers/scrolling"
 
 // Some controls build themselves in the page rather than arriving with the HTML
 // the server sent: the rich text editor writes its own toolbar and holds the
@@ -109,15 +110,13 @@ document.addEventListener("turbo:frame-missing", (event) => {
 // wired and shown in one turn, so a press can never land on a dialog that is not
 // listening yet. None of this waits on the modal controller: that is
 // lazy-loaded, and on a slow connection it can arrive after the answer.
+//
+// A controller asking a question of its own passes it as
+// {title, message, confirmLabel, cancelLabel, variant} instead, message being
+// a sentence or a list of paragraphs; a plain string is the message alone.
+// Either way the same dialog is built here (confirmDialog below).
 Turbo.config.forms.confirm = (message, element, submitter) => {
-    const template = document.createElement("template");
-    template.innerHTML = message;
-    const dialog = template.content.querySelector("dialog");
-
-    // A plain-string message carries no dialog: ask with the browser's own.
-    if (!dialog) {
-        return Promise.resolve(window.confirm(message));
-    }
+    const dialog = confirmDialogFor(message);
 
     document.getElementById("turbo-confirm-modal").replaceChildren(dialog);
 
@@ -134,6 +133,40 @@ Turbo.config.forms.confirm = (message, element, submitter) => {
     });
 };
 
+function confirmDialogFor(message) {
+    if (typeof message === "string") {
+        const template = document.createElement("template");
+        template.innerHTML = message;
+        const dialog = template.content.querySelector("dialog");
+        if (dialog) return dialog;
+
+        message = {message};
+    }
+    return confirmDialog(message);
+}
+
+// The dialog ModalHelper#confirm_modal_dialog draws, for a question a
+// controller asks: a copy of the one the layout keeps in
+// #confirm-dialog-template, filled in. Every text goes in as text, never
+// markup: a team or role title in it is a name someone chose.
+function confirmDialog({title = "Confirm", message = "Continue?", confirmLabel = "Confirm",
+                           cancelLabel = "Cancel", variant = "primary"}) {
+    const dialog = document.getElementById("confirm-dialog-template").content.querySelector("dialog").cloneNode(true);
+    const paragraphs = [message].flat().map((text) => {
+        const paragraph = document.createElement("p");
+        paragraph.textContent = text;
+        return paragraph;
+    });
+    const confirm = dialog.querySelector("#turbo-confirm-button");
+
+    dialog.querySelector(".modal-title-text").textContent = title;
+    dialog.querySelector(".modal-body-content").replaceChildren(...paragraphs);
+    confirm.textContent = confirmLabel;
+    if (variant === "error") confirm.classList.replace("btn-primary", "btn-error");
+    dialog.querySelector("#turbo-cancel-button").textContent = cancelLabel;
+    return dialog;
+}
+
 // A dropdown menu is a native <details> (NavigationHelper#dropdown_menu),
 // which only its own summary closes. A link in it closes it here, and so does
 // a click anywhere outside it. Turbo brings the next page in only once it has
@@ -143,6 +176,18 @@ Turbo.config.forms.confirm = (message, element, submitter) => {
 document.addEventListener("click", ({target}) => {
     document.querySelectorAll("details.dropdown[open]").forEach((menu) => {
         if (!menu.contains(target) || target.closest("a")) menu.open = false;
+    });
+});
+
+// Escape closes an open menu too. Focus that was inside it goes back to its
+// summary, so the keyboard reader is where the menu was opened from.
+document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+
+    document.querySelectorAll("details.dropdown[open]").forEach((menu) => {
+        const hadFocus = menu.contains(document.activeElement);
+        menu.open = false;
+        if (hadFocus) menu.querySelector("summary")?.focus();
     });
 });
 
@@ -158,4 +203,24 @@ document.addEventListener("turbo:before-cache", () => {
 // show that year over the old year's page and export, so put the page's own back.
 document.addEventListener("turbo:before-cache", () => {
     document.querySelectorAll("#year-selector, #year-selector-compact").forEach((select) => select.form.reset());
+});
+
+// A refused submit comes back as a 422 render, which keeps the scroll where
+// the reader pressed the button. A page that reports the refusal in a callout
+// of its own (data-refusal, above its form) has that callout brought into
+// view and focused, as form_controller does for the builder's error summary.
+// Only for the render that answers the refused submit: any later render of
+// the page leaves the reader where they are.
+let submitRefused = false;
+document.addEventListener("turbo:submit-end", ({detail}) => { submitRefused = !detail.success; });
+document.addEventListener("turbo:render", () => {
+    const refused = submitRefused;
+    submitRefused = false;
+    const refusal = refused && document.querySelector("[data-refusal]");
+    if (!refusal) return;
+
+    refusal.focus({preventScroll: true});
+    // After this turn: Turbo puts the scroll back where it was once the render
+    // is done. At once, not smoothly: the callout can be a long page away.
+    setTimeout(() => reveal(refusal, null, {behavior: "auto"}));
 });

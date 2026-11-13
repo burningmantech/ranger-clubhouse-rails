@@ -69,7 +69,7 @@
   <% end %>
 
   <% if @results.found.any? %>
-    <%= ui_section "Found", id: "found-section", border: false,
+    <%= ui_section "Found", id: "found-section",
                    badge: pluralize(@results.found.size, "match"), badge_color: :success do %>
       <%= ui_table full_width: true, striped: true do |t| %>
         <%= t.header do %>
@@ -101,7 +101,7 @@
                 <% if years.last %>
                   <%= years.last %>
                 <% else %>
-                  <em>never</em>
+                  <span class="text-stone-muted">never</span>
                 <% end %>
               <% end %>
               <%= t.cell do %><%= yes_no_badge person.vintage %><% end %>

@@ -62,20 +62,18 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-4">
   <%= ui_section "Significant Other Setup Access Passes", icon: "users", icon_type: :solid do %>
-    <%# Three columns at every width: one tile per row turns three small numbers
-        into a screenful of scrolling on a phone. %>
-    <div class="grid grid-cols-3 gap-2">
+    <%= ui_stat_row do %>
       <%= ui_stat_box number_with_delimiter(sapso[:people]), "People Holding One",
                       icon: "users", icon_type: :solid %>
       <%= ui_stat_box number_with_delimiter(sapso[:claimed]), "Claimed",
                       variant: :success, icon: "circle-check", icon_type: :solid %>
       <%= ui_stat_box number_with_delimiter(sapso[:submitted]), "Submitted",
                       icon: "paper-plane", icon_type: :solid %>
-    </div>
+    <% end %>
   <% end %>
 
   <%= ui_section "Provisions", icon: "utensils", icon_type: :solid do %>
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+    <%= ui_stat_row do %>
       <%= ui_stat_box number_with_delimiter(provisions[:earned]), "Earned",
                       icon: "award", icon_type: :solid %>
       <%= ui_stat_box number_with_delimiter(provisions[:allocated]), "Allocated",
@@ -84,6 +82,6 @@
                       icon: "layer-group", icon_type: :solid %>
       <%= ui_stat_box number_with_delimiter(provisions[:banked]), "Banked",
                       variant: :warning, icon: "piggy-bank", icon_type: :solid %>
-    </div>
+    <% end %>
   <% end %>
 </div>

@@ -1,4 +1,5 @@
 <%= hero_panel icon: "utensils", heading_level: :h1, id: "person-pogs-header",
+               description: "Meal and shower pogs issued to #{@person.callsign}, tracked from the 2023 event on.",
                back_to: [@person.callsign, person_path(@person)] do |panel| %>
   <% panel.title do %>
     Meal &amp; Shower Pogs &mdash; <%= @person.callsign %>
@@ -6,18 +7,14 @@
   <% panel.year_selector year: @year, years: @years %>
 <% end %>
 
-<p class="text-body mb-4">
-  Pog tracking is only available for the 2023 and later events.
-</p>
-
 <% if can?(:manage_pogs) %>
-  <p class="mb-4">
+  <%= button_row class: "mb-4" do %>
     <%= button_link "Add Pog", :primary, new_person_pog_path(@person, year: @year), icon: "plus", icon_type: :solid %>
-  </p>
+  <% end %>
 <% end %>
 
 <%= ui_section "Pog History", icon: "utensils", icon_type: :solid do %>
-  <div class="mb-2 text-base-content/80">
+  <div class="mb-2 me-muted">
     Showing <%= pluralize(@person_pogs.size, "pog") %>
   </div>
   <% if @person_pogs.any? %>

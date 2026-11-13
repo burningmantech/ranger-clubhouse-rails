@@ -39,9 +39,14 @@ class ShiftOperations::RollcallController < ApplicationController
     @groups = Rollcall.shift_groups
     @group = find_group(params[:position_id])
     @slot = find_slot(@group)
+    @start_time = start_time_param
+    # Set Check-In Time opens its dialog in the layout's modal frame, as the
+    # app's other dialogs do: that request draws the dialog alone, without
+    # the roster. The page itself still draws it from ?set_time=1.
+    return render :set_time if turbo_frame_request_id == "modal" && params[:set_time].present? && @slot
+
     @rows = @slot ? Rollcall.sign_in_roster(@slot) : []
     @counts = @slot && Rollcall.sign_in_counts(@slot.id, @slot.position_id)
-    @start_time = start_time_param
   end
 
   def sign_out

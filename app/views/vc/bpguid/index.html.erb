@@ -64,7 +64,7 @@
         <%# D5 (beyond spec): the current link and the Clubhouse email, to judge a search against. %>
         <% list.row "Email" do %><%= @person.email.presence || none_stated %><% end %>
         <% list.row "BPGUID" do %>
-          <%= @person.bpguid.presence || tag.i("None on file", class: "text-stone-muted") %>
+          <%= @person.bpguid.presence || tag.span("None on file", class: "text-stone-muted") %>
         <% end %>
       <% end %>
     </div>

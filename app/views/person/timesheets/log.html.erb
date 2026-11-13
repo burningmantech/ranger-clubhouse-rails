@@ -12,9 +12,7 @@
 
 <% if @entries.empty? %>
   <% if @year < 2018 %>
-    <%= ui_callout_box :warning do %>
-      Timesheet logs are not available prior to 2018.
-    <% end %>
+    <%= ui_empty_state "Timesheet logs are not available prior to 2018." %>
   <% else %>
     <%= ui_empty_state "No timesheet logs were found for #{@year}." %>
   <% end %>

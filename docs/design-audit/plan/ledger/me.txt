@@ -1,0 +1,136 @@
+R12486 || FIXED || app/helpers/dashboard_helper.rb:42 || animate-pulse moved from the action-needed badge to the urgent badge, the one pulse the guide approves.
+R03816 || FIXED || app/views/dashboard_tasks/_after_event_status_advisory.html.erb:9 || R4: both muted notes text-sm -> body size.
+R12494 || COMPLIANT || app/views/dashboard_tasks/_attend_alpha_shift_bonked.html.erb:2 || ALERT-01 new wording: one-line red status in a step card led by its status icon, sentence case.
+R12495 || COMPLIANT || app/views/dashboard_tasks/_attend_alpha_shift_missed.html.erb:2 || ALERT-01: red status line in a step card, led by its icon, sentence case.
+R12498 || FIXED || app/views/dashboard_tasks/_attend_alpha_shift_pending.html.erb:5 || Hand-made bg-default box replaced by a ui_icon_item list (date, arrival rule, location).
+R12499 || FIXED || app/views/dashboard_tasks/_attend_alpha_shift_pending.html.erb:9 || ALL-CAPS warning line rewritten in sentence case; keeps its status icon.
+R12503 || FIXED || app/views/dashboard_tasks/_attend_cheetah_cub_shift_pending.html.erb:2 || ALL-CAPS warning line rewritten in sentence case; keeps its status icon.
+R12504 || FIXED || app/views/dashboard_tasks/_attend_cheetah_cub_shift_pending.html.erb:5 || Hand-made bg-default date box replaced by a ui_icon_item line.
+R12505 || FIXED || app/views/dashboard_tasks/_attend_cheetah_cub_shift_pending.html.erb:6 || strftime replaced by datetime_format (no slot timezone in the Milestones hash, so the app zone, as before).
+R03855 || FIXED || app/views/dashboard_tasks/_attend_cheetah_cub_shift_pending.html.erb:10 || R4: instruction text-sm -> body size.
+R03863 || FIXED || app/views/dashboard_tasks/_attend_green_dot_mentee_shift_waiting.html.erb:7 || R4: instruction and link text-sm -> body size.
+R12510 || COMPLIANT || app/views/dashboard_tasks/_attend_training_fail.html.erb:4 || ALERT-01: status lines in a step card, each led by a status icon, sentence case.
+R12512 || COMPLIANT || app/views/dashboard_tasks/_attend_training_no_show.html.erb:2 || ALERT-01: one-line red status in a step card led by its icon.
+R12513 || FIXED || app/views/dashboard_tasks/_attend_training_pending.html.erb:11 || "FULL DAY required" -> "Full day required" (ALERT-01 forbids capitals); icon kept.
+R12514 || FIXED || app/views/dashboard_tasks/_attend_training_pending.html.erb:28 || Hand-made slot box with <br> replaced by a ui_icon_item list.
+R12518 || FIXED || app/views/dashboard_tasks/_bmid_will_not_be_printed.html.erb:3 || Typed &bullet; divs and the OR divider -> list-bulleted ul with an inline "or".
+R12529 || COMPLIANT || app/views/dashboard_tasks/_dashboard_tickets.html.erb:5 || ALERT-01: each problem line in the step card is led by its status icon, sentence case.
+R12530 || REJECTED || app/views/dashboard_tasks/_dashboard_tickets.html.erb:30 || Not a list the reader came for: a one-line status inside a dashboard step, which ALERT-01 allows as red text with its icon.
+R12534 || FIXED || app/views/dashboard_tasks/_green_dot_mentee_shift_needed.html.erb:2 || Decorative green circle icon removed (COLOR-05).
+R12536 || COMPLIANT || app/views/dashboard_tasks/_missing_bpguid.html.erb:27 || ALERT-01: red status line in a step card led by its icon, sentence case.
+R12539 || REJECTED || app/views/dashboard_tasks/_no_things_at_the_moment.html.erb:1 || The body of a dashboard step ("Watch the Announce Mailing List"), not an empty list; a dashed empty-state box inside the step card would misread.
+R03988 || FIXED || app/views/dashboard_tasks/_online_course_needed.html.erb:4 || R4: both instructions text-sm -> body size.
+R03993 || FIXED || app/views/dashboard_tasks/_online_course_waiting.html.erb:4 || R4: both instructions text-sm -> body size.
+R04022 || FIXED || app/views/dashboard_tasks/_sign_motor_pool_protocol_needed.html.erb:10 || R4: applicant message text-sm -> body size.
+R12547 || FIXED || app/views/dashboard_tasks/_sign_nda_needed.html.erb:3 || "PRIVILEGES SUSPENDED" -> sentence case; icon kept (ALERT-01).
+R04047 || FIXED || app/views/dashboard_tasks/_sign_up_for_alpha_shift_blocked.html.erb:2 || R4: requirement text-sm -> body size.
+R04075 || FIXED || app/views/dashboard_tasks/_sign_up_for_shifts_schedule_pending.html.erb:2 || R4: instruction text-sm -> body size.
+R12557 || COMPLIANT || app/views/dashboard_tasks/_take_student_survey.html.erb:4 || EMPTY-01 new wording: drawn only when there are surveys, so it cannot be empty where drawn.
+R12558 || COMPLIANT || app/views/dashboard_tasks/_trainer_survey.html.erb:4 || EMPTY-01: the step shows only with trainer surveys; cannot be empty where drawn.
+R12559 || FIXED || app/views/dashboard_tasks/_upload_photo_error.html.erb:3 || ALERT-01 compliant (icon-led status in a step); the stray " ." line joined to the sentence.
+R12560 || COMPLIANT || app/views/dashboard_tasks/_upload_photo_rejected.html.erb:2 || ALERT-01: red status line in a step card led by its icon.
+R12562 || COMPLIANT || app/views/dashboard_tasks/_upload_photo_rejected.html.erb:4 || EMPTY-01: a rejected photo always carries its reasons; cannot be empty where drawn.
+R12564 || COMPLIANT || app/views/dashboard_tasks/_vehicle_requests_denied.html.erb:2 || ALERT-01: red status line in a step card led by its icon.
+R12566 || FIXED || app/views/dashboard_tasks/_verify_personal_info.html.erb:3 || Red-only emphasis removed; both branches print the same plain line (the step's badge carries urgency).
+R12567 || FIXED || app/views/dashboard_tasks/_verify_personal_info.html.erb:7 || Shirt line text-lg dropped; font-semibold only, no longer outweighs the step title.
+R04165 || FIXED || app/views/dashboard_tasks/_verify_timesheets.html.erb:14 || R4: warning text-sm -> body size.
+R12572 || FIXED || app/views/me/agreements/index.html.erb:33 || Hand-made article -> ui_accent_card with status variant; coloured status icon kept in the title, aria-labelledby kept.
+R04501 || FIXED || app/views/me/agreements/index.html.erb:33 || Hover shadow lift gone with the hand-made article.
+R04504 || FIXED || app/views/me/agreements/index.html.erb:36 || Title now drawn by ui_accent_card's heading style.
+F0102 || FIXED || app/views/me/agreements/index.html.erb:36 || Agreement titles are h2 under the hero h1.
+R12575 || FIXED || app/views/me/agreements/index.html.erb:56 || Dashed box with medallion -> ui_empty_state.
+F0101 || FIXED || app/views/me/agreements/show.html.erb:13 || @document.body.html_safe -> rich_text(@document.body), as team_documents/show does.
+R12577 || FIXED || app/views/me/agreements/show.html.erb:21 || button_to with button_classes -> button_link :primary, method: :patch, turbo_stream.
+R12580 || FIXED || app/views/me/announcements/_announcement.html.erb:10 || Hand-made rounded div -> ui_card (id and role kept); expired keeps opacity-60.
+R12584 || COMPLIANT || app/views/me/announcements/_announcement.html.erb:6 || BTN-07 new wording exempts one card's record actions.
+R12588 || FIXED || app/views/me/announcements/index.html.erb:12 || Hand-made box -> ui_callout_box :info per branch; nothing renders for people who are neither.
+F0103 || FIXED || app/views/me/announcements/index.html.erb:1 || Notice titles (callout heading_level: :h2) and announcement titles are h2.
+R12587 || FIXED || app/views/me/announcements/index.html.erb:40 || Dashed box -> ui_empty_state with inbox icon; wording kept.
+R12591 || FIXED || app/views/me/dashboard/_announcements_section.html.erb:9 || card-standard div -> ui_card with p-4.
+R12593 || FIXED || app/views/me/dashboard/_announcements_section.html.erb:15 || Hand-made count pill -> ui_badge :warning with its aria-label.
+R04576 || FIXED || app/views/me/dashboard/_announcements_section.html.erb:15 || Arbitrary min-w-[1.5rem] gone with the pill.
+R12596 || FIXED || app/views/me/dashboard/_announcements_section.html.erb:52 || Row is no longer a link; Read Announcement is a real button_link (outline, full_width) described by the subject. Dashboard test updated (A7).
+R12598 || FIXED || app/views/me/dashboard/_dashboard_bonked.html.erb:17 || text-error removed; bold kept.
+R12599 || FIXED || app/views/me/dashboard/_dashboard_document.html.erb:6 || body.html_safe -> rich_text(body).
+F0107 || FIXED || app/views/me/dashboard/_onboarding.html.erb:67 || "File A Bug Report" -> "File a Bug Report"; system test updated.
+R12606 || FIXED || app/views/me/dashboard/index.html.erb:5 || Applicant branch now heads with hero_panel.
+R12611 || FIXED || app/views/me/directory/index.html.erb:28 || Italic "No contact email on file." -> "Contact: —"; system test updated. Grid emptiness: section heading already counts members.
+R12608 || FIXED || app/views/me/directory/index.html.erb:37 || Member tiles -> ui_card.
+R04630 || FIXED || app/views/me/directory/index.html.erb:37 || shadow-sm and hover:shadow-md lift removed.
+M0448 || FIXED || app/views/me/directory/index.html.erb:41 || Height travels as --avatar-height custom property (STYLE-01 new wording).
+M0449 || FIXED || app/views/me/directory/index.html.erb:41 || Placeholder uses the same custom property.
+R12610 || FIXED || app/views/me/directory/index.html.erb:54 || Callsign text-xl -> heading-title.
+R04636 || FIXED || app/views/me/directory/index.html.erb:59 || R4: position titles text-sm -> body size; "No Photo" caption stays text-sm (TYPE-03 allows a placeholder caption).
+F0105 || FIXED || app/views/me/event_info.html.erb:4 || Tab labels "Event", "Training".
+R12614 || FIXED || app/views/me/event_summary/index.html.erb:7 || Stat labels Title Case.
+R04672 || FIXED || app/views/me/menu/_content.html.erb:6 || Visible "Search the Menu" label beside the field (mega-menu-search-label in components/mega-menu.css); duplicate placeholder dropped. Panels unchanged (A6).
+R12625 || WAIVED || app/views/me/menu/_content.html.erb:20 || approved exception 2026-11-12: mega menu panels, not tabs
+F0106 || FIXED || app/views/me/menu/_content.html.erb:22 || "Recently visited" -> "Recently Visited" (both).
+R12626 || FIXED || app/assets/stylesheets/components/mega-menu.css:86 || .mega-menu-panel-title now @apply heading-title (was text-lg); class name kept for the tests.
+R04693 || FIXED || app/assets/stylesheets/components/mega-menu.css:95 || .mega-menu-section-title now @apply heading-title (was text-sm); h4 class kept for menu_controller_test.
+R12624 || FIXED || app/views/me/menu/_content.html.erb:90 || Mobile back control reads "Back to Categories".
+R12630 || FIXED || app/views/me/online_course/index.html.erb:13 || text-warning removed from the strong.
+R04722 || FIXED || app/views/me/operational_summary/_basic_driving.html.erb:16 || R4: permit note text-sm -> body size.
+R04736 || FIXED || app/views/me/operational_summary/_mvr.html.erb:8 || R4: both paragraphs text-sm -> body size.
+M0112 || FIXED || app/views/me/operational_summary/_provisions_and_radios.html.erb:26 || "hours worked" -> "hours on shift".
+R04749 || FIXED || app/views/me/operational_summary/_provisions_and_radios.html.erb:31 || R4: location/hours paragraph text-sm -> body size.
+R12640 || FIXED || app/views/me/operational_summary/_teams_and_positions.html.erb:31 || Hand-made tinted bar removed; plain flex row of label and buttons.
+R04764 || FIXED || app/views/me/operational_summary/_teams_and_positions.html.erb:31 || Label text-sm -> body size, Title Case.
+R12643 || COMPLIANT || app/views/me/operational_summary/_training.html.erb:2 || LAYOUT-02 new wording: an item grid inside a section picks its own scale gap.
+R12647 || FIXED || app/views/me/passkeys/index.html.erb:10 || Add Passkey now in a button_row.
+F0113 || FIXED || app/views/me/password/edit.html.erb:7 || Three password fields marked required:.
+F0114 || FIXED || app/views/me/password/edit.html.erb:13 || Submit "Change Password" -> "Save Password".
+R12653 || FIXED || app/views/me/personal_vehicles/_form.html.erb:12 || Callout removed; make, model, colour (the model's validated fields) marked required:. The callout overstated: other fields are not validated.
+R12654 || FIXED || app/views/me/personal_vehicles/_form.html.erb:11 || w-24/w-40 -> w-full sm:w-24 / sm:w-40; cols: 40 dropped.
+F0111 || FIXED || app/views/me/personal_vehicles/_form.html.erb:68 || Create label "Submit Request" -> "Save Request".
+F0110 || FIXED || app/views/me/personal_vehicles/new.html.erb:2 || Hero title -> "Add Personal Vehicle Request".
+R12656 || FIXED || app/views/me/surveys/_question.html.erb:7 || Red badge removed; required: passed to the builder, which prints the visible "(required)".
+R12657 || FIXED || app/views/me/surveys/_question.html.erb:23 || Fallback now led by an error icon, sentence case (ALERT-01 status line in a card).
+R12661 || FIXED || app/views/me/surveys/show.html.erb:6 || Description is one sentence, no text-lg or ml-4 span.
+R12664 || FIXED || app/views/me/surveys/show.html.erb:40 || Each required-answer error names its question (and trainer); ui_form shows its error summary; the duplicate toast is gone.
+M0144 || FIXED || app/views/me/surveys/show.html.erb:82 || "Submit Feedback" -> "Send Feedback" (Sending…).
+R12672 || FIXED || app/views/me/tickets/_claimed_overview.html.erb:27 || Both red lines now led by a warning icon (ALERT-01).
+R12678 || FIXED || app/views/me/tickets/_item_details.html.erb:14 || Hand-made bordered box dropped; ui_icon_item list stands alone.
+F0108 || FIXED || app/views/me/tickets/_landing.html.erb:37 || "Gift Tickets", "SAPs for Significant Others", "Confirm Your Choices".
+R12679 || FIXED || app/views/me/tickets/_landing.html.erb:152 || Checklist cards -> ui_card.
+R12680 || FIXED || app/views/me/tickets/_landing.html.erb:188 || "Start Ticketing" / "Continue Ticketing"; test updated.
+R12685 || FIXED || app/views/me/tickets/_section_detail.html.erb:37 || Red line now led by a warning icon.
+R12689 || FIXED || app/views/me/tickets/_ticket_gift_conditions.html.erb:2 || Bordered box dropped; ui_icon_item list stands alone.
+F0109 || FIXED || app/views/me/tickets/_wizard_nav.html.erb:25 || Title Case.
+R12692 || FIXED || app/views/me/tickets/_wizard_nav.html.erb:20 || Outside the walkthrough the partial renders nothing; the hero's back link is the way back (HERO-04).
+R12695 || FIXED || app/views/me/tickets/gift.html.erb:23 || Callout with back button -> ui_empty_state (hero link remains).
+R12693 || FIXED || app/views/me/tickets/gift.html.erb:55 || Prose h3s demoted to bold paragraphs; the status chip above labels the state.
+R12694 || FIXED || app/views/me/tickets/gift.html.erb:112 || R7: "Claim & Pick Up at Will Call" is the section's primary, as claim_buttons does.
+R12697 || FIXED || app/views/me/tickets/provisions.html.erb:27 || Callout plus back button -> ui_empty_state.
+R12696 || FIXED || app/views/me/tickets/provisions.html.erb:44 || li flex + fa_icon rows -> ui_icon_item.
+R12700 || FIXED || app/views/me/tickets/review.html.erb:45 || "Nothing claimed." -> ui_empty_state.
+R12699 || FIXED || app/views/me/tickets/review.html.erb:89 || BTN-05 new wording: main action :primary (was :success).
+R12704 || FIXED || app/views/me/tickets/sap.html.erb:91 || BTN-05: :success -> :primary.
+R12706 || FIXED || app/views/me/tickets/sap_so.html.erb:69 || text-error span -> <strong>No exceptions.</strong>
+R12707 || FIXED || app/views/me/tickets/ticket.html.erb:62 || Ticket cards -> ui_card.
+R12710 || FIXED || app/views/me/tickets/ticket.html.erb:87 || All bank buttons read "Bank This Ticket" (COPY-04: one action, one label).
+R12667 || FIXED || app/views/me/timesheet/final_confirmation.html.erb:1 || Success line now led by its status icon (ALERT-01).
+F0104 || FIXED || app/views/me/vehicles_dashboard/_eligible_positions.html.erb:8 || h6 -> h3.
+R12713 || FIXED || app/views/me/vehicles_dashboard/_eligible_positions.html.erb:8 || h3 takes heading-title.
+R12714 || FIXED || app/views/me/vehicles_dashboard/_eligible_positions.html.erb:16 || bg-default box dropped; the list stands alone.
+R12716 || FIXED || app/views/me/vehicles_dashboard/_eligible_positions.html.erb:24 || text-warning removed from the paragraph.
+R05163 || FIXED || app/views/me/vehicles_dashboard/_mvr_status_eligible.html.erb:8 || R4: Deadline label, days-left label and Tip text-sm -> body size.
+R12723 || FIXED || app/views/me/vehicles_dashboard/_pvr_requests.html.erb:6 || Raw card-standard div -> ui_card.
+R05176 || FIXED || app/views/me/vehicles_dashboard/_pvr_requests.html.erb:6 || shadow-sm and hover lift removed.
+R12724 || FIXED || app/views/me/vehicles_dashboard/_pvr_requests.html.erb:10 || h4 takes heading-title.
+R12726 || FIXED || app/views/me/vehicles_dashboard/_pvr_requests.html.erb:37 || Hand-made response box -> ui_label_value row "Response".
+R05181 || FIXED || app/views/me/vehicles_dashboard/_pvr_requests.html.erb:42 || R4: response and permit/logo/fuel/amber text-sm -> body size; colour/plate line stays text-sm (muted second line).
+R12729 || COMPLIANT || app/views/me/vehicles_dashboard/_pvr_requests.html.erb:64 || BTN-07 exempts one card's record actions.
+R12728 || FIXED || app/views/me/vehicles_dashboard/_pvr_requests.html.erb:64 || Edit -> edit_link.
+F0115 || FIXED || app/views/me/vehicles_dashboard/_pvr_requests.html.erb:67 || Delete -> delete_button confirm: "this vehicle request" (red, confirms).
+R12732 || FIXED || app/views/me/vehicles_dashboard/_pvr_status_agreement_needed.html.erb:27 || Sign Agreement :warning -> :primary.
+F0112 || FIXED || app/views/me/vehicles_dashboard/_pvr_status_eligible.html.erb:13 || "New Vehicle Request" -> "Add Vehicle Request"; partials_render_test updated.
+R12735 || FIXED || app/views/me/vehicles_dashboard/_pvr_status_ineligible.html.erb:11 || text-warning removed.
+R12737 || FIXED || app/views/me/vehicles_dashboard/_pvr_status_potential.html.erb:5 || text-warning removed.
+F0116 || WAIVED || app/views/me/vehicles_dashboard/index.html.erb:21 || R7: one primary per section; the MVR and PVR sections each have one.
+R12740 || FIXED || app/views/me/vehicles_dashboard/index.html.erb:10 || Hand-made panel -> ui_callout_box :error with h2 title.
+R05221 || FIXED || app/views/me/vehicles_dashboard/index.html.erb:10 || shadow-sm/rounded-xl gone with the panel.
+R12741 || FIXED || app/views/me/vehicles_dashboard/index.html.erb:38 || "Review and Sign Agreement" :error lg -> :primary.
+R12742 || FIXED || app/views/me/vehicles_dashboard/mvr_submit.html.erb:10 || Red h3 + "Uh oh" -> ui_callout_box :error titled, plain wording.
+R12669 || FIXED || app/views/me/work_history/index.html.erb:6 || Stat labels Title Case.
+R05245 || FIXED || app/views/me/work_history/index.html.erb:11 || Q&A moved into a collapsed ui_disclosure card above the section.

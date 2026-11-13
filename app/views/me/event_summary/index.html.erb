@@ -4,9 +4,9 @@
 <% end %>
 
 <%= ui_stat_row do %>
-  <%= ui_stat_box hour_format(@summary.total_duration), "TOTAL HOURS" %>
-  <%= ui_stat_box credit_format_short(@summary.total_credits), "CREDITS" %>
-  <%= ui_stat_box @position_summary.size, "POSITIONS" %>
+  <%= ui_stat_box hour_format(@summary.total_duration), "Total Hours" %>
+  <%= ui_stat_box credit_format_short(@summary.total_credits), "Credits" %>
+  <%= ui_stat_box @position_summary.size, "Positions" %>
 <% end %>
 
 <%= render partial: "common/event_summary_breakdown",

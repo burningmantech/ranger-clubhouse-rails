@@ -87,6 +87,15 @@ module TeamsPositions
       end
     end
 
+    # Whether the confirmed change can be taken back. A grant can be revoked
+    # here again; a revoke cancels sign-ups, and granting the position again
+    # does not bring them back.
+    def bulk_position_undo(change)
+      return "You can revoke it again from this page." if change.grant?
+
+      "This cannot be undone: granting it again does not restore cancelled sign-ups."
+    end
+
     # What the apply actually did, on the page instead of only in a toast that
     # clips a long list and dismisses itself after six seconds.
     def bulk_position_outcome_headline(change, outcome)

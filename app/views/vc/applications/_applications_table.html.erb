@@ -14,12 +14,13 @@
       <%= t.heading "Age" %>
       <%= t.heading "BRC Events" %>
       <%= t.heading "Last Updated" %>
-      <%= t.heading "Actions" %>
     <% end %>
     <%= t.body do %>
       <% applications.each do |application| %>
         <%= t.row do %>
-          <%= t.row_header application.application_id %>
+          <%# The id is the row link to the review page: it opens the read view, so it is not an Edit control. %>
+          <%= t.row_header link_to(application.application_id, vc_application_path(application),
+                                   class: LinkHelper::TABLE_LINK_CLASSES) %>
           <%= t.cell application_status_badge(application.status) %>
           <%= t.cell "#{application.first_name} #{application.last_name}" %>
           <%= t.cell email_link_or_dash(application.email) %>
@@ -40,8 +41,7 @@
               <%= fa_icon "xmark", :solid, class: "icon-error" %> <span class="text-error">issue</span>
             <% end %>
           <% end %>
-          <%= t.cell application.updated_by_person_at ? datetime_format(application.updated_by_person_at) : "-" %>
-          <%= t.cell edit_link vc_application_path(application) %>
+          <%= t.cell application.updated_by_person_at ? datetime_format(application.updated_by_person_at) : value_or_dash(nil) %>
         <% end %>
       <% end %>
     <% end %>

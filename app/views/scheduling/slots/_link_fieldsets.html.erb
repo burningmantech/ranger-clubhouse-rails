@@ -17,10 +17,11 @@
       <%= f.select :trainer_slot_id, slot_link_choices(link_slots),
                    { label: "Sign-Up Multiplier Mentor/Trainer's Slot",
                      include_blank: "(no multiplier slot)" } %>
-      <p class="my-2 text-error">
-        Warning: do not link the mentor/trainer slot back to this slot.
-        An infinite recursion loop will happen.
-      </p>
+      <div class="my-2">
+        <%= ui_callout_box :warning do %>
+          Do not link the mentor/trainer slot back to this slot. An infinite recursion loop will happen.
+        <% end %>
+      </div>
     <% else %>
       <p class="my-2">The selected position is not a child position, so no multiplier slot can be linked.</p>
     <% end %>

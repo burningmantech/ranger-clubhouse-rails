@@ -2,8 +2,8 @@
                title: "#{@survey.title}",
                back_to: ["Dashboard", me_root_path] do |panel| %>
   <% if @slot %>
-    <% panel.description class: "text-lg" do %>
-      <%= @slot.position.title %> <%= @slot.description %> <span class="ml-4"><%= mdy_format @slot.begins %></span>
+    <% panel.description do %>
+      Your feedback on <%= @slot.position.title %> <%= @slot.description %>, <%= mdy_format @slot.begins %>.
     <% end %>
   <% end %>
 <% end %>
@@ -37,7 +37,7 @@
   <% end %>
 <% end %>
 
-<%= ui_form(@survey_response, me_surveys_path(type: params[:type], slot_id: params[:slot_id], year: params[:year]), method: :post, scope: :survey, no_error_summary: true) do |form| %>
+<%= ui_form(@survey_response, me_surveys_path(type: params[:type], slot_id: params[:slot_id], year: params[:year]), method: :post, scope: :survey) do |form| %>
   <% @survey.survey_groups.each_with_index do |group, group_idx| %>
     <% if @survey.type == Survey::TRAINER %>
       <%# For trainer surveys, show each trainer with all questions %>
@@ -79,6 +79,6 @@
 
   <%= button_row do %>
     <%# Turbo swaps the label in and locks the button while the answers are on their way. %>
-    <%= submit_button "Submit Feedback", data: { turbo_submits_with: "Submitting…" } %>
+    <%= submit_button "Send Feedback", data: { turbo_submits_with: "Sending…" } %>
   <% end %>
 <% end %>

@@ -82,14 +82,6 @@ module Scheduling::SandmanQualifiedHelper
                            aria: "Show the #{qualified} qualified")].compact
   end
 
-  # The scoreboard stays one row on desktop however many boxes it holds, which
-  # varies with the checks in force. Spelled as whole class names, because the
-  # stylesheet is built from the names it can find written down.
-  def sandman_qualified_scoreboard_columns(count)
-    { 4 => "lg:grid-cols-4", 5 => "lg:grid-cols-5", 6 => "lg:grid-cols-6" }
-      .fetch(count, "lg:grid-cols-6")
-  end
-
   # Renders one scoreboard box, as a link when it has somewhere to go. The ring
   # marks the box whose filter is the one currently applied.
   def sandman_qualified_scoreboard_box(box, current_filter)

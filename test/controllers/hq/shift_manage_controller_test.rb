@@ -525,7 +525,7 @@ class Hq::ShiftManageControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Regression: the too-short interstitial dropped submit_correction, so
-  # "End Shift & Submit Correction" on a short entry ended the shift with no
+  # "End Shift & Request Correction" on a short entry ended the shift with no
   # correction modal — exactly when a time correction is most likely.
   test "the too short modal carries the submit correction intent through" do
     entry = create_timesheet!(review_status: Timesheet::STATUS_VERIFIED,

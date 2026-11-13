@@ -1,6 +1,6 @@
 <%# locals: (shifts:, slot:, year:) %>
 <%#
-  The shift picker: an action-less GET form that reloads this page with the
+  The shift picker: a GET form back to this page that reloads it with the
   chosen shift in the query string. Deliberate -- the board it produces is the
   whole page, so it should be a real URL that survives a reload and a back
   button, unlike the writes below it, which are streams.
@@ -9,26 +9,18 @@
   the year and land the reader on the current one, which is a different list of
   shifts than the one they just chose from.
 
-  The shift's actions sit directly under the select and as wide as it is: the
-  shift is what they act on, so the three read as one control block. Both
-  actions need a chosen shift, so they render, like the status badge, only once
-  there is one.
+  The shift's actions sit directly under the select: the shift is what they act
+  on, so the three read as one control block. Both actions need a chosen shift,
+  so they render, like the status badge, only once there is one.
 %>
 <%# Spacing belongs to the row this sits in, alongside the shift's counts. %>
 <div class="flex flex-col w-full lg:w-auto lg:min-w-64">
-  <%= form_tag false, method: :get, data: { controller: "form" }, class: "flex flex-col" do %>
-    <div class="flex items-center justify-between gap-3 mb-1">
-      <%= label_tag :slot_id, "Shift", class: "font-medium text-heading" %>
-      <% if slot && (status = cruise_direction_shift_status(slot)) %>
-        <% variant, label, icon = status %>
-        <%= ui_badge label, variant, icon: icon, icon_type: :solid %>
-      <% end %>
-    </div>
-    <%= select_tag :slot_id,
-                   grouped_options_for_select(cruise_direction_shift_option_groups(shifts), slot&.id),
-                   include_blank: "Select a shift",
-                   class: "#{AppFormBuilder::SELECT_CLASSES} w-full",
-                   data: { action: "change->form#submit" } %>
+  <%= form_with url: shift_operations_cruise_direction_path, method: :get, builder: AppFormBuilder,
+                data: { controller: "form" } do |f| %>
+    <%= f.select :slot_id,
+                 grouped_options_for_select(cruise_direction_shift_option_groups(shifts), slot&.id),
+                 { label: "Shift", include_blank: "Select a shift", width: "w-full", wrapper_class: "" },
+                 { data: { action: "change->form#submit" } } %>
 
     <%= hidden_field_tag :year, year, id: nil %>
 
@@ -36,8 +28,13 @@
     <noscript><%= submit_button "Show Pods" %></noscript>
   <% end %>
 
+  <% if slot && (status = cruise_direction_shift_status(slot)) %>
+    <% variant, label, icon = status %>
+    <div class="mt-2"><%= ui_badge label, variant, icon: icon, icon_type: :solid %></div>
+  <% end %>
+
   <% if slot %>
-    <div class="grid grid-cols-2 gap-2 mt-2">
+    <%= button_row class: "mt-2" do %>
       <%# The dialog opens into the layout's modal frame; its submit escapes to
           _top, because the answer is a stream that replaces the board. %>
       <%= button_link "Add Pod", :primary,
@@ -47,6 +44,6 @@
           stands now, and this page is left open for hours. %>
       <%= button_link "Refresh", :secondary, cruise_direction_refresh_path(slot, shifts, year),
                       icon: "arrows-rotate", icon_type: :solid %>
-    </div>
+    <% end %>
   <% end %>
 </div>

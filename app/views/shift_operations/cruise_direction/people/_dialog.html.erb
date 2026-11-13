@@ -29,9 +29,7 @@
           <%= render "shift_operations/cruise_direction/people/pool",
                      candidates: pools.current, prefix: "current" %>
         <% else %>
-          <p class="text-stone-muted">
-            No one checked in for this shift is waiting for a pod.
-          </p>
+          <%= ui_empty_state "No one checked in for this shift is waiting for a pod." %>
         <% end %>
 
         <% if pools.prior.any? %>
@@ -39,7 +37,7 @@
               somebody else's shift, and one press must not sweep them in. %>
           <%= ui_disclosure "Checked In Earlier -- May Be on the Shift Before (#{pools.prior.size})",
                             class: "mt-3" do %>
-            <p class="text-sm text-stone-muted mb-2">
+            <p class="text-stone-muted mb-2">
               Everyone here checked in an hour or more before this shift started.
             </p>
             <%= render "shift_operations/cruise_direction/people/pool",

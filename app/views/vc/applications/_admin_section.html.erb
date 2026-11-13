@@ -14,7 +14,7 @@
     <%= delete_button vc_application_path(application), "Delete Application",
                       confirm_modal: {
                         title: "Delete Application",
-                        message: "Are you absolutely sure you want to delete application #{application.application_id}? Its notes and audit history will also be deleted.",
+                        message: "Delete application #{application.application_id}? Its notes and audit history are deleted with it. This cannot be undone.",
                         confirm_label: "Delete Application",
                         method: :delete
                       } %>

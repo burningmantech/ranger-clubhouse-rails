@@ -21,7 +21,7 @@
                   icon: "ban", icon_type: :solid %>
 <% end %>
 
-<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
   <dl class="instruction-list">
     <dt>What does &ldquo;not confirmed&rdquo; mean?</dt>
     <dd>The number is on file, but the code texted to it was never sent back, so nothing can be
@@ -31,7 +31,7 @@
   </dl>
 <% end %>
 
-<%= ui_section "By Account Status", icon: "table-list", icon_type: :solid, border: false do %>
+<%= ui_section "By Account Status", icon: "table-list", icon_type: :solid do %>
   <%= ui_table striped: true do |t| %>
     <%= t.header do %>
       <%= t.heading "Status" %>
@@ -57,14 +57,12 @@
 <% end %>
 
 <div class="stack-to-row-lg">
-  <%= ui_section "Not Confirmed (#{@unverified.size})", icon: "clock", icon_type: :solid,
-                 border: false do %>
+  <%= ui_section "Not Confirmed (#{@unverified.size})", icon: "clock", icon_type: :solid do %>
     <%= render "list", people: @unverified,
                empty: "Every number on file has been confirmed." %>
   <% end %>
 
-  <%= ui_section "Asked to Stop (#{@stopped.size})", icon: "ban", icon_type: :solid,
-                 border: false do %>
+  <%= ui_section "Asked to Stop (#{@stopped.size})", icon: "ban", icon_type: :solid do %>
     <%= render "list", people: @stopped,
                empty: "No one has asked us to stop texting them." %>
   <% end %>

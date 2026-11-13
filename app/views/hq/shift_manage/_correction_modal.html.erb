@@ -4,7 +4,7 @@
     "modal" frame; also rendered inline by index for the
     end-shift-and-submit-correction flow. Mirrors
     Me::TimesheetController#update's param surface. %>
-<%= modal_dialog id: "hq-correction-modal", size: :lg, title: "Submit Timesheet Correction", frame: false do %>
+<%= modal_dialog id: "hq-correction-modal", size: :lg, title: "Request Timesheet Correction", frame: false do %>
   <div class="mb-3">
     The <strong><%= entry.position.title %></strong> entry on
     <%= datetime_format entry.on_duty, entry.off_duty %>
@@ -28,6 +28,6 @@
                     help_text: "Provide a brief explanation, 1 to 3 sentences, and name the " \
                                "shift partner or lead who can corroborate it.",
                     maxlength: 1000 %>
-    <%= modal_form_footer f, submit: "Submit Correction" %>
+    <%= modal_form_footer f, submit: "Request Correction" %>
   <% end %>
 <% end %>

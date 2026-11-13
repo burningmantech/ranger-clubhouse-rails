@@ -44,11 +44,11 @@
   <%= render "scheduling/shift_lead/below_min", report: @report %>
 
   <% rosters = [
-       { title: "DIRT / GREEN DOTS", id: "shift-lead-dirt", section: :dirt,
+       { title: "Dirt / Green Dots", id: "shift-lead-dirt", section: :dirt,
          rangers: @dirt, all: @report.dirt },
-       { title: "COMMAND STAFF", id: "shift-lead-command", section: :command,
+       { title: "Command Staff", id: "shift-lead-command", section: :command,
          rangers: @command, all: @report.command },
-       { title: "SPECIAL TEAMS", id: "shift-lead-special", section: :special,
+       { title: "Special Teams", id: "shift-lead-special", section: :special,
          rangers: @special, all: @report.special }
      ] %>
 

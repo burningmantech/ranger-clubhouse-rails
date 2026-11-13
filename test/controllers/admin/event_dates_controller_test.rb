@@ -53,7 +53,7 @@ class Admin::EventDatesControllerTest < ActionDispatch::IntegrationTest
     assert_select "td", text: /Thu Jan 1, #{YEAR} @ 01:00 to Fri Jan 1, #{YEAR + 1} @ 00:59/
   end
 
-  test "a record with no slot window says so rather than rendering a blank cell" do
+  test "a record with no slot window prints a dash rather than a blank cell" do
     @event_date.update_columns(pre_event_slot_start: nil, pre_event_slot_end: nil)
 
     sign_in_as(@admin)
@@ -61,7 +61,7 @@ class Admin::EventDatesControllerTest < ActionDispatch::IntegrationTest
     get admin_event_dates_path
 
     assert_response :success
-    assert_select "td", text: /Not set/
+    assert_select "td", text: "—"
   end
 
   test "an empty table says why it is empty" do

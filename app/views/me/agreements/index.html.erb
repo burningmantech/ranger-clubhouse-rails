@@ -25,18 +25,17 @@
 <% end %>
 
 
+<% card_variants = { signed: :success, pending: :warning, not_available: :secondary }.freeze %>
 <% if @agreements.any? %>
   <% @agreements.each do |agreement| %>
-    <article class="mb-4 rounded-lg border-l-4 <%= agreement_border_class(agreement) %> <%= agreement_bg_class(agreement) %> p-4 transition-all duration-200 hover:shadow-sm" aria-labelledby="agreement-<%= agreement.tag %>-title">
-      <div class="flex flex-col lg:flex-row lg:items-center gap-2">
-        <h3 id="agreement-<%= agreement.tag %>-title" class="flex-1 text-base font-semibold flex items-center gap-2 text-heading">
-          <span class="shrink-0"><%= agreement_icon(agreement) %></span>
-          <span><%= agreement.title %></span>
-        </h3>
-        <div class="shrink-0"><%= agreement_badge(agreement) %></div>
-      </div>
-
-      <div class="mt-3 pl-6 me-muted">
+    <% title_id = "agreement-#{agreement.tag}-title" %>
+    <%# The status icon keeps its colour, so it goes in the title rather than icon:, which draws it uncoloured %>
+    <%= ui_accent_card safe_join([tag.span(agreement_icon(agreement), class: "shrink-0"), tag.span(agreement.title, id: title_id)]),
+                       variant: card_variants.fetch(agreement_status(agreement)),
+                       badge: agreement_badge(agreement),
+                       heading_level: :h2,
+                       options: { class: "mb-4", aria: { labelledby: title_id } } do %>
+      <div class="pl-6 me-muted">
         <% if agreement.signed %>
           <div class="mb-3 text-success">
             <%= fa_icon "check", :solid, { end: 2 } %>Agreement has been signed.
@@ -51,16 +50,12 @@
           <%= button_link((agreement.signed ? "View" : "View & Sign"), :secondary, me_agreement_path(agreement.tag)) %>
         <% end %>
       </div>
-    </article>
+    <% end %>
   <% end %>
 <% else %>
-  <div class="text-center py-12 bg-base-100 rounded-lg border border-dashed border-line">
-    <%= render "common/status_medallion", icon: "file-circle-check", state: :warning %>
-    <h3 class="heading-title mb-2 text-heading">No Agreements Required</h3>
-    <p class="text-stone-subtle max-w-md mx-auto">
-      There are no agreements currently requiring your attention.
-    </p>
-  </div>
+  <%= ui_empty_state icon: "file-circle-check", icon_type: :solid do %>
+    <strong>No Agreements Required.</strong> There are no agreements currently requiring your attention.
+  <% end %>
 <% end %>
 
 <% if @publishing_teams.any? %>

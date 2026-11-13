@@ -33,31 +33,25 @@
     <%= f.text_field :callsign, label: "Callsign", maxlength: 64,
                      help_text: "Messages to or from one Ranger.", width: "w-full",
                      wrapper_class: "flex-1" %>
-    <%= f.select :direction, rbs_direction_options, { label: "Direction" },
-                 { class: "w-full" } %>
+    <%= f.select :direction, rbs_direction_options,
+                 { label: "Direction", width: "w-full", wrapper_class: "flex-1" } %>
   <% end %>
 
-  <div class="mt-2">
-    <label class="<%= AppFormBuilder::LABEL_CLASSES %>" id="rbs-status-label">Outcome</label>
-    <div role="group" aria-labelledby="rbs-status-label">
-      <%= render "common/checkbox_grid",
-                 name: "#{RbsMessageLogFilterForm::PARAM_SCOPE}[status][]",
-                 options: rbs_message_status_options, selected: @form.status,
-                 id_prefix: "rbs-status" %>
-    </div>
-  </div>
+  <%= f.fieldset "Outcome", id: "rbs-status-group" do %>
+    <%= render "common/checkbox_grid",
+               name: "#{RbsMessageLogFilterForm::PARAM_SCOPE}[status][]",
+               options: rbs_message_status_options, selected: @form.status,
+               id_prefix: "rbs-status" %>
+  <% end %>
 
   <%# The reasons a broadcast email did not go, apart from the rest: one
       Outcome filter, sent as the same list. %>
-  <div class="mt-2">
-    <label class="<%= AppFormBuilder::LABEL_CLASSES %>" id="rbs-email-failure-label">Email Failure Reason</label>
-    <div role="group" aria-labelledby="rbs-email-failure-label">
-      <%= render "common/checkbox_grid",
-                 name: "#{RbsMessageLogFilterForm::PARAM_SCOPE}[status][]",
-                 options: rbs_message_status_options(email_failures: true), selected: @form.status,
-                 id_prefix: "rbs-status" %>
-    </div>
-  </div>
+  <%= f.fieldset "Email Failure Reason", id: "rbs-email-failure-group" do %>
+    <%= render "common/checkbox_grid",
+               name: "#{RbsMessageLogFilterForm::PARAM_SCOPE}[status][]",
+               options: rbs_message_status_options(email_failures: true), selected: @form.status,
+               id_prefix: "rbs-status" %>
+  <% end %>
 
   <%= button_row class: "mt-4" do %>
     <%= f.submit "Apply Filters" %>
@@ -109,9 +103,9 @@
         <% end %>
         <% if rbs_message_has_text?(message) %>
           <%= t.detail_row id: text_id, label: "Text" do %>
-            <div class="rounded-base border border-line bg-default p-3 my-1">
-              <%= message.message.presence || tag.i("empty message") %>
-            </div>
+            <%= ui_text_box class: "my-1" do %>
+              <%= value_or_dash(message.message) %>
+            <% end %>
           <% end %>
         <% end %>
       <% end %>

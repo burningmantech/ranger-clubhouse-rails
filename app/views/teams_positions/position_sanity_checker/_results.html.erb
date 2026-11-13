@@ -11,7 +11,8 @@
   <%= ui_callout_box(failed.any? ? :warning : :success,
                      icon: failed.any? ? "triangle-exclamation" : "circle-check",
                      icon_type: :solid,
-                     title: pluralize(@results.size - failed.size, "repair") + " made") do %>
+                     title: pluralize(@results.size - failed.size, "repair") + " made",
+                     heading_level: :h2) do %>
     <ul class="flex flex-col gap-1">
       <% @results.each do |result| %>
         <li>
@@ -27,7 +28,7 @@
             </span>
           <% else %>
             <span>
-              <%= fa_icon "circle-check", :solid, end: 1, class: "text-success" %>
+              <%= fa_icon "circle-check", :solid, end: 1, class: "icon-success" %>
               <span class="font-semibold"><%= result.callsign %></span>
               — <%= result.messages.to_sentence %>
             </span>
@@ -53,7 +54,7 @@
 
 <% if @results.empty? && @skipped.zero? %>
   <%= ui_callout_box :warning, icon: "hand-point-up", icon_type: :solid,
-                     title: "Nothing Was Selected" do %>
+                     title: "Nothing Was Selected", heading_level: :h2 do %>
     Tick the rows you want repaired, then use the button under the table.
   <% end %>
 <% end %>

@@ -32,11 +32,11 @@
         <% end %>
         <%= t.cell class: "align-top" do %>
           <div>
-            <%= person_display_link(mail.sender, mail.sender_id, blank: tag.i("- Clubhouse -")) %><br>
+            <%= person_display_link(mail.sender, mail.sender_id, blank: tag.span("Clubhouse", class: "text-stone-muted")) %><br>
             &lt;<%= mail.from_email %>&gt; <%= fa_icon "arrow-right", :solid %>
           </div>
           <div>
-            <%= person_display_link(mail.person, mail.person_id, blank: "-") %><br>
+            <%= person_display_link(mail.person, mail.person_id, blank: "—") %><br>
             &lt;<%= mail.to_email %>&gt;
           </div>
           <% if mail.broadcast_id %>

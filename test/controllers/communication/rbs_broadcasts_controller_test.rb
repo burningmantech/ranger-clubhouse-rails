@@ -246,7 +246,7 @@ class Communication::RbsBroadcastsControllerTest < ActionDispatch::IntegrationTe
 
     assert_response :unprocessable_entity
     assert_select ".box-warning", text: /Sending reaches 1 person:\s+1 by text, 1 by email\.\s+1 person on the list can.t be reached by text or email: Alone\./
-    assert_select "input[type=submit][value=?]", "Send to 1 person"
+    assert_select "input[type=submit][value=?]", "Send to 1 Person"
     assert_match "Recipients (2)", response.body
   end
 
@@ -258,7 +258,7 @@ class Communication::RbsBroadcastsControllerTest < ActionDispatch::IntegrationTe
 
     assert_response :unprocessable_entity
     assert_no_match "No one matches what you chose", response.body
-    assert_select "input[type=submit][value=?]", "Send to 0 people"
+    assert_select "input[type=submit][value=?]", "Send to 0 People"
     assert_select ".box-warning", text: /1 person on the list can.t be reached by text or email: Alone\./
   end
 
@@ -270,7 +270,7 @@ class Communication::RbsBroadcastsControllerTest < ActionDispatch::IntegrationTe
 
     assert_response :unprocessable_entity
     assert_select ".box-warning", text: /Sending reaches 1 person:/
-    assert_select "input[type=submit][value=?]", "Send to 1 person"
+    assert_select "input[type=submit][value=?]", "Send to 1 Person"
     assert_not_includes response.body, "reached by text or email"
   end
 

@@ -17,7 +17,7 @@
   background: rgb(0 0 0 / 0.5);
 }
 
-@media (min-width: 1024px) {
+@media (width >= theme(--breakpoint-lg)) {
   .mega-menu-dialog {
     @apply rounded-lg;
     width: min(90vw, 72rem);
@@ -37,6 +37,11 @@
 
 .mega-menu-header {
   @apply flex items-center justify-between gap-2 px-4 py-2 border-b border-line;
+}
+
+/* Sits beside the field on every width; it never shrinks, the field does */
+.mega-menu-search-label {
+  @apply shrink-0 font-semibold text-heading;
 }
 
 .mega-menu-search {
@@ -81,8 +86,10 @@
   display: none !important;
 }
 
+/* Both titles are <h3>/<h4>, so they take heading-title (headings.css); the
+   class names stay because the menu tests and controller select by them. */
 .mega-menu-panel-title {
-  @apply text-lg font-semibold text-stone-muted mb-1
+  @apply heading-title text-stone-muted mb-1;
 }
 
 .mega-menu-items {
@@ -91,7 +98,7 @@
 
 /* Section group heading inside a multi-section category panel */
 .mega-menu-section-title {
-  @apply text-sm font-semibold text-stone-muted mt-3 mb-1;
+  @apply heading-title text-stone-muted mt-3 mb-1;
 }
 
 /* Untitled section groups still separate visually */
@@ -110,7 +117,7 @@
 }
 
 .mega-menu-item-link {
-  @apply flex flex-col flex-1 rounded-lg px-1 py-1 min-h-8 hover:bg-base-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary;
+  @apply flex flex-col flex-1 rounded-lg px-1 py-1 min-h-9 hover:bg-base-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary;
 }
 
 .mega-menu-item-title {

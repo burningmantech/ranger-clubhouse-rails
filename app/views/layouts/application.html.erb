@@ -102,6 +102,8 @@
 <% end %>
 <%= turbo_frame_tag "modal" %>
 <%= tag.div id: "turbo-confirm-modal" %>
+<%# The confirm dialog a controller fills in to ask a question of its own (application.js). %>
+<template id="confirm-dialog-template"><%= confirm_modal_dialog(title: "", message: "").html_safe %></template>
 <%# Not aria-atomic: an error toast stays until it is closed, and a new toast
     is read on its own rather than with every one still showing. %>
 <div aria-live="polite" class="relative">

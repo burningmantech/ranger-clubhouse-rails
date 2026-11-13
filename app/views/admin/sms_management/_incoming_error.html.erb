@@ -1,0 +1,8 @@
+<%# locals: (message:) %>
+<%# Where update_incoming says why the incoming address was not changed: the
+    form posts inside the account panel's frame, which cannot draw a toast. %>
+<div id="sms-incoming-error">
+  <% if message %>
+    <%= ui_callout_box :error, role: "alert" do %><%= message %><% end %>
+  <% end %>
+</div>

@@ -15,6 +15,7 @@
 <% ready = @entries.reject { |entry| entry.errors.any? } %>
 <% problem_lines = @entries.size - ready.size %>
 <% entry_count = pluralize(@entries.size, "timesheet entry") %>
+<% apply_label = "Apply #{pluralize(@entries.size, "Line")}" %>
 
 <%= hero_panel icon: "clipboard-check", heading_level: :h1,
                id: "shift-operations-bulk-sign-in-out-preview-header",
@@ -69,7 +70,7 @@
   <% end %>
 <% end %>
 
-<%= ui_section "Every Line You Entered", icon: "list-check", icon_type: :solid, border: false do %>
+<%= ui_section "Every Line You Entered", icon: "list-check", icon_type: :solid do %>
   <%= ui_table full_width: true, striped: true do |t| %>
     <%= t.header do %>
       <%= t.heading "Callsign" %>
@@ -132,13 +133,14 @@
   <%= button_row do %>
     <% unless @have_error %>
       <% one = @entries.one? %>
-      <%= f.submit "Create #{entry_count}", variant: :success,
+      <%= f.submit apply_label, variant: :success,
                    data: {
                      turbo_confirm: confirm_modal_dialog(
-                       title: "Final Confirmation",
-                       message: "#{entry_count} will be created or closed for " \
-                                "#{one ? "this Ranger" : "these Rangers"}.",
-                       confirm_label: one ? "Create it" : "Create them"
+                       title: apply_label,
+                       message: "Apply #{pluralize(@entries.size, "line")}? This creates or closes #{entry_count} for " \
+                                "#{one ? "this Ranger" : "these Rangers"}, and cannot be undone " \
+                                "from this page.",
+                       confirm_label: apply_label
                      )
                    } %>
     <% end %>

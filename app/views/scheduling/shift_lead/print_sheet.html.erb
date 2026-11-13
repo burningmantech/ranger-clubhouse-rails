@@ -38,13 +38,13 @@
       @bottom-left {
         content: "<%= page_footer %>";
         font-size: 7pt;
-        color: #444;
+        color: #4c4742; /* --color-body, light; a margin box cannot be trusted to resolve var() */
         font-family: "Atkinson Hyperlegible", sans-serif;
       }
       @bottom-right {
         content: "Page " counter(page) " of " counter(pages);
         font-size: 7pt;
-        color: #444;
+        color: #4c4742; /* --color-body, light; a margin box cannot be trusted to resolve var() */
         font-family: "Atkinson Hyperlegible", sans-serif;
       }
     }
@@ -100,11 +100,11 @@
 
   <%# --- below minimum ------------------------------------------------------ %>
   <% if @report.fully_staffed? %>
-    <div class="sheet-band" role="heading" aria-level="2">Below minimum staffing — none</div>
+    <div class="sheet-band" role="heading" aria-level="2">Below Minimum Staffing — none</div>
     <p>Every position has enough Rangers.</p>
   <% else %>
     <div class="sheet-band" role="heading" aria-level="2">
-      Below minimum staffing — <%= pluralize @report.below_min.size, "position" %>
+      Below Minimum Staffing — <%= pluralize @report.below_min.size, "Position" %>
     </div>
     <table>
       <colgroup>
@@ -115,7 +115,7 @@
         <tr>
           <th>Position</th>
           <th>Window</th>
-          <th class="sheet-num"><%= @report.on_duty? ? "On duty" : "Signed up" %></th>
+          <th class="sheet-num"><%= @report.on_duty? ? "On Duty" : "Signed Up" %></th>
           <th class="sheet-num">Needed</th>
           <th></th>
         </tr>
@@ -144,13 +144,13 @@
   <%# Shorter than the screen's "Shift Start" / "Shift Ends": on paper these two
       columns are sized by their headings rather than their values, and the long
       pair pushed the roster past the sheet. %>
-  <% start_heading, end_heading = @report.on_duty? ? ["On duty", "Duration"] : ["Start", "Ends"] %>
+  <% start_heading, end_heading = @report.on_duty? ? ["On Duty", "Duration"] : ["Start", "Ends"] %>
   <%# Same rosters the screen was showing, so a position filter collapses the
       sheet to one band here too. %>
   <% rosters = [
-       { title: "DIRT / GREEN DOTS", rangers: @dirt, all: @report.dirt },
-       { title: "COMMAND STAFF", rangers: @command, all: @report.command },
-       { title: "SPECIAL TEAMS", rangers: @special, all: @report.special }
+       { title: "Dirt / Green Dots", rangers: @dirt, all: @report.dirt },
+       { title: "Command Staff", rangers: @command, all: @report.command },
+       { title: "Special Teams", rangers: @special, all: @report.special }
      ] %>
   <% shift_lead_visible_rosters(rosters, @filter_params).each do |roster| %>
     <% title = roster[:title] %>
@@ -218,13 +218,13 @@
                   <span class="sheet-chip">TS</span>
                 <% end %>
               </td>
-              <td><%= pronouns_format(ranger.person, true).presence || "-" %></td>
-              <td class="sheet-ctr"><%= ranger.gender.presence || "-" %></td>
+              <td><%= value_or_dash(pronouns_format(ranger.person, true)) %></td>
+              <td class="sheet-ctr"><%= value_or_dash(ranger.gender) %></td>
               <td class="sheet-num"><%= ranger.years %></td>
               <td class="sheet-ctr"><%= shift_lead_vehicle_cell(ranger.gtr, "GTR") %></td>
               <td class="sheet-ctr"><%= shift_lead_vehicle_cell(ranger.vehicle, "VEH") %></td>
               <td>
-                <%= ranger.positions.any? ? ranger.positions.join(", ") : "-" %>
+                <%= value_or_dash(ranger.positions.join(", ")) %>
                 <% ranger.certifications.each do |certification| %>
                   <span class="sheet-chip"><%= certification %></span>
                 <% end %>
@@ -249,7 +249,7 @@
 
   <%# --- decoder ring -------------------------------------------------------- %>
   <div class="sheet-legend">
-    <div class="sheet-legend-title">Decoder ring</div>
+    <div class="sheet-legend-title">Decoder Ring</div>
     <div class="sheet-legend-cols">
       <div><%= fa_icon "ban", :solid %> not marked as being on site</div>
       <div><b>GD</b> qualified Green Dot &middot; <b>TS</b> Troubleshooter</div>
@@ -257,7 +257,7 @@
       <div><b>VEH</b> has Burning Man org insurance</div>
       <div><b>-BL-</b> vehicle blacklisted, may not take a rig out</div>
       <div><b>Gender</b> F Female, M Male, NB Non-binary, Q Queer, GF Gender Fluid,
-        TF Trans-Female, TM Trans-Male, TS Two Spirit, - not stated</div>
+        TF Trans-Female, TM Trans-Male, TS Two Spirit, — not stated</div>
       <div><b>&lt;06:30</b> starts the day before &middot;
         <b>18:15&gt;</b> ends the day after</div>
       <div>Dspch Dispatcher &middot; GD Green Dot &middot; GDLead Green Dot Lead &middot;

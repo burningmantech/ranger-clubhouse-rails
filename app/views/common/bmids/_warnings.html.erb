@@ -14,7 +14,7 @@
 <% if bmid.not_qualified_to_print? %>
   <%= ui_callout_box (is_new ? :error : :secondary), accent: true,
                      icon: "hand",
-                     title: (person.status == Person::ECHELON ? "No sign-ups found" : "No claimed ticket or in-person training sign-up") do %>
+                     title: (person.status == Person::ECHELON ? "No Sign-Ups Found" : "No Claimed Ticket or In-Person Training Sign-Up") do %>
     <p class="mb-2">
       <% if person.status == Person::ECHELON %>
         Because this Echelon volunteer hasn't signed up for any shifts, the recommendation is to not print their BMID.

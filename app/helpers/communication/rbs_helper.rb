@@ -508,7 +508,8 @@ module Communication
     end
 
     # The channels one sent broadcast actually used, as icons. Each carries its
-    # name for a screen reader, so the icons are never the only thing saying it.
+    # name as a tooltip and for a screen reader, so the icons are never the only
+    # thing saying it.
     def rbs_channel_icons(broadcast)
       used = []
       used << "Text" if broadcast.sent_sms
@@ -517,8 +518,7 @@ module Communication
       return tag.span("—", class: "text-stone-subtle") if used.empty?
 
       safe_join(used.map do |channel|
-        safe_join([fa_icon(CHANNEL_ICONS[channel], :solid, class: "text-stone-icon", fixed: true),
-                   tag.span(channel, class: "sr-only")])
+        fa_icon(CHANNEL_ICONS[channel], :solid, class: "text-stone-icon", fixed: true, label: channel)
       end, " ")
     end
   end

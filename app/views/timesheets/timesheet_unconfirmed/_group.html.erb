@@ -5,7 +5,7 @@
   does not.
 %>
 <%= ui_section "#{pluralize(entries.size, "Ranger")} — #{title}",
-               icon: icon, icon_type: :solid, border: false do %>
+               icon: icon, icon_type: :solid do %>
   <%# Four or five columns of contact detail: desktop-first, scrolling sideways
       on a narrow screen rather than restacking, so a chaser can read the
       callsign column straight down. %>
@@ -28,7 +28,7 @@
           <%= t.cell email_link_or_dash(person.email) %>
           <%= t.cell class: "whitespace-nowrap" do %>
             <% if person.home_phone.blank? %>
-              <span class="text-stone-muted italic">No phone</span>
+              <%= value_or_dash(nil) %>
             <% else %>
               <%# The column holds E.164, already a tel: URI; stripping it to
                   digits would drop the + that every number abroad needs. %>

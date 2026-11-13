@@ -30,11 +30,11 @@
 <% end %>
 
 <% if @detail.slot_details.any? %>
-  <div class="my-4">
-    <%# The pages are one position at a time, and so is the export. %>
+  <%# The pages are one position at a time, and so is the export. %>
+  <%= button_row class: "my-4" do %>
     <%= export_csv_link(scheduling_no_shows_report_position_path(@position.id, year: @year,
                         format: :csv)) %>
-  </div>
+  <% end %>
   <%= ui_table full_width: true, striped: true do |t| %>
     <%= t.header do %>
       <%= t.heading "Shift", width: "30%" %>

@@ -68,7 +68,10 @@ module People::StatusChangeRecommendationsHelper
            else
              " This list is judged as if the #{year} event is over."
            end
-    group.confirm.merge(message: group.confirm[:message] + tail)
+    # Red, and says it cannot be taken back: every group's button is the
+    # destructive variant, and this page has no undo for any of them.
+    group.confirm.merge(message: group.confirm[:message] + tail + " This page cannot undo the change.",
+                        variant: :error)
   end
 
   def status_change_vintage_options

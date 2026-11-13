@@ -141,7 +141,8 @@ class Scheduling::PositionCreditCopiesControllerTest < ActionDispatch::Integrati
     end
 
     assert_response :unprocessable_entity
-    assert_equal "Multiple positions cannot be copied into a single position.", flash[:error]
+    assert_select ".box-error", text: /Multiple positions cannot be copied into a single position\./
+    assert_nil flash[:error]
   end
 
   test "copying nothing reports an error" do
@@ -152,7 +153,8 @@ class Scheduling::PositionCreditCopiesControllerTest < ActionDispatch::Integrati
     end
 
     assert_response :unprocessable_entity
-    assert_equal "Select at least one credit to copy.", flash[:error]
+    assert_select ".box-error", text: /Select at least one credit to copy\./
+    assert_nil flash[:error]
   end
 
   # to_i read "#{id}x" as the id and copied that credit.
@@ -165,7 +167,8 @@ class Scheduling::PositionCreditCopiesControllerTest < ActionDispatch::Integrati
     end
 
     assert_response :unprocessable_entity
-    assert_equal "Select at least one credit to copy.", flash[:error]
+    assert_select ".box-error", text: /Select at least one credit to copy\./
+    assert_nil flash[:error]
   end
 
   test "preview re-renders the shifted times without copying" do

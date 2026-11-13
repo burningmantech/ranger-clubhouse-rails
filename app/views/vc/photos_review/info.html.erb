@@ -20,7 +20,7 @@
               <% if (dimensions = @person_photo.profile_dimensions) %>
                 <%= dimensions.join(" x ") %>
               <% else %>
-                <i>unknown</i>
+                <%= value_or_dash(nil) %>
               <% end %>
             </dd>
             <dt class="font-semibold">Uploaded</dt>
@@ -30,20 +30,20 @@
             <dt class="font-semibold">Edited</dt>
             <dd><%= render "attribution", time: @person_photo.edited_at, person: @person_photo.edit_person %></dd>
             <% if @person_photo.status == PersonPhoto::REJECTED %>
-              <dt class="font-semibold">Rejection reasons</dt>
+              <dt class="font-semibold">Rejection Reasons</dt>
               <dd>
                 <% if (labels = @person_photo.reject_labels) %>
                   <%= labels.join(", ") %>
                 <% else %>
-                  <i>none given</i>
+                  <%= value_or_dash(nil) %>
                 <% end %>
               </dd>
-              <dt class="font-semibold">Rejection message</dt>
+              <dt class="font-semibold">Rejection Message</dt>
               <dd>
                 <% if @person_photo.reject_message.present? %>
                   <%= nl2br(@person_photo.reject_message) %>
                 <% else %>
-                  <i>none given</i>
+                  <%= value_or_dash(nil) %>
                 <% end %>
               </dd>
             <% end %>

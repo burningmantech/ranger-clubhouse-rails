@@ -32,7 +32,7 @@
 
   <%= button_row do %>
     <%= f.submit submit_label %>
-    <%= button_link "Cancel", :secondary, person_swag_index_path(person) %>
+    <%= cancel_link person_swag_index_path(person) %>
     <% if show_delete %>
       <%= delete_button person_swag_path(person, person_swag),
                         "Delete",

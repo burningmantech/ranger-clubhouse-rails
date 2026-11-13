@@ -21,7 +21,7 @@
            test_address: @email_test_address,
            history_path: (communication_rbs_history_broadcast_path(@result.broadcast) if can_read_records) %>
 
-<%= ui_section "Delivery (#{@result.people.size})", icon: "paper-plane", icon_type: :solid, border: false do %>
+<%= ui_section "Delivery (#{@result.people.size})", icon: "paper-plane", icon_type: :solid do %>
   <%= render "common/rbs/delivery_table", result: @result %>
 <% end %>
 

@@ -13,6 +13,10 @@
   <% end %>
 <% end %>
 
+<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+  Questions about this page? See <%= link_to "How the Import Behaves", "#import-help", class: "underline font-semibold" %> below.
+<% end %>
+
 <% if @auth_error %>
   <%= ui_callout_box :error, accent: true, title: "Could Not Sign In to Salesforce" do %>
     <p><%= @auth_error %></p>
@@ -45,9 +49,10 @@
                    data: {
                      turbo_submits_with: "Importing from Salesforce…",
                      turbo_confirm: confirm_modal_dialog(
-                       title: "Confirm Salesforce Import",
-                       message: "This imports every new Salesforce application into the Clubhouse. " \
-                                "Preview first if you have not already.",
+                       title: "Import Applications",
+                       message: "Import every new Salesforce application into the Clubhouse? " \
+                                "This cannot be undone, but running it again is safe: " \
+                                "applications already imported are left untouched.",
                        confirm_label: "Import Applications"
                      )
                    } %>
@@ -58,8 +63,7 @@
   </p>
 <% end %>
 
-<%= ui_accent_card "How the Import Behaves", variant: :info, icon: "circle-question", icon_type: :solid,
-                   heading_level: :h2, options: { id: "import-help" } do %>
+<%= ui_section "How the Import Behaves", icon: "circle-question", icon_type: :solid, id: "import-help" do %>
   <dl class="instruction-list">
     <dt>Which Salesforce applications are pulled?</dt>
     <dd>

@@ -15,7 +15,7 @@
      data-action="input->stale-results#markStale change->stale-results#markStale">
   <% if @results %>
     <% problem_lines = @results.filter_map { |row| row[:line_number] if row[:error] } %>
-    <%= ui_section @upload_form.commit ? "Commit results" : "Verified handles — not saved yet",
+    <%= ui_section @upload_form.commit ? "Commit Results" : "Verified Handles — Not Saved Yet",
                    id: "upload-results", icon: "list-check", icon_type: :solid do %>
       <% if @error_count.positive? %>
         <%= ui_callout_box :error, accent: true do %>

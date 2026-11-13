@@ -42,58 +42,58 @@
   </dl>
 <% end %>
 
-<% if @entries.any? %>
-  <% signed_up = @entries.count(&:signed_up) %>
-  <p class="my-3 text-body">
-    <%= pluralize @entries.size, "shift" %>: <%= signed_up %> signed up, <%= @entries.size - signed_up %> removed.
-  </p>
+<%= ui_section do %>
+  <% if @entries.any? %>
+    <% signed_up = @entries.count(&:signed_up) %>
+    <p class="my-3 me-muted">
+      <%= pluralize @entries.size, "shift" %>: <%= signed_up %> signed up, <%= @entries.size - signed_up %> removed.
+    </p>
 
-  <%= ui_table full_width: true, striped: true do |t| %>
-    <%= t.header do %>
-      <%= t.heading "Shift" %>
-      <%= t.heading "Time" %>
-      <%= t.heading "Status" %>
-      <%= t.heading "Added / By" %>
-      <%= t.heading "Removed / By" %>
-    <% end %>
-    <%= t.body do %>
-      <% @entries.each do |entry| %>
-        <% slot = entry.slot %>
-        <%= t.row align: :top do %>
-          <%= t.row_header do %>
-            <% if slot %>
-              <%= slot.position_title %>
-              <% if slot.description.present? %>
-                <div class="font-normal"><%= slot.description %></div>
+    <%= ui_table full_width: true, striped: true do |t| %>
+      <%= t.header do %>
+        <%= t.heading "Shift" %>
+        <%= t.heading "Time" %>
+        <%= t.heading "Status" %>
+        <%= t.heading "Added / By" %>
+        <%= t.heading "Removed / By" %>
+      <% end %>
+      <%= t.body do %>
+        <% @entries.each do |entry| %>
+          <% slot = entry.slot %>
+          <%= t.row align: :top do %>
+            <%= t.row_header do %>
+              <% if slot %>
+                <%= slot.position_title %>
+                <% if slot.description.present? %>
+                  <div class="font-normal"><%= slot.description %></div>
+                <% end %>
+              <% else %>
+                <span class="text-stone-muted">Deleted shift #<%= entry.slot_id %></span>
               <% end %>
-            <% else %>
-              <span class="text-stone-muted">Deleted shift #<%= entry.slot_id %></span>
             <% end %>
-          <% end %>
-          <%= t.cell do %>
-            <% if slot %>
-              <%# Rows are picked by the year of the change, so a shift of another year says so. %>
-              <%= slot_shift_time(slot, year: slot.begins.year != @year) %>
-              <div class="text-stone-muted"><%= hour_minute_words(slot.duration) %></div>
-            <% else %>
-              —
+            <%= t.cell do %>
+              <% if slot %>
+                <%# Rows are picked by the year of the change, so a shift of another year says so. %>
+                <%= slot_shift_time(slot, year: slot.begins.year != @year) %>
+                <div class="text-stone-muted"><%= hour_minute_words(slot.duration) %></div>
+              <% else %>
+                —
+              <% end %>
             <% end %>
-          <% end %>
-          <%= t.cell do %>
-            <% if entry.signed_up %>
-              <%= ui_badge "Signed Up", :success, icon: "circle-check" %>
-            <% else %>
-              <%= ui_badge "Removed", :secondary, icon: "circle-minus" %>
+            <%= t.cell do %>
+              <% if entry.signed_up %>
+                <%= ui_badge "Signed Up", :success, icon: "circle-check" %>
+              <% else %>
+                <%= ui_badge "Removed", :secondary, icon: "circle-minus" %>
+              <% end %>
             <% end %>
+            <%= t.cell render("log_changes", changes: entry.sign_ups) %>
+            <%= t.cell render("log_changes", changes: entry.removals) %>
           <% end %>
-          <%= t.cell render("log_changes", changes: entry.sign_ups) %>
-          <%= t.cell render("log_changes", changes: entry.removals) %>
         <% end %>
       <% end %>
     <% end %>
-  <% end %>
-<% else %>
-  <%= ui_section do %>
+  <% else %>
     <%= ui_empty_state "No sign-up changes are recorded for #{@person.callsign} in #{@year}. #{log_start}",
                        icon: "clock-rotate-left", icon_type: :solid %>
   <% end %>

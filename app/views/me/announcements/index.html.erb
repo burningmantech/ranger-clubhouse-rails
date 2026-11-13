@@ -8,12 +8,8 @@
   <%= render "unread_count", count: @unread_count %>
 <% end %>
 
-<div class="mb-6 p-4 border border-line rounded-lg">
-  <% if current_user.is_ranger? %>
-    <h3 class="heading-title text-heading mb-2 flex items-center gap-2">
-      <%= fa_icon "info-circle", :solid, class: "icon-info" %>
-      Stay Informed
-    </h3>
+<% if current_user.is_ranger? %>
+  <%= ui_callout_box :info, title: "Stay Informed", heading_level: :h2, role: "note", class: "mb-6" do %>
     <ul class="space-y-1">
       <%= ui_icon_item "check", :solid, tone: "icon-success" do %>
         Check the <strong>Ranger Announce mailing list</strong> regularly for important updates
@@ -22,11 +18,9 @@
         Clubhouse announcements supplement (not replace) official communications
       <% end %>
     </ul>
-  <% elsif current_user.is_applicant? %>
-    <h3 class="heading-title text-heading mb-2 flex items-center gap-2">
-      <%= fa_icon "info-circle", :solid, class: "icon-info" %>
-      Important for Applicants
-    </h3>
+  <% end %>
+<% elsif current_user.is_applicant? %>
+  <%= ui_callout_box :info, title: "Important for Applicants", heading_level: :h2, role: "note", class: "mb-6" do %>
     <ul class="space-y-1">
       <%= ui_icon_item "check", :solid, tone: "icon-success" do %>
         Watch for <strong>Ranger Applicant Newsletter</strong> emails from Volunteer Coordinators
@@ -36,18 +30,12 @@
       <% end %>
     </ul>
   <% end %>
-</div>
+<% end %>
 
 <% if @announcements.any? %>
   <div aria-live="polite" aria-label="Announcements list">
     <%= render partial: "announcement", collection: @announcements %>
   </div>
 <% else %>
-  <div class="my-8 p-6 text-center rounded-lg border border-dashed border-line">
-    <div class="mb-2">
-      <%= fa_icon "inbox", :solid, class: "text-3xl text-stone-icon" %>
-    </div>
-    <p class="text-lg font-medium text-heading">No Announcements</p>
-    <p class=" text-body mt-1">There are currently no Clubhouse announcements to display.</p>
-  </div>
+  <%= ui_empty_state "There are currently no Clubhouse announcements to display.", icon: "inbox", icon_type: :solid %>
 <% end %>

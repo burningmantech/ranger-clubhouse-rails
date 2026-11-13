@@ -12,7 +12,8 @@ description: UI component helpers for buttons, cards, tables, modals, badges, an
 
 **Helper**: `ButtonHelper` (`app/helpers/button_helper.rb`)
 
-**CRITICAL:** Always use `ButtonHelper` methods for buttons. Never write raw button HTML.
+**CRITICAL:** Always use `ButtonHelper` methods for buttons. Never write raw button HTML. A link
+inside a list row that reads as a button is a real `button_link`, never `btn` classes on a span.
 
 ### Button Methods
 
@@ -28,7 +29,7 @@ description: UI component helpers for buttons, cards, tables, modals, badges, an
 <%= submit_button "Save" %>
 <%= cancel_button url %>    <%# or cancel_link (alias) %>
 <%= edit_link url %>        <%# the one edit control: secondary + pen-to-square %>
-<%= delete_button url %>    <%# includes confirmation %>
+<%= delete_button url %>    <%# confirms first: "Delete <thing>?" in the red dialog; confirm: false to skip %>
 
 <%# Button row container %>
 <%= button_row do %>
@@ -43,6 +44,15 @@ description: UI component helpers for buttons, cards, tables, modals, badges, an
 <% end %>
 ```
 
+**Where buttons sit.** Every page or form action sits in a `button_row`, a lone button included,
+and a form's submit and its cancel (`f.submit` + `cancel_link`) share one. Four places take no
+row: the record actions on one table row, list line or record card (a `flex gap-2` group); a
+button inside a callout; a button in a section's or card's title row; and a toolbar line where
+buttons share the row with a pager, a count or a field.
+
+**`delete_button` confirms by default**: the red dialog asks "Delete <thing>?" and says whether it
+can be undone. Pass `confirm: false` only where a confirmation is already given another way.
+
 ### Button Variants
 
 | Variant | Usage |
@@ -55,6 +65,12 @@ description: UI component helpers for buttons, cards, tables, modals, badges, an
 | `:ghost` | Minimal buttons |
 | `:tertiary` | Alias of `:ghost` (legacy) |
 | `:dark` | `btn-neutral` — dark-chrome contexts only |
+
+The main action of a form, dialog or section is `:primary`, a positive one included; `:success` is
+for a positive action that is not the main one. Apply Filters is `:secondary` when the page has a
+primary action of its own, and the default primary otherwise. A two-button view toggle shows the
+current view as `:primary`. `class:` on a button carries width and margin only: never `bg-*`,
+`ring-*`, `btn-link`, padding or a text size (a text-like link is `link_to`, a bigger button `size:`).
 
 ### Button Sizes
 
@@ -101,7 +117,7 @@ centres its content.
 
 **PREFERRED:** `button_action` over `button_to` or raw `<button>` for Stimulus-triggered actions.
 
-**CRITICAL:** Ask permission before using a raw `<button>` element. The helpers handle variants, sizes, icons, dark mode, and accessibility automatically.
+**CRITICAL:** Ask permission before using a raw `<button>` element. The helpers handle variants, sizes, icons, dark mode, and accessibility automatically. The ruled exceptions are helpers' own raw buttons: the client-side sort heading, `clipboard_button`'s copy icon, and `dropdown_button`, the menu row that acts on the page; and the roll call roster row (`shift_operations/rollcall/_row`), one whole-row `button_to` whose full width is the tap target on a tablet.
 
 Plain `link_to` is only appropriate for inline text links within paragraphs or content (e.g., "See the <%= link_to "FAQ", "#faq" %> for details.").
 
@@ -124,7 +140,7 @@ Plain `link_to` is only appropriate for inline text links within paragraphs or c
 ```
 
 **Options:**
-- `shadow:` - Shadow size (`:xs`, `:sm`, `:md`, `:lg`, `:xl`, `:none`)
+- `shadow:` - Shadow size (`:xs`, `:sm`, `:md`, `:lg`, `:xl`, `:none`); default `:xs` (`card-standard` itself has none)
 
 ---
 
@@ -177,6 +193,22 @@ moving its `id:` there, or the page 500s.
 
 ---
 
+## Text Boxes
+
+**Helper**: `UiTextBoxHelper` (`app/helpers/ui_components/ui_text_box_helper.rb`)
+
+A bordered, tinted, padded box for a block of quoted text (a message preview, a prologue). With
+`max_height:` (a Tailwind scale class such as `"max-h-48"`) it scrolls, and `label:` names the
+scrolling box for keyboard and screen-reader users. Never hand-build the box.
+
+```erb
+<%= ui_text_box max_height: "max-h-64", label: "Prologue", class: "lexxy-content" do %>
+  <%= rich_text(@survey.prologue) %>
+<% end %>
+```
+
+---
+
 ## Stat Boxes
 
 **Helper**: `UiStatBoxHelper` (`app/helpers/ui_components/ui_stat_box_helper.rb`)
@@ -201,6 +233,10 @@ Display metrics with icon, value, and label.
 ```
 
 **Sizes:** `:sm`, `:md` (default), `:lg`
+
+A tile's value is a short figure or word (a count, an amount, a status), and its `class:` sets
+width or margin only. It takes a status variant only when its value is a status, and falls back to
+`:secondary` when that count is zero.
 
 ### Stat Row
 
@@ -257,6 +293,12 @@ the outline that goes with it.
   <% end %>
 <% end %>
 ```
+
+Every data table is `ui_table`. `class:` on the table, `t.heading`, `t.row_header` and `t.cell`
+carries layout only: margin, width caps, `whitespace-nowrap`, a column-group divider in
+`border-line`, a total's weight, or a hook into the table's own component CSS. A two-row grouped
+header may be built inside `ui_table` from `TableHelper`'s constants. Not data tables: a print
+sheet's blank fill-in grid, a list of record cards, a roster grid of names.
 
 ### Striped Table (ADHD-Friendly)
 
@@ -326,6 +368,10 @@ Its box is sized to its content but capped at its parent (`max-w-full`), so a
 value wider than a phone — an address, an id list, a nowrap cell — scrolls inside
 the box like any plain table's overflow.
 
+The Shift Lead roster (`scheduling/shift_lead/_roster`) is the one table with its own
+phone shape: a table from `lg` up and a hand-built list of one block per Ranger below
+it, in place of the fold. The partial says why.
+
 ### Filtering Tables
 
 **Helper**: `FilterBarHelper` (`app/helpers/ui_components/filter_bar_helper.rb`)
@@ -355,7 +401,7 @@ actions: (button_link("Export CSV", :secondary, index_path(@index_params.merge(f
                       icon: "file-csv", icon_type: :solid) if @rows.any?)
 ```
 
-A second export describing a different table on the page (size counts, order lines) stays beside that table.
+A second export describing a different table on the page (size counts, order lines) stays beside that table. With no filter bar the export sits in the page's `button_row` above the table.
 
 ---
 
@@ -374,13 +420,6 @@ Card-like containers for grouping related content.
   Profile content.
 <% end %>
 
-<%# Without border padding (for tables) %>
-<%= ui_section "Table Section", border: false do %>
-  <%= ui_table do |t| %>
-    <%# Table content %>
-  <% end %>
-<% end %>
-
 <%# With custom ID for anchor links %>
 <%= ui_section "FAQ", id: "faq-section" do %>
   Content.
@@ -390,8 +429,10 @@ Card-like containers for grouping related content.
 **Options:**
 - `icon:` - FontAwesome icon name
 - `icon_type:` - Icon style (`:solid`, `:regular`)
-- `border:` - Set to `false` to remove padding
 - `id:` - Custom ID for the section
+
+A section normally has a title; an untitled one may box a page's whole body or a form. Icons are
+optional, but sibling sections on one page either all carry one or none do.
 
 ---
 
@@ -399,7 +440,7 @@ Card-like containers for grouping related content.
 
 **Helper**: `UiHeroPanelHelper` (`app/helpers/ui_components/ui_hero_panel_helper.rb`)
 
-Standardized page header component used across all /me routes.
+Standardized page header of every page inside the app shell (`design-layouts` > Pages Outside the App Shell for the rest).
 
 ```erb
 <%= hero_panel icon: "calendar", heading_level: :h1, id: "unique-id" do |panel| %>
@@ -433,6 +474,10 @@ Standardized page header component used across all /me routes.
 - `heading_level:` - `:h1` or `:h2` (default: `:h2`)
 - `id:` - Unique ID for accessibility
 
+The icon is drawn gold (`icon-warning`), as is `action_box`'s, and the stats' award and flame
+hues are pinned in `components/hero-panel.css`: that is the hero's own look. A decorative icon
+anywhere else is neutral.
+
 **CRITICAL — hero stats need an approved plan**: `hero_stats` / `stat_badge` compete
 with the page title, and on mobile they stack beneath it and push the content down. Do
 not use them unless the user approved a plan that puts stats in the hero. Default to a
@@ -448,7 +493,10 @@ not use them unless the user approved a plan that puts stats in the hero. Defaul
 See `design-rules` > Hero Panel Stats Approval Workflow.
 
 **CRITICAL — description is one sentence**: `panel.description` states what the page
-does, in a single sentence. Longer explanations, caveats, and step-by-step
+does, in a single sentence, in the panel's own style (no classes, no status colour). Every hero
+has one except a new or edit form page, whose title already says what it does. The title may
+carry a status or a badge beside the words. The person page's hero (`person/_hero`) is the one
+exception: an identity strip whose description holds badges, name and pronouns, not a sentence. Longer explanations, caveats, and step-by-step
 instructions go in the main content: usually the collapsed card below; a full page of
 instructions on a page the reader operates takes a `ui_section` at the foot, linked from
 the top per `design-layouts` > Help Section & FAQ Pattern. See `design-rules` > Hero
@@ -489,6 +537,10 @@ one-sentence rule is guarded by `test/views/hero_description_test.rb`.
 <%= ui_badge "In a text-lg headline", :warning, size: "base" %>
 ```
 
+`class:` carries layout only (`shrink-0`, margin), never opacity or colour. Every state of a badge
+set is a badge: a helper that returns `ui_badge` for some states does not return plain text for
+another.
+
 ---
 
 ## Progress Bars
@@ -525,6 +577,10 @@ one-sentence rule is guarded by `test/views/hero_description_test.rb`.
 <% end %>
 ```
 
+The title is `modal-title-text` (`text-xl font-semibold`). Two dialogs open themselves instead of
+through the `modal` controller: the on-demand `dialog_controller.js` (search, the mega menu) and the
+HQ wizard (`hq_wizard_controller.js`). A new dialog uses `ModalHelper`.
+
 **PREFERRED for Turbo form dialogs:** `modal_dialog` folds the
 `turbo_frame_tag "modal"` wrapper, the chrome (`close_button: false`), and the
 title into one call; `modal_form_footer` is the standard submit + Cancel row
@@ -558,6 +614,12 @@ inside the form (multi-submit footers keep an explicit `button_row`).
 <% end %>
 ```
 
+Tabs show panes of one page in place. A switch that loads another view of the page (a log's Search
+and Live modes, the mega menu's panels) is a group of buttons, not tabs, with the current one told
+to a screen reader (`aria-current`, or an sr-only "(current view)"). The mailbox's folder switch
+(`messages_folder_tab`, `tabs tabs-lift`) is the one exception: it loads another list, yet keeps
+the tabs look as the mailbox's own adaptation.
+
 ---
 
 ## Notifications
@@ -588,6 +650,20 @@ inside the form (multi-submit footers keep an explicit `button_row`).
 
 **Variants**: `:success`, `:info`, `:warning`, `:error`, `:secondary`
 
+**Tints** (`components/boxes.css`): success and error `bg-*/5` on `border-*/20`; info `bg-info/10`
+on `border-info/30`; warning `bg-warning/10` on a full `border-warning`, with amber ink on everything
+inside but buttons and badges; secondary `bg-base-300/90`.
+
+**When a notice is a callout.** A notice in the page body is a `ui_callout_box` or a
+`ui_alert_banner`. Inside a card, a dashboard step, a table cell, a label/value row or a dialog
+body, a one-line status message may instead be status-coloured text that starts with its status
+icon (`fa_icon … class: "icon-error"`), at `text-base` and in sentence case: never capitals, never
+without the icon. A callout holds a notice, never a control alone; its `class:` is margin and width.
+
+`:error` marks an error, with one approved exception: the red "live data" callout (`:error,
+accent: true`, the `tower-broadcast` icon) on the mentoring Shift Report and Alpha Sign-Out pages,
+which flags a list of who is on duty right now.
+
 ### Alert Banners
 
 ```erb
@@ -610,6 +686,13 @@ inside the form (multi-submit footers keep an explicit `button_row`).
 <% end %>
 ```
 
+**When a collection needs one.** A list, table or section that the reader came for, and a search's
+results, show `ui_empty_state` when empty: never a header-only table or an empty box. A collection
+may render nothing when it cannot be empty where it is drawn (its caller or controller guards it,
+or the only link to it needs rows; say so in a comment), when it is a fixed catalogue, or when it is
+supplementary (an optional bucket, a group or a dashboard step shown only with items) and the page
+gives its count elsewhere. A shared partial may leave the empty state to its caller.
+
 ---
 
 ## Sidebar
@@ -617,19 +700,16 @@ inside the form (multi-submit footers keep an explicit `button_row`).
 **Helper**: `SidebarHelper` (`app/helpers/sidebar_helper.rb`)
 
 ```erb
-<%= sidebar_menu "me" do %>
-  <%= sidebar_section "Navigation", theme: "me" do %>
-    <%= sidebar_item "Dashboard", me_root_path, icon: "home", theme: "me", root: true %>
-    <%= sidebar_item "Schedule", me_schedule_path, icon: "calendar", theme: "me" %>
-  <% end %>
-  
-  <%= sidebar_submenu "Settings", icon: "gear", icon_type: :solid, theme: "me" %>
+<%# Every layout: a menu definition from app/lib/menus.rb (docs/MENUS.md) %>
+<% sidebar_menu :me do %>
+  <%= sidebar_render_menu(Menus::ME, @menu_context) %>
 <% end %>
 ```
 
-**Theme Variants:** `"me"`, `"admin"`, `"hq"` (anything else falls back to `"me"`)
+`sidebar_render_menu` builds the `sidebar_section`, `sidebar_submenu` and `sidebar_item` calls; no view
+makes them directly.
 
-**Badge Variants:** `:error`, `:success`, `:warning`, `:info`
+**Theme Variants:** `"me"`, `"admin"`, `"hq"` (anything else falls back to `"me"`)
 
 ---
 
@@ -666,7 +746,12 @@ that scrolls away. In use on the mailbox's pane (`common/messages/_messages_pane
 <% end %>
 
 <%= dropdown_item_disabled "Coming Soon" %>
+
+<%# A row that acts on the page instead of going somewhere %>
+<%= dropdown_button "Label", data: { action: "controller#method" } %>
 ```
+
+An open dropdown closes on Escape, on a click outside it, and when an item is chosen.
 
 ---
 
@@ -702,8 +787,15 @@ The list is generated from the font (`node bin/fontawesome_regular_icons.js`), n
 **`label:` for an icon that speaks for itself.** Every icon is `aria-hidden`, so a mark with
 no words beside it — a ban icon in a table row — needs its meaning said some other way.
 `label:` sets the `title` (a tooltip for a pointer) and appends the label as an `sr-only`
-sentence. Never hand-write the `title:` + `<span class="sr-only">` pair; leave `label:` off
-an icon that only decorates the words next to it.
+sentence. It is required on every such icon, wherever its explanation lives (the page's card, a
+visible legend, or nowhere): an `sr-only` name alone leaves a sighted reader with the icon only.
+Never hand-write the `title:` + `<span class="sr-only">` pair; leave `label:` off an icon that
+only decorates the words next to it.
+
+**Glyphs in text are punctuation, not icons.** "·" and "—" as separators, "→" for "then" or
+between a value's before and after, and "×" naming a close control in a sentence stay typed. A
+glyph that stands in for a word on its own (✓ or ✗ as a status, ★ as a rating) is an icon:
+`fa_icon`.
 
 **Never pass `start:`/`end:` to an icon inside a button.** `.btn` is a flex row with
 `gap: .375rem`, so the space is already there and a margin doubles it. The same goes for a
@@ -739,7 +831,8 @@ and its indent, nothing else for spacing on the inline-start side:
 `list-bulleted` and `list-numbered` carry the one list indent (`design-foundations` > Spacing).
 Never `list-disc` or `list-decimal` on their own, `ms-5`, `pl-4` or `list-inside`. A list of rows
 (messages, conversations) is not a marker list and takes no indent; a Q&A list is
-`instruction-list` (`design-content` > Q&A Style Content Pattern).
+`instruction-list` (`design-content` > Q&A Style Content Pattern). Lines that each start with a
+typed marker (`—`, `•`, `*`) are a list: write the `<ul>`, not the marker.
 
 ---
 

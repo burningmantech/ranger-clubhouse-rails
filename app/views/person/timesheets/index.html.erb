@@ -8,14 +8,26 @@
 <% end %>
 
 <%= ui_stat_row do %>
-  <%= ui_stat_box @timesheets.size, "ENTRIES" %>
-  <%= ui_stat_box @entries_verified, "VERIFIED" %>
+  <%= ui_stat_box @timesheets.size, "Entries" %>
+  <%= ui_stat_box @entries_verified, "Verified" %>
   <%= ui_stat_box @entries_unverified,
-                  "UNVERIFIED",
+                  "Unverified",
                   variant: (@entries_unverified.positive? ? :warning : :secondary) %>
   <%= ui_stat_box @entries_pending,
-                  "PENDING",
+                  "Pending",
                   variant: (@entries_pending.positive? ? :warning : :secondary) %>
+<% end %>
+
+<% if @entries.any? && !@entries.all? { |entry| entry.position.count_hours } %>
+  <%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>What does <%= fa_icon "ban", :solid, class: "icon-warning" %> beside a duration mean?</dt>
+      <dd>
+        The position's hours do not count toward provisions (meals, showers, clothing, or an event radio).
+        Credits and ticket eligibility are unaffected.
+      </dd>
+    </dl>
+  <% end %>
 <% end %>
 
 <% if @year < 2008 %>
@@ -52,14 +64,14 @@
   <% end %>
 <% end %>
 
-<%# Quick links - visible on mobile only (the action sidebar appears on desktop) %>
-<div class="flex flex-row flex-wrap gap-3">
+<%# Quick links %>
+<%= button_row do %>
   <%= button_link "Audit Log", :secondary, log_person_timesheets_path(@person, year: @year),
                   icon: "clock-rotate-left", icon_type: :solid,
-                  full_width: true, class: "text-base py-3" %>
+                  full_width: true %>
   <%= button_link "Hours & Credits", :secondary, breakdown_person_timesheets_path(@person, year: @year),
                   icon: "chart-simple", icon_type: :solid,
-                  full_width: true, class: "text-base py-3" %>
+                  full_width: true %>
   <% if can?(:confirm_timesheet) && @is_current_year %>
     <% confirmed = @event.timesheet_confirmed %>
     <% verb = confirmed ? "Un-Confirm" : "Confirm" %>
@@ -68,7 +80,7 @@
                     confirm_person_timesheets_path(@person, year: @year, confirmed: confirmed ? 0 : 1),
                     icon: (confirmed ? "rotate-left" : "check"),
                     icon_type: :solid,
-                    full_width: true, class: "text-base py-3",
+                    full_width: true,
                     data: confirm_modal(
                       title: "#{verb} Timesheet?",
                       message: "#{verb.capitalize} this timesheet? The change is logged and can be reversed.",
@@ -79,14 +91,14 @@
   <% if can?(:backfill_timesheets) %>
     <%= button_link "Back Fill Years Rangered", :secondary, backfill_person_timesheets_path(@person),
                     icon: "calendar-plus", icon_type: :solid,
-                    full_width: true, class: "text-base py-3" %>
+                    full_width: true %>
   <% end %>
   <% if can?(:manage_shifts) %>
     <%= button_link "Shift Check In/Out", :secondary, person_shift_manage_path(@person),
                     icon: "person-walking", icon_type: :solid,
-                    full_width: true, class: "text-base py-3" %>
+                    full_width: true %>
   <% end %>
-</div>
+<% end %>
 
 <div class="flex flex-col lg:gap-6 mt-2">
   <%= ui_section "#{@year} Timesheet Entries", icon: "clock", icon_type: :solid do %>
@@ -121,7 +133,7 @@
 
     <%# The rollups total what is on screen, so they follow the filter -- under
         "Dirt only" a year total would read as the Dirt total. %>
-    <div class="mb-3 text-sm">
+    <div class="mb-3">
       <span class="me-3"><span class="font-semibold text-heading">Credits:</span> <%= credit_format @total_credits %>
       </span>
       <span class="me-3"><span class="font-semibold text-heading">Appreciation Hours:</span> <%= hour_minute_words @counted_duration %>
@@ -138,13 +150,6 @@
     <% end %>
 
     <% if @entries.any? %>
-      <% unless @entries.all? { |entry| entry.position.count_hours } %>
-        <div class="mb-2 text-body">
-          <%= fa_icon "ban", :solid, class: "icon-warning" %>
-          marks a position whose hours do not count toward provisions (meals, showers, clothing, or an
-          event radio). Credits and ticket eligibility are unaffected.
-        </div>
-      <% end %>
       <%= render partial: "entries_table" %>
     <% elsif @timesheets.any? %>
       <%= ui_empty_state "No timesheet entries match the filters." %>

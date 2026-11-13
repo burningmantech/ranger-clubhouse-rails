@@ -35,7 +35,7 @@
     <label for="sidebar-drawer" id="sidebar-toggle" class="btn btn-ghost btn-sm lg:hidden" aria-label="Open sidebar">
       <%= fa_icon "bars", :solid %> Sidebar
     </label>
-    <%= link_to "Clubhouse", me_root_path, class: "btn btn-ghost text-sm lg:text-xl no-decoration hidden lg:inline-flex" %>
+    <%= button_link "Clubhouse", :ghost, me_root_path, size: "base", class: "text-sm lg:text-xl hidden lg:inline-flex" %>
     <% if mega_menu %>
       <%# Desktop mega menu trigger %>
       <%# Keyboard hint matches the search bar's: same kbd styling, same nav row.
@@ -61,8 +61,8 @@
   <%# @min-brand is the brand's own width (107px) and a little air: 7rem, named
       --container-brand in app/assets/tailwind/application.css. %>
   <div class="navbar-center lg:hidden @container flex-1 min-w-0 justify-center">
-    <%= link_to "Clubhouse", me_root_path,
-                class: "btn btn-ghost text-xl no-decoration px-1 hidden @min-brand:inline-flex" %>
+    <%= button_link "Clubhouse", :ghost, me_root_path, size: "base",
+                    class: "text-xl px-1 hidden @min-brand:inline-flex" %>
   </div>
   <div class="navbar-end w-auto lg:w-1/2 gap-x-2 lg:gap-x-4 gap-y-0">
     <%= render "application/search_bar_placeholder", enabled: SearchBarPolicy.allowed?(current_user) %>
@@ -89,8 +89,8 @@
         `dark:` variant shows one label at a time, as _theme_toggle's icons do
         -- so nothing has to repaint it after a press or a morph. %>
     <% account_menu = capture do %>
-      <%= dropdown_button safe_join([tag.span("Switch To Dark Theme", class: "dark:hidden"),
-                                     tag.span("Switch To Light Theme", class: "hidden dark:inline")]),
+      <%= dropdown_button safe_join([tag.span("Switch to Dark Theme", class: "dark:hidden"),
+                                     tag.span("Switch to Light Theme", class: "hidden dark:inline")]),
                           data: { action: "click->theme#toggle" } %>
       <%= dropdown_divider %>
       <%= navbar_render_menu(Menus::USER, @menu_context) %>

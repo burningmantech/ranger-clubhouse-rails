@@ -386,9 +386,9 @@ class Mentoring::AlphaAcceptanceSheetsControllerTest < ActionDispatch::Integrati
     get mentoring_alpha_acceptance_sheets_print_path(person_ids: [@ready.id])
 
     assert_select "table.acceptance-signoff tbody tr td.acceptance-signoff-rule", 12
-    assert_match "#{YEAR} MENTOR NAME", response.body
-    assert_match "ACCEPT W/RESERV.", response.body
-    assert_match "REJECT", response.body
+    assert_match "#{YEAR} Mentor Name", response.body
+    assert_match "Accept w/Reserv.", response.body
+    assert_match "Reject", response.body
     assert_match "Asked to return", response.body
     assert_match "Discourage from returning", response.body
   end

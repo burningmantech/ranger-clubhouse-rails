@@ -23,6 +23,7 @@
                                      end) do %>
         <% if no_signups_allowed %>
           <div class="text-error">
+            <%= fa_icon "circle-exclamation", :solid, end: 1 %>
             Complete the Online Course to sign up. Sessions are listed for preview only.
           </div>
         <% end %>
@@ -30,7 +31,5 @@
     <% end %>
   </div>
 <% else %>
-  <div class="mt-4 text-error">
-    No available sign-ups were found for year <%= @year %>.
-  </div>
+  <%= ui_empty_state "No available sign-ups were found for #{@year}.", icon: "calendar-xmark", icon_type: :solid %>
 <% end %>

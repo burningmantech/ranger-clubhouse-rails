@@ -99,7 +99,7 @@
       This list ignores shift boundaries, so an entry left open since an earlier event appears here too.
     <% end %>
   <% else %>
-    <%= ui_callout_box :success, icon: "flag", icon_type: :solid, accent: true, class: "my-4" do %>
+    <%= ui_callout_box :info, icon: "flag", icon_type: :solid, accent: true, class: "my-4" do %>
       <strong><%= alpha_shift_title(@slot) %></strong> &mdash; <%= datetime_format(@slot.begins, @slot.ends, tz: @slot.timezone) %>.
       Alphas who started between <%= alpha_signout_window(@slot) %> are listed.
     <% end %>
@@ -158,7 +158,8 @@
                                    title: "Confirm Sign-Out",
                                    message: "End the shift for the selected Alphas? " \
                                             "Their off-duty time is stamped as of now and this cannot be undone here.",
-                                   confirm_label: "Sign Out Alphas") } %>
+                                   confirm_label: "Sign Out Alphas",
+                                   variant: :error) } %>
           <% end %>
         <% end %>
       <% end %>

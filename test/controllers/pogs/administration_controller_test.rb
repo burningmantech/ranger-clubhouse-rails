@@ -212,7 +212,7 @@ class Pogs::AdministrationControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?]", pogs_record_path(pog, back)
     # The time renders as datetime_format's span, tooltip and all, never as its markup.
     assert_includes css_select("main").sole.text.squish,
-                    "Issued #{pog.issued_at.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR)} by #{@pog_manager.callsign}."
+                    "pog issued #{pog.issued_at.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR)} by #{@pog_manager.callsign}."
     assert_no_escaped_markup
 
     assert_difference -> { ActionLog.where(event: "person-pog-update").count } do

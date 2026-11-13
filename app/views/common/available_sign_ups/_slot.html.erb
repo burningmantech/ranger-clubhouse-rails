@@ -2,16 +2,9 @@
 <% slot = entry.slot %>
 <% has_overlap = entry.overlapping_slots.present? %>
 <% signed_up = entry.person_assigned %>
-<%
-  card_class = if signed_up && has_overlap
-                 "box-accent box-accent-warning border-l-4"
-               elsif signed_up
-                 "box-accent box-accent-success border-l-4"
-               else
-                 "box box-default"
-               end
-%>
-<%= content_tag :div, id: dom_id(slot), class: "#{card_class} p-3 mb-2" do %>
+<%# A slot the person holds is an accent card, warning when it overlaps another
+    of theirs; an open slot is a plain box. The body is the same either way. %>
+<% card_body = capture do %>
   <%
     # max_effective, not slot.max: the card, the Add button and Signup.add all judge a
     # trainer-bound slot by its trainer-multiplied capacity.
@@ -129,4 +122,11 @@
     <% end %>
   </div>
   <%= turbo_frame_tag "signups-#{slot.id}" %>
+<% end %>
+<% if signed_up %>
+  <%= ui_accent_card variant: (has_overlap ? :warning : :success), options: { id: dom_id(slot), class: "mb-2" } do %>
+    <%= card_body %>
+  <% end %>
+<% else %>
+  <%= tag.div card_body, id: dom_id(slot), class: "box box-default p-3 mb-2" %>
 <% end %>

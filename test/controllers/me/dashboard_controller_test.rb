@@ -280,10 +280,10 @@ class Me::DashboardControllerTest < ActionDispatch::IntegrationTest
   end
 
   # The announcements card (me/dashboard/_announcements_section): each unread
-  # announcement is a row that links to it and wears a Read Announcement button,
-  # with its status in words and no aria-label over its text; a read one leaves
-  # the card and the count.
-  test "dashboard lists each unread announcement as a Read Announcement row and drops a read one" do
+  # announcement is a row with its status in words and one link, a real Read
+  # Announcement button whose visible words are its name and which points at
+  # the subject; a read one leaves the card and the count.
+  test "dashboard lists each unread announcement with a Read Announcement button and drops a read one" do
     ranger = person(:active_ranger)
     bulletin = motd(:ranger_announcement)
     card = "[aria-label='Clubhouse Announcements']"
@@ -291,12 +291,15 @@ class Me::DashboardControllerTest < ActionDispatch::IntegrationTest
     get me_root_path
 
     assert_response :success
-    rows = css_select("#{card} a[href*='#motd_']")
-    assert_equal 2, rows.size, "both ranger announcements are unread for the fixtures"
-    rows.each do |row|
-      assert_match(/Unread|Expired/, row.text)
-      assert_match(/Read Announcement/, row.text)
-      assert_nil row["aria-label"], "the row's text is its accessible name"
+    links = css_select("#{card} a[href*='#motd_']")
+    assert_equal 2, links.size, "both ranger announcements are unread for the fixtures"
+    links.each do |link|
+      assert_includes link["class"].split, "btn"
+      assert_equal "Read Announcement", link.text.squish
+      assert_nil link["aria-label"], "the button's words are its accessible name"
+      subject = css_select("##{link["aria-describedby"]}").first
+      assert subject, "the button points at its announcement's subject"
+      assert_match(/Unread|Expired/, subject.parent.text)
     end
     assert_select "#{card} [aria-label='2 unread']"
     assert_select "#{card} a", text: /more announcements/, count: 0

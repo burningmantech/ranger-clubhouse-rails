@@ -18,11 +18,11 @@
         <%= t.cell do %>
           <% if can?(:manage_timesheets) %>
             <%= button_link (request.status_pending? ? "Review" : "Edit"),
-                            (request.status_pending? ? :warning : :primary),
+                            (request.status_pending? ? :warning : :secondary),
                             edit_person_missing_request_path(@person, request, year: @year),
                             icon: "pen-to-square", icon_type: :solid %>
           <% else %>
-            <%= button_link "View", :primary, person_missing_request_path(@person, request, year: @year),
+            <%= button_link "View", :secondary, person_missing_request_path(@person, request, year: @year),
                             icon: "magnifying-glass", icon_type: :solid %>
           <% end %>
         <% end %>

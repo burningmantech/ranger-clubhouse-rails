@@ -59,9 +59,9 @@
         chip are display:none, the icon is alone and stays centred in the 36px
         icon-only button with no breakpoint to keep in sync. %>
     <%= button_action safe_join([fa_icon("magnifying-glass", :solid, class: "text-neutral-content/70"),
-                                 tag.span("Search", class: "hidden md:inline-block"),
+                                 tag.span("Search", class: "hidden lg:inline-block"),
                                  tag.kbd(tag.span(kbd_shortcut("K"), class: "text-xs"),
-                                         class: "hidden md:inline-flex items-center gap-1 px-2 py-1 " \
+                                         class: "hidden lg:inline-flex items-center gap-1 px-2 py-1 " \
                                                 "rounded border font-sans text-xs font-semibold " \
                                                 "tracking-wide text-neutral-content/75 " \
                                                 "bg-neutral-content/12 border-neutral-content/22")]),
@@ -77,8 +77,9 @@
       close. The dialog element is the box itself, so a click that lands on it
       -- and not on something inside -- is a click on the backdrop. Held near
       the top of the screen rather than centred, so the results have room to
-      grow downward. The autocomplete reports a failed search by event, and
-      the dialog answers with one of the callouts at its foot; any edit to the
+      grow downward: mt-[15vh] holds it there, and w-[calc(100%-2rem)] leaves
+      a 1rem gutter on each side of a phone screen. The autocomplete reports
+      a failed search by event, and the dialog answers with one of the callouts at its foot; any edit to the
       box (an input event) takes the callout down again. %>
   <dialog data-search-bar-target="dialog"
           data-action="click->search-bar#backdropClose
@@ -98,7 +99,7 @@
         control on >=lg; a plain DaisyUI select on small screens. %>
     <% if mode_options.length > 1 %>
       <div class="flex items-center gap-3 px-4 py-2 border-b border-line">
-        <span id="search-mode-label" class="text-sm font-semibold text-body">Mode</span>
+        <span id="search-mode-label" class="font-semibold text-body">Mode</span>
 
         <%# Desktop: segmented radio group %>
         <div class="join hidden lg:inline-flex" role="radiogroup" aria-labelledby="search-mode-label">

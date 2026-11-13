@@ -27,9 +27,9 @@
     <%# Segments divide the whole population, not just the decided part, so the
         bar and the chips below it describe the same set. %>
     <div class="stat-meter mb-3" aria-hidden="true">
-      <span class="stat-meter-segment bg-success" style="width: <%= stats.approved_percent %>%"></span>
-      <span class="stat-meter-segment bg-error" style="width: <%= stats.rejected_percent %>%"></span>
-      <span class="stat-meter-segment bg-base-content/30" style="width: <%= stats.undecided_percent %>%"></span>
+      <span class="stat-meter-segment bg-success" style="--stat-meter-share: <%= stats.approved_percent %>%"></span>
+      <span class="stat-meter-segment bg-error" style="--stat-meter-share: <%= stats.rejected_percent %>%"></span>
+      <span class="stat-meter-segment bg-base-content/30" style="--stat-meter-share: <%= stats.undecided_percent %>%"></span>
     </div>
 
     <div class="flex flex-wrap gap-x-4 gap-y-1">
@@ -57,6 +57,6 @@
       <% end %>
     </div>
   <% else %>
-    <p class="text-base text-stone-muted">None reached a reviewer this year.</p>
+    <%= ui_empty_state "None reached a reviewer this year." %>
   <% end %>
 </div>
