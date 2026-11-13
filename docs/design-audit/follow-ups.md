@@ -49,10 +49,6 @@ Nothing below has been built.
 
 ## C. Found along the way, not on the work list
 
-- **A refusal callout is not brought into view.** The B3 pages draw the refusal under the page header with
-  `role="alert"`, so a screen reader hears it, but a 422 render does not scroll: someone who submits from
-  the bottom of a long list (slot bulk edits most of all) has to scroll up to see it. `form_controller.js`
-  focuses and scrolls to `#form-error-summary` only. Give it these callouts as a target too.
 - **Training mentoring, Promote Without a Verdict:** when nothing is left to promote, the 422 page reports
   that only as a toast (`assignments_controller.rb`).
 - **Person permissions edit:** the "—" cells sit at the top of each row while the checkbox sits in the
@@ -75,7 +71,8 @@ Code and tests cannot confirm these. Check them on a page before release.
 
 - **The HQ window:** the summary's container query (lays across from 40rem, an estimate) at tablet width,
   and the leave guard on the HQ shift page. The test account used could not open HQ.
-- **The B3 pages:** each refusal callout, the photo reject dialog reopening with its error, the Twilio
+- **The B3 pages:** each refusal callout (slot bulk edits was checked: a refused submit from the foot of
+  the page scrolls to the callout and focuses it), the photo reject dialog reopening with its error, the Twilio
   frame's callout and streamed toast, the roll call set-time dialog in the modal frame.
 - **The approved items:** the announcement row without its hover state, the mega menu search label, the
   positions scroll box (now tinted, `p-3`).

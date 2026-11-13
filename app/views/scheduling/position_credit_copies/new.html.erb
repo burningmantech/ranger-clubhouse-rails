@@ -26,7 +26,7 @@
 
 <% if @refusal %>
   <div class="my-2">
-    <%= ui_callout_box :error, role: "alert" do %>
+    <%= ui_callout_box :error, role: "alert", tabindex: "-1", data: { refusal: true } do %>
       <%= @refusal %>
     <% end %>
   </div>

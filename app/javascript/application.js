@@ -2,6 +2,7 @@
 import "@hotwired/turbo-rails"
 import "controllers";
 import { session } from "controllers/storage"
+import { reveal } from "controllers/scrolling"
 
 // Some controls build themselves in the page rather than arriving with the HTML
 // the server sent: the rich text editor writes its own toolbar and holds the
@@ -217,4 +218,18 @@ document.addEventListener("turbo:before-cache", () => {
 // show that year over the old year's page and export, so put the page's own back.
 document.addEventListener("turbo:before-cache", () => {
     document.querySelectorAll("#year-selector, #year-selector-compact").forEach((select) => select.form.reset());
+});
+
+// A refused submit comes back as a 422 render, which keeps the scroll where
+// the reader pressed the button. A page that reports the refusal in a callout
+// of its own (data-refusal, above its form) has that callout brought into
+// view and focused, as form_controller does for the builder's error summary.
+document.addEventListener("turbo:render", () => {
+    const refusal = document.querySelector("[data-refusal]");
+    if (!refusal) return;
+
+    refusal.focus({preventScroll: true});
+    // After this turn: Turbo puts the scroll back where it was once the render
+    // is done. At once, not smoothly: the callout can be a long page away.
+    setTimeout(() => reveal(refusal, null, {behavior: "auto"}));
 });
