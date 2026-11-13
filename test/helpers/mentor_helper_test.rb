@@ -10,8 +10,8 @@ class MentorHelperTest < ActionView::TestCase
   MenteeEvent = Struct.new(:alphas)
   Subject = Struct.new(:callsign)
 
-  PASSED = Mentoring.new(2019, PersonMentor::STATUS_PASS)
-  NEVER_AN_ALPHA = Mentoring.new(nil, nil)
+  PASSED = [Mentoring.new(2019, PersonMentor::STATUS_PASS)].freeze
+  NEVER_AN_ALPHA = [].freeze
   TWO_YEARS = [MenteeEvent.new([1, 2, 3]), MenteeEvent.new([4])].freeze
 
   test "the self-serve description is one sentence whichever halves apply" do
@@ -32,10 +32,10 @@ class MentorHelperTest < ActionView::TestCase
                  mentor_result_options(PersonMentor::STATUSES).map(&:first)
   end
 
-  test "mentors are only offered to someone who passed" do
-    bonked = Mentoring.new(2019, PersonMentor::STATUS_BONK)
+  test "several Alpha years are not listed in the sentence" do
+    twice = [Mentoring.new(2022, PersonMentor::STATUS_PASS), Mentoring.new(2019, PersonMentor::STATUS_BONK)]
 
-    assert_equal "", me_mentoring_description(bonked, [])
+    assert_equal "Hubcap's Alpha Shift mentors.", person_mentoring_description(Subject.new("Hubcap"), twice, [])
   end
 
   test "the admin description is one sentence whichever halves apply" do

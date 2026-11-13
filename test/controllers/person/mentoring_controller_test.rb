@@ -11,6 +11,7 @@ class Person::MentoringControllerTest < ActionDispatch::IntegrationTest
   include TimesheetAdminTestHelper # ensure_role / grant_role
   include ArtMentoringTestHelper
   include PersonTestFactory
+  include DomIdTestHelper
   include ActiveSupport::Testing::TimeHelpers
 
   YEAR = 2026
@@ -29,7 +30,7 @@ class Person::MentoringControllerTest < ActionDispatch::IntegrationTest
     walk(entry, @mentor, status: PersonMentor::STATUS_BONK, notes: "Kept the dome cool")
   end
 
-  test "the Alpha status select offers only the four Alpha verdicts" do
+  test "the Alpha status select offers the three verdicts, never Pending or an ART-only one" do
     setup_alpha_position
     PersonMentor.create!(person: @mentee, mentor: @mentor, mentor_year: YEAR, status: PersonMentor::STATUS_PASS)
     admin = person(:echelon_ranger)
@@ -38,8 +39,81 @@ class Person::MentoringControllerTest < ActionDispatch::IntegrationTest
 
     get person_mentoring_path(@mentee)
 
-    assert_select "select[name=?] option", "person_mentor_status_form[status]",
-                  count: PersonMentor::ALPHA_STATUSES.size
+    assert_select "select[name=?] option", "person_mentor_status_form[status]", count: 3
+    assert_select "select[name=?] option[value=?]", "person_mentor_status_form[status]",
+                  PersonMentor::STATUS_PENDING, count: 0
+  end
+
+  test "a refused save shows its errors in that year's form and leaves the other years' forms alone" do
+    setup_alpha_position
+    PersonMentor.create!(person: @mentee, mentor: @mentor, mentor_year: YEAR, status: PersonMentor::STATUS_PASS)
+    bonk = PersonMentor.create!(person: @mentee, mentor: @mentor, mentor_year: YEAR - 1,
+                                status: PersonMentor::STATUS_BONK)
+    admin = person(:echelon_ranger)
+    grant_role(admin, Role::ADMIN)
+    sign_in_as(admin)
+
+    # Pending is refused: the page lists no pending year, so the form would go with it.
+    patch person_mentoring_update_path(@mentee, mentor_year: YEAR - 1),
+          params: { person_mentor_status_form: { mentor_year: YEAR - 1, status: PersonMentor::STATUS_PENDING } }
+
+    assert_response :unprocessable_entity
+    assert_equal PersonMentor::STATUS_BONK, bonk.reload.status
+    assert_select "#form-error-summary", count: 1
+    assert_select "section", text: /#{YEAR - 1} Alpha Shift Mentors/ do
+      assert_select "#form-error-summary"
+    end
+    assert_select "select##{YEAR}_person_mentor_status_form_status option[selected]", text: "Passed"
+
+    patch person_mentoring_update_path(@mentee, mentor_year: YEAR - 1),
+          params: { person_mentor_status_form: { mentor_year: YEAR - 1, status: PersonMentor::STATUS_PASS } }
+
+    assert_redirected_to person_mentoring_path(@mentee)
+    assert_equal PersonMentor::STATUS_PASS, bonk.reload.status
+  end
+
+  test "a refused save for a year the page does not list still says why" do
+    setup_alpha_position
+    PersonMentor.create!(person: @mentee, mentor: @mentor, mentor_year: YEAR, status: PersonMentor::STATUS_PASS)
+    admin = person(:echelon_ranger)
+    grant_role(admin, Role::ADMIN)
+    sign_in_as(admin)
+
+    patch person_mentoring_update_path(@mentee, mentor_year: YEAR - 5),
+          params: { person_mentor_status_form: { mentor_year: YEAR - 5, status: PersonMentor::STATUS_PASS } }
+
+    assert_response :unprocessable_entity
+    assert_select "#form-error-summary", count: 1, text: /no mentor records for that mentor year/
+  end
+
+  test "the person page lists a bonked year beside the passed one; /me lists the pass alone" do
+    setup_alpha_position
+    PersonMentor.create!(person: @mentee, mentor: @mentor, mentor_year: YEAR, status: PersonMentor::STATUS_PASS)
+    PersonMentor.create!(person: @mentee, mentor: @mentor, mentor_year: YEAR - 1, status: PersonMentor::STATUS_BONK)
+    PersonMentor.create!(person: @mentee, mentor: @mentor, mentor_year: YEAR - 2,
+                         status: PersonMentor::STATUS_SELF_BONK)
+    PersonMentor.create!(person: @mentee, mentor: @mentor, mentor_year: YEAR - 3, status: PersonMentor::STATUS_PENDING)
+    admin = person(:echelon_ranger)
+    grant_role(admin, Role::ADMIN)
+    sign_in_as(admin)
+
+    get person_mentoring_path(@mentee)
+
+    assert_select "section", text: /#{YEAR - 3} Alpha Shift Mentors/, count: 0
+    [YEAR, YEAR - 1, YEAR - 2].each { |year| assert_select "section", text: /#{year} Alpha Shift Mentors/ }
+    assert_select "section", text: /#{YEAR - 1} Alpha Shift Mentors/ do
+      assert_select "span", text: "Bonked"
+    end
+    assert_select "span", text: "Self-bonked"
+    assert_select "select[name=?]", "person_mentor_status_form[status]", count: 3
+    assert_unique_dom_ids
+
+    sign_in_as(@mentee)
+    get me_mentoring_path
+
+    assert_select "section", text: /#{YEAR} Alpha Shift Mentors/
+    assert_select "section", text: /#{YEAR - 1} Alpha Shift Mentors/, count: 0
+    assert_select "section", text: /#{YEAR - 2} Alpha Shift Mentors/, count: 0
   end
 
   test "an Admin sees the walk, the Verdicts link, and neither notes nor Send Message" do

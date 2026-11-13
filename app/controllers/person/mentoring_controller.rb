@@ -29,6 +29,9 @@ class Person::MentoringController < ApplicationController
     params.expect(person_mentor_status_form: [:mentor_year, :status])
   end
 
+  # Bonks and self-bonks as well as passes; a year still pending is left out.
+  def mentor_year_statuses = PersonMentor::ALPHA_VERDICTS
+
   def can_update_mentoring?
     has_role? [Role::ADMIN, Role::MENTOR]
   end

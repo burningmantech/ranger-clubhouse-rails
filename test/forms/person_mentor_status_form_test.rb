@@ -42,4 +42,15 @@ class PersonMentorStatusFormTest < ActiveSupport::TestCase
     assert_equal ["Status is not included in the list."], form.errors[:status]
     assert_equal PersonMentor::STATUS_PENDING, alpha.reload.status
   end
+
+  test "pending is refused: a year set back to pending would leave Person › Mentoring with no form" do
+    mentee = person(:alpha_ranger)
+    mentor = person(:active_ranger)
+    alpha = PersonMentor.create!(person: mentee, mentor:, mentor_year: YEAR, status: PersonMentor::STATUS_PASS)
+
+    form = PersonMentorStatusForm.new(person: mentee, mentor_year: YEAR, status: PersonMentor::STATUS_PENDING)
+
+    assert_not form.save(actor: mentor)
+    assert_equal PersonMentor::STATUS_PASS, alpha.reload.status
+  end
 end
