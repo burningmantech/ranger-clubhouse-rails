@@ -291,6 +291,41 @@ class AppFormBuilderTest < ActionView::TestCase
     assert_select "label span", text: "I agree"
   end
 
+  test "check_box honours required: as every other field does" do
+    render inline: <<~ERB, locals: { person: @person }
+      <%= ui_form(person, "/people") do |f| %>
+        <%= f.check_box :terms, label: "I agree", required: true %>
+      <% end %>
+    ERB
+
+    assert_select "input[type=checkbox][required]"
+    assert_select "label", text: /I agree.*\(required\)/
+  end
+
+  # Beside the box, the label column's text is a real label for it, so the box
+  # is named without an inline_label, and the mark goes there once.
+  test "check_box in the horizontal layout names the box from the label column" do
+    render inline: <<~ERB, locals: { person: @person }
+      <%= ui_form(person, "/people", layout: :horizontal) do |f| %>
+        <%= f.check_box :terms, label: "Terms", required: true %>
+      <% end %>
+    ERB
+
+    assert_select "label[for$=_terms]", text: /Terms.*\(required\)/
+    assert_select "span.text-sm.text-error", text: "(required)", count: 1
+  end
+
+  test "the required mark is the visible word at text-sm" do
+    render inline: <<~ERB, locals: { person: @person }
+      <%= ui_form(person, "/people") do |f| %>
+        <%= f.text_field :name, label: "Full Name", required: true %>
+      <% end %>
+    ERB
+
+    assert_select "label span.text-sm.text-error", text: "(required)"
+    assert_select "label .text-xs", count: 0
+  end
+
   test "radio_button generates proper markup" do
     render inline: <<~ERB, locals: { person: @person }
       <%= ui_form(person, "/people") do |f| %>
@@ -300,6 +335,8 @@ class AppFormBuilderTest < ActionView::TestCase
 
     assert_select "input[type=radio].radio"
     assert_select "label", text: "Active"
+    # The 36px label is the hit area, so the radio sits inside it.
+    assert_select "label.min-h-9 > input[type=radio]"
   end
 
   test "field with help_text shows help text" do
@@ -384,6 +421,7 @@ class AppFormBuilderTest < ActionView::TestCase
 
     assert_select "div.box.box-error", count: 1
     assert_select "div.font-semibold", text: /Please fix the following/
+    assert_select "#form-error-summary ul.list-bulleted > li", count: 2
   end
 
   test "form without error summary skips error display" do
@@ -527,10 +565,25 @@ class AppFormBuilderTest < ActionView::TestCase
       <% end %>
     ERB
 
-    # Label should be a span (inline beside radios)
-    assert_select "span.font-medium.text-heading", text: "Status"
+    # The name sits beside the radios, and is still the group's legend
+    assert_select "fieldset[role=radiogroup] > legend.float-start.font-medium.text-heading", text: "Status"
     # Wrapper should use horizontal layout with lg:flex-row
-    assert_select "div.lg\\:flex-row"
+    assert_select "fieldset.lg\\:flex-row"
+    # Each radio sits inside its 36px label
+    assert_select "label.min-h-9 > input[type=radio]", count: 2
+  end
+
+  test "collection_radio_buttons inline on auto layout names the group with a legend" do
+    render inline: <<~ERB, locals: { person: @person }
+      <%= ui_form(person, "/people") do |f| %>
+        <%= f.collection_radio_buttons :status,
+            [["Active", "active"], ["Inactive", "inactive"]],
+            :last, :first,
+            { label: "Status", layout: :auto, required: true } %>
+      <% end %>
+    ERB
+
+    assert_select "fieldset[role=radiogroup] > legend.lg\\:float-start", text: /Status.*\(required\)/
   end
 
   test "collection_radio_buttons with label_position stacked on horizontal layout" do
@@ -550,7 +603,7 @@ class AppFormBuilderTest < ActionView::TestCase
     # Wrapper should be the vertical fieldset wrapper
     assert_select "fieldset.mb-3"
     # Radio buttons should still use horizontal multi-column orientation classes
-    assert_select "div.columns-1.sm\\:columns-2"
+    assert_select "div.columns-1.lg\\:columns-3"
   end
 
   test "collection_radio_buttons with label_position stacked on auto layout" do
@@ -583,10 +636,10 @@ class AppFormBuilderTest < ActionView::TestCase
       <% end %>
     ERB
 
-    # Should fall back to inline (span with horizontal label classes)
-    assert_select "span.font-medium.text-heading", text: "Status"
+    # Should fall back to inline (legend with horizontal label classes)
+    assert_select "legend.float-start.font-medium.text-heading", text: "Status"
     # Wrapper should use horizontal layout with lg:flex-row
-    assert_select "div.lg\\:flex-row"
+    assert_select "fieldset.lg\\:flex-row"
   end
 
   test "collection_radio_buttons stacked preserves radio orientation classes" do
@@ -600,7 +653,7 @@ class AppFormBuilderTest < ActionView::TestCase
     ERB
 
     # Verify horizontal orientation is preserved inside stacked fieldset wrapper
-    assert_select "div.columns-1.sm\\:columns-2" do
+    assert_select "div.columns-1.lg\\:columns-3" do
       assert_select "input[type=radio]", count: 3
     end
   end

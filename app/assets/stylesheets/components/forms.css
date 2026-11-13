@@ -19,6 +19,18 @@ form fieldset > legend {
     @apply border-b border-base-200;
 }
 
+/*
+ * A radio group named beside its options (collection_radio_buttons, layout
+ * :horizontal or :auto, label_position :inline). The builder floats the legend,
+ * so it joins the fieldset's flex row like a field's label instead of being
+ * drawn on the fieldset's edge, and gives it the label-column utilities
+ * (lg:w-1/4, text-base, font-medium). Unlayered, the rule above would beat
+ * them; revert-layer hands every property back to the layered styles.
+ */
+form fieldset > legend:is(.float-start, .lg\:float-start) {
+    all: revert-layer;
+}
+
 /* Icon prefix padding override for DaisyUI inputs */
 .input.has-icon,
 .select.has-icon {

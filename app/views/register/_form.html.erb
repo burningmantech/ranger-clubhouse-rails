@@ -1,12 +1,7 @@
 <%# Everything an auditor account needs. The reason for the account leads,
     because it is the one answer that can send a reader somewhere else; then who
     you are, how you sign in, your legal name, and where you live. The sum that
-    keeps robots out sits last, beside the button that acts on it.
-
-    required_label: "" throughout. Nearly every field here has to be answered, so
-    a full "required" pill on each one is a wall of red that a real error then has
-    to shout over. The bare asterisk still marks the field and the input still
-    carries aria-required; red is left to mean a mistake. %>
+    keeps robots out sits last, beside the button that acts on it. %>
 <% person = @form.person %>
 <% address_required = person.mailing_address_required? %>
 
@@ -32,7 +27,7 @@
         round trip to find out empties both password boxes. %>
     <%= f.collection_radio_buttons :intent, RegisterForm::INTENT_OPTIONS, :last, :first,
                                    { label: "Why are you creating a Clubhouse account?",
-                                     required: true, required_label: "" },
+                                     required: true },
                                    { required: true } %>
 
     <%# Revealed the moment "become a Ranger" is chosen; the controller also holds
@@ -57,16 +52,16 @@
       <dd>Yes, from your profile once you have signed in.</dd>
     </dl>
     <%= f.email_field :email, label: "Email Address", width: "w-full sm:w-72",
-                      maxlength: 255, required: true, required_label: "", autocomplete: "email" %>
+                      maxlength: 255, required: true, autocomplete: "email" %>
     <%= form_row do %>
       <%= f.password_field :password, label: "Password", width: "w-full sm:w-64",
                            minlength: RegisterForm::PASSWORD_MINIMUM,
-                           maxlength: RegisterForm::PASSWORD_MAXIMUM, required: true, required_label: "",
+                           maxlength: RegisterForm::PASSWORD_MAXIMUM, required: true,
                            autocomplete: "new-password",
                            help_text: "#{RegisterForm::PASSWORD_MINIMUM} to #{RegisterForm::PASSWORD_MAXIMUM} characters." %>
       <%= f.password_field :password_confirmation, label: "Confirm Password", width: "w-full sm:w-64",
                            minlength: RegisterForm::PASSWORD_MINIMUM,
-                           maxlength: RegisterForm::PASSWORD_MAXIMUM, required: true, required_label: "",
+                           maxlength: RegisterForm::PASSWORD_MAXIMUM, required: true,
                            autocomplete: "new-password" %>
     <% end %>
   <% end %>
@@ -78,7 +73,7 @@
       <dt>Do I choose my own callsign?</dt>
       <dd>No. The Clubhouse builds one for you from your name, and it appears on the next page.</dd>
     </dl>
-    <%= render "common/legal_name_fields", f: f, autocomplete: true, required_label: "" %>
+    <%= render "common/legal_name_fields", f: f, autocomplete: true %>
   <% end %>
 
   <%= ui_section "Mailing Address", icon: "location-dot", icon_type: :solid do %>
@@ -88,7 +83,7 @@
     </dl>
     <%= render "common/mailing_address_fields", f: f, address_required: address_required,
                                                state_required: person.state_required?,
-                                               autocomplete: true, required_label: "" %>
+                                               autocomplete: true %>
   <% end %>
 
   <%= ui_section "Phone", icon: "phone", icon_type: :solid do %>
@@ -98,7 +93,7 @@
     </dl>
     <%= form_row do %>
       <%= f.telephone_field :home_phone, label: "Primary Phone", width: "w-full sm:w-44",
-                            required: true, required_label: "", autocomplete: "tel" %>
+                            required: true, autocomplete: "tel" %>
       <%= f.telephone_field :alt_phone, label: "Alternative Phone", width: "w-full sm:w-44" %>
     <% end %>
   <% end %>
@@ -109,7 +104,7 @@
       <dd>It keeps automated sign-ups from filling the Clubhouse with accounts no one asked for.</dd>
     </dl>
     <%= f.text_field :human_answer, label: RegisterForm::HUMAN_QUESTION, width: "w-full sm:w-32",
-                     maxlength: 10, required: true, required_label: "", autocomplete: "off",
+                     maxlength: 10, required: true, autocomplete: "off",
                      inputmode: "numeric" %>
   <% end %>
 

@@ -33,8 +33,8 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
   TEXTAREA_DEFAULT_WIDTH = "w-full"
 
   SELECT_FIELD_OPTION_KEYS = %i[
-    label help_text help_mode show_counter wrapper_class wrapper wrapper_id hidden
-    layout width required required_label hide_label icon icon_type icon_class
+    label help_text show_counter wrapper_class wrapper wrapper_id hidden
+    layout width required hide_label icon icon_type icon_class
     replace_class
   ].freeze
 
@@ -87,6 +87,7 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
   TOGGLE_LABEL_CLASSES = "ms-2 inline-flex items-center min-h-9 text-base text-heading select-none cursor-pointer leading-tight"
   TOGGLE_LABEL_ERROR_CLASSES = "ms-2 inline-flex items-center min-h-9 text-base text-error select-none cursor-pointer leading-tight"
   TOGGLE_WRAPPER_CLASSES = "flex items-center"
+  TOGGLE_HIT_AREA_CLASSES = "inline-flex items-center min-h-9 cursor-pointer"
 
   SELECT_CLASSES = "select w-auto"
   SELECT_ERROR_CLASSES = "select select-error w-auto"
@@ -114,9 +115,9 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
   # HORIZONTAL LAYOUT CLASSES
   # =============================================================================
 
-  HORIZONTAL_WRAPPER_CLASSES = "flex flex-col lg:flex-row lg:items-start gap-1 lg:gap-3"
+  HORIZONTAL_WRAPPER_CLASSES = "mb-3 flex flex-col lg:flex-row lg:items-start gap-1 lg:gap-3"
   HORIZONTAL_LABEL_CLASSES = "font-medium text-heading text-base lg:pt-2 lg:w-1/4 lg:shrink-0 lg:mr-2"
-  HORIZONTAL_LABEL_ERROR_CLASSES = "font-medium text-error text-base lg:pt-2 lg:w-1/4 lg:shrink-0"
+  HORIZONTAL_LABEL_ERROR_CLASSES = "font-medium text-error text-base lg:pt-2 lg:w-1/4 lg:shrink-0 lg:mr-2"
   HORIZONTAL_INPUT_CONTAINER_CLASSES = "flex-1 min-w-0"
 
   # =============================================================================
@@ -355,7 +356,8 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
   # @option options [String] :url The suggestions endpoint, answering autocomplete JSON (required)
   # @option options [Integer] :max The most chips it holds: a new one past it replaces the oldest (the HQ
   #   window's relay names one sender)
-  # @option options [String] :placeholder The input's placeholder and, less its ellipsis, its accessible name
+  # @option options [String] :placeholder The input's placeholder. The field's visible label is its
+  #   accessible name: the input carries no aria-label, which would outrank the label
   #
   # @example
   #   f.callsign_chips_field :callsigns, url: suggest_callsigns_messages_path, label: "To"
@@ -455,6 +457,7 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
     field_opts = extract_field_options(options, attribute)
     inline_label = options.delete(:inline_label)
 
+    options[:required] = true if field_opts[:required]
     options[:class] = merge_classes(classes_for(:checkbox, field_opts[:has_errors]), options[:class])
     options[:aria] = (options[:aria] || {}).merge(invalid: true) if field_opts[:has_errors]
     checkbox_tag = super
@@ -469,11 +472,12 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
   def radio_button(attribute, tag_value, options = {})
     field_opts = extract_field_options(options, tag_value, attribute)
 
+    options[:required] = true if field_opts[:required]
     options[:class] = merge_classes(classes_for(:radio, field_opts[:has_errors]), options[:class])
     options[:aria] = (options[:aria] || {}).merge(invalid: true) if field_opts[:has_errors]
     radio_tag = super
 
-    build_toggle_field(:radio, attribute, radio_tag, field_opts, tag_value:)
+    build_toggle_field(:radio, attribute, radio_tag, field_opts)
   end
 
   # =============================================================================
@@ -555,7 +559,6 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
     {
       label_text: options.delete(:label),
       help_text: options.delete(:help_text),
-      help_mode: options.delete(:help_mode) || :inline,
       show_counter: options.delete(:show_counter),
       wrapper_class: options.delete(:wrapper_class),
       skip_wrapper: options.delete(:wrapper) == false,
@@ -565,7 +568,6 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
       has_errors: attribute && object_has_error?(attribute),
       width: options.delete(:width),
       required: options.delete(:required),
-      required_label: options.delete(:required_label),
       hide_label: options.delete(:hide_label),
       icon: options.delete(:icon),
       icon_type: options.delete(:icon_type) || :solid,
@@ -782,44 +784,24 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
     end
   end
 
-  # The mark that says a field has to be answered. A radio group is named by a
-  # legend rather than a label, so this is built on its own and put wherever the
-  # name is, instead of only being appended by build_label.
-  def required_marker(field_opts)
-    if field_opts[:required_label] == ""
-      @template.fa_icon("asterisk", :solid, class: "text-error", start: 2)
-    else
-      @template.tag.span("(required)", class: "ml-2 text-xs text-error")
-    end
+  # The mark that says a field has to be answered: the visible word, which a
+  # screen reader reads as part of the name. It goes wherever the name is -- a
+  # field's label, a radio group's legend, a checkbox's own text.
+  def required_marker
+    @template.tag.span("(required)", class: "ml-2 text-sm text-error")
   end
 
-  # A radio group's name, marked the same way a required field's label is.
-  def group_label_text(field_opts)
+  # A field's name, with the required mark when the field has to be answered.
+  def marked_label_text(field_opts)
     return field_opts[:label_text] unless field_opts[:required]
 
-    safe_join([field_opts[:label_text], required_marker(field_opts)])
+    safe_join([field_opts[:label_text], required_marker])
   end
 
   def build_label(attribute, field_opts, label_type)
     return "".html_safe if field_opts[:hide_label] || field_opts[:label_text].nil?
 
-    label_parts = [field_opts[:label_text]]
-    label_parts << required_marker(field_opts) if field_opts[:required]
-
-    # Add tooltip icon for help text in tooltip mode
-    if field_opts[:help_mode] == :tooltip && field_opts[:help_text]
-      hint_id = "#{sanitized_field_id(attribute)}_hint"
-      tooltip_icon = @template.tag.span(
-        class: "inline-block ms-1 text-stone-muted hover:text-primary cursor-help",
-        title: field_opts[:help_text]
-      ) do
-        @template.fa_icon("circle-info", :solid, class: "text-sm")
-      end
-      label_parts << tooltip_icon
-    end
-
-    label_content = safe_join(label_parts)
-    label(attribute, label_content, class: classes_for(label_type, field_opts[:has_errors]))
+    label(attribute, marked_label_text(field_opts), class: classes_for(label_type, field_opts[:has_errors]))
   end
 
   def build_wrapper_options(field_opts, default_class)
@@ -836,8 +818,7 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
 
     if field_opts[:has_errors]
       error_message(attribute, hint_id)
-    elsif field_opts[:help_text] && field_opts[:help_mode] != :tooltip
-      # Only show inline help text if not in tooltip mode
+    elsif field_opts[:help_text]
       help_text_tag(field_opts[:help_text], hint_id)
     else
       "".html_safe
@@ -848,23 +829,23 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
   # TOGGLE FIELD BUILDING (CHECKBOXES & RADIOS)
   # =============================================================================
 
-  def build_toggle_field(field_type, attribute, input_tag, field_opts, inline_label: nil, tag_value: nil)
+  def build_toggle_field(field_type, attribute, input_tag, field_opts, inline_label: nil)
     case field_opts[:layout]
     when :horizontal
-      build_horizontal_toggle(field_type, attribute, input_tag, field_opts, inline_label, tag_value)
+      build_horizontal_toggle(field_type, attribute, input_tag, field_opts, inline_label)
     when :auto
-      build_auto_toggle(field_type, attribute, input_tag, field_opts, inline_label, tag_value)
+      build_auto_toggle(field_type, attribute, input_tag, field_opts, inline_label)
     else
-      build_vertical_toggle(field_type, attribute, input_tag, field_opts, inline_label, tag_value)
+      build_vertical_toggle(field_type, attribute, input_tag, field_opts, inline_label)
     end
   end
 
-  def build_vertical_toggle(field_type, attribute, input_tag, field_opts, inline_label, tag_value)
+  def build_vertical_toggle(field_type, attribute, input_tag, field_opts, inline_label)
     wrapper_class = field_opts[:wrapper_class] || TOGGLE_FIELD_WRAPPER_CLASSES
 
     field_html = case field_type
                  when :checkbox then build_checkbox_content(attribute, input_tag, field_opts, inline_label)
-                 else build_radio_content(attribute, input_tag, field_opts, tag_value)
+                 else build_radio_content(input_tag, field_opts)
                  end
 
     return field_html if field_opts[:skip_wrapper]
@@ -874,50 +855,42 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
     end
   end
 
-  def build_horizontal_toggle(field_type, attribute, input_tag, field_opts, inline_label, tag_value)
-    wrapper_class = field_opts[:wrapper_class] || HORIZONTAL_WRAPPER_CLASSES
-
-    @template.tag.div(class: wrapper_class) do
-      label_html = if field_opts[:label_text].present? && field_type == :checkbox
-                     @template.tag.span(field_opts[:label_text],
-                                        class: "#{classes_for(:horizontal_label, field_opts[:has_errors])} pt-0")
-                   else
-                     "".html_safe
-                   end
-
-      content = case field_type
-                when :checkbox then build_checkbox_content(attribute, input_tag, field_opts.merge(label_text: nil), inline_label)
-                else build_radio_content(attribute, input_tag, field_opts, tag_value)
-                end
-
-      safe_join([
-                  label_html,
-                  @template.tag.div(class: HORIZONTAL_INPUT_CONTAINER_CLASSES) do
-                    safe_join([content, field_suffix(attribute, field_opts)])
-                  end
-                ])
-    end
+  def build_horizontal_toggle(field_type, attribute, input_tag, field_opts, inline_label)
+    build_side_label_toggle(field_type, attribute, input_tag, field_opts, inline_label,
+                            HORIZONTAL_WRAPPER_CLASSES, :horizontal_label, "pt-0", HORIZONTAL_INPUT_CONTAINER_CLASSES)
   end
 
-  def build_auto_toggle(field_type, attribute, input_tag, field_opts, inline_label, tag_value)
-    wrapper_class = field_opts[:wrapper_class] || AUTO_WRAPPER_CLASSES
+  def build_auto_toggle(field_type, attribute, input_tag, field_opts, inline_label)
+    build_side_label_toggle(field_type, attribute, input_tag, field_opts, inline_label,
+                            AUTO_WRAPPER_CLASSES, :auto_label, "lg:pt-0", AUTO_INPUT_CONTAINER_CLASSES)
+  end
+
+  # A checkbox whose label: sits in the label column beside it. That text is a
+  # real <label> for the box, so the box is named even with no inline_label,
+  # and it carries the required mark; the box's own text then goes unmarked.
+  def build_side_label_toggle(field_type, attribute, input_tag, field_opts, inline_label,
+                              wrapper_default, label_type, label_padding, container_class)
+    wrapper_class = field_opts[:wrapper_class] || wrapper_default
+    side_label = field_opts[:label_text].present? && field_type == :checkbox
 
     @template.tag.div(class: wrapper_class) do
-      label_html = if field_opts[:label_text].present? && field_type == :checkbox
-                     @template.tag.span(field_opts[:label_text],
-                                        class: "#{classes_for(:auto_label, field_opts[:has_errors])} lg:pt-0")
+      label_html = if side_label
+                     label(attribute, marked_label_text(field_opts),
+                           class: "#{classes_for(label_type, field_opts[:has_errors])} #{label_padding}")
                    else
                      "".html_safe
                    end
 
       content = case field_type
-                when :checkbox then build_checkbox_content(attribute, input_tag, field_opts.merge(label_text: nil), inline_label)
-                else build_radio_content(attribute, input_tag, field_opts, tag_value)
+                when :checkbox
+                  inner_opts = side_label ? field_opts.merge(label_text: nil, required: false) : field_opts
+                  build_checkbox_content(attribute, input_tag, inner_opts, inline_label)
+                else build_radio_content(input_tag, field_opts)
                 end
 
       safe_join([
                   label_html,
-                  @template.tag.div(class: AUTO_INPUT_CONTAINER_CLASSES) do
+                  @template.tag.div(class: container_class) do
                     safe_join([content, field_suffix(attribute, field_opts)])
                   end
                 ])
@@ -926,28 +899,29 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
 
   def build_checkbox_content(attribute, checkbox_tag, field_opts, inline_label)
     label_text = field_opts[:label_text] || inline_label
-    label_class = classes_for(:toggle_label, field_opts[:has_errors])
+    label_text = marked_label_text(field_opts.merge(label_text:)) if label_text
 
     @template.tag.div(class: TOGGLE_WRAPPER_CLASSES) do
-      # min-h-9: this label is the hit area -- it wraps both the box and its text.
-      @template.tag.label(for: sanitized_field_id(attribute), class: "inline-flex items-center min-h-9 cursor-pointer") do
-        safe_join([
-                    checkbox_tag,
-                    label_text ? @template.tag.span(label_text, class: label_class) : "".html_safe
-                  ])
-      end
+      toggle_hit_area(checkbox_tag, label_text, field_opts[:has_errors], for: sanitized_field_id(attribute))
     end
   end
 
-  def build_radio_content(attribute, radio_tag, field_opts, tag_value)
-    value_slug = tag_value.to_s.parameterize(separator: "_")
-    radio_id = "#{sanitized_object_name}_#{attribute}_#{value_slug}"
-    label_class = classes_for(:toggle_label, field_opts[:has_errors])
-
+  # The label wraps the radio, so it needs no `for`: one that missed the
+  # radio's id (Rails and parameterize slug a value differently) would outrank
+  # the wrapping and name nothing.
+  def build_radio_content(radio_tag, field_opts)
     @template.tag.div(class: TOGGLE_WRAPPER_CLASSES) do
+      toggle_hit_area(radio_tag, field_opts[:label_text], field_opts[:has_errors])
+    end
+  end
+
+  # min-h-9: this label is the hit area -- it wraps both the control and its
+  # text, so the whole 36px row takes the tap, not only the 20px control.
+  def toggle_hit_area(input_tag, label_text, has_errors, **label_options)
+    @template.tag.label(**label_options, class: TOGGLE_HIT_AREA_CLASSES) do
       safe_join([
-                  radio_tag,
-                  @template.tag.label(field_opts[:label_text], for: radio_id, class: label_class)
+                  input_tag,
+                  label_text ? @template.tag.span(label_text, class: classes_for(:toggle_label, has_errors)) : "".html_safe
                 ])
     end
   end
@@ -958,18 +932,10 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
 
   def build_vertical_collection_radio_buttons(attribute, collection, value_method, text_method,
                                               options, html_options, field_opts)
-    wrapper_class = field_opts[:wrapper_class] || WRAPPER_CLASSES
+    buttons = build_collection_radio_buttons(attribute, collection, value_method, text_method,
+                                             options, html_options, field_opts[:has_errors], field_opts[:layout])
 
-    @template.tag.fieldset(class: wrapper_class, role: "radiogroup") do
-      legend = field_opts[:label_text] ?
-                 @template.tag.legend(group_label_text(field_opts), class: classes_for(:label, field_opts[:has_errors])) :
-                 "".html_safe
-
-      buttons = build_collection_radio_buttons(attribute, collection, value_method, text_method,
-                                               options, html_options, field_opts[:has_errors], field_opts[:layout])
-
-      safe_join([legend, buttons, field_suffix(attribute, field_opts)])
-    end
+    build_stacked_radio_group(attribute, buttons, field_opts)
   end
 
   def build_horizontal_collection_radio_buttons(attribute, collection, value_method, text_method,
@@ -978,34 +944,10 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
                                              options, html_options, field_opts[:has_errors], field_opts[:layout])
 
     if field_opts[:label_position] == :stacked
-      # Stacked: legend on its own line, radios on next line.
-      # A fieldset/legend gives the radio group an accessible name so screen
-      # readers announce the group label with each option.
-      wrapper_class = field_opts[:wrapper_class] || WRAPPER_CLASSES
-
-      @template.tag.fieldset(class: wrapper_class, role: "radiogroup") do
-        legend_html = field_opts[:label_text] ?
-                        @template.tag.legend(group_label_text(field_opts), class: classes_for(:label, field_opts[:has_errors])) :
-                        "".html_safe
-
-        safe_join([legend_html, buttons, field_suffix(attribute, field_opts)])
-      end
+      build_stacked_radio_group(attribute, buttons, field_opts)
     else
-      # Inline: label beside radio group (default behavior)
-      wrapper_class = field_opts[:wrapper_class] || HORIZONTAL_WRAPPER_CLASSES
-
-      @template.tag.div(class: wrapper_class) do
-        label_html = field_opts[:label_text] ?
-                       @template.tag.span(group_label_text(field_opts), class: classes_for(:horizontal_label, field_opts[:has_errors])) :
-                       "".html_safe
-
-        safe_join([
-                    label_html,
-                    @template.tag.div(class: HORIZONTAL_INPUT_CONTAINER_CLASSES) do
-                      safe_join([buttons, field_suffix(attribute, field_opts)])
-                    end
-                  ])
-      end
+      build_inline_radio_group(attribute, buttons, field_opts, HORIZONTAL_WRAPPER_CLASSES, :horizontal_label,
+                               "float-start", HORIZONTAL_INPUT_CONTAINER_CLASSES)
     end
   end
 
@@ -1015,41 +957,54 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
                                              options, html_options, field_opts[:has_errors], field_opts[:layout])
 
     if field_opts[:label_position] == :stacked
-      # Stacked: legend on its own line, radios on next line.
-      # A fieldset/legend gives the radio group an accessible name so screen
-      # readers announce the group label with each option.
-      wrapper_class = field_opts[:wrapper_class] || WRAPPER_CLASSES
-
-      @template.tag.fieldset(class: wrapper_class, role: "radiogroup") do
-        legend_html = field_opts[:label_text] ?
-                        @template.tag.legend(group_label_text(field_opts), class: classes_for(:label, field_opts[:has_errors])) :
-                        "".html_safe
-
-        safe_join([legend_html, buttons, field_suffix(attribute, field_opts)])
-      end
+      build_stacked_radio_group(attribute, buttons, field_opts)
     else
-      # Inline: label beside radio group (default behavior)
-      wrapper_class = field_opts[:wrapper_class] || AUTO_WRAPPER_CLASSES
+      # Below lg the auto layout stacks, so the legend floats (and sits beside the
+      # options) only from lg up.
+      build_inline_radio_group(attribute, buttons, field_opts, AUTO_WRAPPER_CLASSES, :auto_label,
+                               "lg:float-start", AUTO_INPUT_CONTAINER_CLASSES)
+    end
+  end
 
-      @template.tag.div(class: wrapper_class) do
-        label_html = field_opts[:label_text] ?
-                       @template.tag.span(group_label_text(field_opts), class: classes_for(:auto_label, field_opts[:has_errors])) :
-                       "".html_safe
+  # The legend on its own line, the options under it. A fieldset and legend give
+  # the group its accessible name, which screen readers announce with each option.
+  def build_stacked_radio_group(attribute, buttons, field_opts)
+    wrapper_class = field_opts[:wrapper_class] || WRAPPER_CLASSES
 
-        safe_join([
-                    label_html,
-                    @template.tag.div(class: AUTO_INPUT_CONTAINER_CLASSES) do
-                      safe_join([buttons, field_suffix(attribute, field_opts)])
-                    end
-                  ])
-      end
+    @template.tag.fieldset(class: wrapper_class, role: "radiogroup") do
+      legend_html = field_opts[:label_text] ?
+                      @template.tag.legend(marked_label_text(field_opts), class: classes_for(:label, field_opts[:has_errors])) :
+                      "".html_safe
+
+      safe_join([legend_html, buttons, field_suffix(attribute, field_opts)])
+    end
+  end
+
+  # The legend beside the options, in the label column. A floated legend is not
+  # drawn on the fieldset's edge: it joins the fieldset's flex row the way a
+  # field's label does (forms.css hands its styling back to these utilities).
+  def build_inline_radio_group(attribute, buttons, field_opts, wrapper_default, label_type, float_class, container_class)
+    wrapper_class = field_opts[:wrapper_class] || wrapper_default
+
+    @template.tag.fieldset(class: wrapper_class, role: "radiogroup") do
+      legend_html = field_opts[:label_text] ?
+                      @template.tag.legend(marked_label_text(field_opts),
+                                           class: "#{classes_for(label_type, field_opts[:has_errors])} #{float_class}") :
+                      "".html_safe
+
+      safe_join([
+                  legend_html,
+                  @template.tag.div(class: container_class) do
+                    safe_join([buttons, field_suffix(attribute, field_opts)])
+                  end
+                ])
     end
   end
 
   def build_collection_radio_buttons(attribute, collection, value_method, text_method,
                                      options, html_options, has_errors, layout = :vertical)
     wrapper_class = case layout
-                    when :horizontal then "columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-x-4"
+                    when :horizontal then "columns-1 lg:columns-3 xl:columns-4 gap-x-4"
                     when :auto then "space-y-1 lg:columns-2 xl:columns-3 lg:gap-x-4 lg:space-y-0"
                     else "space-y-1"
                     end
@@ -1061,10 +1016,12 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
         options.merge(object:), html_options
       ) do |b|
         @template.tag.div(class: item_class) do
-          safe_join([
-                      b.radio_button(class: classes_for(:radio, has_errors), aria: { invalid: (true if has_errors) }),
-                      b.label(class: classes_for(:toggle_label, has_errors))
-                    ])
+          b.label(class: TOGGLE_HIT_AREA_CLASSES) do
+            safe_join([
+                        b.radio_button(class: classes_for(:radio, has_errors), aria: { invalid: (true if has_errors) }),
+                        @template.tag.span(b.text, class: classes_for(:toggle_label, has_errors))
+                      ])
+          end
         end
       end
     end
@@ -1186,17 +1143,8 @@ module FormHelper
 
     error_word = model.errors.one? ? "error" : "errors"
 
-    error_list = tag.ul(class: "mt-2 space-y-1") do
-      safe_join(
-        model.errors.full_messages.map do |msg|
-          tag.li(class: "flex items-start gap-2") do
-            safe_join([
-                        tag.span("&bullet;".html_safe, class: AppFormBuilder::ERROR_ICON_TEXT_CLASSES, aria: { hidden: true }),
-                        tag.span(msg)
-                      ])
-          end
-        end
-      )
+    error_list = tag.ul(class: "list-bulleted mt-2 space-y-1") do
+      safe_join(model.errors.full_messages.map { |msg| tag.li(msg) })
     end
 
     ui_callout_box :error, id: "form-error-summary", tabindex: "-1" do
