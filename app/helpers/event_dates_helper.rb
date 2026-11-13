@@ -11,11 +11,9 @@ module EventDatesHelper
   # @param end_time [Time, nil] the window's end
   # @param year [Boolean] stamp the year on both ends, for a window that may
   #   legitimately open and close in the same year or straddle two
-  # @return [String] the formatted range, or a "Not set" badge
+  # @return [String] the formatted range, or "—" when the window is not set
   def event_date_window(start_time, end_time, year: false)
-    unless start_time && end_time
-      return ui_badge("Not set", :secondary, icon: "circle-minus", icon_type: :solid)
-    end
+    return "—" unless start_time && end_time
 
     datetime_format(start_time, end_time, year:)
   end

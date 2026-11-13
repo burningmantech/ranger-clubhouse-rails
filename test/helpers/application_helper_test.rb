@@ -16,14 +16,12 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_not_includes inactive, "fa-circle-check"
   end
 
-  test "year_range with empty array returns none text" do
-    result = year_range([])
-    assert_match(/none/, result)
+  test "year_range with empty array returns a dash" do
+    assert_equal "—", year_range([])
   end
 
-  test "year_range with nil returns none text" do
-    result = year_range(nil)
-    assert_match(/none/, result)
+  test "year_range with nil returns a dash" do
+    assert_equal "—", year_range(nil)
   end
 
   test "year_range with single year returns that year" do

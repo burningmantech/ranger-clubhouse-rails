@@ -7,7 +7,7 @@ module PageLayoutHelper
   ALL_YEARS = "All"
 
   def page_title(title, &block)
-    title_div = content_tag :h1, title, class: "text-3xl font-normal"
+    title_div = content_tag :h1, title, class: "text-3xl font-semibold"
     return content_tag(:div, title_div, class: "mb-4") unless block_given?
 
     # Back link appears above title in breadcrumb style
@@ -97,10 +97,6 @@ module PageLayoutHelper
         hidden_field_tag(name, value, id: nil)
       end
     end)
-  end
-
-  def title_year_selector(title, year, options = {}, &block)
-    "#{page_title("#{year} #{title}", &block)}#{year_selector(year, options)}".html_safe
   end
 
   private

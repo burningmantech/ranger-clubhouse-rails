@@ -85,7 +85,7 @@ module UiComponents
 
     def ui_card_section(title, options = {}, &block)
       section_classes = "#{CARD_SECTION_TITLE} #{options[:class]}".squish
-      section_title = content_tag :h6, title, class: section_classes
+      section_title = content_tag :h3, title, class: section_classes
       section_text = content_tag :div, class: CARD_SECTION_BODY, &block
       safe_join([section_title, section_text])
     end

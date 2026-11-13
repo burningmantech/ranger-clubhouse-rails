@@ -6,9 +6,9 @@ module GenderHelper
   def gender_format(person)
     case person.gender_identity
     when GENDER_CUSTOM
-      person.gender_custom.present? ? person.gender_custom : "Not specified"
+      person.gender_custom.presence || "—"
     when GENDER_NONE, "", nil
-      "Not specified"
+      "—"
     else
       GENDER_IDENTITY_LABELS[person.gender_identity]
     end

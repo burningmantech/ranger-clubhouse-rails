@@ -78,7 +78,7 @@ module ApplicationHelper
   end
 
   def none_stated
-    content_tag(:i, "None stated", class: "text-stone-muted")
+    content_tag(:span, "None stated", class: "text-stone-muted")
   end
 
   def value_or_dash(value)
@@ -145,16 +145,25 @@ module ApplicationHelper
       # Never leave an <img> unlabelled: with no alt a screen reader reads the
       # URL aloud. Decorative by default, so a caller that has a name passes one.
       options[:alt] ||= ""
-      options[:style] = "width: #{options.delete(:width)}px;#{options[:style]} " if options[:width]
-      options[:style] = "height: #{options.delete(:height)}px;#{options[:style]} " if options[:height]
+      # A size the caller names travels as a custom property, never as an inline
+      # width or height (design guide, Styling Mechanism).
+      sizes = { width: options.delete(:width), height: options.delete(:height) }.compact
+      if sizes.any?
+        options[:style] = [*sizes.map { |side, px| "--photo-#{side}: #{px}px" }, options[:style]].compact_blank.join("; ")
+        options[:class] = class_names(PHOTO_SIZE_CLASSES.values_at(*sizes.keys), options[:class])
+      end
       # Paths: a live list row is rendered outside any request, where a URL's
       # host is the renderer's example.org.
       url = Rails.env.development? ? rails_storage_proxy_path(photo) : url_for(photo)
       image_tag url, options
     else
-      fa_icon "user"
+      # No photo: the stand-in says so when the caller named the picture.
+      fa_icon "user", :regular, label: options[:alt].presence
     end
   end
+
+  # w-(--photo-width) reads the size photo_tag puts in --photo-width.
+  PHOTO_SIZE_CLASSES = { width: "w-(--photo-width)", height: "h-(--photo-height)" }.freeze
 
   # What a plain text field's own markup may carry: Rails' default allow-list
   # less class. Nothing typed needs one, and the app's own utilities would let
@@ -229,9 +238,9 @@ module ApplicationHelper
   end
 
   def hour_not_counted_disclaimer(is_training = false)
-    content_tag :div, class: "my-2 text-sm" do
-      "Note: The #{is_training ? "time spent in this training does" : "on duty hours volunteered in this position do"} not qualify for provisions (meals, showers, clothing, or an event radio).
-        This applies to provisions only and does not affect any credit earnings or ticket eligibility."
+    ui_callout_box :info, class: "my-2", role: "note" do
+      "The #{is_training ? "time spent in this training does" : "on duty hours volunteered in this position do"} not qualify for provisions (meals, showers, clothing, or an event radio). " \
+        "This applies to provisions only and does not affect any credit earnings or ticket eligibility."
     end
   end
 
@@ -249,7 +258,7 @@ module ApplicationHelper
     aria_label = options.delete(:aria_label) || "Back to #{label}"
 
     # Subtle text link style (breadcrumb pattern)
-    link_class = "inline-flex-center-gap-2 min-h-9 text-body no-decoration " \
+    link_class = "inline-flex-center-gap-2 min-h-9 text-stone-muted no-decoration " \
       "hover:text-stone-emphasis transition-colors"
 
     link_to url, class: link_class, aria: { label: aria_label } do

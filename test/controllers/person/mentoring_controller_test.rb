@@ -52,7 +52,7 @@ class Person::MentoringControllerTest < ActionDispatch::IntegrationTest
     assert_select "section", text: /#{YEAR} Green Dot Training Mentors/
     assert_select "a[href=?]", person_path(@mentor), text: "Ferrous"
     assert_select "span", text: "Bonked"
-    assert_select "h6", text: "Shift"
+    assert_select "h3", text: "Shift"
     assert_select "a[href=?]", training_mentoring_verdicts_path("green-dot", year: YEAR), text: "View Verdicts"
     assert_no_match(/Kept the dome cool/, response.body)
     assert_select "a", text: "Send Message", count: 0

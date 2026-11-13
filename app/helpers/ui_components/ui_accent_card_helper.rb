@@ -76,9 +76,6 @@ module UiComponents
         border_class,
         bg_class,
         "px-4 py-2",
-        "transition-all",
-        "duration-200",
-        "hover:shadow-sm",
         options[:class]
       ].compact.join(" ")
 

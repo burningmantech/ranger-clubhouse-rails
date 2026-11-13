@@ -9,7 +9,7 @@ module AgreementHelper
   BORDER_COLORS = {
     signed: "border-success/30",
     pending: "border-warning/30",
-    not_available: "border-l-secondary"
+    not_available: "border-base-300"
   }.freeze
 
   BG_COLORS = {
@@ -64,7 +64,7 @@ module AgreementHelper
     icon_class = case status
                  when :signed then "icon-success"
                  when :pending then "icon-warning"
-                 else "text-secondary"
+                 else "text-stone-icon"
                  end
 
     fa_icon(config[:name], config[:style], { class: icon_class })

@@ -208,15 +208,21 @@ module ButtonHelper
     button_link label || "Export CSV", variant, url, options
   end
 
-  # Delete button (danger style)
+  # Delete button (danger style). Confirms first, always: a delete nobody meant
+  # to press is the one click the app cannot take back.
   # Accepts: (url), (url, label), (url, options), (url, label, options)
   # Options:
   #   :confirm_message - plain text message shown in the standard confirm modal
   #   :confirm_modal   - options hash passed to confirm_modal helper for a custom dialog
-  # Either dialog's Confirm button is red (variant: :error) unless the hash says otherwise.
+  #   :confirm         - with neither of those, the default dialog asks "Delete this record?
+  #                      This cannot be undone."; a String names the thing instead
+  #                      (confirm: "this note" asks "Delete this note?"). false skips the
+  #                      dialog, only where a confirmation is already given another way.
+  # Every dialog's Confirm button is red (variant: :error) unless the hash says otherwise.
   def delete_button(url, label = nil, options = {})
     label, options = normalize_button_args(label, options)
 
+    confirm = options.delete(:confirm)
     confirm_message = options.delete(:confirm_message)
     confirm_modal_options = options.delete(:confirm_modal)
     variant = options.delete(:variant) || :error
@@ -227,6 +233,12 @@ module ButtonHelper
       options[:data].merge!(confirm_modal({ variant: :error }.merge(confirm_modal_options)))
     elsif confirm_message
       options[:data][:turbo_confirm] = confirm_modal_dialog(message: confirm_message, variant: :error)
+    elsif confirm != false
+      thing = confirm.is_a?(String) ? confirm : "this record"
+      options[:data][:turbo_confirm] = confirm_modal_dialog(title: label || "Delete",
+                                                            message: "Delete #{thing}? This cannot be undone.",
+                                                            confirm_label: label || "Delete",
+                                                            variant: :error)
     end
 
     options[:method] ||= :delete
@@ -238,7 +250,7 @@ module ButtonHelper
   # Accepts: (), (label), (options), (label, options)
   def submit_button(label = nil, options = {})
     label, options = normalize_button_args(label, options)
-    label ||= "Submit"
+    label ||= "Save"
     variant = options.delete(:variant) || :primary
     disabled = options.delete(:disabled)
     options[:disabled] = true if disabled

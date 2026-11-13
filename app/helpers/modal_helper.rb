@@ -42,24 +42,26 @@ module ModalHelper
     options["data-controller"] = "modal"
     options["data-modal-closable-value"] = closable.to_s
 
-    content_tag :dialog, options do
-      inner = content_tag(:div, class: "modal-box #{size_class}".squish) do
-        modal_builder = ModalBuilder.new(self, modal_id)
-        content = capture(modal_builder, &block)
-        unless modal_builder.footer_seen || close_button == false
-          content += modal_builder.footer { modal_builder.close_button }
-        end
-        content
+    modal_builder = ModalBuilder.new(self, modal_id)
+    inner = content_tag(:div, class: "modal-box #{size_class}".squish) do
+      content = capture(modal_builder, &block)
+      unless modal_builder.footer_seen || close_button == false
+        content += modal_builder.footer { modal_builder.close_button }
       end
-
-      if closable
-        inner += content_tag(:form, method: "dialog", class: "modal-backdrop") do
-          content_tag(:button, "close")
-        end
-      end
-
-      inner
+      content
     end
+
+    if closable
+      inner += content_tag(:form, method: "dialog", class: "modal-backdrop") do
+        content_tag(:button, "Close Dialog")
+      end
+    end
+
+    # Every dialog opens with showModal(), so it is modal; the title, when the
+    # block wrote one, is its name.
+    options[:aria] = { modal: true, labelledby: modal_builder.title_id }.compact.merge(options[:aria] || {})
+
+    content_tag :dialog, inner, options
   end
 
   # The scaffold every Turbo form dialog shares: the turbo-frame wrapper, a
@@ -165,15 +167,18 @@ module ModalHelper
     include ButtonHelper
     include IconHelper
 
-    attr_reader :template, :modal_id, :footer_seen
+    # title_id: the heading's id once title has run, for the dialog's aria-labelledby.
+    attr_reader :template, :modal_id, :footer_seen, :title_id
 
     def initialize(template, modal_id)
       @template = template
       @modal_id = modal_id
       @footer_seen = false
+      @title_id = nil
     end
 
     def title(header = nil, options = {}, &block)
+      @title_id = options[:id] ||= "#{modal_id}-title"
       @template.content_tag :div, class: MODAL_HEADER do
         options[:class] = "#{MODAL_TITLE} #{options[:class]}".squish
         icon_html = fa_icon(:xmark, :solid, class: "w-3 h-4", "aria-hidden": "true") +
@@ -182,7 +187,7 @@ module ModalHelper
           block_given? ? @template.capture(&block) : header
         end
         close_btn = @template.button_action(icon_html, :ghost,
-                                            class: "btn-circle", data: { action: "modal#hide" })
+                                            class: "btn-square", data: { action: "modal#hide" })
         heading + close_btn
       end
     end

@@ -102,8 +102,10 @@ module UiComponents
       label_class = VARIANT_FG_CLASSES[variant.to_sym] || VARIANT_FG_CLASSES[:primary]
       label_html = label_text ? content_tag(:span, label_text, class: "text-xs #{label_class} font-medium leading-none pe-2") : nil
 
+      # The fill's width is a computed number, so it travels as a custom property
+      # that w-(--progress-fill) reads, not as an inline width.
       content_tag :div, options.merge(class: container_classes) do
-        content_tag(:div, label_html, class: bar_classes, style: "width: #{percentage}%",
+        content_tag(:div, label_html, class: "#{bar_classes} w-(--progress-fill)", style: "--progress-fill: #{percentage}%",
                                       role: "progressbar", aria: aria_attributes)
       end
     end

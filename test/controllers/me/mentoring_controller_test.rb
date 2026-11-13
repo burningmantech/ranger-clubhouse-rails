@@ -272,7 +272,7 @@ class Me::MentoringControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "section", text: /#{ART_YEAR} Green Dot Training Mentors/
     assert_select "section", text: /Green Dot Training Mentees/, count: 0
-    assert_select "h6", text: "Shift"
+    assert_select "h3", text: "Shift"
     assert_match(/Ferrous/, response.body)
     assert_select "a", text: "Ferrous", count: 0
     assert_select "a[href=?]", new_me_message_path(to: "Ferrous"), text: "Send Message"

@@ -16,7 +16,7 @@ module UiComponents
     ACTION_BOX_TITLE = "heading-title text-heading mb-1"
 
     # Description styling - muted, scannable
-    ACTION_BOX_DESCRIPTION = "text-sm text-body leading-relaxed"
+    ACTION_BOX_DESCRIPTION = "text-base text-body leading-relaxed"
 
     # Renders an action-oriented card with icon, title, description, and action button
     #
@@ -53,7 +53,6 @@ module UiComponents
       button_options = {
         icon: "arrow-right",
         icon_type: :solid,
-        icon_position: :end,
         size: "sm",
         class: "w-full justify-center mt-auto"
       }

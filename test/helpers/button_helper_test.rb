@@ -107,6 +107,32 @@ class ButtonHelperTest < ActionView::TestCase
     assert_equal [["btn-error"], ["btn-error"], ["btn-warning"]], confirm_variants
   end
 
+  # R5: a bare delete_button asks first, in the red dialog, with the action and
+  # whether it can be undone; confirm: names the thing, or false skips it.
+  test "a delete button confirms by default unless told not to" do
+    dialogs = [
+      delete_button("/swag/1"),
+      delete_button("/swag/1", "Delete Swag", confirm: "this swag item"),
+      delete_button("/swag/1", confirm: false)
+    ].map { |html| Nokogiri::HTML5.fragment(html).at_css("a")["data-turbo-confirm"] }
+
+    default = Nokogiri::HTML5.fragment(dialogs[0])
+    assert_equal "Delete this record? This cannot be undone.", default.at_css(".modal-body-content").text
+    assert_equal "Delete", default.at_css("#turbo-confirm-button").text
+    assert_includes default.at_css("#turbo-confirm-button")["class"].split, "btn-error"
+
+    named = Nokogiri::HTML5.fragment(dialogs[1])
+    assert_equal "Delete this swag item? This cannot be undone.", named.at_css(".modal-body-content").text
+    assert_equal "Delete Swag", named.at_css("h3").text
+
+    assert_nil dialogs[2]
+  end
+
+  test "submit_button says Save when given no label" do
+    assert_dom_equal %(<input type="submit" name="commit" value="Save" class="btn btn-primary btn-sm" data-disable-with="Save">),
+                     submit_button
+  end
+
   # btn-disabled only stops the pointer: with an href the link stays tabbable
   # and Enter follows it.
   test "a disabled button link has no href to follow" do
