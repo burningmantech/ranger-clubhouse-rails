@@ -36,9 +36,8 @@
               <%= t.cell do %>
                 <%= button_row do %>
                   <%= edit_link language_edit_url(row) %>
-                  <%= button_link "Delete", :secondary, language_url(row),
-                                  data: confirm_modal(message: "Delete #{row.actual_name}? You can add it again.", method: :delete, variant: :error)
-                  %>
+                  <%= delete_button language_url(row),
+                                    confirm_modal: { message: "Delete #{row.actual_name}? You can add it again." } %>
                 <% end %>
               <% end %>
             <% end %>
@@ -50,10 +49,9 @@
     <%= ui_empty_state "No languages have been stated.", icon: "language", icon_type: :solid %>
   <% end %>
 
-  <%= button_row do %>
-    <% if can_edit_languages? %>
+  <% if can_edit_languages? %>
+    <%= button_row do %>
       <%= button_link "Add Language", :primary, language_new_url %>
     <% end %>
-    <%= cancel_link profile_index_path %>
   <% end %>
 <% end %>

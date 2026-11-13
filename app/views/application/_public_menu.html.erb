@@ -6,7 +6,7 @@
     from the saved preference or the system. %>
 <nav class="navbar bg-chrome/80" data-controller="theme">
   <div class="navbar-start">
-    <%= link_to "Clubhouse", root_path, class: "btn btn-ghost text-xl no-decoration" %>
+    <%= button_link "Clubhouse", :ghost, root_path, size: "base", class: "text-xl" %>
   </div>
   <div class="navbar-end">
     <%= render "application/theme_toggle" %>

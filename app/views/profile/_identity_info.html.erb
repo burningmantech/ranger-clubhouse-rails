@@ -5,7 +5,7 @@
                edit_link: (can_edit_profile? ? profile_edit_section_path("identity-info") : nil) do %>
   <div class="space-y-2">
     <div>
-      <div class="text-lg font-semibold text-heading">
+      <div class="font-semibold text-heading">
         <%= person.callsign %>
       </div>
       <% if person.callsign_pronounce.present? %>
@@ -26,7 +26,7 @@
       <% if person.preferred_name? %>
         Preferred name: <span class="font-semibold text-heading"><%= person.preferred_name %></span>
       <% else %>
-        <span class="italic">no preferred first name given</span>
+        Preferred name: <%= none_stated %>
       <% end %>
     </div>
 
@@ -34,7 +34,7 @@
       <div>
         <span class="font-semibold text-stone-emphasis">Gender:</span>
         <% if person.gender_not_stated? %>
-          <span class="italic">not stated</span>
+          <%= none_stated %>
         <% else %>
           <%= gender_format person %>
         <% end %>
@@ -44,7 +44,7 @@
         <% if person.pronouns? %>
           <%= pronouns_format person %>
         <% else %>
-          <span class="italic">not stated</span>
+          <%= none_stated %>
         <% end %>
       </div>
     </div>

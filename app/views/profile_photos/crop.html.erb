@@ -18,24 +18,20 @@
     <%# Mobile: Condensed single instruction %>
     <div class="lg:hidden">
       <%= ui_callout_box :info, accent: true, icon: "hand-pointer", icon_type: :regular do %>
-        <strong>One thing to do:</strong> Drag your photo until your face <span class="bg-primary/10 px-1 rounded font-medium">fills the outline completely</span>.
+        <strong>One thing to do:</strong> Drag your photo until your face <strong>fills the outline completely</strong>.
       <% end %>
     </div>
     
-    <%# Desktop: Full instruction panel %>
+    <%# Desktop: the how-to, collapsed until asked for %>
     <div class="hidden lg:block">
-      <div class="card-standard p-4">
-        <h2 class="heading-section text-heading mb-4">
-          <%= fa_icon "lightbulb", :solid, class: "mr-2 text-primary" %>Quick Guide
-        </h2>
-        
+      <%= ui_disclosure "How This Page Works", variant: :card do %>
         <dl class="instruction-list">
           <dt>What do I do?</dt>
           <dd>Drag and zoom your photo so your face fills the outline.</dd>
           
           <dt>What are the buttons for?</dt>
           <dd>
-            <ul class="mt-1 space-y-1 text-sm">
+            <ul class="mt-1 space-y-1">
               <li><%= fa_icon "magnifying-glass-plus", :solid, class: "mr-1 text-stone-muted" %> Zoom in closer</li>
               <li><%= fa_icon "magnifying-glass-minus", :solid, class: "mr-1 text-stone-muted" %> Zoom out wider</li>
               <li><%= fa_icon "rotate-left", :solid, class: "mr-1 text-stone-muted" %> Rotate left</li>
@@ -49,11 +45,11 @@
         </dl>
         
         <%# Review reminder %>
-        <div class="mt-4 pt-4 border-t border-line text-sm text-stone-muted">
+        <div class="mt-4 pt-4 border-t border-line text-stone-muted">
           <%= fa_icon "clock", :regular, class: "mr-1" %>
           Photos are reviewed within 2-3 days.
         </div>
-      </div>
+      <% end %>
     </div>
   </div>
   
@@ -61,6 +57,7 @@
   <div class="flex-1">
     <%= form_with model: @person_photo,
                   url: profile_photo_crop_save_path(@person_photo),
+                  builder: AppFormBuilder,
                   local: false,
                   html: {
                     data: {
@@ -73,10 +70,18 @@
                     }
                   } do |f| %>
 
+      <%# Shown by photo_cropper_controller when a save fails. %>
+      <div class="mb-4" data-photo-cropper-target="error" hidden>
+        <%= ui_callout_box :error, accent: true, role: "alert" do %>
+          <span data-photo-cropper-target="errorMessage"></span>
+        <% end %>
+      </div>
+
       <%# Crop tools: icon-only below lg, labelled from lg up. The label carries
           the gap, so a lone icon stays centred, and aria-label names the button
-          in full at every width. Secondary, because Submit Photo is the page's
-          one primary action. %>
+          in full at every width. Square while icon-only (max-lg:), so the
+          labelled button keeps its width from lg up. Secondary, because Save Photo
+          is the page's one primary action. %>
       <div class="flex flex-wrap justify-center gap-2 lg:gap-3 mb-4 mx-auto max-w-sm lg:max-w-none">
         <% [["magnifying-glass-plus", "In", "Zoom In", "zoomIn"],
             ["magnifying-glass-minus", "Out", "Zoom Out", "zoomOut"],
@@ -85,6 +90,7 @@
             ["arrows-rotate", "Reset", "Reset to Original", "reset"]].each do |icon, label, name, action| %>
           <%= button_action safe_join([fa_icon(icon, :solid), tag.span(label, class: "hidden lg:inline")]),
                             :secondary,
+                            class: "max-lg:btn-square",
                             title: name, aria: { label: name },
                             data: { action: "click->photo-cropper##{action}" } %>
         <% end %>
@@ -131,12 +137,12 @@
       </div>
       
       <%# Mobile: Tip shown below cropper %>
-      <div class="lg:hidden mb-4 text-sm text-stone-muted text-center">
+      <div class="lg:hidden mb-4 text-stone-muted text-center">
         <strong>Tip:</strong> No orange checkerboard should be visible when you're done.
       </div>
 
       <!-- Submit and Cancel Controls - stack on mobile, side-by-side on desktop -->
-      <%= button_row class: "flex-col sm:flex-row gap-3 sm:justify-between mt-0 mb-2" do %>
+      <%= button_row do %>
         <%# Reviewers only return to the queue; the uploader flows abandon the pending photo. %>
         <% if crop_cancel_deletes? %>
           <%= button_link "Cancel & Delete",
@@ -149,7 +155,7 @@
         <% else %>
           <%= cancel_button profile_index_path, full_width: true %>
         <% end %>
-        <%= submit_button "Submit Photo",
+        <%= submit_button "Save Photo",
                           full_width: true,
                           data: { photo_cropper_target: :submit } %>
       <% end %>

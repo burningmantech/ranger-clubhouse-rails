@@ -7,7 +7,7 @@
   <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
   <%= javascript_importmap_tags %>
 </head>
-<body class="bg-primary text-body">
+<body class="bg-base-100 text-body">
   <div class="max-w-lg mx-auto p-8">
     <h1 class="text-xl font-bold mb-4">Autocomplete Test Fixture</h1>
 
@@ -17,7 +17,7 @@
       mode: "person_manage",
       name: nil,
       input_id: "test-autocomplete",
-      placeholder: "Search people...",
+      placeholder: "Search people…",
       min_length: 2,
       limit: 5,
       delay: 300,
@@ -34,13 +34,13 @@
 
   <%# Recents variant - positioned with padding so it's accessible %>
   <div class="max-w-lg mx-auto p-8" id="recents-fixture">
-    <h2 class="text-lg font-bold mb-4">Recents Variant</h2>
+    <h2 class="heading-section mb-4">Recents Variant</h2>
     <%= render "shared/autocomplete",
       url: autocomplete_search_path,
       mode: "person_manage",
       name: nil,
       input_id: "test-recents-autocomplete",
-      placeholder: "Search with recents...",
+      placeholder: "Search with recents…",
       min_length: 2,
       limit: 5,
       delay: 300,
@@ -59,13 +59,13 @@
       dialog (no floating dropdown); the highlighted or sole result commits
       when focus leaves the component. %>
   <div class="max-w-lg mx-auto p-8" id="blur-fixture">
-    <h2 class="text-lg font-bold mb-4">Inline / Select-on-blur Variant</h2>
+    <h2 class="heading-section mb-4">Inline / Select-on-blur Variant</h2>
     <%= render "shared/autocomplete",
       url: autocomplete_search_path,
       mode: "person_manage",
       name: nil,
       input_id: "test-blur-autocomplete",
-      placeholder: "Search (select on blur)...",
+      placeholder: "Search (select on blur)…",
       min_length: 2,
       limit: 5,
       delay: 300,
@@ -82,7 +82,8 @@
       aria_label: "Search with select on blur" %>
 
     <%# Focus sink to blur into %>
-    <input type="text" id="blur-sink" class="mt-4 border border-line rounded p-2" />
+    <label for="blur-sink" class="mt-4 block">Focus Sink</label>
+    <input type="text" id="blur-sink" class="border border-line rounded p-2" />
   </div>
 
   <%# Free-text variant, with select-on-blur and recents: the first row of a
@@ -90,15 +91,16 @@
       a reader's pick; a recent is no such row. %>
   <%# Bare markup: the variants above already show how the page looks. %>
   <div id="free-text-fixture">
-    <h2>Free Text Variant</h2>
+    <h2 class="heading-section">Free Text Variant</h2>
     <%# Above the field, where its list cannot cover it %>
+    <label for="free-text-sink">Free Text Focus Sink</label>
     <input type="text" id="free-text-sink" />
     <%= render "shared/autocomplete",
       url: autocomplete_search_path,
       mode: "person_manage",
       name: "q",
       input_id: "test-free-text-autocomplete",
-      placeholder: "Search (free text)...",
+      placeholder: "Search (free text)…",
       form_field: true,
       free_text: true,
       select_on_blur: true,
@@ -107,15 +109,15 @@
   </div>
 
   <%# Placement variant - pushed to bottom of viewport to test above-placement %>
-  <div style="min-height: 90vh;"></div>
+  <div class="min-h-[90vh]"></div>
   <div class="max-w-lg mx-auto p-8" id="placement-fixture">
-    <h2 class="text-lg font-bold mb-4">Placement Variant</h2>
+    <h2 class="heading-section mb-4">Placement Variant</h2>
     <%= render "shared/autocomplete",
       url: autocomplete_search_path,
       mode: "person_manage",
       name: nil,
       input_id: "test-placement-autocomplete",
-      placeholder: "Search near bottom...",
+      placeholder: "Search near bottom…",
       min_length: 2,
       limit: 5,
       delay: 300,
