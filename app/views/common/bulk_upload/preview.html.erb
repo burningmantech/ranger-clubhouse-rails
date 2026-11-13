@@ -96,8 +96,8 @@
       <%= f.submit bulk_upload_confirm_label(@batch), variant: :success,
                    data: {
                      turbo_confirm: confirm_modal_dialog(
-                       title: "Final Confirmation",
-                       message: bulk_upload_consequence(@batch),
+                       title: "#{@batch.action.label} for #{pluralize(@batch.changing.size, "person")}?",
+                       message: "#{bulk_upload_consequence(@batch)} There is no undo: each change is reversed by hand.",
                        confirm_label: bulk_upload_confirm_label(@batch)
                      )
                    } %>

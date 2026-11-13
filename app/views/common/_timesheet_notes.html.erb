@@ -6,7 +6,7 @@
   <div class="font-semibold px-2">
     From <%= row.from_label(current_user.id) %> <span class="ms-2"><%= datetime_format row.created_at %></span>
   </div>
-  <div class="border border-body-subtle rounded p-2 mb-1">
+  <%= ui_card class: "p-3 mb-1" do %>
     <%= hyperlink_text row.note %>
-  </div>
+  <% end %>
 <% end %>

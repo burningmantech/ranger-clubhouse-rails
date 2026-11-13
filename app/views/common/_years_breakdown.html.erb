@@ -14,7 +14,7 @@
       <%= pluralize person.years_as_ranger.size, "event" %>
       <span class="text-stone-muted">[<%= year_range person.years_as_ranger %>]</span>
     <% else %>
-      <span class="text-stone-muted italic">none</span>
+      —
     <% end %>
   </dd>
   <% if person.years_as_contributor.any? %>
@@ -31,7 +31,7 @@
       <%= pluralize person.years_of_service.size, "year" %>
       <span class="text-stone-muted">[<%= year_range person.years_of_service %>]</span>
     <% else %>
-      <span class="text-stone-muted italic">none</span>
+      —
     <% end %>
   </dd>
 </dl>

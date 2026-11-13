@@ -4,9 +4,9 @@
                title: "Missing Timesheet Requests",
                back_to: (timesheet_self_serve? ? back_to_timesheet_dashboard : back_to("Timesheet", timesheet_return_path)) %>
 
-<div class="mt-4 mb-2">
+<%= button_row class: "mt-4 mb-2" do %>
   <%= button_link "Add Missing Timesheet Request", :primary, timesheet_new_missing_request_path %>
-</div>
+<% end %>
 
 <% if @missing_requests.any? %>
   <% if @unapproved_requests.any? %>
@@ -27,7 +27,5 @@
     <% end %>
   <% end %>
 <% else %>
-  <div class="mt-4">
-    No missing timesheet requests have been submitted.
-  </div>
+  <%= ui_empty_state "No missing timesheet requests have been submitted." %>
 <% end %>

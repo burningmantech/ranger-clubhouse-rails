@@ -3,14 +3,13 @@
 <%= ui_section "Status & SAP", icon: "print", icon_type: :solid, link: local_assigns[:link] do %>
   <%= form_row do %>
     <%= f.select :status, BmidHelper::BMID_STATUS_OPTIONS,
-                 { label: "Status",
-                   help_text: "Only Prep and Ready-to-Print statuses are sent to the printer.", layout: :auto },
-                 { class: "w-full lg:w-60" } %>
+                 { label: "Status", width: "w-full sm:w-60",
+                   help_text: "Only Prep and Ready-to-Print statuses are sent to the printer.", layout: :auto } %>
 
     <%= f.select :admission_date, admission_date_options(bmid, ticketing_info),
-                 { label: "SAP Date", selected: bmid.admission_date,
+                 { label: "SAP Date", selected: bmid.admission_date, width: "w-full sm:w-72",
                    help_text: bmid_sap_help_text(bmid), layout: :auto },
-                 { class: "w-full", disabled: bmid.sap_disabled? } %>
+                 { disabled: bmid.sap_disabled? } %>
   <% end %>
 <% end %>
 

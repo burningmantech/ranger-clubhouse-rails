@@ -28,29 +28,29 @@
               <strong>Wait for <%= pluralize @missing_requests_pending, "missing entry request" %></strong> — Timesheet Wranglers are reviewing
             <% end %>
           <% end %>
+          <%# A rejected missing entry request keeps the review open too
+              (TimesheetConcern), so it needs a task of its own. %>
+          <% if @missing_requests_rejected.positive? %>
+            <%= ui_icon_item "circle-xmark", :regular do %>
+              <strong>Review <%= pluralize @missing_requests_rejected, "rejected missing entry request" %></strong> — Appeal or delete each one
+            <% end %>
+          <% end %>
         </ul>
       </div>
 
       <%# Collapsible help section %>
       <div class="mt-4 border-t border-line pt-3">
         <%= ui_accordion(
-              safe_join([fa_icon("circle-question", :solid), "Need help?"]),
-              summary_class: "px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded flex items-center gap-2",
+              safe_join([fa_icon("circle-question", :solid, end: 2), "Common Questions"]),
               content_class: "px-2 pt-3"
             ) do %>
-          <dl class="space-y-2 text-sm">
-            <div>
-              <dt class="font-semibold">Missing a timesheet entry?</dt>
-              <dd>Use the "Missing Requests" button to submit missing timesheet entry requests.</dd>
-            </div>
-            <div>
-              <dt class="font-semibold">What happens after I complete all tasks?</dt>
-              <dd>Once all tasks are complete, a "Confirm Final Confirmation" button will appear.</dd>
-            </div>
-            <div>
-              <dt class="font-semibold">Why is this important?</dt>
-              <dd>Verified timesheets ensure you receive proper credit and qualify for tickets and provisions.</dd>
-            </div>
+          <dl class="instruction-list">
+            <dt>Missing a timesheet entry?</dt>
+            <dd>Use the "Missing Requests" button to submit missing timesheet entry requests.</dd>
+            <dt>What happens after I complete all tasks?</dt>
+            <dd>Once all tasks are complete, a "Confirm Final Confirmation" button will appear.</dd>
+            <dt>Why is this important?</dt>
+            <dd>Verified timesheets ensure you receive proper credit and qualify for tickets and provisions.</dd>
           </dl>
         <% end %>
       </div>
@@ -61,7 +61,7 @@
     <%= ui_alert_banner "Timesheet Review Completed", :success do %>
       <div class="mb-3">
         <p class="text-base font-semibold">
-          <%= fa_icon "circle-check", :solid, class: "text-success" %> All timesheet tasks
+          <%= fa_icon "circle-check", :solid, class: "icon-success" %> All timesheet tasks
           completed!
         </p>
         <p class="mt-2">
@@ -71,13 +71,12 @@
       </div>
 
       <%# Collapsible "what if" section %>
-      <div class="mt-3 border-t border-success/30 pt-3">
+      <div class="mt-4 border-t border-line pt-3">
         <%= ui_accordion(
               "Making Changes Later",
-              summary_class: "px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded",
               content_class: "px-2 pt-2"
             ) do %>
-          <p class="text-sm">
+          <p>
             Need to make changes later? You can submit correction requests anytime. You'll just need to complete the Final
             Confirmation step again after those requests are processed.
           </p>
@@ -101,14 +100,14 @@
         <%= render layout: "common/icon_block",
                    locals: { icon: "calendar-days", icon_class: "text-lg" } do %>
           <p class="font-semibold">Still have more shifts planned?</p>
-          <p class="text-sm mt-1">Come back after your shifts to confirm. Timesheet Reviewers will
+          <p class="mt-1">Come back after your shifts to confirm. Timesheet Reviewers will
             follow up if not completed after the event.</p>
         <% end %>
       </div>
       <%= render layout: "common/icon_block",
                  locals: { icon: "check-circle", icon_class: "text-lg" } do %>
         <p class="font-semibold">Finished volunteering for this event?</p>
-        <p class="text-sm mt-1 mb-3">Click below to confirm you won't submit more
+        <p class="mt-1 mb-3">Click below to confirm you won't submit more
           corrections.</p>
         <%= button_link "Confirm Final Confirmation", :primary, final_confirmation_me_timesheet_index_path, full_width: true %>
       <% end %>

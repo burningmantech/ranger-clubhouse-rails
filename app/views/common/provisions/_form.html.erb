@@ -13,21 +13,19 @@
   <%= ui_section "Provision Details", icon: "gear", icon_type: :solid do %>
     <%= form_row do %>
       <%= f.select :type, TicketsProvisionsHelper::PROVISION_TYPE_OPTIONS,
-                   { label: "Type", required: true }, { class: "w-full sm:w-48" } %>
+                   { label: "Type", required: true, width: "w-full sm:w-48" } %>
       <%= f.select :status, TicketsProvisionsHelper::PROVISION_STATUS_OPTIONS,
-                   { label: "Status", required: true }, { class: "w-full sm:w-44" } %>
+                   { label: "Status", required: true, width: "w-full sm:w-44" } %>
     <% end %>
 
     <%= form_row do %>
       <%= f.select :source_year, provision_year_options,
-                   { label: "Source Year",
-                     help_text: "The year the provision was earned or issued." },
-                   { class: "w-full sm:w-32" } %>
+                   { label: "Source Year", width: "w-full sm:w-32",
+                     help_text: "The year the provision was earned or issued." } %>
       <%= f.select :expires_on, provision_year_options,
-                   { label: "Expires After",
+                   { label: "Expires After", width: "w-full sm:w-32",
                      selected: provision.expires_on&.year,
-                     help_text: "Expires September 15 of this year. Allocated provisions always expire after the event." },
-                   { class: "w-full sm:w-32" } %>
+                     help_text: "Expires September 15 of this year. Allocated provisions always expire after the event." } %>
     <% end %>
   <% end %>
 
@@ -36,16 +34,17 @@
                        width: "w-24", min: 1,
                        help_text: "Only applies to Event Radios." %>
 
-    <p class="mb-1 font-medium text-heading">Meal periods</p>
-    <p class="mb-2 me-muted">Only apply to Meals — pick at least one period.</p>
-    <%# The three periods read as one choice, so they sit on a single row and
-        wrap only when they have to. wrapper_class drops the per-field mb-3
-        that would otherwise pad a row that needs no vertical rhythm. %>
-    <div class="flex flex-wrap items-center gap-x-6 gap-y-1">
-      <%= f.check_box :pre_event_meals, label: "Pre-event", wrapper_class: "" %>
-      <%= f.check_box :event_week_meals, label: "Event week", wrapper_class: "" %>
-      <%= f.check_box :post_event_meals, label: "Post-event", wrapper_class: "" %>
-    </div>
+    <%= f.fieldset "Meal Periods" do %>
+      <p class="text-stone-muted">Only apply to Meals — pick at least one period.</p>
+      <%# The three periods read as one choice, so they sit on a single row and
+          wrap only when they have to. wrapper_class drops the per-field mb-3
+          that would otherwise pad a row that needs no vertical rhythm. %>
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-1">
+        <%= f.check_box :pre_event_meals, label: "Pre-event", wrapper_class: "" %>
+        <%= f.check_box :event_week_meals, label: "Event week", wrapper_class: "" %>
+        <%= f.check_box :post_event_meals, label: "Post-event", wrapper_class: "" %>
+      </div>
+    <% end %>
   <% end %>
 
   <%= ui_section "Allocation", icon: "hand-holding", icon_type: :solid do %>
@@ -64,7 +63,7 @@
         <% if provision.comments.present? %>
           <div class="text-body"><%= nl2br provision.comments %></div>
         <% else %>
-          <p class="me-muted">No comments yet.</p>
+          <div class="text-body">—</div>
         <% end %>
       </div>
     <% end %>
@@ -92,7 +91,7 @@
     <% end %>
     <% unless provision.new_record? %>
         <%= delete_button provision_form_path(provision),
-                          "Delete",
+                          "Delete Provision",
                           variant: :error,
                           confirm_modal: {
                             title: "Delete Provision",

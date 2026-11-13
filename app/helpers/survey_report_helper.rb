@@ -54,7 +54,7 @@ module SurveyReportHelper
   # A person id of 0 marks a survey imported from the pre-2020 paper forms,
   # where the callsign was typed in and never matched an account.
   def survey_respondent(person)
-    return tag.span("Anonymous", class: "italic text-stone-muted") unless person
+    return tag.span("Anonymous", class: "text-stone-muted") unless person
     return tag.span(person.callsign, class: "font-semibold") if person.id.to_i.zero?
 
     link_to person.callsign, person_path(person.id), class: LinkHelper::TABLE_LINK_CLASSES

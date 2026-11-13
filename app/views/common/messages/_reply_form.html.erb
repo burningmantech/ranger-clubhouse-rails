@@ -2,9 +2,8 @@
 <%# autofocus only where the reader was just typing here: the re-render after a
     reply is sent or refused (MessagesConcern#render_reply_form). On a selection
     it would pull focus off the row the reader activated and scroll the pane to
-    its foot. The editor focuses itself once it loads. The label is hidden, and
-    Lexxy names its text box from labels alone, so aria-label names it: Lexxy
-    copies the host's own onto it. %>
+    its foot. The editor focuses itself once it loads. Lexxy names its text box
+    from its visible label. %>
 <%= ui_form(reply_form, create_reply_message_path(message), method: :post) do |f| %>
   <%= hidden_field_tag :message_id, message.id %>
   <%# The newest card the thread shows (MessageReplyForm#shown_through); after a
@@ -24,14 +23,12 @@
   <% end %>
   <%= f.rich_text_area :reply,
                        label: "Reply",
-                       hide_label: true,
-                       aria: { label: "Reply" },
                        required: true,
                        placeholder: "Type your reply…",
                        width: "w-full",
                        class: "messages-reply-editor",
                        autofocus: %>
-  <div class="flex justify-end">
+  <%= button_row class: "justify-end" do %>
     <%= f.submit "Send Reply" %>
-  </div>
+  <% end %>
 <% end %>

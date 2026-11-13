@@ -43,11 +43,11 @@
     <% entries = history[:teams][team_key] %>
     <% if team_key == "training" %>
       <section class="mb-4">
-        <h4 class="heading-title text-heading mb-2">
+        <h3 class="heading-title text-heading mb-2">
           <%= fa_icon("chalkboard-user", :solid, end: 1) %>Training
-        </h4>
+        </h3>
         <% if history[:trainings].blank? %>
-          <p class="text-stone-muted">No training sign-ups.</p>
+          <%= ui_empty_state "No training sign-ups." %>
         <% else %>
           <% history[:trainings].sort_by(&:slot_begins).reverse.each do |training| %>
             <div class="mb-3 last:mb-0">
@@ -56,7 +56,7 @@
                 <% if training.slot_description.present? %>
                   <span class="text-body"><%= training.slot_description %></span>
                 <% end %>
-                <span class="text-stone-muted">&lt;<%= training.person_status %>&gt;</span>
+                <span class="text-stone-muted"><%= training.person_status %></span>
                 <% if training.slot_has_ended %>
                   <%= training_pass_badge(training.training_status) %>
                   <%= intake_rank_badge(training.training_rank) %>
@@ -78,14 +78,14 @@
                             <% if note.person_source %>
                               <%= note.person_source.callsign %>
                             <% else %>
-                              <i>*imported*</i>
+                              imported
                             <% end %>
                           </div>
                           <div class="text-body"><%= simple_format(note.note) %></div>
                         </li>
                       <% end %>
                     </ul>
-                    <p class="mt-2 text-sm">
+                    <p class="mt-2">
                       <% if training.feedback_delivered %>
                         <span class="text-success">
                           <%= fa_icon("check", :solid, end: 1) %>Lead trainer delivered feedback to trainee.
@@ -99,7 +99,7 @@
                     </p>
                   <% end %>
                 <% else %>
-                  <p class="text-stone-muted text-sm">No trainer notes.</p>
+                  <%= ui_empty_state "No trainer notes." %>
                 <% end %>
               <% end %>
             </div>
@@ -109,9 +109,9 @@
     <% elsif entries&.any? %>
       <% label = intake_team_label(team_key) %>
       <section class="mb-4">
-        <h4 class="heading-title text-heading mb-2">
+        <h3 class="heading-title text-heading mb-2">
           <%= fa_icon(intake_team_icon(team_key), :solid, end: 1) %><%= label %>
-        </h4>
+        </h3>
         <% entries.reverse_each do |entry| %>
           <div class="mb-3 last:mb-0">
             <div class="flex flex-wrap items-center gap-2 mb-1">
@@ -127,7 +127,7 @@
                                      origin_params: origin_params } %>
               </ul>
             <% else %>
-              <p class="text-body">No notes.</p>
+              <%= ui_empty_state "No notes." %>
             <% end %>
           </div>
         <% end %>
@@ -136,9 +136,8 @@
   <% end %>
 
   <% if without_content.any? %>
-    <p class="text-stone-muted mb-4">
-      No notes yet: <%= without_content.map { |team_key, _| intake_team_label(team_key) }.to_sentence %>.
-    </p>
+    <%= ui_empty_state "No notes yet: #{without_content.map { |team_key, _| intake_team_label(team_key) }.to_sentence}.",
+                       class: "mb-4" %>
   <% end %>
 
   <%= render "common/unified_flagging/note_buttons", person: person, year: year if note_buttons %>

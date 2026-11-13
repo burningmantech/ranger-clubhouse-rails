@@ -1,6 +1,6 @@
 <%# locals: (entry:) %>
 
-<div class="my-2 shadow-lg">
+<%= ui_card class: "my-2 overflow-hidden" do %>
   <% if entry.status_approved? %>
     <%= ui_callout_box :success do %>
       The correction request has been approved. Please review the new timesheet entry for accuracy.
@@ -41,28 +41,21 @@
       </div>
     <% end %>
 
+    <% if entry.notes.any? %>
+      <%= ui_disclosure "Notes (#{entry.notes.size})", class: "mt-2" do %>
+        <%= render partial: "common/timesheet_notes", locals: { notes: entry.notes } %>
+      <% end %>
+    <% end %>
+
     <div class="mt-4">
       <%= button_row do %>
         <% if entry.status_pending? || entry.status_rejected? %>
-          <%= button_link((entry.status_pending? ? "Add More Info" : "Submit Appeal"), :secondary, timesheet_edit_missing_request_path(entry)) %>
-        <% end %>
-        <% if entry.notes.any? %>
-          <%= button_action "Show Notes", :secondary, controller: "toggle",
-                            data: {
-                              toggle_label_value: "Hide Notes",
-                              toggle_dom_id_value: "entry-notes-#{entry.id}"
-                            },
-                            aria_hidden: "true" %>
+          <%= button_link((entry.status_pending? ? "Add More Info" : "Add Appeal"), :secondary, timesheet_edit_missing_request_path(entry)) %>
         <% end %>
         <% unless entry.status_approved? %>
-          <%= button_link "Delete", :secondary, timesheet_missing_request_path(entry), data: confirm_modal(message: "Delete this request? This cannot be undone.", method: :delete, variant: :error) %>
+          <%= delete_button timesheet_missing_request_path(entry), "Delete Request", confirm: "this request" %>
         <% end %>
-      <% end %>
-      <% if entry.notes.any? %>
-        <div id="entry-notes-<%= entry.id %>" class="hidden mt-2" aria-hidden="true">
-          <%= render partial: "common/timesheet_notes", locals: { notes: entry.notes } %>
-        </div>
       <% end %>
     </div>
   </div>
-</div>
+<% end %>

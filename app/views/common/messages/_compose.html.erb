@@ -4,7 +4,7 @@
     with Find Recipient adding a chip from a phone. The HQ window's relay names
     its one sender in the same field, capped at one chip: a new choice replaces
     it. select_callsign streams a Find choice into either. %>
-<div class="overflow-hidden rounded-lg border border-line">
+<%= ui_card do %>
   <%= ui_form message, messages_path(**direction_params), class: "p-3" do |f| %>
     <%# The page's one how-to: several callsigns, a Cadre or Delegation, or both
         make one shared conversation (MessagesConcern#send_group_message). %>
@@ -61,4 +61,4 @@
       <%= cancel_link messages_path %>
     <% end %>
   <% end %>
-</div>
+<% end %>

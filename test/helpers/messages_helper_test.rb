@@ -12,7 +12,7 @@ class MessagesHelperTest < ActionView::TestCase
     # A fixed day of this year that cannot be today, so the date branch is
     # exercised whatever day the suite runs.
     earlier = today.month == 6 && today.day == 15 ? today.change(month: 3, day: 1) : today.change(month: 6, day: 15)
-    assert_equal earlier.strftime("%b %-d"), message_list_time(earlier)
+    assert_equal earlier.strftime(DateTimeHelper::DAY_LABEL), message_list_time(earlier)
 
     last_year = today - 1.year
     assert_equal last_year.strftime(DateTimeHelper::DATE), message_list_time(last_year)
@@ -22,7 +22,7 @@ class MessagesHelperTest < ActionView::TestCase
   # message sent at 00:30 was listed the day before its thread is dated.
   test "message_list_time reads the app's clock, as the thread does" do
     travel_to Time.zone.local(2026, 1, 20, 12, 0) do
-      assert_equal "Jan 16", message_list_time(Time.zone.local(2026, 1, 16, 0, 30))
+      assert_equal "Fri Jan 16", message_list_time(Time.zone.local(2026, 1, 16, 0, 30))
       assert_equal "00:30", message_list_time(Time.zone.local(2026, 1, 20, 0, 30))
     end
   end

@@ -30,7 +30,7 @@
             <%# Same treatment as the callsign link on the other ticketing pages. %>
             <%= callsign_link row.person %>
           <% else %>
-            <span class="italic">unknown</span>
+            —
           <% end %>
         <% end %>
         <%= t.cell value_or_dash(row.person&.status) %>

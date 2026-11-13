@@ -62,8 +62,8 @@ module MessagesHelper
     send(:"#{namespace}_message_path", *([owner] unless namespace == "me"), message, **)
   end
 
-  # The list stamp: the clock time for a thread that moved today, the date
-  # otherwise, and the year once it is not this year. The full stamp stays on
+  # The list stamp: the clock time for a thread that moved today, the day label
+  # ("Thu Jan 8") otherwise, and the date with its year once it is not this year. The full stamp stays on
   # the thread page; in the list it crowded the callsign off a phone-width row.
   # The app's clock, which datetime_format prints the thread on, so the two
   # never disagree about the day.
@@ -72,7 +72,7 @@ module MessagesHelper
     today = Current.today
     return local.strftime(DateTimeHelper::HOUR_MINS) if local.to_date == today
 
-    local.strftime(local.year == today.year ? "%b %-d" : DateTimeHelper::DATE)
+    local.strftime(local.year == today.year ? DateTimeHelper::DAY_LABEL : DateTimeHelper::DATE)
   end
 
   # The line over a search's hits: how many threads it found, with whom (the

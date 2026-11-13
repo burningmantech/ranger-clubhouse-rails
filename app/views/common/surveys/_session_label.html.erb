@@ -4,7 +4,7 @@
     converted. Mentor, mentee and Alpha surveys hang off shifts, which have no
     session page, so those render as plain text (session_url returns nil). %>
 <% slot = @slots[slot_response.slot_id] %>
-<% label = slot_response.slot_description.presence || slot&.description.presence || "(no description)" %>
+<% label = slot_response.slot_description.presence || slot&.description.presence || "—" %>
 <% when_held = slot ? training_session_time(slot) : nil %>
 <% url = session_url(slot) %>
 
