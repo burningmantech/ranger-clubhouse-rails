@@ -17,7 +17,7 @@ export default class extends Controller {
    * Handle a team membership checkbox change.
    * Delegates to the team card element which holds all per-team data.
    */
-  teamToggle(event) {
+  async teamToggle(event) {
     const checkbox = event.currentTarget
     const card = checkbox.closest("[data-membership-editor-target='teamCard']")
     if (!card) return
@@ -26,7 +26,7 @@ export default class extends Controller {
     const teamTitle = card.dataset.teamTitle
 
     if (checkbox.checked && isDangerous) {
-      if (!this._confirmDangerous(checkbox, "Clubhouse Team", teamTitle, card.dataset.dangerousPermissions)) {
+      if (!await this._confirmDangerous(checkbox, "Clubhouse Team", teamTitle, card.dataset.dangerousPermissions)) {
         return
       }
     }
@@ -53,13 +53,16 @@ export default class extends Controller {
     const teamTitle = card.dataset.teamTitle
 
     if (checkbox.checked && teamType !== "team") {
-      confirmChecked(checkbox,
-        `The Clubhouse Team "${teamTitle}" is a ${teamType}.\n\n` +
-        "It is recommended cadre / delegation members are NOT assigned as Clubhouse Managers " +
-        "for their cadre/delegation, only their team. Otherwise, they may be given the ability " +
-        "to mint new cadre/delegation members without approval from Council first, and " +
-        "unintentional privilege escalation may result.\n\nMake them a Clubhouse Manager anyway?"
-      )
+      confirmChecked(checkbox, {
+        title: "Manager of a Cadre or Delegation",
+        message: [
+          `Make them a Clubhouse Manager of the ${teamType} "${teamTitle}"?`,
+          "Cadre and delegation members should be Clubhouse Managers of their team only. As managers " +
+            "of their cadre or delegation they may be able to add new members to it without approval " +
+            "from Council first, and privileges may be escalated unintentionally."
+        ],
+        confirmLabel: "Make Manager"
+      })
     }
   }
 
@@ -83,17 +86,21 @@ export default class extends Controller {
   // -- Private helpers --------------------------------------------------------
 
   /**
-   * Show a confirmation dialog for a dangerous permission grant.
+   * Ask in the app's dialog before a dangerous permission grant.
    * Unchecks the checkbox if the user cancels.
    *
-   * @returns {boolean} true if confirmed
+   * @returns {Promise<boolean>} true if confirmed
    */
   _confirmDangerous(checkbox, entityType, title, permissions) {
-    return confirmChecked(checkbox,
-      `The ${entityType} "${title}" has the permission(s) ${permissions} associated.\n\n` +
-      "Normally, such permission grants require approval from Council and the Tech Team first.\n\n" +
-      `Grant this ${entityType} anyway?`
-    )
+    return confirmChecked(checkbox, {
+      title: "Approval Normally Required",
+      message: [
+        `Grant the ${entityType} "${title}"?`,
+        `It carries the permission(s) ${permissions}. Such grants normally need approval from Council ` +
+          "and the Tech Team first."
+      ],
+      confirmLabel: "Grant"
+    })
   }
 
   /**

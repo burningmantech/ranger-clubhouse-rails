@@ -9,6 +9,7 @@
 // same way, as a camera:failed event carrying the message for that box.
 
 import { Controller } from "@hotwired/stimulus"
+import { tablistKeyTarget } from "controllers/tabs_controller"
 
 // getUserMedia failures, by the error box that explains each.
 const CAMERA_ERRORS = {
@@ -30,8 +31,29 @@ export default class extends Controller {
     "unsupportedError", "permissionError", "noCameraError", "cameraInUseError"
   ]
 
+  connect() {
+    this.handleTabKeydown = this.handleTabKeydown.bind(this)
+    this.element.addEventListener("keydown", this.handleTabKeydown)
+  }
+
   disconnect() {
+    this.element.removeEventListener("keydown", this.handleTabKeydown)
     this.stopCamera()
+  }
+
+  // The tablist keys for Upload File / Take Selfie, as tabs_controller.js
+  // gives a tab_navigation: the idle tab is out of the Tab order, so the
+  // arrows, Home and End reach it, selecting it as a click would.
+  handleTabKeydown(event) {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+    if (!this.hasTabUploadTarget || ![this.tabUploadTarget, this.tabCameraTarget].includes(event.target)) return
+
+    const next = tablistKeyTarget(event.key, event.target, event.target.closest("[role='tablist']"))
+    if (!next) return
+
+    event.preventDefault()
+    next.focus()
+    next.click()
   }
 
   showUpload(event) {

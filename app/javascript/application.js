@@ -109,15 +109,13 @@ document.addEventListener("turbo:frame-missing", (event) => {
 // wired and shown in one turn, so a press can never land on a dialog that is not
 // listening yet. None of this waits on the modal controller: that is
 // lazy-loaded, and on a slow connection it can arrive after the answer.
+//
+// A controller asking a question of its own passes it as
+// {title, message, confirmLabel, cancelLabel, variant} instead, message being
+// a sentence or a list of paragraphs; a plain string is the message alone.
+// Either way the same dialog is built here (confirmDialog below).
 Turbo.config.forms.confirm = (message, element, submitter) => {
-    const template = document.createElement("template");
-    template.innerHTML = message;
-    const dialog = template.content.querySelector("dialog");
-
-    // A plain-string message carries no dialog: ask with the browser's own.
-    if (!dialog) {
-        return Promise.resolve(window.confirm(message));
-    }
+    const dialog = confirmDialogFor(message);
 
     document.getElementById("turbo-confirm-modal").replaceChildren(dialog);
 
@@ -134,6 +132,55 @@ Turbo.config.forms.confirm = (message, element, submitter) => {
     });
 };
 
+function confirmDialogFor(message) {
+    if (typeof message === "string") {
+        const template = document.createElement("template");
+        template.innerHTML = message;
+        const dialog = template.content.querySelector("dialog");
+        if (dialog) return dialog;
+
+        message = {message};
+    }
+    return confirmDialog(message);
+}
+
+// The confirm button's look, by the variant ButtonHelper names it with.
+const CONFIRM_VARIANT_CLASSES = {primary: "btn-primary", error: "btn-error"};
+
+// The dialog ModalHelper#confirm_modal_dialog draws, built for a question a
+// controller asks. Keep the two in step: same classes, same button ids (the
+// answer is read from them above). Every text goes in as text, never markup:
+// a team or role title in it is a name someone chose.
+function confirmDialog({title = "Confirm", message = "Continue?", confirmLabel = "Confirm",
+                           cancelLabel = "Cancel", variant = "primary"}) {
+    const tag = (name, attributes = {}, ...children) => {
+        const node = document.createElement(name);
+        Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, value));
+        node.append(...children);
+        return node;
+    };
+    const titleId = `confirm-title-${Math.random().toString(36).slice(2, 10)}`;
+    const paragraphs = [message].flat().map((text) => tag("p", {}, text));
+
+    const close = tag("button", {type: "button", class: "btn btn-ghost btn-sm btn-square", "data-action": "modal#hide"},
+        tag("i", {class: "fa-solid fa-xmark w-3 h-4", "aria-hidden": "true"}),
+        tag("span", {class: "sr-only"}, "Close modal"));
+    const variantClass = CONFIRM_VARIANT_CLASSES[variant] ?? CONFIRM_VARIANT_CLASSES.primary;
+
+    return tag("dialog", {
+            class: "modal size-auto max-h-none max-w-none overflow-y-auto modal-middle",
+            "aria-labelledby": titleId, "aria-modal": "true",
+            "data-controller": "modal", "data-modal-closable-value": "true"
+        },
+        tag("div", {class: "modal-box max-w-2xl"},
+            tag("div", {class: "modal-header-bar"}, tag("h3", {id: titleId, class: "modal-title-text"}, title), close),
+            tag("div", {class: "modal-body-content"}, ...paragraphs),
+            tag("div", {class: "button-row modal-footer-bar"},
+                tag("button", {type: "button", class: `btn ${variantClass} btn-sm`, id: "turbo-confirm-button"}, confirmLabel),
+                tag("button", {type: "button", class: "btn btn-secondary btn-outline btn-sm", id: "turbo-cancel-button"}, cancelLabel))),
+        tag("form", {method: "dialog", class: "modal-backdrop"}, tag("button", {}, "Close Dialog")));
+}
+
 // A dropdown menu is a native <details> (NavigationHelper#dropdown_menu),
 // which only its own summary closes. A link in it closes it here, and so does
 // a click anywhere outside it. Turbo brings the next page in only once it has
@@ -143,6 +190,18 @@ Turbo.config.forms.confirm = (message, element, submitter) => {
 document.addEventListener("click", ({target}) => {
     document.querySelectorAll("details.dropdown[open]").forEach((menu) => {
         if (!menu.contains(target) || target.closest("a")) menu.open = false;
+    });
+});
+
+// Escape closes an open menu too. Focus that was inside it goes back to its
+// summary, so the keyboard reader is where the menu was opened from.
+document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+
+    document.querySelectorAll("details.dropdown[open]").forEach((menu) => {
+        const hadFocus = menu.contains(document.activeElement);
+        menu.open = false;
+        if (hadFocus) menu.querySelector("summary")?.focus();
     });
 });
 

@@ -9,7 +9,7 @@ import { readJson } from "controllers/requests"
 import "cropperjs"
 
 export default class extends Controller {
-  static targets = ["canvas", "image", "selection", "submit"]
+  static targets = ["canvas", "image", "selection", "submit", "error", "errorMessage"]
   static values = {
     canvasWidth: Number,
     canvasHeight: Number,
@@ -233,22 +233,23 @@ export default class extends Controller {
    */
   async beforeSubmit(event) {
     event.preventDefault()
+    this.hideError()
 
     if (!this.hasSelectionTarget) {
-      alert("Cropper not initialized")
+      this.showError("The cropper did not load. Reload the page and try again.")
       return
     }
 
     const { width = 0, height = 0 } = this.selectionTarget
 
     if (width === 0 || height === 0) {
-      alert("Please select a crop area before saving")
+      this.showError("Select a crop area before saving.")
       return
     }
 
     // Check for gaps before submitting
     if (this.hasGaps()) {
-      alert("The image does not fully cover the selection area. Please adjust the image position, zoom, or selection to eliminate gaps before saving.")
+      this.showError("The image does not fully cover the selection area. Please adjust the image position, zoom, or selection to eliminate gaps before saving.")
       return
     }
 
@@ -267,9 +268,25 @@ export default class extends Controller {
       const result = await readJson(response, "Failed to save")
       if (result) Turbo.visit(result.redirect_url)
     } catch (error) {
-      alert(`Error: ${error.message}`)
+      this.showError(error.message)
       this.setSubmitState(false, "Save Crop Data")
     }
+  }
+
+  // Shown in the page's error box, as photo-upload shows its errors. A page
+  // drawn without the box still says it, in the browser's own alert.
+  showError(message) {
+    if (!this.hasErrorTarget) {
+      window.alert(message)
+      return
+    }
+    this.errorMessageTarget.textContent = message
+    this.errorTarget.hidden = false
+    this.errorTarget.scrollIntoView({ block: "nearest" })
+  }
+
+  hideError() {
+    if (this.hasErrorTarget) this.errorTarget.hidden = true
   }
 
   /**

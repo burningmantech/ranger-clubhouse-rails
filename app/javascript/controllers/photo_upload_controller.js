@@ -53,7 +53,7 @@ export default class extends Controller {
     const file = this.fileInputTarget.files[0]
 
     if (!file) {
-      this.showError("Please select an image")
+      this.showError("Select an image.")
       return
     }
 
@@ -64,7 +64,7 @@ export default class extends Controller {
 
     if (file.size > this.maxFileSizeValue) {
       const maxSizeMB = Math.floor(this.maxFileSizeValue / (1024 * 1024))
-      this.showError(`File must be less than ${maxSizeMB} MB`)
+      this.showError(`The file must be smaller than ${maxSizeMB} MB.`)
       return
     }
 
