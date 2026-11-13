@@ -53,8 +53,7 @@ module UiComponents
     end
 
     def build_body_class(options)
-      has_border = options.fetch(:border, true)
-      class_names(BODY_BASE, options[:body_class], "px-4 pb-1": has_border)
+      class_names(BODY_BASE, options[:body_class])
     end
 
     def build_title_attrs(options)

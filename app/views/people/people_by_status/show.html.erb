@@ -13,7 +13,7 @@
   <%= ui_stat_box number_with_delimiter(@people.length), "People", icon: "users", icon_type: :solid %>
 <% end %>
 
-<%= ui_section @status, badge: @people.size.to_s, border: false do %>
+<%= ui_section @status, badge: @people.size.to_s do %>
   <div class="callsign-list">
     <% @people.each do |person| %>
       <%= callsign_link(person) %>

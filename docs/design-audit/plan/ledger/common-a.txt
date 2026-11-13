@@ -1,4 +1,4 @@
-R11899 || NEEDS-APPROVAL || app/helpers/messages_helper.rb:35 || Folder switch loads another list, so the guide wants a button group with aria-current, not tabs. That restyles the mailbox (tabs-lift panel, R11792) and its tab-role tests: needs a look decision.
+R11899 || WAIVED || app/helpers/messages_helper.rb:35 || approved exception 2026-11-12: mailbox folder switch keeps tabs
 M0212 || FIXED || app/helpers/messages_helper.rb:75 || This year's stamp uses DateTimeHelper::DAY_LABEL ("Thu Jan 8") instead of a hand-written "%b %-d"; helper test updated.
 R11837 || FIXED || app/helpers/survey_report_helper.rb:57 || "Anonymous" is a fact word: muted, no longer italic.
 R11685 || FIXED || app/views/common/_checkbox_grid.html.erb:10 || md:grid-cols-2 tier replaced by lg:grid-cols-2 (md is not for grid columns).
@@ -57,13 +57,13 @@ R11763 || COMPLIANT || app/views/common/messages/_find_recipient_form.html.erb:2
 R02648 || FIXED || app/views/common/messages/_find_recipient_form.html.erb:16 || Each result is a ui_card p-3 inside its li.
 R11762 || BLOCKED || app/views/common/messages/_find_recipient_form.html.erb:32 || ButtonHelper has no one-button POST form helper (button_to); needs one in app/helpers/button_helper.rb. aria-label now holds the visible text ("Select Recipient: X").
 F0022 || FIXED || app/views/common/messages/_find_recipient_form.html.erb:35 || Result "Select" buttons are :secondary; the modal's own submit stays primary.
-R11766 || NEEDS-APPROVAL || app/views/common/messages/_folder_selector.html.erb:5 || Same as R11899: folder switch should be a button group with aria-current per the guide; changes the mailbox's look and tests.
+R11766 || WAIVED || app/views/common/messages/_folder_selector.html.erb:5 || approved exception 2026-11-12: mailbox folder switch keeps tabs
 R11778 || COMPLIANT || app/views/common/messages/_messages_panel_header.html.erb:55 || gap-1 is on the scale and it is not a button_row; SPACE-01 fixes only arbitrary values.
 R02676 || BLOCKED || app/views/common/messages/_messages_panel_header.html.erb:59 || Same as R11762: Mark Read/Archive must stay forms (button_to); needs a ButtonHelper form-button method in app/helpers/button_helper.rb.
 R11786 || FIXED || app/views/common/messages/_reply_form.html.erb:24 || Reply label visible (hide_label and aria-label removed); Lexxy names the box from it. System test updated.
 R11785 || FIXED || app/views/common/messages/_reply_form.html.erb:31 || Send Reply sits in button_row class "justify-end".
 F0024 || FIXED || app/views/common/messages/_search_field.html.erb:18 || Visible "Search Messages" label paired with the autocomplete input, builder label classes.
-R11792 || NEEDS-APPROVAL || app/views/common/messages/_workspace.html.erb:48 || The bg-default panel is the tabs-lift surface; decide with R11899/R11766 (tabs vs button group) before swapping it for ui_card.
+R11792 || WAIVED || app/views/common/messages/_workspace.html.erb:48 || approved exception 2026-11-12: tabs-lift panel stays with tabs
 F0018 || FIXED || app/views/common/messages/new.html.erb:22 || Hero "New Message" -> "Write Message", matching the button; system test updated.
 R11890 || FIXED || app/views/common/missing_requests/_entry.html.erb:3 || Entry is a ui_card (overflow-hidden) instead of a hand-made div.
 R02739 || FIXED || app/views/common/missing_requests/_entry.html.erb:3 || shadow-lg gone; ui_card's default shadow-xs.

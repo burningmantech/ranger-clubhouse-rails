@@ -60,13 +60,13 @@
 <% else %>
   <%# Event-only notes go stale on their own, so they lead. %>
   <% if @event_banners.any? %>
-    <%= ui_section "Event Only", icon: "calendar", icon_type: :solid, border: false do %>
+    <%= ui_section "Event Only", icon: "calendar", icon_type: :solid do %>
       <%= render partial: "banner", collection: @event_banners, as: :banner %>
     <% end %>
   <% end %>
 
   <% if @permanent_banners.any? %>
-    <%= ui_section "Permanent", icon: "thumbtack", icon_type: :solid, border: false do %>
+    <%= ui_section "Permanent", icon: "thumbtack", icon_type: :solid do %>
       <%= render partial: "banner", collection: @permanent_banners, as: :banner %>
     <% end %>
   <% end %>

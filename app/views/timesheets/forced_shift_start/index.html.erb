@@ -73,7 +73,7 @@
                      "Remove one to widen the search.",
                      icon: "filter-circle-xmark", icon_type: :solid %>
 <% elsif @entries.any? %>
-  <%= ui_section "#{pluralize(@entries.size, "Forced Start")} in #{@year}", border: false do %>
+  <%= ui_section "#{pluralize(@entries.size, "Forced Start")} in #{@year}" do %>
     <%# Six columns of audit detail: desktop-first, scrolling sideways on a
         narrow screen rather than restacking, so a column can still be read
         down. %>

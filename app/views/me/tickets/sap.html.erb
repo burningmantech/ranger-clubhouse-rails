@@ -40,7 +40,7 @@
 
 <% if own_sap %>
   <%# ---- You have your own SAP document ---------------------------------- %>
-  <%= ui_section border: true do %>
+  <%= ui_section do %>
     <% if sap_using %>
       <%= render "section_header",
             title: "Your Setup Access Pass Is #{sap_submitted ? "Submitted" : "Claimed"}",
@@ -96,7 +96,7 @@
 
 <% elsif sc_banked_nosap %>
   <%# ---- Staff Credential banked, no SAP -------------------------------- %>
-  <%= ui_section border: true do %>
+  <%= ui_section do %>
     <%= render "section_header", title: "You Banked Your Staff Credential", state: :not_applicable, label: "Ask the Team" %>
     <p class="text-base text-body mb-4">
       <strong>Because your Staff Credential is banked, you have no Setup Access Pass right now.</strong>
@@ -108,7 +108,7 @@
 
 <% elsif sc_is_sap %>
   <%# ---- Staff Credential acts as the SAP ------------------------------- %>
-  <%= ui_section border: true do %>
+  <%= ui_section do %>
     <%= render "section_header",
           title: "Your Staff Credential Is Your Setup Access Pass",
           state: (sc_doc.is_using? ? :decided : :locked),
@@ -143,7 +143,7 @@
 
 <% elsif all_banked %>
   <%# ---- All tickets banked --------------------------------------------- %>
-  <%= ui_section border: true do %>
+  <%= ui_section do %>
     <%= render "section_header", title: "You Banked All Your Tickets", state: :not_applicable, label: "Ask the Team" %>
     <p class="text-base text-body mb-4">
       <strong>You do not have a Setup Access Pass set up.</strong>
@@ -155,7 +155,7 @@
 
 <% elsif no_tickets_touched %>
   <%# ---- Tickets untouched: claim/bank a ticket first ------------------- %>
-  <%= ui_section border: true do %>
+  <%= ui_section do %>
     <%= render "section_header", title: "Claim a Ticket First", state: :locked, label: "Locked" %>
     <p class="text-base text-body mb-3">
       Your Setup Access Pass unlocks once you have claimed or banked one of your event tickets.
@@ -166,7 +166,7 @@
 
 <% else %>
   <%# ---- No SAP and no Staff Credential: likely a mistake --------------- %>
-  <%= ui_section border: true do %>
+  <%= ui_section do %>
     <%= render "section_header", title: "We Can't Find Your Setup Access Pass", state: :not_applicable, label: "Ask the Team" %>
     <p class="text-base text-body mb-4">
       <strong>This is most likely a mistake.</strong> Every returning Ranger in good standing qualifies for a

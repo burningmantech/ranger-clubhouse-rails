@@ -14,4 +14,5 @@ module UiComponentsHelper
   include UiComponents::UiSectionHelper
   include UiComponents::UiStatBoxHelper
   include UiComponents::UiStatRowHelper
+  include UiComponents::UiTextBoxHelper
 end

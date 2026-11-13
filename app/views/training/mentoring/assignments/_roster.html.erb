@@ -113,7 +113,7 @@
   <% end %>
 <% end %>
 
-<%= ui_section "Mentors on Shift", icon: "user-check", icon_type: :solid, border: false do %>
+<%= ui_section "Mentors on Shift", icon: "user-check", icon_type: :solid do %>
   <% if group.mentor_entries.empty? %>
     <%= ui_empty_state "No mentor has signed in around this shift.", icon: "user-check", icon_type: :solid %>
   <% else %>
@@ -140,7 +140,7 @@
 <% end %>
 
 <% mentees = capture do %>
-  <%= ui_section "Mentees", icon: "person-walking", icon_type: :solid, border: false, class: "mt-6",
+  <%= ui_section "Mentees", icon: "person-walking", icon_type: :solid, class: "mt-6",
                  badge: group.mentee_entries.size.to_s do %>
     <%# Not striped: an error row follows the row it describes. %>
     <%= ui_table full_width: true, striped: false do |t| %>

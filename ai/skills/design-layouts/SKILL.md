@@ -37,7 +37,9 @@ table fold packs fields into columns on a tablet and one per line on a phone wit
 side by side — and has exactly two sanctioned uses, both in `components/buttons.css`: `.button-row`
 stacking, and `.button-row-spacer`, the sticky row's spacer, whose height `ButtonHelper#button_row`
 derives from the controls it rendered. Never use `md:` for layout tiers, grid columns, or
-show/hide.
+show/hide. The date picker's swap to the browser's native control at 768px and below
+(`vanilla_calendar_controller.js`, which also swaps on a mobile user agent) is a touch-device
+swap, not a layout fold, so it stays at 768px and is not an `lg` matter.
 
 `sm:` has one sanctioned use of its own: the `width:` option on form fields (`w-full sm:w-48`),
 full width on a phone and the measured width from 640px up. Nothing else uses it.
@@ -251,7 +253,8 @@ checked out?"). Those are flat reports — use a single filtered `ui_table` page
 
 ### Level 1 — category index
 
-No filter bar, no table. Just the categories and how big each one is.
+No table, and no filter bar but one that sets what every row counts. Just the categories and
+how big each one is.
 
 ```erb
 <%= hero_panel icon: "icon", heading_level: :h1, id: "page-header",
@@ -339,16 +342,19 @@ No filter bar, no table. Just the categories and how big each one is.
   removable chip — a chip that drops it has nowhere to land. Build every chip URL
   against the category page so removing one keeps both the year and the category.
 - **Drop the category column** from the level-2 table. Every row has the same value.
-- **Level 1 gets no filter bar.** Filters narrow rows, and there are no rows here.
+- **Level 1 gets no filter bar.** Filters narrow rows, and there are no rows here. A bar that
+  sets what every row counts (site, year, type, status) is the exception and stays; its
+  export rides it in `filter_bar actions:`.
 - **Counts on level 1 are plain text**, not stat boxes: one `text-lg` summary line, plus
   `meta:` on each row — or `figures:` when the count splits into what is still owed and
   what is done (Available Sign-Ups' upcoming/past), never both. Constrain the row list to
   `lg:w-3/4`, as any list of drill-down rows or roster of one-line rows may be.
 - **Badge only the exception count** on a row (`N expired`, `N inactive`), `size: "base"`,
-  and omit it entirely at zero. A badge on every row is noise.
+  and omit it entirely at zero. A badge on every row is noise. A count that marks the rows a
+  reader hunts for (`N on duty`) is badged the same way.
 - **Level-2 totals describe the category, not the filtered view** — `filter_bar count:`
   already reports the filtered slice as "Showing X of Y".
-- **The export follows the filters.** Level 1 has no bar, so its Export CSV sits in the
+- **The export follows the filters.** A level 1 with no bar keeps its Export CSV in the
   `button_row` beside Add Record. Level 2 has one, so its export moves into
   `filter_bar actions:` and that `button_row` keeps only Add Record.
 - **Two empty states on level 2**, and they say different things: filters matched nothing
@@ -515,7 +521,7 @@ is `login.css` and `sessions/_heading`, not the component library, and they take
 
 Print sheets, kiosk and bookmark pages, wall displays (the ROC photo board), the `public/` error
 pages and the test harness have no app shell. Colour tokens, the type floor and Title Case apply to
-them as to any page; `hero_panel`, `button_row`, the layout patterns and the page-structure rules
+them as to any page (printed paper is `bg-paper` / `print:bg-paper`, never `bg-white`); `hero_panel`, `button_row`, the layout patterns and the page-structure rules
 (hero, back link, sections) do not. Each heads itself with its own `<h1>` or masthead. A print
 sheet's way back sits above the sheet, `print:hidden`, in its area's `_print_screen_nav` partial
 where one exists.

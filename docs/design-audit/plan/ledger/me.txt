@@ -49,7 +49,7 @@ R12587 || FIXED || app/views/me/announcements/index.html.erb:40 || Dashed box ->
 R12591 || FIXED || app/views/me/dashboard/_announcements_section.html.erb:9 || card-standard div -> ui_card with p-4.
 R12593 || FIXED || app/views/me/dashboard/_announcements_section.html.erb:15 || Hand-made count pill -> ui_badge :warning with its aria-label.
 R04576 || FIXED || app/views/me/dashboard/_announcements_section.html.erb:15 || Arbitrary min-w-[1.5rem] gone with the pill.
-R12596 || NEEDS-APPROVAL || app/views/me/dashboard/_announcements_section.html.erb:52 || Row link wears btn classes on a span. Options: plain primary text CTA inside the row, or split the row so Read is a real button_link (test pins the row).
+R12596 || FIXED || app/views/me/dashboard/_announcements_section.html.erb:52 || Row is no longer a link; Read Announcement is a real button_link (outline, full_width) described by the subject. Dashboard test updated (A7).
 R12598 || FIXED || app/views/me/dashboard/_dashboard_bonked.html.erb:17 || text-error removed; bold kept.
 R12599 || FIXED || app/views/me/dashboard/_dashboard_document.html.erb:6 || body.html_safe -> rich_text(body).
 F0107 || FIXED || app/views/me/dashboard/_onboarding.html.erb:67 || "File A Bug Report" -> "File a Bug Report"; system test updated.
@@ -63,8 +63,8 @@ R12610 || FIXED || app/views/me/directory/index.html.erb:54 || Callsign text-xl 
 R04636 || FIXED || app/views/me/directory/index.html.erb:59 || R4: position titles text-sm -> body size; "No Photo" caption stays text-sm (TYPE-03 allows a placeholder caption).
 F0105 || FIXED || app/views/me/event_info.html.erb:4 || Tab labels "Event", "Training".
 R12614 || FIXED || app/views/me/event_summary/index.html.erb:7 || Stat labels Title Case.
-R04672 || NEEDS-APPROVAL || app/views/me/menu/_content.html.erb:4 || A visible "Search the Menu" label needs a mega-menu header layout change (components/mega-menu.css, closed); placeholder-only today.
-R12625 || NEEDS-APPROVAL || app/views/me/menu/_content.html.erb:20 || Mega menu panel switch is shared infrastructure (mega_menu_controller.js, mega-menu.css); converting to tab_navigation is a redesign.
+R04672 || FIXED || app/views/me/menu/_content.html.erb:6 || Visible "Search the Menu" label beside the field (mega-menu-search-label in components/mega-menu.css); duplicate placeholder dropped. Panels unchanged (A6).
+R12625 || WAIVED || app/views/me/menu/_content.html.erb:20 || approved exception 2026-11-12: mega menu panels, not tabs
 F0106 || FIXED || app/views/me/menu/_content.html.erb:22 || "Recently visited" -> "Recently Visited" (both).
 R12626 || FIXED || app/assets/stylesheets/components/mega-menu.css:86 || .mega-menu-panel-title now @apply heading-title (was text-lg); class name kept for the tests.
 R04693 || FIXED || app/assets/stylesheets/components/mega-menu.css:95 || .mega-menu-section-title now @apply heading-title (was text-sm); h4 class kept for menu_controller_test.

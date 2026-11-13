@@ -74,7 +74,7 @@
 
   <%# Never empty: a day the report does not hold falls back to all of them. %>
   <% @days.each do |day| %>
-    <%= ui_section day.label, icon: "calendar-day", icon_type: :solid, border: false,
+    <%= ui_section day.label, icon: "calendar-day", icon_type: :solid,
                    badge: hq_forecast_day_badge(@report, day), badge_color: :warning do %>
       <%= hq_forecast_gantt(@report, day) %>
     <% end %>

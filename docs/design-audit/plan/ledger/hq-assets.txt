@@ -23,12 +23,12 @@ R04274 || FIXED || app/views/hq/shift_manage/_pog_guideline.html.erb:13 || Dropp
 R12296 || FIXED || app/views/hq/shift_manage/_pog_guideline.html.erb:13 || Same fix as R04274: no btn-link restyling on the ButtonHelper button (BTN-02).
 F0087 || FIXED || app/views/hq/shift_manage/_pogs.html.erb:57 || Record Full Meal Pog stays :primary; Record 1/2 Meal Pog, Record Shower Pog and the row Redeem are :secondary (R7).
 R04300 || FIXED || app/views/hq/shift_manage/_pogs.html.erb:104 || Message now "Redeem this 1/2 Meal Pog for a Full Meal Pog? This cannot be undone." (no un-redeem op exists).
-R12266 || NEEDS-APPROVAL || app/views/hq/shift_manage/_section.html.erb:30 || Plan-approved guided-flow section with state borders. ui_accordion's base (border-0, bg-transparent, text-sm, px-0) would restyle it; needs unstyled: true approval or an accordion variant.
+R12266 || WAIVED || app/views/hq/shift_manage/_section.html.erb:30 || approved exception 2026-11-12: HQ guided-flow section is purpose-built
 F0096 || FIXED || app/views/hq/shift_manage/_section.html.erb:36 || Section title is now an h2 inside the summary (same size/weight/ink), so the h3s inside follow h1 > h2.
 R04320 || FIXED || app/views/hq/shift_manage/_todo_chip.html.erb:32 || Chip glyph drawn by fa_icon (ban/check solid, circle regular); hq-shift JS still repaints the i className.
 R12275 || FIXED || app/views/hq/shift_manage/_todo_chip.html.erb:32 || Same fix as R04320: raw i replaced with fa_icon.
-R12269 || NEEDS-APPROVAL || app/views/hq/shift_manage/_todo_list.html.erb:23 || A sticky strip pinned over a scrolling area (-top-3 offset), not a card; ui_card (border, radius, bg-base-100) would change the pinned checklist's look. Product call.
-R04328 || NEEDS-APPROVAL || app/views/hq/shift_manage/_todo_list.html.erb:23 || shadow-lg separates content scrolling beneath the pinned checklist; guide allows lift only for popovers/dropdowns/menus. Approve keeping it, or flat with a border.
+R12269 || WAIVED || app/views/hq/shift_manage/_todo_list.html.erb:23 || approved exception 2026-11-12: pinned checklist strip is purpose-built
+R04328 || WAIVED || app/views/hq/shift_manage/_todo_list.html.erb:23 || approved exception 2026-11-12: pinned bar keeps its shadow-lg
 R12272 || FIXED || app/views/hq/shift_manage/_todo_list.html.erb:65 || Template icon is now fa_icon "circle" (same classes the JS clones).
 R12281 || COMPLIANT || app/views/hq/shift_manage/_verification.html.erb:25 || EMPTY-01: a supplementary review list inside the shift section may render nothing; the section's own actions remain.
 F0078 || FIXED || app/views/hq/shift_manage/_verification.html.erb:92 || Row button Submit Correction -> Request Correction.

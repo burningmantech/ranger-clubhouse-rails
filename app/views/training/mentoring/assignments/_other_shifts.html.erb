@@ -4,8 +4,7 @@
   earlier pending walk, or a pass, is what a mentor reads before recording this
   one. `entries` is [group, timesheet entry] pairs from ArtMentoring::Shifts.
 %>
-<%= ui_section "Mentees' Other Shifts", icon: "repeat", icon_type: :solid, badge: entries.size.to_s,
-               border: false, class: "mt-6" do %>
+<%= ui_section "Mentees' Other Shifts", icon: "repeat", icon_type: :solid, badge: entries.size.to_s, class: "mt-6" do %>
   <% if entries.empty? %>
     <%= ui_empty_state "None of them has signed in to another mentee shift in #{@year}.",
                        icon: "repeat", icon_type: :solid %>

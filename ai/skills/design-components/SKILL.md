@@ -12,7 +12,8 @@ description: UI component helpers for buttons, cards, tables, modals, badges, an
 
 **Helper**: `ButtonHelper` (`app/helpers/button_helper.rb`)
 
-**CRITICAL:** Always use `ButtonHelper` methods for buttons. Never write raw button HTML.
+**CRITICAL:** Always use `ButtonHelper` methods for buttons. Never write raw button HTML. A link
+inside a list row that reads as a button is a real `button_link`, never `btn` classes on a span.
 
 ### Button Methods
 
@@ -116,7 +117,7 @@ centres its content.
 
 **PREFERRED:** `button_action` over `button_to` or raw `<button>` for Stimulus-triggered actions.
 
-**CRITICAL:** Ask permission before using a raw `<button>` element. The helpers handle variants, sizes, icons, dark mode, and accessibility automatically. The ruled exceptions are helpers' own raw buttons: the client-side sort heading, `clipboard_button`'s copy icon, and `dropdown_button`, the menu row that acts on the page.
+**CRITICAL:** Ask permission before using a raw `<button>` element. The helpers handle variants, sizes, icons, dark mode, and accessibility automatically. The ruled exceptions are helpers' own raw buttons: the client-side sort heading, `clipboard_button`'s copy icon, and `dropdown_button`, the menu row that acts on the page; and the roll call roster row (`shift_operations/rollcall/_row`), one whole-row `button_to` whose full width is the tap target on a tablet.
 
 Plain `link_to` is only appropriate for inline text links within paragraphs or content (e.g., "See the <%= link_to "FAQ", "#faq" %> for details.").
 
@@ -189,6 +190,22 @@ and a screen reader can then move from card to card. A notice, tip or banner kee
 **CRITICAL — a bare `id:` raises `ArgumentError`.** `ui_section` takes `id:` directly; the accent
 card takes every HTML attribute inside `options:`. Turning a `ui_section` into an accent card means
 moving its `id:` there, or the page 500s.
+
+---
+
+## Text Boxes
+
+**Helper**: `UiTextBoxHelper` (`app/helpers/ui_components/ui_text_box_helper.rb`)
+
+A bordered, tinted, padded box for a block of quoted text (a message preview, a prologue). With
+`max_height:` (a Tailwind scale class such as `"max-h-48"`) it scrolls, and `label:` names the
+scrolling box for keyboard and screen-reader users. Never hand-build the box.
+
+```erb
+<%= ui_text_box max_height: "max-h-64", label: "Prologue", class: "lexxy-content" do %>
+  <%= rich_text(@survey.prologue) %>
+<% end %>
+```
 
 ---
 
@@ -351,6 +368,10 @@ Its box is sized to its content but capped at its parent (`max-w-full`), so a
 value wider than a phone — an address, an id list, a nowrap cell — scrolls inside
 the box like any plain table's overflow.
 
+The Shift Lead roster (`scheduling/shift_lead/_roster`) is the one table with its own
+phone shape: a table from `lg` up and a hand-built list of one block per Ranger below
+it, in place of the fold. The partial says why.
+
 ### Filtering Tables
 
 **Helper**: `FilterBarHelper` (`app/helpers/ui_components/filter_bar_helper.rb`)
@@ -399,13 +420,6 @@ Card-like containers for grouping related content.
   Profile content.
 <% end %>
 
-<%# Without border padding (for tables) %>
-<%= ui_section "Table Section", border: false do %>
-  <%= ui_table do |t| %>
-    <%# Table content %>
-  <% end %>
-<% end %>
-
 <%# With custom ID for anchor links %>
 <%= ui_section "FAQ", id: "faq-section" do %>
   Content.
@@ -415,7 +429,6 @@ Card-like containers for grouping related content.
 **Options:**
 - `icon:` - FontAwesome icon name
 - `icon_type:` - Icon style (`:solid`, `:regular`)
-- `border:` - `false` drops only the extra `pb-1`; the body keeps its `px-4 pb-2`
 - `id:` - Custom ID for the section
 
 A section normally has a title; an untitled one may box a page's whole body or a form. Icons are
@@ -461,6 +474,10 @@ Standardized page header of every page inside the app shell (`design-layouts` > 
 - `heading_level:` - `:h1` or `:h2` (default: `:h2`)
 - `id:` - Unique ID for accessibility
 
+The icon is drawn gold (`icon-warning`), as is `action_box`'s, and the stats' award and flame
+hues are pinned in `components/hero-panel.css`: that is the hero's own look. A decorative icon
+anywhere else is neutral.
+
 **CRITICAL — hero stats need an approved plan**: `hero_stats` / `stat_badge` compete
 with the page title, and on mobile they stack beneath it and push the content down. Do
 not use them unless the user approved a plan that puts stats in the hero. Default to a
@@ -478,7 +495,8 @@ See `design-rules` > Hero Panel Stats Approval Workflow.
 **CRITICAL — description is one sentence**: `panel.description` states what the page
 does, in a single sentence, in the panel's own style (no classes, no status colour). Every hero
 has one except a new or edit form page, whose title already says what it does. The title may
-carry a status or a badge beside the words. Longer explanations, caveats, and step-by-step
+carry a status or a badge beside the words. The person page's hero (`person/_hero`) is the one
+exception: an identity strip whose description holds badges, name and pronouns, not a sentence. Longer explanations, caveats, and step-by-step
 instructions go in the main content: usually the collapsed card below; a full page of
 instructions on a page the reader operates takes a `ui_section` at the foot, linked from
 the top per `design-layouts` > Help Section & FAQ Pattern. See `design-rules` > Hero
@@ -598,7 +616,9 @@ inside the form (multi-submit footers keep an explicit `button_row`).
 
 Tabs show panes of one page in place. A switch that loads another view of the page (a log's Search
 and Live modes, the mega menu's panels) is a group of buttons, not tabs, with the current one told
-to a screen reader (`aria-current`, or an sr-only "(current view)").
+to a screen reader (`aria-current`, or an sr-only "(current view)"). The mailbox's folder switch
+(`messages_folder_tab`, `tabs tabs-lift`) is the one exception: it loads another list, yet keeps
+the tabs look as the mailbox's own adaptation.
 
 ---
 
@@ -639,6 +659,10 @@ inside but buttons and badges; secondary `bg-base-300/90`.
 body, a one-line status message may instead be status-coloured text that starts with its status
 icon (`fa_icon … class: "icon-error"`), at `text-base` and in sentence case: never capitals, never
 without the icon. A callout holds a notice, never a control alone; its `class:` is margin and width.
+
+`:error` marks an error, with one approved exception: the red "live data" callout (`:error,
+accent: true`, the `tower-broadcast` icon) on the mentoring Shift Report and Alpha Sign-Out pages,
+which flags a list of who is on duty right now.
 
 ### Alert Banners
 

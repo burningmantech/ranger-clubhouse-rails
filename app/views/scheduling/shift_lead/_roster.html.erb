@@ -19,7 +19,7 @@
   a cell, so they survive greyscale, colour blindness and a screen reader.
 %>
 <%= ui_section title, id: id, badge: shift_lead_roster_count(rangers, on_duty, total: total),
-               badge_color: :secondary, border: false do %>
+               badge_color: :secondary do %>
   <%# Nothing to order when there is nothing, or only one row, to order. %>
   <% if total > 1 %>
     <div class="flex justify-end mb-2">

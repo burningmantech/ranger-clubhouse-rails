@@ -40,9 +40,9 @@
 
   <%# Tall announcements scroll inside the card rather than pushing the next one
       off the screen. %>
-  <div class="lexxy-content text-body bg-default rounded-base border border-line p-3 max-h-64 overflow-y-auto">
+  <%= ui_text_box max_height: "max-h-64", label: "#{announcement.subject} message", class: "lexxy-content text-body" do %>
     <%= rich_text(announcement.message) %>
-  </div>
+  <% end %>
 
   <div class="pt-3 mt-3 border-t border-line">
     <%= button_row do %>

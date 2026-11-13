@@ -50,10 +50,10 @@ R13280 || COMPLIANT || app/views/scheduling/shift_lead/_filters.html.erb:24 || F
 F0179 || FIXED || app/views/scheduling/shift_lead/_picker.html.erb:32 || Disclosure heading "Shift period" -> "Shift Period".
 R13264 || FIXED || app/views/scheduling/shift_lead/_picker.html.erb:37 || Picker is now form_with(url: false, builder: AppFormBuilder) + f.select with label "<year> Shift"; same id, name and auto-submit.
 R08044 || FIXED || app/views/scheduling/shift_lead/_picker.html.erb:41 || Same fix as R13264: f.select replaces select_tag borrowing SELECT_CLASSES.
-R13271 || NEEDS-APPROVAL || app/views/scheduling/shift_lead/_roster.html.erb:36 || Would drop the phone list and use one responsive ui_table; the partial documents why a 10-field fold per Ranger was rejected. Product call.
+R13271 || WAIVED || app/views/scheduling/shift_lead/_roster.html.erb:36 || approved exception 2026-11-12: roster keeps hand-built phone list
 R13274 || FIXED || app/views/scheduling/shift_lead/_roster.html.erb:58 || Pronouns, gender and positions print value_or_dash ("—") instead of "-".
 F0182 || FIXED || app/views/scheduling/shift_lead/_roster.html.erb:72 || Both award icons take fa_icon label: "Certification".
-R13270 || NEEDS-APPROVAL || app/views/scheduling/shift_lead/_roster.html.erb:92 || Same decision as R13271: replacing the hand-built phone roster with ui_table's fold changes the phone layout on purpose-built page.
+R13270 || WAIVED || app/views/scheduling/shift_lead/_roster.html.erb:92 || approved exception 2026-11-12: roster keeps hand-built phone list
 R13272 || FIXED || app/views/scheduling/shift_lead/_roster.html.erb:107 || Positions and certification lines to text-base; muted years and pronouns/gender lines keep text-sm under R4.
 R08066 || FIXED || app/views/scheduling/shift_lead/_roster.html.erb:114 || Same fix as R13272 (positions and certifications text-base).
 R13260 || FIXED || app/views/scheduling/shift_lead/_sort_control.html.erb:16 || Sort control is form_with + AppFormBuilder f.select; same id, name, hidden fields and auto-submit.

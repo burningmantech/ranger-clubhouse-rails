@@ -75,7 +75,7 @@
   <% end %>
 <% end %>
 
-<%= ui_section "Mentees", icon: "user-graduate", icon_type: :solid, border: false do %>
+<%= ui_section "Mentees", icon: "user-graduate", icon_type: :solid do %>
   <% if rows.empty? %>
     <%= ui_empty_state "No mentee has more than one mentee shift in #{@year}.", icon: "clone", icon_type: :solid %>
   <% elsif @rows.empty? %>

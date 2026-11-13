@@ -103,9 +103,9 @@
         <% end %>
         <% if rbs_message_has_text?(message) %>
           <%= t.detail_row id: text_id, label: "Text" do %>
-            <div class="rounded-base border border-line bg-default p-3 my-1">
+            <%= ui_text_box class: "my-1" do %>
               <%= value_or_dash(message.message) %>
-            </div>
+            <% end %>
           <% end %>
         <% end %>
       <% end %>

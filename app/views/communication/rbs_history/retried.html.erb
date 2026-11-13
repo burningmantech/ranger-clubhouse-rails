@@ -14,7 +14,7 @@
 <%= render "common/rbs/delivery_summary", result: @result, sandboxes: @sandboxes,
            test_address: @email_test_address, resent: true %>
 
-<%= ui_section "Delivery (#{@result.people.size})", icon: "paper-plane", icon_type: :solid, border: false do %>
+<%= ui_section "Delivery (#{@result.people.size})", icon: "paper-plane", icon_type: :solid do %>
   <p class="px-3 pb-2">
     A Ranger who has since asked us to stop, changed their number, or left is not sent to again.
   </p>

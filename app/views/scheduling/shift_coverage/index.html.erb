@@ -73,7 +73,7 @@
     a filter the page will hold, so a chosen day always has its periods. %>
 <% if @report.any? %>
   <% @days.each do |day| %>
-    <%= ui_section day.label, icon: "calendar-day", icon_type: :solid, border: false do %>
+    <%= ui_section day.label, icon: "calendar-day", icon_type: :solid do %>
       <%= ui_table full_width: true, striped: true,
                    container_class: "shift-coverage-grid",
                    caption: "#{day.label} coverage by post" do |t| %>

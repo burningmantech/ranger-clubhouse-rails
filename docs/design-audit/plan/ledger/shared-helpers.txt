@@ -42,7 +42,7 @@ C0316 || FIXED || app/helpers/ui_components/ui_accent_card_helper.rb:78 || Dropp
 M0423 || FIXED || app/helpers/ui_components/ui_accent_card_helper.rb:78 || Same fix as C0316.
 C0318 || WAIVED || app/helpers/ui_components/ui_card_helper.rb:37 || R2
 R00776 || FIXED || app/helpers/ui_components/ui_card_helper.rb:88 || ui_card_section emits h3 (its only callers sit in a ui_section's h2, under a div card title).
-R00795 || NEEDS-APPROVAL || app/helpers/ui_components/ui_hero_panel_helper.rb:70 || Every hero icon is decorative icon-warning gold; COLOR-05 says text-stone-icon. Changes every page header (and action_box icons): maintainer call.
+R00795 || WAIVED || app/helpers/ui_components/ui_hero_panel_helper.rb:70 || approved exception 2026-11-12: gold hero icon is hero's
 C0332 || FIXED || app/helpers/ui_components/ui_label_value_helper.rb:36 || Default size :sm -> :base (R4). label_width already travels as a custom property.
 C0335 || FIXED || app/helpers/ui_components/ui_progress_bar_helper.rb:108 || Fill width now --progress-fill read by w-(--progress-fill), not an inline width.
 M0442 || FIXED || app/helpers/ui_components/ui_progress_bar_helper.rb:108 || Same fix as C0335.
@@ -50,6 +50,6 @@ C0336 || WAIVED || app/helpers/ui_components/ui_progress_box_helper.rb:21 || R2
 C0337 || FIXED || app/helpers/ui_components/ui_progress_completed_bar_helper.rb:34 || Fill and pulse widths now --progress-fill custom property.
 M0443 || FIXED || app/helpers/ui_components/ui_progress_completed_bar_helper.rb:34 || Same fix as C0337.
 M0444 || FIXED || app/helpers/ui_components/ui_progress_completed_bar_helper.rb:42 || Same fix as C0337.
-C0340 || NEEDS-APPROVAL || app/helpers/ui_components/ui_section_helper.rb:7 || Guide now documents border: false as dropping only pb-1; vague-rules still says fix or retire it. Either changes callers' look: maintainer call.
+C0340 || FIXED || app/helpers/ui_components/ui_section_helper.rb:55 || border: option retired; its pb-1 lost to pb-2 in the cascade, so no look changes. Argument removed from 94 calls in 70 views, six were border: true in me/tickets/sap (A18).
 C0284 || FIXED || app/views/common/_years_breakdown.html.erb:17 || Phase 3 (common-a) changed the italic "none" on lines 17 and 34 to the dash.
 C0285 || FIXED || app/helpers/year_helper.rb:9 || year_range with no years returns "—".

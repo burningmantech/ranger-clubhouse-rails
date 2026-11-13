@@ -40,7 +40,7 @@
   <% end %>
 
   <%= ui_form(nil, ticketing_unsubmit_provisions_commit_path, method: :post) do |f| %>
-    <%= ui_section "Recommended for Un-Submitting", icon: "table-list", icon_type: :solid, border: false do %>
+    <%= ui_section "Recommended for Un-Submitting", icon: "table-list", icon_type: :solid do %>
       <%= bulk_select do %>
         <%= bulk_select_all label: "Select everyone listed" %>
 

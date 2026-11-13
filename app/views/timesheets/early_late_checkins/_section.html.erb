@@ -13,7 +13,7 @@
 <% badge_color = early ? :warning : :error %>
 
 <%= ui_section "#{early ? "Early" : "Late"} Check-Ins", badge: entries.size.to_s,
-               badge_color:, border: false do %>
+               badge_color: do %>
   <% if !period.positive? %>
     <%# Nothing was measured, so an empty table here is not a clean year. %>
     <%= ui_empty_state "The #{kind} check-in limit is switched off, so no check-in is " \

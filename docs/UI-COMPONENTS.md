@@ -28,7 +28,7 @@ hero_panel(icon:, id: nil, heading_level: :h2, title: nil, description: nil, bac
 | `id:` | String | auto-generated | Unique ID for accessibility |
 | `heading_level:` | Symbol | `:h2` | Heading level (`:h1` or `:h2`) |
 | `title:` | String | `nil` | Plain-text title (block slot for rich titles) |
-| `description:` | String | `nil` | Plain-text description — **one sentence** on what the page does |
+| `description:` | String | `nil` | Plain-text description — **one sentence** on what the page does (the person page's identity strip excepted) |
 | `back_to:` | Symbol/Array/String | `nil` | `:dashboard`, `[label, path]`, or an already-rendered link |
 
 Simple pages need no block:
@@ -78,7 +78,6 @@ ui_section(title = nil, options = {}, &block)
 | `edit_link:` | String | `nil` | Path for edit button; the link's accessible name is "Edit <title>" |
 | `link:` | SafeBuffer | `nil` | A rendered link at the header's right edge, in place of `edit_link:` |
 | `action:` | Hash | `nil` | `{ partial:, locals: }` rendered at the header's right edge, for more than one control (a `button_row`); `edit_link:` wins when both are given |
-| `border:` | Boolean | `true` | `false` drops only the body's extra `pb-1`; its `px-4 pb-2` stays either way |
 | `body_class:` | String | `nil` | Additional classes for body |
 | `class:` | String | `nil` | Additional classes for container |
 | `id:` | String | `nil` | HTML id attribute |
@@ -223,6 +222,24 @@ A title that labels the card's content takes `heading_level:` one below the near
 the card, so a screen reader can move from card to card: `:h3` for a dashboard step under its
 group's `<h2>` or a card inside a `ui_section`, `:h2` for a card at page level. A notice, tip or
 banner keeps the div.
+
+### ui_text_box
+
+**File:** `app/helpers/ui_components/ui_text_box_helper.rb`
+
+```ruby
+ui_text_box(max_height: nil, label: nil, class: nil, &block)
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `max_height:` | String | `nil` | A Tailwind scale class (`"max-h-48"`, `"max-h-64"`); the box scrolls past it |
+| `label:` | String | `nil` | The scrolling box's accessible name, for keyboard and screen-reader users |
+| `class:` | String | `nil` | Additional CSS classes |
+
+A bordered, tinted, padded box for a block of text (a message preview, a prologue). A scrolling box
+is a keyboard stop (`tabindex="0"`, `role="region"`, `aria-label` from `label:`) with the focus ring;
+`max_height:` without `label:` raises.
 
 ### page_title
 
@@ -828,7 +845,7 @@ percent of the busiest period.
 
 ```erb
 <% @days.each do |day| %>
-  <%= ui_section day.label, icon: "calendar-day", icon_type: :solid, border: false,
+  <%= ui_section day.label, icon: "calendar-day", icon_type: :solid,
                  badge: hq_forecast_day_badge(@report, day), badge_color: :warning do %>
     <%= hq_forecast_gantt(@report, day) %>
   <% end %>

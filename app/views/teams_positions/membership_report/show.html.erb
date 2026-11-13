@@ -37,7 +37,7 @@
   </dl>
 <% end %>
 
-<%= ui_section "Managers", icon: "user-shield", icon_type: :solid, border: false do %>
+<%= ui_section "Managers", icon: "user-shield", icon_type: :solid do %>
   <% if @managers.any? %>
     <p class="text-base text-body mb-2"><%= pluralize @managers.size, "manager" %></p>
     <%= render "roster", people: @managers, kind: "manager" %>
@@ -51,7 +51,7 @@
   <% end %>
 <% end %>
 
-<%= ui_section "Members", icon: "users", icon_type: :solid, border: false do %>
+<%= ui_section "Members", icon: "users", icon_type: :solid do %>
   <% if @members.any? %>
     <p class="text-base text-body mb-2"><%= pluralize @members.size, "member" %></p>
     <%= render "roster", people: @members, kind: "member" %>

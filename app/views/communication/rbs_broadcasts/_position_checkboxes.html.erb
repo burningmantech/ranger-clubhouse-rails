@@ -13,7 +13,7 @@
     </div>
     <%# Sent whatever the boxes say, so clearing them all reads as a choice. %>
     <%= hidden_field_tag "#{RbsBroadcastForm::PARAM_SCOPE}[position_ids][]", "", id: nil %>
-    <div class="max-h-96 overflow-y-auto rounded-base border border-line p-2">
+    <%= ui_text_box max_height: "max-h-96", label: "Positions" do %>
       <% if @position_groups.empty? %>
         <%= ui_empty_state "You do not manage any team with positions to send to." %>
       <% end %>
@@ -30,6 +30,6 @@
           <% end %>
         </div>
       <% end %>
-    </div>
+    <% end %>
   <% end %>
 </div>

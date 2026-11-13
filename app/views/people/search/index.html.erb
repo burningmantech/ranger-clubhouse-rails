@@ -148,7 +148,7 @@
 <% end %>
 
 <% if results_shown %>
-  <%= ui_section "Results", border: false do %>
+  <%= ui_section "Results" do %>
     <% if @people.empty? %>
       <%= ui_empty_state nil, icon: "magnifying-glass", icon_type: :solid do %>
         No accounts matched your search criteria.

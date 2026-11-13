@@ -47,9 +47,9 @@
   <link rel="modulepreload" href="<%= asset_path("controllers/index.js") %>">
   <link rel="modulepreload" href="<%= asset_path("controllers/application.js") %>">
 </head>
-<%# print:bg-white -- paper is white regardless of the screen theme; the
+<%# print:bg-paper -- paper is white regardless of the screen theme; the
     themed bg-base-100 tinted the trailing area of a report's final sheet. %>
-<body class="bg-base-100 text-base-content text-base p-4 print:p-0 print:bg-white" data-controller="local-time">
+<body class="bg-base-100 text-base-content text-base p-4 print:p-0 print:bg-paper" data-controller="local-time">
 <%= yield %>
 </body>
 </html>

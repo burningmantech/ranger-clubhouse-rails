@@ -39,8 +39,7 @@
 
 <% if @detail.slot_drops.any? %>
   <% @detail.slot_drops.each do |slot_drops| %>
-    <%= ui_section shift_drop_shift(slot_drops.slot), icon: "clock", icon_type: :solid,
-                   border: false do %>
+    <%= ui_section shift_drop_shift(slot_drops.slot), icon: "clock", icon_type: :solid do %>
       <%# The count sits here rather than in a section badge: the badge shares a
           flex row with the shift's date range and is squeezed onto two
           unreadable lines on a phone. %>

@@ -168,7 +168,7 @@ creating visual noise.
 | Primary CTAs        | Brand color (Signal Blue)                           | `bg-primary` with `btn-primary`               |
 | Status indicators   | Semantic (green/amber/red) only where status exists | `text-success`, `bg-warning/10`               |
 | Decorative elements | **AVOID** colored decoration                        | No colored borders/backgrounds for aesthetics |
-| Icons               | Neutral unless conveying status                     | `text-stone-muted` or status icon classes     |
+| Icons               | Neutral unless conveying status; the hero's own icon is its gold | `text-stone-muted` or status icon classes |
 
 **AVOID:**
 
@@ -185,7 +185,8 @@ twin. The outline is worn by four things, only two of which are hero panels: `co
 the hero stat tiles, the trophy badge in `common/_trophies.html.erb`, and the dashboard progress badge in
 `ui_progress_box_helper.rb`. That badge's warm gradient is still raw palette on purpose, because turning it
 into a theme-derived mix repaints it. Last is the sidebar's active-item marker, now the
-`sidebar-active` token (`#ffc107`), kept as hex because its oklch does not round-trip bit-exactly. Treat all of it as documented legacy, not as a palette to extend.
+`sidebar-active` token (`#ffc107`), kept as hex because its oklch does not round-trip bit-exactly. Treat all of it as documented legacy, not as a palette to extend. The hero's own look is the one other
+place: its icon gold and its stats' award and flame hues (see [Hero Panels](#hero-panels)).
 
 ---
 
@@ -223,6 +224,10 @@ explicit user confirmation before implementation.
     - Code examples with ERB helper syntax
     - Accessibility considerations
     - Styling details (Tailwind classes, dark mode support)
+
+**Approved one-offs:** the search bar's segmented radio control (`application/_search_bar_placeholder`, `btn`
+classes on radio labels in a `join`) and the profile photo upload's drag-and-drop dropzone (`profile_photos/new`)
+stay as one-off markup. Either becomes a helper on its second use.
 
 **Example approval request:**
 
@@ -330,6 +335,8 @@ implementation: `app/views/training/multiple_enrollments/index.html.erb`.
 ### Hero Panel Description Rule
 
 **CRITICAL**: `panel.description` is **one sentence** saying what the page does. Nothing else.
+The person page's hero (`person/_hero`) is the one exception: it is an identity strip, and its description
+holds the person's status, vintage and site badges, name, pronouns and callsign pronunciation instead of a sentence.
 
 The hero is the page's first fixation and is size-constrained on mobile; a paragraph there pushes the actual content
 below the fold. Background, caveats, eligibility rules, and especially step-by-step instructions go in the main
@@ -406,6 +413,7 @@ semantic token exists (e.g., `text-body`).
 | `bg-base-100`   | Primary card and panel surfaces | Warm off-white    | Deep neutral      |
 | `bg-base-200`   | Secondary/selected surfaces     | Light neutral     | Raised neutral    |
 | `bg-base-300`   | Form fills and progress tracks  | Mid neutral       | Strong neutral    |
+| `bg-paper`, `print:bg-paper` | Print surfaces only (`--color-paper`): the one place a page is white whatever the theme | White | White |
 | `bg-primary`    | Brand emphasis and CTAs         | Brand tone        | Brand tone        |
 | `bg-primary/10` | Soft brand emphasis             | Subtle brand tint | Subtle brand tint |
 | `bg-success`    | Success state                   | Green             | Green             |
@@ -611,7 +619,7 @@ token. Guarded by `test/views/list_indent_test.rb`. Lines that each start with a
 | `shadow-xs` | Cards, subtle elevation |
 | `shadow-sm` | Buttons, dropdowns      |
 | `shadow-md` | Modals, overlays        |
-| `shadow-lg` | Popovers, menus         |
+| `shadow-lg` | Popovers, menus; a pinned bar that content scrolls beneath (the HQ window's checklist strip) |
 | `shadow-xl` | Prominent overlays      |
 
 **Custom shadow (hero panels):**
@@ -1087,7 +1095,9 @@ same step.
 
 **CRITICAL:** Always use `ButtonHelper` methods for buttons. Never write raw button HTML. The ruled
 exceptions are helpers' own raw `<button>`s: the client-side sort heading, `clipboard_button`'s copy icon, and
-`dropdown_button`, the menu row that acts on the page inside a `dropdown_menu`.
+`dropdown_button`, the menu row that acts on the page inside a `dropdown_menu`; and the roll call roster row
+(`shift_operations/rollcall/_row`), one whole-row `button_to` whose full width is the tap target on a tablet. A
+link inside a list row that reads as a button is a real `button_link`, never `btn` classes on a span.
 
 Buttons are daisyUI `btn` components. `ButtonHelper` emits `btn` + a variant class + a size class; there is no custom
 base class.
@@ -1334,6 +1344,24 @@ Step details.
 - Schedule item cards with visual priority
 - Any content requiring left-border accent for visual hierarchy
 
+### Text Boxes
+
+**Helper**: `UiTextBoxHelper` (`app/helpers/ui_components/ui_text_box_helper.rb`)
+
+A bordered, tinted, padded box for a block of quoted text: a message preview, a survey's prologue. Given
+`max_height:` (a Tailwind scale class such as `"max-h-48"`) it scrolls, and `label:` names the scrolling box for
+keyboard and screen-reader users. Never hand-build the box.
+
+```erb
+<%= ui_text_box do %><%= @broadcast.sms_message %><% end %>
+
+<%= ui_text_box max_height: "max-h-64", label: "Prologue", class: "lexxy-content" do %>
+  <%= rich_text(@survey.prologue) %>
+<% end %>
+```
+
+API: `docs/UI-COMPONENTS.md` > `ui_text_box`.
+
 ### Stat Boxes
 
 **Helper**: `UiStatBoxHelper` (`app/helpers/ui_components/ui_stat_box_helper.rb`)
@@ -1567,6 +1595,9 @@ A fit-width table (`full_width: false`, the default) is no reason to opt out. It
 its content but capped at its parent (`max-w-full`), so a value wider than a phone — an address, an
 id list, a nowrap cell — scrolls inside the box like any plain table's overflow.
 
+The Shift Lead roster (`scheduling/shift_lead/_roster`) is the one table with its own phone shape: a table from
+`lg` up and a hand-built list of one block per Ranger below it, in place of the fold. The partial says why.
+
 **Key Differences:**
 
 | Feature         | `ui_table responsive: false` | `ui_table` (the default)                            |
@@ -1681,6 +1712,10 @@ Both helpers render native `<details>` / `<summary>` markup:
 `summary_class:` sets the weight, size and ink of the summary's text, nothing else: never its focus ring,
 outline or layout, which the helpers own. An icon in a title goes inside it as `fa_icon … end: 2`.
 
+The HQ window's guided-flow sections (`hq/shift_manage/_section`, a hand-built `collapse` whose border shows its
+state) and its pinned checklist strip (`hq/shift_manage/_todo_list`, a sticky strip, not a card, with the
+`shadow-lg` of a pinned bar) are purpose-built and keep their own markup.
+
 ### Match Stepper
 
 **Helper**: `UiComponents::UiMatchStepperHelper` (`app/helpers/ui_components/ui_match_stepper_helper.rb`).
@@ -1732,7 +1767,9 @@ Stimulus controller of the page's own counts, moves and scrolls.
 The helper renders the DaisyUI `tabs tabs-border` markup with the ARIA roles wired up; do not hand-write it.
 Tabs show panes of one page in place. A switch that loads another view of the page (a log's Search and Live
 modes, the mega menu's panels) is a group of buttons, not tabs; the current one is told to a screen reader
-(`aria-current`, or an sr-only "(current view)").
+(`aria-current`, or an sr-only "(current view)"). The mailbox's folder switch (`messages_folder_tab`,
+`tabs tabs-lift`) is the one exception: it loads another list, yet keeps the tabs look as the mailbox's own
+adaptation.
 
 ### Toasts & Notifications
 
@@ -1820,6 +1857,10 @@ be a line of status-coloured text (`text-error`, `text-warning`, `text-success`)
 icon (`fa_icon … class: "icon-error"`), at `text-base` and in sentence case: never in capitals, never without
 the icon. A callout holds a notice, never a control alone, and its `class:` carries margin and width only.
 
+`:error` marks an error, with one approved exception: the red "live data" callout (`:error, accent: true`, the
+`tower-broadcast` icon) on the mentoring Shift Report and Alpha Sign-Out pages, which flags a list of who is on
+duty right now.
+
 #### Alert Banners
 
 ```erb
@@ -1859,8 +1900,10 @@ API and the full-button form: `docs/UI-COMPONENTS.md` > `clipboard_button`.
 Hero panels are the standardized page header of every page inside the app shell (pages outside it: see
 [Pages Outside the App Shell](#pages-outside-the-app-shell)). They provide a consistent, visually
 distinctive header: a warm neutral surface (`bg-base-200 dark:bg-base-300`) inside a soft amber ring
-(`ring-signature-edge`, the token holding amber-200/40 and its dark amber-700/30 twin). That ring is the one place
-amber survives as decoration rather than as a warning signal.
+(`ring-signature-edge`, the token holding amber-200/40 and its dark amber-700/30 twin). The ring, the gold
+(`icon-warning`) of the hero's icon and of `action_box`'s icon, and the hero stats' award gold and flame gradient
+(`hero-stat-award`, `hero-stat-flame` in `components/hero-panel.css`) are the hero's own look and stay; a
+decorative icon anywhere else is neutral.
 
 **Structure:**
 
@@ -1903,7 +1946,8 @@ amber survives as decoration rather than as a warning signal.
 
 - `title` - Main page title (required); it may carry a status or a badge beside the words
 - `description` - Page description — **one sentence only**, see below. Every hero has one except a new or edit
-  form page, whose title already says what it does. It takes the panel's own style: no classes, no status colour
+  form page, whose title already says what it does. It takes the panel's own style: no classes, no status colour.
+  The person page's identity strip (badges, name, pronouns) is the one exception
 - `back_to` - Back navigation link
 - `year_selector` - Year dropdown (desktop: compact, mobile: full)
 - `hero_stats` - Statistics badges (beside the title on desktop, beneath it on mobile) — **approval required**, see below
@@ -2013,13 +2057,6 @@ Section content.
 Profile content.
 <% end %>
 
-<%# Without border padding %>
-<%= ui_section "Table Section", border: false do %>
-<%= ui_table do |t| %>
-<%# Table content %>
-<% end %>
-<% end %>
-
 <%# With custom ID for anchor links %>
 <%= ui_section "Team Members", id: "team-123" do %>
 Member content.
@@ -2040,7 +2077,7 @@ Member content.
 
 - Base: `.box` class with `rounded-lg`, border, shadow
 - Body: `text-body rounded-xl` on the box's `bg-base-100` (`box-default`)
-- Default padding: `px-4 pb-2`, with or without `border:`
+- Body padding: `px-4 pb-2`
 - Section title: `px-4 pt-2 mb-1` with responsive text sizing
 
 A section normally has a title; an untitled one may box a page's whole body or a form. Icons are optional, but
@@ -2051,7 +2088,6 @@ a section.
 
 - `icon:` - FontAwesome icon name
 - `icon_type:` - Icon style (`:solid`, `:regular`)
-- `border:` - `false` drops only the extra `pb-1`; the body keeps its `px-4 pb-2`, so it does not set a table flush
 - `id:` - Custom ID for the section
 - `badge:` / `badge_color:` - Badge in the title row
 - `edit_link:` - Path for an edit button in the title row
@@ -2650,10 +2686,14 @@ Best for semantic grouping of form controls with compact layout:
 **Caution:** Screen readers announce the legend text for every input when tabbing through the fieldset. Avoid overuse
 with many text inputs.
 
+**Exception:** the People Search criteria panel (`people/search`) is not a fieldset. Its criteria sit in
+`ui_disclosure variant: :card` categories laid out with `form_row`, and its status checkboxes are one flat list with
+no group wrapper; `test/controllers/people/search_controller_test.rb` pins both.
+
 **Styling** (`components/forms.css`, on every `form fieldset`): a 4px `border-primary` rule on the start edge over a
 `from-primary/5` gradient, `rounded-r-lg`, `ps-4`; the legend is `text-lg font-semibold` over a `border-base-200`
-underline. This is the theme's look for a group of fields, the one place outside progress components a gradient
-appears.
+underline. This is the theme's look for a group of fields; with the hero stats' flame (the hero's own look), the
+only place outside progress components a gradient appears.
 
 **Basic usage:**
 
@@ -3039,6 +3079,10 @@ show/hide. It marks exactly one fact: **below 768px, controls cannot sit side by
 
 Anything else wanting a tablet tier should use the content-driven patterns above.
 
+The date picker's swap to the browser's native control at 768px and below (`vanilla_calendar_controller.js`, which
+also swaps on a mobile user agent) is not a layout fold: it is a touch-device swap, so it stays at 768px and is not
+an `lg` matter.
+
 #### The one sanctioned use of `sm`
 
 Form field widths. `AppFormBuilder`'s `width:` option takes `w-full sm:w-48` and friends: full width on a phone so the
@@ -3125,7 +3169,8 @@ and register alike), nothing under the type floor (`text-xs` for content) or the
 ### Pages Outside the App Shell
 
 Print sheets, kiosk and bookmark pages, wall displays (the ROC photo board), the `public/` error pages and the test
-harness have no app shell. Colour tokens, the type floor and Title Case apply to them as to any page; `hero_panel`,
+harness have no app shell. Colour tokens, the type floor and Title Case apply to them as to any page (printed paper
+is `bg-paper` / `print:bg-paper`, never `bg-white`); `hero_panel`,
 `button_row`, the layout patterns and the page-structure rules (hero, back link, sections) do not. Each heads itself
 with its own `<h1>` or masthead. A print sheet's way back sits above the sheet, `print:hidden`, in its area's
 `_print_screen_nav` partial where one exists.
@@ -3503,8 +3548,8 @@ levels; do not put both on one page.
 records, or when the reader's real question spans categories ("who still has gear checked
 out?"). Those are flat reports — use a single filtered `ui_table` page instead.
 
-**Level 1 — category index.** No filter bar, no table. Just the categories and how big each
-one is.
+**Level 1 — category index.** No table, and no filter bar but one that sets what every row
+counts. Just the categories and how big each one is.
 
 ```erb
 <%= hero_panel icon: "icon", heading_level: :h1, id: "page-header",
@@ -3592,16 +3637,19 @@ one is.
   removable chip — a chip that drops it has nowhere to land. Build every chip URL against
   the category page so removing one keeps both the year and the category.
 - **Drop the category column** from the level-2 table. Every row has the same value.
-- **Level 1 gets no filter bar.** Filters narrow rows, and there are no rows here.
+- **Level 1 gets no filter bar.** Filters narrow rows, and there are no rows here. A bar that
+  sets what every row counts (site, year, type, status) is the exception and stays; its
+  export rides it in `filter_bar actions:`.
 - **Counts on level 1 are plain text**, not stat boxes: one `text-lg` summary line, plus
   `meta:` on each row — or `figures:` when the count splits into what is still owed and
   what is done (Available Sign-Ups' upcoming/past), never both. Constrain the row list to
   `lg:w-3/4`, as any list of drill-down rows or roster of one-line rows may be.
 - **Badge only the exception count** on a row (`N expired`, `N inactive`), `size: "base"`,
-  and omit it entirely at zero. A badge on every row is noise.
+  and omit it entirely at zero. A badge on every row is noise. A count that marks the rows a
+  reader hunts for (`N on duty`) is badged the same way.
 - **Level-2 totals describe the category, not the filtered view** — `filter_bar count:`
   already reports the filtered slice as "Showing X of Y".
-- **The export follows the filters.** Level 1 has no bar, so its Export CSV sits in the
+- **The export follows the filters.** A level 1 with no bar keeps its Export CSV in the
   `button_row` beside Add Record. Level 2 has one, so its export moves into
   `filter_bar actions:` and that `button_row` keeps only Add Record.
 - **Two empty states on level 2**, and they say different things: filters matched nothing

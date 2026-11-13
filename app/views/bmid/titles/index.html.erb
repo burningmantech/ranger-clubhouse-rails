@@ -23,7 +23,7 @@
 <% BmidTitle::TITLE_LINES.each do |line| %>
   <% titles = @titles_by_line[line].to_a %>
   <%= ui_section "Title #{line}", icon: "id-badge", icon_type: :solid,
-                 id: "bmid-title-line-#{line}", border: false do %>
+                 id: "bmid-title-line-#{line}" do %>
     <% if titles.empty? %>
       <%= ui_empty_state "Nothing prints on this line yet.", icon: "id-badge", icon_type: :solid %>
     <% else %>

@@ -16,7 +16,7 @@
 <% end %>
 
 <%= ui_section "Signed Up", icon: "user-group", icon_type: :solid,
-               badge: (shift.mentees.size + shift.mentors.size).to_s, border: false do %>
+               badge: (shift.mentees.size + shift.mentors.size).to_s do %>
   <% if shift.mentees.empty? && shift.mentors.empty? %>
     <%= ui_empty_state "No one has signed up for this shift yet.", icon: "user-group", icon_type: :solid %>
   <% else %>

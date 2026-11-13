@@ -30,7 +30,7 @@
     </dl>
   <% end %>
 
-  <%= ui_section "Team Membership", icon: "people-group", icon_type: :solid, border: false do %>
+  <%= ui_section "Team Membership", icon: "people-group", icon_type: :solid do %>
     <% if teams.any? %>
       <% members = teams.count(&:current) %>
       <p>
@@ -59,7 +59,7 @@
     <% end %>
   <% end %>
 
-  <%= ui_section "Positions", icon: "user-shield", icon_type: :solid, border: false do %>
+  <%= ui_section "Positions", icon: "user-shield", icon_type: :solid do %>
     <% if positions.any? %>
       <% held = positions.count(&:current) %>
       <p>

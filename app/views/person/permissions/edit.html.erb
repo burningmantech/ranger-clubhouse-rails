@@ -15,7 +15,7 @@
             data: { controller: "permission-editor", action: "submit->permission-editor#submit" }) do |f| %>
   <%= hidden_field_tag "#{param_key}[role_ids][]", "" %>
 
-  <%= ui_section "Permissions", icon: "shield-halved", icon_type: :solid, border: false do %>
+  <%= ui_section "Permissions", icon: "shield-halved", icon_type: :solid do %>
     <%= ui_table responsive: false do |t| %>
       <%= t.header do %>
         <%= t.heading "Permission" %>

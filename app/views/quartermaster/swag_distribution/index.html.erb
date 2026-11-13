@@ -51,7 +51,7 @@
              count: "Showing #{@filtered.size} of #{pluralize(@rows.size, "person")}",
              actions: export_csv_link(swag_distribution_url(@filter_params.merge(format: :csv))) %>
 
-  <%= ui_section "Distribution", icon: "gift", icon_type: :solid, border: false do %>
+  <%= ui_section "Distribution", icon: "gift", icon_type: :solid do %>
     <% if @filtered.empty? %>
       <div class="px-4 pb-2">
         <%= ui_empty_state "No one matched the current filter.",

@@ -52,7 +52,7 @@
     </dl>
   <% end %>
 
-  <%= ui_section "Service Swag to Order", icon: "medal", icon_type: :solid, border: false do %>
+  <%= ui_section "Service Swag to Order", icon: "medal", icon_type: :solid do %>
     <% if @milestones.empty? %>
       <div class="px-4 pb-2">
         <%= ui_empty_state "No one in this scope reaches a five-year mark at the " \
@@ -113,7 +113,7 @@
     <% end %>
   <% end %>
 
-  <%= ui_section "Roster", icon: "users", icon_type: :solid, border: false do %>
+  <%= ui_section "Roster", icon: "users", icon_type: :solid do %>
     <% if @filtered.empty? %>
       <div class="px-4 pb-2">
         <%= ui_empty_state "No one matched the current filters.",

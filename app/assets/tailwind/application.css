@@ -138,6 +138,11 @@
        unused on purpose: it was a third spelling for the same rung. */
     --color-body-subtle: oklch(50% 0.012 60);
     --color-line: oklch(30% 0.01 260);
+    /* Printed paper: white in both themes, with no dark value. base-100 is an
+       off-white that tints a sheet's trailing area, and the palette ban leaves
+       bg-white no home. Print surfaces only: print:bg-paper on layouts/print's
+       body and var(--color-paper) on :root in print-page.css. */
+    --color-paper: oklch(100% 0 0);
 
     /* Chrome that is always dark in both themes. One value is shared -- the
        black the sidebar sits on and the navbar sits on at 80% -- so it is named

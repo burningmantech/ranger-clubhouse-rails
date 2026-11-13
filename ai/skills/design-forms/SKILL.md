@@ -193,6 +193,11 @@ Best for semantic grouping of form controls with compact layout:
 
 **Caution:** Screen readers announce the legend text for every input when tabbing through the fieldset.
 
+**Exception:** the People Search criteria panel (`people/search`) is not a fieldset. Its criteria
+sit in `ui_disclosure variant: :card` categories laid out with `form_row`, and its status
+checkboxes are one flat list with no group wrapper; `test/controllers/people/search_controller_test.rb`
+pins both.
+
 **Styling** (`components/forms.css`): a 4px `border-primary` start rule over a `from-primary/5`
 gradient, `rounded-r-lg`; the legend `text-lg font-semibold` over a `border-base-200` underline.
 

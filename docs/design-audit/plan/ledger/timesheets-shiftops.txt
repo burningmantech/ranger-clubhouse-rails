@@ -51,7 +51,7 @@ M0335 || FIXED || app/views/shift_operations/rollcall/_pickers.html.erb:26 || Sh
 R08738 || COMPLIANT || app/views/shift_operations/rollcall/_roster.html.erb:19 || Browser-only filter input; guide (Forms, FORM-01 text) asks a visible label or an aria-label, and it has an sr-only label.
 R14281 || COMPLIANT || app/views/shift_operations/rollcall/_roster.html.erb:20 || A filter input that never submits is not a builder form (guide FORM-01 text).
 R14288 || COMPLIANT || app/views/shift_operations/rollcall/_row.html.erb:38 || class: on ui_badge is layout only (shrink-0); BADGE-01 allows it.
-R14285 || NEEDS-APPROVAL || app/views/shift_operations/rollcall/_row.html.erb:50 || Whole-row tap target is a new pattern: needs a ButtonHelper roster-row method or a ruled BTN-01 exception; not built.
+R14285 || WAIVED || app/views/shift_operations/rollcall/_row.html.erb:50 || approved exception 2026-11-12: whole-row button is ruled exception
 R14293 || FIXED || app/views/shift_operations/rollcall/_set_time_dialog.html.erb:15 || Red line now led by a triangle-exclamation status icon.
 R14267 || FIXED || app/views/shift_operations/rollcall/index.html.erb:16 || Mode buttons sit in a button_row.
 R14266 || FIXED || app/views/shift_operations/rollcall/index.html.erb:18 || py-4 text-lg override replaced by size: "lg" and full_width:; labels and icons via options.

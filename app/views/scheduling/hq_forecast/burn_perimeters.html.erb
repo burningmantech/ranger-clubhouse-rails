@@ -41,7 +41,7 @@
   <% end %>
 
   <% @burns.each do |burn| %>
-    <%= ui_section burn.title, icon: "fire", icon_type: :solid, border: false,
+    <%= ui_section burn.title, icon: "fire", icon_type: :solid,
                    id: "hq-burn-#{burn.key}" do %>
       <%= render "periods_table", periods: burn.periods, desks: burn.desks, interval: @interval,
                  caption: "#{burn.title} check-ins, check-outs, and HQ staffing" %>

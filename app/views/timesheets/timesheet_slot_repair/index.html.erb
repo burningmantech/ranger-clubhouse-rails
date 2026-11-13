@@ -51,7 +51,7 @@
         <% next if changes.blank? %>
         <% meta = slot_repair_meta(kind) %>
 
-        <%= ui_section meta[:heading], icon: meta[:icon], icon_type: :solid, border: false do %>
+        <%= ui_section meta[:heading], icon: meta[:icon], icon_type: :solid do %>
           <p class="text-stone-muted mb-2"><%= meta[:aside] %></p>
           <%= render "group", changes: changes %>
         <% end %>

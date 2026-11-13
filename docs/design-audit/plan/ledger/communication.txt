@@ -17,7 +17,7 @@ R12083 || WAIVED || app/views/bookmarks/_document.html.erb:17 || R10
 M0011 || WAIVED || app/views/bookmarks/_document.html.erb:22 || R10
 R12085 || WAIVED || app/views/bookmarks/_document.html.erb:31 || R10
 R02166 || WAIVED || app/views/bookmarks/show.html.erb:15 || R10
-R12116 || NEEDS-APPROVAL || app/views/communication/announcements/_announcement.html.erb:43 || No helper exists for a bordered, tinted, padded, optionally scrolling text box; would build ui_text_box(max_height:) in ui_components for the 8 copies in communication/.
+R12116 || FIXED || app/views/communication/announcements/_announcement.html.erb:43 || Hand-built scroll box replaced by ui_text_box max_height: "max-h-64", labelled with the subject (maintainer approved A1 2026-11-12).
 F0058 || FIXED || app/views/communication/announcements/_form.html.erb:3 || Legends Title Case: Who Sees It, What It Says, When It Stops Showing.
 R12108 || FIXED || app/views/communication/announcements/index.html.erb:21 || Delete Expired is :error.
 R12110 || COMPLIANT || app/views/communication/announcements/index.html.erb:40 || V/FORM-07: filter_bar selects fill their share (w-full + flex-1) in a form_row, as the new rule asks.
@@ -36,11 +36,11 @@ R12223 || FIXED || app/views/communication/rbs_broadcasts/_audience_fields.html.
 R12218 || FIXED || app/views/communication/rbs_broadcasts/_message_fields.html.erb:27 || Subject width w-full max-w-2xl: a scale step, no lg: or arbitrary value.
 F0065 || FIXED || app/views/communication/rbs_broadcasts/_notices.html.erb:7 || Callout title "Use Only in an Emergency".
 R12227 || FIXED || app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb:6 || Positions group is an f.fieldset (partial now takes f:); span label and role=group removed.
-R12231 || NEEDS-APPROVAL || app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb:16 || No helper for a bordered scroll box; same proposed ui_text_box(max_height:) as R12116 would cover it.
+R12231 || FIXED || app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb:16 || Checkbox scroll box is ui_text_box max_height: "max-h-96", label: "Positions"; gains the standard tint and p-3 (A1).
 R12233 || COMPLIANT || app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb:22 || V/LAYOUT-02: an item grid inside a section, which picks its own scale gap.
 R12213 || COMPLIANT || app/views/communication/rbs_broadcasts/_recipients_table.html.erb:21 || V/EMPTY-01: cannot be empty where drawn; RbsBroadcastsController#review re-renders the form when @people is empty.
 R12216 || FIXED || app/views/communication/rbs_broadcasts/_simple_fields.html.erb:26 || Position select width: "w-full sm:w-96" through width:.
-R12206 || NEEDS-APPROVAL || app/views/communication/rbs_broadcasts/review.html.erb:36 || Message previews: no helper exists; proposed ui_text_box(max_height:) as in R12116.
+R12206 || FIXED || app/views/communication/rbs_broadcasts/review.html.erb:36 || Both message previews (36, 46) are ui_text_box (A1).
 F0066 || FIXED || app/views/communication/rbs_broadcasts/review.html.erb:44 || Heading "Clubhouse Message"; submit "Send to N Person/People"; tests updated.
 R12207 || FIXED || app/views/communication/rbs_broadcasts/review.html.erb:80 || Send is :primary for every type, emergency included.
 F0055 || FIXED || app/views/communication/rbs_history/index.html.erb:22 || Info callout replaced by a collapsed "About This Report" card holding a Q&A list.
@@ -50,12 +50,12 @@ R12201 || FIXED || app/views/communication/rbs_history/retried.html.erb:28 || Fo
 F0057 || COMPLIANT || app/views/communication/rbs_history/show.html.erb:32 || V/BTN-07: a button inside a callout is exempt.
 R12192 || FIXED || app/views/communication/rbs_history/show.html.erb:32 || Send Failed Messages Again is :primary, not :error.
 R12197 || FIXED || app/views/communication/rbs_history/show.html.erb:66 || stack-to-row-lg replaced by the documented flex flex-col lg:flex-row gap-4.
-R12191 || NEEDS-APPROVAL || app/views/communication/rbs_history/show.html.erb:70 || Message boxes: no helper exists; proposed ui_text_box(max_height:) as in R12116.
+R12191 || FIXED || app/views/communication/rbs_history/show.html.erb:70 || Text box (70) is ui_text_box; email box (74) is ui_text_box max_height: "max-h-96" with a label (A1).
 F0067 || FIXED || app/views/communication/rbs_history/show.html.erb:73 || Heading "Email and Clubhouse Message".
 R12177 || FIXED || app/views/communication/rbs_messages/index.html.erb:36 || Direction select takes width: "w-full" and wrapper_class: "flex-1", matching the callsign field.
 R03647 || FIXED || app/views/communication/rbs_messages/index.html.erb:40 || Raw labels replaced by f.fieldset legends Outcome and Email Failure Reason.
 R12178 || FIXED || app/views/communication/rbs_messages/index.html.erb:40 || Both checkbox groups are f.fieldset (ids rbs-status-group, rbs-email-failure-group); tests updated.
-R12182 || NEEDS-APPROVAL || app/views/communication/rbs_messages/index.html.erb:106 || Detail-row message box: no helper exists; proposed ui_text_box(max_height:) as in R12116.
+R12182 || FIXED || app/views/communication/rbs_messages/index.html.erb:106 || Detail-row message box is ui_text_box class: "my-1" (A1).
 R03652 || FIXED || app/views/communication/rbs_messages/index.html.erb:107 || An empty message prints "—" through value_or_dash.
 R12173 || FIXED || app/views/communication/rbs_phone_numbers/index.html.erb:24 || Q&A moved from a visible info callout into a collapsed "About This Report" card.
 F0062 || FIXED || app/views/communication/survey_groups/_form.html.erb:4 || Legends "What People See" and "How the Answers Are Reported".
@@ -70,5 +70,5 @@ F0064 || FIXED || app/views/communication/surveys/index.html.erb:36 || Section t
 R12133 || FIXED || app/views/communication/surveys/index.html.erb:63 || Row action Manage is :secondary; Add Survey stays the page's one primary.
 F0069 || FIXED || app/views/communication/surveys/new.html.erb:4 || Hero and page title "Add Survey".
 R12138 || COMPLIANT || app/views/communication/surveys/show.html.erb:28 || V/LAYOUT-02: an item grid inside a section, which picks its own scale gap.
-R12140 || NEEDS-APPROVAL || app/views/communication/surveys/show.html.erb:45 || Prologue/epilogue boxes: no helper exists; proposed ui_text_box(max_height:) as in R12116.
+R12140 || FIXED || app/views/communication/surveys/show.html.erb:45 || Prologue and epilogue (45, 51) are ui_text_box max_height: "max-h-64", labelled Prologue and Epilogue (A1).
 R12141 || FIXED || app/views/communication/surveys/show.html.erb:46 || Missing prologue or epilogue prints "—", not italic "None given.".

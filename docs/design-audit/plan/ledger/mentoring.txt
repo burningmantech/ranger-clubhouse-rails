@@ -69,7 +69,7 @@ F0125 || FIXED || app/views/mentoring/alpha_schedule/show.html.erb:116 || Confir
 R12807 || WAIVED || app/views/mentoring/alpha_schedule/signup_sheet.html.erb:28 || R10
 R12804 || WAIVED || app/views/mentoring/alpha_schedule/signup_sheet.html.erb:30 || R10
 R05593 || FIXED || app/views/mentoring/alpha_schedule/signup_sheet.html.erb:48 || Literal ⚑ replaced by fa_icon "flag" with label "Flagged", as the information sheet does.
-R12840 || NEEDS-APPROVAL || app/views/mentoring/alpha_signout/index.html.erb:97 || Red banner is a deliberate "live data" signal matching the shift report's approved mockup; would change to :warning or :info if the maintainer agrees.
+R12840 || WAIVED || app/views/mentoring/alpha_signout/index.html.erb:97 || approved exception 2026-11-12: red live-data banner is approved
 F0128 || FIXED || app/views/mentoring/alpha_signout/index.html.erb:102 || Chosen-shift callout :success to :info (neutral information).
 R05633 || FIXED || app/views/mentoring/alpha_signout/index.html.erb:162 || Sign-out confirm_modal_dialog passes variant: :error.
 R12763 || FIXED || app/views/mentoring/alpha_status/index.html.erb:97 || Empty section uses ui_empty_state.
@@ -85,7 +85,7 @@ R12768 || FIXED || app/views/mentoring/post_season_summary/index.html.erb:100 ||
 R12485 || FIXED || app/views/mentoring/potential_alphas/index.html.erb:84 || Empty cohort section uses ui_empty_state.
 R12790 || FIXED || app/views/mentoring/shift_report/_group_positions.html.erb:8 || All three empty cases use ui_empty_state (8, 12, 26).
 F0131 || FIXED || app/views/mentoring/shift_report/index.html.erb:30 || "Currently On Duty" to "Currently on Duty" (button and empty-state copy).
-R12787 || NEEDS-APPROVAL || app/views/mentoring/shift_report/index.html.erb:54 || Comment records the red "On duty now" banner as an approved mockup; colour change is the maintainer's call (:warning or :info proposed).
+R12787 || WAIVED || app/views/mentoring/shift_report/index.html.erb:54 || approved exception 2026-11-12: red live-data banner is approved
 F0129 || FIXED || app/views/mentoring/shift_report/index.html.erb:59 || Scheduled-shift callout :success to :info.
 F0130 || FIXED || app/views/mentoring/shift_report/index.html.erb:92 || Counting window moved from the banner into the About This Report card (scheduled mode only).
 R12829 || FIXED || app/views/mentoring/surveys/index.html.erb:25 || Section badge is a bare count in :secondary, like sibling sections.

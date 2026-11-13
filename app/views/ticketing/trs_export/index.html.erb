@@ -34,7 +34,7 @@
 
 <% if @bad_documents.any? %>
   <%= ui_section "#{pluralize(@bad_documents.size, 'Item')} with Problems",
-                 icon: "triangle-exclamation", icon_type: :solid, border: false do %>
+                 icon: "triangle-exclamation", icon_type: :solid do %>
     <p class="my-2">
       <strong>These items are passed over by &ldquo;select all&rdquo;.</strong>
       Fix them from the holder's Tickets &amp; Provisions page, or select them
@@ -87,7 +87,7 @@
     <%# id: nil -- the filter_bar select above already owns id="filter". %>
     <%= hidden_field_tag :filter, @filter.slug, id: nil %>
     <%= bulk_select do %>
-      <%= ui_section @filter.label, icon: "table-list", icon_type: :solid, border: false do %>
+      <%= ui_section @filter.label, icon: "table-list", icon_type: :solid do %>
         <%= render "rows_table", rows: @rows, selectable: true, checked: false %>
       <% end %>
 
@@ -119,7 +119,7 @@
     <% end %>
   <% end %>
 <% else %>
-  <%= ui_section "All Claimed Items", icon: "table-list", icon_type: :solid, border: false do %>
+  <%= ui_section "All Claimed Items", icon: "table-list", icon_type: :solid do %>
     <p class="my-2">
       The All view is a read-only overview. Pick a specific export filter to select and export items.
     </p>

@@ -48,7 +48,7 @@
   <%# items-start so a short run does not stretch to match the longest column. %>
   <div class="grid grid-cols-1 lg:grid-cols-3 items-start gap-0 lg:gap-4">
     <% @kinds.each do |kind| %>
-      <%= ui_section kind.name, icon: "shirt", icon_type: :solid, border: false do %>
+      <%= ui_section kind.name, icon: "shirt", icon_type: :solid do %>
         <% if kind.sizes.empty? %>
           <%= ui_empty_state "No sizes recorded for this shirt." %>
         <% else %>
@@ -97,7 +97,7 @@
     <% end %>
   <% end %>
 
-  <%= ui_section "Roster", icon: "users", icon_type: :solid, border: false do %>
+  <%= ui_section "Roster", icon: "users", icon_type: :solid do %>
     <% if @filtered_people.empty? %>
       <div class="px-4 pb-2">
         <%= ui_empty_state "No one matched the current filters.",

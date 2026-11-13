@@ -42,6 +42,7 @@ description: Color tokens, typography scale, spacing, and dark mode patterns for
 | `bg-error` | Danger state | Red-500 | Red-600 |
 | `bg-error/10` | Soft danger tint | error @ 10% | error @ 10% |
 | `bg-base-300` | Disabled state | base-300 | base-300 |
+| `bg-paper`, `print:bg-paper` | Print surfaces only (`--color-paper`): the one place a page is white whatever the theme | white | white |
 
 ### Border and Ring Colors
 
@@ -100,7 +101,7 @@ grep -c 'text-warning{' app/assets/builds/tailwind.css
 | Primary CTAs | Brand color (Signal Blue) | `bg-primary` with `btn-primary` |
 | Status indicators | Semantic (green/amber/red) only where status exists | `text-success`, `bg-warning/10` |
 | Decorative elements | **AVOID** colored decoration | No colored borders/backgrounds for aesthetics |
-| Icons | Neutral unless conveying status | `text-stone-muted` or status icon classes |
+| Icons | Neutral unless conveying status; the hero's own icon is its gold | `text-stone-muted` or status icon classes |
 
 **The brand color is blue, not amber.** `--color-primary` is `oklch(0.52 0.2 262)` in light mode and
 `oklch(0.68 0.19 262)` in dark — Signal Blue, the only chromatic color permitted in ordinary chrome. Amber is a
@@ -109,7 +110,10 @@ palette to extend: the signature outline (`ring-signature-edge`) and the amber s
 `text-hero-tile-content`), which are theme tokens carrying their own dark values and so take no `dark:` twin;
 the progress badge's warm gradient (`ui_progress_box_helper.rb`), still raw palette on purpose, because
 turning it into a theme-derived mix repaints it; and the sidebar's active-item marker, the `sidebar-active` token (`#ffc107`). Surfaces
-are warm (hue 80) in light mode and cool (hue 260) in dark; text is warm in both.
+are warm (hue 80) in light mode and cool (hue 260) in dark; text is warm in both. The hero's own
+look is the one other place: the gold (`icon-warning`) of the hero's icon and of `action_box`'s
+icon, and the hero stats' award gold and flame gradient (`components/hero-panel.css`), stay; a
+decorative icon anywhere else is neutral.
 
 **AVOID:**
 - Colored backgrounds for visual variety (use cards/sections with neutral backgrounds)
@@ -325,7 +329,7 @@ knowingly rather than by drift.
 | `shadow-xs` | Cards, subtle elevation |
 | `shadow-sm` | Buttons, dropdowns |
 | `shadow-md` | Modals, overlays |
-| `shadow-lg` | Popovers, menus |
+| `shadow-lg` | Popovers, menus; a pinned bar that content scrolls beneath (the HQ window's checklist strip) |
 | `shadow-xl` | Prominent overlays |
 
 **Flat by default** (DESIGN.md): a new component gets no shadow. Region lift belongs to `.box`,

@@ -62,7 +62,7 @@
     <%= hidden_field_tag :year, @year, id: nil %>
     <%= hidden_field_tag :filter, @category_filter, id: nil %>
     <%= bulk_select do %>
-      <%= ui_section "Review and Select", icon: "table-list", icon_type: :solid, border: false do %>
+      <%= ui_section "Review and Select", icon: "table-list", icon_type: :solid do %>
         <%= render "common/bmids/flag_legend" %>
         <%= render "selection_table", rows: @rows %>
       <% end %>

@@ -50,7 +50,7 @@
 <% end %>
 
 <% if @result[:reverted].any? %>
-  <%= ui_section "Returned Badges", icon: "table-list", icon_type: :solid, border: false do %>
+  <%= ui_section "Returned Badges", icon: "table-list", icon_type: :solid do %>
     <%= ui_table responsive: false do |t| %>
       <%= t.header do %>
         <%= t.heading "Callsign" %>

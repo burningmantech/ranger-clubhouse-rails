@@ -1,6 +1,6 @@
 R13757 || WAIVED || app/helpers/people/languages_known_helper.rb:15 || R2: me-muted renders the same muted ink as text-stone-muted; guide follows code, no visual change.
 R00332 || FIXED || app/helpers/people/languages_known_helper.rb:49 || The shift position in the Right Now cell is inline cell content, not a second line: dropped text-sm, now text-base.
-F0231 || NEEDS-APPROVAL || app/helpers/people/languages_known_helper.rb:79 || "N on duty" is omitted at zero and marks the rows a reader hunts for; tests pin it. Dropping it is a product call.
+F0231 || WAIVED || app/helpers/people/languages_known_helper.rb:79 || approved exception 2026-11-12: on-duty badge marks hunted rows
 R13785 || COMPLIANT || app/helpers/people/search_helper.rb:23 || DISC-01 new wording: a title's icon goes inside it; the icon sits inside the title span.
 F0238 || FIXED || app/helpers/teams_positions/position_sanity_checker_helper.rb:22 || CHECK_META labels now Title Case ("Deactivated Accounts with Grants", etc.).
 F0239 || FIXED || app/helpers/teams_positions/position_sanity_checker_helper.rb:30 || Repair button labels now Title Case ("Revoke Everything", "Reset to the New-User Set", etc.).
@@ -10,19 +10,19 @@ R13756 || COMPLIANT || app/views/people/languages_known/_language_group.html.erb
 R13751 || FIXED || app/views/people/languages_known/index.html.erb:16 || Search form now form_with builder: AppFormBuilder, f.search_field inside form_row, as the VC applications search does.
 F0224 || FIXED || app/views/people/languages_known/index.html.erb:16 || Visible "Search Languages" label from the builder; sr-only label and placeholder removed.
 R05880 || FIXED || app/views/people/languages_known/index.html.erb:16 || Field classes now come from the builder (width: option), no hand-written input classes.
-F0225 || NEEDS-APPROVAL || app/views/people/languages_known/index.html.erb:39 || Level-1 filter bar picks who is counted (site), not rows; removing it loses the filter on both levels. Product decision.
+F0225 || WAIVED || app/views/people/languages_known/index.html.erb:39 || approved exception 2026-11-12: level-1 bar sets row counts
 R13759 || COMPLIANT || app/views/people/languages_known/show.html.erb:12 || SPACE-01 new wording: scale spacing (my-4) around the bar is fine.
 R13801 || COMPLIANT || app/views/people/people_by_location/_country_group.html.erb:4 || CARD-03 new wording: ui_section_title may head a group of rows.
 R13803 || FIXED || app/views/people/people_by_location/_filter_fields.html.erb:10 || Raw fieldset replaced by f.fieldset "Also Include"; help line uses the builder's help-text classes and aria-describedby.
 R13802 || FIXED || app/views/people/people_by_location/_status_notice.html.erb:7 || Callout title passes heading_level: :h2 (page level, under the h1).
 R13805 || COMPLIANT || app/views/people/people_by_location/country.html.erb:64 || BTN-05/R7: the page has no primary action of its own (export is secondary), so Apply Filters stays primary.
-F0226 || NEEDS-APPROVAL || app/views/people/people_by_location/index.html.erb:22 || Level-1 filter bar sets the year/participation/statuses counted and the export; removing it loses those. Product decision.
+F0226 || WAIVED || app/views/people/people_by_location/index.html.erb:22 || approved exception 2026-11-12: level-1 bar sets row counts
 R13799 || COMPLIANT || app/views/people/people_by_location/index.html.erb:37 || BTN-05/R7: no other primary action on the page, so Apply Filters stays primary.
 R13769 || FIXED || app/views/people/people_by_status/show.html.erb:12 || Level-2 count is now a body ui_stat_row ("People") in place of the level-1 text-lg line.
 R13771 || COMPLIANT || app/views/people/people_by_status/show.html.erb:16 || EMPTY-01 new wording: a list that cannot be empty where drawn may render nothing.
 R13764 || COMPLIANT || app/views/people/retention_report/index.html.erb:62 || BTN-05/R7: no other primary action on the page, so Apply Filters stays primary.
 R13775 || COMPLIANT || app/views/people/search/index.html.erb:30 || BTN-07 new wording: a button in a callout is exempt from button_row.
-R13777 || NEEDS-APPROVAL || app/views/people/search/index.html.erb:81 || search_controller_test pins "no fieldset" and "no [role=group]" in the criteria panel by owner decree; f.fieldset needs that reversed.
+R13777 || WAIVED || app/views/people/search/index.html.erb:81 || approved exception 2026-11-12: criteria panel is not fieldset
 R06000 || COMPLIANT || app/views/people/search/index.html.erb:167 || SPACE-01 new wording: arbitrary value allowed with a comment; the comment above explains the cap.
 R13772 || FIXED || app/views/people/shared/_privacy_notice.html.erb:6 || Callout title passes heading_level: :h2; every caller renders it at page level under the h1.
 R13736 || COMPLIANT || app/views/people/status_change_recommendations/index.html.erb:14 || BTN-05 new wording: a two-button view toggle shows the current view as :primary, the other :secondary.
@@ -39,9 +39,9 @@ R13592 || BLOCKED || app/views/teams_positions/bulk_teams/index.html.erb:39 || N
 R13591 || FIXED || app/views/teams_positions/bulk_teams/index.html.erb:63 || "Checking is always safe" is now an info callout beside the submit.
 R08869 || FIXED || app/views/teams_positions/bulk_teams/preview.html.erb:109 || Dialog titled "<action>?", message adds whether it can be undone (bulk_team_undo), red on revoke.
 R13598 || COMPLIANT || app/views/teams_positions/bulk_teams/preview.html.erb:120 || HERO-04 new wording: a body link back is allowed for a re-post; "Go Back and Edit" re-posts the list.
-F0227 || NEEDS-APPROVAL || app/views/teams_positions/membership_report/index.html.erb:28 || Level-1 filter bar (type, managers, name, sort) is the page's only way to narrow teams; removing it is a product decision.
+F0227 || WAIVED || app/views/teams_positions/membership_report/index.html.erb:28 || approved exception 2026-11-12: level-1 bar sets row counts
 R13659 || COMPLIANT || app/views/teams_positions/membership_report/show.html.erb:48 || EMPTY-01: the missing manager is the report's finding, stated as an error callout, not an empty list the reader came for.
-F0228 || NEEDS-APPROVAL || app/views/teams_positions/position_grants/index.html.erb:26 || Level-1 filter bar (type, status, location) changes what every row counts; removing it is a product decision.
+F0228 || WAIVED || app/views/teams_positions/position_grants/index.html.erb:26 || approved exception 2026-11-12: level-1 bar sets row counts
 F0229 || FIXED || app/views/teams_positions/position_grants/show.html.erb:20 || "Shown" box now "Holders" from @total_members. On Site still counts the filtered roster: a category-wide figure needs the controller.
 F0237 || FIXED || app/views/teams_positions/position_lineups/_form.html.erb:11 || Section title now "Positions in This Lineup".
 F0234 || FIXED || app/views/teams_positions/position_lineups/index.html.erb:6 || Info callout replaced by one collapsed "How This Page Works" card with Q&A.

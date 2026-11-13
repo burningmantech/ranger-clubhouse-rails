@@ -21,7 +21,7 @@
                   icon: "plus", icon_type: :solid, aria: { label: "Add Post to #{@group.title}" } %>
 <% end %>
 
-<%= ui_section "Posts", badge: @posts.size.to_s, border: false do %>
+<%= ui_section "Posts", badge: @posts.size.to_s do %>
   <% if @posts.any? %>
     <%= ui_table striped: true do |t| %>
       <%= t.header do %>

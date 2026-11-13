@@ -39,6 +39,10 @@ This design system uses priority markers to indicate rule severity:
 5. **Implement as helper**: Once approved, create the component as a Ruby helper in `app/helpers/` or `app/helpers/ui_components/`
 6. **Document in guide**: Update the design guide with component description, usage, examples, accessibility, and styling
 
+**Approved one-offs:** the search bar's segmented radio control (`application/_search_bar_placeholder`,
+`btn` classes on radio labels in a `join`) and the profile photo upload's drag-and-drop dropzone
+(`profile_photos/new`) stay as one-off markup. Either becomes a helper on its second use.
+
 ---
 
 ## Color Styling Approval Workflow
@@ -99,6 +103,9 @@ for the reference implementation.
 ## Hero Panel Description Rule
 
 **CRITICAL**: `panel.description` is **one sentence** saying what the page does. Nothing else.
+The person page's hero (`person/_hero`) is the one exception: it is an identity strip, and its
+description holds the person's status, vintage and site badges, name, pronouns and callsign
+pronunciation instead of a sentence.
 
 The hero is the page's first fixation and is size-constrained on mobile. A paragraph
 there pushes the actual content below the fold and buries the one line the reader

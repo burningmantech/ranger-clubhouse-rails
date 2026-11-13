@@ -6,15 +6,15 @@ R01650 || COMPLIANT || app/views/application/_search_bar_placeholder.html.erb:84
 R13440 || COMPLIANT || app/views/application/_search_bar_placeholder.html.erb:84 || Same exemption as R01650: search is the guide's named on-demand dialog.
 R13441 || FIXED || app/views/application/_search_bar_placeholder.html.erb:80 || New SPACE-01 allows an arbitrary value with a comment; comment now explains mt-[15vh] and w-[calc(100%-2rem)].
 R01655 || FIXED || app/views/application/_search_bar_placeholder.html.erb:102 || "Mode" label text-sm dropped to text-base (R4).
-R01638 || NEEDS-APPROVAL || app/views/application/_search_bar_placeholder.html.erb:107 || Radio-label segmented control has no ButtonHelper; button_classes(:secondary) would change its neutral look. Approve variant or a segmented helper.
+R01638 || WAIVED || app/views/application/_search_bar_placeholder.html.erb:107 || approved exception 2026-11-12: segmented control one-off until reused
 R01644 || COMPLIANT || app/views/application/_search_bar_placeholder.html.erb:118 || FORM-01 exempts browser-only inputs; the mode select is in no form and only drives the Stimulus controller.
 R01659 || FIXED || app/views/application/_top_menu.html.erb:38 || Desktop brand is button_link :ghost, size "base".
 M0064 || FIXED || app/views/application/_top_menu.html.erb:65 || Phone brand is button_link :ghost, size "base", keeps px-1 and @min-brand classes.
 F0210 || FIXED || app/views/application/_top_menu.html.erb:92 || "Switch to Dark Theme" / "Switch to Light Theme"; top_menu_test updated.
 R01869 || FIXED || app/views/autocomplete/_item.html.erb:27 || Meta lines text-xs to text-sm: a muted second line under the main value (R4).
 R13428 || FIXED || app/views/layouts/print.html.erb:35 || @page and print :root rule moved to app/assets/stylesheets/print-page.css, linked by this layout alone (media print).
-R04479 || NEEDS-APPROVAL || app/views/layouts/print.html.erb:41 || Paper must print white; base-100 is off-white and no paper token exists. Needs a new colour token (e.g. --color-paper).
-M0092 || NEEDS-APPROVAL || app/views/layouts/print.html.erb:59 || print:bg-white for the same reason as R04479; would become print:bg-paper with the approved token.
+R04479 || FIXED || app/assets/stylesheets/print-page.css:24 || :root print background #fff is now var(--color-paper), the new white print token in application.css (A17).
+M0092 || FIXED || app/views/layouts/print.html.erb:52 || print:bg-white is now print:bg-paper (--color-paper token, A17).
 R13520 || FIXED || app/views/profile/_alerts.html.erb:18 || Italic "No number on file" is now none_stated (R6, profile label/value).
 R13516 || FIXED || app/views/profile/_alerts.html.erb:35 || Group header rows are t.row with t.cell colspan 3, not raw tr/td (35, 76).
 R13521 || COMPLIANT || app/views/profile/_alerts.html.erb:39 || New EMPTY-01: alerts are a fixed catalogue, which may render nothing.
@@ -58,10 +58,10 @@ R13556 || FIXED || app/views/profile_photos/new.html.erb:23 || Photo Requirement
 R13558 || FIXED || app/views/profile_photos/new.html.erb:175 || Tabs are tab_navigation; camera_controller follows the tab clicks to start/stop the camera.
 M0537 || FIXED || app/views/profile_photos/new.html.erb:175 || Same as R13558: hand-built tab buttons replaced by tab_navigation.
 M0067 || FIXED || app/views/profile_photos/new.html.erb:175 || Same as R13558.
-R13559 || NEEDS-APPROVAL || app/views/profile_photos/new.html.erb:129 || The builder has no drag-and-drop file field; a dropzone variant of f.file_field is a new component.
+R13559 || WAIVED || app/views/profile_photos/new.html.erb:129 || approved exception 2026-11-12: dropzone one-off until second use
 R07367 || FIXED || app/views/profile_photos/new.html.erb:128 || lg:w-[50%] to lg:w-1/2; border-[3px] spinners to border-3.
 R13568 || FIXED || app/views/profile_photos/new.html.erb:136 || "Click to upload" line text-lg removed.
-R07350 || NEEDS-APPROVAL || app/views/profile_photos/new.html.erb:147 || Hidden file input is the dropzone's; same decision as R13559.
+R07350 || WAIVED || app/views/profile_photos/new.html.erb:147 || approved exception 2026-11-12: dropzone one-off until second use
 R13560 || FIXED || app/views/profile_photos/new.html.erb:159 || Selected-file box is ui_callout_box :success inside the hidden target wrapper.
 R13565 || FIXED || app/views/profile_photos/new.html.erb:266 || Camera picker is a daisyUI select (handed-down); browser-only control, outside FORM-01.
 R07340 || FIXED || app/views/profile_photos/new.html.erb:290 || Capture is button_action :primary, xl, btn-circle; camera-select and camera-capture-btn utilities now unused.

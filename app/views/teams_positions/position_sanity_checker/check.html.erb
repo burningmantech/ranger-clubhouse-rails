@@ -45,7 +45,7 @@
 
       <% if PositionSanityCheck.grouped?(@check) %>
         <% @findings.group_by(&:group_id).each do |_id, group| %>
-          <%= ui_section group.first.group_label, border: false do %>
+          <%= ui_section group.first.group_label do %>
             <%= render "findings_table", check: @check, findings: group %>
           <% end %>
         <% end %>

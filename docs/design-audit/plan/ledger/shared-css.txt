@@ -11,7 +11,7 @@ C0096 || FIXED || app/assets/stylesheets/accessibility.css:63 || btn-copy-succes
 C0174 || FIXED || app/assets/stylesheets/components/camera.css:1 || camera-capture-btn and camera-select deleted: the view uses button_action and a daisyUI select; nothing else references them.
 C0104 || COMPLIANT || app/assets/stylesheets/components/flex-patterns.css:13 || Guide no longer documents inline-flex-center; it lists inline-flex-center-gap-2, which exists here.
 C0158 || FIXED || app/assets/stylesheets/components/hero-panel.css:57 || hero-stat-label 0.75rem to var(--text-sm) (C1). Flame and award hues are C0064.
-C0064 || NEEDS-APPROVAL || app/assets/stylesheets/components/hero-panel.css:48 || Award gold and flame warning-to-error mix are new colour; replacing them (neutral or a status token) is a colour decision for the maintainer.
+C0064 || WAIVED || app/assets/stylesheets/components/hero-panel.css:48 || approved exception 2026-11-12: award and flame hues stay
 C0089 || FIXED || app/assets/stylesheets/components/hq-window.css:41 || md..lg media band replaced by a container query on the summary's parent (below lg), laid across at 40rem. Threshold not rendered yet.
 C0175 || FIXED || app/assets/stylesheets/components/label-value.css:33 || (width >= 1024px) to (width >= theme(--breakpoint-lg)).
 C0137 || FIXED || app/assets/stylesheets/components/mega-menu.css:20 || (min-width: 1024px) to (width >= theme(--breakpoint-lg)); dialog look otherwise left.

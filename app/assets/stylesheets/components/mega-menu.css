@@ -39,6 +39,11 @@
   @apply flex items-center justify-between gap-2 px-4 py-2 border-b border-line;
 }
 
+/* Sits beside the field on every width; it never shrinks, the field does */
+.mega-menu-search-label {
+  @apply shrink-0 font-semibold text-heading;
+}
+
 .mega-menu-search {
   @apply flex-1 min-w-0 min-h-9 text-base;
 }

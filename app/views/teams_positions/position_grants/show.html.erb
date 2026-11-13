@@ -48,7 +48,7 @@
   <% end %>
 </div>
 
-<%= ui_section "Roster", icon: "users", icon_type: :solid, border: false do %>
+<%= ui_section "Roster", icon: "users", icon_type: :solid do %>
   <% if @members.any? %>
     <p class="text-base text-body mb-2">
       <%# "of N people on site" while that filter is applied: it narrows the
@@ -87,7 +87,7 @@
 <% end %>
 
 <% if @unassigned.any? %>
-  <%= ui_section "Unassigned", icon: "triangle-exclamation", icon_type: :solid, border: false do %>
+  <%= ui_section "Unassigned", icon: "triangle-exclamation", icon_type: :solid do %>
     <%# Not an empty state and not a filtered list: these are the people the
         position's own flag says should hold it and do not, which is the finding
         this report exists to surface. The status filter deliberately does not

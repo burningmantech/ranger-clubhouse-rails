@@ -33,9 +33,9 @@
       <h3 class="heading-title text-heading mb-1">
         <%= fa_icon "comment-sms", :solid, fixed: true %> Text
       </h3>
-      <div class="rounded-base border border-line bg-default p-3 mb-3">
+      <%= ui_text_box class: "mb-3" do %>
         <%= @form.sms_message %><span class="text-stone-subtle"><%= Rbs::SMS_SUFFIX %></span>
-      </div>
+      <% end %>
     <% end %>
 
     <% if @form.sends_email? || @form.sends_clubhouse? %>
@@ -43,12 +43,12 @@
         <%= fa_icon "envelope", :solid, fixed: true %>
         <%= [("Email" if @form.sends_email?), ("Clubhouse Message" if @form.sends_clubhouse?)].compact.to_sentence %>
       </h3>
-      <div class="rounded-base border border-line bg-default p-3">
+      <%= ui_text_box do %>
         <div class="font-semibold"><%= @form.simple? ? @form.sms_message : @form.subject %></div>
         <% if @form.message.present? %>
           <div class="mt-2"><%= simple_format(@form.message) %></div>
         <% end %>
-      </div>
+      <% end %>
     <% end %>
   <% end %>
 
@@ -62,7 +62,7 @@
   <% end %>
 </div>
 
-<%= ui_section "Recipients (#{@people.size})", icon: "user-check", icon_type: :solid, border: false do %>
+<%= ui_section "Recipients (#{@people.size})", icon: "user-check", icon_type: :solid do %>
   <p class="px-3 pb-2">
     Everyone below matches what you chose. If a channel cannot reach someone, the table says why.
   </p>
