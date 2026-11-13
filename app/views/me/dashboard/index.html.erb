@@ -1,9 +1,8 @@
 <% if current_user.is_ranger? || current_user.is_echelon? %>
   <%= render "welcome_hero_stats", person: current_user %>
 <% elsif current_user.is_applicant? %>
-  <h1 class="text-2xl font-bold text-heading mb-4">
-    Welcome Ranger Applicant <%= current_user.callsign %>!
-  </h1>
+  <%= hero_panel icon: "home", heading_level: :h1, id: "dashboard-header",
+                 title: "Welcome Ranger Applicant #{current_user.callsign}!" %>
 <% else %>
   <%= hero_panel icon: "home", heading_level: :h1, id: "dashboard-header", title: "Clubhouse Dashboard" %>
 <% end %>

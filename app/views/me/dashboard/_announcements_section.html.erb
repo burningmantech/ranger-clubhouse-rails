@@ -6,15 +6,13 @@
   has_more = unread.size > max_display
 %>
 <% if unread.any? %>
-  <div class="mb-6 card-standard p-3" role="region" aria-label="Clubhouse Announcements">
+  <%= ui_card class: "mb-6 p-4", role: "region", aria: { label: "Clubhouse Announcements" } do %>
     <%# Header: title, unread count, and a quiet link to the full list %>
     <div class="flex items-center justify-between gap-3 mb-1">
       <div class="flex-center-gap-2 flex-wrap min-w-0">
         <%= fa_icon "bullhorn", :solid, class: "icon-warning" %>
         <h2 class="heading-section text-heading">Clubhouse Announcements</h2>
-        <span class="inline-flex items-center justify-center min-w-[1.5rem] px-2 py-1 font-bold rounded-full bg-warning text-warning-content" aria-label="<%= unread.size %> unread">
-          <%= unread.size %>
-        </span>
+        <%= ui_badge unread.size.to_s, :warning, size: "sm", aria: { label: "#{unread.size} unread" } %>
       </div>
       <%= link_to me_announcements_path, class: "inline-flex-center-gap-2 shrink-0 min-h-9 font-medium text-stone-muted hover:text-heading transition-colors" do %>
         View All
@@ -69,5 +67,5 @@
         <% end %>
       </div>
     <% end %>
-  </div>
+  <% end %>
 <% end %>

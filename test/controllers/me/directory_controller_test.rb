@@ -85,7 +85,7 @@ class Me::DirectoryControllerTest < ActionDispatch::IntegrationTest
     assert teams.any?, "Should have teams"
 
     # Check that member cards are rendered
-    assert_select "div.rounded-lg", minimum: 1, message: "Should display member cards"
+    assert_select "[role=listitem].card-standard", minimum: 1, message: "Should display member cards"
 
     # Verify specific member callsigns appear
     teams.each do |team|

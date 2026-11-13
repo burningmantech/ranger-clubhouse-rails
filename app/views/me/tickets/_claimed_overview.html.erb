@@ -24,13 +24,13 @@
             <p><strong>Pickup on or after <%= mdy_format presenter.ticket.access_date, full: true %></strong> at the
               locations below.</p>
           <% else %>
-            <p class="font-bold text-error">We don't have your pickup date on file. Contact the Ranger Ticketing
+            <p class="font-bold text-error"><%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %> We don't have your pickup date on file. Contact the Ranger Ticketing
               Team.</p>
           <% end %>
           <% if info.pickup_locations.present? %>
             <div class="mt-1 text-body"><%= nl2br info.pickup_locations %></div>
           <% else %>
-            <p class="font-bold text-error mt-1">Pickup locations aren't set yet. Contact the Ranger Ticketing Team.</p>
+            <p class="font-bold text-error mt-1"><%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %> Pickup locations aren't set yet. Contact the Ranger Ticketing Team.</p>
           <% end %>
         </div>
       <% end %>

@@ -3,6 +3,6 @@
     puts back the headings and paragraph spacing the saved HTML relies on. %>
 <% if body.present? %>
   <%= ui_section title, id:, body_class: "lexxy-content" do %>
-    <%= body.html_safe %>
+    <%= rich_text(body) %>
   <% end %>
 <% end %>

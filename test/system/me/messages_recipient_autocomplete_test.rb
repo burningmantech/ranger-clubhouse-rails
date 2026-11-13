@@ -21,7 +21,7 @@ class Me::MessagesFindRecipientTest < ApplicationSystemTestCase
   test "compose page shows Find Recipient button on a phone only" do
     visit new_me_message_path
 
-    assert_selector "h1", text: "New Message", wait: 5
+    assert_selector "h1", text: "Write Message", wait: 5
     assert_no_selector "a", text: "Find Recipient"
     on_a_phone { assert_selector "a", text: "Find Recipient" }
   end
@@ -71,7 +71,7 @@ class Me::MessagesFindRecipientTest < ApplicationSystemTestCase
     assert_text "No callsigns matched.", wait: 5
     field.send_keys :enter
     assert_selector "button[aria-label='Remove NoSuchRanger']"
-    assert_selector "h1", text: "New Message"
+    assert_selector "h1", text: "Write Message"
 
     # A callsign already chipped is not chipped twice. The Enter arrives inside
     # the search's debounce, so it waits for the search, which empties the field.
@@ -177,7 +177,7 @@ class Me::MessagesFindRecipientTest < ApplicationSystemTestCase
     field.send_keys "NoSuchRanger", :enter
     assert_selector "button[aria-label='Remove NoSuchRanger']", wait: 5
     assert_equal "", field.value
-    assert_selector "h1", text: "New Message"
+    assert_selector "h1", text: "Write Message"
   end
 
   # Folded away, the Cadre select used to send the message to the whole team,
@@ -209,7 +209,7 @@ class Me::MessagesFindRecipientTest < ApplicationSystemTestCase
   test "Find Recipient opens the search modal" do
     on_a_phone do
       visit new_me_message_path
-      assert_selector "h1", text: "New Message", wait: 5
+      assert_selector "h1", text: "Write Message", wait: 5
 
       click_on "Find Recipient"
 
@@ -222,7 +222,7 @@ class Me::MessagesFindRecipientTest < ApplicationSystemTestCase
   test "searching by callsign lists matching recipients" do
     on_a_phone do
       visit new_me_message_path
-      assert_selector "h1", text: "New Message", wait: 5
+      assert_selector "h1", text: "Write Message", wait: 5
 
       click_on "Find Recipient"
       assert_selector "dialog.modal[open]", wait: 5
@@ -240,7 +240,7 @@ class Me::MessagesFindRecipientTest < ApplicationSystemTestCase
   test "selecting a recipient populates the compose form and closes the modal" do
     on_a_phone do
       visit new_me_message_path
-      assert_selector "h1", text: "New Message", wait: 5
+      assert_selector "h1", text: "Write Message", wait: 5
 
       click_on "Find Recipient"
       assert_selector "dialog.modal[open]", wait: 5
@@ -275,7 +275,7 @@ class Me::MessagesFindRecipientTest < ApplicationSystemTestCase
   test "end-to-end message send via Find Recipient flow" do
     on_a_phone do
       visit new_me_message_path
-      assert_selector "h1", text: "New Message", wait: 5
+      assert_selector "h1", text: "Write Message", wait: 5
 
       click_on "Find Recipient"
       assert_selector "dialog.modal[open]", wait: 5
@@ -306,7 +306,7 @@ class Me::MessagesFindRecipientTest < ApplicationSystemTestCase
   test "browser autofill in the Callsign field leaves the dialog open with the value" do
     on_a_phone do
       visit new_me_message_path
-      assert_selector "h1", text: "New Message", wait: 5
+      assert_selector "h1", text: "Write Message", wait: 5
 
       click_on "Find Recipient"
       assert_selector "dialog.modal[open]", wait: 5

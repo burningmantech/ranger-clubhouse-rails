@@ -1,15 +1,9 @@
 <%# locals: (step:,facts:)%>
 <% unless facts.is_applicant %>
-  <% if !facts.is_echelon && facts.online_course_passed %>
-    <p class="text-error font-medium">
-      Yearly check: Confirm your info is still correct.
-    </p>
-  <% else %>
-    <p>Yearly check: Confirm your info is still correct.</p>
-  <% end %>
+  <p>Yearly check: Confirm your info is still correct.</p>
 
   <% if !facts.is_echelon && !facts.is_auditor %>
-    <p class="font-semibold text-lg">
+    <p class="font-semibold">
       <%= fa_icon "shirt", :solid %> Double-check your shirt sizes!
     </p>
   <% end %>

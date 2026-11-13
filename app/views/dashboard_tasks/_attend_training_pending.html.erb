@@ -8,7 +8,7 @@
 <% elsif session_ended %>
   <%= fa_icon "hourglass-half", :solid %> <b>Your training session has ended.</b> Your result will show here once your trainers record it.
 <% elsif facts.needs_full_training || facts.is_auditor || facts.is_applicant %>
-  <p class="text-error font-bold"><%= fa_icon "clock", :solid, class: "icon-error" %> FULL DAY required</p>
+  <p class="text-error font-bold"><%= fa_icon "clock", :solid, class: "icon-error" %> Full day required</p>
   <% unless facts.is_auditor %>
     <div class="text-stone-muted text-sm">
       <% if facts.is_binary %>
@@ -24,10 +24,14 @@
   <%= fa_icon "clock-rotate-left", :solid %> <b>Half-day only</b> — 2+ events experience.
 <% end %>
 <% if training.slot %>
-  <div class="my-2 p-2 bg-default dark:bg-default rounded">
-    <%= fa_icon "calendar", :solid %> <b><%= datetime_format(training.slot.begins, tz: training.slot.timezone) %></b><br>
-    <%= fa_icon "location-dot", :solid %> <%= training.slot.description %>
-  </div>
+  <ul class="my-2 space-y-1">
+    <%= ui_icon_item "calendar" do %>
+      <b><%= datetime_format(training.slot.begins, tz: training.slot.timezone) %></b>
+    <% end %>
+    <%= ui_icon_item "location-dot" do %>
+      <%= training.slot.description %>
+    <% end %>
+  </ul>
 <% end %>
 <% unless session_ended %>
   <p class="text-base">Can't make it? <%= link_to "Schedule", me_schedule_path %></p>

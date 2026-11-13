@@ -24,14 +24,10 @@
 
 <% unless have_provisions %>
   <%# --- Nothing to decide -------------------------------------------------- %>
-  <%= ui_callout_box :secondary, icon: "circle-info", accent: true, title: "No Provisions to Decide Right Now" do %>
-    <p class="mb-1"><strong>You have no earned provisions this year.</strong></p>
-    <p class="text-body">Provisions like meals, Wet Spot access, and event radios are earned from prior volunteer service. When you earn some, they show up here.</p>
+  <%= ui_empty_state icon: "gear", icon_type: :solid do %>
+    <strong>You have no earned provisions this year.</strong>
+    Provisions like meals, Wet Spot access, and event radios are earned from prior volunteer service. When you earn some, they show up here.
   <% end %>
-
-  <div class="mt-4">
-    <%= button_link "Back to Tickets & Provisions", :secondary, me_tickets_path, icon: "arrow-left", icon_type: :solid %>
-  </div>
 
 <% else %>
   <%# --- What the choice is about ------------------------------------------ %>
@@ -45,10 +41,9 @@
     </p>
     <ul class="space-y-2">
       <% items.each do |item| %>
-        <li class="flex items-center gap-3">
-          <%= fa_icon item.icon, :solid, class: "text-stone-icon shrink-0 w-5 text-center" %>
-          <span class="text-body"><%= item.label %></span>
-        </li>
+        <%= ui_icon_item item.icon, :solid, tone: "text-stone-icon" do %>
+          <%= item.label %>
+        <% end %>
       <% end %>
     </ul>
   <% end %>

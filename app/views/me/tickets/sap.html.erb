@@ -88,7 +88,7 @@
       <p class="text-base text-body mb-3">
         <strong>You can release it later<%= deadline ? " until #{full_datetime_format(deadline)}" : " before the deadline" %> if your plans change.</strong>
       </p>
-      <%= button_link "Claim Setup Access Pass", :success, me_tickets_document_status_path(sap_doc),
+      <%= button_link "Claim Setup Access Pass", :primary, me_tickets_document_status_path(sap_doc),
             method: :patch, params: { status: AccessDocument::CLAIMED },
             icon: "circle-check", icon_type: :solid %>
     <% end %>

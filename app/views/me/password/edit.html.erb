@@ -4,13 +4,13 @@
 
 <%= ui_form(@password_form, me_profile_password_path) do |f| %>
   <%= ui_section "Password Details", icon: "key", icon_type: :solid do %>
-    <%= f.password_field :old_password, label: "Current Password", width: "w-full sm:w-64" %>
-    <%= f.password_field :password, label: "New Password", width: "w-full sm:w-64", minlength: 8, maxlength: 80, help_text: "Must be at least 8 characters" %>
-    <%= f.password_field :password_confirmation, label: "Confirm New Password", width: "w-full sm:w-64", minlength: 8, maxlength: 80 %>
+    <%= f.password_field :old_password, label: "Current Password", required: true, width: "w-full sm:w-64" %>
+    <%= f.password_field :password, label: "New Password", required: true, width: "w-full sm:w-64", minlength: 8, maxlength: 80, help_text: "Must be at least 8 characters" %>
+    <%= f.password_field :password_confirmation, label: "Confirm New Password", required: true, width: "w-full sm:w-64", minlength: 8, maxlength: 80 %>
   <% end %>
 
   <%= button_row do %>
-    <%= f.submit "Change Password" %>
+    <%= f.submit "Save Password" %>
     <%= cancel_link me_profile_path %>
   <% end %>
 <% end %>

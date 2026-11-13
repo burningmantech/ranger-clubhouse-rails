@@ -3,18 +3,21 @@
                description: "Review your on-playa rangering hours by position and event year.", back_to: back_to_timesheet_dashboard(@year) %>
 
 <%= ui_stat_row do %>
-  <%= ui_stat_box hour_format(@history.total_duration), "TOTAL HOURS" %>
-  <%= ui_stat_box @history.years.size, "YEARS" %>
-  <%= ui_stat_box @history.positions.size, "POSITIONS" %>
+  <%= ui_stat_box hour_format(@history.total_duration), "Total Hours" %>
+  <%= ui_stat_box @history.years.size, "Years" %>
+  <%= ui_stat_box @history.positions.size, "Positions" %>
 <% end %>
 
-<%= ui_section "Volunteer Hours Summary", icon: "person-walking", icon_type: :solid do %>
-  <dl class="instruction-list mb-3">
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
     <dt>What does this table show?</dt>
     <dd>Your on-playa rangering hours by position and event year. Click on any hour total to see the individual timesheet entries.</dd>
     <dt>Why are some hours excluded?</dt>
     <dd>In-Person Trainings, and Advanced Ranger Trainings are not tracked. Off-playa efforts are not shown here.</dd>
   </dl>
+<% end %>
+
+<%= ui_section "Volunteer Hours Summary", icon: "person-walking", icon_type: :solid do %>
 
   <div class="mb-3">
     <%= years_breakdown current_user %>

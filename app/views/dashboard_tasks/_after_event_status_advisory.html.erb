@@ -6,7 +6,7 @@
     <li>Attend <b>full day</b> In-Person Training</li>
     <li>Walk a regular shift (Dirt, etc.)</li>
   </ol>
-  <p class="text-sm text-stone-muted"><%= fa_icon "info-circle", :solid, class: "icon-info" %> Training/mentee shifts don't count. Status auto-restores after regular shift.</p>
+  <p class="text-stone-muted"><%= fa_icon "info-circle", :solid, class: "icon-info" %> Training/mentee shifts don't count. Status auto-restores after regular shift.</p>
   <p class="mt-2">Questions? Contact Volunteer Coordinators.</p>
 <% else %>
   <% is_retired = (facts.status == Person::RETIRED) %>
@@ -18,6 +18,6 @@
     <li>Attend <b>full day</b> In-Person Training</li>
     <li>Walk a Cheetah Cub shift with Mentor</li>
   </ol>
-  <p class="text-sm text-stone-muted">Mentor Cadre restores status after Cheetah Cub if approved.</p>
+  <p class="text-stone-muted">Mentor Cadre restores status after Cheetah Cub if approved.</p>
   <p class="mt-2">Questions? Contact Volunteer Coordinators.</p>
 <% end %>

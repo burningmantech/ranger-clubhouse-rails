@@ -19,7 +19,7 @@
   <%# Mobile tab bar %>
   <div class="mega-menu-tabs flex lg:hidden">
     <%= mega_chrome_button "Favorites", "favorites" %>
-    <%= mega_chrome_button "Recently visited", "recent" %>
+    <%= mega_chrome_button "Recently Visited", "recent" %>
     <%= mega_chrome_button "Categories", "categories" %>
   </div>
 
@@ -27,7 +27,7 @@
     <%# Desktop side column: convenience area above, categories below %>
     <nav class="mega-menu-side hidden lg:flex" aria-label="Menu sections">
       <%= mega_chrome_button "Favorites", "favorites", icon: "star", icon_type: :solid %>
-      <%= mega_chrome_button "Recently visited", "recent", icon: "clock-rotate-left", icon_type: :solid %>
+      <%= mega_chrome_button "Recently Visited", "recent", icon: "clock-rotate-left", icon_type: :solid %>
       <div class="mega-menu-side-divider" aria-hidden="true"></div>
       <% @mega_categories.each do |category| %>
         <%= mega_chrome_button category[:title], MegaMenu.panel_key(category),
@@ -87,7 +87,7 @@
 
       <% @mega_categories.each do |category| %>
         <%= mega_panel MegaMenu.panel_key(category) do %>
-          <%= button_action "Categories", :ghost,
+          <%= button_action "Back to Categories", :ghost,
                             icon: "chevron-left", icon_type: :solid,
                             class: "mega-menu-back lg:hidden",
                             data: { action: "mega-menu#show", mega_menu_panel_param: "categories" } %>

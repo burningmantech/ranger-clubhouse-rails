@@ -181,7 +181,7 @@ class Me::ProfileIntegrationTest < ApplicationSystemTestCase
 
     within_section "Name & Contact" do
       # No preferred name
-      assert_text "no preferred first name given"
+      assert_text "Preferred name: None stated"
 
       # Gender and pronouns are provided, but for prospective ranger test below
     end

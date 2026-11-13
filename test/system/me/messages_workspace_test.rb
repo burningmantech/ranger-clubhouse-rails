@@ -60,14 +60,15 @@ class Me::MessagesWorkspaceTest < ApplicationSystemTestCase
     assert_selector "#{row(@other)}.messages-conversation-unread"
   end
 
-  # Review finding 12: the label is hidden and Lexxy names its text box from
-  # labels alone, so the reply box had no accessible name at all.
+  # Review finding 12: Lexxy names its text box from labels alone, so with the
+  # label hidden the reply box had no accessible name at all. The label is
+  # visible now, and its required mark is part of the name.
   test "the reply box is named Reply" do
     sign_in(@owner)
     visit me_message_path(@thread)
 
     editor = find("#messages-reply-form lexxy-editor [role=textbox]")
-    assert_equal "Reply", editor["aria-label"]
+    assert_match(/\AReply/, editor["aria-label"])
   end
 
   test "below lg a row opens the thread as its own page" do

@@ -20,10 +20,8 @@
                back_to: ["Tickets & Provisions", me_tickets_path] %>
 
 <% if gifts.empty? %>
-  <%= ui_callout_box :secondary, icon: "gift", accent: true, title: "No Gift Ticket to Set Up" do %>
-    <p class="mb-3">You don't have a Gift Ticket to claim right now. If you expected one, the Ranger Ticketing Team can help.</p>
-    <%= button_link "Back to Tickets & Provisions", :secondary, me_tickets_path, icon: "arrow-left", icon_type: :solid %>
-  <% end %>
+  <%= ui_empty_state "You don't have a Gift Ticket to claim right now. If you expected one, the Ranger Ticketing Team can help.",
+                     icon: "gift", icon_type: :solid %>
 
 <% else %>
   <%# How delivery works — ported from ticket-gift-info.hbs top notice. %>
@@ -53,9 +51,9 @@
         <div class="flex items-center gap-2 mb-2">
           <%= render "status_chip", state: :decided, label: "Claimed" %>
         </div>
-        <h3 class="heading-title text-heading mb-1">
+        <p class="font-semibold text-heading mb-1">
           Claimed — <%= delivery_phrase.call(ticket) %>.
-        </h3>
+        </p>
         <p class="text-body mb-3">
           Your <%= ticket.type_label %> is yours for this event. Gift Tickets can't be banked for a future year.
         </p>
@@ -99,9 +97,9 @@
         <div class="flex items-center gap-2 mb-2">
           <%= render "status_chip", state: :needs_decision, label: "Ready to Claim" %>
         </div>
-        <h3 class="heading-title text-heading mb-1">
+        <p class="font-semibold text-heading mb-1">
           A <%= ticket.type_label %> is ready to claim.
-        </h3>
+        </p>
         <p class="text-body mb-3">
           Pick how it reaches you and it's claimed in one step. Gift Tickets can't be banked — they're only good for the upcoming event.
         </p>
@@ -111,7 +109,7 @@
         <div class="mt-4">
           <p class="text-body font-medium mb-2">Claim it and choose delivery:</p>
           <%= button_row do %>
-            <%= button_link "Claim & Pick Up at Will Call", :secondary, me_tickets_delivery_path,
+            <%= button_link "Claim & Pick Up at Will Call", :primary, me_tickets_delivery_path,
                   method: :patch, icon: "hand", icon_type: :solid,
                   params: { delivery_method: "will_call", document_id: ticket.id } %>
             <%= button_link "Claim & Mail (USPS Standard)", :secondary, me_tickets_delivery_path,

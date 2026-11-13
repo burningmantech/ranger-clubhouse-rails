@@ -3,11 +3,11 @@
 <% else %>
   <div class="flex flex-col gap-4">
     <% vehicles.each do |vehicle| %>
-      <div class="card-standard shadow-sm overflow-hidden transition-shadow hover:shadow-md" aria-labelledby="vehicle-title-<%= vehicle.id %>">
+      <%= ui_card class: "overflow-hidden", aria: { labelledby: "vehicle-title-#{vehicle.id}" } do %>
         <div class="p-4 flex flex-col gap-3">
           <div class="flex justify-between items-start">
             <div>
-              <h4 id="vehicle-title-<%= vehicle.id %>" class="text-base font-semibold text-heading">
+              <h4 id="vehicle-title-<%= vehicle.id %>" class="heading-title text-heading">
                 <%= vehicle.vehicle_year %> <%= vehicle.vehicle_make %> <%= vehicle.vehicle_model %>
               </h4>
               <p class="me-muted text-sm mt-1">
@@ -34,13 +34,12 @@
           </div>
 
           <% if vehicle.response.present? %>
-            <div class="text-sm bg-default p-3 rounded text-body border border-line">
-              <span class="font-bold block uppercase tracking-wider me-muted mb-1">Response</span>
-              <%= vehicle.response %>
-            </div>
+            <%= ui_label_value do |lv| %>
+              <% lv.row "Response", vehicle.response %>
+            <% end %>
           <% end %>
 
-          <div class="grid grid-cols-2 gap-y-2 gap-x-4 text-sm me-muted mt-1">
+          <div class="grid grid-cols-2 gap-y-2 gap-x-4 me-muted mt-1">
             <div class="flex flex-col">
               <span class="uppercase tracking-wider font-semibold">Permit</span>
               <span class="font-medium text-heading"><%= vehicle.driving_sticker_label %></span>
@@ -62,20 +61,15 @@
           <% if vehicle.status == Vehicle::PENDING || vehicle.status == Vehicle::REJECTED %>
             <div class="flex gap-3 mt-2 pt-3 border-t border-line">
               <% if vehicle.status == Vehicle::PENDING %>
-                <%= button_link nil, :primary, edit_me_vehicles_personal_vehicle_path(vehicle) do %>
-                  <%= fa_icon "pen", :solid, end: 2 %> Edit
-                <% end %>
+                <%= edit_link edit_me_vehicles_personal_vehicle_path(vehicle) %>
               <% end %>
 
-              <%= button_link nil, :secondary,
-                              me_vehicles_personal_vehicle_path(vehicle),
-                              data: confirm_modal(message: "Delete this vehicle request? This cannot be undone.", method: :delete, variant: :error) do %>
-                <%= fa_icon "trash", :solid, end: 2 %> Delete
-              <% end %>
+              <%= delete_button me_vehicles_personal_vehicle_path(vehicle), icon: "trash", icon_type: :solid,
+                                confirm: "this vehicle request" %>
             </div>
           <% end %>
         </div>
-      </div>
+      <% end %>
     <% end %>
   </div>
 <% end %>

@@ -7,7 +7,8 @@
   <% if @instructions.present? %>
     <%= @instructions.html_safe %>
   <% else %>
-    <h3 class="heading-title text-error mb-2">Instructions Not Found</h3>
-    <p>Uh oh, I cannot find the MVR Request instructions! Please contact the Vehicle Administrator for help.</p>
+    <%= ui_callout_box :error, title: "Instructions Not Found", heading_level: :h3 do %>
+      <p>The MVR Request instructions are missing. Please contact the Vehicle Administrator for help.</p>
+    <% end %>
   <% end %>
 <% end %>

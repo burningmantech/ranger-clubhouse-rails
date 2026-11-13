@@ -140,7 +140,7 @@ class Me::AvailableSignUpsControllerTest < ActionDispatch::IntegrationTest
     assert_nil @controller.instance_variable_get(:@message)
     # create.turbo_stream passes { result:, slot:, person: }; the modal must tolerate the
     # extra slot: and person: locals and render rather than raising StrictLocalsError.
-    assert_match "Missing Sign Up Prerequisite", response.body
+    assert_match "Missing Sign-Up Prerequisite", response.body
     assert_match(/target="modal"/, response.body)
   end
 

@@ -5,7 +5,7 @@
   <div class="mb-4 rounded-lg" role="timer" aria-label="Deadline countdown: <%= days_left %> days remaining">
     <div class="flex items-center justify-between gap-4 mb-4">
       <div>
-        <p class="text-sm font-bold uppercase tracking-wider">
+        <p class="font-bold uppercase tracking-wider">
           Deadline
         </p>
         <div class="font-bold text-lg text-error">
@@ -18,7 +18,7 @@
           <p class="text-2xl font-bold text-heading">
             <%= days_left %>
           </p>
-          <p class="text-sm font-medium">
+          <p class="font-medium">
             <%= "day".pluralize(days_left) %> left
           </p>
         </div>
@@ -27,7 +27,7 @@
   </div>
 <% end %>
 <%= ui_callout_box :info, accent: true, icon: false, role: "note" do %>
-  <p class="text-sm">
+  <p>
     <strong>Tip:</strong> Submit only <strong>one</strong> request. Multiple submissions will delay processing.
   </p>
 <% end %>
