@@ -233,7 +233,7 @@ module ButtonHelper
       options[:data].merge!(confirm_modal({ variant: :error }.merge(confirm_modal_options)))
     elsif confirm_message
       options[:data][:turbo_confirm] = confirm_modal_dialog(message: confirm_message, variant: :error)
-    elsif confirm != false
+    elsif confirm != false && !options[:data].key?(:turbo_confirm) && !options[:data].key?("turbo_confirm")
       thing = confirm.is_a?(String) ? confirm : "this record"
       options[:data][:turbo_confirm] = confirm_modal_dialog(title: label || "Delete",
                                                             message: "Delete #{thing}? This cannot be undone.",

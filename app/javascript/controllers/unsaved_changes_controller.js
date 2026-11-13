@@ -20,6 +20,22 @@ import { Turbo } from "@hotwired/turbo-rails";
 // A form drawn again with what was typed -- a refused or questioned save --
 // sets data-unsaved-changes-dirty-value="true": the submit that brought it back
 // disarmed the guard, and the edits are still unsaved.
+// One question at a time for the page, and one answer: two guarded forms on a
+// page share these, so the second neither asks again nor replaces the first
+// one's dialog.
+let asking = false;
+let leaveConfirmed = false;
+
+// The question is open only while its dialog is: a dialog a render took away
+// answers nothing, and must not leave every later visit refused.
+const questionOpen = () => asking && Boolean(document.querySelector("#turbo-confirm-modal dialog[open]"));
+
+// A leave agreed to holds for that visit alone. Still here once a page has
+// loaded, or after the request failed: the guard stands again.
+const rearm = () => { leaveConfirmed = false; };
+document.addEventListener("turbo:load", rearm);
+document.addEventListener("turbo:fetch-request-error", rearm);
+
 export default class extends Controller {
     static values = { dirty: Boolean };
 
@@ -89,7 +105,7 @@ export default class extends Controller {
     handleBeforeUnload(event) {
         // A leave already agreed to in the dialog is not asked about again
         // when Turbo turns that visit into a full page load.
-        if (this.leaveConfirmed || !this.guard()) return;
+        if (leaveConfirmed || !this.guard()) return;
 
         // Browsers ignore custom text and show their own generic message —
         // both preventDefault() and returnValue are required for Chrome/Firefox.
@@ -103,11 +119,11 @@ export default class extends Controller {
         if (document.documentElement.hasAttribute("data-signed-out")) return;
 
         // The visit started again below, after a yes.
-        if (this.leaveConfirmed) return;
+        if (leaveConfirmed) return;
 
         // A visit proposed while the dialog is up (a stream's redirect, say)
         // is dropped: the reader is answering about the first one.
-        if (this.asking) {
+        if (questionOpen()) {
             event.preventDefault();
             return;
         }
@@ -116,16 +132,16 @@ export default class extends Controller {
         if (!guard) return;
 
         event.preventDefault();
-        this.asking = true;
+        asking = true;
         const url = event.detail.url;
         const options = await this.visitOptionsFor(url);
 
         const confirmed = await Turbo.config.forms.confirm(guard.question, this.element);
-        this.asking = false;
+        asking = false;
 
         if (confirmed) {
             this.guardConfirmed(guard);
-            this.leaveConfirmed = true;
+            leaveConfirmed = true;
             Turbo.visit(url, options);
         } else {
             this.guardDeclined(guard);

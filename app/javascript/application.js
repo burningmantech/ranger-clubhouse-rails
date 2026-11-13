@@ -145,41 +145,26 @@ function confirmDialogFor(message) {
     return confirmDialog(message);
 }
 
-// The confirm button's look, by the variant ButtonHelper names it with.
-const CONFIRM_VARIANT_CLASSES = {primary: "btn-primary", error: "btn-error"};
-
-// The dialog ModalHelper#confirm_modal_dialog draws, built for a question a
-// controller asks. Keep the two in step: same classes, same button ids (the
-// answer is read from them above). Every text goes in as text, never markup:
-// a team or role title in it is a name someone chose.
+// The dialog ModalHelper#confirm_modal_dialog draws, for a question a
+// controller asks: a copy of the one the layout keeps in
+// #confirm-dialog-template, filled in. Every text goes in as text, never
+// markup: a team or role title in it is a name someone chose.
 function confirmDialog({title = "Confirm", message = "Continue?", confirmLabel = "Confirm",
                            cancelLabel = "Cancel", variant = "primary"}) {
-    const tag = (name, attributes = {}, ...children) => {
-        const node = document.createElement(name);
-        Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, value));
-        node.append(...children);
-        return node;
-    };
-    const titleId = `confirm-title-${Math.random().toString(36).slice(2, 10)}`;
-    const paragraphs = [message].flat().map((text) => tag("p", {}, text));
+    const dialog = document.getElementById("confirm-dialog-template").content.querySelector("dialog").cloneNode(true);
+    const paragraphs = [message].flat().map((text) => {
+        const paragraph = document.createElement("p");
+        paragraph.textContent = text;
+        return paragraph;
+    });
+    const confirm = dialog.querySelector("#turbo-confirm-button");
 
-    const close = tag("button", {type: "button", class: "btn btn-ghost btn-sm btn-square", "data-action": "modal#hide"},
-        tag("i", {class: "fa-solid fa-xmark w-3 h-4", "aria-hidden": "true"}),
-        tag("span", {class: "sr-only"}, "Close modal"));
-    const variantClass = CONFIRM_VARIANT_CLASSES[variant] ?? CONFIRM_VARIANT_CLASSES.primary;
-
-    return tag("dialog", {
-            class: "modal size-auto max-h-none max-w-none overflow-y-auto modal-middle",
-            "aria-labelledby": titleId, "aria-modal": "true",
-            "data-controller": "modal", "data-modal-closable-value": "true"
-        },
-        tag("div", {class: "modal-box max-w-2xl"},
-            tag("div", {class: "modal-header-bar"}, tag("h3", {id: titleId, class: "modal-title-text"}, title), close),
-            tag("div", {class: "modal-body-content"}, ...paragraphs),
-            tag("div", {class: "button-row modal-footer-bar"},
-                tag("button", {type: "button", class: `btn ${variantClass} btn-sm`, id: "turbo-confirm-button"}, confirmLabel),
-                tag("button", {type: "button", class: "btn btn-secondary btn-outline btn-sm", id: "turbo-cancel-button"}, cancelLabel))),
-        tag("form", {method: "dialog", class: "modal-backdrop"}, tag("button", {}, "Close Dialog")));
+    dialog.querySelector(".modal-title-text").textContent = title;
+    dialog.querySelector(".modal-body-content").replaceChildren(...paragraphs);
+    confirm.textContent = confirmLabel;
+    if (variant === "error") confirm.classList.replace("btn-primary", "btn-error");
+    dialog.querySelector("#turbo-cancel-button").textContent = cancelLabel;
+    return dialog;
 }
 
 // A dropdown menu is a native <details> (NavigationHelper#dropdown_menu),
@@ -224,8 +209,14 @@ document.addEventListener("turbo:before-cache", () => {
 // the reader pressed the button. A page that reports the refusal in a callout
 // of its own (data-refusal, above its form) has that callout brought into
 // view and focused, as form_controller does for the builder's error summary.
+// Only for the render that answers the refused submit: any later render of
+// the page leaves the reader where they are.
+let submitRefused = false;
+document.addEventListener("turbo:submit-end", ({detail}) => { submitRefused = !detail.success; });
 document.addEventListener("turbo:render", () => {
-    const refusal = document.querySelector("[data-refusal]");
+    const refused = submitRefused;
+    submitRefused = false;
+    const refusal = refused && document.querySelector("[data-refusal]");
     if (!refusal) return;
 
     refusal.focus({preventScroll: true});

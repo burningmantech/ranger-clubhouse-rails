@@ -238,13 +238,13 @@ class Me::SurveysController < ApplicationController
             field_name = "question_#{question.id}_#{trainer.id}"
             next if survey_params[field_name].present?
 
-            errors[field_name] = %(A response is required for "#{question.description}" (#{trainer.callsign}).)
+            errors[field_name] = %(A response is required for "#{question.description.truncate(80)}" (#{trainer.callsign}).)
           end
         end
       else
         group.survey_questions.select(&:is_required).each do |question|
           field_name = "question_#{question.id}"
-          errors[field_name] = %(A response is required for "#{question.description}".) if survey_params[field_name].blank?
+          errors[field_name] = %(A response is required for "#{question.description.truncate(80)}".) if survey_params[field_name].blank?
         end
       end
     end

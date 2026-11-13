@@ -59,7 +59,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
 
     fake = FakeTwilioClient.new
     with_fake_twilio(fake) do
-      patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/x" } }
+      patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/x" } }, as: :turbo_stream
     end
 
     assert_redirected_to me_root_path
@@ -533,7 +533,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@tech_ninja)
 
     with_fake_twilio(fake) do
-      patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: here } }
+      patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: here } }, as: :turbo_stream
 
       assert_response :success
       # The service in TwilioMessagingServiceId, read and changed; no Notify
@@ -574,7 +574,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
 
       assert_select "dd", text: /When that address fails, Twilio sends the text to #{Regexp.escape(fallback)}\./
 
-      patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
+      patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }, as: :turbo_stream
     end
 
     assert_select "turbo-stream[target=toast-container] template [role=status]",
@@ -599,7 +599,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
      "https://127.1/in", "https://2130706433/in", "https://0x7f000001/in", "https://010.0.0.1/in", "https://[::1]/in",
      "https://LOCALHOST/in", "https://localhost./in", "https://box.LOCAL/in", "https://clubhouse/in",
      "https://clubhouse.example.org/in?token=s3cret", "https://clubhouse.example.org/in#top"].each do |url|
-      with_fake_twilio(fake) { patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: } } }
+      with_fake_twilio(fake) { patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: } }, as: :turbo_stream }
 
       assert_response :success
       assert_select "turbo-stream[action=replace][target=sms-incoming-error] template #sms-incoming-error [role=alert]",
@@ -619,7 +619,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@tech_ninja)
 
     with_fake_twilio(fake) do
-      patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
+      patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }, as: :turbo_stream
     end
 
     assert_response :success
@@ -643,7 +643,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
         assert_select "form[action=?]", admin_sms_management_incoming_path, 0
         assert_empty fake.asked
 
-        patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
+        patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }, as: :turbo_stream
       end
     end
 
@@ -659,7 +659,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
 
     with_env("RANGER_CLUBHOUSE_ENVIRONMENT" => "Staging") do
       with_fake_twilio(fake) do
-        patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
+        patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }, as: :turbo_stream
       end
     end
 
@@ -703,7 +703,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@tech_ninja)
 
     with_fake_twilio(fake) do
-      patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
+      patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }, as: :turbo_stream
     end
 
     assert_response :success
@@ -732,7 +732,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
       assert_select "turbo-frame#sms-twilio .box-info", text: /once TwilioMessagingServiceId names a Messaging Service Twilio can read/
       assert_not_includes response.body, unknown
 
-      patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
+      patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }, as: :turbo_stream
     end
 
     assert_incoming_error "Twilio was not changed: The requested resource /Services/MG…3210 was not found (Twilio error 20404)."
@@ -758,7 +758,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
         assert_select "form[action=?]", admin_sms_management_incoming_path, 0
         assert_select "turbo-frame#sms-twilio .box-info", text: /once TwilioMessagingServiceId names a Messaging Service Twilio can read/
 
-        patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
+        patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }, as: :turbo_stream
       end
 
       assert_incoming_error "Twilio was not changed: #{problem}."
@@ -769,6 +769,15 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ---------------------------------------------------------------- Twilio panel
+
+  test "an incoming address sent without Turbo is refused back on the page, with the reason in a flash" do
+    sign_in_as(@tech_ninja)
+
+    patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "http://clubhouse.example.org/in" } }
+
+    assert_redirected_to admin_sms_management_path
+    assert_equal "Twilio was not changed: the address must start with https://.", flash[:error]
+  end
 
   test "the Twilio panel says it cannot ask before the settings are in" do
     sign_in_as(@tech_ninja)

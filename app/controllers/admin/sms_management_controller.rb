@@ -80,8 +80,15 @@ class Admin::SmsManagementController < ApplicationController
     url = params.expect(twilio_incoming: [:url])[:url].to_s.strip
     problem = SmsManagement.incoming_url_problem(url)
     if problem
-      render turbo_stream: turbo_stream.replace("sms-incoming-error", partial: "admin/sms_management/incoming_error",
-                                                                      locals: { message: "Twilio was not changed: #{problem}." })
+      message = "Twilio was not changed: #{problem}."
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace("sms-incoming-error", partial: "admin/sms_management/incoming_error",
+                                                                          locals: { message: })
+        end
+        # Sent without Turbo: back to the page, which draws the flash.
+        format.html { redirect_to admin_sms_management_path, error: message }
+      end
       return
     end
 
@@ -94,7 +101,15 @@ class Admin::SmsManagementController < ApplicationController
       @incoming_error = incoming_problem_message(result) if result[:error]
       success = incoming_changed_message(url, result[:changed]) if result[:changed].any?
     end
-    render_twilio_panel(success:)
+    respond_to do |format|
+      format.turbo_stream { render_twilio_panel(success:) }
+      # Sent without Turbo: back to the page, which draws the flash.
+      format.html do
+        flash[:success] = success if success
+        flash[:error] = @incoming_error if @incoming_error
+        redirect_to admin_sms_management_path
+      end
+    end
   end
 
   private
