@@ -51,7 +51,7 @@
         <%= f.text_field :sms_number,
                          label: "SMS Phone ",
                          help_text: "Leave blank to clear.",
-                         width: "w-full sm:w-32",
+                         width: "w-full sm:w-44",
                          maxlength: 20 %>
 
         <%= f.check_box :sms_stopped,
@@ -67,7 +67,7 @@
     <% else %>
       <dl class="instruction-list">
         <dt>Phone number</dt>
-        <dd><%= person.sms_number.presence || content_tag(:em, "none on file") %></dd>
+        <dd><%= value_or_dash(person.sms_number) %></dd>
         <dt>Stopped</dt>
         <dd><%= person.sms_stopped? ? "Yes" : "No" %></dd>
         <dt>Verified</dt>
@@ -105,9 +105,11 @@
                               inputmode: "tel",
                               autocomplete: "tel",
                               maxlength: 20,
-                              width: "w-full sm:w-80" %>
+                              width: "w-full sm:w-44" %>
       <% end %>
-      <%= f.submit "Save Phone Number", size: "sm" %>
+      <%= button_row do %>
+        <%= f.submit "Save Phone Number", size: "sm" %>
+      <% end %>
     <% end %>
   <% end %>
 
@@ -153,14 +155,14 @@
       <div class="font-semibold mb-2">
         To resume alerts, text the word START from this same phone number using your SMS app.
       </div>
-      <div class="text-sm">
+      <div>
         Or contact <%= link_to "rangers@burningman.org", "mailto:rangers@burningman.org", class: "underline" %> for
         help.
       </div>
       <%= ui_disclosure "Why It's Stopped",
                         class: "mt-3",
-                        summary_class: "text-sm font-medium",
-                        content_class: "mt-2 text-sm" do %>
+                        summary_class: "font-medium",
+                        content_class: "mt-2" do %>
         Someone texted the STOP command from this number, which opted out of all SMS alerts.
       <% end %>
     <% end %>
@@ -170,6 +172,25 @@
 <%# ===================================================================== %>
 <%# Section C: Alert Preferences                                         %>
 <%# ===================================================================== %>
+
+<%# One legend for both alert groups below. %>
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <div class="font-semibold text-heading mb-2">Alert Channels</div>
+  <div class="flex flex-wrap gap-x-4 gap-y-2">
+    <div class="flex-center-gap-2">
+      <%= ui_badge "Required", :secondary %>
+      <span class="text-stone-muted">Must receive this alert</span>
+    </div>
+    <div class="flex-center-gap-2">
+      <%= ui_badge "Email only", :secondary %>
+      <span class="text-stone-muted">Only available via email</span>
+    </div>
+    <div class="flex-center-gap-2">
+      <%= ui_badge "SMS only", :secondary %>
+      <span class="text-stone-muted">Only available via SMS</span>
+    </div>
+  </div>
+<% end %>
 
 <%= ui_form person, alerts_form_path, method: :patch, no_error_summary: true do |f| %>
   <%= hidden_field_tag :intent, Alerts::EditingConcern::PREFERENCES_INTENT, id: nil %>

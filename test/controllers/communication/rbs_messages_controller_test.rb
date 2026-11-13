@@ -86,7 +86,7 @@ class Communication::RbsMessagesControllerTest < ActionDispatch::IntegrationTest
     get communication_rbs_messages_path(filter: { status: ["account-throttled"] })
 
     assert_response :success
-    assert_select "#rbs-email-failure-label", text: "Email Failure Reason"
+    assert_select "#rbs-email-failure-group legend", text: "Email Failure Reason"
     assert_select "input#rbs-status-account-throttled[checked]"
     assert_select ".badge", text: "SES rate limit"
     assert_no_match(/who is this/, response.body)
@@ -100,7 +100,7 @@ class Communication::RbsMessagesControllerTest < ActionDispatch::IntegrationTest
     get communication_rbs_messages_path(filter: { status: [Rbs::EMAIL_STATUS_SUPPRESSED] })
 
     assert_response :success
-    assert_select "[aria-labelledby=rbs-status-label] input#rbs-status-suppressed[checked]"
+    assert_select "#rbs-status-group input#rbs-status-suppressed[checked]"
     assert_select ".badge", text: "Bounce or spam report on file"
     assert_no_match(/who is this/, response.body)
   end
@@ -114,7 +114,7 @@ class Communication::RbsMessagesControllerTest < ActionDispatch::IntegrationTest
     get communication_rbs_messages_path(filter: { status: [Rbs::EMAIL_STATUS_NO_CONTACT] })
 
     assert_response :success
-    assert_select "[aria-labelledby=rbs-status-label] input#rbs-status-no-contact[checked]"
+    assert_select "#rbs-status-group input#rbs-status-no-contact[checked]"
     assert_select ".badge", text: "Opted out or no address on file"
     assert_select ".badge", text: "no-contact", count: 0
     assert_select "a span", text: "Outcome: Opted out or no address on file"

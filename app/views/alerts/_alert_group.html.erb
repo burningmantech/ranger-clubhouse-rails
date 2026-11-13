@@ -4,25 +4,6 @@
  <div class="mb-2">
    <%= description  %>
  </div>
-  <%# Channel Legend %>
-  <div class="mb-4 card-standard bg-base-200 p-3">
-    <div class="font-semibold text-heading mb-2">Alert Channels:</div>
-    <div class="flex flex-col sm:flex-row sm:flex-wrap gap-x-4 gap-y-2">
-      <div class="flex-center-gap-2">
-        <%= ui_badge "Required", :secondary %>
-        <span class="text-stone-muted">Must receive this alert</span>
-      </div>
-      <div class="flex-center-gap-2">
-        <%= ui_badge "Email only", :secondary %>
-        <span class="text-stone-muted">Only available via email</span>
-      </div>
-      <div class="flex-center-gap-2">
-        <%= ui_badge "SMS only", :secondary %>
-        <span class="text-stone-muted">Only available via SMS</span>
-      </div>
-    </div>
-  </div>
-
   <% alerts.each_with_index do |alert, idx| %>
     <% field_idx = index_offset + idx %>
     <% unless idx.zero? %>

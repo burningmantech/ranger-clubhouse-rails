@@ -41,7 +41,7 @@
     <% if @form.sends_email? || @form.sends_clubhouse? %>
       <h3 class="heading-title text-heading mb-1">
         <%= fa_icon "envelope", :solid, fixed: true %>
-        <%= [("Email" if @form.sends_email?), ("Clubhouse message" if @form.sends_clubhouse?)].compact.to_sentence %>
+        <%= [("Email" if @form.sends_email?), ("Clubhouse Message" if @form.sends_clubhouse?)].compact.to_sentence %>
       </h3>
       <div class="rounded-base border border-line bg-default p-3">
         <div class="font-semibold"><%= @form.simple? ? @form.sms_message : @form.subject %></div>
@@ -77,8 +77,7 @@
 <%= ui_form(nil, communication_rbs_broadcasts_path(@type)) do %>
   <%= render "carried_values", form: @form %>
   <%= button_row do %>
-    <%= submit_button "Send to #{pluralize(reached, "person")}",
-                      variant: @type == Broadcast::TYPE_EMERGENCY ? :error : :primary %>
+    <%= submit_button "Send to #{pluralize(reached, "Person")}" %>
     <%= submit_button "Edit Message", variant: :secondary,
                       formaction: communication_rbs_edit_broadcast_path(@type) %>
     <%= cancel_link communication_rbs_root_path %>

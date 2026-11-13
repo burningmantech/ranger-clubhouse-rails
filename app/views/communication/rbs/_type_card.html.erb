@@ -10,7 +10,7 @@
   <div class="flex flex-wrap items-center gap-2">
     <%= rbs_channel_badges(rbs_type_channels(type)) %>
     <span class="grow"></span>
-    <%= button_link "Start", info[:variant] == :secondary ? :primary : info[:variant],
+    <%= button_link "Start", :primary,
                     communication_rbs_new_broadcast_path(type),
                     icon: "arrow-right", icon_type: :solid, size: "sm",
                     aria: { label: "Start a #{info[:title].downcase}" } %>

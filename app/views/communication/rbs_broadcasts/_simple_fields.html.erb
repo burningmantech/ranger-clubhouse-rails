@@ -22,8 +22,8 @@
                    [["Shifts Running Now", @in_progress_positions.map { |p| [p.title, p.id] }]] +
                      @position_groups.map { |team, positions| [team, positions.map { |p| [p.title, p.id] }] },
                    @form.position_id),
-                 { label: "Position", include_blank: "Choose a position…", required: true },
-                 { class: "w-full lg:w-96" } %>
+                 { label: "Position", include_blank: "Choose a position…", required: true,
+                   width: "w-full sm:w-96" } %>
   <% end %>
 <% end %>
 

@@ -18,7 +18,7 @@
   <%= button_link "Add Announcement", :primary, new_communication_announcement_path,
                   icon: "plus", icon_type: :solid %>
   <% if @expired_count.positive? %>
-    <%= button_link "Delete Expired", :secondary,
+    <%= button_link "Delete Expired", :error,
                     delete_expired_communication_announcements_path,
                     icon: "trash", icon_type: :solid,
                     data: confirm_modal(

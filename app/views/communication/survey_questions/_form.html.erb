@@ -6,7 +6,7 @@
     <%= hidden_field_tag "survey_question[survey_group_id]", @group.id %>
   <% end %>
 
-  <%= f.fieldset "The question", icon: "clipboard-question", icon_type: :solid do %>
+  <%= f.fieldset "The Question", icon: "clipboard-question", icon_type: :solid do %>
     <dl class="instruction-list mb-3">
       <dt>Which group is this in?</dt>
       <dd><%= @group.title %></dd>
@@ -26,7 +26,7 @@
     <%= f.check_box :is_required, inline_label: "An answer is required" %>
   <% end %>
 
-  <%= f.fieldset "Settings for one type of question", icon: "sliders", icon_type: :solid do %>
+  <%= f.fieldset "Settings for One Type of Question", icon: "sliders", icon_type: :solid do %>
     <%= f.text_area :options, label: "Choices, One per Line", rows: 4, width: "w-full",
                     help_text: "Options questions only. Each line becomes one choice." %>
 
@@ -36,7 +36,7 @@
   <% end %>
 
   <%= button_row do %>
-    <%= f.submit @question.persisted? ? "Save Question" : "Add Question" %>
+    <%= f.submit "Save Question" %>
     <%= cancel_link communication_survey_path(@survey, group: @group.id) %>
     <% if @question.persisted? %>
       <%= delete_button communication_survey_question_path(@survey, @question), "Delete Question",

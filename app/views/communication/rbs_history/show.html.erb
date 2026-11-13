@@ -29,7 +29,7 @@
       Sending again reaches only the <%= "other " if stuck.positive? %><%= pluralize(retryable, "message") %> that
       failed; everyone who already received it is left alone.
       <div class="mt-2">
-        <%= button_link "Send Failed Messages Again", :error,
+        <%= button_link "Send Failed Messages Again", :primary,
                         communication_rbs_retry_history_broadcast_path(@broadcast),
                         icon: "rotate-right", icon_type: :solid, size: "sm",
                         data: confirm_modal(
@@ -63,14 +63,14 @@
                   icon: "reply", icon_type: :solid %>
 <% end %>
 
-<div class="stack-to-row-lg">
+<div class="flex flex-col lg:flex-row gap-4">
   <%= ui_section "Message", icon: "envelope-open-text", icon_type: :solid do %>
     <% if @broadcast.sent_sms && @broadcast.sms_message.present? %>
       <h3 class="heading-title text-heading mb-1"><%= fa_icon "comment-sms", :solid, fixed: true %> Text</h3>
       <div class="rounded-base border border-line bg-default p-3 mb-3"><%= @broadcast.sms_message %></div>
     <% end %>
     <% if @broadcast.subject.present? || @broadcast.email_message.present? %>
-      <h3 class="heading-title text-heading mb-1"><%= fa_icon "envelope", :solid, fixed: true %> Email and Clubhouse message</h3>
+      <h3 class="heading-title text-heading mb-1"><%= fa_icon "envelope", :solid, fixed: true %> Email and Clubhouse Message</h3>
       <div class="rounded-base border border-line bg-default p-3 max-h-96 overflow-y-auto">
         <div class="font-semibold"><%= @broadcast.subject %></div>
         <% if @broadcast.email_message.present? %>

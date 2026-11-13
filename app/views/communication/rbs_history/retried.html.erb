@@ -26,9 +26,6 @@
 <% end %>
 
 <%= button_row do %>
-  <%= button_link "Back to This Broadcast", :primary,
-                  communication_rbs_history_broadcast_path(@broadcast),
-                  icon: "arrow-left", icon_type: :solid %>
   <%= button_link "Broadcast History", :secondary, communication_rbs_history_path,
                   icon: "clipboard-list", icon_type: :solid %>
 <% end %>

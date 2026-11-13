@@ -1,6 +1,6 @@
 <%= ui_form(@announcement,
             @announcement.persisted? ? communication_announcement_path(@announcement) : communication_announcements_path) do |f| %>
-  <%= f.fieldset "Who sees it", icon: "users", icon_type: :solid do %>
+  <%= f.fieldset "Who Sees It", icon: "users", icon_type: :solid do %>
     <dl class="instruction-list mb-3">
       <dt>Can I choose more than one?</dt>
       <dd>Yes. Everyone in every group you check will see the announcement.</dd>
@@ -13,7 +13,7 @@
     <%= f.check_box :for_auditors, label: "Auditors" %>
   <% end %>
 
-  <%= f.fieldset "What it says", icon: "bullhorn", icon_type: :solid do %>
+  <%= f.fieldset "What It Says", icon: "bullhorn", icon_type: :solid do %>
     <%= f.text_field :subject, label: "Subject", required: true,
                      maxlength: 191, show_counter: true, width: "w-full",
                      help_text: "The heading readers see first. Lead with the point." %>
@@ -22,7 +22,7 @@
                          help_text: "Keep it short. Bold the key point, and put steps in a list." %>
   <% end %>
 
-  <%= f.fieldset "When it stops showing", icon: "hourglass-half", icon_type: :solid do %>
+  <%= f.fieldset "When It Stops Showing", icon: "hourglass-half", icon_type: :solid do %>
     <dl class="instruction-list mb-3">
       <dt>Is an end date required?</dt>
       <dd>Yes, and it has to be in the future.</dd>

@@ -21,7 +21,7 @@
                   icon: "ban", icon_type: :solid %>
 <% end %>
 
-<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
   <dl class="instruction-list">
     <dt>What does &ldquo;not confirmed&rdquo; mean?</dt>
     <dd>The number is on file, but the code texted to it was never sent back, so nothing can be

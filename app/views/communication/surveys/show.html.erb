@@ -43,13 +43,13 @@
         Prologue <span class="text-stone-muted font-normal">(shown first)</span>
       </div>
       <div class="lexxy-content text-body bg-default rounded-base border border-line p-3 max-h-64 overflow-y-auto mb-3">
-        <%= @survey.prologue.present? ? rich_text(@survey.prologue) : tag.span("None given.", class: "italic text-stone-muted") %>
+        <%= @survey.prologue.present? ? rich_text(@survey.prologue) : "—" %>
       </div>
       <div class="font-semibold text-heading mb-1">
         Epilogue <span class="text-stone-muted font-normal">(shown last)</span>
       </div>
       <div class="lexxy-content text-body bg-default rounded-base border border-line p-3 max-h-64 overflow-y-auto">
-        <%= @survey.epilogue.present? ? rich_text(@survey.epilogue) : tag.span("None given.", class: "italic text-stone-muted") %>
+        <%= @survey.epilogue.present? ? rich_text(@survey.epilogue) : "—" %>
       </div>
     </div>
   </div>

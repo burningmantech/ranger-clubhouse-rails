@@ -4,7 +4,7 @@
     recorded instead of delivered. %>
 <% if info[:note].present? %>
   <%= ui_callout_box info[:variant] == :secondary ? :info : info[:variant],
-                     title: type == Broadcast::TYPE_EMERGENCY ? "Use only in an emergency" : nil,
+                     title: type == Broadcast::TYPE_EMERGENCY ? "Use Only in an Emergency" : nil,
                      icon: info[:icon], icon_type: :solid do %>
     <%= info[:note] %>
     <% if type == Broadcast::TYPE_EMERGENCY %>
