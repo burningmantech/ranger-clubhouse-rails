@@ -13,19 +13,18 @@
 %>
 <% key = :"sort_#{section}" %>
 
-<%= form_tag false, method: :get, data: { controller: "form" },
-             class: "flex-center-gap-2" do %>
+<%= form_with url: false, method: :get, builder: AppFormBuilder, data: { controller: "form" },
+              class: "flex-center-gap-2" do |f| %>
   <%= shift_lead_carried_fields shift_lead_all_params(filter_params), except: [key] %>
   <%# The roster's name is in the label but not on screen: three controls all
       reading "Sort by" are one undifferentiated list in a screen reader's form
       rotor, and picking the wrong one silently re-orders a roster the reader is
       not looking at. Sighted readers have the heading directly above instead. %>
-  <%= label_tag key, safe_join(["Sort by", tag.span(" #{title}", class: "sr-only")]),
-                class: "text-sm text-stone-muted whitespace-nowrap" %>
-  <%= select_tag key, options_for_select(Scheduling::ShiftLeadHelper::SORT_LABELS.invert.to_a,
-                                         filter_params[key]),
-                 class: "#{AppFormBuilder::SELECT_CLASSES}",
-                 data: { action: "change->form#submit" } %>
+  <%= f.select key, options_for_select(Scheduling::ShiftLeadHelper::SORT_LABELS.invert.to_a,
+                                       filter_params[key]),
+               { label: safe_join(["Sort By", tag.span(" #{title}", class: "sr-only")]),
+                 wrapper_class: "flex-center-gap-2 whitespace-nowrap" },
+               { data: { action: "change->form#submit" } } %>
   <%# The select auto-submits, so this only ever fires without JavaScript. %>
   <noscript><%= submit_button "Sort" %></noscript>
 <% end %>

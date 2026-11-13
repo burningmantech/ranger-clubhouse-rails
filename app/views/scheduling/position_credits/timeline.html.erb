@@ -18,17 +18,23 @@
     <%= ui_stat_box @timeline.days.size, "Days" %>
   <% end %>
 
+  <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+    <dl class="instruction-list">
+      <dt>How do I read the chart?</dt>
+      <dd>Each credit is a band, and the top edge is the rate a shift earns at that moment.</dd>
+      <dt>Which credits make up a step?</dt>
+      <dd>Hover a step to see them. Steps too narrow to hover are in the Rate Table.</dd>
+      <dt>What is the Rate Table?</dt>
+      <dd>Every step of the combined rate, for reading the chart without hovering.</dd>
+    </dl>
+  <% end %>
+
   <%= ui_section "Credit Rate Timeline", icon: "chart-column", icon_type: :solid do %>
-    <p class="mb-2">
-      Each credit is a band and the top edge is the rate a shift earns at that moment.
-      Hover a step to see which credits make it up; steps too narrow to hover are in the Rate Table below.
-    </p>
     <%= credit_timeline_chart @timeline %>
   <% end %>
 
   <%= ui_section "Rate Table", icon: "table-cells", icon_type: :solid,
                  link: export_csv_link(scheduling_position_credits_position_timeline_path(@position_id, year: @year, format: :csv)) do %>
-    <p class="mb-2">Every step of the combined rate, for reading the chart without hovering.</p>
     <%= ui_table full_width: true do |t| %>
       <%= t.header do %>
         <%= t.heading "From" %>

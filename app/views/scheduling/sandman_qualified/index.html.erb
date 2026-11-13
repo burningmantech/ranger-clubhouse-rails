@@ -29,12 +29,11 @@
   <%# Each box counts the people who have met one requirement and opens the ones
       who have not, so the number and the list behind it always agree. How many
       boxes there are follows the checks in force. %>
-  <% boxes = sandman_qualified_scoreboard(@report, @year) %>
-  <div class="grid grid-cols-2 <%= sandman_qualified_scoreboard_columns(boxes.size) %> gap-2 lg:gap-3 my-4">
-    <% boxes.each do |box| %>
+  <%= ui_stat_row do %>
+    <% sandman_qualified_scoreboard(@report, @year).each do |box| %>
       <%= sandman_qualified_scoreboard_box(box, @filter_params[:show]) %>
     <% end %>
-  </div>
+  <% end %>
 
   <%# The scoreboard above is labelled with the very words defined here. %>
   <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>

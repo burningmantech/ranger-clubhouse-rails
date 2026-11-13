@@ -239,7 +239,7 @@ class Scheduling::ShiftLeadControllerTest < ActionDispatch::IntegrationTest
     # Pinned to their columns: a bare "some td reads 1" would still pass with the
     # have and need cells swapped, and an under-staffed position would then read
     # as over-staffed.
-    assert_select "#shift-lead-below-min thead th:nth-of-type(3)", text: "Signed up"
+    assert_select "#shift-lead-below-min thead th:nth-of-type(3)", text: "Signed Up"
     assert_select "#shift-lead-below-min thead th:nth-of-type(4)", text: "Needed"
     assert_select "#shift-lead-below-min tbody tr td:nth-of-type(2)", text: "1"
     assert_select "#shift-lead-below-min tbody tr td:nth-of-type(3)", text: "3"
@@ -388,7 +388,7 @@ class Scheduling::ShiftLeadControllerTest < ActionDispatch::IntegrationTest
     assert_select "section.shift-lead-sheet"
     assert_select ".sheet-mode", text: /SCHEDULED/
     assert_select "td span.sheet-callsign", text: "Dusty"
-    assert_select ".sheet-legend-title", text: "Decoder ring"
+    assert_select ".sheet-legend-title", text: "Decoder Ring"
   end
 
   # The sheet is the page: no navbar, no sidebar, and no picker to change what
@@ -427,7 +427,7 @@ class Scheduling::ShiftLeadControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".sheet-mode", text: /ON DUTY/
     assert_select "td span.sheet-callsign", text: "Standing"
-    assert_select "th", text: "On duty"
+    assert_select "th", text: "On Duty"
   end
 
   # A blank sheet is not a document.
@@ -814,7 +814,7 @@ class Scheduling::ShiftLeadControllerTest < ActionDispatch::IntegrationTest
 
     get scheduling_shift_lead_print_path(year: YEAR, slot_id: @slot.id)
 
-    assert_select "thead tr.sheet-running-head th", text: /DIRT \/ GREEN DOTS/
+    assert_select "thead tr.sheet-running-head th", text: /Dirt \/ Green Dots/
   end
 
   test "the print sheet's return link carries the filters and sorts back" do

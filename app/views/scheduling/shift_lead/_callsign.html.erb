@@ -4,7 +4,7 @@
   link, then the GD / TS chips. Shared so the two cannot drift apart.
 %>
 <% unless ranger.on_site %>
-  <%= fa_icon "ban", :solid, class: "text-error", label: "Not marked as being on site" %>
+  <%= fa_icon "ban", :solid, class: "icon-error", label: "Not marked as being on site" %>
 <% end %>
 <%= person_display_link ranger.person, ranger.person.id %>
 <%= shift_lead_chips(ranger) %>

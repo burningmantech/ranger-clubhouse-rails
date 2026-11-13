@@ -22,14 +22,14 @@
   <%= ui_stat_box hour_minute_format(@detail.total_duration), "Hours",
                   variant: :secondary, icon: "clock", icon_type: :solid %>
   <%= ui_stat_box @detail.position_count.to_s, "Positions",
-                  variant: :success, icon: "list-check", icon_type: :solid %>
+                  icon: "list-check", icon_type: :solid %>
 <% end %>
 
 <%# Every reader of this page holds a role that opens /person/:id, so these
     links are live for all of them today. Gated on the controller that enforces
     it anyway -- a copied role list is a link that keeps promising a page after
     the page stops admitting the reader. %>
-<div class="my-4 flex flex-wrap gap-2">
+<%= button_row class: "my-4" do %>
   <% if can_view_person_page? %>
     <%= button_link "Account", :secondary, person_path(@person),
                     icon: "user", icon_type: :solid %>
@@ -40,7 +40,7 @@
     <%= export_csv_link(scheduling_schedule_by_callsign_person_path(@person, year: @year,
                         format: :csv)) %>
   <% end %>
-</div>
+<% end %>
 
 <% if @detail.slots.any? %>
   <%= ui_table full_width: true, striped: true do |t| %>

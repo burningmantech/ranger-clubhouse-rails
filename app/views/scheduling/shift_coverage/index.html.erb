@@ -59,8 +59,10 @@
       string, so without this every Apply would bounce back to the current year. %>
   <%= hidden_field_tag :year, @year %>
   <%= form_row do %>
-    <%= f.select :type, @type_options, label: "Shift Type", selected: @type %>
-    <%= f.select :day, shift_coverage_day_options(@report), label: "Day", selected: @day %>
+    <%= f.select :type, @type_options, label: "Shift Type", selected: @type,
+                 width: "w-full", wrapper_class: "flex-1" %>
+    <%= f.select :day, shift_coverage_day_options(@report), label: "Day", selected: @day,
+                 width: "w-full", wrapper_class: "flex-1" %>
   <% end %>
   <%= button_row do %>
     <%= f.submit "Apply Filters" %>

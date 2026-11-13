@@ -77,9 +77,7 @@
             <% end %>
             <%= t.cell row.shift_count, right: true %>
             <%= t.cell signed_up, right: true, class: "whitespace-nowrap" %>
-            <%# A dash rather than a nought: every position with a gap should
-                catch the eye, and a column of noughts hides the ones that do. %>
-            <%= t.cell row.empty_count.positive? ? row.empty_count : "—", right: true %>
+            <%= t.cell row.empty_count, right: true %>
             <%= t.cell do %>
               <%= render "fill_meter", counts: row,
                          label: "#{row.title}: #{signed_up} signed up" %>

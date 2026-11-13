@@ -113,7 +113,7 @@
                                   scheduling_repeat_slot_path(slot, year: @year),
                                   method: :post, title: "Repeat", aria: { label: "Repeat" },
                                   class: "btn-square" %>
-                  <%= button_link fa_icon("clone") + tag.span("+24h", class: "text-xs"), :secondary,
+                  <%= button_link fa_icon("clone") + tag.span("+24h"), :secondary,
                                   scheduling_repeat_slot_path(slot, add24: 1, year: @year),
                                   method: :post, title: "Repeat +24h", aria: { label: "Repeat +24h" } %>
                   <%= edit_link scheduling_edit_slot_path(slot, year: @year), "Edit Slot" %>

@@ -1,5 +1,5 @@
 <%= hero_panel icon: "coins", heading_level: :h1, id: "scheduling-position-credit-form-header",
-               description: "#{credit_position_title(@credit.position, @credit.position_id)} - #{@credit.description}",
+               description: "Change the times, rate or description of the #{credit_position_title(@credit.position, @credit.position_id)} credit “#{@credit.description}”.",
                back_to: ["#{credit_position_title(@credit.position, @credit.position_id)} Credits", @cancel_path] do |panel| %>
   <% panel.title do %>Edit Position Credit #<%= @credit.id %><% end %>
 <% end %>

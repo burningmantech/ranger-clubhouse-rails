@@ -27,23 +27,21 @@
               end %>
 
 <%# role=heading on the title span: this was a ui_section, which gives its title
-    an aria-level 2 heading, and the fold would otherwise take "Shift period" out
+    an aria-level 2 heading, and the fold would otherwise take "Shift Period" out
     of the outline a screen-reader reader navigates the page by. %>
-<%= ui_disclosure tag.span("Shift period", class: "font-semibold", role: "heading", "aria-level": "2"),
+<%= ui_disclosure tag.span("Shift Period", class: "font-semibold", role: "heading", "aria-level": "2"),
                   variant: :card, subtitle: subtitle, open: slot.nil? && !on_duty,
                   class: "mb-3" do %>
   <div class="flex flex-col lg:flex-row lg:items-end gap-2">
     <% if shifts.any? %>
-      <%= form_tag false, method: :get, data: { controller: "form" } do %>
-        <%= label_tag :slot_id, "#{year} shift", class: "block font-medium text-heading mb-1" %>
+      <%= form_with url: false, method: :get, builder: AppFormBuilder, data: { controller: "form" } do |f| %>
         <%# The same day-grouped list and the same shift labels the Cruise
             Direction picker offers -- both pages pick from the year's dirt
             shifts, and two spellings of one shift would be a needless puzzle. %>
-        <%= select_tag :slot_id,
-                       grouped_options_for_select(cruise_direction_shift_option_groups(shifts), slot&.id),
-                       include_blank: "Select a shift",
-                       class: "#{AppFormBuilder::SELECT_CLASSES}",
-                       data: { action: "change->form#submit" } %>
+        <%= f.select :slot_id,
+                     grouped_options_for_select(cruise_direction_shift_option_groups(shifts), slot&.id),
+                     { label: "#{year} Shift", include_blank: "Select a shift", wrapper_class: "mb-0" },
+                     { data: { action: "change->form#submit" } } %>
 
         <%# Everything except the shift itself, which this form's own select
             carries: a sort and a filter describe how the reader is reading a

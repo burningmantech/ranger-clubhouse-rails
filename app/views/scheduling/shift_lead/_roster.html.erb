@@ -55,13 +55,13 @@
                   <%= render "scheduling/shift_lead/callsign", ranger: ranger %>
                 </div>
               <% end %>
-              <%= t.cell pronouns_format(ranger.person, true).presence || "-" %>
-              <%= t.cell ranger.gender.presence || "-" %>
+              <%= t.cell value_or_dash(pronouns_format(ranger.person, true)) %>
+              <%= t.cell value_or_dash(ranger.gender) %>
               <%= t.cell ranger.years, right: true %>
               <%= t.cell shift_lead_vehicle_cell(ranger.gtr, "GTR"), center: true %>
               <%= t.cell shift_lead_vehicle_cell(ranger.vehicle, "VEH"), center: true %>
               <%= t.cell do %>
-                <%= ranger.positions.any? ? ranger.positions.join(", ") : "-" %>
+                <%= value_or_dash(ranger.positions.join(", ")) %>
                 <% if ranger.certifications.any? %>
                   <div class="mt-1">
                     <%# A neutral icon: holding a certification is not a status to
@@ -69,7 +69,7 @@
                         not-on-site signals a shift lead is actually scanning for. %>
                     <% ranger.certifications.each do |certification| %>
                       <span class="whitespace-nowrap me-2">
-                        <%= fa_icon "award", :solid, class: "text-stone-icon" %> <%= certification %>
+                        <%= fa_icon "award", :solid, class: "text-stone-icon", label: "Certification" %> <%= certification %>
                       </span>
                     <% end %>
                   </div>
@@ -111,11 +111,11 @@
             <%= shift_lead_vehicle_badge(ranger.gtr, "GTR") %>
             <%= shift_lead_vehicle_badge(ranger.vehicle, "VEH") %>
             <% if ranger.positions.any? %>
-              <span class="text-sm text-stone-emphasis"><%= ranger.positions.join(", ") %></span>
+              <span class="text-stone-emphasis"><%= ranger.positions.join(", ") %></span>
             <% end %>
             <% ranger.certifications.each do |certification| %>
-              <span class="text-sm text-stone-emphasis whitespace-nowrap">
-                <%= fa_icon "award", :solid, class: "text-stone-icon" %> <%= certification %>
+              <span class="text-stone-emphasis whitespace-nowrap">
+                <%= fa_icon "award", :solid, class: "text-stone-icon", label: "Certification" %> <%= certification %>
               </span>
             <% end %>
           </div>

@@ -78,15 +78,15 @@
                                                aria_label: "Copy credit ##{credit.id} #{credit.description}" %>
                     <% end %>
                     <%= t.cell do %>
-                      <%= credit.start_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      <%= datetime_format(credit.start_time, year: true) %>
                       <div class="text-stone-subtle">
-                        &rarr; <%= Scheduling::SlotCopier.adjust_time(credit.start_time, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                        &rarr; <%= datetime_format(Scheduling::SlotCopier.adjust_time(credit.start_time, @delta), year: true) %>
                       </div>
                     <% end %>
                     <%= t.cell do %>
-                      <%= credit.end_time.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      <%= datetime_format(credit.end_time, year: true) %>
                       <div class="text-stone-subtle">
-                        &rarr; <%= Scheduling::SlotCopier.adjust_time(credit.end_time, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                        &rarr; <%= datetime_format(Scheduling::SlotCopier.adjust_time(credit.end_time, @delta), year: true) %>
                       </div>
                     <% end %>
                     <%= t.cell credit_format_short(credit.credits_per_hour), right: true %>

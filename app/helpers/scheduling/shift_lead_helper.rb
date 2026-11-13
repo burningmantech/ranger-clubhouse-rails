@@ -187,7 +187,7 @@ module Scheduling::ShiftLeadHelper
     case status
     when :blacklisted then tag.span("-BL-", class: "font-bold text-error")
     when :yes then label
-    else "-"
+    else value_or_dash(nil)
     end
   end
 
@@ -244,11 +244,11 @@ module Scheduling::ShiftLeadHelper
   # What the report is reporting on, said in one line above the rosters.
   def shift_lead_mode_summary(report)
     if report.on_duty?
-      return safe_join([tag.span("ON DUTY", class: "font-bold text-error"), " as of ",
+      return safe_join([tag.span("ON DUTY", class: "font-bold"), " as of ",
                         full_datetime_format(report.shift_start)])
     end
 
-    safe_join([tag.span("SCHEDULED", class: "font-bold text-success"), " for ",
+    safe_join([tag.span("SCHEDULED", class: "font-bold"), " for ",
                full_datetime_format(report.shift_start)])
   end
 

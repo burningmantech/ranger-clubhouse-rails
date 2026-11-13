@@ -41,7 +41,7 @@
                                       @filter[:time]),
                    { label: "Time", width: "w-full sm:w-40" } %>
       <%= f.select :datetime,
-                   options_for_select([["Any start", ""]] + @datetime_options.map { |dt| [dt.strftime(DateTimeHelper::MONTH_DAY_TIME), dt.iso8601] },
+                   options_for_select([["Any start", ""]] + @datetime_options.map { |dt| [slot_start_option_label(dt), dt.iso8601] },
                                       @filter[:datetime]),
                    { label: "Date/Time", width: "w-full sm:w-56" } %>
     <% end %>
@@ -119,15 +119,15 @@
                                                aria_label: "Copy slot ##{slot.id} #{slot.description}" %>
                     <% end %>
                     <%= t.cell do %>
-                      <%= slot.begins.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      <%= datetime_format(slot.begins, tz: slot.timezone, year: true) %>
                       <div class="text-stone-subtle">
-                        &rarr; <%= Scheduling::SlotCopier.adjust_time(slot.begins, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                        &rarr; <%= datetime_format(Scheduling::SlotCopier.adjust_time(slot.begins, @delta), tz: slot.timezone, year: true) %>
                       </div>
                     <% end %>
                     <%= t.cell do %>
-                      <%= slot.ends.strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                      <%= datetime_format(slot.ends, tz: slot.timezone, year: true) %>
                       <div class="text-stone-subtle">
-                        &rarr; <%= Scheduling::SlotCopier.adjust_time(slot.ends, @delta).strftime(DateTimeHelper::MONTH_DAY_TIME_YEAR) %>
+                        &rarr; <%= datetime_format(Scheduling::SlotCopier.adjust_time(slot.ends, @delta), tz: slot.timezone, year: true) %>
                       </div>
                     <% end %>
                     <%= t.cell slot.max, right: true %>
