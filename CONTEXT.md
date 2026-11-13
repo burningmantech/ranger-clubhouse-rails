@@ -40,6 +40,13 @@ keeps its `now:` because it genuinely honours it; every parameter that did not w
 **Slot**:
 A single staffable shift opening for a position.
 
+**Venue**:
+Where a slot may take place (`slot.venue`): Event Season (`event-season`, the default), Off-Season / Off-Playa
+(`non-event`), Playa & Surrounding Area (`multisite`), Virtual / Online (`virtual`). Volunteers see it only
+when it is virtual. Not the room a session meets in: a slot's description names that place, and the training
+survey's "Venue Feedback" questions (`Survey`) rate it.
+_Avoid_: venue for a session's room or site (say location); grouping venue-feedback survey answers by `slot.venue`.
+
 **Parent / child slot**:
 Two linked slots whose signups share capacity — combined signups cannot exceed the parent's max.
 

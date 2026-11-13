@@ -70,14 +70,12 @@
           <%= t.heading width: "1%" do %>
             <%= bulk_select_all aria_label: "Select all slots" %>
           <% end %>
-          <%= t.heading "ID", right: true %>
-          <%= t.heading "Active", center: true %>
-          <%= t.heading "Time", width: "12rem" %>
-          <%= t.heading "Duration" %>
+          <%= t.heading "Slot" %>
           <%= t.heading "Sign-Ups", right: true %>
+          <%= t.heading "Duration", right: true %>
           <%= t.heading "Credits", right: true %>
-          <%= t.heading "Description" %>
-          <%= t.heading "Actions" %>
+          <%= t.heading "Attributes" %>
+          <%= t.heading "Actions", right: true %>
         <% end %>
         <%= t.body do %>
           <% @slots.each do |slot| %>
@@ -86,34 +84,31 @@
                 <%= bulk_select_checkbox "slot_ids[]", slot.id, id: "select-slot-#{slot.id}",
                                          aria_label: "Select slot ##{slot.id} #{slot.description}" %>
               <% end %>
-              <%= t.cell slot.id, right: true %>
-              <%= t.cell center: true do %>
-                <%= slot_status_badge(slot) %>
-              <% end %>
-              <%= t.cell do %>
-                <%= datetime_format slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr %>
-                <% { "Multiplier" => slot.trainer_slot,
-                     "Parent" => slot.parent_signup_slot,
-                     "Child" => slot.child_signup_slot }.each do |label, linked| %>
-                  <% next unless linked %>
-                  <div class="mt-1 text-stone-subtle">
-                    <%= label %>: #<%= linked.id %> <%= linked.position_title %>
-                  </div>
+              <%# Laid out as Position Records lays out a position: the status icon,
+                  the time as the record's name, and what the slot is beneath it. %>
+              <%= t.row_header do %>
+                <%= record_title datetime_format(slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr),
+                                 active: slot.active do %>
+                  <div class="text-stone-muted"><%= [slot.description.presence, "##{slot.id}"].compact.join(" · ") %></div>
+                  <% unless slot.active %>
+                    <div class="mt-1">
+                      <%= ui_badge "Inactive", :warning, size: "sm", class: "whitespace-nowrap" %>
+                    </div>
+                  <% end %>
                 <% end %>
               <% end %>
+              <%= t.cell "#{slot.signed_up} of #{slot.max}", right: true, class: "whitespace-nowrap" %>
               <%= t.cell right: true do %>
                 <%= hour_minute_format slot.duration %>
               <% end %>
-              <%= t.cell "#{slot.signed_up} of #{slot.max}", right: true, class: "whitespace-nowrap" %>
               <%= t.cell credit_format_short(slot.credits), right: true %>
               <%= t.cell do %>
-                <%= slot.description %>
+                <%= value_list(slot_attributes(slot)) %>
                 <%= render "common/scheduling/slot_additional_info", slot: slot, collapsed: true %>
               <% end %>
-              <%= t.cell do %>
-                <%# Icon-only: the labelled variant overflows the table at the xl breakpoint.
-                    Icons ride in the label slot so ButtonHelper's icon: margin is not added. %>
-                <div class="flex-center-gap-2">
+              <%= t.cell right: true do %>
+                <%# The repeat icons ride in the label slot so ButtonHelper's icon: margin is not added. %>
+                <div class="flex-center-gap-2 justify-end">
                   <%= button_link fa_icon("clone"), :secondary,
                                   scheduling_repeat_slot_path(slot, year: @year),
                                   method: :post, title: "Repeat", aria: { label: "Repeat" },
@@ -121,8 +116,7 @@
                   <%= button_link fa_icon("clone") + tag.span("+24h", class: "text-xs"), :secondary,
                                   scheduling_repeat_slot_path(slot, add24: 1, year: @year),
                                   method: :post, title: "Repeat +24h", aria: { label: "Repeat +24h" } %>
-                  <%= edit_link scheduling_edit_slot_path(slot, year: @year), "",
-                                title: "Edit", aria: { label: "Edit" }, class: "btn-square" %>
+                  <%= edit_link scheduling_edit_slot_path(slot, year: @year), "Edit Slot" %>
                 </div>
               <% end %>
             <% end %>

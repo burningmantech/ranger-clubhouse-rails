@@ -12,6 +12,23 @@ class Slot < ApplicationRecord
   # Default timezone
   DEFAULT_TIMEZONE = "America/Los_Angeles"
 
+  # Where the slot may take place (the slot.venue enum).
+  VENUE_EVENT_SEASON = "event-season"
+  VENUE_NON_EVENT = "non-event"
+  VENUE_MULTISITE = "multisite"
+  VENUE_VIRTUAL = "virtual"
+
+  VENUE_LABELS = {
+    VENUE_EVENT_SEASON => "Event Season (Operations Running)",
+    VENUE_NON_EVENT => "Off-Season / Off-Playa (no credits / hours counted)",
+    VENUE_MULTISITE => "Playa & Surrounding Area (usually for NVO)",
+    VENUE_VIRTUAL => "Virtual / Online"
+  }.freeze
+
+  # Positions whose shifts run across the playa and the area around it: a new
+  # slot for one starts as multisite (the migration classified the existing ones).
+  MULTISITE_POSITION_IDS = [Position::DPW_RANGER, Position::NVO_RANGER, Position::DPW_RANGER_LONG].freeze
+
   # Struct for sign-up results
   SignUpResults = Struct.new(
     :people, :max, :signed_up, :combined_max, :parent, :child, :assoc_signups,
@@ -65,6 +82,7 @@ class Slot < ApplicationRecord
   validates :position_id, presence: true, numericality: { only_integer: true }
   validates :trainer_slot_id, numericality: { only_integer: true }, allow_nil: true
   validates :parent_signup_slot_id, numericality: { only_integer: true }, allow_nil: true
+  validates :venue, inclusion: { in: VENUE_LABELS.keys, message: "Pick a venue from the list." }
   validate :begins_before_ends
   validate :no_circular_references
   validate :no_conflicting_slot_references
@@ -81,6 +99,11 @@ class Slot < ApplicationRecord
   # A destroyed slot takes its statuses with it, and their own callbacks purge.
   after_commit :purge_training_role_caches, on: :update,
                if: -> { saved_change_to_active? || saved_change_to_begins_year? || saved_change_to_position_id? }
+
+  # The venue a new slot for +position_id+ starts with.
+  def self.default_venue_for(position_id)
+    MULTISITE_POSITION_IDS.include?(position_id.to_i) ? VENUE_MULTISITE : VENUE_EVENT_SEASON
+  end
 
   # Training.did_person_pass_for_year? reads a session slot's position and year,
   # and whether a trainer's slot is active, and RoleManager caches its answer.
@@ -503,6 +526,13 @@ class Slot < ApplicationRecord
   def position_title
     position&.title || "Deleted ##{position_id}"
   end
+
+  def venue_label = VENUE_LABELS.fetch(venue, venue)
+
+  # The label without its parenthetical hint: "Event Season", not "Event Season (Operations Running)".
+  def venue_short_label = venue_label.sub(/\s*\(.*\)\z/, "")
+
+  def virtual? = venue == VENUE_VIRTUAL
 
   #
   # Is this slot an ART training slot?

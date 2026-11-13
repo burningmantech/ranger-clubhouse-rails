@@ -57,6 +57,21 @@ class Scheduling::SlotBulkEditsControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /First shift/
   end
 
+  # filter_bar renders a GET form of its own. Nested in the bulk-edit form, it
+  # ended that form at its </form>: Save Selected Slots belonged to no form and
+  # Apply Filters posted the edit.
+  test "new keeps the filter form out of the bulk-edit form" do
+    get scheduling_new_slot_bulk_edit_path(@position.id)
+
+    assert_select "form[method=post][action^='#{scheduling_slot_bulk_edits_path(@position.id)}']" do
+      assert_select "input[type=submit][value='Save Selected Slots']"
+      assert_select "select[name=venue]"
+      assert_select "input[name='slot_ids[]']", count: 3
+      assert_select "[name^=filter]", count: 0
+    end
+    assert_select "form[method=get] select[name='filter[description]']"
+  end
+
   test "unknown position redirects back to the index" do
     get scheduling_new_slot_bulk_edit_path(999_999)
 
@@ -75,6 +90,22 @@ class Scheduling::SlotBulkEditsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Renamed", @second.reload.description
     assert_equal "Third shift", @third.reload.description
     assert_equal 10, @first.max
+  end
+
+  test "applies a chosen venue and leaves it alone when blank" do
+    post scheduling_slot_bulk_edits_path(@position.id, year: 2026), params: {
+      venue: Slot::VENUE_VIRTUAL, slot_ids: [@first.id]
+    }
+
+    assert_equal Slot::VENUE_VIRTUAL, @first.reload.venue
+    assert_equal Slot::VENUE_EVENT_SEASON, @second.reload.venue
+
+    post scheduling_slot_bulk_edits_path(@position.id, year: 2026), params: {
+      venue: "", description: "Renamed", slot_ids: [@first.id]
+    }
+
+    assert_equal Slot::VENUE_VIRTUAL, @first.reload.venue
+    assert_equal "Renamed", @first.description
   end
 
   test "moves slots to a new position and redirects there" do

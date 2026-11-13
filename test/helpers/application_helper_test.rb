@@ -3,6 +3,19 @@
 require "test_helper"
 
 class ApplicationHelperTest < ActionView::TestCase
+  include IconHelper
+
+  test "record_title marks an active record with a check and an inactive one with a cross" do
+    active = record_title("Green Dot", active: true) { tag.div("Frontline") }
+    inactive = record_title("Retired", active: false)
+
+    assert_includes active, "fa-circle-check"
+    assert_includes active, "Frontline"
+    assert_includes inactive, "fa-circle-xmark"
+    assert_includes inactive, "Retired"
+    assert_not_includes inactive, "fa-circle-check"
+  end
+
   test "year_range with empty array returns none text" do
     result = year_range([])
     assert_match(/none/, result)

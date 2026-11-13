@@ -12,9 +12,10 @@ class Scheduling::SlotsController < ApplicationController
   before_action :set_position, only: %i[position set_active_all bulk_destroy]
   before_action :set_slot, only: %i[edit update destroy repeat]
 
-  # Attributes carried over when repeating or cloning a slot. Trainer/parent
-  # links are deliberately dropped, mirroring the Ember admin behavior.
-  CLONE_ATTRS = %w[begins ends description active position_id max url timezone].freeze
+  # Attributes carried over when repeating or cloning a slot: Copy Slots' list
+  # plus the times and the active flag, so a new column is added in one place.
+  # Trainer/parent links are deliberately dropped, mirroring the Ember admin behavior.
+  CLONE_ATTRS = [*Scheduling::SlotCopier::COPY_ATTRS, "begins", "ends", "active"].freeze
 
   def index
     @slot_counts = Hash.new(0)
@@ -44,7 +45,8 @@ class Scheduling::SlotsController < ApplicationController
   end
 
   def new
-    @slot = Slot.new(position_id: params[:position_id].presence, timezone: Slot::DEFAULT_TIMEZONE)
+    position_id = params[:position_id].presence
+    @slot = Slot.new(position_id:, timezone: Slot::DEFAULT_TIMEZONE, venue: Slot.default_venue_for(position_id))
     load_form_collections
   end
 
@@ -201,7 +203,7 @@ class Scheduling::SlotsController < ApplicationController
   end
 
   def slot_params
-    params.expect(slot: [:position_id, :description, :begins, :ends, :timezone,
+    params.expect(slot: [:position_id, :description, :begins, :ends, :timezone, :venue,
                          :url, :trainer_slot_id, :parent_signup_slot_id, :max, :active])
   end
 end

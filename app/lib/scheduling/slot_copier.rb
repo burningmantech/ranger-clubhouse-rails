@@ -5,7 +5,7 @@ module Scheduling
   # (the Ember ops/slots "Copy Slots" tool). Trainer/parent/trainee links and
   # training linkage are never carried over to the copies.
   class SlotCopier
-    COPY_ATTRS = %w[description max url timezone position_id].freeze
+    COPY_ATTRS = %w[description max url timezone position_id venue].freeze
 
     Result = Struct.new(:slots, :errors, keyword_init: true) do
       def success?

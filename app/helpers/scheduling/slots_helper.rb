@@ -32,6 +32,21 @@ module Scheduling::SlotsHelper
     end
   end
 
+  # Venue select choices, [label, value] pairs from Slot::VENUE_LABELS.
+  def slot_venue_choices
+    Slot::VENUE_LABELS.map(&:reverse)
+  end
+
+  # The position page's Attributes cell, for value_list as on Position Records:
+  # the venue (the hint in its full label on hover), then the trainer
+  # (multiplier), parent or child slot it is linked to.
+  def slot_attributes(slot)
+    links = { "Multiplier" => slot.trainer_slot, "Parent" => slot.parent_signup_slot,
+              "Child" => slot.child_signup_slot }.compact
+    [safe_join(["Venue: ", tag.span(slot.venue_short_label, title: slot.venue_label)]),
+     *links.map { |label, linked| "#{label}: ##{linked.id} #{linked.position_title}" }]
+  end
+
   # Position select choices for the slot form, grouped into Active/Inactive
   # optgroups (mirrors the Ember slot form).
   def slot_position_choices(positions)
