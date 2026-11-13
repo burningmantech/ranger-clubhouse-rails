@@ -3,21 +3,19 @@
                description: "Timesheet entries for #{@person.callsign}.",
                back_to: ["Work History", url_for(action: :index)] %>
 
-<%= ui_section "Hours Breakdown", icon: "clock", icon_type: :solid do %>
-  <div class="flex flex-wrap gap-3 mb-4">
-    <%= ui_badge "#{pluralize @position.years.size, 'year'}", :secondary %>
-    <%= ui_badge "#{hour_format(@position.duration)} total", :primary %>
-  </div>
+<%= ui_stat_row do %>
+  <%= ui_stat_box @position.years.size.to_s, (@position.years.size == 1 ? "Year" : "Years") %>
+  <%= ui_stat_box hour_format(@position.duration), "Total Hours" %>
+<% end %>
 
+<%= ui_section "Hours Breakdown", icon: "clock", icon_type: :solid do %>
   <div class="space-y-4">
     <% @position.years.each do |year, event| %>
       <div>
-        <div class="text-lg font-semibold text-heading mb-2 flex flex-wrap items-center gap-2">
-          <span>Event Year <%= year %></span>
-          <span class="text-stone-muted text-sm font-normal">
-            (<%= hour_format(event.duration) %>)
-          </span>
-        </div>
+        <%= ui_subheading do %>
+          Event Year <%= year %>
+          <span class="text-stone-muted font-normal">(<%= hour_format(event.duration) %> hours)</span>
+        <% end %>
         <%= ui_table responsive: false do |t| %>
           <%= t.header do %>
             <%= t.heading "Time" %>

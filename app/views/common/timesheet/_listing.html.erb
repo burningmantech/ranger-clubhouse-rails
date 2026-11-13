@@ -1,7 +1,7 @@
 <%# locals: (entries:) %>
 <% if entries.any? %>
   <% entries.each do |entry| %>
-    <div class="box box-default mb-3 p-4 rounded-xl border border-line shadow-sm" aria-labelledby="entry-<%= entry.id %>-title">
+    <%= ui_card class: "mb-3 p-4", "aria-labelledby": "entry-#{entry.id}-title" do %>
       <%= render layout: "common/entry_card_grid", locals: {
             title: entry.position.title,
             duration: entry.duration,
@@ -17,11 +17,11 @@
       <% end %>
 
       <% unless entry.position.count_hours %>
-        <div class="mt-3 me-muted">
+        <div class="mt-3 text-stone-muted">
           These hours do count toward credits and ticket eligibility.
         </div>
       <% end %>
-    </div>
+    <% end %>
   <% end %>
 <% else %>
   <%= ui_empty_state "No timesheet entries were recorded for #{@year}.", icon: "clipboard-list", icon_type: :solid %>

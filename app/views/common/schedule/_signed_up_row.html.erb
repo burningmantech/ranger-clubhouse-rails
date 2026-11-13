@@ -2,8 +2,8 @@
 <% slot = row.slot %>
 <%# The hairline is what makes one sign-up read as one record. Below lg these
     cards are the only structure on the page, and on a phone in glare a
-    shadow-sm on base-100 over base-100 is not a boundary anyone can see. %>
-<div class="card-standard shadow-sm p-3 xl:px-5"
+    shadow on base-100 over base-100 is not a boundary anyone can see. %>
+<div class="card-standard shadow-xs p-3 xl:px-5"
      aria-labelledby="slot-<%= slot.id %>-title">
 
   <div class="mb-1 flex flex-row flex-wrap gap-x-4 gap-y-1">
@@ -25,11 +25,11 @@
     <% end %>
   </div>
 
-  <%# Three stacked lines is the right shape on a phone and a waste of a tablet.
-      From sm up the time keeps its own line and duration/credits pair off beside
-      each other; at lg the row flattens into the four-column desktop record. %>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1 lg:gap-2 text-stone-emphasis">
-    <div class="sm:col-span-2">
+  <%# Below lg the time keeps its own line and duration and credits wrap: side by
+      side where they fit, stacked where they do not. At lg the row flattens into
+      the four-column desktop record (basis-full does nothing on a grid item). %>
+  <div class="flex flex-wrap gap-x-4 gap-y-1 lg:grid lg:grid-cols-4 lg:gap-2 text-stone-emphasis">
+    <div class="basis-full lg:col-span-2">
       <span class="font-medium lg:hidden">Time: </span>
       <%= datetime_format slot.begins, slot.ends, tz: slot.timezone, tz_abbr: slot.timezone_abbr %>
       <%= slot_virtual_venue_badge(slot) %>

@@ -1,7 +1,7 @@
 <%# Shared correction request form — self-serve at /me, third person at /hq
     (see the TimesheetConcern contract for subject, voice, and paths). %>
 <%= hero_panel icon: "clock", heading_level: :h1, id: "submit-correction-header",
-               title: "Submit Correction",
+               title: "Request Correction",
                back_to: (timesheet_self_serve? ? back_to_timesheet_dashboard : back_to("Timesheet", timesheet_return_path)) %>
 
 <%= ui_form @entry, timesheet_update_path(@entry), method: :patch do |f| %>
@@ -13,22 +13,22 @@
 
   <%= ui_section "Position Correction", icon: "briefcase", icon_type: :solid do %>
     <dl class="instruction-list mb-3">
-      <dt>Current position: <%= @entry.position.title %></dt>
-      <dd>If this is incorrect, select the correct position below.</dd>
+      <dt>Is the position correct?</dt>
+      <dd>It is <%= @entry.position.title %>. If this is incorrect, select the correct position below.</dd>
     </dl>
     <%= f.select :desired_position_id, @desired_position_options, label: "Correct Position" %>
   <% end %>
   <%= ui_section "Start Time Correction", icon: "clock", icon_type: :solid do %>
     <dl class="instruction-list mb-3">
-      <dt>Current start time: <%= datetime_format @entry.on_duty %></dt>
-      <dd>If this is incorrect, enter the correct time below.</dd>
+      <dt>Is the start time correct?</dt>
+      <dd>It is <%= datetime_format @entry.on_duty %>. If this is incorrect, enter the correct time below.</dd>
     </dl>
     <%= f.datetime_field :desired_on_duty, label: "Correct Start Time" %>
   <% end %>
   <%= ui_section "End Time Correction", icon: "clock", icon_type: :solid do %>
     <dl class="instruction-list mb-3">
-      <dt>Current end time: <%= datetime_format @entry.off_duty %></dt>
-      <dd>If this is incorrect, enter the correct time below.</dd>
+      <dt>Is the end time correct?</dt>
+      <dd>It is <%= datetime_format @entry.off_duty %>. If this is incorrect, enter the correct time below.</dd>
     </dl>
     <%= f.datetime_field :desired_off_duty, label: "Correct End Time" %>
   <% end %>
@@ -77,12 +77,12 @@
         <% end %>
       <% end %>
     </ul>
-    <div class="mt-3 pt-3 border-t border-warning font-semibold">
+    <div class="mt-4 pt-3 border-t border-line font-semibold">
       <%= fa_icon "user-check", :solid, end: 2 %>We verify all corrections with shift partners and leads.
     </div>
   <% end %>
   <%= button_row class: "mt-4" do %>
-    <%= f.submit "Submit Correction" %>
-    <%= back_to "Entries", timesheet_return_path %>
+    <%= f.submit "Request Correction" %>
+    <%= cancel_link timesheet_return_path %>
   <% end %>
 <% end %>

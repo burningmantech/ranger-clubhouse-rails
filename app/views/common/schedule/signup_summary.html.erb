@@ -5,7 +5,7 @@
   <% end %>
 <% end %>
 
-<div class="grid grid-cols-3 gap-2 lg:gap-4 my-4">
+<%= ui_stat_row do %>
   <%= ui_stat_box credit_format(@summary.credits_earned), "Earned",
                   variant: :success,
                   icon: "circle-check",
@@ -23,12 +23,14 @@
                   icon: "star",
                   icon_type: :solid,
                   size: :md %>
-</div>
+<% end %>
 
-<div class="text-stone-muted">
-  <%= fa_icon "circle-info", :solid, class: "text-primary", aria: { hidden: true } %>
-  <span><strong>Earned</strong> = confirmed. <strong>Scheduled/Potential</strong> = estimates from sign-ups.</span>
-</div>
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What do Earned, Scheduled and Potential mean?</dt>
+    <dd>Earned is confirmed. Scheduled and Potential are estimates from sign-ups.</dd>
+  </dl>
+<% end %>
 <% if @summary.event_start.present? %>
   <div class="text-stone-muted">
     <%= fa_icon "calendar", :solid, end: 1 %> Event week: <%= datetime_format @summary.event_start, @summary.event_end %>
@@ -46,6 +48,8 @@
   Breakdown by Period
 </div>
 
+<%# responsive: false -- a two-row period matrix, read across: as cards it would
+    lose the Total/Pre/Event/Post columns it exists to compare. %>
 <%= ui_table full_width: false, striped: false, responsive: false do |t| %>
   <%= t.header do %>
     <%= t.heading "" %>

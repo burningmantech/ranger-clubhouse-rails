@@ -72,9 +72,7 @@
                    sign_up_slot_path_builder:
                  } %>
     <% else %>
-      <div class="text-error px-4">
-        No more upcoming shifts were found.
-      </div>
+      <%= ui_empty_state "No more upcoming shifts were found." %>
     <% end %>
   <% end %>
 
@@ -87,8 +85,6 @@
                  sign_up_slot_path_builder:
                } %>
   <% else %>
-    <div class="text-error px-4">
-      No past shifts were found.
-    </div>
+    <%= ui_empty_state "No past shifts were found." %>
   <% end %>
 </div>

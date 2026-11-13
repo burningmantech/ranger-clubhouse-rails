@@ -39,7 +39,8 @@
             <% end %>
             <%= t.cell datetime_format(shift.slot_begins, shift.slot_ends, tz: shift.slot_timezone) %>
             <%= t.cell do %>
-              <%= button_link "Start Shift", :primary,
+              <%# Secondary: one primary per section, and these are rows of it. %>
+              <%= button_link "Start Shift", :secondary,
                               shift_start_path(position_id: shift.position_id, slot_id: shift.slot_id),
                               method: :post, icon: "person-walking", icon_type: :solid,
                               full_width: true, class: "text-base py-3" %>
@@ -71,8 +72,7 @@
         </p>
       <% end %>
       <%= f.select :position_id, shift_positions.map { |position| [position.title, position.id] },
-                   { label: "Shift / Position", required: true },
-                   { class: "w-full lg:w-96" } %>
+                   { label: "Shift / Position", required: true, width: "w-full sm:w-96" } %>
     <% end %>
     <%= button_row sticky: shift_self_serve? do %>
       <%= submit_button "Start Shift", size: "lg", full_width: true %>

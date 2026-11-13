@@ -7,6 +7,7 @@
       may not exceed the parent shift's <%= signups.combined_max %> sign-up limit.
       <% if signups.parent.max == signups.parent.signed_up %>
         <div class="text-error mt-1">
+          <%= fa_icon "circle-exclamation", :solid, end: 1 %>
           That limit has been reached. No more sign-ups are allowed in either shift at this time.
         </div>
       <% else %>
@@ -21,6 +22,7 @@
       may not exceed this shift's <%= signups.combined_max %> sign-up limit.
       <% if signups.max == signups.signed_up %>
         <div class="text-error mt-1">
+          <%= fa_icon "circle-exclamation", :solid, end: 1 %>
           That limit has been reached. No more sign-ups are allowed in either shift at this time.
         </div>
       <% else %>
@@ -31,7 +33,7 @@
 
   <% if signups.people.present? %>
     <div class="font-semibold my-2">
-      <%= pluralize(signups.people.length, "signup") %> in this shift:
+      <%= pluralize(signups.people.length, "sign-up") %> in this shift:
     </div>
     <div class="callsign-list mt-2">
       <% signups.people.each do |person| %>
@@ -39,12 +41,12 @@
       <% end %>
     </div>
   <% else %>
-    No one is signed up for this shift. Be the first!
+    <%= ui_empty_state "No one is signed up for this shift. Be the first!" %>
   <% end %>
 
   <% if signups.parent %>
     <div class="font-semibold my-2">
-      <%= pluralize(signups.parent.people.length, "signup") %> in the parent <%= signups.parent.position_title %> shift:
+      <%= pluralize(signups.parent.people.length, "sign-up") %> in the parent <%= signups.parent.position_title %> shift:
     </div>
     <% if signups.parent.people.present? %>
       <div class="callsign-list">
@@ -53,15 +55,13 @@
         <% end %>
       </div>
     <% else %>
-      <div class="font-semibold my-2">
-        No one has signed up for the parent shift.
-      </div>
+      <%= ui_empty_state "No one has signed up for the parent shift." %>
     <% end %>
   <% end %>
 
   <% if signups.child %>
     <div class="font-semibold my-2">
-      <%= pluralize(signups.child.people.length, "signup") %> in the <%= signups.child.position_title %> child shift:
+      <%= pluralize(signups.child.people.length, "sign-up") %> in the <%= signups.child.position_title %> child shift:
     </div>
     <% if signups.child.people.present? %>
       <div class="callsign-list">
@@ -70,9 +70,7 @@
         <% end %>
       </div>
     <% else %>
-      <div class="font-semibold my-2">
-        No one has signed up for the child shift.
-      </div>
+      <%= ui_empty_state "No one has signed up for the child shift." %>
     <% end %>
   <% end %>
 
@@ -85,7 +83,7 @@
     <% end %>
     <% signups.assoc_signups.each do |assoc| %>
       <div class="font-semibold mt-2">
-        <%= pluralize(assoc.people.length, "signup") %> in the corresponding <%= assoc.position_title %> shift:
+        <%= pluralize(assoc.people.length, "sign-up") %> in the corresponding <%= assoc.position_title %> shift:
       </div>
       <div class="mt-2">
         <% if assoc.people.present? %>
@@ -95,7 +93,7 @@
             <% end %>
           </div>
         <% else %>
-          No one has signed up for corresponding shift.
+          <%= ui_empty_state "No one has signed up for the corresponding shift." %>
         <% end %>
       </div>
     <% end %>

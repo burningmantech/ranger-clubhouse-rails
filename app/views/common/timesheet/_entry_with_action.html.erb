@@ -22,7 +22,7 @@
   end
 %>
 
-<div class="px-3 py-2">
+<%= ui_card class: "px-3 py-2 mb-3" do %>
   <%= render layout: "common/entry_card_grid", locals: {
     title: entry.position.title,
     duration: entry.duration,
@@ -57,10 +57,12 @@
       </div>
     <% elsif entry.status_pending? %>
       <div class="mt-1 text-warning">
+        <%= fa_icon "hourglass", :solid, end: 1 %>
         The requested corrections are pending review.
       </div>
     <% elsif entry.status_rejected? %>
       <div class="mt-1 text-error">
+        <%= fa_icon "ban", :solid, end: 1 %>
         <% if timesheet_self_serve? %>
           The submitted corrections request has been denied. You may submit an appeal. If you do not wish to do so,
           the entry still needs to be verified to indicate no further correction requests will be submitted for this
@@ -73,11 +75,13 @@
       </div>
     <% else %>
       <div class="mt-1 text-error">
+        <%= fa_icon "bug", :solid, end: 1 %>
         Uh oh, a bug has been tripped over.
       </div>
     <% end %>
   <% else %>
     <div class="mb-1 text-warning">
+      <%= fa_icon "person-walking", :solid, end: 1 %>
       <% if timesheet_self_serve? %>
         This shift is still in progress. You may verify the entry or submit a correction once you have signed out.
       <% else %>
@@ -88,7 +92,7 @@
   <% end %>
 
   <% if entry.notes.any? %>
-    <div class="mb-1 text-sm me-muted">
+    <div class="mb-1 text-sm text-stone-muted">
       Last note left from <%= entry.notes.last.from_label(current_user.id) %>
       at <%= datetime_format entry.notes.last.created_at %>
     </div>
@@ -107,7 +111,7 @@
         correct_label = if entry.status_pending?
                           "Add More Info"
                         elsif entry.status_rejected?
-                          "Submit Appeal"
+                          "Appeal Decision"
                         else
                           "Request Correction"
                         end
@@ -136,4 +140,4 @@
       <% end %>
     </div>
   <% end %>
-</div>
+<% end %>

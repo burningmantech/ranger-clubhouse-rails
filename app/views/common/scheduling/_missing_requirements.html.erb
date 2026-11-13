@@ -1,20 +1,24 @@
 <%# locals: (verdict:) %>
 <% if verdict.requirements.empty? && !verdict.training_signups_allowed %>
-  <p>
-    Completion of the Online Course is required before signing up for any In-Person Training.
-    This requirement does not apply to Advanced Ranger Trainings (ART).
-  </p>
-  <p>
-    Shifts may be signed up for in advance; however, you must attend and successfully complete
-    the required In-Person Training before you are permitted to be on duty. Certain positions may
-    additionally require successful completion of an Advanced Ranger Training (ART).
-  </p>
-  <p>
-    <b>Note:</b> The Clubhouse may take up to 30 minutes to display completion of the
-    Online Course. If more than two hours have passed since completion and your status has not
-    updated, contact the Training Academy.
-  </p>
-  <%= mail_to EmailAddresses::TRAINING_ACADEMY %>
+  <dl class="instruction-list">
+    <dt>Why can't I sign up for this session?</dt>
+    <dd>
+      Completion of the Online Course is required before signing up for any In-Person Training. This requirement
+      does not apply to Advanced Ranger Trainings (ART).
+    </dd>
+
+    <dt>Can I sign up for shifts now?</dt>
+    <dd>
+      Yes, shifts may be signed up for in advance. You must attend and pass the required In-Person Training before
+      you are permitted to be on duty, and certain positions also require an Advanced Ranger Training (ART).
+    </dd>
+
+    <dt>I finished the Online Course. Why does it not show?</dt>
+    <dd>
+      The Clubhouse may take up to 30 minutes to display completion. If more than two hours have passed and your
+      status has not updated, contact the Training Academy at <%= mail_to EmailAddresses::TRAINING_ACADEMY %>.
+    </dd>
+  </dl>
 <% else %>
   <p>
     Before the shift can be signed up for, the following issue(s) must be fixed first:
