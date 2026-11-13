@@ -95,6 +95,8 @@ cell, a filter select, a chip, a CSV cell, a preview message.
 <%= ui_badge person.status, :secondary %>        <%# ✅ %>
 ```
 
+Print it bare, too: no brackets, quotes or italics around it.
+
 One page that title-cases a status while another prints it raw makes the same
 status look like two, and a chip that re-cases what its own select spelled
 disagrees with the control that set it. Same rule for a filter chip's value
@@ -122,7 +124,7 @@ The Clubhouse serves users with varying attention profiles. These guidelines are
 ### Visual Hierarchy
 
 - **CRITICAL:** Use clear, consistent heading hierarchy (h1 > h2 > h3)
-- **CRITICAL:** Ensure a single, clear primary action per view
+- **CRITICAL:** One clear primary action per form, dialog or section; a row of several primaries is wrong, and so is a primary on every row of a table. The same action may repeat above and below a long table
 - **PREFERRED:** Highlight the most important action on each screen
 - **PREFERRED:** Group related information visually with cards and sections
 - **PREFERRED:** Use whitespace to reduce cognitive load
@@ -154,7 +156,7 @@ The Clubhouse serves users with varying attention profiles. These guidelines are
 
 ### Reducing Distractions
 
-- **CRITICAL:** Motion is functional only. The approved set: `animate-spin` loading spinners, the progress-bar pulse, `animate-pulse` on urgent badges, and the sidebar drill-down slide. All of it must honor `prefers-reduced-motion`
+- **CRITICAL:** Motion is functional only. The approved set: `animate-spin` loading spinners, the progress-bar pulse, `animate-pulse` on urgent badges, the sidebar drill-down slide, a toast's slide in and out and its countdown bar, and the copy control's bounce when a copy lands. Every one of them stops under `prefers-reduced-motion`
 - **AVOID:** Decorative motion — hover lifts, entrance animations, parallax
 - **AVOID:** Auto-playing media or carousels
 - **AVOID:** Flashing or blinking content
@@ -245,9 +247,8 @@ question down:
 - Body copy, help text, form hints, error messages, empty-state sentences and
   `panel.description` — these are prose and stay sentence case
 
-The rule is guarded by `test/lib/copy_casing_test.rb`, which reads every literal
-heading and button label in `app/views` and `app/helpers`. A title built in a Ruby
-constant or passed as a `render … label:` local is out of its reach: case it by hand.
+No test guards the rule: case every heading and button label by hand, including a title
+built in a Ruby constant or passed as a `render … label:` local.
 
 ### Content Writing Guidelines
 
@@ -287,7 +288,7 @@ This applies to:
 
 **CRITICAL:** Ensure proper ARIA support:
 - Labels properly associated with inputs via `for` attribute
-- Required fields announce "(required)" to screen readers
+- Required fields show the word "(required)" in the label, which screen readers read with it
 - Help text connected via `aria-describedby`
 - Error messages use `role="alert"`
 - Interactive elements have appropriate ARIA attributes
@@ -367,7 +368,9 @@ form, so a screen reader gets an empty string rather than announcing what the
 "Delete Passkey". A shift you leave is still on the schedule: "Remove from Schedule".
 
 A submit that does more than store the record keeps its own verb: "Send Message", "Claim Ticket",
-"Create Account".
+"Create Account". A save names what it saves ("Save Camp Location"), never a bare "Save" or "Save
+Changes", and one action reads the same on every button that does it ("Bank Ticket", not "Bank It"
+on one page and "Bank for Later" on the next).
 
 ---
 
@@ -404,8 +407,14 @@ it can be undone.
 | "Are you sure you want to delete this note?" | "Delete this note? This cannot be undone." |
 | "Really remove Firecracker from this session?" | "Remove Firecracker from this session? They can sign up again." |
 
-`delete_button` already makes a destructive confirm button red. A dialog built from
-`confirm_modal` passes `variant: :error`.
+`delete_button` asks this by default and makes the confirm button red. A dialog built from
+`confirm_modal` passes `variant: :error`. A confirm that destroys nothing (a sign-out, a download)
+asks with its action the same way, says what follows, and keeps its action's own variant.
+
+Every confirm is the app's dialog: `data-turbo-confirm`, or a controller that calls
+`Turbo.config.forms.confirm` as `status_warning_controller.js` does. Never `window.confirm`,
+leave-page guards included. Only closing or reloading the tab keeps the browser's own prompt, which
+a page cannot replace.
 
 ---
 
@@ -460,7 +469,14 @@ Rails' own messages already do this: `config/locales/en.yml` rewrites them as
 - **Noun with a hyphen, verb in two words:** "your sign-up", "sign up for a shift"; "the
   check-in", "check in the radio". Never "signup" or "checkin".
 - **"un-submit"**, not "unsubmit".
-- **An empty value** prints "—".
+- **An empty value** (nothing recorded) prints "—" through `value_or_dash`, in a table cell and
+  anywhere else. A label/value display on a profile may say "None stated" instead, through
+  `none_stated` only. No hyphen, "none", "unknown", "Not specified", "(blank)" or other wording of
+  nothing. A word that states a fact the data records is a value and stays: "Never" for something
+  that has not happened, "Self", "Anonymous", "imported" for a record brought in without one,
+  "[hidden]", "No limit", "Shift deleted". It prints plain or in `text-stone-muted`, never in
+  italics or wrapped in asterisks, hyphens or brackets. "—" means nothing recorded; a zero is a
+  value and prints as a number, in a grid cell as in a total.
 - **No exclamation marks** in flash messages or error messages.
 
 ---
@@ -479,7 +495,8 @@ Rails' own messages already do this: `config/locales/en.yml` rewrites them as
 | In running copy | `January 8`, `January 8, 2026` |
 | Long form | `Thursday, January 8, 2026` |
 | A chip with no room | `Thu 1/8 14:30` |
-| Admin logs, CSV, form field values | `2026-01-08 14:30:00`, `2026-01-08` |
+| Admin logs | `2026-01-08 14:30:00` (`LOG_TIME`) |
+| CSV, filter-bar chips, printed forms, form field values | `2026-01-08 14:30` (`CSV_TIME`, `CHIP_TIME`), `2026-01-08` |
 
 - Never zero-pad the day: `Jan 8`, not `Jan 08`.
 - The year goes after the date and before the time, never after the time.
@@ -519,18 +536,11 @@ Empty states should:
 Form help text should:
 - Be concise (1-2 sentences)
 - Explain why the information is needed or how it will be used
-- Use inline mode for brief explanations
-- Use tooltip mode for longer explanations
+- Sit below the field, where the builder ties it to the field with `aria-describedby`
 
 ```erb
-<%# Inline help text (default) %>
 <%= f.email_field :email, label: "Email", 
     help_text: "We'll send your confirmation here." %>
-
-<%# Tooltip help text %>
-<%= f.text_field :callsign, label: "Callsign", 
-    help_text: "Choose a unique name that identifies you on the playa. This can be changed later.",
-    help_mode: :tooltip %>
 ```
 
 ---

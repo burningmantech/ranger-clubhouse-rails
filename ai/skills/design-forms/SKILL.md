@@ -36,6 +36,10 @@ description: Form builder patterns and field helpers for Clubhouse 3. Use when c
 <% end %>
 ```
 
+Not covered by the builder: a fieldless carrier form (a hidden `form_tag` that only gives buttons
+somewhere to submit) and a filter input that never submits (`search_field_tag` filtering a list in
+the browser), which still has a visible label or an `aria-label`.
+
 ---
 
 ## Layout Modes
@@ -76,9 +80,8 @@ All fields support these common options:
 | Option | Type | Description |
 |--------|------|-------------|
 | `label:` | String | Label text (always use - never placeholder-only) |
-| `required:` | Boolean | Shows red asterisk and adds `required` attribute |
+| `required:` | Boolean | Shows "(required)" after the label (`text-sm`, error colour) and adds the `required` attribute; every field, `check_box` included |
 | `help_text:` | String | Supportive text below the field |
-| `help_mode:` | Symbol | `:inline` (default) or `:tooltip` for help text display |
 | `layout:` | Symbol | `:vertical`, `:horizontal`, or `:auto` |
 | `wrapper_class:` | String | Custom classes for wrapper div |
 | `width:` | String | Custom width classes (e.g., `"w-32"` or `"w-full sm:w-48"`) |
@@ -107,17 +110,12 @@ All fields support these common options:
 <%# Text input with responsive width %>
 <%= f.text_field :preferred_name, label: "Preferred Name", width: "w-full sm:w-48" %>
 
-<%# Text input with tooltip help text %>
-<%= f.email_field :email, label: "Email", 
-    help_text: "We'll never share your email with third parties", 
-    help_mode: :tooltip %>
-
 <%# Date/Time %>
 <%= f.datetime_field :starts_at, label: "Start Time" %>
 <%= f.date_field :birth_date, label: "Birth Date" %>
 <%= f.time_field :reminder, label: "Reminder Time" %>
 
-<%# Textarea (120px minimum height) %>
+<%# Textarea (daisyUI's 80px minimum height, full width by default) %>
 <%= f.text_area :bio, label: "Biography", help_text: "Tell us about yourself" %>
 <%= f.text_area :reason, label: "Reason", maxlength: 1000, show_counter: true %>
 
@@ -195,6 +193,9 @@ Best for semantic grouping of form controls with compact layout:
 
 **Caution:** Screen readers announce the legend text for every input when tabbing through the fieldset.
 
+**Styling** (`components/forms.css`): a 4px `border-primary` start rule over a `from-primary/5`
+gradient, `rounded-r-lg`; the legend `text-lg font-semibold` over a `border-base-200` underline.
+
 ```erb
 <%= f.fieldset "Personal Information" do %>
   <%= f.text_field :first_name, label: "First Name", required: true %>
@@ -269,13 +270,22 @@ Errors are automatically displayed with ADHD-friendly prominence:
 <% end %>
 ```
 
+**Forms without one model.** A form with no model, or one that acts on many records (a bulk tool,
+an editable grid, a paste-then-review flow), reports a refusal in a `ui_callout_box :error` above
+the form or in its results (`:warning` when only some rows failed), naming the rows that failed; a
+flash alone is not enough. A per-line review table counts as that report.
+
 ---
 
 ## ADHD-Friendly Form Page Patterns
 
 ### Form Page Structure
 
-Standard structure for edit form pages:
+Standard structure for edit form pages. The order is fixed: hero (title, and a back link when the
+reader came from a page in the app; a description is optional on a new or edit page), optional
+callouts, `ui_form`, and the button row last. The rest is free: a short form may put its fields
+straight in `ui_form`, a `ui_section` may box the whole form, a callout that explains one group of
+fields may sit inside the form beside them, and an edit form may have a stat row above it.
 
 ```erb
 <%# 1. Hero Panel with description and back navigation %>
@@ -339,6 +349,10 @@ Constrain field widths based on expected content. **Always use responsive width 
 - Add `sm:` prefix for desktop widths (640px and above)
 - Fields narrower than `w-32` don't need responsive classes
 - `sm:` is otherwise an AVOID breakpoint (`design-layouts`); field `width:` is its one sanctioned use
+- The table is for a field standing alone. In a `filter_bar` panel or a `form_row` of fields side by
+  side, each field fills its share (`width: "w-full"`, `wrapper_class: "flex-1"`) or keeps the default
+- A width goes through `width:`, never the input's `class:`, and turns at `sm:` on a scale step:
+  never `lg:` (`lg:w-96`) or an arbitrary value (`lg:w-[40rem]`)
 
 ```erb
 <%= f.text_field :preferred_name, label: "Preferred Name", width: "w-full sm:w-48" %>
@@ -380,8 +394,10 @@ Keep save/cancel buttons accessible on mobile:
 
 The form builder includes built-in accessibility:
 
-- **Labels**: Always visible, properly associated via `for` attribute
-- **Required fields**: Visual indicator (asterisk) plus screen reader text "(required)"
+- **Labels**: Always visible, properly associated via `for` attribute. In a grid of rows the column
+  heading is the visible label; each field takes `hide_label:` and an `aria-label` naming row and column
+- **Required fields**: the visible word "(required)" in the label (`text-sm`, error colour), which
+  screen readers read with it, and the `required` attribute
 - **Help text**: Connected via `aria-describedby`
 - **Error messages**: Use `role="alert"` for screen reader announcement
 - **Focus states**: High-contrast 2px ring with offset, meets WCAG 2.4.7

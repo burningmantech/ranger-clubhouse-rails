@@ -156,7 +156,7 @@ The `datetime_field` integrates with Vanilla Calendar Pro for enhanced date/time
 
 ### Textarea
 
-Textareas default to full width and are vertically resizable:
+Textareas default to full width and are vertically resizable, with daisyUI's 80px (`5rem`) minimum height:
 
 ```ruby
 <%= f.text_area :bio, 
@@ -471,8 +471,7 @@ All field types support these common options:
 |--------|------|---------|-------------|
 | `label:` | String | - | Label text displayed above/beside the field |
 | `help_text:` | String | - | Help text displayed below the field |
-| `help_mode:` | Symbol | `:inline` | Display mode: `:inline` or `:tooltip` |
-| `required:` | Boolean | `false` | Adds required indicator (*) and HTML5 required attribute |
+| `required:` | Boolean | `false` | Adds the visible "(required)" after the label (`text-sm`, error colour) and the HTML5 required attribute; every field, `check_box` included |
 | `width:` | String | `"w-auto"` | Tailwind width class (e.g., `"w-full"`, `"w-1/2"`) |
 | `layout:` | Symbol | Form default | Override layout for this field: `:vertical`, `:horizontal`, or `:auto` |
 | `wrapper_class:` | String | - | Additional CSS classes for the wrapper div |
@@ -501,12 +500,6 @@ All field types support these common options:
   label: "Email",
   icon: "envelope",
   icon_type: :solid %>
-
-# Tooltip help text
-<%= f.password_field :password,
-  label: "Password",
-  help_text: "Must contain at least 8 characters, one uppercase, one number",
-  help_mode: :tooltip %>
 
 # Custom width
 <%= f.text_field :zip_code,
@@ -670,7 +663,7 @@ AppFormBuilder is built with WCAG 2.1 Level AA compliance:
 
 ### Visual Indicators
 
-- **Required Fields** - Red asterisk (*) with hidden "(required)" text
+- **Required Fields** - The visible word "(required)" after the label, `text-sm` in the error colour
 - **Error States** - Color plus icon indicators (not color alone)
 - **Focus States** - Visible focus indicators for keyboard users
 
@@ -808,8 +801,7 @@ Add FontAwesome icons to text inputs:
     <%= f.password_field :password,
       label: "Password",
       required: true,
-      help_text: "Minimum 8 characters",
-      help_mode: :tooltip %>
+      help_text: "Minimum 8 characters" %>
     
     <%= f.password_field :password_confirmation,
       label: "Confirm Password",

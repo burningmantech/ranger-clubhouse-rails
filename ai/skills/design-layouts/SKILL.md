@@ -125,7 +125,9 @@ review shape for reading many records one at a time.
 <% end %>
 
 <div class="mb-4">
-  <%= button_link "Primary Action", :primary, path %>
+  <%= button_row do %>
+    <%= button_link "Primary Action", :primary, path %>
+  <% end %>
 </div>
 
 <%= ui_section "Section Title" do %>
@@ -157,7 +159,8 @@ review shape for reading many records one at a time.
 ```
 
 Its links are plain fragments (`data-turbo="false"`): Turbo would treat each as a full
-visit of the same URL, refetching the page and dropping any unapplied filter text.
+visit of the same URL, refetching the page and dropping any unapplied filter text. A lead-in
+before the list is in its own element, never a bare text node.
 
 **Existing pages:** Directory, Announcements, Agreements, Messages
 
@@ -340,7 +343,7 @@ No filter bar, no table. Just the categories and how big each one is.
 - **Counts on level 1 are plain text**, not stat boxes: one `text-lg` summary line, plus
   `meta:` on each row — or `figures:` when the count splits into what is still owed and
   what is done (Available Sign-Ups' upcoming/past), never both. Constrain the row list to
-  `lg:w-3/4`.
+  `lg:w-3/4`, as any list of drill-down rows or roster of one-line rows may be.
 - **Badge only the exception count** on a row (`N expired`, `N inactive`), `size: "base"`,
   and omit it entirely at zero. A badge on every row is noise.
 - **Level-2 totals describe the category, not the filtered view** — `filter_bar count:`
@@ -349,7 +352,8 @@ No filter bar, no table. Just the categories and how big each one is.
   `button_row` beside Add Record. Level 2 has one, so its export moves into
   `filter_bar actions:` and that `button_row` keeps only Add Record.
 - **Two empty states on level 2**, and they say different things: filters matched nothing
-  vs. the category is empty for this year. One message for both strands the reader.
+  vs. the category is empty for this year. One message for both strands the reader. A page
+  whose filters are built from its own rows, and so cannot empty the table, needs only the second.
 - **Return links follow the category.** Detail, edit, and delete all come back to the
   category page the reader came from with its filters intact, not to level 1. Resolve the
   path from the record's own category so a create lands on the category it created.
@@ -416,7 +420,7 @@ kind of record gets its own line and pane partials in the same shape.
 
 - **One line per record**: name, what stands out, one coloured chip. Status, former
   handles, mentors and the history wait in the pane. A line that wraps on a laptop has too
-  much on it.
+  much on it. The mailbox's lines are the exception: party, subject and snippet, three lines each.
 - **The pane's header is the record's own**: the shared `_name_line` with the chips, the
   gray `_signal_line`, the Personnel warning when a flag is raised, the Add-note buttons
   (`_note_buttons`), then `_history`, its team sections in the gray line's team order. A
@@ -489,7 +493,8 @@ the split holds.
 
 ### Page Headers
 
-All pages use the `hero_panel` component for consistent page headers:
+Every page inside the app shell uses the `hero_panel` component for its header; the pages in the
+next two sections do not:
 
 ```erb
 <%= hero_panel icon: "icon-name", heading_level: :h1, id: "page-header" do |panel| %>
@@ -497,6 +502,23 @@ All pages use the `hero_panel` component for consistent page headers:
   <% panel.description do %>Page description<% end %>
 <% end %>
 ```
+
+### Sign-In Pages
+
+Sign-in and its door pages (`sessions/*`, the SSO hand-back pages) are the brand surface: their look
+is `login.css` and `sessions/_heading`, not the component library, and they take no `hero_panel`,
+`button_row` or `ui_card`. Their access is not exempt: labels at `text-base`, the visible
+"(required)" word every form shows (sign-in and register alike), nothing under the type floor
+(`text-xs` for content) or the 36px touch floor.
+
+### Pages Outside the App Shell
+
+Print sheets, kiosk and bookmark pages, wall displays (the ROC photo board), the `public/` error
+pages and the test harness have no app shell. Colour tokens, the type floor and Title Case apply to
+them as to any page; `hero_panel`, `button_row`, the layout patterns and the page-structure rules
+(hero, back link, sections) do not. Each heads itself with its own `<h1>` or masthead. A print
+sheet's way back sits above the sheet, `print:hidden`, in its area's `_print_screen_nav` partial
+where one exists.
 
 ### Year Selector
 
@@ -530,12 +552,19 @@ Back links are integrated into hero panels:
 - Desktop: Appears on the far right of the header
 - Mobile: Appears above the title
 
+The hero's link is the page's one way back: never repeat it at the foot of the page. A link in the
+body may go back only when it does what the hero's cannot: a step back in a multi-step flow, a way
+back that re-posts a form, or the only action left on an empty result. The `back_to` slot may hold
+a link that switches interface ("Switch to HQ Interface") in place of a back link.
+
 ### Quick Actions
 
 ```erb
 <div class="mb-4">
-  <%= button_link "Primary", :primary, path, icon: "icon" %>
-  <%= button_link "Secondary", :secondary, path %>
+  <%= button_row do %>
+    <%= button_link "Primary", :primary, path, icon: "icon" %>
+    <%= button_link "Secondary", :secondary, path %>
+  <% end %>
 </div>
 ```
 
@@ -561,6 +590,12 @@ Back links are integrated into hero panels:
   <%= ui_section "Right" do %>...<% end %>
 </div>
 ```
+
+Page columns (regions side by side) are one of these, folding at `lg` with `gap-4` in both
+directions; a fixed rail may be a track list (`lg:grid-cols-[1fr_20rem]`). Never `md:` for columns.
+A grid of items inside a section (checkboxes, cards, label/value pairs) picks its own gap from the
+spacing scale and may instead use CSS `columns-*`, an `xl:` refinement, or a content-driven wrap
+(`flex flex-wrap`, `basis-*`).
 
 ### ADHD-Friendly Q&A Display
 
@@ -622,7 +657,8 @@ This is the shape for a full page of instructions on a page the reader operates.
 
 ## Empty States
 
-Always use the helper — never a hand-rolled dashed box:
+Always use the helper — never a hand-rolled dashed box (when a collection needs one:
+`design-components` > Empty States):
 
 ```erb
 <%= ui_empty_state "No items found." %>

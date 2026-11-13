@@ -78,7 +78,7 @@ ui_section(title = nil, options = {}, &block)
 | `edit_link:` | String | `nil` | Path for edit button; the link's accessible name is "Edit <title>" |
 | `link:` | SafeBuffer | `nil` | A rendered link at the header's right edge, in place of `edit_link:` |
 | `action:` | Hash | `nil` | `{ partial:, locals: }` rendered at the header's right edge, for more than one control (a `button_row`); `edit_link:` wins when both are given |
-| `border:` | Boolean | `true` | Include padding |
+| `border:` | Boolean | `true` | `false` drops only the body's extra `pb-1`; its `px-4 pb-2` stays either way |
 | `body_class:` | String | `nil` | Additional classes for body |
 | `class:` | String | `nil` | Additional classes for container |
 | `id:` | String | `nil` | HTML id attribute |
@@ -967,7 +967,7 @@ Several callsigns in one input box, each a removable chip, over `shared/_autocom
 |--------|------|---------|-------------|
 | `url` | String | required | Suggestions endpoint answering the autocomplete JSON envelope (`Autocomplete::ResponseBuilder`), each item's `value` the callsign |
 | `max` | Integer | none | The most chips it holds; a new chip past it replaces the oldest (`data-callsign-chips-max-value`) |
-| `placeholder` | String | "Add a callsign…", or "Choose a callsign…" with `max: 1` | The input's placeholder; less its ellipsis, its `aria-label` |
+| `placeholder` | String | "Add a callsign…", or "Choose a callsign…" with `max: 1` | The input's placeholder. It is not the name: the input has no `aria-label`, so the field's visible label names it |
 | `label`, `help_text`, `layout`, `width`, `wrapper_class` | | | As every builder field (`build_field`): the label names the input, help and errors describe it |
 
 - The attribute reads an array; each chip sends `<object>[<attribute>][]`. The chips are
@@ -1435,8 +1435,11 @@ delete_button(url, label = nil, options = {})
 | `size:` | String | `"sm"` | Button size |
 | `confirm_message:` | String | `nil` | Message for the standard confirm dialog |
 | `confirm_modal:` | Hash | `nil` | `confirm_modal` options for a custom dialog |
+| `confirm:` | Boolean | `true` | `false` skips the dialog, only where a confirmation is already given another way |
 
-Either dialog's Confirm button is `:error` (red) unless `confirm_modal:` passes its own `variant:`.
+It confirms by default: with neither message given, the standard dialog asks "Delete <thing>?" and says
+whether it can be undone. Either dialog's Confirm button is `:error` (red) unless `confirm_modal:` passes its
+own `variant:`.
 
 ### clipboard_button
 
@@ -1482,14 +1485,17 @@ Covered by `test/system/copy_to_clipboard_test.rb`.
 **File:** `app/helpers/sidebar_helper.rb`
 
 ```ruby
-sidebar_menu(theme = "me", id: "sidebar-drawer", width: "w-65 lg:w-45", &block)
+sidebar_menu(theme = "me", id: "sidebar-drawer", width: "w-65 lg:w-50", &block)
 ```
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `theme` | String | `"me"` | Theme (`"me"`, `"admin"`, `"hq"`) |
 | `id:` | String | `"sidebar-drawer"` | Drawer ID |
-| `width:` | String | `"w-65 lg:w-45"` | Drawer width classes |
+| `width:` | String | `"w-65 lg:w-50"` | Drawer width classes |
+
+Every layout fills it with `sidebar_render_menu(Menus::…, @menu_context)`, which builds the three helpers below
+from the menu definition; no view calls them directly.
 
 ### sidebar_section
 
@@ -1509,14 +1515,12 @@ sidebar_section(title, theme: "me", &block)
 **File:** `app/helpers/sidebar_helper.rb`
 
 ```ruby
-sidebar_submenu(title, icon: nil, icon_type: "regular", theme: "me")
+sidebar_submenu(title, theme: "me")
 ```
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `title` | String | required | Submenu title |
-| `icon:` | String | `nil` | FontAwesome icon name |
-| `icon_type:` | String | `"regular"` | Icon style |
 | `theme:` | String | `"me"` | Theme name |
 
 ### sidebar_item
@@ -1524,36 +1528,17 @@ sidebar_submenu(title, icon: nil, icon_type: "regular", theme: "me")
 **File:** `app/helpers/sidebar_helper.rb`
 
 ```ruby
-sidebar_item(title, url, icon: nil, icon_type: "regular", badge: nil, badge_variant: :error, use_turbo: false, active: nil, active_prefix: false, theme: "me", root: false, **html_options)
+sidebar_item(title, url, active: nil, active_prefix: false, theme: "me", root: false, **html_options)
 ```
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `title` | String | required | Item title |
 | `url` | String | required | Link URL |
-| `icon:` | String | `nil` | FontAwesome icon name |
-| `icon_type:` | String | `"regular"` | Icon style |
-| `badge:` | String | `nil` | Badge text/number |
-| `badge_variant:` | Symbol | `:error` | Badge color (`:error`, `:success`, `:warning`, `:info`, `:default`) |
-| `use_turbo:` | Boolean | `false` | Enable Turbo navigation |
 | `active:` | Boolean | auto-detect | Manually set active state |
 | `active_prefix:` | Boolean | `false` | Keep the item active for descendant routes with the same path prefix |
 | `theme:` | String | `"me"` | Theme name |
 | `root:` | Boolean | `false` | Root path for active detection |
-
-### sidebar_submenu_item
-
-**File:** `app/helpers/sidebar_helper.rb`
-
-```ruby
-sidebar_submenu_item(title, url, **options)
-```
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `title` | String | required | Item title |
-| `url` | String | required | Link URL |
-| `**options` | Hash | `{}` | Same as `sidebar_item` |
 
 ---
 

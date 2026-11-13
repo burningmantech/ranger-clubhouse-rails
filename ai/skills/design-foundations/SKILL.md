@@ -163,9 +163,10 @@ Leading Rule. Do not "fix" this to 16px or 1.5; buy row spacing with padding, no
 - Button size variants (`btn-xs`)
 - Badges (`ui_badge` defaults to `text-xs`; pass `size:` where a badge sits in a headline)
 - Mobile-only labels in responsive tables
-- Icon sizing within links
+- Icon sizing (an icon beside text)
 - Decorative/non-essential footer text
 - Progress bar labels inside the bar element
+- Keyboard-shortcut hints (`<kbd>` chips, the autocomplete's key-help footer), which repeat what a control already does
 
 **CRITICAL - Never use `text-xs` for:**
 - Any content users need to read
@@ -184,14 +185,15 @@ Leading Rule. Do not "fix" this to 16px or 1.5; buy row spacing with padding, no
 - Button size variants (`btn-sm`)
 - Status badges and pills
 - Form help text and error messages (secondary/supporting info)
-- Metadata (timestamps, "Posted by", etc.)
-- Fine print or legal text
+- Metadata (timestamps, "Posted by", etc.), including the state words on a review or list line
+- Fine print or legal text, a footnote marker, a caption inside an image placeholder ("No Photo")
+- A muted second line under a table cell's or a card's main value
 
 **CRITICAL - Never use `text-sm` for:**
 - Body text or main content
-- Table content (use `text-base`)
-- Tab labels
-- Form labels
+- A table cell's main value (use `text-base`; a muted second line under it may be `text-sm`)
+- Tab labels, and the summary label of a disclosure or accordion
+- Form labels, and the labels and values of a label/value display (`ui_label_value`)
 - Primary information in cards
 - Empty state messages
 - Paragraph content
@@ -202,7 +204,7 @@ Leading Rule. Do not "fix" this to 16px or 1.5; buy row spacing with padding, no
 |-------|--------|-------|
 | `font-normal` | 400 | Body text |
 | `font-medium` | 500 | Labels, slight emphasis |
-| `font-semibold` | 600 | Headings, buttons |
+| `font-semibold` | 600 | Headings, buttons, a total row or grand-total cell |
 | `font-bold` | 700 | Strong emphasis |
 
 ### Heading Levels
@@ -225,7 +227,9 @@ Leading Rule. Do not "fix" this to 16px or 1.5; buy row spacing with padding, no
 Nothing inside a section may outweigh the section's title, so an `<h3>` never takes `text-lg`.
 `ui_accent_card` follows its `heading_level:` (`TITLE_STYLES`). Colour stays free: a status
 heading may be `text-success` or `text-error`. Surfaces with their own stylesheet keep it: the
-mega menu, the login screen, the ROC photo board, print sheets, modal titles.
+mega menu, the login screen, the ROC photo board, print sheets, modal titles. Inside the app shell
+the `<h1>` is the hero's; a page outside it (sign-in, a print sheet, a kiosk page, the test
+harness) styles its own `<h1>` from its own stylesheet or masthead.
 
 ---
 
@@ -241,16 +245,17 @@ Follow Tailwind spacing conventions consistently:
 | `6` | 1.5rem | Section spacing |
 | `8` | 2rem | Large section spacing |
 
-**Common patterns:**
-- Card padding: `p-4` or `p-2 lg:p-4`
+**Defaults** (any other value comes from the same scale, never an arbitrary one without a comment):
+- Card padding: `p-4` or `p-2 lg:p-4`; `p-3` for a dense card repeated in a list or grid
 - Section margin: `mb-4`
-- Button row gaps: `gap-2` or `gap-4`
+- Button row gaps: the row's own (`button_row`); never a `gap-*` passed to it
 - Form field spacing: `mb-3` (the builder's wrapper)
 
 **Lists:** a bulleted list is `list-bulleted`, a numbered one `list-numbered`; never
 `list-disc`/`list-decimal` on their own, `ms-5`, `pl-4` or `list-inside`. Each utility is the
 marker plus `--spacing-list-indent` (1.5em), hung outside so wrapped lines align with the text.
-Guarded by `test/views/list_indent_test.rb`.
+Guarded by `test/views/list_indent_test.rb`. Lines that each start with a typed marker (`—`, `•`,
+`*`) are a list: write the `<ul>`, not the marker.
 
 ---
 
@@ -304,11 +309,12 @@ knowingly rather than by drift.
 
 | Class | Value | Usage |
 |-------|-------|-------|
-| `rounded-base` | 12px | Buttons, inputs |
+| `rounded-field` | 8px | Buttons, inputs, selects: daisyUI draws every `btn` and `input` at `--radius-field` (0.5rem) |
+| `rounded-base` | 12px | Cards (`card-standard` is daisyUI's `--radius-box`, the same 12px) |
 | `rounded-lg` | 16px | Modals, panels that are not cards |
 | `rounded-xl` | 12px | Alias of `rounded-base` -- the scale stops at `lg`, so `xl` falls through to Tailwind's 0.75rem |
-| `rounded-2xl` | 16px | Alias of `rounded-lg`, same reason (1rem) |
-| `rounded-full` | 9999px | Badges, avatars, pills |
+| `rounded-2xl` | 16px | Alias of `rounded-lg`, same reason (1rem); a full profile photo (`photo_tag`) |
+| `rounded-full` | 9999px | Badges, small avatars, pills |
 
 ---
 
@@ -322,8 +328,9 @@ knowingly rather than by drift.
 | `shadow-lg` | Popovers, menus |
 | `shadow-xl` | Prominent overlays |
 
-**Flat by default** (DESIGN.md): a new component gets no shadow. Region lift belongs to `.box`
-and the hero panel; hover is a colour change, never a lift.
+**Flat by default** (DESIGN.md): a new component gets no shadow. Region lift belongs to `.box`,
+the hero panel and `ui_card`'s default `shadow-xs`; a panel that floats over the page (a popover,
+a dropdown, a menu) casts the shadow the table gives it. Hover is a colour change, never a lift.
 
 **Custom shadow (hero panels):**
 ```css

@@ -219,7 +219,9 @@ sentence answers a short question:
   by the empty state, where it may be the whole reason nothing is listed.
 - **On a page the reader operates**, a sentence **joins** a visible list, callout or
   section that fits instead of starting a card beside it. A consequence of the page's action
-  stays visible as a `ui_callout_box :warning` or `:info` beside the action.
+  stays visible as a `ui_callout_box :warning` or `:info` beside the action. A form page may keep
+  the Q&A that explains its form open, in a `ui_section` above the form, and the steps of one
+  action may sit in an info callout beside it.
 
 Reference implementations: `app/views/asset_management/asset_history/index.html.erb`, and
 `app/views/ticketing/access_documents/index.html.erb` for a card that holds a legend with
