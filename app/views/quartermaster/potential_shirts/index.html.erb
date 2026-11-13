@@ -65,18 +65,22 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 items-start gap-0 lg:gap-4">
     <% @kinds.each do |kind| %>
       <%= ui_section kind.name, icon: "shirt", icon_type: :solid, border: false do %>
-        <%= ui_table full_width: true, striped: true do |t| %>
-          <%= t.header do %>
-            <%= t.heading "Shirt" %>
-            <%= t.heading "Earned", right: true %>
-            <%= t.heading "Pending", right: true %>
-          <% end %>
-          <%= t.body do %>
-            <% kind.lines.each do |line| %>
-              <%= t.row do %>
-                <%= t.row_header shirt_size_title(line.title) %>
-                <%= t.cell line.earned, right: true %>
-                <%= t.cell line.pending, right: true %>
+        <% if kind.lines.empty? %>
+          <%= ui_empty_state "No order lines for this shirt." %>
+        <% else %>
+          <%= ui_table full_width: true, striped: true do |t| %>
+            <%= t.header do %>
+              <%= t.heading "Shirt" %>
+              <%= t.heading "Earned", right: true %>
+              <%= t.heading "Pending", right: true %>
+            <% end %>
+            <%= t.body do %>
+              <% kind.lines.each do |line| %>
+                <%= t.row do %>
+                  <%= t.row_header shirt_size_title(line.title) %>
+                  <%= t.cell line.earned, right: true %>
+                  <%= t.cell line.pending, right: true %>
+                <% end %>
               <% end %>
             <% end %>
           <% end %>

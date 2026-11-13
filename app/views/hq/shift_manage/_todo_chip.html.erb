@@ -17,18 +17,18 @@
 <%
   if todo.ignore
     chip_class = "text-stone-muted"
-    icon_class = "fa-solid fa-ban"
+    icon = fa_icon("ban", :solid)
   elsif todo.completed
     chip_class = "text-stone-muted"
-    icon_class = "fa-solid fa-check"
+    icon = fa_icon("check", :solid)
   else
     chip_class = [ ("text-primary" if next_up), ("animate-pulse" if todo.blink) ].compact.join(" ")
-    icon_class = "fa-regular fa-circle"
+    icon = fa_icon("circle")
   end
 %>
 <%= tag.div class: class_names("inline-flex items-center gap-2 me-4 text-base", chip_class),
             data: { hq_shift_target: "todo", task: todo.task, completed: todo.completed, ignore: todo.ignore,
                     blink: todo.blink, ask_if_done: (true if ask_if_done) } do %>
-  <i class="<%= icon_class %>" aria-hidden="true"></i>
+  <%= icon %>
   <span><%= todo.label %></span>
 <% end %>

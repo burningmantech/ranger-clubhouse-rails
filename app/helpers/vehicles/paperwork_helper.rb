@@ -112,10 +112,10 @@ module Vehicles::PaperworkHelper
   end
 
   def paperwork_count_chips(counts)
-    chips = counts.map do |label, present|
-      # A zero is still information here, so it stays legible rather than being
-      # dropped -- it is only de-emphasised against the counts that matter.
-      ui_badge(label, :secondary, class: ("opacity-60" unless present))
+    chips = counts.map do |label, _present|
+      # A zero is still information here, so it stays a badge: each chip states
+      # its own count ("0 teams"), which is what tells it apart, not its contrast.
+      ui_badge(label, :secondary)
     end
 
     # No chevron: detail_row_toggle appends its own.
@@ -131,7 +131,7 @@ module Vehicles::PaperworkHelper
   def paperwork_detail_group(title, &block)
     tag.div(class: "min-w-52") do
       safe_join([tag.h4(title, class: "heading-title text-stone-muted mb-1"),
-                 tag.div(capture(&block), class: "text-sm")])
+                 tag.div(capture(&block))])
     end
   end
 
@@ -154,7 +154,7 @@ module Vehicles::PaperworkHelper
     lines << paperwork_source_line("Event Info", ["marked eligible"]) if checkbox
     lines.compact!
 
-    return tag.div("- none -", class: "ms-4 italic") if lines.empty?
+    return tag.div(value_or_dash(nil), class: "ms-4") if lines.empty?
 
     safe_join(lines)
   end
@@ -175,7 +175,7 @@ module Vehicles::PaperworkHelper
   end
 
   def paperwork_signups(signups)
-    return tag.div("- none -", class: "ms-4 italic") if signups.empty?
+    return tag.div(value_or_dash(nil), class: "ms-4") if signups.empty?
 
     safe_join(signups.map do |signup|
       tag.div(safe_join([signup.position_title, " ", datetime_format(signup.begins, tz: signup.timezone)]),

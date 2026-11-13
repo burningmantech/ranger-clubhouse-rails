@@ -46,8 +46,7 @@
           options_including_current covers the other direction: a stored value
           the list does not offer stays selected instead of being erased. %>
       <%= f.select :vehicle_class, options_including_current(Vehicle::CLASS_OPTIONS, @vehicle.vehicle_class),
-                   { label: "Class", include_blank: "Not recorded" },
-                   { class: "w-full sm:w-56" } %>
+                   { label: "Class", include_blank: "Not recorded", width: "w-full sm:w-56" } %>
       <%= f.text_field :vehicle_year, label: "Year", width: "w-full sm:w-24", maxlength: 4 %>
       <%= f.text_field :vehicle_make, label: "Make", width: "w-full sm:w-48",
                        required: true, help_text: "For example Ford, GMC, Toyota." %>
@@ -59,8 +58,8 @@
     <%= form_row do %>
       <%= f.select :license_state,
                    options_including_current(CountryStateHelper::US_CANADA_OPTIONS, @vehicle.license_state),
-                   { label: "License State or Province", include_blank: "No plate on file" },
-                   { class: "w-full sm:w-56" } %>
+                   { label: "License State or Province", include_blank: "No plate on file",
+                     width: "w-full sm:w-56" } %>
       <%= f.text_field :license_number, label: "License Plate Number", width: "w-full sm:w-44" %>
       <%= f.text_field :sticker_number, label: "Driving Permit Number", width: "w-full sm:w-44" %>
       <%= f.text_field :rental_number, label: "DPW Request ID", width: "w-full sm:w-44",
@@ -82,12 +81,13 @@
         <%= render "person/vehicles/eligibility_list",
                    list: @mvr_positions, title: "Motor Vehicle Record Eligible Position", name: "MVR",
                    is_position: true %>
-        <hr class="my-4 border-base-300">
-        <%= render "person/vehicles/eligibility_list",
-                   list: @pvr_teams, title: "Personal Vehicle Eligible Team", name: "Personal Vehicle" %>
-        <%= render "person/vehicles/eligibility_list",
-                   list: @pvr_positions, title: "Personal Vehicle Eligible Position", name: "Personal Vehicle",
-                   is_position: true, no_advisory: true %>
+        <div class="mt-4 pt-3 border-t border-line">
+          <%= render "person/vehicles/eligibility_list",
+                     list: @pvr_teams, title: "Personal Vehicle Eligible Team", name: "Personal Vehicle" %>
+          <%= render "person/vehicles/eligibility_list",
+                     list: @pvr_positions, title: "Personal Vehicle Eligible Position", name: "Personal Vehicle",
+                     is_position: true, no_advisory: true %>
+        </div>
       <% end %>
     <% end %>
   <% end %>
@@ -129,11 +129,11 @@
   <% end %>
 
   <%= button_row do %>
-    <%= f.submit @vehicle.persisted? ? "Save vehicle" : "Add vehicle" %>
+    <%= f.submit "Save Vehicle" %>
     <%= cancel_link @cancel_path %>
     <% if @vehicle.persisted? && can?(:delete_registry) %>
       <%= delete_button vehicles_registry_path(@vehicle, @return_index_params),
-                        "Delete vehicle",
+                        "Delete Vehicle",
                         confirm_modal: {
                           title: "Delete Vehicle",
                           message: "Delete this vehicle? This cannot be undone.",

@@ -8,14 +8,14 @@
 <% if variant == :agreement %>
   <% if person_event.asset_authorized %>
     <h3 class="heading-title text-success">
-      <%= fa_icon "check", :solid, end: 2 %>The Radio Checkout Agreement has been signed.
+      <%= fa_icon "check", :solid, end: 2 %>Radio Checkout Agreement Signed
     </h3>
   <% else %>
     <h3 class="heading-title text-error">
-      <%= fa_icon "ban", :solid, end: 2 %>Radio Checkout Agreement <strong>not signed</strong> &mdash; DO NOT ISSUE RADIOS.
+      <%= fa_icon "ban", :solid, end: 2 %>Radio Checkout Agreement Not Signed
     </h3>
     <p class="mb-3">
-      Direct <%= callsign %> to a kiosk and have them agree to the Radio Checkout
+      <strong>Do not issue radios.</strong> Direct <%= callsign %> to a kiosk and have them agree to the Radio Checkout
       Agreement. Issue a radio only after they sign.
     </p>
   <% end %>
@@ -28,12 +28,12 @@
     <% else %>
       <h3 class="heading-title text-error">
         <%= fa_icon "ban", :solid, end: 2 %>Authorized for <%= pluralize(event_info.radio_max, "Event Radio") %>
-        &mdash; <strong>Do not issue until the Radio Checkout Agreement is signed.</strong>
       </h3>
+      <p><strong>Do not issue until the Radio Checkout Agreement is signed.</strong></p>
     <% end %>
   <% else %>
     <h3 class="heading-title text-heading">
-      <%= fa_icon "tower-broadcast", :solid, end: 2 %>Shift radios only
+      <%= fa_icon "tower-broadcast", :solid, end: 2 %>Shift Radios Only
     </h3>
   <% end %>
 <% end %>

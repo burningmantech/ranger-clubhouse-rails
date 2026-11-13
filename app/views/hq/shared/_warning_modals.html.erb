@@ -10,7 +10,7 @@
   <%= modal id: "hq-signin-warning-modal" do |m| %>
     <%= m.title "Sign In to a Shift" %>
     <%= m.body do %>
-      <strong class="text-warning"><%= fa_icon "circle-exclamation", :solid, end: 2 %>Heads up:</strong>
+      <strong><%= fa_icon "circle-exclamation", :solid, end: 2 %>Heads up:</strong>
       You are not signed in to any shift. You can still use the HQ Interface,
       but please sign in to a shift first.
     <% end %>
@@ -22,7 +22,7 @@
       <p class="mb-2"><%= @person.callsign %> is <%= hq_pnv_noun(@person) %>.</p>
       <p>
         You may <strong>only perform an On-Site Registration</strong> for this person.
-        <strong class="text-error"><%= fa_icon "ban", :solid, end: 2 %>Do not start their Alpha shift.</strong>
+        <strong><%= fa_icon "ban", :solid, end: 2 %>Do not start their Alpha shift.</strong>
         After the On-Site Registration, send the person to the Mentor Shack.
         The Mentors start their shift.
       </p>
@@ -35,7 +35,7 @@
     <%= m.title "Person May Not Ranger" %>
     <%= m.body do %>
       <p class="mb-2">
-        <strong class="text-error">
+        <strong>
           <%= fa_icon "ban", :solid, end: 2 %><%= @person.callsign %> has the status "<%= @person.status %>".
           Do not give them a BMID or radios.
           They are NOT ALLOWED TO PERFORM RANGER SHIFTS.

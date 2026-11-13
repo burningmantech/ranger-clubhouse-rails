@@ -9,9 +9,7 @@
     <div class="text-base"><%= pronouns_format @person %></div>
   <% end %>
   <% panel.description do %>
-    <div class="flex flex-wrap items-center gap-4">
-      <div class="font-semibold">HQ Window Interface</div>
-    </div>
+    Help <%= @person.callsign %> at the HQ Window: on-site registration, shifts, assets, and provisions.
   <% end %>
   <% panel.back_to do %>
     <%= back_to "Switch to Person Manage", person_path(@person),

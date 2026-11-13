@@ -50,7 +50,7 @@
     <% @kinds.each do |kind| %>
       <%= ui_section kind.name, icon: "shirt", icon_type: :solid, border: false do %>
         <% if kind.sizes.empty? %>
-          <p class="text-body px-4 pb-2">No sizes recorded for this shirt.</p>
+          <%= ui_empty_state "No sizes recorded for this shirt." %>
         <% else %>
           <%= ui_table full_width: true, striped: true do |t| %>
             <%= t.header do %>
@@ -121,7 +121,7 @@
                 thing this page sends you off to do. %>
             <%= t.cell safe_join([
                   person.desired_full_name,
-                  tag.div(email_link_or_dash(person.email), class: "text-sm")
+                  tag.div(email_link_or_dash(person.email))
                 ]) %>
             <%= t.cell(ui_badge(person.status,
                                 person.status == Person::ALPHA ? :success : :secondary)) %>

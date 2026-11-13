@@ -172,17 +172,17 @@
               <%# Both sides have an "eligible via" group, so each names its
                   side: two headings reading "Eligible via" would put two
                   identically labelled lists side by side. %>
-              <%= paperwork_detail_group "Record eligible via" do %>
+              <%= paperwork_detail_group "Record Eligible Via" do %>
                 <%= paperwork_sources teams: row.mvr_teams, positions: row.mvr_positions,
                                       positions_label: "Granted positions",
                                       checkbox: row.mvr_checkbox,
                                       teams_checked: @result.memberships_checked?,
                                       positions_checked: @result.memberships_checked? %>
               <% end %>
-              <%= paperwork_detail_group "Eligible sign-ups" do %>
+              <%= paperwork_detail_group "Eligible Sign-Ups" do %>
                 <%= paperwork_signups row.mvr_signups %>
               <% end %>
-              <%= paperwork_detail_group "Personal vehicle eligible via" do %>
+              <%= paperwork_detail_group "Personal Vehicle Eligible Via" do %>
                 <%= paperwork_sources teams: row.pvr_teams, positions: row.pvr_positions,
                                       positions_label: "Signed-up positions",
                                       checkbox: row.pvr_checkbox,

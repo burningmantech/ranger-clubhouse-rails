@@ -89,7 +89,7 @@
                                 hq_shift_manage_correction_form_path(person, entry.id,
                                                                      listed:, **shift_context),
                                 data: { turbo_stream: true } do %>
-                  Submit Correction<% if entry.status_pending? %> <%= fa_icon "check", :solid, start: 1 %><% end %>
+                  Request Correction<% if entry.status_pending? %> <%= fa_icon "check", :solid, start: 1 %><% end %>
                 <% end %>
                 <%= button_action "Skip Review", :secondary,
                                   disabled: entry.status_verified? || entry.status_pending?,

@@ -366,7 +366,7 @@ class Vehicles::RegistryControllerTest < ActionDispatch::IntegrationTest
     assert_equal ["Green Dot"], row.mvr_teams
     assert_equal ["Green Dot"], row.pvr_teams
     assert_includes @response.body, "vehicle-eligibility-#{row.id}"
-    assert_includes @response.body, "Motor Vehicle Record eligible via"
+    assert_includes @response.body, "Motor Vehicle Record Eligible Via"
   end
 
   test "a pending request with no eligibility says so instead of offering an empty detail row" do

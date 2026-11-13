@@ -19,6 +19,6 @@
     <%= hidden_field_tag :pog_op, "cancel" %>
     <%= f.text_area :notes, label: "Why is this pog being cancelled?",
                     rows: 2, required: true %>
-    <%= modal_form_footer f, submit: "Cancel #{pog.pog_label}", close: "Do Not Cancel Pog" %>
+    <%= modal_form_footer f, submit: "Cancel #{pog.pog_label}", close: "Do Not Cancel Pog", variant: :error %>
   <% end %>
 <% end %>

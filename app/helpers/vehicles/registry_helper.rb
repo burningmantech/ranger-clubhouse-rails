@@ -186,7 +186,7 @@ module Vehicles::RegistryHelper
     lines << paperwork_source_line("Teams", teams) if teams.any?
     lines << paperwork_source_line("Positions", positions) if positions.any?
 
-    return "none" if lines.empty?
+    return value_or_dash(nil) if lines.empty?
 
     safe_join(lines)
   end

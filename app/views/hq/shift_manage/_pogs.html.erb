@@ -49,12 +49,12 @@
                   hq_shift_manage_new_pog_path(person, pog: PersonPog::POG_MEAL, **shift_context),
                   data: { turbo_stream: true } %>
   <% if half_pog_enabled %>
-    <%= button_link "Record 1/2 Meal Pog", :primary,
+    <%= button_link "Record 1/2 Meal Pog", :secondary,
                     hq_shift_manage_new_pog_path(person, pog: PersonPog::POG_HALF_MEAL,
                                                  **shift_context),
                     data: { turbo_stream: true } %>
   <% end %>
-  <%= button_link "Record Shower Pog", :primary,
+  <%= button_link "Record Shower Pog", :secondary,
                   hq_shift_manage_new_pog_path(person, pog: PersonPog::POG_SHOWER,
                                                **shift_context),
                   data: { turbo_stream: true } %>
@@ -96,13 +96,13 @@
                               hq_shift_manage_edit_pog_path(person, pog.id, **shift_context),
                               data: { turbo_stream: true } %>
               <% if pog.pog == PersonPog::POG_HALF_MEAL && pog.status == PersonPog::STATUS_ISSUED %>
-                <%= button_link "Redeem for Full Meal Pog", :primary,
+                <%= button_link "Redeem for Full Meal Pog", :secondary,
                                 hq_shift_manage_update_pog_path(person, pog.id,
                                                                pog_op: "redeem", **shift_context),
                                 data: confirm_modal(
                                   title: "Redeem for Full Meal Pog",
-                                  message: "Confirm you want to redeem this 1/2 Meal Pog " \
-                                           "for a Full Meal Pog.",
+                                  message: "Redeem this 1/2 Meal Pog for a Full Meal Pog? " \
+                                           "This cannot be undone.",
                                   confirm_label: "Redeem Pog",
                                   method: :patch
                                 ) %>
