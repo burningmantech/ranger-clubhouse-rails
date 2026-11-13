@@ -25,16 +25,27 @@
  */
 
 /*
- * Tier 1 — the tablet band (md .. lg)
+ * Tier 1 — the summary laid across, where there is room for it
  *
  * Wide enough for two things per line, narrow enough that the phone rules
- * still applied.
+ * still applied. Asked of the summary's own width, not the viewport's: the
+ * guide gives md no layout tier (DESIGN-GUIDE "The two sanctioned uses of
+ * md"), and what decides this is whether the photo, the figures and the button
+ * fit on one line. 40rem is that line. Below the lg fold only: from lg the
+ * column sits beside the content, sized by what it holds, and size containment
+ * there would collapse it to nothing.
  *
  * The other half of this band's problem — .button-row stacking every button
  * onto its own line up to lg — turned out not to be an HQ problem at all, and
  * is fixed for every namespace in buttons.css rather than overridden here.
  */
-@media (width >= theme(--breakpoint-md)) and (width < theme(--breakpoint-lg)) {
+@media (width < theme(--breakpoint-lg)) {
+    .hq-shell :has(> .hq-summary) {
+        container: hq-summary / inline-size;
+    }
+}
+
+@container hq-summary (width >= 40rem) {
     /*
      * The identity/summary column leads on mobile because the operator
      * verifies the face before anything else, and that ordering is correct

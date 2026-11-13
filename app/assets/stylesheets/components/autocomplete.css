@@ -99,7 +99,7 @@
 
 /* Group header label */
 @utility ac-group-header {
-    @apply px-3 py-2 text-xs font-semibold uppercase tracking-wider;
+    @apply px-3 py-2 text-sm font-semibold uppercase tracking-wider;
     @apply text-stone-muted;
     @apply select-none;
 }
@@ -127,7 +127,7 @@
    of its own: the browser's default ring is blue, which vanishes on the active
    chip's brand-blue fill. The offset keeps the ring clear of that fill. */
 @utility ac-filter-chip {
-    @apply inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full;
+    @apply inline-flex items-center gap-1 px-3 py-1 text-sm font-medium rounded-full;
     @apply bg-base-200;
     @apply text-body;
     @apply border border-line;
@@ -157,7 +157,7 @@
 /* Empty state */
 @utility ac-empty {
     @apply px-4 py-6 text-center text-stone-muted;
-    @apply text-sm;
+    @apply text-base;
 }
 
 /* Error state */

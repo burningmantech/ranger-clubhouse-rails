@@ -38,7 +38,30 @@
  * Respect user's motion preferences
  */
 @media (prefers-reduced-motion: reduce) {
-    .animate-pulse {
+    .animate-pulse,
+    .animate-spin {
+        animation: none;
+    }
+
+    /* Toasts (components/toasts.css) fade in place instead of sliding in from
+       the edge. The pair matches .toast-base.show, which sets the slide's end. */
+    .toast-base,
+    .toast-base.show {
+        transform: none;
+        transition: opacity 300ms ease;
+    }
+
+    /* toast_controller.js drives the countdown bar's width with an inline
+       transition-duration, which no stylesheet rule can stop without
+       !important; the bar goes instead. The toast still closes on time. */
+    .toast-progress {
+        display: none;
+    }
+
+    /* The copy control's bounce and the icon's zoom-fade (components/buttons.css).
+       The "Copied" tip still says the copy landed. */
+    .btn-copy-success,
+    .btn-copy-success .fa {
         animation: none;
     }
 }

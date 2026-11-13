@@ -157,18 +157,11 @@ main:has(.login-backdrop) {
     @apply mb-3;
 }
 
+/* text-base, as every form label is: the sign-in look is exempt from the
+   guide, its label size is not (plan R9). The required marker is not hidden
+   here either; it shows as it does on every other form. */
 .login-field label {
-    font-size: 0.8125rem;
-    @apply block font-semibold text-heading mb-2;
-}
-
-/* Every field on every sessions page is required, so marking them all marks
-   nothing -- and the asterisk's text-error red was the only chroma on the page
-   that was not amber. The inputs keep required="required", which is what a
-   screen reader actually announces; only the glyph goes. Delete this rule to
-   bring it back. */
-.login-field label .fa-asterisk {
-    @apply hidden;
+    @apply block text-base font-semibold text-heading mb-2;
 }
 
 /* The password label shares its line with the way out of a forgotten
@@ -183,8 +176,7 @@ main:has(.login-backdrop) {
 }
 
 .login-label-link {
-    @apply tap-target-link font-semibold text-warning hover:underline;
-    font-size: 0.8125rem;
+    @apply tap-target-link text-sm font-semibold text-warning hover:underline;
     text-decoration: none;
 }
 
@@ -346,8 +338,7 @@ main:has(.login-backdrop) {
 }
 
 .login-doors-lede {
-    @apply mb-3 text-body-subtle;
-    font-size: 0.8125rem;
+    @apply mb-3 text-base text-body-subtle;
 }
 
 .login-doors-list {
@@ -398,8 +389,7 @@ main:has(.login-backdrop) {
 }
 
 .login-doors-list p {
-    @apply text-body;
-    font-size: 0.85rem;
+    @apply text-base text-body;
     line-height: 1.3;
 }
 
