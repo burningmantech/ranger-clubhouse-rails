@@ -1,0 +1,67 @@
+R11661 || FIXED || app/helpers/admin/action_logs_helper.rb:60 || Person label uses person_display_link's default "—"; a blank message prints "—" (line 131). Helper test updated.
+R11663 || FIXED || app/helpers/admin/error_logs_helper.rb:122 || "(no data)" now "—", "(unreadable data)" now plain "Unreadable data", blank person "—". "server" is a fact word; "[hidden]" is the payload mask inside data, kept.
+R11666 || COMPLIANT || app/helpers/admin/jobs_helper.rb:144 || BTN-07 new wording exempts one row's record actions.
+R11670 || FIXED || app/helpers/admin/log_styles_helper.rb:11 || LOG_TEXT is text-base (R4), so every admin log cell using log_text_class reads at text-base.
+R11671 || COMPLIANT || app/helpers/admin/log_styles_helper.rb:41 || BTN-05 new wording: a view toggle marks the current view :primary.
+R11675 || FIXED || app/helpers/admin/request_logs_helper.rb:52 || Missing client IP prints "—"; blank person uses the "—" default too.
+R11683 || FIXED || app/helpers/admin/sms_management_helper.rb:80 || "(not set)" now "—"; "(unreadable)" now plain "Unreadable".
+R11508 || FIXED || app/views/admin/action_logs/_live.html.erb:48 || Fixed through LOG_TEXT now text-base (R11670).
+R11505 || FIXED || app/views/admin/action_logs/_table.html.erb:26 || Fixed through LOG_TEXT now text-base (R11670).
+R11517 || FIXED || app/views/admin/bug_reports/index.html.erb:43 || Person, browser, page, address and user agent print "—" via value_or_dash / person_display_link default. Test updated.
+R11518 || FIXED || app/views/admin/bug_reports/index.html.erb:73 || Lone Delete All Bug Reports button now in button_row.
+R11519 || FIXED || app/views/admin/documents/body.html.erb:4 || Hand-made bordered div replaced with ui_card class "p-4 my-2".
+R00977 || FIXED || app/views/admin/documents/body.html.erb:6 || me-muted replaced with text-stone-muted.
+R11521 || FIXED || app/views/admin/documents/body.html.erb:16 || Body renders through rich_text inside .lexxy-content instead of html_safe.
+R11523 || COMPLIANT || app/views/admin/documents/index.html.erb:59 || BTN-07 exempts one row's record actions.
+R11530 || FIXED || app/views/admin/error_logs/index.html.erb:67 || Type cell uses log_text_class("align-middle") (text-base, text-body).
+R11533 || COMPLIANT || app/views/admin/error_logs/index.html.erb:115 || BTN-07 exempts a toolbar shared with a pager.
+F0010 || FIXED || app/views/admin/event_dates/_form.html.erb:3 || Legends now "Event Window", "Credit Period", "Pre-Event Slot Window".
+R11535 || FIXED || app/views/admin/event_dates/_form.html.erb:4 || Each fieldset's explanation paragraph is now a one-question instruction-list.
+F0003 || FIXED || app/views/admin/jobs/index.html.erb:55 || Apply Filters is :secondary (R7); Retry All Failed stays the page's primary.
+F0011 || FIXED || app/views/admin/oauth_clients/_form.html.erb:5 || Legend now "Client Details".
+R11552 || FIXED || app/views/admin/oauth_clients/_form.html.erb:44 || Dialog asks "Make a new secret and save it now?" and says the old secret cannot be brought back.
+F0004 || FIXED || app/views/admin/online_courses/edit.html.erb:10 || Sync Name from Moodle now in a button_row.
+R11560 || COMPLIANT || app/views/admin/online_courses/enrollment_roster.html.erb:42 || EMPTY-02 new wording: a fact word stays as a value, plain or muted.
+R11564 || COMPLIANT || app/views/admin/online_courses/index.html.erb:58 || BTN-07 exempts one row's record actions.
+R11567 || FIXED || app/views/admin/online_courses/moodle_catalog_courses.html.erb:25 || "— none —" now a plain "—". Test assertion updated.
+F0001 || FIXED || app/views/admin/online_courses/moodle_catalog_courses.html.erb:29 || Per-row Add Course is :secondary.
+R11572 || FIXED || app/views/admin/passkeys/index.html.erb:28 || Width moved to the select's width: option.
+R11573 || FIXED || app/views/admin/passkeys/index.html.erb:58 || Deleted account's Status cell prints "—".
+R11574 || COMPLIANT || app/views/admin/passkeys/index.html.erb:67 || "Self" and "Never" are fact words, kept as values (EMPTY-02 new wording).
+R01264 || FIXED || app/views/admin/permissions/_row.html.erb:7 || font-mono dropped from the ID cell.
+R01265 || FIXED || app/views/admin/permissions/_row.html.erb:7 || ID cell and the Teams/Positions labels (lines 37, 41) drop text-sm.
+R11578 || COMPLIANT || app/views/admin/permissions/_row.html.erb:22 || "Direct grant only" is a muted fact word (EMPTY-02 new wording).
+M0139 || FIXED || app/views/admin/permissions/index.html.erb:25 || Button now "Add ART Permissions". The new_art hero title still says "Create ART Permissions".
+F0012 || FIXED || app/views/admin/permissions/new_art.html.erb:24 || Legend now "Training Position".
+M0140 || FIXED || app/views/admin/permissions/new_art.html.erb:30 || Submit now "Save Permissions".
+R11591 || FIXED || app/views/admin/rbs_alerts/edit.html.erb:39 || Raw p replaced by help_text:. The builder now ties a check box's help text itself, so the hand-made aria-describedby is gone.
+R11602 || FIXED || app/views/admin/request_logs/_live_rows.html.erb:8 || Fixed through LOG_TEXT now text-base (R11670).
+R11597 || FIXED || app/views/admin/request_logs/index.html.erb:144 || Missing address chain prints "—" via value_or_dash.
+F0013 || FIXED || app/views/admin/request_logs/index.html.erb:157 || Labels now "What Was Sent" and "What Came Back".
+R11596 || FIXED || app/views/admin/request_logs/index.html.erb:168 || No-payload note drops text-sm (text-base default).
+R11598 || COMPLIANT || app/views/admin/request_logs/index.html.erb:184 || BTN-07 exempts a toolbar shared with a pager.
+F0005 || FIXED || app/views/admin/request_logs/index.html.erb:185 || Confirm adds "This cannot be undone."
+F0006 || COMPLIANT || app/views/admin/settings/edit.html.erb:1 || HERO-02 new wording exempts an edit form page.
+R11620 || COMPLIANT || app/views/admin/settings/edit.html.erb:5 || CARD-03: an untitled section may box a whole form.
+F0008 || FIXED || app/views/admin/settings/edit.html.erb:19 || Boolean radio group gets label "Value".
+R11621 || FIXED || app/views/admin/settings/edit.html.erb:38 || Plain string text field gets label "Value".
+R11611 || FIXED || app/views/admin/settings/index.html.erb:14 || Hand-made GET form replaced by filter_bar with a Setting chip, Clear All and the count.
+F0009 || FIXED || app/views/admin/settings/index.html.erb:19 || size: 40 and horizontal layout replaced by width: "w-full sm:w-72".
+R11612 || FIXED || app/views/admin/settings/index.html.erb:23 || Search submit in a button_row inside the filter panel; ml-4 and the dead click->form#submit action dropped.
+R11615 || COMPLIANT || app/views/admin/settings/index.html.erb:53 || "No access" is a muted fact word (EMPTY-02 new wording).
+R11625 || COMPLIANT || app/views/admin/shift_coverage_groups/_form.html.erb:26 || LAYOUT-02 new wording: item lists inside a section may use columns-*.
+F0007 || FIXED || app/views/admin/shift_coverage_groups/show.html.erb:5 || Hero gets a one-sentence description.
+R01495 || BLOCKED || app/views/admin/shift_coverage_positions/_position_rows.html.erb:10 || Per-row errors need AppFormBuilder (app/helpers/form_helper.rb) to support indexed repeated rows with a per-row error state.
+R11635 || COMPLIANT || app/views/admin/shift_coverage_positions/_position_rows.html.erb:18 || SPACE-01 new wording: scale gaps are fine; no arbitrary values.
+R11633 || BLOCKED || app/views/admin/shift_coverage_positions/_position_rows.html.erb:26 || Raw tags stand in because the builder has no indexed repeated-row field; needs app/helpers/form_helper.rb.
+M0003 || BLOCKED || app/views/admin/shift_coverage_positions/_position_rows.html.erb:24 || Wrapper width stays until the rows use builder fields that accept width: (app/helpers/form_helper.rb).
+R11634 || BLOCKED || app/views/admin/shift_coverage_positions/_position_rows.html.erb:40 || Same as R01495: per-row error classes need builder support in app/helpers/form_helper.rb.
+R01491 || BLOCKED || app/views/admin/shift_coverage_positions/_position_rows.html.erb:28 || Same as R11633: select_tag needs an indexed-row f.select in app/helpers/form_helper.rb.
+R01494 || BLOCKED || app/views/admin/shift_coverage_positions/_position_rows.html.erb:33 || Same as R01495: aria-invalid per row needs builder support in app/helpers/form_helper.rb.
+R01492 || BLOCKED || app/views/admin/shift_coverage_positions/_position_rows.html.erb:38 || Same as R11633: text_field_tag needs an indexed-row f.text_field in app/helpers/form_helper.rb.
+R11642 || FIXED || app/views/admin/sms_management/index.html.erb:87 || Edit Twilio Settings now in a button_row.
+F0002 || FIXED || app/views/admin/sms_management/index.html.erb:125 || Apply Filters is :secondary (R7); Look Up and Update Incoming Address each stay their own form's one primary.
+R01563 || BLOCKED || app/views/admin/sms_management/twilio.html.erb:4 || The frame cannot draw a layout toast; the PATCH in app/controllers/admin/sms_management controller would need to answer with a streamed toast.
+R11652 || FIXED || app/views/admin/sms_management/twilio.html.erb:105 || Dialog asks "Send every text … to the address entered?" and says to undo it by updating the address back.
+R11651 || FIXED || app/views/admin/sms_management/twilio.html.erb:113 || Lock reason is now ui_callout_box :info. Two test selectors updated.
+R11650 || COMPLIANT || app/views/admin/sms_management/twilio.html.erb:117 || BTN-07 exempts a toolbar shared with a status line (the "Checked …" time).

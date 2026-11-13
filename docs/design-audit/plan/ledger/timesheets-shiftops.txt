@@ -1,0 +1,87 @@
+R14331 || FIXED || app/helpers/shift_operations/mass_signout_helper.rb:24 || Stale-row icon takes icon-error instead of text-error.
+R14301 || FIXED || app/helpers/shift_operations/rollcall_helper.rb:137 || Confirm now asks, says when they go off duty, and that a second tap signs them back in.
+R14006 || FIXED || app/helpers/timesheets/correction_requests_helper.rb:45 || Empty reason cell prints the dash (R6) in place of italic "None given".
+R14063 || FIXED || app/helpers/timesheets/hours_credits_helper.rb:41 || Period columns print a zero as 0.00 (R14); BLANK_VALUE removed.
+R14309 || COMPLIANT || app/views/shift_operations/bulk_sign_in_out/index.html.erb:29 || Line problems are reported in the review page's error callout and table, as FORM-06's new text allows for review flows.
+R14307 || FIXED || app/views/shift_operations/bulk_sign_in_out/index.html.erb:37 || Line-format reference is now ui_disclosure variant: :card.
+R14311 || COMPLIANT || app/views/shift_operations/bulk_sign_in_out/preview.html.erb:150 || Go Back and Edit re-posts the pasted list; HERO-04 allows a body link for a re-post.
+R08477 || COMPLIANT || app/views/shift_operations/bulk_sign_in_out/preview.html.erb:99 || Per-line problems listed in the review table under an error callout; FORM-06 allows this for review flows.
+M0150 || FIXED || app/views/shift_operations/bulk_sign_in_out/preview.html.erb:18 || Submit and confirm read "Apply N Lines"; "Create" gone.
+R08463 || FIXED || app/views/shift_operations/bulk_sign_in_out/preview.html.erb:139 || Dialog titled with the action, asks "Apply N lines?" and says it cannot be undone from this page.
+F0255 || FIXED || app/views/shift_operations/bulk_sign_in_out/preview.html.erb:18 || Labels now Title Case ("Apply 3 Lines").
+R14236 || COMPLIANT || app/views/shift_operations/cruise_direction/_board.html.erb:17 || class: carries margin only (mb-4); ALERT-01 is met by the callout itself.
+R14238 || FIXED || app/views/shift_operations/cruise_direction/_board.html.erb:33 || Empty state names the real button: "Use Add Pod".
+R14218 || FIXED || app/views/shift_operations/cruise_direction/_pickers.html.erb:18 || Shift picker is form_with builder: AppFormBuilder with f.select; status badge moved under the select.
+R08490 || FIXED || app/views/shift_operations/cruise_direction/_pickers.html.erb:20 || select_tag replaced by f.select with label.
+R14221 || FIXED || app/views/shift_operations/cruise_direction/_pickers.html.erb:37 || Add Pod and Refresh sit in a button_row.
+R14230 || FIXED || app/views/shift_operations/cruise_direction/_pod.html.erb:51 || Empty pod uses ui_empty_state.
+R14217 || FIXED || app/views/shift_operations/cruise_direction/_stats.html.erb:12 || Tiles wrapped by ui_stat_row (id kept as the stream target).
+R14254 || FIXED || app/views/shift_operations/cruise_direction/people/_dialog.html.erb:32 || Empty current pool uses ui_empty_state.
+R08545 || FIXED || app/views/shift_operations/cruise_direction/people/_dialog.html.erb:41 || Explanatory paragraph raised from text-sm to text-base (R4).
+M0043 || FIXED || app/views/shift_operations/cruise_direction/people/_pool.html.erb:11 || sm:grid-cols-2 changed to lg:grid-cols-2.
+R14261 || FIXED || app/views/shift_operations/cruise_direction/people/edit.html.erb:18 || Pod field is f.select with label and help_text; raw label/select/p gone.
+M0044 || FIXED || app/views/shift_operations/cruise_direction/people/edit.html.erb:19 || sm:w-44 now rides the builder's width: option.
+R14264 || FIXED || app/views/shift_operations/cruise_direction/people/edit.html.erb:30 || Divider uses border-line.
+R14265 || FIXED || app/views/shift_operations/cruise_direction/people/edit.html.erb:33 || Button reads "Remove from Pod N" and confirms with "Remove X from Pod N? They can be added back."
+F0252 || FIXED || app/views/shift_operations/cruise_direction/people/edit.html.erb:33 || Label Title Case: "Remove from Pod N".
+R14243 || FIXED || app/views/shift_operations/cruise_direction/pods/_dialog.html.erb:30 || Divider uses border-line.
+F0251 || FIXED || app/views/shift_operations/cruise_direction/pods/_dialog.html.erb:51 || Button reads "Delete Pod".
+F0253 || FIXED || app/views/shift_operations/cruise_direction/pods/new.html.erb:5 || Dialog title "Add a Pod" matches the Add Pod opener.
+R08590 || FIXED || app/views/shift_operations/cruise_direction/unavailable.html.erb:12 || Second paragraph raised from text-sm to text-base (R4).
+R14324 || COMPLIANT || app/views/shift_operations/mass_signout/index.html.erb:60 || class: carries margin only (my-4); the notice is a callout.
+R14329 || FIXED || app/views/shift_operations/mass_signout/index.html.erb:122 || Dialog titled with the action, asks "Sign out the selected Rangers?" and says it cannot be undone here.
+R14207 || COMPLIANT || app/views/shift_operations/payroll_export/_person.html.erb:21 || A person card exists only for someone with entries, so the table cannot be empty where drawn (EMPTY-01).
+R14191 || COMPLIANT || app/views/shift_operations/payroll_export/index.html.erb:49 || Ghost buttons share a toolbar with the live count; BTN-07 exempts a toolbar shared with a count.
+R14194 || FIXED || app/views/shift_operations/payroll_export/index.html.erb:38 || Standalone note moved into the Meal Break After field's help_text.
+F0250 || COMPLIANT || app/views/shift_operations/payroll_export/index.html.erb:113 || Button inside a callout; BTN-07 exempts it.
+F0249 || FIXED || app/views/shift_operations/payroll_export/index.html.erb:122 || Export labels and fieldset legend now Title Case.
+R14198 || FIXED || app/views/shift_operations/payroll_export/index.html.erb:138 || Person filter is form_with builder: AppFormBuilder with a labelled f.select.
+R08635 || FIXED || app/views/shift_operations/payroll_export/index.html.erb:141 || select_tag replaced by f.select.
+F0248 || COMPLIANT || app/views/shift_operations/payroll_export/index.html.erb:77 || R7: one primary per form or section; Run Report is the parameter form's, the payroll export the export row's.
+R14200 || FIXED || app/views/shift_operations/payroll_export/index.html.erb:161 || Grand total is a ui_card; label Title Case.
+R14337 || WAIVED || app/views/shift_operations/roc_photo_board/_board.html.erb:20 || R10
+R14338 || WAIVED || app/views/shift_operations/roc_photo_board/_board.html.erb:21 || R10
+R14336 || WAIVED || app/views/shift_operations/roc_photo_board/_board.html.erb:28 || R10
+R14339 || WAIVED || app/views/shift_operations/roc_photo_board/_board.html.erb:38 || R10
+F0256 || FIXED || app/views/shift_operations/rollcall/_blocked_dialog.html.erb:10 || Title reads "Check-In Is Blocked".
+R14297 || COMPLIANT || app/views/shift_operations/rollcall/_blocked_dialog.html.erb:12 || Dialog-body one-line status in error colour led by an icon, sentence case: ALERT-01 allows it.
+R14279 || FIXED || app/views/shift_operations/rollcall/_pickers.html.erb:16 || Pickers are form_with builder: AppFormBuilder with f.select.
+R08732 || FIXED || app/views/shift_operations/rollcall/_pickers.html.erb:19 || Position select_tag replaced by f.select.
+M0335 || FIXED || app/views/shift_operations/rollcall/_pickers.html.erb:26 || Shift select_tag replaced by f.select.
+R08738 || COMPLIANT || app/views/shift_operations/rollcall/_roster.html.erb:19 || Browser-only filter input; guide (Forms, FORM-01 text) asks a visible label or an aria-label, and it has an sr-only label.
+R14281 || COMPLIANT || app/views/shift_operations/rollcall/_roster.html.erb:20 || A filter input that never submits is not a builder form (guide FORM-01 text).
+R14288 || COMPLIANT || app/views/shift_operations/rollcall/_row.html.erb:38 || class: on ui_badge is layout only (shrink-0); BADGE-01 allows it.
+R14285 || NEEDS-APPROVAL || app/views/shift_operations/rollcall/_row.html.erb:50 || Whole-row tap target is a new pattern: needs a ButtonHelper roster-row method or a ruled BTN-01 exception; not built.
+R14293 || FIXED || app/views/shift_operations/rollcall/_set_time_dialog.html.erb:15 || Red line now led by a triangle-exclamation status icon.
+R14267 || FIXED || app/views/shift_operations/rollcall/index.html.erb:16 || Mode buttons sit in a button_row.
+R14266 || FIXED || app/views/shift_operations/rollcall/index.html.erb:18 || py-4 text-lg override replaced by size: "lg" and full_width:; labels and icons via options.
+F0257 || FIXED || app/views/shift_operations/rollcall/sign_in.html.erb:57 || Lone button wrapped in button_row.
+F0258 || FIXED || app/views/shift_operations/rollcall/sign_in.html.erb:24 || Card moved directly under the hero (shown once a roster exists).
+R14275 || BLOCKED || app/views/shift_operations/rollcall/sign_in.html.erb:84 || Opening via modal frame needs a set-time action in app/controllers/shift_operations/rollcall_controller.rb rendering into the modal frame; outside my paths.
+F0259 || FIXED || app/views/shift_operations/rollcall/sign_out.html.erb:26 || Card moved directly under the hero (shown once a position is picked).
+M0458 || FIXED || app/views/timesheets/correction_stats/_decision_card.html.erb:30 || Segments set --stat-meter-share; stat-meter.css reads it for width. No inline width left.
+R14020 || FIXED || app/views/timesheets/correction_stats/_decision_card.html.erb:60 || Zero case uses ui_empty_state.
+R14023 || FIXED || app/views/timesheets/correction_stats/_top_list.html.erb:23 || Empty leaderboard uses ui_empty_state.
+R14009 || FIXED || app/views/timesheets/correction_stats/index.html.erb:30 || Decorative warning variant dropped; tile is uncoloured like its neighbours.
+R14034 || FIXED || app/views/timesheets/early_late_checkins/_section.html.erb:19 || Both empty texts use ui_empty_state.
+R14032 || FIXED || app/views/timesheets/early_late_checkins/index.html.erb:100 || Both rollups show ui_empty_state instead of a header-only table.
+R14045 || FIXED || app/views/timesheets/forced_shift_start/index.html.erb:76 || Section title Title Case: "N Forced Starts in YEAR".
+R14047 || FIXED || app/views/timesheets/forced_shift_start/index.html.erb:101 || "No reason given" prints the dash; "Not recorded" (a fact) stays, muted, not italic.
+R14059 || COMPLIANT || app/views/timesheets/hours_credits/index.html.erb:112 || TABLE-01 now allows a grouped header built inside ui_table.
+R14072 || FIXED || app/views/timesheets/on_duty/index.html.erb:134 || md:grid-cols-2 changed to lg:grid-cols-2.
+R14073 || BLOCKED || app/views/timesheets/on_duty/index.html.erb:137 || ui_card_title now takes heading_level:, but the header still needs a trailing badge slot in ui_card_helper.rb (a new feature, not approved).
+F0254 || FIXED || app/views/timesheets/sanity_checker/_entries.html.erb:20 || Headings Title Case: Entry / Shift, On Duty / Off Duty, Duration / Shift Length.
+R14092 || COMPLIANT || app/views/timesheets/sanity_checker/check.html.erb:48 || Export shares a toolbar with the count badge; BTN-07 exempts it.
+F0260 || FIXED || app/views/timesheets/sanity_checker/check.html.erb:27 || About card moved directly under the hero.
+R14086 || FIXED || app/views/timesheets/sanity_checker/index.html.erb:55 || Band groups and Clear are ui_section.
+R09841 || FIXED || app/views/timesheets/sanity_checker/index.html.erb:69 || Note raised from text-sm to text-base (R4).
+R14112 || FIXED || app/views/timesheets/timesheet_by_position/position.html.erb:51 || Export link wrapped in button_row.
+R09875 || COMPLIANT || app/views/timesheets/timesheet_slot_repair/_group.html.erb:36 || R4: muted second lines under a cell's main value may be text-sm.
+R14133 || FIXED || app/views/timesheets/timesheet_slot_repair/_results.html.erb:28 || Status icon takes icon-success.
+R09888 || COMPLIANT || app/views/timesheets/timesheet_slot_repair/_shift.html.erb:4 || R4: muted second lines under the cell's position may be text-sm.
+R14124 || FIXED || app/views/timesheets/timesheet_slot_repair/index.html.erb:61 || Submit is f.submit in the button_row.
+R09901 || FIXED || app/views/timesheets/timesheet_slot_repair/index.html.erb:68 || Destructive confirm passes variant: :error.
+R14125 || FIXED || app/views/timesheets/timesheet_slot_repair/index.html.erb:20 || Back link moved into the hero; button removed from the form row.
+R14152 || FIXED || app/views/timesheets/timesheet_unconfirmed/_group.html.erb:31 || Empty phone cell prints the dash like the email column.
+R14146 || FIXED || app/views/timesheets/timesheet_unconfirmed/index.html.erb:30 || Non-status count tile is secondary, not primary.
+R14164 || FIXED || app/views/timesheets/timesheets_by_callsign/person.html.erb:53 || Links and export wrapped in button_row.

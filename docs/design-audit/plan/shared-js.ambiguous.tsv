@@ -1,0 +1,6 @@
+id	severity	rule	ruling	file	line	pattern	note
+C0423	-	NAV-01	V	app/javascript/application.js	143	navigation	ambiguous NAV-01: rule names dropdown_menu/dropdown_item but not close-on-outside-click or close-on-link behaviour; no Escape handling, native <details> summary still toggles from the keyboard.
+C0447	-	MODAL-01	V	app/javascript/controllers/dialog_controller.js	38	modals	ambiguous MODAL-01: rule says modals open through the modal controller; this on-demand base (one modal at a time, backdrop click, hotkey, error callouts by kind) serves search and mega menu and is not documented.
+C0450	-	STYLE-01	V	app/javascript/controllers/dropdown_fit_controller.js	23	navigation	ambiguous STYLE-01: rule bans a style= attribute in markup; this sets a computed px custom property (--dropdown-fit-shift) from JS to keep a dropdown_scroll_list panel inside the row.
+C0453	-	MODAL-01	V	app/javascript/controllers/hq_wizard_controller.js	44	modals	ambiguous MODAL-01: a multi-step wizard in one native <dialog> opened with its own showModal and step machine, not the modal controller; the guide has no wizard pattern.
+C0454	-	FORM-04	V	app/javascript/controllers/input_counter_controller.js	28	forms	ambiguous FORM-04: guide shows input_counter_data usage only; the "N of MAX characters" div is not tied to the field by aria-describedby and is not a live region.

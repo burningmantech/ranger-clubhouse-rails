@@ -1,0 +1,59 @@
+id	severity	rule	ruling	file	line	pattern	note
+R12494	-	ALERT-01	V	app/views/dashboard_tasks/_attend_alpha_shift_bonked.html.erb	2	toasts-alerts	ambiguous ALERT-01: rule does not say whether a one-line error message (red text plus icon) inside a dashboard step card is an inline notice needing ui_callout_box
+R12495	-	ALERT-01	V	app/views/dashboard_tasks/_attend_alpha_shift_missed.html.erb	2	toasts-alerts	ambiguous ALERT-01: one-line red status message with icon inside a step card; rule does not settle whether it must be a callout
+R12499	-	ALERT-01	V	app/views/dashboard_tasks/_attend_alpha_shift_pending.html.erb	9	toasts-alerts	ambiguous ALERT-01: ALL-CAPS red bold warning line with icon inside an info box; rule does not settle whether it must be a callout
+R12503	-	ALERT-01	V	app/views/dashboard_tasks/_attend_cheetah_cub_shift_pending.html.erb	2	toasts-alerts	ambiguous ALERT-01: ALL-CAPS red bold warning line with icon in a step card; rule does not settle whether it must be a callout
+R03868	-	ICON-01	V	app/views/dashboard_tasks/_attend_training_cheetah.html.erb	2	icons	ambiguous ICON-01: rule does not say whether a typographic arrow character in sentence text counts as an icon
+R12509	-	ICON-01	V	app/views/dashboard_tasks/_attend_training_cheetah.html.erb	2	icons	ambiguous ICON-01: literal arrow character in a sentence; rule does not settle whether it is an icon
+R12510	-	ALERT-01	V	app/views/dashboard_tasks/_attend_training_fail.html.erb	3	toasts-alerts	ambiguous ALERT-01: red text status lines (semibold at 3, bold at 12) with icons in a step card; rule does not settle callout use
+R12512	-	ALERT-01	V	app/views/dashboard_tasks/_attend_training_no_show.html.erb	2	toasts-alerts	ambiguous ALERT-01: red semibold status line with icon in a step card
+R12513	-	ALERT-01	V	app/views/dashboard_tasks/_attend_training_pending.html.erb	11	toasts-alerts	ambiguous ALERT-01: red bold "FULL DAY required" line with icon in a step card
+R12524	-	COPY-03	V	app/views/dashboard_tasks/_dashboard_arts.html.erb	19	other	ambiguous COPY-03: rule does not list badge labels (its own CARD-02 example is lowercase "urgent"); lowercase labels, no icons, unlike operational_summary/_training
+R12529	-	ALERT-01	V	app/views/dashboard_tasks/_dashboard_tickets.html.erb	5	toasts-alerts	ambiguous ALERT-01: red text problem lines with icons (bold at 5,9,12, semibold at 30) in a step card
+R12536	-	ALERT-01	V	app/views/dashboard_tasks/_missing_bpguid.html.erb	26	toasts-alerts	ambiguous ALERT-01: red semibold warning line with icon in a step card
+R03974	-	ICON-01	V	app/views/dashboard_tasks/_online_course_blocked.html.erb	2	icons	ambiguous ICON-01: typographic arrow in sentence text; rule does not say whether it is an icon
+R12540	-	ICON-01	V	app/views/dashboard_tasks/_online_course_blocked.html.erb	2	icons	ambiguous ICON-01: literal arrow character in bare text
+R04011	-	ICON-01	V	app/views/dashboard_tasks/_sign_motor_pool_protocol_blocked.html.erb	2	icons	ambiguous ICON-01: typographic arrow in sentence text
+R12544	-	ICON-01	V	app/views/dashboard_tasks/_sign_motor_pool_protocol_blocked.html.erb	2	icons	ambiguous ICON-01: literal arrow character in bare text
+R12547	-	ALERT-01	V	app/views/dashboard_tasks/_sign_nda_needed.html.erb	2	toasts-alerts	ambiguous ALERT-01: ALL-CAPS red bold "PRIVILEGES SUSPENDED" line with icon; arrow glyph at 6
+R04027	-	ICON-01	V	app/views/dashboard_tasks/_sign_nda_needed.html.erb	6	icons	ambiguous ICON-01: typographic arrow in sentence text
+R04032	-	ICON-01	V	app/views/dashboard_tasks/_sign_radio_checkout_agreement_blocked.html.erb	1	icons	ambiguous ICON-01: typographic arrow in sentence text
+R12548	-	ICON-01	V	app/views/dashboard_tasks/_sign_radio_checkout_agreement_blocked.html.erb	1	icons	ambiguous ICON-01: literal arrow in bare text; no strict-locals comment
+R04044	-	ICON-01	V	app/views/dashboard_tasks/_sign_up_for_alpha_shift_blocked.html.erb	1	icons	ambiguous ICON-01: typographic arrow in sentence text
+R12549	-	ICON-01	V	app/views/dashboard_tasks/_sign_up_for_alpha_shift_blocked.html.erb	1	icons	ambiguous ICON-01: literal arrow in bare text
+R04059	-	ICON-01	V	app/views/dashboard_tasks/_sign_up_for_shifts_blocked.html.erb	1	icons	ambiguous ICON-01: typographic arrow in sentence text
+R12552	-	ICON-01	V	app/views/dashboard_tasks/_sign_up_for_shifts_blocked.html.erb	1	icons	ambiguous ICON-01: literal arrow in bare text
+R04061	-	ICON-01	V	app/views/dashboard_tasks/_sign_up_for_shifts_completed.html.erb	4	icons	ambiguous ICON-01: typographic arrow between count and credits
+R12553	-	ICON-01	V	app/views/dashboard_tasks/_sign_up_for_shifts_completed.html.erb	4	icons	ambiguous ICON-01: literal arrow; credits formatted with format("%.2f") in the view
+R04077	-	ICON-01	V	app/views/dashboard_tasks/_sign_up_for_training_blocked.html.erb	2	icons	ambiguous ICON-01: typographic arrow in sentence text
+R12555	-	ICON-01	V	app/views/dashboard_tasks/_sign_up_for_training_blocked.html.erb	2	icons	ambiguous ICON-01: literal arrow in bare text
+R12556	-	ICON-01	V	app/views/dashboard_tasks/_sign_up_for_training_needed.html.erb	3	icons	ambiguous ICON-01: literal arrow in bare text
+R04080	-	ICON-01	V	app/views/dashboard_tasks/_sign_up_for_training_needed.html.erb	3	icons	ambiguous ICON-01: typographic arrow in sentence text
+R12557	-	EMPTY-01	V	app/views/dashboard_tasks/_take_student_survey.html.erb	4	empty-loading	ambiguous EMPTY-01: the rule does not say every collection needs an empty branch; step presumably shown only with surveys (unverified)
+R12558	-	EMPTY-01	V	app/views/dashboard_tasks/_trainer_survey.html.erb	4	empty-loading	ambiguous EMPTY-01: loop over trainer surveys has no empty branch; rule does not require one
+R12559	-	ALERT-01	V	app/views/dashboard_tasks/_upload_photo_error.html.erb	2	toasts-alerts	ambiguous ALERT-01: red "Bug:" developer message div with icon; stray " ." on its own line at 4
+R12560	-	ALERT-01	V	app/views/dashboard_tasks/_upload_photo_rejected.html.erb	2	toasts-alerts	ambiguous ALERT-01: red semibold "Photo rejected:" line with icon as list heading
+R12562	-	EMPTY-01	V	app/views/dashboard_tasks/_upload_photo_rejected.html.erb	3	empty-loading	ambiguous EMPTY-01: rejections loop has no empty branch; rule does not require one
+R12564	-	ALERT-01	V	app/views/dashboard_tasks/_vehicle_requests_denied.html.erb	2	toasts-alerts	ambiguous ALERT-01: red status line with icon in a step card
+R12584	-	BTN-07	V	app/views/me/announcements/_announcement.html.erb	70	spacing	ambiguous BTN-07: the guide shows button_row in its form and records-management examples but never requires it, and its own Quick Actions example (3608-3615) puts buttons in a bare div. Found: Buttons sit in a button_row; the Mark as Read/Unread button sits in a bordered div instead
+R04576	-	SPACE-01	V	app/views/me/dashboard/_announcements_section.html.erb	15	spacing	ambiguous SPACE-01: the guide lists "common patterns" (549-554) rather than required values, and has no general rule on arbitrary values. Found: Spacing follows the Tailwind scale; count pill uses arbitrary min-w-[1.5rem]
+R04599	-	ICON-01	V	app/views/me/dashboard/_onboarding.html.erb	14	icons	ambiguous ICON-01: the "×" character names the tour's close control in prose; rule does not say whether a glyph in copy is an icon
+R04602	-	TOAST-01	V	app/views/me/dashboard/_onboarding.html.erb	88	toasts-alerts	ambiguous TOAST-01: client-shown toast from a <template>, not a controller flash
+R12603	-	TOAST-01	V	app/views/me/dashboard/_onboarding.html.erb	88	toasts-alerts	ambiguous TOAST-01: rule covers flash toasts set in a controller; this toast is rendered into a template and shown by the tour script
+R04674	-	FORM-01	V	app/views/me/menu/_content.html.erb	5	forms	ambiguous FORM-01: search_field_tag used as a client-side filter, not a form field
+R12622	-	FORM-01	V	app/views/me/menu/_content.html.erb	5	forms	ambiguous FORM-01: search_field_tag is a client-side filter with no form; rule addresses forms only
+R04673	-	FORM-01	V	app/views/me/menu/_content.html.erb	7	forms	ambiguous FORM-01: daisyUI input class on a standalone filter input outside any form
+R12643	-	LAYOUT-02	V	app/views/me/operational_summary/_training.html.erb	2	cards	ambiguous LAYOUT-02: the guide gives two column recipes as examples (3077-3092); it does not say another grid, gap or column method is wrong. Found: Columns are grid grid-cols-1 lg:grid-cols-N gap-4; the training cards use gap-2
+R12647	-	BTN-07	V	app/views/me/passkeys/index.html.erb	10	buttons	ambiguous BTN-07: the guide shows button_row in its form and records-management examples but never requires it, and its own Quick Actions example (3608-3615) puts buttons in a bare div. Found: Buttons sit in a button_row; "Add Passkey" sits in a bare div my-4
+R12657	-	ALERT-01	V	app/views/me/surveys/_question.html.erb	23	toasts-alerts	ambiguous ALERT-01: the guide documents ui_callout_box as the notice component but does not say a one-line warning inside a card, cell or dialog must be one. Found: Inline notices are ui_callout_box; unknown-question fallback is a text-error div ("Uh oh ... This is a bug")
+R12672	-	ALERT-01	V	app/views/me/tickets/_claimed_overview.html.erb	27	toasts-alerts	ambiguous ALERT-01: red bold "Contact the Ranger Ticketing Team" lines inside overview items; a _contact_ticketing callout exists but the rule does not settle one-liners
+R12685	-	ALERT-01	V	app/views/me/tickets/_section_detail.html.erb	37	toasts-alerts	ambiguous ALERT-01: red bold missing-data lines inside a checklist card; rule does not settle one-line notices
+R12692	-	HERO-04	V	app/views/me/tickets/_wizard_nav.html.erb	33	navigation	ambiguous HERO-04: the guide says where the back link lives; it does not address a second link at the foot of a page, or pages that have no hero (print sheets). Found: Back navigation lives in the hero; outside the wizard every step page adds a body "Back to Tickets & Provisions" button duplicating the hero link
+R12699	-	BTN-05	V	app/views/me/tickets/review.html.erb	89	buttons	ambiguous BTN-05: the page's primary action is a positive confirmation; rule gives :primary for primary and :success for positive without saying which wins
+R12704	-	BTN-05	V	app/views/me/tickets/sap.html.erb	91	buttons	ambiguous BTN-05: Claim is :success here but :primary on vehicle_pass and ticket; rule allows either for a positive primary action
+R12710	-	COPY-04	V	app/views/me/tickets/ticket.html.erb	87	buttons	ambiguous COPY-04: rule fixes the verb (Bank) but not the rest; labels vary "Bank This Ticket", "Bank It", "Bank for Later"
+R12667	-	ALERT-01	V	app/views/me/timesheet/final_confirmation.html.erb	5	color	ambiguous ALERT-01: success-coloured congratulations line in a div; rule does not settle whether a one-line status message must be a callout
+R12721	-	COPY-03	V	app/views/me/vehicles_dashboard/_mvr_info.html.erb	10	cards	ambiguous COPY-03: section badges are lowercase strings ("completed", "action needed"); rule does not list badges
+R12722	-	COPY-03	V	app/views/me/vehicles_dashboard/_pvr_info.html.erb	21	cards	ambiguous COPY-03: section badges are lowercase strings; rule does not list badges
+R12729	-	BTN-07	V	app/views/me/vehicles_dashboard/_pvr_requests.html.erb	63	spacing	ambiguous BTN-07: the guide shows button_row in its form and records-management examples but never requires it, and its own Quick Actions example (3608-3615) puts buttons in a bare div. Found: Buttons sit in a button_row; Edit/Delete sit in a div flex gap-3 with a border-t
+R12742	-	ALERT-01	V	app/views/me/vehicles_dashboard/mvr_submit.html.erb	10	toasts-alerts	ambiguous ALERT-01: the guide documents ui_callout_box as the notice component but does not say a one-line warning inside a card, cell or dialog must be one. Found: Inline notices are ui_callout_box; missing instructions shown as a red h3 plus "Uh oh" paragraph

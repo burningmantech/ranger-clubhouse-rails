@@ -1,0 +1,8 @@
+id	severity	rule	ruling	file	line	pattern	note
+C0414	-	EMPTY-02	V	app/helpers/event_dates_helper.rb	15	typography	ambiguous EMPTY-02: an unset window shows a ui_badge "Not set" (secondary, circle-minus icon) rather than "—"; the rule does not say whether a stated fact like "Not set" counts as an empty value.
+C0273	-	TABS-01	V	app/helpers/mega_menu_helper.rb	95	navigation	ambiguous TABS-01: a panel switcher made of ghost button_actions with aria-current true/false, not tab roles; the rule covers tabs but not whether this switcher is one.
+R00269	-	MODAL-02	V	app/helpers/menu_helper.rb	94	modals	ambiguous MODAL-02: menu confirm ("Confirm {title}", "{description}?") at primary for a sign-out; the rule does not say whether a non-destructive confirm must state undoability.
+C0255	-	BTN-01	V	app/helpers/navigation_helper.rb	78	navigation	ambiguous BTN-01: undocumented menu row that acts on the page, a raw tag.button styled as dropdown-link; the rule does not say how a menu-item action is built.
+R00300	-	BTN-01	V	app/helpers/navigation_helper.rb	82	buttons	ambiguous BTN-01: dropdown_button is a raw button styled as a dropdown-link menu row; no ButtonHelper method builds a menu row.
+C0416	-	EMPTY-02	V	app/helpers/pronouns_helper.rb	6	typography	ambiguous EMPTY-02: returns "" when no pronouns, which suits inline use after a name; whether a cell shows a blank or "—" depends on the caller.
+R00724	-	BTN-01	V	app/helpers/ui_components/clipboard_helper.rb	21	buttons	ambiguous BTN-01: the guide documents clipboard_button (TOAST-03) but not that its icon control is a raw button with no btn class.

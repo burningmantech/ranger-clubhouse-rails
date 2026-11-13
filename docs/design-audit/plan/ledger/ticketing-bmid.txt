@@ -1,0 +1,55 @@
+R13986 || FIXED || app/helpers/bmid/manage_helper.rb:301 || The add case now shows the visible word "Add"; "Manage" only where provisions exist.
+R13992 || COMPLIANT || app/helpers/bmid/manage_helper.rb:372 || V FORM-06: a grid refusal reported in an error callout naming each failed row, as the new wording asks.
+R00109 || COMPLIANT || app/helpers/bmid/manage_helper.rb:372 || V FORM-06: the joined row messages feed the manage page's error callout listing failed rows by callsign.
+M0231 || FIXED || app/helpers/ticketing/access_documents_helper.rb:64 || Arrival filter label now formatted by wday_month_day_format instead of strftime.
+R01891 || FIXED || app/views/bmid/badges/edit.html.erb:64 || Meals, Showers and Motor Vehicle Record labels and the "(Read-only)" note raised to text-base (R4).
+R13908 || FIXED || app/views/bmid/badges/edit.html.erb:109 || Timestamp line uses text-stone-muted directly instead of the hero-panel me-muted class.
+R13965 || COMPLIANT || app/views/bmid/export/_buckets.html.erb:11 || V EMPTY-01: the set-aside buckets are a supplementary list, which may render nothing.
+R13962 || COMPLIANT || app/views/bmid/export/_buckets.html.erb:12 || V LAYOUT-02: an item grid inside the page picks its own gap; it folds at lg.
+R13966 || COMPLIANT || app/views/bmid/export/_filter_bar.html.erb:32 || V BTN-05/R7: Apply is secondary; the page's primary is the export submit.
+F0247 || FIXED || app/views/bmid/export/_previous_exports.html.erb:48 || Un-Submit confirm now says the batch record and CSV are deleted and cannot be restored.
+R01958 || FIXED || app/views/bmid/export/index.html.erb:87 || Export confirm now says Un-Submit reverses it (current year) or that a previous year's export cannot be.
+R13984 || REJECTED || app/views/bmid/export/unsubmit.html.erb:34 || A result notice, not an empty list: it warns the batch was removed though nothing changed; an empty state would drop the warning.
+R02002 || COMPLIANT || app/views/bmid/manage/_edit_grid.html.erb:29 || V FORM-06: the grid's refusal is the page's error callout naming failed rows; rows stay highlighted.
+R13947 || COMPLIANT || app/views/bmid/manage/_filter_bar.html.erb:70 || V BTN-05/R7: Apply Filters is already secondary.
+R13951 || FIXED || app/views/bmid/manage/_table.html.erb:35 || Per-row Edit is now edit_link (secondary, pen-to-square), aria-label kept.
+R13955 || COMPLIANT || app/views/bmid/manage/index.html.erb:44 || V FORM-06: multi-record refusal in an error callout listing each failed row by callsign.
+R13902 || FIXED || app/views/bmid/provisions/_list.html.erb:32 || Add and Close button_row moved from m.body into m.footer.
+R13904 || BLOCKED || app/views/bmid/provisions/_modal.html.erb:9 || Buttons render inside the shared form app/views/common/provisions/_form.html.erb (common-a); it needs a modal: footer split there.
+F0243 || FIXED || app/views/bmid/sanity_check/index.html.erb:30 || Current-year info callout moved into the About This Report card as a Q&A pair; text kept.
+R13932 || FIXED || app/views/bmid/sanity_check/index.html.erb:5 || Hand grid of stat links replaced by ui_stat_row.
+R13936 || COMPLIANT || app/views/bmid/sanity_check/index.html.erb:90 || R4: a muted second line under a cell's main value may be text-sm.
+R13912 || FIXED || app/views/bmid/titles/_cell.html.erb:11 || select_tag replaced by AppFormBuilder select (fields_for) with hide_label and aria-label, per new FORM-02 grid rule.
+R02077 || FIXED || app/views/bmid/titles/_cell.html.erb:22 || text_field_tag replaced by AppFormBuilder text_field with hide_label, maxlength and aria-label.
+M0007 || FIXED || app/views/bmid/titles/_form.html.erb:21 || Badge Line select width passed through width: instead of html class.
+R13915 || FIXED || app/views/bmid/titles/_form.html.erb:28 || Position collection_select width passed through width: instead of html class.
+R13918 || FIXED || app/views/bmid/titles/_form.html.erb:44 || Delete confirm now ends "This cannot be undone."
+R13930 || COMPLIANT || app/views/bmid/titles/apply.html.erb:43 || R4: muted status line under the callsign may be text-sm.
+R13922 || FIXED || app/views/bmid/titles/index.html.erb:7 || Visible instruction-list wrapped in a collapsed "How This Page Works" card.
+R13921 || COMPLIANT || app/views/bmid/titles/index.html.erb:44 || V BTN-07: one row's record actions are exempt from button_row.
+F0246 || FIXED || app/views/bmid/titles/new.html.erb:4 || Hero title "New Badge Title" now "Add Badge Title".
+R13924 || COMPLIANT || app/views/bmid/titles/set.html.erb:57 || R4: muted status and positions line under the callsign may be text-sm.
+M0054 || FIXED || app/views/ticketing/access_documents/_summary_legend.html.erb:13 || Dropped the sm: tier: grid-cols-1 lg:grid-cols-3.
+R13883 || FIXED || app/views/ticketing/bulk_access_documents/_consequence.html.erb:15 || "the amber ones above" now names the "Will replace" badge (word and icon) those rows carry.
+R13880 || FIXED || app/views/ticketing/bulk_access_documents/_formats.html.erb:13 || Two format cards merged into one collapsed "Line Formats" card.
+R13881 || FIXED || app/views/ticketing/bulk_access_documents/_formats.html.erb:13 || Format paragraphs rewritten as one instruction-list, each question naming its action; table kept in an answer.
+R13885 || FIXED || app/views/ticketing/expiring/index.html.erb:50 || Lone clipboard button moved from a p into a button_row.
+F0245 || FIXED || app/views/ticketing/expiring/index.html.erb:52 || Label now Title Case: "Copy N Email Addresses".
+R13869 || COMPLIANT || app/views/ticketing/maintenance/index.html.erb:23 || V EMPTY-01: @groups is a fixed task catalogue, which may render no empty state.
+R13866 || COMPLIANT || app/views/ticketing/maintenance/index.html.erb:38 || V ALERT-01: one-line status text inside a card, led by the error badge with its triangle icon.
+R13868 || FIXED || app/views/ticketing/maintenance/index.html.erb:45 || Task card launch buttons now :secondary, so no section carries a row of primaries (R7).
+R13870 || BLOCKED || app/views/ticketing/maintenance/preview.html.erb:48 || Builder flags only object errors; needs app/controllers/ticketing/maintenance_controller.rb to pass a model with a :reason error instead of @reason_error.
+R13890 || COMPLIANT || app/views/ticketing/provisions/index.html.erb:52 || V BTN-06: the id link is a row link reading the record ref, never "Edit".
+R13811 || FIXED || app/views/ticketing/statistics/_pipeline_card.html.erb:23 || Hand card-standard div replaced by ui_card (gains the default shadow-xs, R2).
+M0457 || FIXED || app/views/ticketing/statistics/_pipeline_card.html.erb:33 || stat-meter.css takes width from --stat-meter-share; segment passes the percent as that custom property, no inline width.
+R13820 || COMPLIANT || app/views/ticketing/statistics/index.html.erb:57 || V EMPTY-01: types come from TicketingStatistics::TYPES, a fixed catalogue never empty.
+R13816 || FIXED || app/views/ticketing/statistics/index.html.erb:65 || Both hand stat-box grids (S.O. passes, Provisions) replaced by ui_stat_row.
+R13832 || FIXED || app/views/ticketing/trs_export/_rows_table.html.erb:44 || Problem icon uses icon-error with end: 1 instead of raw text-error me-1.
+F0242 || COMPLIANT || app/views/ticketing/trs_export/export.html.erb:34 || R7: Download is the page's primary; the mark-submitted form has its own single primary.
+R09527 || FIXED || app/views/ticketing/trs_export/export.html.erb:57 || Mark-submitted confirm now says undoing means changing each status back by hand.
+R13842 || FIXED || app/views/ticketing/trs_export/index.html.erb:75 || Filter select width now w-full sm:w-96 (V FORM-07: never lg:).
+F0241 || FIXED || app/views/ticketing/trs_export/index.html.erb:78 || Apply Filters now :secondary; Export Selected Items stays the primary (R7).
+R13838 || FIXED || app/views/ticketing/trs_export/index.html.erb:89 || Raw checkbox-select-all div replaced by bulk_select.
+R09548 || FIXED || app/views/ticketing/trs_export/index.html.erb:102 || Export confirm says the comments cannot be removed; mark-submitted confirm says undo is by hand.
+F0244 || FIXED || app/views/ticketing/unsubmit_provisions/index.html.erb:55 || Column heading "#{@year} Sign-Ups?" now "#{@year} Sign-Ups"; CSV header untouched.
+R13826 || FIXED || app/views/ticketing/unsubmit_provisions/index.html.erb:91 || confirm_modal_dialog now variant: :error and says it cannot be undone from here.

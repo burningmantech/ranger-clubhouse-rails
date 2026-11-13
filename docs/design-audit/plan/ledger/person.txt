@@ -1,0 +1,146 @@
+F0138 || FIXED || app/views/person/missing_requests/show.html.erb:1 || Added a one-sentence hero description.
+F0139 || COMPLIANT || app/views/person/memberships/edit.html.erb:1 || Edit form page: new HERO-02 wording exempts new/edit forms.
+F0140 || FIXED || app/views/person/pogs/index.html.erb:2 || Added a one-sentence description that carries the 2023 scope note; loose p removed.
+F0141 || COMPLIANT || app/views/person/pogs/new.html.erb:1 || New form page: HERO-02 exempts new/edit forms.
+F0142 || COMPLIANT || app/views/person/pogs/edit.html.erb:1 || Edit form page: HERO-02 exempts new/edit forms.
+F0143 || COMPLIANT || app/views/person/swag/new.html.erb:1 || New form page: HERO-02 exempts new/edit forms.
+F0144 || COMPLIANT || app/views/person/swag/edit.html.erb:1 || Edit form page: HERO-02 exempts new/edit forms.
+F0145 || FIXED || app/views/person/tickets_provisions/show.html.erb:15 || Added a one-sentence hero description.
+F0146 || COMPLIANT || app/views/person/timesheets/edit.html.erb:4 || Edit form page: HERO-02 exempts new/edit forms.
+F0147 || COMPLIANT || app/views/person/intake_notes/new.html.erb:1 || New form page: HERO-02 exempts new/edit forms.
+F0148 || COMPLIANT || app/views/person/intake_notes/edit.html.erb:1 || Edit form page: HERO-02 exempts new/edit forms.
+F0170 || COMPLIANT || app/views/person/memberships/_team_card.html.erb:2 || New SPACE-01 wording allows p-3 for a dense repeated card.
+F0171 || COMPLIANT || app/views/person/memberships/edit.html.erb:45 || New SPACE-01 wording allows p-3 for a dense repeated card.
+R12910 || COMPLIANT || app/views/person/_actions.html.erb:54 || Rendered in the Overview section's title-row action slot; BTN-07 exempts a title-row button.
+R12916 || FIXED || app/views/person/_contact_details.html.erb:13 || Access notices are now status text led by a lock icon (text-warning, icon-warning), per ALERT-01.
+R12920 || COMPLIANT || app/views/person/_hero.html.erb:27 || Not in the HERO-04 fix list; the slot holds the page's one cross-interface link, no foot repeat.
+R12929 || COMPLIANT || app/views/person/_summary_strip.html.erb:5 || LAYOUT-02: an item grid inside a section may use its own gap and xl:.
+R12940 || FIXED || app/views/person/_timestamp_value.html.erb:8 || Fact words now muted plain text, no italics.
+R12942 || FIXED || app/views/person/access_documents/_form.html.erb:56 || "No comments yet." replaced with "—".
+R12945 || FIXED || app/views/person/access_documents/edit.html.erb:9 || Lone page button wrapped in button_row.
+R12955 || COMPLIANT || app/views/person/applications/index.html.erb:16 || CARD-03: an untitled section may box a whole page body.
+R12958 || COMPLIANT || app/views/person/assets/_history.html.erb:13 || Not in the EMPTY-01 fix list: history always holds the row it was opened from.
+R12961 || FIXED || app/views/person/assets/index.html.erb:46 || Bare f.submit wrapped in button_row.
+R12962 || FIXED || app/views/person/assets/index.html.erb:38 || Added icon to match sibling sections.
+R12963 || FIXED || app/views/person/awards/_awards_table.html.erb:4 || Lone button wrapped in button_row.
+R12969 || FIXED || app/views/person/awards/index.html.erb:40 || Rebuild Awards wrapped in button_row.
+R12972 || FIXED || app/views/person/banners/index.html.erb:19 || Add Banner wrapped in button_row.
+R12973 || COMPLIANT || app/views/person/banners/index.html.erb:47 || BTN-07 exempts one row's record actions.
+R12979 || FIXED || app/views/person/callsigns/edit.html.erb:19 || Warning is now text-error led by its icon, text-base, no capitals.
+R12982 || FIXED || app/views/person/callsigns/edit.html.erb:91 || Add FKA wrapped in button_row.
+R12983 || COMPLIANT || app/views/person/callsigns/edit.html.erb:114 || BTN-07 exempts one row's record actions.
+R12985 || FIXED || app/views/person/certifications/index.html.erb:8 || Add Certification wrapped in button_row.
+R12990 || FIXED || app/views/person/certifications/show.html.erb:27 || "— imported —" italic now plain muted "Imported".
+R13013 || FIXED || app/views/person/memberships/_team_card.html.erb:53 || Inactive warning led by its status icon, text-sm dropped.
+R13015 || COMPLIANT || app/views/person/memberships/_team_card.html.erb:82 || A card's own action is exempt from BTN-07; same submit repeated, one action.
+R13016 || COMPLIANT || app/views/person/memberships/edit.html.erb:42 || LAYOUT-02: item grids may use columns-*.
+R13020 || FIXED || app/views/person/memberships/edit.html.erb:66 || Bottom button_row now pairs a Save submit with Cancel.
+R13021 || FIXED || app/views/person/missing_requests/edit.html.erb:91 || Each error line now led by its status icon.
+R13028 || FIXED || app/views/person/missing_requests/show.html.erb:34 || Foot back_to button_row removed; the hero back link is the one way back.
+R13031 || FIXED || app/views/person/passkeys/index.html.erb:17 || Add Security Key wrapped in button_row.
+R13041 || FIXED || app/views/person/pogs/_form.html.erb:13 || Cancel is now cancel_link.
+R13043 || FIXED || app/views/person/pogs/index.html.erb:11 || Add Pog wrapped in button_row.
+R13055 || COMPLIANT || app/views/person/scheduling/log.html.erb:71 || A fact word in muted plain text is allowed by EMPTY-02.
+R13063 || FIXED || app/views/person/status_history/index.html.erb:48 || "* imported *" now plain muted "Imported"; test updated.
+R13067 || FIXED || app/views/person/swag/_form.html.erb:35 || Cancel is now cancel_link.
+R13075 || FIXED || app/views/person/tickets_provisions/show.html.erb:31 || Lone button wrapped in button_row.
+R13081 || FIXED || app/views/person/timesheets/_desired_changes.html.erb:42 || Lone button wrapped in button_row.
+R13085 || FIXED || app/views/person/timesheets/_entries_table.html.erb:40 || Ban icon takes label:.
+R13086 || COMPLIANT || app/views/person/timesheets/_entries_table.html.erb:46 || BTN-07 exempts one row's record actions.
+R13107 || FIXED || app/views/person/timesheets/edit.html.erb:39 || Foot back_to button_row removed from the read-only branch.
+R13109 || FIXED || app/views/person/timesheets/index.html.erb:68 || Quick links in button_row; text-base py-3 overrides dropped; stale mobile-only comment fixed.
+R13114 || COMPLIANT || app/views/person/timesheets/index.html.erb:103 || Not in the SPACE-01 fix list; scale gap.
+R13115 || COMPLIANT || app/views/person/timesheets/index.html.erb:164 || BTN-07 exempts a toolbar shared with a count.
+R13122 || FIXED || app/views/person/training/_moodle_account.html.erb:47 || "(blank)" now "—".
+R13128 || FIXED || app/views/person/unified_flagging/_note.html.erb:14 || Italic *imported* now plain word in the muted line.
+R13129 || COMPLIANT || app/views/person/unified_flagging/_note.html.erb:19 || BTN-07 exempts one card's record actions.
+R13135 || FIXED || app/views/person/unified_flagging/_team_notes.html.erb:51 || Add Note / Rank wrapped in button_row.
+R13140 || FIXED || app/views/person/unified_flagging/_training_notes.html.erb:40 || Italic *imported* now plain word in the muted line.
+R12926 || FIXED || app/views/person/_photo.html.erb:15 || Unknown status is now a badge like its siblings.
+R12930 || FIXED || app/views/person/_summary_strip.html.erb:13 || Email and phone links use tap-target-link (36px).
+R13074 || FIXED || app/views/person/tickets_provisions/show.html.erb:22 || Hand-rolled boxes replaced by ui_stat_box in ui_stat_row, Title Case labels.
+F0136 || FIXED || app/views/person/certifications/show.html.erb:2 || Description is now a sentence saying what the page shows.
+F0137 || FIXED || app/views/person/missing_requests/edit.html.erb:4 || Description is now a sentence.
+F0152 || FIXED || app/views/person/missing_requests/edit.html.erb:140 || Second submit is :secondary; one primary per form (R7).
+F0155 || COMPLIANT || app/views/person/callsigns/edit.html.erb:92 || R7: one primary per section; Save Callsign and Add FKA sit in separate sections.
+F0156 || FIXED || app/views/person/timesheets/edit.html.erb:168 || Radio group given a visible label.
+F0157 || FIXED || app/views/person/access_documents/_form.html.erb:43 || Width now w-full sm:w-96.
+F0160 || FIXED || app/views/person/memberships/edit.html.erb:46 || Card title is h2 under the h1; tests updated.
+F0161 || FIXED || app/views/person/awards/index.html.erb:63 || Labels now Title Case.
+F0162 || FIXED || app/views/person/awards/index.html.erb:63 || Openers now read "Add ... Award".
+F0163 || FIXED || app/views/person/certifications/_form.html.erb:27 || Title Case.
+F0164 || FIXED || app/views/person/banners/_form.html.erb:39 || Title Case.
+F0165 || FIXED || app/views/person/provisions/_section.html.erb:50 || Title Case.
+F0166 || FIXED || app/views/person/tickets_provisions/show.html.erb:84 || Title Case.
+F0167 || FIXED || app/views/person/passkeys/index.html.erb:10 || Callout says Delete/Deleting to match the button.
+F0168 || FIXED || app/views/person/timesheets/edit.html.erb:19 || Hyphens now "—" (verifier and review status).
+F0169 || FIXED || app/views/person/unified_flagging/show.html.erb:95 || Profile label/value prints none_stated (R6).
+M0037 || FIXED || app/views/person/access_documents/_form.html.erb:21 || Width passed through width:.
+M0038 || FIXED || app/views/person/access_documents/_form.html.erb:21 || Width passed through width:.
+M0039 || FIXED || app/views/person/access_documents/_form.html.erb:34 || Width passed through width:.
+R06274 || FIXED || app/views/person/awards/index.html.erb:45 || Confirm now asks with the action, then says what follows.
+R06902 || FIXED || app/views/person/timesheets/edit.html.erb:180 || Confirm asks "Delete this entry?" and says it cannot be undone.
+R07049 || FIXED || app/views/person/vehicles/index.html.erb:35 || hr replaced by the FORM-10 divider.
+R12915 || FIXED || app/views/person/_contact_details.html.erb:9 || Empty camp and emergency contact use none_stated (R6).
+R12932 || FIXED || app/views/person/_summary_strip.html.erb:25 || Phone uses none_stated; years and former callsigns print "—" (R6).
+R12941 || FIXED || app/views/person/access_documents/_form.html.erb:17 || All select widths passed through width:; lg:w-40 now sm:w-40.
+R12950 || FIXED || app/views/person/agreements/index.html.erb:31 || Intro uses text-stone-muted.
+R12984 || FIXED || app/views/person/callsigns/edit.html.erb:110 || Missing FKA date prints "—".
+R12996 || FIXED || app/views/person/intake_notes/new.html.erb:28 || Consequence is an info callout beside the save row.
+R12999 || FIXED || app/views/person/mail_log/index.html.erb:53 || Blank changer prints "—".
+R13014 || FIXED || app/views/person/memberships/_team_card.html.erb:78 || Now ui_empty_state.
+R13029 || FIXED || app/views/person/missing_requests/show.html.erb:26 || Blank partner prints "—".
+R13039 || FIXED || app/views/person/permissions/edit.html.erb:2 || Empty cells print "—".
+R13044 || FIXED || app/views/person/pogs/index.html.erb:17 || Count uses me-muted.
+R13045 || FIXED || app/views/person/pogs/index.html.erb:2 || Scope note folded into the hero description.
+R13056 || FIXED || app/views/person/scheduling/log.html.erb:48 || Count line uses me-muted.
+R13058 || FIXED || app/views/person/sessions/index.html.erb:52 || Confirm asks with the action.
+R13071 || FIXED || app/views/person/swag/index.html.erb:36 || Count uses me-muted.
+R13072 || FIXED || app/views/person/swag/index.html.erb:56 || Missing year and notes print "—".
+R13094 || FIXED || app/views/person/timesheets/_log_table.html.erb:17 || Missing creator prints "—".
+R13110 || FIXED || app/views/person/timesheets/index.html.erb:11 || Stat labels Title Case.
+R13124 || FIXED || app/views/person/training/index.html.erb:59 || Confirm asks with the action.
+R13130 || FIXED || app/views/person/unified_flagging/_team_notes.html.erb:21 || Both empty messages are ui_empty_state.
+R13139 || FIXED || app/views/person/unified_flagging/_training_notes.html.erb:48 || Now ui_empty_state.
+R13145 || FIXED || app/views/person/vehicles/_eligibility_list.html.erb:41 || Empty list is ui_empty_state.
+R13162 || FIXED || app/helpers/person/swag_helper.rb:13 || Nil swag returns "—".
+F0135 || NEEDS-APPROVAL || app/views/person/_hero.html.erb:6 || Main person page header redesign: move status/site badges, name, pronouns into the Overview body and give the hero one sentence.
+F0149 || FIXED || app/views/person/awards/index.html.erb:18 || Background moved into a collapsed ui_disclosure :card with an instruction-list; warning stays visible.
+F0150 || COMPLIANT || app/views/person/awards/_awards_table.html.erb:5 || R7: one primary per section; each award section has one.
+F0151 || COMPLIANT || app/views/person/memberships/_team_card.html.erb:82 || R7/BTN-04: one form, one save action repeated per card, not competing primaries.
+F0153 || COMPLIANT || app/views/person/unified_flagging/_team_notes.html.erb:52 || R7: one primary per section.
+F0154 || COMPLIANT || app/views/person/vehicles/index.html.erb:62 || R7: one primary per form; each of four forms has one.
+F0172 || BLOCKED || app/views/person/memberships/_team_card.html.erb:28 || NavigationHelper (app/helpers/navigation_helper.rb) has no non-link item or title; needs dropdown_heading(label) and dropdown_text(label) helpers.
+M0318 || FIXED || app/views/person/memberships/_team_card.html.erb:35 || Manager box is f.check_box (multiple:, id:) under fields param_key; the builder's label now follows the passed id.
+R06125 || FIXED || app/views/person/_summary_group_heading.html.erb:3 || h3 now plain heading-title; rule and colour dropped.
+R06209 || FIXED || app/views/person/agreements/index.html.erb:31 || text-sm dropped.
+R06347 || FIXED || app/views/person/callsigns/edit.html.erb:36 || Release confirm is red.
+R06507 || FIXED || app/views/person/memberships/_position_checkbox.html.erb:12 || text-sm dropped from the label span.
+R06510 || FIXED || app/views/person/memberships/_position_group.html.erb:3 || Group title text-sm dropped.
+R06516 || FIXED || app/views/person/memberships/_team_card.html.erb:11 || Hand-made team and manager labels gone; the builder's label wraps each box and points at its id.
+R06526 || FIXED || app/views/person/memberships/_team_card.html.erb:46 || Label and empty message no longer text-sm.
+R06546 || FIXED || app/views/person/memberships/edit.html.erb:5 || Intro paragraph text-base; legend moved to a collapsed card.
+R06843 || FIXED || app/views/person/timesheets/_entries_table.html.erb:61 || End Shift confirm is red and says the times can be corrected.
+R06936 || FIXED || app/views/person/timesheets/index.html.erb:136 || Rollup line text-sm dropped.
+R07015 || FIXED || app/views/person/unified_flagging/_training_notes.html.erb:51 || text-sm dropped.
+R12936 || FIXED || app/views/person/_teams_positions.html.erb:9 || text-sm dropped.
+R12980 || FIXED || app/views/person/callsigns/edit.html.erb:56 || Checkbox notes now help_text:; standalone notes plain muted p.
+R13004 || FIXED || app/views/person/memberships/_position_checkbox.html.erb:7 || check_box_tag replaced by f.check_box :position_ids, multiple: true, id: kept for the editor.
+R13005 || FIXED || app/views/person/memberships/_position_checkbox.html.erb:7 || Raw label removed; the builder draws the position's label around the box.
+R13008 || BLOCKED || app/views/person/memberships/_position_checkbox.html.erb:31 || Same as F0172: app/helpers/navigation_helper.rb needs non-link dropdown item/title helpers.
+R13011 || FIXED || app/views/person/memberships/_team_card.html.erb:11 || Team box is f.check_box :team_ids, multiple: true, under fields param_key.
+R13019 || FIXED || app/views/person/memberships/edit.html.erb:13 || Legend moved into a collapsed ui_disclosure :card instruction-list.
+R13036 || FIXED || app/views/person/permissions/edit.html.erb:29 || f.check_box :role_ids, multiple:, labelled by the permission's name; the Grant column folds into Permission.
+R13037 || FIXED || app/views/person/permissions/edit.html.erb:29 || Hand-made label removed; the builder's label wraps the box with the role title.
+R13048 || FIXED || app/views/person/provisions/_section.html.erb:56 || Toggle controller replaced by ui_disclosure; bmids/tickets tests updated.
+R13054 || FIXED || app/views/person/scheduling/log.html.erb:45 || Count and table now inside the same untitled section as the empty state.
+R13070 || FIXED || app/views/person/swag/index.html.erb:21 || Seven add buttons :secondary in a button_row group.
+R13084 || FIXED || app/views/person/timesheets/_entries_table.html.erb:1 || size: "sm" removed.
+R13096 || FIXED || app/views/person/timesheets/_missing_requests_table.html.erb:21 || Row Edit and View are :secondary.
+R13097 || BLOCKED || app/views/person/timesheets/backfill.html.erb:24 || Labels now follow id:, but the box lives in common/_checkbox_tile, which waits on the array-checkbox builder field (R11686, maintainer).
+R13104 || FIXED || app/views/person/timesheets/edit.html.erb:127 || Now ui_empty_state.
+R13112 || FIXED || app/views/person/timesheets/index.html.erb:22 || Ban-icon legend moved into a collapsed card under the stat row.
+R13119 || FIXED || app/views/person/timesheets/log.html.erb:15 || Now ui_empty_state.
+R13132 || FIXED || app/views/person/unified_flagging/_team_notes.html.erb:10 || text-lg dropped.
+R13141 || FIXED || app/views/person/unified_flagging/show.html.erb:93 || Instruction-list replaced with ui_label_value.
+R13144 || FIXED || app/views/person/vehicles/_eligibility_list.html.erb:34 || sm: fold now lg:.

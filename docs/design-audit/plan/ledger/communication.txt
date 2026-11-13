@@ -1,0 +1,74 @@
+R12239 || FIXED || app/helpers/communication/rbs_helper.rb:521 || Channel icons take fa_icon label: (tooltip plus sr-only sentence) in place of a hand-written sr-only span.
+R00225 || REJECTED || app/helpers/mailer_helper.rb:7 || Email header image: mail clients ignore stylesheets, so inline style= is required; email HTML is outside the guide.
+F0051 || FIXED || app/views/alerts/edit.html.erb:177 || Channel legend moved out of each group's section into one collapsed "How This Page Works" card above the alert groups.
+M0004 || FIXED || app/views/alerts/edit.html.erb:179 || Legend row is a content wrap (flex flex-wrap), no sm: tier.
+R01582 || COMPLIANT || app/views/alerts/_alert_group.html.erb:16 || V/LAYOUT-02: an item grid inside a section, not page columns; it may pick its own track list and gap.
+R12070 || COMPLIANT || app/views/alerts/_alert_group.html.erb:16 || V/LAYOUT-02: same row grid; item grids inside a section choose their own layout and gap.
+R01576 || FIXED || app/views/alerts/_alert_group.html.erb:35 || Disabled SMS box is af.check_box under fields "alerts[i]", described by its sr-only reason; the builder now uses Rails' ids.
+R12072 || FIXED || app/views/alerts/_alert_group.html.erb:52 || SMS and Email boxes are af.check_box under fields "alerts[i]"; labels now point at alerts_i_use_sms/use_email.
+F0053 || FIXED || app/views/alerts/edit.html.erb:54 || Both SMS phone fields now w-full sm:w-44 (were sm:w-32 and sm:w-80).
+R01602 || FIXED || app/views/alerts/edit.html.erb:70 || Missing SMS number prints "—" through value_or_dash, not italic "none on file".
+R12061 || FIXED || app/views/alerts/edit.html.erb:111 || Save Phone Number now sits in a button_row; Verify Code and Resend Code are inside a callout, which BTN-07 exempts.
+F0052 || COMPLIANT || app/views/alerts/edit.html.erb:111 || R7: each primary is the one submit of its own form (phone, verify, SMS state, preferences).
+R12058 || FIXED || app/views/alerts/edit.html.erb:159 || Contact sentence in the stopped-number callout drops text-sm (R4: text-base).
+R12059 || FIXED || app/views/alerts/edit.html.erb:162 || "Why It's Stopped" disclosure drops text-sm from summary_class and content_class.
+F0054 || FIXED || app/views/bookmarks/_document.html.erb:17 || Status line uses text-stone-muted instead of the hero panel's me-muted class (same colour).
+R12083 || WAIVED || app/views/bookmarks/_document.html.erb:17 || R10
+M0011 || WAIVED || app/views/bookmarks/_document.html.erb:22 || R10
+R12085 || WAIVED || app/views/bookmarks/_document.html.erb:31 || R10
+R02166 || WAIVED || app/views/bookmarks/show.html.erb:15 || R10
+R12116 || NEEDS-APPROVAL || app/views/communication/announcements/_announcement.html.erb:43 || No helper exists for a bordered, tinted, padded, optionally scrolling text box; would build ui_text_box(max_height:) in ui_components for the 8 copies in communication/.
+F0058 || FIXED || app/views/communication/announcements/_form.html.erb:3 || Legends Title Case: Who Sees It, What It Says, When It Stops Showing.
+R12108 || FIXED || app/views/communication/announcements/index.html.erb:21 || Delete Expired is :error.
+R12110 || COMPLIANT || app/views/communication/announcements/index.html.erb:40 || V/FORM-07: filter_bar selects fill their share (w-full + flex-1) in a form_row, as the new rule asks.
+F0068 || FIXED || app/views/communication/announcements/new.html.erb:2 || Hero title "Add Announcement".
+F0059 || FIXED || app/views/communication/mail_templates/edit.html.erb:36 || Legends "Subject Line" and "Template Text".
+F0060 || FIXED || app/views/communication/mail_templates/index.html.erb:13 || Section title pluralizes "Template": "3 Templates".
+F0073 || FIXED || app/views/communication/person_banners/index.html.erb:18 || Callout cut to three sentences, no longer opens by repeating its title as a question.
+R12122 || COMPLIANT || app/views/communication/person_banners/index.html.erb:41 || V/FORM-07: filter field is w-full + flex-1 in a form_row.
+R12170 || FIXED || app/views/communication/rbs/_type_card.html.erb:13 || Start is :primary on every card; the card's accent colour still carries the severity.
+F0056 || COMPLIANT || app/views/communication/rbs/_type_card.html.erb:13 || R7: one primary per card, each card its own section.
+R12224 || FIXED || app/views/communication/rbs_broadcasts/_audience_fields.html.erb:9 || Alert and position selects width: "w-full sm:w-96" through width:; shift select w-full through width:.
+R12221 || FIXED || app/views/communication/rbs_broadcasts/_audience_fields.html.erb:13 || All four sub-group dividers now mt-4 pt-3 border-t border-line.
+R03500 || FIXED || app/views/communication/rbs_broadcasts/_audience_fields.html.erb:36 || Raw label replaced: Account Status is now an f.fieldset legend.
+R12222 || FIXED || app/views/communication/rbs_broadcasts/_audience_fields.html.erb:36 || Account Status and Attendance groups use f.fieldset instead of label/span plus role=group.
+R12223 || FIXED || app/views/communication/rbs_broadcasts/_audience_fields.html.erb:44 || Help line has an id, builder help-text classes, and the fieldset's aria-describedby points at it.
+R12218 || FIXED || app/views/communication/rbs_broadcasts/_message_fields.html.erb:27 || Subject width w-full max-w-2xl: a scale step, no lg: or arbitrary value.
+F0065 || FIXED || app/views/communication/rbs_broadcasts/_notices.html.erb:7 || Callout title "Use Only in an Emergency".
+R12227 || FIXED || app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb:6 || Positions group is an f.fieldset (partial now takes f:); span label and role=group removed.
+R12231 || NEEDS-APPROVAL || app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb:16 || No helper for a bordered scroll box; same proposed ui_text_box(max_height:) as R12116 would cover it.
+R12233 || COMPLIANT || app/views/communication/rbs_broadcasts/_position_checkboxes.html.erb:22 || V/LAYOUT-02: an item grid inside a section, which picks its own scale gap.
+R12213 || COMPLIANT || app/views/communication/rbs_broadcasts/_recipients_table.html.erb:21 || V/EMPTY-01: cannot be empty where drawn; RbsBroadcastsController#review re-renders the form when @people is empty.
+R12216 || FIXED || app/views/communication/rbs_broadcasts/_simple_fields.html.erb:26 || Position select width: "w-full sm:w-96" through width:.
+R12206 || NEEDS-APPROVAL || app/views/communication/rbs_broadcasts/review.html.erb:36 || Message previews: no helper exists; proposed ui_text_box(max_height:) as in R12116.
+F0066 || FIXED || app/views/communication/rbs_broadcasts/review.html.erb:44 || Heading "Clubhouse Message"; submit "Send to N Person/People"; tests updated.
+R12207 || FIXED || app/views/communication/rbs_broadcasts/review.html.erb:80 || Send is :primary for every type, emergency included.
+F0055 || FIXED || app/views/communication/rbs_history/index.html.erb:22 || Info callout replaced by a collapsed "About This Report" card holding a Q&A list.
+R12185 || FIXED || app/views/communication/rbs_history/index.html.erb:39 || Filter selects take width: "w-full" and wrapper_class: "flex-1" instead of html class:.
+R12189 || FIXED || app/views/communication/rbs_history/index.html.erb:83 || Fixed in rbs_channel_icons: each icon takes label: (tooltip plus screen-reader name).
+R12201 || FIXED || app/views/communication/rbs_history/retried.html.erb:28 || Foot "Back to This Broadcast" removed; the hero's back link is the way back, Broadcast History stays.
+F0057 || COMPLIANT || app/views/communication/rbs_history/show.html.erb:32 || V/BTN-07: a button inside a callout is exempt.
+R12192 || FIXED || app/views/communication/rbs_history/show.html.erb:32 || Send Failed Messages Again is :primary, not :error.
+R12197 || FIXED || app/views/communication/rbs_history/show.html.erb:66 || stack-to-row-lg replaced by the documented flex flex-col lg:flex-row gap-4.
+R12191 || NEEDS-APPROVAL || app/views/communication/rbs_history/show.html.erb:70 || Message boxes: no helper exists; proposed ui_text_box(max_height:) as in R12116.
+F0067 || FIXED || app/views/communication/rbs_history/show.html.erb:73 || Heading "Email and Clubhouse Message".
+R12177 || FIXED || app/views/communication/rbs_messages/index.html.erb:36 || Direction select takes width: "w-full" and wrapper_class: "flex-1", matching the callsign field.
+R03647 || FIXED || app/views/communication/rbs_messages/index.html.erb:40 || Raw labels replaced by f.fieldset legends Outcome and Email Failure Reason.
+R12178 || FIXED || app/views/communication/rbs_messages/index.html.erb:40 || Both checkbox groups are f.fieldset (ids rbs-status-group, rbs-email-failure-group); tests updated.
+R12182 || NEEDS-APPROVAL || app/views/communication/rbs_messages/index.html.erb:106 || Detail-row message box: no helper exists; proposed ui_text_box(max_height:) as in R12116.
+R03652 || FIXED || app/views/communication/rbs_messages/index.html.erb:107 || An empty message prints "—" through value_or_dash.
+R12173 || FIXED || app/views/communication/rbs_phone_numbers/index.html.erb:24 || Q&A moved from a visible info callout into a collapsed "About This Report" card.
+F0062 || FIXED || app/views/communication/survey_groups/_form.html.erb:4 || Legends "What People See" and "How the Answers Are Reported".
+F0071 || FIXED || app/views/communication/survey_groups/_form.html.erb:27 || Submit reads "Save Group" for new and edit.
+F0063 || FIXED || app/views/communication/survey_questions/_form.html.erb:9 || Legends "The Question" and "Settings for One Type of Question".
+F0072 || FIXED || app/views/communication/survey_questions/_form.html.erb:39 || Submit reads "Save Question" for new and edit.
+F0061 || FIXED || app/views/communication/surveys/_form.html.erb:5 || Legends "Who Answers, and About What", "What It Says", "Whether It Is Shown".
+R12155 || FIXED || app/views/communication/surveys/_form.html.erb:30 || Paired selects already fill their share; the About select goes from lg:w-96 to sm:w-96.
+F0070 || FIXED || app/views/communication/surveys/_form.html.erb:64 || Submit reads "Save Survey" for new and edit.
+R12153 || COMPLIANT || app/views/communication/surveys/_group_actions.html.erb:3 || R7: one Add Question primary per group section.
+F0064 || FIXED || app/views/communication/surveys/index.html.erb:36 || Section title "3 Surveys in 2026".
+R12133 || FIXED || app/views/communication/surveys/index.html.erb:63 || Row action Manage is :secondary; Add Survey stays the page's one primary.
+F0069 || FIXED || app/views/communication/surveys/new.html.erb:4 || Hero and page title "Add Survey".
+R12138 || COMPLIANT || app/views/communication/surveys/show.html.erb:28 || V/LAYOUT-02: an item grid inside a section, which picks its own scale gap.
+R12140 || NEEDS-APPROVAL || app/views/communication/surveys/show.html.erb:45 || Prologue/epilogue boxes: no helper exists; proposed ui_text_box(max_height:) as in R12116.
+R12141 || FIXED || app/views/communication/surveys/show.html.erb:46 || Missing prologue or epilogue prints "—", not italic "None given.".

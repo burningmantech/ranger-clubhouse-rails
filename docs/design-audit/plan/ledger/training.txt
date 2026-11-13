@@ -1,0 +1,72 @@
+R14346 || COMPLIANT || app/helpers/training/mentees_helper.rb:46 || "Not granted" is a recorded fact, muted and plain, not italic or bracketed: the new EMPTY-02 wording allows it.
+R14349 || COMPLIANT || app/helpers/training/mentoring_helper.rb:40 || "Shift deleted" is a fact word, muted and plain; EMPTY-02 keeps such words as values.
+R14352 || COMPLIANT || app/helpers/training/mentoring_helper.rb:167 || ui_badge supports :info (badge_helper.rb:27); BADGE-01 now governs class: and badge sets, and every chip state is a badge.
+R14356 || FIXED || app/helpers/training/session_link_helper.rb:43 || "(no description)" now prints "—"; helper and multiple-enrollments tests updated.
+R14374 || FIXED || app/views/training/all_notes/_notes.html.erb:6 || Empty notes cell prints "—" (R6 table cell) instead of italic "no notes"; test updated.
+M0250 || FIXED || app/views/training/all_notes/_notes.html.erb:13 || strftime replaced with wday_month_day_format.
+R14379 || FIXED || app/views/training/all_notes/index.html.erb:22 || "With Notes" is a count, not a status: variant dropped, so it takes the default :secondary.
+F0261 || FIXED || app/views/training/completed_training/show.html.erb:9 || Hero description is now one sentence saying what the page shows.
+R14366 || FIXED || app/views/training/mentees/_row.html.erb:34 || Confirm now says the positions can be restored from the row until the page is reloaded.
+R14372 || FIXED || app/views/training/mentees/destroy.turbo_stream.erb:6 || Toast reads "X's mentee positions revoked."
+R14373 || FIXED || app/views/training/mentees/restore.turbo_stream.erb:5 || Toast reads "X's mentee positions restored."
+R14535 || FIXED || app/views/training/mentoring/assignments/_general_notes.html.erb:14 || Box is a builder text_area via fields "general_notes" with label and help_text; ids now builder ids, tests updated.
+R14533 || COMPLIANT || app/views/training/mentoring/assignments/_general_notes_list.html.erb:19 || Edit and Delete are one note's record actions, which BTN-07 exempts from button_row.
+R14543 || NEEDS-APPROVAL || app/views/training/mentoring/assignments/_roster.html.erb:33 || ui_form nil has no errors object; the summary needs the save result exposed as ActiveModel errors (conflict, denial, rows) for ui_form. Callout kept.
+R10180 || FIXED || app/views/training/mentoring/assignments/_roster.html.erb:173 || Result select is wf.select via fields "walks[id]", hide_label with aria-label; names unchanged, ids now builder ids.
+R14546 || FIXED || app/views/training/mentoring/assignments/_roster.html.erb:210 || Mentor selects and labels are mf.select with builder labels via fields "walks[id][mentors][i]"; tests updated to new ids.
+R10181 || FIXED || app/views/training/mentoring/assignments/_roster.html.erb:213 || Mentor notes are mf.text_area with builder label.
+R14544 || FIXED || app/views/training/mentoring/assignments/_roster.html.erb:227 || Row error now role="alert"; it is a row-level message with no model attribute, so the builder's per-field message cannot carry it.
+R14556 || FIXED || app/views/training/mentoring/assignments/_upcoming.html.erb:7 || Heading callout is :info, not :success.
+R14557 || FIXED || app/views/training/mentoring/assignments/_upcoming.html.erb:21 || Landing lists upcoming shifts with no sign-ups, so the table can be empty: ui_empty_state branch added.
+R14515 || FIXED || app/views/training/mentoring/landing/index.html.erb:127 || Both "None yet" cells print "—".
+R14528 || FIXED || app/views/training/mentoring/multiple_shifts/index.html.erb:31 || "On Shift Now" is :success when positive, :secondary at zero (COLOR-02 new text).
+R14520 || COMPLIANT || app/views/training/mentoring/verdicts/_mentor_shifts.html.erb:18 || "No mentee assigned" is a muted plain fact word in a list line; EMPTY-02 allows it.
+R14488 || FIXED || app/views/training/online_course_progress/index.html.erb:95 || Italic bracketed "— direct enrollment —" is now muted plain "Direct enrollment"; test regex updated.
+R14403 || COMPLIANT || app/views/training/sessions/_print_screen_nav.html.erb:4 || HERO-04 now says print sheets use the area's print nav, which this partial is.
+R14404 || FIXED || app/views/training/sessions/_session_table.html.erb:24 || Session time link takes LinkHelper::TABLE_LINK_CLASSES.
+R14408 || FIXED || app/views/training/sessions/_session_table.html.erb:51 || Empty trainer group in the cell prints "—" (R6).
+R14407 || FIXED || app/views/training/sessions/_session_table.html.erb:58 || In a cell, so ALERT-01's status line applies: text-error now led by its icon-error icon; not a list, so no empty state.
+F0263 || FIXED || app/views/training/sessions/_stats.html.erb:10 || Tile label is "Signed Up" / "Signed Up — Full".
+R14415 || FIXED || app/views/training/sessions/_trainee_card.html.erb:21 || Callsign is text-base lg:text-lg, matching the section title's scale.
+R14418 || FIXED || app/views/training/sessions/_trainee_card.html.erb:35 || Full-day line is text-warning led by a triangle-exclamation icon-warning icon (ALERT-01 new text).
+R14420 || FIXED || app/views/training/sessions/_trainee_card.html.erb:53 || Notes are a supplementary list in the card: nothing renders when there are none (EMPTY-01 new text).
+F0266 || COMPLIANT || app/views/training/sessions/_trainee_card.html.erb:68 || Score and Work History are one card's record actions, exempt from button_row under BTN-07.
+R14421 || FIXED || app/views/training/sessions/_trainee_card.html.erb:70 || Score is :secondary: one primary per card was a row of primaries in the section (R7).
+R14423 || REJECTED || app/views/training/sessions/_trainees_section.html.erb:49 || A full copy button is documented as exactly this button_action form (docs/UI-COMPONENTS.md:1470-1479); clipboard_button is the icon form.
+R10412 || FIXED || app/views/training/sessions/_trainer_section.html.erb:40 || Attendance select is tf.select via fields "trainers[key]"; names unchanged.
+R14430 || FIXED || app/views/training/sessions/_trainer_section.html.erb:40 || Same fix as R10412: builder select, hidden label, aria-label kept.
+R14431 || FIXED || app/views/training/sessions/_trainer_section.html.erb:49 || Lead is tf.check_box with label "Lead" (builder hidden 0 and 36px hit area).
+R14459 || FIXED || app/views/training/sessions/graduations/_dialog.html.erb:58 || Override rows use f.check_box :person_ids, multiple: true, id: kept; the builder's label now hits the box.
+R14460 || FIXED || app/views/training/sessions/graduations/_dialog.html.erb:78 || No candidates is ui_empty_state.
+R14464 || COMPLIANT || app/views/training/sessions/graduations/_results.html.erb:9 || The controller returns to the dialog when no ids are picked (graduations_controller.rb:16), so results cannot be empty here.
+R14468 || FIXED || app/views/training/sessions/rosters/_dialog.html.erb:22 || Trainer position is f.select labelled "Trainer Position".
+R10472 || FIXED || app/views/training/sessions/rosters/_dialog.html.erb:32 || Search query is f.text_field labelled "Callsign, Name, or Email".
+R14469 || COMPLIANT || app/views/training/sessions/rosters/_dialog.html.erb:30 || BTN-07 exempts a toolbar shared with a field; comment added at the row.
+R14472 || FIXED || app/views/training/sessions/rosters/_dialog.html.erb:66 || Per-row "Add X" submits are :secondary; Search is the dialog's one primary.
+R14470 || FIXED || app/views/training/sessions/rosters/_dialog.html.erb:74 || No match is ui_empty_state.
+R14476 || COMPLIANT || app/views/training/sessions/scores/_dialog.html.erb:37 || Edit and Delete are one note row's record actions, exempt under BTN-07.
+R14474 || FIXED || app/views/training/sessions/scores/_dialog.html.erb:56 || No notes is ui_empty_state.
+F0262 || FIXED || app/views/training/sessions/show.html.erb:9 || Hero description is one sentence about the page.
+R14440 || WAIVED || app/views/training/sessions/signup_sheet.html.erb:22 || R10
+R10505 || FIXED || app/views/training/sessions/signup_sheet.html.erb:27 || #444 is var(--color-body-subtle); unverified in a printed @page margin box.
+R14443 || WAIVED || app/views/training/sessions/signup_sheet.html.erb:46 || R10
+R14442 || WAIVED || app/views/training/sessions/signup_sheet.html.erb:52 || R10
+F0265 || FIXED || app/views/training/sessions/signup_sheet.html.erb:55 || Running head and doc label read "Sign-Up Sheet".
+R14441 || WAIVED || app/views/training/sessions/signup_sheet.html.erb:87 || R10
+M0475 || WAIVED || app/views/training/sessions/signup_sheet.html.erb:95 || R10
+R14445 || WAIVED || app/views/training/sessions/trainers_report.html.erb:17 || R10
+R10526 || FIXED || app/views/training/sessions/trainers_report.html.erb:22 || Both #444 are var(--color-body-subtle); unverified in a printed @page margin box.
+R14446 || WAIVED || app/views/training/sessions/trainers_report.html.erb:54 || R10
+F0264 || FIXED || app/views/training/sessions/trainers_report.html.erb:55 || "Signed Up", "Teams Legend", doc label "Trainer's Report"; "Inact/Retired" is already capitalised. Tests updated.
+R14450 || WAIVED || app/views/training/sessions/trainers_report.html.erb:70 || R10
+R14452 || WAIVED || app/views/training/sessions/trainers_report.html.erb:79 || R10
+R14453 || WAIVED || app/views/training/sessions/trainers_report.html.erb:90 || R10
+R14447 || FIXED || app/views/training/sessions/trainers_report.html.erb:94 || The glyph is aria-hidden, with sr-only "Passed" as the header's name.
+R14449 || WAIVED || app/views/training/sessions/trainers_report.html.erb:111 || R10
+R14448 || WAIVED || app/views/training/sessions/trainers_report.html.erb:123 || R10
+R14485 || COMPLIANT || app/views/training/sessions/work_histories/show.html.erb:33 || Reached only from a non-zero hour link in the matrix, so it cannot be empty where drawn (EMPTY-01 new text).
+R14481 || FIXED || app/views/training/sessions/work_histories/show.html.erb:77 || text-error dropped; the strong stays.
+M0523 || FIXED || app/views/training/sessions/work_histories/show.html.erb:81 || Comment at the call site gives the reason for responsive: false.
+R14483 || FIXED || app/views/training/sessions/work_histories/show.html.erb:98 || All three hour links take LinkHelper::TABLE_LINK_CLASSES.
+M0133 || FIXED || app/views/training/trained_no_work/index.html.erb:18 || "working positions" became "shift positions"; test updated.
+R14497 || REJECTED || app/views/training/untrained_people/index.html.erb:54 || Documented full copy-button form (docs/UI-COMPONENTS.md:1470-1479), already in a button_row.

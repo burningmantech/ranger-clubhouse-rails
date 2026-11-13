@@ -1,0 +1,55 @@
+C0389 || FIXED || app/helpers/agreement_helper.rb:12 || not_available border now border-base-300, ui_accent_card's secondary value. me/agreements/index still hand-builds the card; Phase 3 should switch it to ui_accent_card.
+C0391 || FIXED || app/helpers/agreement_helper.rb:67 || not_available icon text-secondary -> text-stone-icon (neutral).
+C0286 || REJECTED || app/helpers/application_helper.rb:65 || The rewritten guide no longer asks for data-turbo="false"; the partial's same-page fragments are left to the browser by application.js turbo:click, as its comment says.
+R00066 || FIXED || app/helpers/application_helper.rb:80 || none_stated stays (R6) but prints a plain span.text-stone-muted, not italics (guide: never in italics).
+C0292 || FIXED || app/helpers/application_helper.rb:142 || width:/height: go as --photo-width/--photo-height read by w-(--photo-width)/h-(--photo-height); the missing-photo icon takes the caller's alt as its label.
+C0294 || FIXED || app/helpers/application_helper.rb:240 || hour_not_counted_disclaimer is ui_callout_box :info (role note), text-base; "Note:" prefix dropped since the callout says it.
+R00085 || FIXED || app/helpers/application_helper.rb:240 || text-sm gone with the callout conversion (R4: paragraphs text-base).
+C0296 || FIXED || app/helpers/application_helper.rb:261 || back_to rests at text-stone-muted, hovers to text-stone-emphasis.
+C0299 || REJECTED || app/helpers/application_helper.rb:292 || Guide (Status Icon Colors) allows text-primary for a brand icon; the row prints the state in words beside each icon, so label: is not needed.
+C0222 || WAIVED || app/helpers/button_helper.rb:63 || R2
+R00129 || WAIVED || app/helpers/button_helper.rb:63 || R2
+R00140 || REJECTED || app/helpers/button_helper.rb:83 || The only style= is --button-row-controls, a computed custom property the guide's Styling Mechanism names as allowed.
+C0228 || FIXED || app/helpers/button_helper.rb:222 || R5: confirms by default ("Delete this record? This cannot be undone.", red, button label as title/confirm); confirm: "this note" names the thing; confirm: false skips.
+C0229 || FIXED || app/helpers/button_helper.rb:253 || submit_button default label "Save"; no caller relied on "Submit".
+C0413 || COMPLIANT || app/helpers/date_time_helper.rb:33 || Rewritten guide gives CSV and chips as 2026-01-08 14:30 (CSV_TIME, CHIP_TIME); code matches.
+C0414 || FIXED || app/helpers/event_dates_helper.rb:16 || Unset window prints "—" instead of a "Not set" badge (vague-rules EMPTY-02 lists this badge to fix).
+C0415 || FIXED || app/helpers/gender_helper.rb:6 || No gender, or custom with no text, prints "—" instead of "Not specified".
+R00208 || REJECTED || app/helpers/icon_helper.rb:80 || "style" here is the Font Awesome style (regular/solid); fa_icon emits no style= attribute.
+C0236 || FIXED || app/helpers/modal_helper.rb:62 || Dialog gets aria-modal="true" (all open via showModal) and aria-labelledby the title h3's id (<modal id>-title).
+R00279 || FIXED || app/helpers/modal_helper.rb:56 || Backdrop button text "Close". application.js confirmDialog() copies the markup and still says "close": shared-js should match.
+R00289 || REJECTED || app/helpers/modal_helper.rb:129 || "Confirm"/"Continue?" are fallbacks for callers that pass their own question; delete_button now supplies the R5 wording. Callers' copy is Phase 3.
+C0237 || WAIVED || app/helpers/modal_helper.rb:183 || R2 (guide Modals: title is modal-title-text, text-xl). The btn-circle half is fixed under R00278.
+R00296 || WAIVED || app/helpers/modal_helper.rb:183 || R2
+R00278 || FIXED || app/helpers/modal_helper.rb:190 || Title-row close button btn-circle -> btn-square. application.js confirmDialog() mirror still btn-circle: shared-js should match.
+R00325 || FIXED || app/helpers/page_layout_helper.rb:10 || page_title h1 font-normal -> font-semibold. page_title now has no caller at all.
+C0260 || BLOCKED || app/helpers/page_layout_helper.rb:37 || Builder labels now follow a custom id; year_selector still needs the compact inline layout (C0261) and the year selector's markup is the maintainer's.
+R00315 || BLOCKED || app/helpers/page_layout_helper.rb:42 || Same as C0260: custom-id labels now work; waits on the compact inline layout and the maintainer's year selector call.
+R00317 || BLOCKED || app/helpers/page_layout_helper.rb:49 || Same as C0260.
+C0261 || BLOCKED || app/helpers/page_layout_helper.rb:62 || form_helper.rb: needs a compact inline layout (label beside a select-sm, no mb-3/w-1/4 wrapper) plus custom-id labels.
+M0293 || BLOCKED || app/helpers/page_layout_helper.rb:67 || form_helper.rb: same as C0261.
+R00313 || BLOCKED || app/helpers/page_layout_helper.rb:75 || form_helper.rb: same as C0261.
+R00318 || FIXED || app/helpers/page_layout_helper.rb:102 || title_year_selector (zero callers) deleted.
+C0416 || COMPLIANT || app/helpers/pronouns_helper.rb:6 || Returns "" for inline use after a name, where a dash would be wrong; a cell caller wraps it in value_or_dash.
+C0277 || COMPLIANT || app/helpers/sidebar_helper.rb:45 || Rewritten guide documents w-65 lg:w-50 and the 140px logo; stale lg:w-55 comment fixed.
+R00557 || COMPLIANT || app/helpers/sidebar_helper.rb:52 || Rewritten guide's structure is drawer-side/drawer-overlay, as the code builds.
+R00560 || COMPLIANT || app/helpers/sidebar_helper.rb:90 || Rewritten guide (Logo Area) documents h-[140px] w-[140px] opacity-30 mb-5.
+C0279 || FIXED || app/helpers/sidebar_helper.rb:110 || Removed the fixed aria-expanded="false" from the non-interactive submenu title.
+C0280 || FIXED || app/helpers/sidebar_helper.rb:117 || R15: icon:, icon_type:, badge:, badge_variant:, use_turbo: removed from sidebar_item; sidebar_submenu_item, its icon args deleted.
+C0283 || FIXED || app/helpers/sidebar_helper.rb:209 || R15: sidebar_badge, render_sidebar_content, render_icon_with_title, SIDEBAR_BADGE(_VARIANTS) and the sidebar-badge utility deleted.
+C0301 || FIXED || app/helpers/ui_components/action_box_helper.rb:19 || Description text-sm -> text-base (R4); bogus icon_position: removed. Always-gold icon left: NEEDS-APPROVAL with R00795.
+C0316 || FIXED || app/helpers/ui_components/ui_accent_card_helper.rb:78 || Dropped transition-all duration-200 hover:shadow-sm (no lift on a non-interactive card).
+M0423 || FIXED || app/helpers/ui_components/ui_accent_card_helper.rb:78 || Same fix as C0316.
+C0318 || WAIVED || app/helpers/ui_components/ui_card_helper.rb:37 || R2
+R00776 || FIXED || app/helpers/ui_components/ui_card_helper.rb:88 || ui_card_section emits h3 (its only callers sit in a ui_section's h2, under a div card title).
+R00795 || NEEDS-APPROVAL || app/helpers/ui_components/ui_hero_panel_helper.rb:70 || Every hero icon is decorative icon-warning gold; COLOR-05 says text-stone-icon. Changes every page header (and action_box icons): maintainer call.
+C0332 || FIXED || app/helpers/ui_components/ui_label_value_helper.rb:36 || Default size :sm -> :base (R4). label_width already travels as a custom property.
+C0335 || FIXED || app/helpers/ui_components/ui_progress_bar_helper.rb:108 || Fill width now --progress-fill read by w-(--progress-fill), not an inline width.
+M0442 || FIXED || app/helpers/ui_components/ui_progress_bar_helper.rb:108 || Same fix as C0335.
+C0336 || WAIVED || app/helpers/ui_components/ui_progress_box_helper.rb:21 || R2
+C0337 || FIXED || app/helpers/ui_components/ui_progress_completed_bar_helper.rb:34 || Fill and pulse widths now --progress-fill custom property.
+M0443 || FIXED || app/helpers/ui_components/ui_progress_completed_bar_helper.rb:34 || Same fix as C0337.
+M0444 || FIXED || app/helpers/ui_components/ui_progress_completed_bar_helper.rb:42 || Same fix as C0337.
+C0340 || NEEDS-APPROVAL || app/helpers/ui_components/ui_section_helper.rb:7 || Guide now documents border: false as dropping only pb-1; vague-rules still says fix or retire it. Either changes callers' look: maintainer call.
+C0284 || FIXED || app/views/common/_years_breakdown.html.erb:17 || Phase 3 (common-a) changed the italic "none" on lines 17 and 34 to the dash.
+C0285 || FIXED || app/helpers/year_helper.rb:9 || year_range with no years returns "—".

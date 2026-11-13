@@ -1,0 +1,15 @@
+C0080 || WAIVED || app/assets/stylesheets/components/forms.css:7 || C5 (R2): fieldset left rule and gradient are theme look; guide follows code.
+C0350 || FIXED || app/helpers/form_helper.rb:118 || Horizontal wrapper gets mb-3; the horizontal error label gets lg:mr-2 like the normal one.
+C0355 || FIXED || app/helpers/form_helper.rb:359 || Guide now says the visible label names the chips input; corrected the stale :placeholder comment that called it the accessible name.
+C0356 || WAIVED || app/helpers/form_helper.rb:384 || R2: textarea keeps daisyUI's 80px minimum and w-full default; the guide now says so.
+C0359 || FIXED || app/helpers/form_helper.rb:456 || check_box sets the required attribute and shows "(required)"; horizontal/auto label column is now a real <label for> naming the box.
+C0360 || FIXED || app/helpers/form_helper.rb:912 || Radio now sits inside its min-h-9 label (no stale for=); radio_button passes required: through as the attribute.
+C0361 || FIXED || app/helpers/form_helper.rb:986 || Inline horizontal/auto radio groups are a fieldset role=radiogroup with a floated legend; items wrap radio in label; sm:columns-2 dropped.
+C0365 || FIXED || app/helpers/form_helper.rb:790 || R3/R13: marker is always the visible "(required)" at text-sm; asterisk branch and required_label: removed from builder and all 7 callers.
+R00197 || FIXED || app/helpers/form_helper.rb:790 || "(required)" raised from text-xs to text-sm (R3).
+C0366 || FIXED || app/helpers/form_helper.rb:816 || C3: help_mode :tooltip removed (option key, tooltip icon, suffix branch); help text always inline with aria-describedby.
+R00182 || FIXED || app/helpers/form_helper.rb:912 || radio_button's label now wraps the radio, so the 36px label is the hit area.
+M0001 || FIXED || app/helpers/form_helper.rb:1007 || Horizontal collection radios: columns-1 lg:columns-3 xl:columns-4; no sm: tier.
+C0372 || FIXED || app/helpers/form_helper.rb:1145 || Error summary list is ul.list-bulleted with plain li; hand-drawn bullet spans gone.
+R00192 || FIXED || app/helpers/form_helper.rb:1145 || Same fix as C0372.
+C0451 || FIXED || app/javascript/controllers/form_controller.js:19 || Focuses the first errored field (checkbox-error added); summary takes focus only when no field is marked.
