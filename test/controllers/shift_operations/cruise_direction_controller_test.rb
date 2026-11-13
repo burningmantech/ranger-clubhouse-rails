@@ -621,7 +621,7 @@ class ShiftOperations::CruiseDirectionControllerTest < ActionDispatch::Integrati
     get shift_operations_edit_cruise_direction_person_path(first, person, year: YEAR)
 
     assert_response :success
-    assert_select "select#cruise-direction-new-pod option", count: 2
+    assert_select "select#new_pod_id option", count: 2
   end
 
   # Someone else took them out while this board sat on screen.

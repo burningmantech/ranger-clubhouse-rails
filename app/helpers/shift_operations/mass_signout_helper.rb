@@ -21,7 +21,7 @@ module ShiftOperations::MassSignoutHelper
     stamp = datetime_format(row.timesheet.on_duty, year: row.stale?)
     return stamp unless row.stale?
 
-    safe_join([fa_icon("triangle-exclamation", :solid, class: "text-error"), stamp], " ")
+    safe_join([fa_icon("triangle-exclamation", :solid, class: "icon-error"), stamp], " ")
   end
 
   # How long an entry has been open. Past a day a clock reading stops being

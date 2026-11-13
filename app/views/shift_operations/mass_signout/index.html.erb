@@ -119,10 +119,11 @@
         <%= f.submit "Sign Out Selected Rangers",
                      data: { checkbox_select_all_target: "submit",
                              turbo_confirm: confirm_modal_dialog(
-                               title: "Confirm Mass Sign-Out",
-                               message: "Every selected Ranger is recorded as going off duty " \
-                                        "right now. Anyone whose status is Inactive is " \
-                                        "converted back to Active and emailed.",
+                               title: "Sign Out Selected Rangers",
+                               message: "Sign out the selected Rangers? Each is recorded as going " \
+                                        "off duty right now, and anyone whose status is Inactive is " \
+                                        "converted back to Active and emailed. This cannot be " \
+                                        "undone from this page.",
                                confirm_label: "Sign Them Out"
                              ) } %>
       <% end %>

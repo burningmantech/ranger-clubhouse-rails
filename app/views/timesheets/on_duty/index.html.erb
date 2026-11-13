@@ -131,7 +131,7 @@
 <% else %>
   <%# items-start so a short position card does not stretch to match the
       longest column. %>
-  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 items-start gap-4">
+  <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 items-start gap-4">
     <% @report.positions.each do |position| %>
       <%= ui_card do %>
         <div class="flex flex-wrap items-baseline justify-between gap-2 border-b border-line px-4 py-3">

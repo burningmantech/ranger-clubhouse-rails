@@ -52,11 +52,7 @@
 
 <div class="lg:w-3/4 flex flex-col gap-6">
   <% bands.each do |meta, keys| %>
-    <section class="flex flex-col gap-2">
-      <div class="border-b border-line pb-1">
-        <h2 class="heading-section text-heading"><%= meta[:title] %></h2>
-      </div>
-
+    <%= ui_section meta[:title], body_class: "flex flex-col gap-2" do %>
       <% keys.each do |key| %>
         <% check = timesheet_check_meta(key) %>
         <% count = @summary.counts[key] %>
@@ -69,24 +65,21 @@
                 against the credit table is the most expensive thing this
                 report does, and paying for it on every load of every year to
                 put one more figure on the board is not worth it. %>
-            <span class="text-sm text-stone-subtle">
+            <span class="text-stone-subtle">
               Open to check — this one is counted when you look at it.
             </span>
           <% end %>
         <% end %>
       <% end %>
-    </section>
+    <% end %>
   <% end %>
 
   <% clear = @summary.counts.select { |_, count| count.zero? }.keys %>
   <% if clear.any? %>
-    <section class="flex flex-col gap-2">
-      <div class="border-b border-line pb-1">
-        <h2 class="heading-section text-heading">Clear</h2>
-        <p class="text-sm text-stone-muted">
-          <%= pluralize(clear.size, "check") %> found nothing for <%= @year %>.
-        </p>
-      </div>
+    <%= ui_section "Clear", body_class: "flex flex-col gap-2" do %>
+      <p class="text-stone-muted">
+        <%= pluralize(clear.size, "check") %> found nothing for <%= @year %>.
+      </p>
 
       <% clear.each do |key| %>
         <% check = timesheet_check_meta(key) %>
@@ -95,6 +88,6 @@
                               meta: check[:summary],
                               badges: [timesheet_check_badge(key, 0, size: "base")] %>
       <% end %>
-    </section>
+    <% end %>
   <% end %>
 </div>

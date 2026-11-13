@@ -17,8 +17,8 @@
   <%= t.header do %>
     <%= t.heading "Callsign" %>
     <%= t.heading "Position" %>
-    <%= t.heading shows_shift ? "Entry / shift" : (reversed ? "On duty / off duty" : "Time") %>
-    <%= t.heading shows_shift ? "Duration / shift length" : "Duration", right: true %>
+    <%= t.heading shows_shift ? "Entry / Shift" : (reversed ? "On Duty / Off Duty" : "Time") %>
+    <%= t.heading shows_shift ? "Duration / Shift Length" : "Duration", right: true %>
     <% if shows_max_hours %>
       <%= t.heading "Max Hours", right: true %>
     <% end %>

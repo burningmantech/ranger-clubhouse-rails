@@ -139,7 +139,7 @@ class ShiftOperations::BulkSignInOutControllerTest < ActionDispatch::Integration
     post shift_operations_preview_bulk_sign_in_out_path, params: line("nosuchranger,#{@position.title}")
 
     assert_response :unprocessable_entity
-    assert_not submit_values.any? { |value| value.start_with?("Create") },
+    assert_not submit_values.any? { |value| value.start_with?("Apply") },
                "all-or-nothing: a batch with a problem cannot be committed"
     assert_includes submit_values, "Go Back and Edit"
   end
@@ -148,7 +148,7 @@ class ShiftOperations::BulkSignInOutControllerTest < ActionDispatch::Integration
     post shift_operations_preview_bulk_sign_in_out_path, params: line(signed_in_line)
 
     assert_response :unprocessable_entity
-    assert_includes submit_values, "Create 1 timesheet entry"
+    assert_includes submit_values, "Apply 1 Line"
   end
 
   # ----------------------------------------------------------------- apply

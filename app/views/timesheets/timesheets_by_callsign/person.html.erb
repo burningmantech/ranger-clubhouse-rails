@@ -50,7 +50,7 @@
     each link is gated on the controller that enforces it rather than on a role
     list copied here -- a copied list is a link that keeps promising a page
     after the page stops admitting the reader. %>
-<div class="my-4 flex flex-wrap gap-2">
+<%= button_row class: "my-4" do %>
   <% if can_view_person_page? %>
     <%= button_link "Account", :secondary, person_path(@person),
                     icon: "user", icon_type: :solid %>
@@ -68,7 +68,7 @@
     <%= export_csv_link(timesheets_timesheets_by_callsign_person_path(@person, year: @year,
                         format: :csv)) %>
   <% end %>
-</div>
+<% end %>
 
 <% if @detail.entries.any? %>
   <%= ui_table full_width: true, striped: true do |t| %>

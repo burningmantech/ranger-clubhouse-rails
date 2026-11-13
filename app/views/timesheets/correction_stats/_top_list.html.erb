@@ -20,7 +20,7 @@
   <h3 class="heading-title text-heading mb-2"><%= title %></h3>
 
   <% if rows.empty? %>
-    <p class="text-base text-stone-muted">None this year.</p>
+    <%= ui_empty_state "None this year." %>
   <% else %>
     <%= ui_table full_width: true, striped: true do |t| %>
       <%= t.header do %>

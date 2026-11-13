@@ -35,14 +35,14 @@ module Timesheets::CorrectionRequestsHelper
   # out what was being asked; opened here, the table can be triaged in place.
   #
   # Kept closed rather than printed inline because most rows need no argument --
-  # the reader is scanning for the ones that do. A row with nothing to open says
-  # so rather than offering a control that reveals an empty box.
+  # the reader is scanning for the ones that do. A row with nothing to open
+  # prints the empty-cell dash rather than a control that reveals an empty box.
   #
   # The ARIA pairing with the detail row belongs to the table builder, so the
   # two cannot drift apart; describing: is appended to the visible label rather
   # than replacing it, which keeps the button operable by voice.
   def correction_request_reason_toggle(table, entry)
-    return tag.span("None given", class: "text-stone-muted italic") if entry.notes.empty?
+    return value_or_dash(nil) if entry.notes.empty?
 
     label = entry.notes.size > 1 ? pluralize(entry.notes.size, "note") : "Reason"
 

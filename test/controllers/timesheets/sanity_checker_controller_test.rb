@@ -85,7 +85,7 @@ class Timesheets::SanityCheckerControllerTest < ActionDispatch::IntegrationTest
     get timesheets_sanity_checker_path(year: YEAR)
 
     assert_response :success
-    assert_select "h2", text: "Clear"
+    assert_select "[role=heading][aria-level='2']", text: "Clear"
     # Every check but the deferred one, which never reports a count and so is
     # never clear.
     Timesheets::SanityCheckerHelper::CHECK_META.each do |key, meta|
@@ -105,7 +105,7 @@ class Timesheets::SanityCheckerControllerTest < ActionDispatch::IntegrationTest
     assert_match "Open to check", response.body
     # Its band heading is shown even in an otherwise clean year, because the
     # check has not been run.
-    assert_select "h2", text: "Fix the Configuration"
+    assert_select "[role=heading][aria-level='2']", text: "Fix the Configuration"
   end
 
   test "a finding moves its check out of Clear and into its band" do
@@ -114,7 +114,7 @@ class Timesheets::SanityCheckerControllerTest < ActionDispatch::IntegrationTest
     get timesheets_sanity_checker_path(year: YEAR)
 
     assert_response :success
-    assert_select "h2", text: "Review the Entry"
+    assert_select "[role=heading][aria-level='2']", text: "Review the Entry"
     assert_match "1 entry", response.body
   end
 

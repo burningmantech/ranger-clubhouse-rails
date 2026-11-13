@@ -16,14 +16,10 @@
                badge_color:, border: false do %>
   <% if !period.positive? %>
     <%# Nothing was measured, so an empty table here is not a clean year. %>
-    <p class="text-stone-muted italic">
-      The <%= kind %> check-in limit is switched off, so no check-in is flagged as
-      <%= kind %>.
-    </p>
+    <%= ui_empty_state "The #{kind} check-in limit is switched off, so no check-in is " \
+                       "flagged as #{kind}." %>
   <% elsif entries.empty? %>
-    <p class="text-stone-muted italic">
-      No <%= kind %> check-in<%= " matched these filters" if @filters.any? %> in <%= @year %>.
-    </p>
+    <%= ui_empty_state "No #{kind} check-in#{" matched these filters" if @filters.any?} in #{@year}." %>
   <% else %>
     <%# Six columns of audit detail: desktop-first, scrolling sideways on a
         narrow screen rather than restacking, so a column can still be read

@@ -34,14 +34,15 @@
                            width: "w-full lg:w-56", required: true %>
       <%= f.select :break_after, PayrollExportForm::BREAK_AFTER_OPTIONS,
                    { label: "Meal Break After",
-                     help_text: "How long someone can be out before a break is inserted." },
+                     help_text: "How long someone can be out before a break is inserted. " \
+                                "Positions set to leave hours alone never get one." },
                    { class: "w-full lg:w-44" } %>
       <%= f.select :break_duration, PayrollExportForm::BREAK_DURATION_OPTIONS,
                    { label: "Meal Break Length" }, { class: "w-full lg:w-44" } %>
     <% end %>
 
     <div data-controller="position-picker">
-      <%= f.fieldset "Positions to export", icon: "list-check", icon_type: :solid do %>
+      <%= f.fieldset "Positions to Export", icon: "list-check", icon_type: :solid do %>
         <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mb-2">
           <%= button_action "Select All", :ghost,
                             data: { action: "click->position-picker#selectAll" } %>
@@ -71,10 +72,6 @@
         </div>
       <% end %>
     </div>
-
-    <p class="text-stone-muted mb-3">
-      Positions set to leave hours alone never get a meal break, whatever is chosen above.
-    </p>
 
     <%= button_row do %>
       <%= f.submit "Run Report" %>
@@ -113,7 +110,7 @@
       <div class="mt-2">
         <%# Guarded like the other punch files. This is the cohort most likely
             to need a second look, so it is the last one that should skip it. %>
-        <%= payroll_export_link "Export these without IDs", "without-ids", @form,
+        <%= payroll_export_link "Export These Without IDs", "without-ids", @form,
                                 review_count: @report.people_without_ids.sum(&:needs_review_count) %>
       </div>
     <% end %>
@@ -122,9 +119,9 @@
   <% if @report.people.any? %>
     <%# The three exports, named once: the buttons print the labels and the card
         quotes them. %>
-    <% adjusted_label = "Export payroll with meal breaks" %>
-    <% unadjusted_label = "Export unadjusted payroll" %>
-    <% table_label = "Export this table" %>
+    <% adjusted_label = "Export Payroll with Meal Breaks" %>
+    <% unadjusted_label = "Export Unadjusted Payroll" %>
+    <% table_label = "Export This Table" %>
 
     <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
       <dl class="instruction-list">
@@ -138,17 +135,13 @@
     <% end %>
 
     <div class="flex flex-col lg:flex-row lg:items-end gap-3 my-4">
-      <%= form_tag shift_operations_payroll_export_path, method: :get,
-                   data: { controller: "form" } do %>
+      <%= form_with url: shift_operations_payroll_export_path, method: :get, builder: AppFormBuilder,
+                    data: { controller: "form" } do |f| %>
         <%= payroll_query_fields @form, except: :person_id %>
-        <label class="flex-center-gap-2" for="payroll-person-filter">
-          <span>Show</span>
-          <%= select_tag "#{PayrollExportForm::PARAM_SCOPE}[person_id]",
-                         options_for_select(payroll_person_options(@roster), @form.person_id),
-                         id: "payroll-person-filter",
-                         class: AppFormBuilder::SELECT_CLASSES,
-                         data: { action: "change->form#submit" } %>
-        </label>
+        <%= f.select "#{PayrollExportForm::PARAM_SCOPE}[person_id]",
+                     options_for_select(payroll_person_options(@roster), @form.person_id),
+                     { label: "Show", wrapper_class: "" },
+                     { data: { action: "change->form#submit" } } %>
       <% end %>
 
       <div class="lg:ms-auto">
@@ -165,12 +158,12 @@
     <%= render partial: "person", collection: @report.people,
                locals: { meal_break_minutes: @form.break_duration } %>
 
-    <div class="bg-base-100 border border-line rounded-base px-4 py-3 flex items-center gap-3">
-      <span class="text-heading font-semibold">Grand total</span>
+    <%= ui_card class: "px-4 py-3 flex items-center gap-3" do %>
+      <span class="text-heading font-semibold">Grand Total</span>
       <span class="ms-auto text-lg text-heading font-semibold">
         <%= hour_minute_format(@report.grand_total) %>
       </span>
-    </div>
+    <% end %>
   <% elsif @form.person_id.present? %>
     <%# Only reachable by hand-editing the address: the filter lists the people
         who are on the report, so it cannot select someone who is not. Says so

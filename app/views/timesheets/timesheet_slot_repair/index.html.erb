@@ -16,6 +16,9 @@
       heading would say one year and the selector another. The pandemic years
       hold no shifts and simply report nothing to repair. %>
   <% panel.year_selector year: @year, min_year: year_floor %>
+  <% panel.back_to do %>
+    <%= back_to "Timesheets", timesheets_on_duty_path %>
+  <% end %>
 <% end %>
 
 <%= render "results" if @results %>
@@ -55,17 +58,15 @@
       <% end %>
 
       <%= button_row do %>
-        <%= button_action "Apply the Selected Changes", :primary,
-                          type: "submit", icon: "wrench", icon_type: :solid,
-                          data: { checkbox_select_all_target: "submit",
-                                  turbo_confirm: confirm_modal_dialog(
-                                    title: "Apply These Changes",
-                                    message: "Apply these changes? This rewrites the shift link on every entry " \
-                                             "you selected. It cannot be undone from here.",
-                                    confirm_label: "Apply Changes"
-                                  ) } %>
-        <%= button_link "Back to Timesheets", :secondary, timesheets_on_duty_path,
-                        icon: "arrow-left", icon_type: :solid %>
+        <%= f.submit "Apply the Selected Changes",
+                     data: { checkbox_select_all_target: "submit",
+                             turbo_confirm: confirm_modal_dialog(
+                               title: "Apply These Changes",
+                               message: "Apply these changes? This rewrites the shift link on every entry " \
+                                        "you selected. It cannot be undone from here.",
+                               confirm_label: "Apply Changes",
+                               variant: :error
+                             ) } %>
       <% end %>
     <% end %>
   <% end %>

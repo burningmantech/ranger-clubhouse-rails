@@ -213,8 +213,8 @@ class ShiftOperations::PayrollExportControllerTest < ActionDispatch::Integration
 
     get shift_operations_payroll_export_path(query(person_id: @ranger.id))
 
-    assert_select "#payroll-person-filter option[value=?]", @admin.id.to_s
-    assert_select "#payroll-person-filter option[value=?]", @ranger.id.to_s
+    assert_select "select[name='payroll[person_id]'] option[value=?]", @admin.id.to_s
+    assert_select "select[name='payroll[person_id]'] option[value=?]", @ranger.id.to_s
   end
 
   # ---------------------------------------------------------------- report

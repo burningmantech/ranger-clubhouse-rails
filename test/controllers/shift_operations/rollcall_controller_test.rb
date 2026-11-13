@@ -223,7 +223,7 @@ class ShiftOperations::RollcallControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal Mime[:turbo_stream], response.media_type
     assert_select "turbo-stream[action=update][target=modal]"
-    assert_select "turbo-stream[target=modal] template", /Check In Is Blocked/
+    assert_select "turbo-stream[target=modal] template", /Check-In Is Blocked/
     # No force affordance on this page, for anyone.
     assert_select "turbo-stream[target=modal] template textarea[name=?]",
                   "signin_force_reason", count: 0

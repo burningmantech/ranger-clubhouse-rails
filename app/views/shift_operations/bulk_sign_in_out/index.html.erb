@@ -34,13 +34,13 @@
                              "and/or the times — the formats are listed below.",
                   class: "font-mono" %>
 
-  <%= ui_disclosure "Supported Line Formats" do %>
+  <%= ui_disclosure "Supported Line Formats", variant: :card do %>
     <%= render "formats" %>
   <% end %>
 
   <%# Said beside the button it is about, not in the hero: the hero is one
-      sentence on what the page does. my-3, not mb-3 -- the disclosure above
-      brings no margin of its own. %>
+      sentence on what the page does. my-3, not mb-3 -- the card above brings
+      no margin of its own. %>
   <p class="my-3">
     <strong>Checking is always safe.</strong> It shows exactly what each line will do, and
     nothing is saved until you confirm.

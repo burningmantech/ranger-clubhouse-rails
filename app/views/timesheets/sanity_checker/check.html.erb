@@ -19,6 +19,19 @@
 <% end %>
 
 <% if @findings.any? %>
+  <%# What the blurb used to say after its first sentence: the hero is one
+      sentence on what these rows are. Directly under the hero, only where
+      there are rows to act on, and only for a check that has more to say --
+      too_short does not. %>
+  <% if meta[:question] %>
+    <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+      <dl class="instruction-list">
+        <dt><%= meta[:question] %></dt>
+        <dd><%= meta[:answer] %></dd>
+      </dl>
+    <% end %>
+  <% end %>
+
   <%# Only "No credits" can reach the cap: a year whose credit table was never
       filled in prices every entry at zero, and a list of the whole year is not
       a worklist. Said plainly, with the export offered as the way to see it
@@ -35,18 +48,6 @@
     <%= timesheet_check_badge(@check, @findings.size) %>
     <%= export_csv_link(timesheet_check_path(@check, @year, format: :csv)) %>
   </div>
-
-  <%# What the blurb used to say after its first sentence: the hero is one
-      sentence on what these rows are. Only where there are rows to act on, and
-      only for a check that has more to say -- too_short does not. %>
-  <% if meta[:question] %>
-    <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
-      <dl class="instruction-list">
-        <dt><%= meta[:question] %></dt>
-        <dd><%= meta[:answer] %></dd>
-      </dl>
-    <% end %>
-  <% end %>
 
   <% case @check %>
   <% when :overlapping %>

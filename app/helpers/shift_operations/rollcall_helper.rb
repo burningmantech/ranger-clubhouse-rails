@@ -134,8 +134,8 @@ module ShiftOperations::RollcallHelper
 
     { turbo_confirm: confirm_modal_dialog(
       title: "Sign Out #{row.callsign}",
-      message: "Sign out #{row.callsign}? #{row.callsign} is on duty. Signing them out records them as going off duty " \
-               "right now.",
+      message: "Sign out #{row.callsign}? They go off duty as of right now. Tapping them again signs them " \
+               "back in on a new entry.",
       confirm_label: "Sign Them Out"
     ) }
   end

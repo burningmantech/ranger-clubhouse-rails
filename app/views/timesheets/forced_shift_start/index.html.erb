@@ -73,7 +73,7 @@
                      "Remove one to widen the search.",
                      icon: "filter-circle-xmark", icon_type: :solid %>
 <% elsif @entries.any? %>
-  <%= ui_section "#{pluralize(@entries.size, "forced start")} in #{@year}", border: false do %>
+  <%= ui_section "#{pluralize(@entries.size, "Forced Start")} in #{@year}", border: false do %>
     <%# Six columns of audit detail: desktop-first, scrolling sideways on a
         narrow screen rather than restacking, so a column can still be read
         down. %>
@@ -106,7 +106,7 @@
                     would say which checks did not survive. Saying "none" here
                     would read as "nothing was overridden", which is the one
                     thing this row rules out. %>
-                <span class="text-stone-muted italic">Not recorded</span>
+                <span class="text-stone-muted">Not recorded</span>
               <% else %>
                 <div class="flex flex-col gap-y-1">
                   <% entry.blockers.each do |blocker| %>
@@ -119,7 +119,7 @@
                 columns the reader scans down. %>
             <%= t.cell class: "max-w-md" do %>
               <% if entry.reason.blank? %>
-                <span class="text-stone-muted italic">No reason given</span>
+                <%= value_or_dash(nil) %>
               <% else %>
                 <%= simple_format entry.reason, {}, sanitize: true %>
               <% end %>

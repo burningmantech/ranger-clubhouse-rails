@@ -13,16 +13,12 @@
   <% end %>
 <% end %>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 my-4 lg:w-3/4">
-  <%= button_link nil, :primary, shift_operations_rollcall_sign_in_path,
-                  class: "py-4 text-lg" do %>
-    <%= fa_icon "person-walking", :solid %>Sign Rangers In
-  <% end %>
-  <%= button_link nil, :secondary, shift_operations_rollcall_sign_out_path,
-                  class: "py-4 text-lg" do %>
-    <%= fa_icon "bed", :solid %>Sign Rangers Out
-  <% end %>
-</div>
+<%= button_row class: "my-4" do %>
+  <%= button_link "Sign Rangers In", :primary, shift_operations_rollcall_sign_in_path,
+                  size: "lg", full_width: true, icon: "person-walking", icon_type: :solid %>
+  <%= button_link "Sign Rangers Out", :secondary, shift_operations_rollcall_sign_out_path,
+                  size: "lg", full_width: true, icon: "bed", icon_type: :solid %>
+<% end %>
 
 <%= ui_section "How This Page Is Used", icon: "circle-question", icon_type: :solid do %>
   <dl class="instruction-list">
