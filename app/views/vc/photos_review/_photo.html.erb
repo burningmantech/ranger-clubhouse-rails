@@ -6,10 +6,10 @@
         <%= photo_tag photo.profile, width: 175, class: "rounded-lg p-2", alt: "Submitted photo for #{photo.person.callsign}" %>
       </div>
       <div class="flex-1 min-w-0">
-        <h3 class="heading-title text-heading mb-2">
+        <h2 class="heading-title text-heading mb-2">
           <%= callsign_link photo.person %>
           <span class="text-stone-muted font-normal">&lt;<%= photo.person.status %>&gt;</span>
-        </h3>
+        </h2>
 
         <%= ui_table striped: false do |t| %>
           <%= t.header do %>
@@ -44,7 +44,7 @@
             <%= button_link "Approve", :success, vc_photos_review_approve_path(photo),
                             icon: "check", icon_type: :solid,
                             data: confirm_modal(title: "Approve Photo",
-                                                message: "Approve this photo for #{photo.person.callsign}? It becomes their current photo — an approval email will be sent, and all of their other photos will be removed.",
+                                                message: "Approve this photo for #{photo.person.callsign}? It becomes their current photo — an approval email will be sent, and all of their other photos will be removed. You can still reject it afterwards.",
                                                 confirm_label: "Approve Photo",
                                                 method: :patch) %>
           <% end %>
@@ -75,19 +75,19 @@
               <% end %>
             </div>
           <% else %>
-            <div class="font-semibold">No prior rejected photos.</div>
+            <%= ui_empty_state "No prior rejected photos." %>
           <% end %>
         </div>
         <% if photo.status == PersonPhoto::REJECTED %>
           <dl class="mt-4 space-y-2">
-            <dt class="font-semibold">Rejection reasons</dt>
+            <dt class="font-semibold">Rejection Reasons</dt>
             <dd><%= photo.reject_labels.to_a.join(", ") %></dd>
-            <dt class="font-semibold">Rejection message</dt>
+            <dt class="font-semibold">Rejection Message</dt>
             <dd>
               <% if photo.reject_message.present? %>
                 <%= nl2br(photo.reject_message) %>
               <% else %>
-                <i>none given</i>
+                <%= value_or_dash(nil) %>
               <% end %>
             </dd>
           </dl>

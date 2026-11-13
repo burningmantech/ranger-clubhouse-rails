@@ -28,14 +28,13 @@
                url: vc_thank_you_cards_path do |f| %>
   <%= hidden_field_tag :year, @year %>
 
-  <fieldset>
-    <legend class="mb-2 text-base font-medium text-heading">Also include people we do not normally mail</legend>
+  <%= f.fieldset "Also Include People We Do Not Normally Mail" do %>
     <%= render "common/checkbox_grid",
                name: "include_statuses[]",
                options: ThankYouCardsReport::OPTIONAL_STATUSES.map { |status| [status, status] },
                selected: @include_statuses,
                id_prefix: "include-status" %>
-  </fieldset>
+  <% end %>
 
   <%= button_row do %>
     <%= f.submit "Apply Filters", variant: :secondary %>
@@ -63,7 +62,7 @@
           <%# inline-block keeps every line of the address flush left of each other
               when the table folds and the column heading becomes an inline label. %>
           <%= t.cell tag.span(lines.any? ? safe_join(lines, tag.br) : "No address on file",
-                              class: class_names("inline-block align-top", "text-base-content/70" => lines.empty?)) %>
+                              class: class_names("inline-block align-top", "text-stone-muted" => lines.empty?)) %>
           <%= t.cell value_or_dash(thank_you_card_country(person.country)) %>
         <% end %>
       <% end %>

@@ -29,18 +29,18 @@
       <%= [application.city.presence, application.state.presence, application.postal_code.presence].compact.join(", ") %><br>
       <%= application.country %>
     <% else %>
-      <span class="text-stone-muted">not stated</span>
+      <%= none_stated %>
     <% end %>
   <% end %>
   <% list.row "Phone" do %>
     <% if application.phone.present? %>
       <%= link_to application.phone, "tel:#{application.phone}" %>
     <% else %>
-      <span class="text-stone-muted">not stated</span>
+      <%= none_stated %>
     <% end %>
   <% end %>
-  <% list.row "Emergency contact" do %>
-    <%= application.emergency_contact.presence || content_tag(:span, "not stated", class: "text-stone-muted") %>
+  <% list.row "Emergency Contact" do %>
+    <%= application.emergency_contact.presence || none_stated %>
   <% end %>
 <% end %>
 

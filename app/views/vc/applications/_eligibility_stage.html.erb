@@ -1,6 +1,6 @@
 <%# locals: (application:) %>
 <%= ui_label_value label_width: "12rem", size: :base do |list| %>
-  <% list.row "BRC events" do %>
+  <% list.row "BRC Events" do %>
     <% if application.all_events.empty? %>
       <%= ui_badge "No event attendance", :error, icon: "ban", icon_type: :solid %>
     <% elsif application.brc_experience_okay? %>
@@ -24,7 +24,7 @@
       <div class="text-stone-muted mt-1">Applicant asked to confirm attendance.</div>
     <% end %>
   <% end %>
-  <% list.row "Experience type", application.experience_label %>
+  <% list.row "Experience Type", application.experience_label %>
   <% list.row "Age" do %>
     <% if application.is_over_18 %>
       <%= ui_badge "Is 18 or older", :success, icon: "circle-check", icon_type: :solid %>
@@ -37,7 +37,7 @@
   <% end %>
 <% end %>
 
-<div class="flex flex-wrap items-center gap-2 mt-3">
+<%= button_row class: "mt-3" do %>
   <%= edit_link edit_details_vc_application_path(application), "Edit Details" %>
   <% unless application.finalized? %>
     <% unless application.status_hold_qualification_issue? %>
@@ -53,4 +53,4 @@
                       data: { turbo_frame: "modal" } %>
     <% end %>
   <% end %>
-</div>
+<% end %>

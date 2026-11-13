@@ -7,7 +7,7 @@
                       alt: "Submitted photo for #{@person_photo.person.callsign}" %>
       </div>
       <div class="flex-1 min-w-0">
-        <%= f.fieldset "Rejection reasons" do %>
+        <%= f.fieldset "Rejection Reasons" do %>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-4">
             <% PersonPhoto::REJECTIONS.each do |key, info| %>
               <%= f.check_box :reject_reasons, { label: info[:label], multiple: true }, key, nil %>

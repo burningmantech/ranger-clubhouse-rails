@@ -1,5 +1,5 @@
 <%= hero_panel icon: "ban", heading_level: :h1, id: "vc-reserved-handles-form-header",
-               description: "Reserved handle ##{@reservation.id}.",
+               description: "Change this reserved handle's type, expiry date, or reason.",
                back_to: ["Reserved Handles", vc_reserved_handles_path] do |panel| %>
   <% panel.title do %>Edit <%= @reservation.handle %><% end %>
 <% end %>

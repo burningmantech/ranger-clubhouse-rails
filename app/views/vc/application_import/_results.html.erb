@@ -35,7 +35,7 @@
   <% end %>
 <% end %>
 
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 my-4">
+<%= ui_stat_row class: "my-4" do %>
   <%= ui_stat_box new_count.to_s, committed ? "Imported" : "New",
                   variant: :success, icon: "circle-check", icon_type: :solid %>
   <%= ui_stat_box import.existing_applications.size.to_s, "Already in Clubhouse",
@@ -46,7 +46,7 @@
   <%= ui_stat_box create_failures.size.to_s, "Creation Failures",
                   variant: create_failures.any? ? :error : :secondary,
                   icon: "circle-exclamation", icon_type: :solid %>
-</div>
+<% end %>
 
 <%= render "failures_table", failures: query_failures, id: "query-failures",
            title: "Salesforce Query Failures",

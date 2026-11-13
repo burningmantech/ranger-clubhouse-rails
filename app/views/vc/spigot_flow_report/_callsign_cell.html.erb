@@ -1,6 +1,10 @@
 <%# Count that opens an anchored popover listing the people who reached the
     milestone. Uses the daisyUI popover-API dropdown so the panel escapes the
-    table's horizontal scroll container. Only rendered for populated cells. %>
+    table's horizontal scroll container. Only rendered for populated cells.
+    Why style=: CSS anchor positioning pairs a trigger with its panel by a
+    dashed-ident name, and each cell needs its own. A name cannot be a utility
+    class, and the pairing is per element, so the two inline declarations
+    carry it -- the one inline style this partial has, and nothing else. %>
 <%= button_action people.size.to_s, :ghost,
                   popovertarget: dom_id,
                   style: "anchor-name: --#{dom_id}",

@@ -2,15 +2,15 @@
 <%= ui_section "Known People", icon: "people-group", icon_type: :solid do %>
   <%= ui_label_value label_width: "8rem", size: :base do |list| %>
     <% list.row "Rangers" do %>
-      <%= application.known_rangers.presence || content_tag(:span, "none stated", class: "text-stone-muted") %>
+      <%= application.known_rangers.presence || none_stated %>
     <% end %>
     <% list.row "Applicants" do %>
-      <%= application.known_applicants.presence || content_tag(:span, "none stated", class: "text-stone-muted") %>
+      <%= application.known_applicants.presence || none_stated %>
     <% end %>
   <% end %>
 <% end %>
 
-<%= ui_section do %>
+<%= ui_section "VC Only Comments", icon: "comments", icon_type: :solid do %>
   <%= render "notes_list", application: application,
              note_type: ProspectiveApplicationNote::TYPE_VC_COMMENT,
              title: "VC Only Comments",
@@ -18,7 +18,7 @@
              explanation: "Comments are shared between VCs, and are NOT sent to the Unified Flagging system." %>
 <% end %>
 
-<%= ui_section do %>
+<%= ui_section "Unified Flagging VC Notes", icon: "flag", icon_type: :solid do %>
   <%= render "notes_list", application: application,
              note_type: ProspectiveApplicationNote::TYPE_VC,
              title: "Unified Flagging VC Notes",

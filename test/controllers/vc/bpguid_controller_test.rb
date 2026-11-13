@@ -459,9 +459,9 @@ class Vc::BpguidControllerTest < ActionDispatch::IntegrationTest
                     "Present", "Use This BPGUID"],
                    first.css("td").map { |td| td.text.squish }
       assert_no_match SUNNY_BPGUID, first.css("td")[2].to_html
-      # A contact with one name keeps it, and no email, phone or BPGUID says so.
+      # A contact with one name keeps it; no email or phone is the house dash, no BPGUID a badge.
       assert_match(/\AStone 9001/, stone.at_css("th[scope=row]").text.squish)
-      assert_equal ["No email addresses", "No phone numbers", "None or Hidden"],
+      assert_equal ["—", "—", "None or Hidden"],
                    stone.css("td").first(3).map { |td| td.text.squish }
       assert stone.css("td")[2].at_css(".badge-error"), "no BPGUID is an error badge"
       # An address or number in both fields, in another case or format, is listed once.

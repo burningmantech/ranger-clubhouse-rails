@@ -22,11 +22,11 @@
 
   <%= ui_section "Address & Phone", icon: "location-dot", icon_type: :solid do %>
     <%= f.text_field :street, label: "Street", width: "w-full sm:w-80", required: true %>
-    <%= f.select :country, CountryStateHelper::COUNTRY_OPTIONS, label: "Country", width: "w-44",
+    <%= f.select :country, CountryStateHelper::COUNTRY_OPTIONS, label: "Country", width: "w-full sm:w-44",
                  data: country_data_attributes %>
     <%= form_row do %>
-      <%= f.text_field :city, label: "City", width: "w-48", required: true %>
-      <%= f.select :state, [], label: "State", width: "w-44", data: state_data_attributes %>
+      <%= f.text_field :city, label: "City", width: "w-full sm:w-48", required: true %>
+      <%= f.select :state, [], label: "State", width: "w-full sm:w-44", data: state_data_attributes %>
       <%= f.text_field :postal_code, label: "Postal Code", width: "w-28", required: true %>
     <% end %>
     <%= f.telephone_field :phone, label: "Phone", width: "w-full sm:w-44", required: true,

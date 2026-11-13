@@ -67,13 +67,13 @@
               <span class="block font-normal text-stone-subtle"><%= value_or_dash(contact.home_address) %></span>
             <% end %>
             <%# Every email address, then every phone number, Salesforce holds: once
-                each, whichever field it came from. %>
-            <% [[contact.emails, "No email addresses"], [contact.phones, "No phone numbers"]].each do |values, none| %>
+                each, whichever field it came from. None at all is the house dash. %>
+            <% [contact.emails, contact.phones].each do |values| %>
               <%= t.cell do %>
                 <% values.each do |value| %>
                   <div class="lg:whitespace-nowrap"><%= value %></div>
                 <% end %>
-                <% if values.empty? %><span class="text-stone-subtle"><%= none %></span><% end %>
+                <%= value_or_dash(nil) if values.empty? %>
               <% end %>
             <% end %>
             <%# Whether there is one to link, not the value: the row's button carries it. %>
@@ -100,13 +100,15 @@
                     confirm = if person.bpguid.present?
                                 confirm_modal(title: "Replace BPGUID",
                                               message: "#{person.callsign}'s BPGUID is #{person.bpguid}. " \
-                                                       "Replace it with #{contact.bpguid}#{", from #{source}" if source.present?}?",
+                                                       "Replace it with #{contact.bpguid}#{", from #{source}" if source.present?}? " \
+                                                       "It can be replaced again here, but only an Admin can remove it.",
                                               confirm_label: "Replace BPGUID", variant: :error, method: :patch)
                               end
                   %>
                   <%# The value travels only in the signed link_token; with method:, Turbo
                       submits the href's query as the PATCH's form fields. %>
-                  <%= button_link "Use This BPGUID", :primary, vc_bpguid_person_path(person),
+                  <%# Secondary: one per row, so no row's button outranks the page's search. %>
+                  <%= button_link "Use This BPGUID", :secondary, vc_bpguid_person_path(person),
                                   params: { link_token: search.link_token(contact) }, method: :patch,
                                   aria: { label: ["Use This BPGUID", contact.name.presence, contact.bpguid].compact.join(" — ") },
                                   data: confirm %>

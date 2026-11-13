@@ -35,7 +35,7 @@
       <%= button_link "Bulk Upload", :secondary, upload_vc_reserved_handles_path,
                       icon: "upload", icon_type: :solid %>
       <% if @expired_count.positive? %>
-        <%= button_link "Delete Expired Handles", :secondary, expire_vc_reserved_handles_path,
+        <%= button_link "Delete Expired Handles", :error, expire_vc_reserved_handles_path,
                         icon: "clock-rotate-left", icon_type: :solid,
                         data: confirm_modal(
                           title: "Delete Expired Handles",
@@ -59,18 +59,16 @@
                  reserved_handle_type_filter_options,
                  label: "Type",
                  selected: @filter_params[:reservation_type],
-                 width: "w-full",
-                 wrapper_class: "flex-1" %>
+                 width: "w-full sm:w-44" %>
     <%= f.select :status,
                  reserved_handle_status_filter_options,
                  label: "Status",
                  selected: @filter_params[:status],
-                 width: "w-full",
-                 wrapper_class: "flex-1" %>
+                 width: "w-full sm:w-44" %>
   <% end %>
 
   <%= button_row do %>
-    <%= f.submit "Apply Filters" %>
+    <%= f.submit "Apply Filters", variant: :secondary %>
   <% end %>
 <% end %>
 

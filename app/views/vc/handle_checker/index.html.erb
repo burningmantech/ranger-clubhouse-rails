@@ -15,7 +15,7 @@
   <% end %>
 
   <%= ui_section "Check a Handle", icon: "magnifying-glass", icon_type: :solid do %>
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
       <%# Cleared once checked, so the handle lives in the history rather than
           being re-submitted every time a rule is toggled. %>
       <%= f.text_field :handle,
@@ -59,18 +59,9 @@
                         variant: :card,
                         open: @form.types_narrowed? || !@form.include_vintage,
                         subtitle: "#{@form.entity_types.count} of #{@checker.entity_types.count} in use" do %>
-        <%# Paired with a hidden field so unchecking submits a value, matching
-            the tap target of the handle type checkboxes below. %>
-        <%= hidden_field_tag "#{scope}[include_vintage]", "0", id: nil %>
-        <%= render layout: "common/checkbox_tile" do %>
-          <%= check_box_tag "#{scope}[include_vintage]", "1", @form.include_vintage,
-                            id: "include-vintage",
-                            class: "#{AppFormBuilder::CHECKBOX_CLASSES} shrink-0" %>
-          <span class="text-sm text-body leading-snug">Always include vintage callsigns</span>
-        <% end %>
-        <p class="mt-2 text-sm text-stone-muted">
-          Vintage callsigns are reported even when their status is switched off.
-        </p>
+        <%# The builder pairs the box with a hidden "0", so unchecking submits a value. %>
+        <%= f.check_box :include_vintage, label: "Always include vintage callsigns",
+                        help_text: "Vintage callsigns are reported even when their status is switched off." %>
 
         <div class="mt-3">
           <%= render "common/checkbox_grid",

@@ -10,9 +10,9 @@
 <% end %>
 
 <%= ui_label_value label_width: "12rem", size: :base do |list| %>
-  <% list.row "Approved callsign" do %>
+  <% list.row "Approved Callsign" do %>
     <% if application.approved_handle.present? %>
-      <span class="font-bold text-success"><%= application.approved_handle %></span>
+      <span class="font-bold"><%= application.approved_handle %></span>
       <%= edit_link dialog_vc_application_path(application, dialog: "edit_approved_handle"), "Edit Callsign",
                     data: { turbo_frame: "modal" }, class: "ms-2" %>
     <% else %>
@@ -21,7 +21,7 @@
                       data: { turbo_frame: "modal" }, class: "ms-2" %>
     <% end %>
   <% end %>
-  <% list.row "Submitted handles" do %>
+  <% list.row "Submitted Handles" do %>
     <% if application.handle_list_issues.any? %>
       <%= ui_callout_box :warning do %>
         <strong>The handle list needs reformatting.</strong>
@@ -43,7 +43,7 @@
       <% end %>
     <% end %>
     <% if application.screened_handles.blank? %>
-      <span class="text-error font-semibold">none submitted</span>
+      <%= ui_empty_state "No handles were submitted." %>
     <% else %>
       <ul class="space-y-2">
         <% application.screened_handles.each do |screened| %>
@@ -78,10 +78,10 @@
     <% end %>
     <%= dropdown_menu "Handle Actions", class: "mt-3 block", menu_class: "w-64" do %>
       <% if application.handles.present? %>
-        <%= dropdown_item "Reject handle submissions…", dialog_vc_application_path(application, dialog: "more_handles"),
+        <%= dropdown_item "Reject Handle Submissions…", dialog_vc_application_path(application, dialog: "more_handles"),
                           data: { turbo_frame: "modal" } %>
       <% end %>
-      <%= dropdown_item "Edit handles list…", dialog_vc_application_path(application, dialog: "edit_handles"),
+      <%= dropdown_item "Edit Handles List…", dialog_vc_application_path(application, dialog: "edit_handles"),
                         data: { turbo_frame: "modal" } %>
       <% if application.handles.present? %>
         <%= dropdown_item "Extract handles with AI…", extract_handles_vc_application_path(application),
@@ -89,9 +89,9 @@
       <% end %>
     <% end %>
   <% end %>
-  <% list.row "Rejected handles" do %>
+  <% list.row "Rejected Handles" do %>
     <% if application.rejected_handles.blank? %>
-      <span class="text-stone-muted">No handle submissions have been rejected.</span>
+      <%= ui_empty_state "No handle submissions have been rejected." %>
     <% else %>
       <ul class="space-y-3">
         <% application.rejected_handles.each do |rejection| %>
@@ -102,11 +102,11 @@
             </div>
             <div><%= Array(rejection["handles"]).join(", ") %></div>
             <% if rejection["message"].present? %>
-              <%= ui_disclosure "Rejection Message", summary_class: "text-sm text-stone-muted" do %>
+              <%= ui_disclosure "Rejection Message", summary_class: "text-stone-muted" do %>
                 <%= simple_format rejection["message"] %>
               <% end %>
             <% else %>
-              <div class="text-sm text-stone-muted">No rejection message was given.</div>
+              <%= ui_empty_state "No rejection message was given." %>
             <% end %>
           </li>
         <% end %>

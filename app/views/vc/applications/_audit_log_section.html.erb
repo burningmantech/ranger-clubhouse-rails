@@ -14,7 +14,7 @@
       <% application.audit_logs.sort_by(&:created_at).reverse.each do |log| %>
         <%= t.row do %>
           <%= t.cell datetime_format(log.created_at, year: true) %>
-          <%= t.cell log.person&.callsign || "- unknown -" %>
+          <%= t.cell log.person&.callsign || value_or_dash(nil) %>
           <%= t.cell content_tag(:strong, log.action) %>
           <%= t.cell do %>
             <% if log.data.is_a?(Hash) %>
@@ -26,12 +26,12 @@
                     <strong><%= ProspectiveApplication::COLUMN_LABELS[column] || column %>:</strong>
                     <% if column == "assigned_person_id" && (meta = log.meta(assigned_callsigns)) %>
                       <% from, to = meta[:assigned_person] %>
-                      <%= from || content_tag(:em, "blank") %> &rarr; <%= to || content_tag(:em, "blank") %>
+                      <%= value_or_dash(from) %> &rarr; <%= value_or_dash(to) %>
                     <% elsif change.is_a?(Array) %>
                       <% from, to = change %>
                       <% from = ProspectiveApplication::STATUS_LABELS[from] || from if column == "status" %>
                       <% to = ProspectiveApplication::STATUS_LABELS[to] || to if column == "status" %>
-                      <%= from.presence || content_tag(:em, "blank") %> &rarr; <%= to.presence || content_tag(:em, "blank") %>
+                      <%= value_or_dash(from) %> &rarr; <%= value_or_dash(to) %>
                     <% else %>
                       <%= change %>
                     <% end %>

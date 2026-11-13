@@ -4,14 +4,16 @@
     instead of pushing the page sideways. %>
 <article class="grow basis-xl min-w-0">
   <%= ui_subheading name %>
-  <p class="mb-3">
-    <%= handle_checker_result_summary(conflicts) %>
-    <% if (note = handle_checker_overflow_note(conflicts)) %>
-      <span class="text-sm text-stone-muted"><%= note %></span>
-    <% end %>
-  </p>
+  <% if conflicts.empty? %>
+    <%= ui_empty_state handle_checker_result_summary(conflicts), class: "mb-3" %>
+  <% else %>
+    <p class="mb-3">
+      <%= handle_checker_result_summary(conflicts) %>
+      <% if (note = handle_checker_overflow_note(conflicts)) %>
+        <span class="text-sm text-stone-muted"><%= note %></span>
+      <% end %>
+    </p>
 
-  <% if conflicts.any? %>
     <%# Not responsive: a card per conflict would be a hundred labelled cards for
         one handle, and the rule cell spans its run of rows, which per-row cards
         cannot show. On a phone the ledger scrolls inside its own box. %>
@@ -37,7 +39,7 @@
             <%= t.cell handle_checker_priority_text(conflict.priority) %>
             <% if rowspan %>
               <%= t.cell handle_checker_rule_name(conflict.rule_id), rowspan:,
-                         class: "text-sm text-stone-muted border-s border-base-300" %>
+                         class: "text-stone-muted border-s border-base-300" %>
             <% end %>
           <% end %>
         <% end %>

@@ -471,7 +471,7 @@ class Vc::UnifiedFlaggingControllerTest < ActionDispatch::IntegrationTest
     get vc_unified_flagging_path(person: @flagged.id)
 
     labels = Intake::TEAM_ORDER.map { |team| IntakeHelper::TEAM_META.dig(team, :label) }
-    headings = css_select("aside.review-pane h4").map { |node| node.text.squish } & labels
+    headings = css_select("aside.review-pane h3").map { |node| node.text.squish } & labels
 
     assert_includes headings, "Mentors", "the fixture person needs a Mentors section for the order to show"
     assert_equal labels & headings, headings

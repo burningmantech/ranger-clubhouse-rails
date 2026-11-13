@@ -38,7 +38,7 @@
   <% end %>
 <% end %>
 
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 my-4">
+<%= ui_stat_row class: "my-4" do %>
   <% if committed %>
     <%= ui_stat_box summary[:created].to_s, "Accounts Created",
                     variant: summary[:created].positive? ? :success : :secondary,
@@ -59,7 +59,7 @@
                   icon: "circle-exclamation", icon_type: :solid %>
   <%= ui_stat_box summary[:total].to_s, "Applications Checked",
                   variant: :secondary, icon: "list-check", icon_type: :solid %>
-</div>
+<% end %>
 
 <% create_prospectives_groups(results).each do |group| %>
   <%= render "group", group: group %>

@@ -121,12 +121,12 @@ module Vc::CreateProspectivesHelper
 
   # What a commit will actually do, given the settings in force.
   def create_prospectives_confirm_message(send_welcome_email:, sf_writebacks:)
-    message = +"This creates a Clubhouse account for every application listed as ready, and marks each " \
-               "application Account Created. Callsigns listed for reassignment are taken from their " \
+    message = +"Create a Clubhouse account for every application listed as ready? Each application is " \
+               "marked Account Created, and callsigns listed for reassignment are taken from their " \
                "current holders. "
     message << "Each new prospective is sent a welcome email. " if send_welcome_email
     message << "Each application's Salesforce record is updated. " if sf_writebacks
-    message << "Preview first if you have not already."
+    message << "This cannot be undone."
     message
   end
 end

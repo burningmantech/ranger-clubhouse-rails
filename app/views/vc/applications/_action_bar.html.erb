@@ -17,14 +17,14 @@
 
     <%= dropdown_menu "Assign", class: "dropdown-end" do %>
       <% unless application.assigned_person_id == current_user.id %>
-        <%= dropdown_item "Assign to self",
+        <%= dropdown_item "Assign to Self",
                           vc_application_path(application, prospective_application: { assigned_person_id: current_user.id }),
                           data: { turbo_method: :patch } %>
       <% end %>
       <%= dropdown_item "Assign to VC…", dialog_vc_application_path(application, dialog: "assign"),
                         data: { turbo_frame: "modal" } %>
       <% if application.assigned_person_id %>
-        <%= dropdown_item "Clear assignment",
+        <%= dropdown_item "Clear Assignment",
                           vc_application_path(application, prospective_application: { assigned_person_id: "" }),
                           data: { turbo_method: :patch } %>
       <% end %>
