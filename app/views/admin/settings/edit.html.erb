@@ -16,7 +16,7 @@
         <%= f.collection_radio_buttons :value,
                                        Admin::SettingsController::BOOL_OPTIONS,
                                        :last, :first,
-                                       layout: :horizontal,
+                                       label: "Value", layout: :horizontal,
                                        wrapper_class: "w-full"
         %>
       <% when Setting::TYPE_DATETIME %>
@@ -35,7 +35,7 @@
         <% if @setting.options.present? %>
           <%= f.select :value, @setting.options, label: "Select an Option" %>
         <% else %>
-          <%= f.text_field :value, maxlength: 250 %>
+          <%= f.text_field :value, label: "Value", maxlength: 250 %>
         <% end %>
       <% else %>
         <%= ui_callout_box :error do %>

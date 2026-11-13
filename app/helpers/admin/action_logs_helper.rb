@@ -56,8 +56,8 @@ module Admin::ActionLogsHelper
 
   # The callsign as every admin log draws it (LinkHelper#person_display_link):
   # a table link for readers who can open person pages, plain text for the
-  # rest, "Deleted #id" for a person removed since, and "-" for none.
-  def action_log_person_label(person, person_id) = person_display_link(person, person_id, blank: "-")
+  # rest, "Deleted #id" for a person removed since, and "—" for none.
+  def action_log_person_label(person, person_id) = person_display_link(person, person_id)
 
   def action_log_ip(row)
     row.ip.presence || "server"
@@ -128,7 +128,7 @@ module Admin::ActionLogsHelper
 
   def action_log_message_cell(row)
     message = row.message.to_s
-    return "-" if message.blank?
+    return "—" if message.blank?
     return message if message.length <= ACTION_LOG_MESSAGE_TRUNCATE_LENGTH
 
     dom_id = "action-log-message-#{row.id}"

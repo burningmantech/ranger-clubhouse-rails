@@ -25,7 +25,7 @@
                  clear_url: admin_passkeys_path,
                  count: "Showing #{@passkeys.size} of #{pluralize(@pagy.count, "passkey")}",
                  url: admin_passkeys_path, model: @form, scope: PasskeyFilterForm::PARAM_SCOPE do |f| %>
-    <%= f.select :added_by, PasskeyFilterForm::ADDED_BY_OPTIONS, { label: "Added By" }, { class: "w-full sm:w-48" } %>
+    <%= f.select :added_by, PasskeyFilterForm::ADDED_BY_OPTIONS, { label: "Added By", width: "w-full sm:w-48" } %>
     <%= button_row class: "mt-4" do %>
       <%= f.submit "Apply Filters" %>
     <% end %>
@@ -55,7 +55,7 @@
               <%= t.cell passkey.person.status %>
             <% else %>
               <%= t.row_header "Account deleted" %>
-              <%= t.cell "" %>
+              <%= t.cell "—" %>
             <% end %>
             <%= t.cell passkey.nickname %>
             <%= t.cell datetime_format(passkey.created_at) %>

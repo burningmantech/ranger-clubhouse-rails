@@ -140,7 +140,7 @@ class Admin::ErrorLogsControllerTest < ActionDispatch::IntegrationTest
     get admin_error_logs_path
 
     assert_response :success
-    assert_select "td", text: "-", count: 1
+    assert_select "td", text: "—", count: 1
   end
 
   test "a record with no ip reads as server rather than a dash" do

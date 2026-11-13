@@ -102,15 +102,15 @@
           <%= f.submit "Update Incoming Address",
                        data: { turbo_confirm: confirm_modal_dialog(
                          title: "Update Incoming Address",
-                         message: "Twilio will send every text a Ranger sends to the address entered, starting with the next one, " \
+                         message: "Send every text a Ranger sends to the address entered? Twilio starts with the next one, " \
                                   "with no fallback address. The server that gets them now, Clubhouse 2 included, " \
-                                  "stops getting STOP, START and HELP replies.",
+                                  "stops getting STOP, START and HELP replies. To undo it, update the address back.",
                          confirm_label: "Update Incoming Address"
                        ) } %>
         <% end %>
       <% end %>
     <% else %>
-      <p class="mt-4"><%= lock %></p>
+      <%= ui_callout_box :info, class: "mt-4" do %><%= lock %><% end %>
     <% end %>
 
     <div class="mt-3 flex flex-wrap items-center gap-3">

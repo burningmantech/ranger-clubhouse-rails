@@ -43,13 +43,13 @@ module Admin::RequestLogsHelper
   def request_log_live_cap = REQUEST_LOG_LIVE_CAP
 
   def request_log_person_label(row)
-    person_display_link(row.person, row.person_id, blank: "-")
+    person_display_link(row.person, row.person_id)
   end
 
   # The address alone, with the whole forwarded-for chain saved for the detail
   # row when an older entry carries one.
   def request_log_ip(row)
-    row.client_ip || "-"
+    row.client_ip || "—"
   end
 
   # The status number carries the meaning; the colour only repeats it, so a

@@ -21,13 +21,13 @@
 <% end %>
 
 <%= ui_form(@art_form, art_admin_permissions_path) do |f| %>
-  <%= f.fieldset "Training position", icon: "graduation-cap", icon_type: :solid do %>
+  <%= f.fieldset "Training Position", icon: "graduation-cap", icon_type: :solid do %>
     <%= f.collection_select :position_id, @art_positions, :id, :title,
                             { label: "Position", prompt: "Select a training position", required: true } %>
   <% end %>
 
   <%= button_row do %>
-    <%= f.submit "Create Permissions" %>
+    <%= f.submit "Save Permissions" %>
     <%= cancel_link admin_permissions_path %>
   <% end %>
 <% end %>

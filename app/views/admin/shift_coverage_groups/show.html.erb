@@ -2,6 +2,7 @@
 
 <%= hero_panel icon: "table-cells", heading_level: :h1, id: "shift-coverage-group-header",
                title: @group.title,
+               description: "Set the posts this shift type shows on the Shift Coverage report, in order.",
                back_to: ["Shift Coverage Management", admin_shift_coverage_groups_path] %>
 
 <%= ui_section "Shift Type Details", edit_link: edit_admin_shift_coverage_group_path(@group) do %>

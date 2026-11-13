@@ -4,7 +4,7 @@
 <% granted = teams.any? || positions.any? %>
 
 <%= t.row do %>
-  <%= t.cell permission.id, right: true, class: "font-mono text-sm whitespace-nowrap" %>
+  <%= t.cell permission.id, right: true, class: "whitespace-nowrap" %>
   <%= t.row_header do %>
     <%= permission.title %>
     <% if permission.new_user_eligible? %>
@@ -34,11 +34,11 @@
   <%= t.detail_row id: detail_id do %>
     <div class="flex flex-col lg:flex-row gap-4 py-2">
       <div class="w-full lg:w-1/2">
-        <div class="mb-1 text-sm font-semibold text-heading">Teams</div>
+        <div class="mb-1 font-semibold text-heading">Teams</div>
         <%= value_list teams.map(&:title) %>
       </div>
       <div class="w-full lg:w-1/2">
-        <div class="mb-1 text-sm font-semibold text-heading">Positions</div>
+        <div class="mb-1 font-semibold text-heading">Positions</div>
         <%= value_list positions.map(&:title) %>
       </div>
     </div>

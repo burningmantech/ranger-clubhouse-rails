@@ -77,13 +77,13 @@ module Admin::SmsManagementHelper
   # A webhook address as the page shows it: scheme, host, port and path. A
   # user name, password or query on it stays off the page.
   def sms_url_shown(url)
-    return "(not set)" if url.blank?
+    return "—" if url.blank?
 
     uri = URI.parse(url)
     port = ":#{uri.port}" unless uri.port == uri.default_port
     "#{uri.scheme}://#{uri.host}#{port}#{uri.path}"
   rescue URI::InvalidURIError
-    "(unreadable)"
+    "Unreadable"
   end
 
   # This server's address for the texts Rangers send: the one their signatures

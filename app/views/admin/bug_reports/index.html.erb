@@ -33,14 +33,14 @@
                                       class: "justify-start px-1 text-left normal-case" %>
             <% end %>
             <%= t.cell class: log_text_class("align-middle") do %>
-              <%= person_display_link(row.person, row.person_id, blank: "-") %>
+              <%= person_display_link(row.person, row.person_id) %>
             <% end %>
             <%# Kept to one line: a report can run to paragraphs. The whole of it
                 is in the detail row below. %>
             <%= t.cell class: "align-middle max-w-xs" do %>
               <div class="<%= log_text_class("truncate") %>"><%= row.description %></div>
             <% end %>
-            <%= t.cell row.browser || "-", class: log_text_class("align-middle") %>
+            <%= t.cell value_or_dash(row.browser), class: log_text_class("align-middle") %>
           <% end %>
 
           <%# Below the fold each row becomes its own card, so the opened detail
@@ -55,13 +55,13 @@
                   said it was. %>
               <%= ui_label_value label_width: "8rem" do |list| %>
                 <%= list.row "Page" do %>
-                  <span class="break-all"><%= row.url.presence || "-" %></span>
+                  <span class="break-all"><%= value_or_dash(row.url) %></span>
                 <% end %>
                 <%= list.row "Address" do %>
-                  <span class="break-all"><%= row.ip.presence || "-" %></span>
+                  <span class="break-all"><%= value_or_dash(row.ip) %></span>
                 <% end %>
                 <%= list.row "Browser" do %>
-                  <span class="break-all"><%= row.user_agent.presence || "-" %></span>
+                  <span class="break-all"><%= value_or_dash(row.user_agent) %></span>
                 <% end %>
               <% end %>
             </div>
@@ -70,7 +70,7 @@
       <% end %>
     <% end %>
 
-    <div class="mt-4">
+    <%= button_row class: "mt-4" do %>
       <%= delete_button admin_purge_bug_reports_path, "Delete All Bug Reports", size: "sm",
                         confirm_modal: {
                           title: "Delete All Bug Reports",
@@ -79,6 +79,6 @@
                           variant: :error,
                           method: "delete"
                         } %>
-    </div>
+    <% end %>
   <% end %>
 <% end %>

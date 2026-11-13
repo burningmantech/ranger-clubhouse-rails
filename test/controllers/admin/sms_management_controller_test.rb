@@ -725,7 +725,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
       assert_select "dt:contains('Incoming Texts') + dd",
                     text: %r{Could not be read.*/Services/MG…3210 was not found \(Twilio error 20404\)}m
       assert_select "form[action=?]", admin_sms_management_incoming_path, 0
-      assert_select "turbo-frame#sms-twilio p", text: /once TwilioMessagingServiceId names a Messaging Service Twilio can read/
+      assert_select "turbo-frame#sms-twilio .box-info", text: /once TwilioMessagingServiceId names a Messaging Service Twilio can read/
       assert_not_includes response.body, unknown
 
       patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
@@ -753,7 +753,7 @@ class Admin::SmsManagementControllerTest < ActionDispatch::IntegrationTest
         assert_response :success
         assert_select "dt:contains('Incoming Texts') + dd", text: /Could not be read.*#{Regexp.escape(problem)}/m
         assert_select "form[action=?]", admin_sms_management_incoming_path, 0
-        assert_select "turbo-frame#sms-twilio p", text: /once TwilioMessagingServiceId names a Messaging Service Twilio can read/
+        assert_select "turbo-frame#sms-twilio .box-info", text: /once TwilioMessagingServiceId names a Messaging Service Twilio can read/
 
         patch admin_sms_management_incoming_path, params: { twilio_incoming: { url: "https://clubhouse.example.org/in" } }
       end
