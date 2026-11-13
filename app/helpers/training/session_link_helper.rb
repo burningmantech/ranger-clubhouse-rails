@@ -40,7 +40,7 @@ module Training::SessionLinkHelper
 
     safe_join [
       stamp,
-      tag.span(slot.description.presence || "(no description)", class: "text-stone-muted"),
+      tag.span(slot.description.presence || "—", class: "text-stone-muted"),
       (capture(&block) if block)
     ].compact
   end

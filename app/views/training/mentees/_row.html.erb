@@ -31,7 +31,8 @@
                           confirm_modal: { title: "Revoke Mentee Positions",
                                            method: :delete,
                                            confirm_label: "Revoke Positions",
-                                           message: "Revoke every #{@training.title} mentee position from #{mentee.callsign}?" } %>
+                                           message: "Revoke every #{@training.title} mentee position from #{mentee.callsign}? " \
+                                                    "You can restore them from this row until the page is reloaded." } %>
       <% end %>
     <% end %>
   <% end %>

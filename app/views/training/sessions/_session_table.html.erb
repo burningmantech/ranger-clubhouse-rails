@@ -21,7 +21,7 @@
             <div>
               <%= link_to training_session_time(slot),
                           training_session_path(training_slug, slot.id),
-                          class: "font-medium" %>
+                          class: class_names(LinkHelper::TABLE_LINK_CLASSES, "font-medium") %>
               <% if slot.max.positive? && slot.signed_up >= slot.max %>
                 <%= ui_badge "FULL", :error, icon: "circle-dot", icon_type: :regular %>
               <% end %>
@@ -48,13 +48,15 @@
                             person_display_link(trainer.person, trainer.person.id) + (trainer.is_lead ? " (lead)" : "")
                           }, ", ") %>
                     <% else %>
-                      <span class="text-stone-muted">No trainers signed up yet.</span>
+                      —
                     <% end %>
                   </div>
                 <% end %>
               </div>
             <% else %>
-              <p class="text-error font-semibold">No trainer slots were found.</p>
+              <p class="text-error font-semibold">
+                <%= fa_icon "triangle-exclamation", :solid, class: "icon-error", end: 1 %>No trainer slots were found.
+              </p>
               <p><%= render "training/sessions/trainer_slot_rule" %></p>
             <% end %>
           <% end %>

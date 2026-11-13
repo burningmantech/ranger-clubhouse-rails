@@ -2,7 +2,7 @@
 <% slot = @training_session.slot %>
 <% session_title = "#{slot.begins_year} #{@training.title} — #{slot.description}" %>
 <% session_when = training_session_time(slot) %>
-<% doc_label = "#{@training.title} · Trainer's report" %>
+<% doc_label = "#{@training.title} · Trainer's Report" %>
 <% signed_up = @trainee_bands.sum { |_label, trainees| trainees.size } %>
 <% tile_labels = { "Prospectives" => "Prospective" } %>
 
@@ -19,13 +19,13 @@
       @bottom-left {
         content: "<%= page_footer %>";
         font-size: 7.5pt;
-        color: #444;
+        color: var(--color-body-subtle);
         font-family: "Atkinson Hyperlegible", sans-serif;
       }
       @bottom-right {
         content: "Page " counter(page) " of " counter(pages);
         font-size: 7.5pt;
-        color: #444;
+        color: var(--color-body-subtle);
         font-family: "Atkinson Hyperlegible", sans-serif;
       }
     }
@@ -52,7 +52,7 @@
   </div>
 
   <div class="report-stats">
-    <div class="report-stat"><b><%= signed_up %><% if slot.max.positive? %><span class="report-stat-max">/<%= slot.max %></span><% end %></b> <span class="report-stat-label">Signed up</span></div>
+    <div class="report-stat"><b><%= signed_up %><% if slot.max.positive? %><span class="report-stat-max">/<%= slot.max %></span><% end %></b> <span class="report-stat-label">Signed Up</span></div>
     <% @trainee_bands.each do |band_label, trainees| %>
       <div class="report-stat"><b><%= trainees.size %></b> <span class="report-stat-label"><%= tile_labels.fetch(band_label, band_label) %></span></div>
     <% end %>
@@ -91,7 +91,7 @@
     <thead>
     <tr>
       <th class="report-num"><span class="sr-only">Row</span></th>
-      <th class="report-pass">✔&#xFE0E;</th>
+      <th class="report-pass"><span aria-hidden="true">✔&#xFE0E;</span><span class="sr-only">Passed</span></th>
       <th>Callsign</th>
       <th>Years</th>
       <th>Teams</th>
@@ -157,7 +157,7 @@
   <% legend = @team_legend.select { |_title, short_title| short_title.present? } %>
   <% if legend.any? %>
     <div class="report-legend">
-      <div class="report-legend-title">Teams legend</div>
+      <div class="report-legend-title">Teams Legend</div>
       <div class="report-legend-cols">
         <% legend.each do |title, short_title| %>
           <div><b><%= short_title %></b> <%= title %></div>

@@ -27,7 +27,8 @@
   <%= ui_stat_box signed_up.to_s, "Signed Up Again", variant: signed_up.positive? ? :warning : :secondary,
                   icon: "calendar", icon_type: :solid %>
   <% if @is_current_year %>
-    <%= ui_stat_box rows.count(&:on_shift?).to_s, "On Shift Now", variant: :success,
+    <% on_shift = rows.count(&:on_shift?) %>
+    <%= ui_stat_box on_shift.to_s, "On Shift Now", variant: on_shift.positive? ? :success : :secondary,
                     icon: "person-walking", icon_type: :solid %>
   <% end %>
 <% end %>

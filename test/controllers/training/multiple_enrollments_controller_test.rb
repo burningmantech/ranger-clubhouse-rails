@@ -138,7 +138,7 @@ class Training::MultipleEnrollmentsControllerTest < ActionDispatch::IntegrationT
 
     assert_response :success
     assert_select "th", text: "TestRanger"
-    assert_match "(no description)", response.body
+    assert_no_match "(no description)", response.body
   end
 
   # --- sections --------------------------------------------------------------

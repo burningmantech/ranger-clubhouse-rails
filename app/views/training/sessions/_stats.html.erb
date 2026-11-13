@@ -7,7 +7,7 @@
 
 <%= ui_stat_row do %>
   <%= ui_stat_box "#{session.trainees.size} of #{slot.max}",
-                  session.full? ? "Signed up — FULL" : "Signed up",
+                  session.full? ? "Signed Up — Full" : "Signed Up",
                   variant: session.full? ? :warning : :secondary %>
   <% session.status_counts.each do |status, count| %>
     <%= trainee_status_stat_box status, count %>

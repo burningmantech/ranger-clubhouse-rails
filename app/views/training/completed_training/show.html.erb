@@ -6,7 +6,7 @@
     <%= training_session_time slot %>
   <% end %>
   <% panel.description do %>
-    <%= slot.description %> · Completed <%= @training.title %>
+    Who passed <%= @training.title %> at the <%= slot.description %> session, and which trainers attended.
   <% end %>
   <% panel.back_to do %>
     <%= back_to "All #{@year} Sessions",

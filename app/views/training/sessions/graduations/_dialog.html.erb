@@ -75,7 +75,7 @@
       <%= modal_form_footer submit: "Graduate Selected Trainees" %>
     <% end %>
   <% else %>
-    <p class="text-error font-semibold mb-3">No eligible candidates were found.</p>
+    <%= ui_empty_state "No eligible candidates were found.", icon: "graduation-cap", icon_type: :solid %>
     <%= button_row do %>
       <%= modal_close_button "Close" %>
     <% end %>

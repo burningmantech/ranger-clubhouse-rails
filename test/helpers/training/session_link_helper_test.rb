@@ -32,7 +32,7 @@ class Training::SessionLinkHelperTest < ActionView::TestCase
   test "falls back when a slot has no description" do
     # Descriptions are NULL on real slots.
     [nil, ""].each do |empty|
-      assert_includes training_session_link(slot(description: empty)), "(no description)"
+      assert_includes training_session_link(slot(description: empty)), "—"
     end
   end
 

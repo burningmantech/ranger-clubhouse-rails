@@ -53,7 +53,7 @@
       <% end %>
     <% end %>
   <% else %>
-    <p class="text-stone-muted italic mb-2">No notes yet.</p>
+    <%= ui_empty_state "No notes yet.", icon: "note-sticky", icon_type: :regular %>
   <% end %>
 
   <%= ui_form(score_form, training_session_score_path(training_slug, session.slot.id, person.id)) do |f| %>

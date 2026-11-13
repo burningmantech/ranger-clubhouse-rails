@@ -124,7 +124,7 @@
                             class: LinkHelper::TABLE_LINK_CLASSES %>
               <% end %>
               <%= t.cell do %>
-                <%= shift.mentees.any? ? shift.mentees.map(&:callsign).to_sentence : "None yet" %>
+                <%= shift.mentees.any? ? shift.mentees.map(&:callsign).to_sentence : "—" %>
                 <% if shift.slot.max.to_i.positive? %>(<%= shift.mentees.size %> of <%= shift.slot.max %>)<% end %>
               <% end %>
               <%= t.cell do %>
@@ -133,7 +133,7 @@
                 <% elsif shift.needs_mentor? %>
                   <%= ui_badge "No mentor signed up", :warning, icon: "triangle-exclamation", icon_type: :solid %>
                 <% else %>
-                  None yet
+                  —
                 <% end %>
               <% end %>
             <% end %>

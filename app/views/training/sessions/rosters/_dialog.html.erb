@@ -16,30 +16,21 @@
   <% else %>
     <%= form_with url: training_session_new_roster_path(training_slug, session.slot.id),
                   method: :get, builder: AppFormBuilder,
-                  data: { turbo_frame: "modal" } do %>
+                  data: { turbo_frame: "modal" } do |f| %>
       <%= hidden_field_tag :kind, kind %>
       <% if adding_trainer && session.trainer_groups.size > 1 %>
-        <div class="mb-2">
-          <label for="roster-trainer-slot" class="font-medium block mb-1">Trainer position</label>
-          <%= select_tag :trainer_slot_id,
-                         options_for_select(
-                           session.trainer_groups.map { |g| [g.position_title, g.slot.id] },
-                           trainer_slot_id
-                         ),
-                         id: "roster-trainer-slot", class: AppFormBuilder::SELECT_CLASSES %>
-        </div>
+        <%= f.select :trainer_slot_id,
+                     options_for_select(session.trainer_groups.map { |g| [g.position_title, g.slot.id] },
+                                        trainer_slot_id),
+                     { label: "Trainer Position" } %>
       <% elsif adding_trainer %>
         <%= hidden_field_tag :trainer_slot_id, trainer_slot_id %>
       <% end %>
 
+      <%# The search button shares the field's row: a toolbar, not a button_row. %>
       <div class="flex flex-wrap items-end gap-2 mb-3">
-        <div class="grow">
-          <label for="roster-search" class="font-medium block mb-1">
-            Callsign, name, or email
-          </label>
-          <%= text_field_tag :q, query, id: "roster-search", autofocus: true,
-                             class: "#{AppFormBuilder::INPUT_CLASSES} w-full" %>
-        </div>
+        <%= f.text_field :q, label: "Callsign, Name, or Email", value: query, autofocus: true,
+                             width: "w-full", wrapper_class: "grow" %>
         <%= submit_button "Search" %>
       </div>
     <% end %>
@@ -72,7 +63,7 @@
                     <% if adding_trainer %>
                       <%= hidden_field_tag :trainer_slot_id, trainer_slot_id, id: nil %>
                     <% end %>
-                    <%= submit_button "Add #{found.callsign}" %>
+                    <%= submit_button "Add #{found.callsign}", variant: :secondary %>
                   <% end %>
                 <% end %>
               <% end %>
@@ -80,7 +71,7 @@
           <% end %>
         <% end %>
       <% else %>
-        <p class="text-error font-semibold">No one matched "<%= query %>".</p>
+        <%= ui_empty_state "No one matched \"#{query}\".", icon: "magnifying-glass", icon_type: :solid %>
       <% end %>
     <% elsif query.present? %>
       <p class="text-stone-muted">Type at least 2 characters and search.</p>
