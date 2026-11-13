@@ -12,51 +12,27 @@
                                                     anchor: "provisions")
 %>
 <%= hero_panel icon: "ticket", heading_level: :h1, id: "person-tickets-provisions-header",
+               description: "Access documents, provisions, and ticketing progress for #{@person.callsign}.",
                back_to: [@person.callsign, person_path(@person)] do |panel| %>
   <% panel.title do %>
     Tickets &amp; Provisions &mdash; <%= @person.callsign %>
   <% end %>
 <% end %>
 
-<div class="flex justify-start gap-2">
-  <div class="border rounded px-2 py-1">
-    <div class="font-semibold">
-      Ticketing Period
-    </div>
-    <div>
-      <%= @ticketing_period.presence&.titleize || "Unknown" %>
-    </div>
-  </div>
-  <div class="border rounded px-2 py-1">
-    <div class="font-semibold">
-      Last visited Tickets & Stuff
-    </div>
-    <div>
-      <%= @person_event.ticketing_last_visited_at ? datetime_format(@person_event.ticketing_last_visited_at, year: true) : "Not yet" %>
-    </div>
-  </div>
-  <div class="border rounded px-2 py-1">
-    <div class="font-semibold">
-      Started ticketing
-    </div>
-    <div>
-      <%= @person_event.ticketing_started_at ? datetime_format(@person_event.ticketing_started_at, year: true) : "Not yet" %>
-    </div>
-  </div>
-  <div class="border rounded px-2 py-1">
-    <div class="font-semibold">
-      Finished ticketing
-    </div>
-    <div>
-      <%= @person_event.ticketing_finished_at ? datetime_format(@person_event.ticketing_finished_at, year: true) : "Not yet" %>
-    </div>
-  </div>
-</div>
-<div class="my-4">
+<%= ui_stat_row do %>
+  <%= ui_stat_box @ticketing_period.presence&.titleize || "Unknown", "Ticketing Period", size: :sm %>
+  <%= ui_stat_box (@person_event.ticketing_last_visited_at ? datetime_format(@person_event.ticketing_last_visited_at, year: true) : "Not yet"),
+                  "Last Visited Tickets & Stuff", size: :sm %>
+  <%= ui_stat_box (@person_event.ticketing_started_at ? datetime_format(@person_event.ticketing_started_at, year: true) : "Not yet"),
+                  "Started Ticketing", size: :sm %>
+  <%= ui_stat_box (@person_event.ticketing_finished_at ? datetime_format(@person_event.ticketing_finished_at, year: true) : "Not yet"),
+                  "Finished Ticketing", size: :sm %>
+<% end %>
+<%= button_row class: "my-4" do %>
   <%= button_link "View Their Tickets & Stuff Page", :secondary,
                   person_tickets_provisions_dashboard_path(@person),
                   icon: "eye", icon_type: :solid %>
-</div>
+<% end %>
 
 <%= ui_section "Access Documents", icon: "ticket", icon_type: :solid, id: "access-documents" do %>
   <div class="me-muted">
@@ -105,7 +81,7 @@
     <%= button_link "Add Access Document", :primary,
                     new_person_access_document_path(@person),
                     icon: "plus", icon_type: :solid %>
-    <%= button_link (@showing_all_documents ? "Show current documents" : "Show all documents"), :secondary,
+    <%= button_link (@showing_all_documents ? "Show Current Documents" : "Show All Documents"), :secondary,
                     document_toggle %>
   <% end %>
 <% end %>

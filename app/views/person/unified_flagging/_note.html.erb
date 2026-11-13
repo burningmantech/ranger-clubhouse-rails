@@ -11,7 +11,7 @@
     <% if note.person_source %>
       <%= note.person_source.callsign %>
     <% else %>
-      <i>*imported*</i>
+      imported
     <% end %>
   </div>
   <div class="text-body"><%= simple_format(note.note) %></div>

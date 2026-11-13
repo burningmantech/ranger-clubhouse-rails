@@ -9,7 +9,7 @@
                     id: "position-#{item.id}",
                     class: AppFormBuilder::CHECKBOX_CLASSES,
                     data: { action: "membership-editor#positionToggle" } %>
-  <span class="flex flex-wrap items-center gap-2 text-sm">
+  <span class="flex flex-wrap items-center gap-2">
     <label for="<%= "position-#{item.id}" %>" class="inline-flex items-center min-h-9 min-w-9 font-medium text-heading cursor-pointer"><%= item.title %></label>
     <% if item.all_rangers %>
       <span class="text-stone-muted"><%= fa_icon "universal-access", :solid, class: "text-xs" %> All Rangers</span>

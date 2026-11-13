@@ -6,10 +6,10 @@
   <% end %>
 <% end %>
 
-<div class="my-4">
+<%= button_row class: "my-4" do %>
   <%= button_link "View Change History", :secondary,
                   history_person_access_document_path(@person, @document),
                   icon: "clock-rotate-left", icon_type: :solid %>
-</div>
+<% end %>
 
 <%= render "form", person: @person, document: @document, ticketing_info: @ticketing_info %>

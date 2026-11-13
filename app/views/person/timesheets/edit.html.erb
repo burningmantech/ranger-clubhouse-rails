@@ -16,7 +16,7 @@
   <% elsif @entry.status_verified? %>
     <%= ui_callout_box :success, title: "Entry Verified - No Review Required" do %>
       Review is not needed at this time.
-      Verified on <%= datetime_format @entry.verified_at %> by <%= @entry.verified_person&.callsign || "-" %>.
+      Verified on <%= datetime_format @entry.verified_at %> by <%= @entry.verified_person&.callsign || "—" %>.
     <% end %>
   <% elsif @entry.status_approved? %>
     <%= ui_callout_box :warning, title: "Verification Needed - No Review Required", icon: "hourglass" do %>
@@ -54,12 +54,8 @@
       <% end %>
     <% end %>
     <div class="mt-3">
-      <span class="font-semibold text-heading">Review status:</span> <%= @entry.review_status || "-" %>
+      <span class="font-semibold text-heading">Review status:</span> <%= @entry.review_status || "—" %>
     </div>
-  <% end %>
-
-  <%= button_row do %>
-    <%= back_to "#{@year} Timesheet", person_timesheets_path(@person, year: @year) %>
   <% end %>
 <% else %>
   <%= ui_form @entry, person_timesheet_path(@person, @entry, year: @year), method: :patch do |f| %>
@@ -128,7 +124,7 @@
         <% if @entry.desired_position_id.present? || @entry.desired_on_duty.present? || @entry.desired_off_duty.present? %>
           <%= render partial: "desired_changes" %>
         <% else %>
-          <div class="text-error font-semibold mb-3">The person has not entered any desired changes.</div>
+          <%= ui_empty_state "The person has not entered any desired changes." %>
         <% end %>
       <% end %>
 
@@ -169,7 +165,7 @@
                                         ["Entry verified: all information is correct. No further action needed.", Timesheet::STATUS_VERIFIED],
                                         ["Entry unverified: awaiting verification by #{@person.callsign}", Timesheet::STATUS_UNVERIFIED]],
                                        :last, :first,
-                                       { layout: :vertical } %>
+                                       { label: "Review Status", layout: :vertical } %>
       <% end %>
     <% end %>
 
@@ -180,8 +176,8 @@
         <%= button_link "Delete Entry", :error, person_timesheet_path(@person, @entry, year: @year),
                         class: "ms-auto",
                         data: confirm_modal(
-                          title: "Confirm Timesheet Deletion",
-                          message: "Are you certain you want to permanently delete this entry? Unsaved edits will be lost.",
+                          title: "Delete Timesheet Entry",
+                          message: "Delete this entry? This cannot be undone, and unsaved edits will be lost.",
                           confirm_label: "Delete Entry",
                           method: :delete,
                           variant: :error

@@ -43,12 +43,13 @@
                         id: "team-manager-#{team.id}",
                         class: AppFormBuilder::CHECKBOX_CLASSES,
                         data: { action: "membership-editor#managerToggle" } %>
-      <label for="<%= "team-manager-#{team.id}" %>" class="inline-flex items-center min-h-9 text-sm font-medium text-heading cursor-pointer">Is Team Manager</label>
+      <label for="<%= "team-manager-#{team.id}" %>" class="inline-flex items-center min-h-9 font-medium text-heading cursor-pointer">Is Team Manager</label>
     </div>
   </div>
 
   <% unless team.active %>
-    <p class="mt-1 text-sm text-error">
+    <p class="mt-1 text-error">
+      <%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %>
       Team is inactive but still has related grants. The recommendation is to deselect all items.
     </p>
   <% end %>
@@ -74,7 +75,7 @@
                  param_key: param_key %>
     </div>
   <% else %>
-    <p class="mt-1 ml-1 text-sm italic text-stone-muted">Team does not have any positions.</p>
+    <%= ui_empty_state "Team does not have any positions." %>
   <% end %>
 
   <div class="mt-2 ml-1">

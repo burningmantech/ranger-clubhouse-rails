@@ -14,17 +14,15 @@
   <%= ui_section "Document Details", icon: "ticket", icon_type: :solid do %>
     <%= form_row do %>
       <%= f.select :type, TicketsProvisionsHelper::ACCESS_DOCUMENT_TYPE_OPTIONS,
-                   { label: "Type" }, { class: "w-full sm:w-64" } %>
+                   { label: "Type", width: "w-full sm:w-64" } %>
       <%= f.select :status, TicketsProvisionsHelper::ACCESS_DOCUMENT_STATUS_OPTIONS,
-                   { label: "Status" }, { class: "w-full sm:w-44" } %>
+                   { label: "Status", width: "w-full sm:w-44" } %>
       <%= f.select :source_year, access_document_year_options,
-                   { label: "Earned / Source Year", },
-                   { class: "w-full sm:w-32" } %>
+                   { label: "Earned / Source Year", width: "w-full sm:w-32" } %>
       <%= f.select :expiry_date, access_document_year_options,
                    { label: "Expires After",
                      selected: document.expiry_date&.year,
-                   },
-                   { class: "w-full sm:w-32" } %>
+                     width: "w-full sm:w-32" } %>
     <% end %>
     <%= ui_callout_box :info do %>
       Gift, LSD, vehicle pass, and SAP items always expire after the event. Qualified LSD items are saved as claimed
@@ -32,17 +30,17 @@
 
     <%= f.select :delivery_method, TicketsProvisionsHelper::DELIVERY_METHOD_OPTIONS,
                  { label: "Delivery Method",
-                   help_text: "SAPs always emailed. SCs are always Will Call" },
-                 { class: "w-full sm:w-56" } %>
+                   help_text: "SAPs always emailed. SCs are always Will Call",
+                   width: "w-full sm:w-56" } %>
   <% end %>
 
   <%= ui_section "Type-Specific Details", icon: "sliders", icon_type: :solid do %>
     <%= form_row do %>
       <%= f.select :admission_date, admission_date_options(document, ticketing_info),
-                   { label: "Event Entry", help_text: "Only applies to SCs, SAPs, and S.O. SAPs." },
-                   { class: "w-full lg:w-40" } %>
+                   { label: "Event Entry", help_text: "Only applies to SCs, SAPs, and S.O. SAPs.",
+                     width: "w-full sm:w-40" } %>
 
-      <%= f.text_field :name, label: "Name on Document", width: "w-full",
+      <%= f.text_field :name, label: "Name on Document", width: "w-full sm:w-96",
                        size: 60,
                        help_text: "S.O. SAPs, Gift & LSD Tickets only." %>
 
@@ -55,7 +53,7 @@
         <% if document.comments.present? %>
           <div class="text-body"><%= nl2br document.comments %></div>
         <% else %>
-          <p class="me-muted">No comments yet.</p>
+          <div class="text-body">—</div>
         <% end %>
       </div>
     <% end %>

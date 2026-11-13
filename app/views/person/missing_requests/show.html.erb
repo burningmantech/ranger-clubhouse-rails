@@ -1,4 +1,5 @@
 <%= hero_panel icon: "file-circle-question", heading_level: :h1, id: "person-missing-request-show-header",
+               description: "The shift this person asked to have added to their timesheet, and its notes.",
                back_to: ["#{@year} Timesheet", person_timesheets_path(@person, year: @year)] do |panel| %>
   <% panel.title do %>
     Missing Timesheet Request #<%= @entry.id %> &mdash; <%= @person.callsign %>
@@ -22,7 +23,7 @@
         <%= t.cell datetime_format(@entry.on_duty, @entry.off_duty) %>
         <%= t.cell hour_minute_words(@entry.duration, full: true) %>
         <%= t.cell credit_format(@entry.credits), right: true %>
-        <%= t.cell @entry.partner.presence || "-" %>
+        <%= t.cell @entry.partner.presence || "—" %>
       <% end %>
     <% end %>
   <% end %>
@@ -31,8 +32,4 @@
 <%= ui_section "User & Timesheet Reviewer Notes", icon: "comment", icon_type: :solid do %>
   <%= render partial: "common/timesheet_notes",
              locals: { notes: @entry.notes, empty_message: "No notes have been entered." } %>
-<% end %>
-
-<%= button_row do %>
-  <%= back_to "#{@year} Timesheet", person_timesheets_path(@person, year: @year) %>
 <% end %>

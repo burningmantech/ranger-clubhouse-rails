@@ -39,8 +39,8 @@
                      lead_in: "The DESIRED times are outside the scheduled sign-up date ranges for the entire
                                event. This might indicate the times were entered incorrectly by the person:" } %>
 
-<div class="my-3">
+<%= button_row class: "my-3" do %>
   <%= button_link "Use the Desired Changes", :secondary,
                   edit_person_timesheet_path(@person, @entry, year: @year, apply_desired: 1),
                   icon: "wand-magic-sparkles", icon_type: :solid %>
-</div>
+<% end %>

@@ -10,7 +10,7 @@
 
   <%= button_row do %>
     <%= f.submit submit_label %>
-    <%= button_link "Cancel", :secondary, person_pogs_path(person, year: year) %>
+    <%= cancel_link person_pogs_path(person, year: year) %>
     <% if show_delete %>
       <%= delete_button person_pog_path(person, person_pog, year: year),
                         "Delete",

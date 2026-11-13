@@ -3,19 +3,7 @@
 <%# Provisions, BMID). CRUD links carry origin: so the provision pages return    %>
 <%# here. See ProvisionManagementConcern.                                        %>
 
-<%
-  if collapsed
-    action_link = button_action "Edit Provisions", :secondary, controller: "toggle",
-                                id: "provisions-toggle",
-                                data: {
-                                  toggle_label_value: "Hide Edit",
-                                  toggle_dom_id_value: "provisions-collapsible-body"
-                                }
-  else
-    action_link = nil
-  end
-%>
-<%= ui_section "Provisions", icon: "gear", icon_type: :solid, id: "provisions", link: action_link do %>
+<%= ui_section "Provisions", icon: "gear", icon_type: :solid, id: "provisions" do %>
   <p class="mb-1">
     <strong>Meals:</strong> <%= package.meals.title %>
     <span class="mx-1">&middot;</span>
@@ -24,9 +12,7 @@
     <strong>Event Radios:</strong> <%= package.radios %>
   </p>
 
-  <% body_attrs = { id: "provisions-collapsible-body" } %>
-  <% body_attrs.merge!(class: "hidden hidden!", aria: { hidden: "true" }) if collapsed %>
-  <%= content_tag :div, body_attrs do %>
+  <% body = capture do %>
     <p class="mb-3 me-muted">
       Calculated from available, claimed, and submitted provisions. For multiple event radio
       provisions, the record with the highest count is used — radio counts do not add up.
@@ -61,8 +47,16 @@
       <%= button_link "Add Event Radio", :secondary,
                       new_person_provision_path(person, type: Provision::EVENT_RADIO, origin: origin),
                       icon: "plus", icon_type: :solid %>
-      <%= button_link (showing_all ? "Show current provisions" : "Show all provisions"), :secondary,
+      <%= button_link (showing_all ? "Show Current Provisions" : "Show All Provisions"), :secondary,
                       toggle_path %>
     <% end %>
+  <% end %>
+
+  <% if collapsed %>
+    <%= ui_disclosure "Edit Provisions", content_html: { id: "provisions-collapsible-body" } do %>
+      <%= body %>
+    <% end %>
+  <% else %>
+    <%= tag.div body, id: "provisions-collapsible-body" %>
   <% end %>
 <% end %>

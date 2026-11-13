@@ -12,7 +12,7 @@
       <% when PersonPhoto::REJECTED %>
         <%= ui_badge "rejected", :error, size: "xs" %>
       <% else %>
-        <span class="text-xs text-body">Status: <%= photo.status %></span>
+        <%= ui_badge photo.status, :secondary, size: "xs" %>
       <% end %>
     </div>
   <% else %>

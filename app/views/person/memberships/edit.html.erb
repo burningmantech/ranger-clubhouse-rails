@@ -2,19 +2,30 @@
                title: "Manage Teams & Positions — #{@person.callsign}",
                back_to: [@person.callsign, person_path(@person)] %>
 
-<p class="mb-2 text-sm text-stone-muted">
+<p class="mb-2 text-stone-muted">
   <% if @membership_presenter.admin_view? %>
     As an administrator, all teams and positions are available to be granted or revoked.
   <% else %>
     You may only grant or revoke positions for teams you manage.
   <% end %>
-  Legend:
-  <%= fa_icon "universal-access", :solid, class: "text-xs" %> All Rangers &middot;
-  <%= fa_icon "globe", :solid, class: "text-xs" %> All Accounts &middot;
-  <%= fa_icon "power-off", :solid, class: "text-xs" %> Clears on join &middot;
-  <i>Is Team Manager</i> = may manage the team's grants &middot;
-  <i>N Permissions</i> = opens the list of associated permissions.
 </p>
+
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What do the marks beside a position mean?</dt>
+    <dd>
+      <ul class="space-y-1">
+        <li><%= fa_icon "universal-access", :solid %> All Rangers</li>
+        <li><%= fa_icon "globe", :solid %> All Accounts</li>
+        <li><%= fa_icon "power-off", :solid %> Clears on join</li>
+      </ul>
+    </dd>
+    <dt>What does Is Team Manager do?</dt>
+    <dd>It lets the person manage the team's grants.</dd>
+    <dt>What does a Permissions button show?</dt>
+    <dd>The list of permissions the team or position grants.</dd>
+  </dl>
+<% end %>
 
 <% if @membership_presenter.show_scroll_list? %>
   <%= dropdown_scroll_list @membership_presenter.scroll_items %>
@@ -32,7 +43,7 @@
       <% if @membership_presenter.can_manage_general_positions? %>
         <div class="mb-4 break-inside-avoid">
           <article class="card-standard p-3 shadow-xs">
-            <h3 class="heading-title text-heading mb-2">General Positions / Unassociated with a Clubhouse Team</h3>
+            <h2 class="heading-title text-heading mb-2">General Positions / Unassociated with a Clubhouse Team</h2>
             <% @membership_presenter.general_positions.each do |position| %>
               <%= render "position_checkbox", item: position, param_key: param_key %>
             <% end %>
@@ -51,6 +62,7 @@
     </div>
 
     <%= button_row do %>
+      <%= submit_button "Save" %>
       <%= cancel_link person_path(@person) %>
     <% end %>
   <% end %>

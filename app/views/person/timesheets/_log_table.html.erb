@@ -14,7 +14,7 @@
             <%= link_to log.creator&.callsign || "##{log.create_person_id}",
                         person_path(log.create_person_id), class: "underline" %>
           <% else %>
-            -
+            —
           <% end %>
         <% end %>
         <%= t.cell do %>

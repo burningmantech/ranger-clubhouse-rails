@@ -16,9 +16,9 @@
   The person will not see this message.
 <% end %>
 
-<div class="mb-3">
+<%= button_row class: "mb-3" do %>
   <%= button_link "Add Banner", :primary, new_person_banner_path(@person), icon: "plus", icon_type: :solid %>
-</div>
+<% end %>
 
 <%= ui_section "Existing Banners", icon: "message", icon_type: :solid, badge: @person_banners.size.to_s do %>
   <% if @person_banners.any? %>

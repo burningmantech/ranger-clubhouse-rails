@@ -44,7 +44,7 @@
             <% if field[:in_sync] %>
               <span class="text-stone-muted">—</span>
             <% else %>
-              <span class="font-medium text-heading"><%= field[:expected].presence || "(blank)" %></span>
+              <span class="font-medium text-heading"><%= field[:expected].presence || "—" %></span>
             <% end %>
           <% end %>
           <%= t.cell do %>

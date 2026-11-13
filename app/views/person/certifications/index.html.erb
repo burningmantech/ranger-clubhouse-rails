@@ -5,11 +5,11 @@
 
 <%= ui_section do %>
   <% if @can_manage %>
-    <div class="my-4">
+    <%= button_row class: "my-4" do %>
       <%= button_link "Add Certification", :primary,
                       new_person_certification_path(@person),
                       icon: "plus", icon_type: :solid %>
-    </div>
+    <% end %>
   <% else %>
     <%= ui_callout_box :info do %>
       Contact a Clubhouse Admin or Certification Manager to administer certification records.

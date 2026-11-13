@@ -6,15 +6,15 @@
         <% if person.camp_location.present? %>
           <%= hyperlink_text person.camp_location %>
         <% else %>
-          <i class="text-stone-muted">None</i>
+          <%= none_stated %>
         <% end %>
       <% elsif can_view_emergency_contact_during_event? %>
-        <div class="font-medium">
-          Camp location information is only available to you while the event is running.
+        <div class="text-warning">
+          <%= fa_icon "lock", :solid, class: "icon-warning" %> Camp location information is only available to you while the event is running.
         </div>
       <% else %>
-        <div class="font-medium">
-          You do not have the permissions to view the camp location.
+        <div class="text-warning">
+          <%= fa_icon "lock", :solid, class: "icon-warning" %> You do not have the permissions to view the camp location.
         </div>
       <% end %>
     <% end %>
@@ -23,15 +23,15 @@
         <% if person.emergency_contact.present? %>
           <%= hyperlink_text person.emergency_contact %>
         <% else %>
-          <i class="text-stone-muted">None stated</i>
+          <%= none_stated %>
         <% end %>
       <% elsif can_view_emergency_contact_during_event? %>
-        <div class="font-medium">
-          Emergency contact information is only available to you while the event is running.
+        <div class="text-warning">
+          <%= fa_icon "lock", :solid, class: "icon-warning" %> Emergency contact information is only available to you while the event is running.
         </div>
       <% else %>
-        <div class="font-medium">
-          You do not have the permissions to view the emergency contact.
+        <div class="text-warning">
+          <%= fa_icon "lock", :solid, class: "icon-warning" %> You do not have the permissions to view the emergency contact.
         </div>
       <% end %>
     <% end %>

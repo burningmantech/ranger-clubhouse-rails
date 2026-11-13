@@ -13,10 +13,6 @@
 
 <%= ui_form(@form, person_intake_notes_path(@person, intake_notes_origin_params)) do |f| %>
   <%= ui_section "Add Note / Rank", icon: intake_team_icon(@form.type), icon_type: :solid do %>
-    <p class="text-body mb-3">
-      <strong>Your note will be timestamped, and appended to any existing notes.</strong>
-    </p>
-
     <%= f.hidden_field :type %>
 
     <%= form_row do %>
@@ -27,6 +23,10 @@
     <% end %>
 
     <%= f.text_area :note, label: "Note", rows: 5 %>
+  <% end %>
+
+  <%= ui_callout_box :info do %>
+    Your note will be timestamped and appended to any existing notes.
   <% end %>
 
   <%= button_row do %>

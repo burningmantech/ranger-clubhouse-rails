@@ -36,7 +36,7 @@
     <%= cancel_link person_banners_path(person) %>
     <% if person_banner.persisted? %>
       <%= delete_button person_banner_path(person, person_banner),
-                        "Delete banner",
+                        "Delete Banner",
                         variant: :error,
                         confirm_modal: {
                           message: "Delete this banner? This cannot be undone."

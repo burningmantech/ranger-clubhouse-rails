@@ -41,8 +41,8 @@ class Person::TicketsProvisionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /RAD-#{access_document(:ar_spt).id}/
     assert_select "body", text: /RP-#{provision(:ar_meals).id}/
     # Unlike the BMID page, the provisions section stays expanded here.
-    assert_no_match "provisions-toggle", response.body
-    assert_select "#provisions-collapsible-body:not(.hidden)"
+    assert_select "#provisions details", count: 0
+    assert_select "#provisions-collapsible-body"
   end
 
   test "person-page user without the ticketing role is denied" do

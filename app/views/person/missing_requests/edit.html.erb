@@ -1,7 +1,8 @@
 <%# safe_join, not interpolation: datetime_format returns markup, and a plain
     string would print the tags in the header. %>
 <%= hero_panel icon: "file-circle-question", heading_level: :h1, id: "person-missing-request-edit-header",
-               description: safe_join([@entry.position.title, ", ", datetime_format(@entry.on_duty, @entry.off_duty, year: true)]),
+               description: safe_join(["Review the request for a missing ", @entry.position.title, " entry on ",
+                                        datetime_format(@entry.on_duty, @entry.off_duty, year: true), "."]),
                back_to: ["#{@year} Timesheet", person_timesheets_path(@person, year: @year)] do |panel| %>
   <% panel.title do %>
     Missing Timesheet Request #<%= @entry.id %> &mdash; <%= @person.callsign %>
@@ -66,13 +67,14 @@
             <% elsif partner[:person_id].present? %>
               <%= t.cell colspan: 2 do %>
                 <span class="text-error">
+                  <%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %>
                   No partner shift was found within <%= TimesheetMissing::PARTNER_SHIFT_STARTS_WITHIN %> minutes
                   of <%= datetime_format @entry.on_duty %>.
                 </span>
               <% end %>
             <% else %>
               <%= t.cell colspan: 2 do %>
-                <span class="text-error">Callsign not found.</span>
+                <span class="text-error"><%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %> Callsign not found.</span>
               <% end %>
             <% end %>
             <%= t.cell do %>
@@ -86,7 +88,7 @@
       <% end %>
     <% end %>
   <% else %>
-    <div class="text-error">No shift partner name(s) stated.</div>
+    <div class="text-error"><%= fa_icon "triangle-exclamation", :solid, class: "icon-error" %> No shift partner name(s) stated.</div>
   <% end %>
 <% end %>
 
@@ -135,7 +137,7 @@
   <%= button_row do %>
     <%= f.submit "Save Request" %>
     <% if @next_pending %>
-      <%= f.submit "Save & Review Next", name: "save_and_next", value: "1" %>
+      <%= f.submit "Save & Review Next", name: "save_and_next", value: "1", variant: :secondary %>
     <% end %>
     <%= cancel_button person_timesheets_path(@person, year: @year) %>
     <%# Plain text, not datetime_format: a confirmation is carried in an

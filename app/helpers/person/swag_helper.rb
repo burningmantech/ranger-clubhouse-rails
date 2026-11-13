@@ -10,7 +10,7 @@ module Person::SwagHelper
   }.freeze
 
   def swag_type_label(swag)
-    return "-" if swag.nil?
+    return "—" if swag.nil?
     return ShirtHelper::SHIRT_TYPE_LABELS[swag.shirt_type] || "Shirt" if swag.type == Swag::TYPE_DEPT_SHIRT
 
     SWAG_ROW_LABELS[swag.type] || swag.type.to_s.titleize

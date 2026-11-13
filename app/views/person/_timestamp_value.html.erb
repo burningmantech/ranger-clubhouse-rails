@@ -5,5 +5,5 @@
   <%= datetime_format at, year: true %>
   <span class="text-stone-muted">(<%= relative_time_in_words at %>)</span>
 <% else %>
-  <i class="text-stone-muted"><%= none %></i>
+  <span class="text-stone-muted"><%= none %></span>
 <% end %>

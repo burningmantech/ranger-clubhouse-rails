@@ -32,7 +32,7 @@ class Person::ProvisionsControllerTest < ActionDispatch::IntegrationTest
     get new_person_provision_path(@target, type: Provision::EVENT_RADIO)
 
     assert_response :success
-    assert_select "body", text: /New Provision/
+    assert_select "body", text: /Add Provision/
   end
 
   test "create defaults an event radio to one radio" do

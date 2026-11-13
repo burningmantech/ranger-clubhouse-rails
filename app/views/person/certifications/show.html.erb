@@ -1,5 +1,5 @@
 <%= hero_panel icon: "certificate", heading_level: :h1, id: "person-certification-header",
-               description: "Certification details.",
+               description: "The card, dates, and notes recorded for one of this person's certifications.",
                back_to: ["Certifications", person_certifications_path(@person)] do |panel| %>
   <% panel.title do %>
     <%= @person_certification.certification.title %> &mdash; <%= @person.callsign %>
@@ -24,7 +24,7 @@
                     person_path(@person_certification.recorder), class: "underline" %>
         at <%= datetime_format(@person_certification.created_at, year: true) %>
       <% else %>
-        <i class="me-muted">— imported —</i>
+        <span class="me-muted">Imported</span>
       <% end %>
     </dd>
 

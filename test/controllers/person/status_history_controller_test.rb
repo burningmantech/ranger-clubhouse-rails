@@ -42,7 +42,7 @@ class Person::StatusHistoryControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "body", text: /Showing 2 status logs/
     assert_select "a[href=?]", person_path(@vc), text: @vc.callsign
-    assert_select "body", text: /\* imported \*/
+    assert_select "body", text: /Imported/
     assert_select "body", text: /passed training/
   end
 

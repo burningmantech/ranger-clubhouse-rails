@@ -10,7 +10,7 @@
             <% if can_view_email? %>
               <% list.row "Email" do %>
                 <%= clipboard_button person.email, label: "Copy email address" do %>
-                  <%= mail_to person.email, nil, class: "inline-flex items-center min-h-7" %>
+                  <%= mail_to person.email, nil, class: "tap-target-link" %>
                 <% end %>
               <% end %>
             <% end %>
@@ -19,10 +19,10 @@
               <% list.row "Phone" do %>
                 <% if person.home_phone.present? %>
                   <%= clipboard_button person.home_phone, label: "Copy phone number" do %>
-                    <%= link_to phone_format(person.home_phone), "tel:#{person.home_phone}", class: "inline-flex items-center min-h-7" %>
+                    <%= link_to phone_format(person.home_phone), "tel:#{person.home_phone}", class: "tap-target-link" %>
                   <% end %>
                 <% else %>
-                  <i class="text-stone-muted">None</i>
+                  <%= none_stated %>
                 <% end %>
               <% end %>
 
@@ -48,7 +48,7 @@
                   <%= pluralize(person.years_as_ranger.length, "event") %>
                   <span class="text-stone-muted">[<%= year_range person.years_as_ranger %>]</span>
                 <% else %>
-                  <i class="text-stone-muted">None</i>
+                  —
                 <% end %>
               <% end %>
             <% end %>
@@ -59,7 +59,7 @@
                   <%= pluralize(person.years_as_contributor.length, "event") %>
                   <span class="text-stone-muted">[<%= year_range person.years_as_contributor %>]</span>
                 <% else %>
-                  <i class="text-stone-muted">None</i>
+                  —
                 <% end %>
               <% end %>
             <% end %>
@@ -69,7 +69,7 @@
                 <%= pluralize(person.years_of_service.length, "year") %>
                 <span class="text-stone-muted">[<%= year_range person.years_of_service %>]</span>
               <% else %>
-                <i class="text-stone-muted">None</i>
+                —
               <% end %>
             <% end %>
           <% end %>
@@ -91,7 +91,7 @@
             <% if person_fkas.any? %>
               <%= person_fkas.join(", ") %>
             <% else %>
-              <i class="text-stone-muted">None</i>
+              —
             <% end %>
           <% end %>
 
