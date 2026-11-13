@@ -3,14 +3,12 @@
      data-position-title="<%= item.title %>"
      data-position-dangerous-permissions="<%= item.dangerous_permissions.join(" and ") %>"
      data-deselect-on-join="<%= item.deselect_on_team_join %>">
-  <%= check_box_tag "#{param_key}[position_ids][]",
-                    item.id,
-                    item.selected,
-                    id: "position-#{item.id}",
-                    class: AppFormBuilder::CHECKBOX_CLASSES,
-                    data: { action: "membership-editor#positionToggle" } %>
+  <%= fields param_key, builder: AppFormBuilder do |f| %>
+    <%= f.check_box :position_ids, { label: item.title, multiple: true, checked: item.selected, id: "position-#{item.id}",
+                                     wrapper: false, data: { action: "membership-editor#positionToggle" } },
+                    item.id, nil %>
+  <% end %>
   <span class="flex flex-wrap items-center gap-2">
-    <label for="<%= "position-#{item.id}" %>" class="inline-flex items-center min-h-9 min-w-9 font-medium text-heading cursor-pointer"><%= item.title %></label>
     <% if item.all_rangers %>
       <span class="text-stone-muted"><%= fa_icon "universal-access", :solid, class: "text-xs" %> All Rangers</span>
     <% end %>

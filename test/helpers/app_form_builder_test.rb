@@ -315,6 +315,91 @@ class AppFormBuilderTest < ActionView::TestCase
     assert_select "span.text-sm.text-error", text: "(required)", count: 1
   end
 
+  # Every label `for` and every aria-describedby points at an element on the page.
+  def assert_labels_and_hints_resolve
+    labels = css_select("label[for]")
+    assert_predicate labels, :any?
+    labels.each { |label| assert_select "##{label["for"]}", 1, "label for=#{label["for"]} names nothing" }
+    css_select("[aria-describedby]").each do |field|
+      assert_select "##{field["aria-describedby"]}", 1, "aria-describedby=#{field["aria-describedby"]} points at nothing"
+    end
+  end
+
+  test "check_box's label names the box by the id the view passed" do
+    render inline: <<~ERB, locals: { person: @person }
+      <%= ui_form(person, "/people", layout: :horizontal) do |f| %>
+        <%= f.check_box :terms, label: "Terms", id: "own-terms" %>
+      <% end %>
+    ERB
+
+    assert_select "input[type=checkbox]#own-terms"
+    assert_select "label[for=own-terms]", count: 2
+    assert_labels_and_hints_resolve
+  end
+
+  test "check_box with multiple: names the box by the id Rails gives it, the value included" do
+    render inline: <<~ERB, locals: { person: @person }
+      <%= ui_form(person, "/people", layout: :horizontal) do |f| %>
+        <%= f.check_box :status, { label: "Active", multiple: true, help_text: "Pick any" }, "active", nil %>
+      <% end %>
+    ERB
+
+    box = css_select("input[type=checkbox]").first
+    assert_equal "app_form_builder_test_mock_person_status_active", box["id"]
+    assert_select "label[for=?]", box["id"], count: 2
+    assert_equal "#{box["id"]}_hint", box["aria-describedby"]
+    assert_labels_and_hints_resolve
+  end
+
+  test "a scopeless form's multiple: check_box keeps the bare array name and its own id" do
+    render inline: <<~ERB
+      <%= form_with url: "/graduate", builder: AppFormBuilder do |f| %>
+        <%= f.check_box :person_ids, { label: "Force graduate Tinsel", multiple: true, checked: false,
+                                       id: "graduate-7", wrapper: false }, 7, nil %>
+      <% end %>
+    ERB
+
+    assert_select "label[for=graduate-7] > input#graduate-7[name=?][value=7]:not([checked])", "person_ids[]"
+    assert_select "input[type=hidden][name=?]", "person_ids[]", count: 0
+  end
+
+  test "fields under a nested, indexed scope are labelled by the ids Rails gives them" do
+    render inline: <<~ERB
+      <%= fields "settings[alerts][3]", builder: AppFormBuilder do |af| %>
+        <%= af.check_box :terms, label: "Terms", help_text: "Read them" %>
+        <%= af.text_field :name, label: "Name", help_text: "Yours", layout: :horizontal %>
+      <% end %>
+    ERB
+
+    assert_select "input[type=checkbox][aria-describedby]"
+    assert_select "input[type=text][aria-describedby]"
+    assert_labels_and_hints_resolve
+  end
+
+  test "check_box ties its help text to the box" do
+    render inline: <<~ERB, locals: { person: @person }
+      <%= ui_form(person, "/people") do |f| %>
+        <%= f.check_box :terms, label: "I agree", help_text: "Weekly updates" %>
+      <% end %>
+    ERB
+
+    box = css_select("input[type=checkbox]").first
+    assert_select "##{box["aria-describedby"]}", text: "Weekly updates"
+    assert_select "input[type=hidden][aria-describedby]", count: 0
+  end
+
+  test "a text field's label and hint follow the id the view passed" do
+    render inline: <<~ERB, locals: { person: @person }
+      <%= ui_form(person, "/people") do |f| %>
+        <%= f.text_field :name, label: "Name", id: "own-name", help_text: "Yours" %>
+      <% end %>
+    ERB
+
+    assert_select "label[for=own-name]"
+    assert_select "input#own-name[aria-describedby=own-name_hint]"
+    assert_labels_and_hints_resolve
+  end
+
   test "the required mark is the visible word at text-sm" do
     render inline: <<~ERB, locals: { person: @person }
       <%= ui_form(person, "/people") do |f| %>

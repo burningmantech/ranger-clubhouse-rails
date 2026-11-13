@@ -97,11 +97,14 @@
       </div>
 
       <!-- CropperJS Canvas with Headshot Overlay -->
-      <div class="cropper-wrapper mb-4">
+      <%# The canvas size comes from the model; photo-cropper.css reads it here. %>
+      <div class="cropper-wrapper mb-4"
+           style="--photo-crop-width: <%= PersonPhoto::PROFILE_WIDTH %>px; --photo-crop-height: <%= PersonPhoto::PROFILE_HEIGHT %>px;">
+        <%# bg-gray-800 and bg-gray-500 are palette colours on purpose (AGENTS.md):
+            the photo is judged against the same neutral grey in either theme. %>
         <div class="cropper-container bg-gray-800">
           <cropper-canvas
             class="bg-gray-500"
-            style="width: <%= PersonPhoto::PROFILE_WIDTH %>px; height: <%= PersonPhoto::PROFILE_HEIGHT %>px;"
             data-photo-cropper-target="canvas">
             
             <!-- Image is draggable via manual implementation in controller -->
@@ -164,85 +167,3 @@
   </div>
 </div>
 
-<style>
-  /* CropperJS 2.0 Web Components Integration Styles */
-  /* Mobile-first approach - canvas stays at fixed 350x450, container scales with CSS zoom */
-
-  .cropper-wrapper {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 1rem;
-    position: relative;
-    padding: 0 1rem;
-  }
-
-  /* Desktop: remove horizontal padding */
-  @media (min-width: 1024px) {
-    .cropper-wrapper {
-      padding: 0;
-    }
-  }
-
-  .cropper-container {
-    border-radius: 0.5rem;
-    margin: auto;
-    /* Mobile: Use CSS zoom to scale down entire container (doesn't affect CropperJS coordinates) */
-    /* Clamp zoom between the calculated mobile scale and 1.0 (100%) */
-    /* Divisor must be a length: length/length yields the unitless number min() needs */
-    zoom: min(1, calc((100vw - 2rem) / <%= PersonPhoto::PROFILE_WIDTH %>px));
-  }
-
-  /* Desktop: ensure full size */
-  @media (min-width: 400px) {
-    .cropper-container {
-      zoom: 1;
-    }
-  }
-
-  /* CropperJS canvas with checkered background pattern */
-  cropper-canvas {
-    display: block;
-    background-color: #ffffff;
-    background-image: conic-gradient(#fbbf24 90deg, transparent 90deg 180deg, #f59e0b 180deg 270deg, transparent 270deg);
-    background-size: 15px 15px;
-  }
-
-  /* Image is draggable */
-  cropper-image {
-    position: relative;
-    cursor: move;
-    /* Touch-action for better mobile dragging */
-    touch-action: none;
-  }
-
-  /* Make shade and selection non-interactive to allow image dragging */
-  cropper-shade {
-    pointer-events: none !important;
-    display: none !important;
-  }
-
-  cropper-selection,
-  cropper-selection * {
-    pointer-events: none !important;
-  }
-
-  /* Headshot overlay guide */
-  .selection-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none !important;
-    z-index: 1;
-  }
-
-  .overlay-image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    opacity: 0.7;
-  }
-</style>

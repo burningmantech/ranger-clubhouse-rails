@@ -172,6 +172,7 @@ ui_card_title(title, options = {}, &block)
 |-----------|------|---------|-------------|
 | `title` | String | required | Title text |
 | `size:` | Symbol | `:lg` | Title size (`:sm`, `:md`, `:lg`, `:xl`) |
+| `heading_level:` | Symbol | `nil` | Renders the title as this heading (`:h2`, `:h3`, `:h4`) instead of a `div` |
 | `class:` | String | `nil` | Additional CSS classes |
 
 ### ui_card_section

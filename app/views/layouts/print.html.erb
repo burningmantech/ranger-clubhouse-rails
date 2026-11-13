@@ -30,20 +30,13 @@
       only when something actually asks for them. %>
   <link rel="preload" href="<%= asset_path("atkinson-latin.woff2") %>" as="font" type="font/woff2" crossorigin>
   <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
-  <%# Letter with fixed margins for every print view. Lives here, not in the
-      tailwind bundle -- @page cannot be scoped by selector, so a bare rule
-      there would apply to every screen page's print output. %>
-  <%# The :root rule covers the html box below the last sheet's content --
-      daisyUI paints :root with base-100, and the body's print:bg-white
-      cannot reach it. %>
-  <style>
-    @page { size: letter; margin: 0.5in; }
-    @media print { :root { background: #fff; } }
-  </style>
+  <%# Letter with fixed margins for every print view, in its own sheet: @page
+      cannot be scoped by selector, so it stays out of the tailwind bundle. %>
+  <%= stylesheet_link_tag "print-page", media: "print" %>
   <%# Named per-view @page rules land here via content_for :page_rules (the
       trainer's report emits its footer margin boxes with the dynamic session
       title; Chrome renders them -- verified in 151). CRITICAL: margin boxes
-      must stay on a NAMED rule, never on the bare @page above -- that one
+      must stay on a NAMED rule, never on the bare @page in print-page.css -- that one
       reaches every print view, including the sign-up sheet, which carries no
       page numbers on purpose. %>
   <%= yield :page_rules %>

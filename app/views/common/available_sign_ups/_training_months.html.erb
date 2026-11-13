@@ -5,7 +5,7 @@
     so group_by keeps the months in order. Nothing here is a date, a seat count
     or a button. %>
 <div class="grid gap-3 lg:grid-cols-2">
-  <% entries.group_by { |entry| entry.slot.begins.strftime("%B") }.each do |month, month_entries| %>
+  <% entries.group_by { |entry| month_name_format(entry.slot.begins) }.each do |month, month_entries| %>
     <% sessions = month_entries.map { |entry| entry.slot.description.presence || "Session" }.tally.sort_by { |description, _| description.downcase } %>
     <%= ui_card class: "p-3" do %>
       <%= ui_subheading do %>

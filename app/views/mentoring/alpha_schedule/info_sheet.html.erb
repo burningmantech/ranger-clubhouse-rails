@@ -21,7 +21,7 @@
       @bottom-right {
         content: "Page " counter(page) " of " counter(pages);
         font-size: 8pt;
-        color: var(--color-body);
+        color: #4c4742; /* --color-body, light; a margin box cannot be trusted to resolve var() */
         font-family: "Atkinson Hyperlegible", sans-serif;
       }
     }

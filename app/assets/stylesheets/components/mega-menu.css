@@ -81,8 +81,10 @@
   display: none !important;
 }
 
+/* Both titles are <h3>/<h4>, so they take heading-title (headings.css); the
+   class names stay because the menu tests and controller select by them. */
 .mega-menu-panel-title {
-  @apply text-lg font-semibold text-stone-muted mb-1
+  @apply heading-title text-stone-muted mb-1;
 }
 
 .mega-menu-items {
@@ -91,7 +93,7 @@
 
 /* Section group heading inside a multi-section category panel */
 .mega-menu-section-title {
-  @apply text-sm font-semibold text-stone-muted mt-3 mb-1;
+  @apply heading-title text-stone-muted mt-3 mb-1;
 }
 
 /* Untitled section groups still separate visually */

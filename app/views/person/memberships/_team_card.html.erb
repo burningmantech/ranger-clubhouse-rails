@@ -6,16 +6,11 @@
         data-dangerous="<%= team.dangerous? %>"
         data-dangerous-permissions="<%= team.dangerous_permissions.join(" and ") %>"
 >
+  <%= fields param_key, builder: AppFormBuilder do |f| %>
   <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-    <div class="flex-center-gap-2">
-      <%= check_box_tag "#{param_key}[team_ids][]",
-                        team.id,
-                        team.selected,
-                        id: "team-#{team.id}",
-                        class: AppFormBuilder::CHECKBOX_CLASSES,
-                        data: { action: "membership-editor#teamToggle" } %>
-      <label for="<%= "team-#{team.id}" %>" class="inline-flex items-center min-h-9 min-w-9 text-base font-semibold text-heading cursor-pointer"><%= team.title %></label>
-    </div>
+    <%= f.check_box :team_ids, { label: team.title, multiple: true, checked: team.selected, id: "team-#{team.id}",
+                                 wrapper: false, data: { action: "membership-editor#teamToggle" } },
+                    team.id, nil %>
 
     <% if team.permissions? %>
       <%# Below lg the menu drops under the title row at full width, so its panel
@@ -36,16 +31,14 @@
       <%= ui_badge "inactive", :error, size: "xs" %>
     <% end %>
 
-    <div class="ml-auto flex items-center gap-2">
-      <%= check_box_tag "#{param_key}[manager_ids][]",
-                        team.id,
-                        team.manager_selected,
-                        id: "team-manager-#{team.id}",
-                        class: AppFormBuilder::CHECKBOX_CLASSES,
-                        data: { action: "membership-editor#managerToggle" } %>
-      <label for="<%= "team-manager-#{team.id}" %>" class="inline-flex items-center min-h-9 font-medium text-heading cursor-pointer">Is Team Manager</label>
+    <div class="ml-auto">
+      <%= f.check_box :manager_ids, { label: "Is Team Manager", multiple: true, checked: team.manager_selected,
+                                      id: "team-manager-#{team.id}", wrapper: false,
+                                      data: { action: "membership-editor#managerToggle" } },
+                      team.id, nil %>
     </div>
   </div>
+  <% end %>
 
   <% unless team.active %>
     <p class="mt-1 text-error">

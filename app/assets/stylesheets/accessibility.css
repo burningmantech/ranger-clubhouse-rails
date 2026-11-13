@@ -9,16 +9,11 @@
  * minimum (min-h-9) that design-foundations sets. Bump them to 9 steps.
  * Set on --size rather than min-height so btn-circle/btn-square stay square.
  *
- * The composed classes are listed because they are built with `@apply btn-sm`,
- * which inlines daisyUI's 32px value at build time -- their elements carry only
- * the composed name, so a `.btn-sm` selector never reaches them.
- *
  * This lives here, not in a component file, so the floor stays a single number
  * in a single place across buttons and form controls alike.
  */
 .btn-sm,
-.select-sm,
-.btn-toast-close {
+.select-sm {
     --size: calc(var(--size-field, 0.25rem) * 9);
 }
 

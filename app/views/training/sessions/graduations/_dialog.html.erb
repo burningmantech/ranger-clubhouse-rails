@@ -22,7 +22,7 @@
 
   <% if graduation.selectable.any? %>
     <%= form_with url: training_session_graduation_path(training_slug, session.slot.id),
-                  method: :post, builder: AppFormBuilder do %>
+                  method: :post, builder: AppFormBuilder do |f| %>
       <% if graduation.ready.any? %>
         <%= ui_table full_width: true do |t| %>
           <%= t.header do %>
@@ -55,13 +55,9 @@
           </p>
           <% graduation.overrides.each do |candidate| %>
             <div class="border-t border-line pt-2 mt-2">
-              <label class="inline-flex items-center gap-2 min-h-9 cursor-pointer font-semibold"
-                     for="graduate-<%= candidate.person.id %>">
-                <%= check_box_tag "person_ids[]", candidate.person.id, false,
-                                  id: "graduate-#{candidate.person.id}",
-                                  class: AppFormBuilder::CHECKBOX_CLASSES %>
-                Force graduate <%= candidate.person.callsign %>
-              </label>
+              <%= f.check_box :person_ids, { label: "Force graduate #{candidate.person.callsign}", multiple: true,
+                                             checked: false, id: "graduate-#{candidate.person.id}", wrapper: false },
+                              candidate.person.id, nil %>
               <ul class="list-bulleted">
                 <% candidate.gaps.messages.each do |message| %>
                   <li><%= message %></li>

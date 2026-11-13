@@ -88,11 +88,9 @@ module UiComponents
       html_options[:data] = options[:data] if options[:data]
 
       # Use article tag for semantic HTML
+      header = render_card_header(title, icon, icon_type, badge, heading_level)
       content_tag(:article, html_options) do
-        safe_join([
-          render_card_header(title, icon, icon_type, badge, heading_level),
-          render_card_body(&block)
-        ].compact)
+        safe_join([header, render_card_body(spaced: header.present?, &block)].compact)
       end
     end
 
@@ -131,10 +129,12 @@ module UiComponents
       content_tag(:div, badge.html_safe, class: "shrink-0")
     end
 
-    def render_card_body(&block)
+    # The margin parts the body from a header; with no header it would only
+    # make the card's top padding deeper than its bottom.
+    def render_card_body(spaced:, &block)
       return nil unless block_given?
 
-      content_tag(:div, capture(&block), class: "mt-2")
+      content_tag(:div, capture(&block), class: ("mt-2" if spaced))
     end
   end
 end

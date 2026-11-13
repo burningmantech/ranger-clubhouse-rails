@@ -255,9 +255,9 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
     ac_display_attribute = options.delete(:display_attribute)
 
     build_field(attribute, options) do |opts|
-      # Label targets sanitized_field_id(attribute) — assign that to the visible input
-      # so label click/focus and screen reader association work correctly.
-      input_id = sanitized_field_id(attribute)
+      # The label targets this id -- assign it to the visible input so label
+      # click/focus and screen reader association work correctly.
+      input_id = field_input_id(attribute, opts)
       hidden_id = "#{input_id}_value"
       wrapper_id = "#{input_id}-ac"
       results_id = "#{wrapper_id}-results"
@@ -371,7 +371,7 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
     build_field(attribute, options) do |opts|
       @template.render("shared/callsign_chips",
                        name: "#{object_name}[#{attribute}][]", callsigns: Array(object.public_send(attribute)),
-                       url:, max:, field_id: sanitized_field_id(attribute), placeholder:,
+                       url:, max:, field_id: field_input_id(attribute, opts), placeholder:,
                        describedby: opts.dig(:aria, :describedby), invalid: opts.dig(:aria, :invalid),
                        box_class: "#{opts[:class]} h-auto flex flex-wrap items-center gap-2 py-1")
     end
@@ -421,7 +421,7 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
       on_file = (object.try(:attribute_in_database, attribute) || current).to_s
       safe_join([
                   lost_images_warning(on_file),
-                  @template.tag.lexxy_editor(**opts, id: sanitized_field_id(attribute), name: field_name(attribute),
+                  @template.tag.lexxy_editor(**opts, id: field_input_id(attribute, opts), name: field_name(attribute),
                                              value: editor_ready(current), attachments: "false")
                 ])
     end
@@ -453,6 +453,11 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
   # CHECKBOX FIELD
   # =============================================================================
 
+  # The box's id is read from what Rails drew, not rebuilt: an id: the view
+  # passed, multiple: (which adds the value), and a nested or indexed scope
+  # each change it, and a label `for` that misses it names nothing. With a help
+  # or error line, the box is drawn again carrying that id and the line's
+  # aria-describedby.
   def check_box(attribute, options = {}, checked_value = "1", unchecked_value = "0")
     field_opts = extract_field_options(options, attribute)
     inline_label = options.delete(:inline_label)
@@ -461,6 +466,14 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
     options[:class] = merge_classes(classes_for(:checkbox, field_opts[:has_errors]), options[:class])
     options[:aria] = (options[:aria] || {}).merge(invalid: true) if field_opts[:has_errors]
     checkbox_tag = super
+    field_opts[:input_id] = rendered_input_id(checkbox_tag, "input[type=checkbox]")
+    field_opts[:hint_id] = "#{field_opts[:input_id] || field_input_id(attribute, options)}_hint"
+
+    if field_opts[:input_id] && (field_opts[:help_text] || field_opts[:has_errors])
+      options = options.merge(id: field_opts[:input_id],
+                              aria: (options[:aria] || {}).merge(describedby: field_opts[:hint_id]))
+      checkbox_tag = super(attribute, options, checked_value, unchecked_value)
+    end
 
     build_toggle_field(:checkbox, attribute, checkbox_tag, field_opts, inline_label:)
   end
@@ -724,11 +737,16 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
       options[:data][:input_counter_css_value] = "text-sm ms-2 text-body"
     end
 
+    # The label's `for` and the hint's id follow the field's own id, the one a
+    # view passed included: Rails' label would point at the default id instead.
+    field_opts[:input_id] = field_input_id(attribute, options)
+    field_opts[:hint_id] = "#{field_opts[:input_id]}_hint"
+
     # Add aria-describedby for help text or errors (WCAG 1.3.1), and aria-invalid
     # for errors (WCAG 3.3.1): the red border alone says nothing to a screen reader.
     if field_opts[:help_text] || field_opts[:has_errors]
       options[:aria] ||= {}
-      options[:aria][:describedby] = "#{sanitized_field_id(attribute)}_hint"
+      options[:aria][:describedby] = field_opts[:hint_id]
       options[:aria][:invalid] = true if field_opts[:has_errors]
     end
 
@@ -801,7 +819,8 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
   def build_label(attribute, field_opts, label_type)
     return "".html_safe if field_opts[:hide_label] || field_opts[:label_text].nil?
 
-    label(attribute, marked_label_text(field_opts), class: classes_for(label_type, field_opts[:has_errors]))
+    label(attribute, marked_label_text(field_opts), for: field_opts[:input_id],
+                                                   class: classes_for(label_type, field_opts[:has_errors]))
   end
 
   def build_wrapper_options(field_opts, default_class)
@@ -814,7 +833,7 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
   end
 
   def field_suffix(attribute, field_opts)
-    hint_id = "#{sanitized_field_id(attribute)}_hint"
+    hint_id = field_opts[:hint_id] || "#{field_input_id(attribute, {})}_hint"
 
     if field_opts[:has_errors]
       error_message(attribute, hint_id)
@@ -875,7 +894,7 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
 
     @template.tag.div(class: wrapper_class) do
       label_html = if side_label
-                     label(attribute, marked_label_text(field_opts),
+                     label(attribute, marked_label_text(field_opts), for: field_opts[:input_id],
                            class: "#{classes_for(label_type, field_opts[:has_errors])} #{label_padding}")
                    else
                      "".html_safe
@@ -902,7 +921,7 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
     label_text = marked_label_text(field_opts.merge(label_text:)) if label_text
 
     @template.tag.div(class: TOGGLE_WRAPPER_CLASSES) do
-      toggle_hit_area(checkbox_tag, label_text, field_opts[:has_errors], for: sanitized_field_id(attribute))
+      toggle_hit_area(checkbox_tag, label_text, field_opts[:has_errors], for: field_opts[:input_id])
     end
   end
 
@@ -1068,16 +1087,19 @@ class AppFormBuilder < ActionView::Helpers::FormBuilder
 
   def merge_classes(*classes) = classes.compact_blank.join(" ")
 
-  def sanitized_object_name = @object_name.to_s.tr("[]", "_")
+  # The id the field carries: the view's own id:, else the one Rails gives it
+  # (field_id is what Rails' own tags call, so a scopeless form, a nested
+  # "alerts[1]" scope and an index: all come out as Rails draws them). A label
+  # `for` or a hint id built any other way can miss the field, and a present
+  # but unmatched `for` beats the wrapped control: the label names nothing.
+  def field_input_id(attribute, options)
+    options[:id] || options.dig(:html_options, :id) ||
+      field_id(attribute, index: options.fetch(:index) { @options[:index] })
+  end
 
-  # Matches how Rails builds the id it puts on the field itself: with no model
-  # -- a filter_bar opening its own scopeless GET form -- Rails drops the empty
-  # object name, so prefixing an underscore unconditionally aimed every label's
-  # `for` and every hint's `aria-describedby` at an id that does not exist. A
-  # present-but-unmatched `for` beats the descendant control, so those labels
-  # labelled nothing: the text was not clickable and screen readers announced
-  # an unnamed field.
-  def sanitized_field_id(attribute) = [sanitized_object_name.presence, attribute].compact.join("_")
+  # The id of the control Rails drew, for a control whose id this builder
+  # cannot know in advance (a check_box's multiple: adds its value).
+  def rendered_input_id(html, selector) = Nokogiri::HTML5.fragment(html).at_css(selector)&.[]("id").presence
 
   def safe_join(array) = @template.safe_join(array)
 

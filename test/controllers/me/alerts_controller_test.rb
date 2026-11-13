@@ -27,6 +27,15 @@ class Me::AlertsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "every alert checkbox is named by the label that points at it" do
+    get edit_me_alerts_url
+
+    boxes = css_select("input[type=checkbox][name^=alerts]")
+    assert_predicate boxes, :any?
+    boxes.each { |box| assert_select "label[for=?] > input##{box["id"]}", box["id"] }
+    assert_unique_dom_ids
+  end
+
   test "edit shows verification section when number is unverified" do
     @person.update_columns(sms_number: "+15551234567", sms_verified: false, sms_stopped: false)
 

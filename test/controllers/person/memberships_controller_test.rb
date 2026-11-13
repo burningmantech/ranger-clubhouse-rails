@@ -58,6 +58,11 @@ class Person::MembershipsControllerTest < ActionDispatch::IntegrationTest
     # The permission list is a native <details> dropdown named for assistive tech.
     assert_select "details.dropdown > summary", text: /1 Permission/
     assert_select "ul[aria-label='Granted Permissions'] li", text: "Admin"
+    council = teams(:council_cadre).id
+    assert_select "label[for=team-#{council}] > input#team-#{council}[name=?][value=?]",
+                  "person_membership_form[team_ids][]", council.to_s
+    assert_select "label[for=team-manager-#{council}]", text: "Is Team Manager"
+    assert_select "input[type=hidden][name=?]", "person_membership_form[team_ids][]", count: 1
   end
 
   test "non-admin edit only shows manageable teams" do

@@ -1,0 +1,79 @@
+/*
+ * Photo Cropper
+ * The CropperJS 2 canvas on the crop page (profile_photos/crop.html.erb),
+ * driven by photo_cropper_controller.js.
+ *
+ * The canvas stays at the photo's exact size, PersonPhoto::PROFILE_WIDTH by
+ * PROFILE_HEIGHT, because the crop coordinates are read off it. The view hands
+ * those two numbers in as --photo-crop-width and --photo-crop-height on
+ * .cropper-wrapper, so the size lives in the model alone; on a narrow screen
+ * the container shrinks with CSS zoom, which leaves CropperJS's coordinates
+ * alone.
+ *
+ * The container and canvas also carry bg-gray-800 and bg-gray-500 in the view:
+ * the two palette colours AGENTS.md keeps on purpose. The photo is judged
+ * against a neutral grey whatever the theme, so they do not follow it.
+ */
+
+.cropper-wrapper {
+    @apply relative mb-4 flex flex-col items-center justify-center px-4 lg:px-0;
+}
+
+.cropper-container {
+    @apply m-auto rounded-lg;
+    /* Clamp between the phone's scale and 100%. The divisor is a length, so
+       length/length gives the unitless number min() needs. */
+    zoom: min(1, calc((100vw - 2rem) / var(--photo-crop-width)));
+}
+
+@media (min-width: 400px) {
+    .cropper-container {
+        zoom: 1;
+    }
+}
+
+/* The checkerboard is functional, not decoration: the page tells the reader
+   that no orange checkerboard should show when the photo fills the frame, so
+   these stay the literal orange and white in both themes. */
+cropper-canvas {
+    --photo-crop-check-light: #fbbf24;
+    --photo-crop-check-dark: #f59e0b;
+
+    display: block;
+    width: var(--photo-crop-width);
+    height: var(--photo-crop-height);
+    background-color: #ffffff;
+    background-image: conic-gradient(var(--photo-crop-check-light) 90deg, transparent 90deg 180deg,
+                                     var(--photo-crop-check-dark) 180deg 270deg, transparent 270deg);
+    background-size: 15px 15px;
+}
+
+/* The image is dragged by hand in the controller. */
+cropper-image {
+    position: relative;
+    cursor: move;
+    touch-action: none;
+}
+
+/* The shade and selection must not catch the drag meant for the image.
+   CropperJS writes inline styles on its elements (element.style.display and
+   the like), which only !important outranks. */
+cropper-shade {
+    pointer-events: none !important;
+    display: none !important;
+}
+
+cropper-selection,
+cropper-selection * {
+    pointer-events: none !important;
+}
+
+/* Headshot outline over the selection */
+.selection-overlay {
+    @apply absolute inset-0 z-1 size-full;
+    pointer-events: none !important;
+}
+
+.overlay-image {
+    @apply size-full object-contain opacity-70;
+}

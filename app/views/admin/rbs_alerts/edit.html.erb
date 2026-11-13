@@ -36,12 +36,9 @@
     <%= f.text_area :description, label: "Description", required: true, rows: 4,
                     help_text: "One or two sentences saying what a Ranger will be told.",
                     width: "w-full" %>
-    <%# The builder prints help_text under a check box but does not point the box at it, so
-        aria-describedby names the hint id it gives that text. %>
     <%= f.check_box :on_playa, label: "Sent while the event is running",
                     help_text: "Ticked, this alert is listed under On Playa Alerts. Unticked, it is listed " \
-                               "under Pre & Post Event Alerts. Nothing else changes.",
-                    aria: { describedby: "alert_on_playa_hint" } %>
+                               "under Pre & Post Event Alerts. Nothing else changes." %>
   <% end %>
 
   <%= button_row do %>

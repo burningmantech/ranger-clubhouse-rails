@@ -9,9 +9,12 @@
 // same way, as a camera:failed event carrying the message for that box.
 
 import { Controller } from "@hotwired/stimulus"
-import { tablistKeyTarget } from "controllers/tabs_controller"
 
 // getUserMedia failures, by the error box that explains each.
+// The panel ids profile_photos/new gives its two tab_navigation panes.
+const UPLOAD_PANEL = "panel-upload"
+const CAMERA_PANEL = "panel-camera"
+
 const CAMERA_ERRORS = {
   NotAllowedError: "permission",
   PermissionDeniedError: "permission",
@@ -23,49 +26,38 @@ const CAMERA_ERRORS = {
 
 export default class extends Controller {
   static targets = [
-    "uploadPanel", "cameraPanel",
-    "tabUpload", "tabCamera",
     "video", "canvas",
     "cameraSelect", "cameraSelectWrapper",
     "previewArea", "loading",
     "unsupportedError", "permissionError", "noCameraError", "cameraInUseError"
   ]
 
+  // The Upload File / Take Selfie tabs are a tab_navigation: tabs_controller.js
+  // switches the panels and answers the tablist keys (which click the tab they
+  // land on). This controller only follows along, from the click bubbling up
+  // after tabs#show has run: the camera starts on its tab and stops off it.
   connect() {
-    this.handleTabKeydown = this.handleTabKeydown.bind(this)
-    this.element.addEventListener("keydown", this.handleTabKeydown)
+    this.handleTabClick = this.handleTabClick.bind(this)
+    this.element.addEventListener("click", this.handleTabClick)
   }
 
   disconnect() {
-    this.element.removeEventListener("keydown", this.handleTabKeydown)
+    this.element.removeEventListener("click", this.handleTabClick)
     this.stopCamera()
   }
 
-  // The tablist keys for Upload File / Take Selfie, as tabs_controller.js
-  // gives a tab_navigation: the idle tab is out of the Tab order, so the
-  // arrows, Home and End reach it, selecting it as a click would.
-  handleTabKeydown(event) {
-    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
-    if (!this.hasTabUploadTarget || ![this.tabUploadTarget, this.tabCameraTarget].includes(event.target)) return
+  handleTabClick(event) {
+    const tab = event.target.closest("[role='tab']")
+    if (!tab || !this.element.contains(tab)) return
 
-    const next = tablistKeyTarget(event.key, event.target, event.target.closest("[role='tablist']"))
-    if (!next) return
-
-    event.preventDefault()
-    next.focus()
-    next.click()
+    if (tab.getAttribute("aria-controls") === CAMERA_PANEL) {
+      this.startCamera()
+    } else {
+      this.stopCamera()
+    }
   }
 
-  showUpload(event) {
-    event.preventDefault()
-    this.stopCamera()
-    this.selectTab("upload")
-  }
-
-  showCamera(event) {
-    event.preventDefault()
-    this.selectTab("camera")
-
+  startCamera() {
     // A second tap while the camera is up, or still coming up, changes nothing.
     if (this.stream || this.starting) return
 
@@ -73,18 +65,8 @@ export default class extends Controller {
     this.initCamera()
   }
 
-  // One tab at a time: the tab buttons and their panels move together.
-  selectTab(name) {
-    const pairs = [
-      [this.tabUploadTarget, this.uploadPanelTarget, name === "upload"],
-      [this.tabCameraTarget, this.cameraPanelTarget, name === "camera"]
-    ]
-    for (const [tab, panel, active] of pairs) {
-      tab.classList.toggle("tab-active", active)
-      tab.setAttribute("aria-selected", String(active))
-      tab.tabIndex = active ? 0 : -1
-      panel.hidden = !active
-    }
+  get uploadTab() {
+    return this.element.querySelector(`[role='tab'][aria-controls='${UPLOAD_PANEL}']`)
   }
 
   // Asks for the front camera, then lists the others once permission is in.
@@ -192,8 +174,9 @@ export default class extends Controller {
         return
       }
 
-      this.stopCamera()
-      this.selectTab("upload")
+      // Back to the upload tab, through tabs#show like any click; leaving the
+      // camera tab stops the camera.
+      this.uploadTab.click()
       const file = new File([blob], `selfie-${Date.now()}.jpg`, { type: "image/jpeg" })
       this.dispatch("captured", { detail: { file } })
     }, "image/jpeg", 0.92)

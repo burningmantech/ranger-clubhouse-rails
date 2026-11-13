@@ -78,38 +78,8 @@
     <% end %>
   </div>
 
-  <%# Tab Navigation (self-service only; admins upload a file for the person) %>
-  <% if selfie_enabled? %>
-    <div class="tabs tabs-border mb-4" role="tablist" aria-label="Photo source">
-      <button type="button"
-              id="tab-upload"
-              class="tab tab-active gap-1"
-              role="tab"
-              aria-selected="true"
-              aria-controls="panel-upload"
-              tabindex="0"
-              data-camera-target="tabUpload"
-              data-action="click->camera#showUpload">
-        <%= fa_icon "cloud-arrow-up", :solid %> Upload File
-      </button>
-      <button type="button"
-              id="tab-camera"
-              class="tab gap-1"
-              role="tab"
-              aria-selected="false"
-              aria-controls="panel-camera"
-              tabindex="-1"
-              data-camera-target="tabCamera"
-              data-action="click->camera#showCamera">
-        <%= fa_icon "camera", :solid %> Take Selfie
-      </button>
-    </div>
-  <% end %>
-
   <%# ===== Upload File Panel ===== %>
-  <%= tag.div id: "panel-upload", role: ("tabpanel" if selfie_enabled?),
-              aria: { labelledby: ("tab-upload" if selfie_enabled?) },
-              data: { camera_target: ("uploadPanel" if selfie_enabled?) } do %>
+  <% upload_panel = capture do %>
     <%= ui_section "Photo Upload" do %>
 
       <!-- Upload Form -->
@@ -198,9 +168,17 @@
     <% end %>
   <% end %>
 
-  <%# ===== Camera Selfie Panel (self-service only) ===== %>
+  <%# Self-service only: admins upload a file for the person, so their page has
+      the upload panel and no tabs. camera_controller follows the tab changes
+      tabs_controller makes, starting the camera on its tab. %>
   <% if selfie_enabled? %>
-    <div id="panel-camera" role="tabpanel" aria-labelledby="tab-camera" data-camera-target="cameraPanel" hidden>
+    <%= tab_navigation "photo-source" do |tabs| %>
+      <% tabs.pane safe_join([fa_icon("cloud-arrow-up", :solid, class: "mr-1"), "Upload File"]), "panel-upload" do %>
+        <%= upload_panel %>
+      <% end %>
+
+      <%# ===== Camera Selfie Panel ===== %>
+      <% tabs.pane safe_join([fa_icon("camera", :solid, class: "mr-1"), "Take Selfie"]), "panel-camera" do %>
       <%= ui_section nil do %>
 
         <%# Browser not supported error %>
@@ -294,6 +272,9 @@
         </div>
 
       <% end %>
-    </div>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= upload_panel %>
   <% end %>
 <% end %>

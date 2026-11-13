@@ -30,7 +30,7 @@
 
   <div class="stat-meter mb-3" aria-hidden="true">
     <% type_count.segments.each do |status, percent| %>
-      <span class="stat-meter-segment <%= tints[status][:bar] %>" style="width: <%= percent %>%"></span>
+      <span class="stat-meter-segment <%= tints[status][:bar] %>" style="--stat-meter-share: <%= percent %>%"></span>
     <% end %>
   </div>
 
