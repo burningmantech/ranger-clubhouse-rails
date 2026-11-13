@@ -5,13 +5,12 @@
   positions exist only when someone is on duty.
 %>
 <% if group.positions.empty? %>
-  <p class="text-stone-muted">No one is on duty in these positions right now.</p>
+  <%= ui_empty_state "No one is on duty in these positions right now." %>
 <% else %>
   <% group.positions.each do |position| %>
     <% if position.slots.empty? %>
-      <p class="text-stone-muted mt-4 first:mt-0">
-        No <%= position.title %> shifts are scheduled around this Alpha shift.
-      </p>
+      <%= ui_empty_state "No #{position.title} shifts are scheduled around this Alpha shift.",
+                         class: "mt-4 first:mt-0" %>
     <% else %>
       <% position.slots.each do |slot_sign_ups| %>
         <%= ui_subheading do %>
@@ -24,7 +23,7 @@
           <%= ui_badge slot_sign_ups.entries.size.to_s, :secondary %>
         <% end %>
         <% if slot_sign_ups.entries.empty? %>
-          <p class="text-stone-muted">No sign-ups yet for this shift.</p>
+          <%= ui_empty_state "No sign-ups yet for this shift." %>
         <% else %>
           <%= render "people_table", entries: slot_sign_ups.entries, alpha: position.alpha?,
                                      began_label: began_label %>

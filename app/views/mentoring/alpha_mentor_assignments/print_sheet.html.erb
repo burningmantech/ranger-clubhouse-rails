@@ -6,12 +6,8 @@
 %>
 <% content_for :title, "#{@year} Alpha Mentor Assignments" %>
 
-<div class="print:hidden mb-4">
-  <%= back_to "Mentor assignments", mentoring_alpha_mentor_assignments_path(@back_params) %>
-  <p class="text-stone-muted mt-1">
-    Use your browser's print command. This message and the navigation are left off the paper.
-  </p>
-</div>
+<%= render "mentoring/alpha_schedule/print_screen_nav",
+           label: "Alpha Mentor Assignments", url: mentoring_alpha_mentor_assignments_path(@back_params) %>
 
 <%# .alpha-sheet is the house paper surface -- fixed ink-on-white, 11pt, and a
     bordered page preview on screen. Reused rather than forked, the way the

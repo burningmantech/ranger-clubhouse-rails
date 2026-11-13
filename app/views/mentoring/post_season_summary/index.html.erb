@@ -97,7 +97,7 @@
       <%= ui_section meta[:title], id: "post-season-#{key}", icon: meta[:icon], icon_type: :solid,
                      badge: rows.size.to_s, badge_color: meta[:badge_color] do %>
         <% if rows.empty? %>
-          <p class="text-stone-muted"><%= post_season_empty_message(key, filtering: @filtering) %></p>
+          <%= ui_empty_state post_season_empty_message(key, filtering: @filtering) %>
         <% else %>
           <%= render "common/unified_flagging/review_list", rows: rows, year: @year, selected_id: @selected_id,
                      extra: "mentoring/post_season_summary/list_extra" %>

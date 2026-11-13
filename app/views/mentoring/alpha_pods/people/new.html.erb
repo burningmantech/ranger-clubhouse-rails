@@ -15,15 +15,10 @@
     <%# _top: the response is a turbo stream that replaces the board behind
         this dialog, so the submit must not be scoped to the modal frame. %>
     <%= form_with url: mentoring_alpha_pods_people_path(@slot, @pod), method: :post,
-                  builder: AppFormBuilder, data: { turbo_frame: "_top" } do %>
+                  builder: AppFormBuilder, data: { turbo_frame: "_top" } do |f| %>
       <%= bulk_select do %>
         <% if @pod.mentor? %>
-          <%= ui_callout_box :secondary, class: "mb-3" do %>
-            <label class="flex items-center gap-2 min-h-9">
-              <%= check_box_tag :is_lead, "1", false, class: AppFormBuilder::CHECKBOX_CLASSES %>
-              <span>Mark everyone selected as a <strong>lead mentor</strong></span>
-            </label>
-          <% end %>
+          <%= f.check_box :is_lead, label: "Mark everyone selected as a lead mentor" %>
         <% end %>
 
         <%# Scoped to the list below it: the two folded pools opt out, so one
@@ -46,7 +41,7 @@
 
         <% if @pools.not_checked_in.any? %>
           <%= ui_disclosure "Not Checked In (#{@pools.not_checked_in.size})", class: "mt-3" do %>
-            <p class="text-sm text-stone-muted mb-2">
+            <p class="text-stone-muted mb-2">
               Everyone here holds the position but has no open shift. Adding them records no
               check-in time.
             </p>

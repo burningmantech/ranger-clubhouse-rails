@@ -22,7 +22,7 @@
     </dl>
   <% end %>
 
-  <%= ui_section "Alpha Surveys", badge: pluralize(@surveys.size, "survey"), badge_color: :success do %>
+  <%= ui_section "Alpha Surveys", badge: @surveys.size.to_s, badge_color: :secondary do %>
     <%# One row per season, so the year leads. %>
     <%= render "common/surveys/survey_table", surveys: @surveys, show_year: true %>
   <% end %>

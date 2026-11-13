@@ -94,7 +94,7 @@
                      icon: section[:icon], icon_type: :solid,
                      badge: rows.size.to_s, badge_color: section[:badge_color] do %>
         <% if rows.empty? %>
-          <p class="text-stone-muted"><%= alpha_status_empty_message(section, filtering: @filtering) %></p>
+          <%= ui_empty_state alpha_status_empty_message(section, filtering: @filtering) %>
         <% elsif section[:key] == :resolve %>
           <%# The only section holding more than one kind of concern: a Personnel
               flag quarantines someone and a rank 3/4 does not, and that decides

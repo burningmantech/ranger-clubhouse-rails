@@ -45,7 +45,7 @@
         <tbody>
           <tr class="alpha-write-row">
             <%# A flag means "a mentor should talk to this person first". %>
-            <td class="alpha-flag-cell" rowspan="3"><%= "⚑" if entry.flagged? %></td>
+            <td class="alpha-flag-cell" rowspan="3"><%= fa_icon("flag", :solid, label: "Flagged") if entry.flagged? %></td>
             <td>
               <span class="alpha-fill">Handle</span>
               <span class="alpha-callsign"><%= person.callsign %></span>

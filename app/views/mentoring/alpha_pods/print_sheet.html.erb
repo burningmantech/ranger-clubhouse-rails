@@ -22,7 +22,7 @@
       @bottom-right {
         content: "Page " counter(page) " of " counter(pages);
         font-size: 7.5pt;
-        color: #444;
+        color: var(--color-body);
         font-family: "Atkinson Hyperlegible", sans-serif;
       }
     }
@@ -30,13 +30,9 @@
   </style>
 <% end %>
 
-<div class="print:hidden mb-4">
-  <%= back_to "Pods", mentoring_alpha_pods_shift_path(@slot) %>
-  <p class="text-stone-muted mt-1">
-    Use your browser's print command, with landscape orientation. This message and the navigation
-    are left off the paper.
-  </p>
-</div>
+<%= render "mentoring/alpha_schedule/print_screen_nav",
+           label: "Pods", url: mentoring_alpha_pods_shift_path(@slot),
+           hint: "Use your browser's print command, with landscape orientation." %>
 
 <section class="alpha-sheet alpha-sheet--wide alpha-pod-sheet">
   <div class="alpha-masthead">

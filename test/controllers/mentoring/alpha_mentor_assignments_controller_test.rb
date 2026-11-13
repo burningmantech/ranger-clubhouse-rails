@@ -245,7 +245,7 @@ class Mentoring::AlphaMentorAssignmentsControllerTest < ActionDispatch::Integrat
     end
 
     assert_response :unprocessable_entity
-    assert_match "No bonks on this sheet?", response.body
+    assert_match "No Bonks on This Sheet", response.body
     assert_select "input[name=confirmed]"
   end
 
