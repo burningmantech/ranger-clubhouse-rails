@@ -98,9 +98,10 @@
                    variant: @change.grant? ? :success : :error,
                    data: {
                      turbo_confirm: confirm_modal_dialog(
-                       title: "Final Confirmation",
-                       message: bulk_position_consequence(@change),
-                       confirm_label: bulk_position_preview_title(@change)
+                       title: "#{bulk_position_preview_title(@change)}?",
+                       message: "#{bulk_position_consequence(@change)} #{bulk_position_undo(@change)}",
+                       confirm_label: bulk_position_preview_title(@change),
+                       variant: @change.grant? ? :primary : :error
                      )
                    } %>
     <% end %>

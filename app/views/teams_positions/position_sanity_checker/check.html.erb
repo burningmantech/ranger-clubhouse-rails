@@ -26,7 +26,7 @@
       before offering the list. %>
   <% if @truncated %>
     <%= ui_callout_box :warning, icon: "list-ol", icon_type: :solid,
-                       title: "Showing the First #{@findings.size}" do %>
+                       title: "Showing the First #{@findings.size}", heading_level: :h2 do %>
       This check found more rows than one page can repair at once. Settle these,
       then reload for the next batch — and if the number is not going down,
       look at the position or team settings behind the check rather than the
@@ -64,9 +64,6 @@
         <%= button_action meta[:action], :primary,
                           type: "submit", icon: "wrench", icon_type: :solid,
                           data: { checkbox_select_all_target: "submit" } %>
-        <%= button_link "Back to the Board", :secondary,
-                        teams_positions_position_sanity_checker_path,
-                        icon: "arrow-left", icon_type: :solid %>
       <% end %>
     <% end %>
   <% end %>

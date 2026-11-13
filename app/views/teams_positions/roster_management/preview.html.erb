@@ -18,7 +18,8 @@
   <% end %>
 <% end %>
 
-<%= ui_callout_box roster_action_variant(@action), icon: "triangle-exclamation", icon_type: :solid do %>
+<%= ui_callout_box(@action.grant? ? :info : :warning,
+                   icon: @action.grant? ? "circle-info" : "triangle-exclamation", icon_type: :solid) do %>
   <%= roster_action_consequence(@action, @team) %>
 <% end %>
 
@@ -78,9 +79,10 @@
       <%= f.submit roster_action_confirm_label(@action), variant: roster_action_variant(@action),
                    data: {
                      turbo_confirm: confirm_modal_dialog(
-                       title: "Final Confirmation",
-                       message: roster_action_consequence(@action, @team),
-                       confirm_label: roster_action_confirm_label(@action)
+                       title: "#{roster_action_title(@action)}?",
+                       message: "#{roster_action_consequence(@action, @team)} #{roster_action_undo(@action)}",
+                       confirm_label: roster_action_confirm_label(@action),
+                       variant: roster_action_variant(@action)
                      )
                    } %>
     <% end %>

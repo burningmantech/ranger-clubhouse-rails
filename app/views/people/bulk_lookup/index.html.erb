@@ -101,7 +101,7 @@
                 <% if years.last %>
                   <%= years.last %>
                 <% else %>
-                  <em>never</em>
+                  <span class="text-stone-muted">never</span>
                 <% end %>
               <% end %>
               <%= t.cell do %><%= yes_no_badge person.vintage %><% end %>

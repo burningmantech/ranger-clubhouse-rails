@@ -135,7 +135,7 @@ class People::BulkLookupControllerTest < ActionDispatch::IntegrationTest
     post people_run_bulk_lookup_path, params: { lines: "ProspectiveNewbie" }
 
     assert_select "#found-section tbody tr", 1
-    assert_select "#found-section em", "never"
+    assert_select "#found-section td span.text-stone-muted", "never"
     assert_select "#found-section", /ProspectiveNewbie/
   end
 
@@ -145,7 +145,7 @@ class People::BulkLookupControllerTest < ActionDispatch::IntegrationTest
     post people_run_bulk_lookup_path, params: { lines: "EchelonTest" }
 
     assert_select "#found-section tbody tr", 1
-    assert_select "#found-section em", "never"
+    assert_select "#found-section td span.text-stone-muted", "never"
   end
 
   # -------------------------------------------------------------- refusals

@@ -3,11 +3,16 @@
                description: "Group positions whose sign-ups should be shown together on the Schedule page.",
                back_to: ["Position Records", teams_positions_position_records_path] %>
 
-<%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
-  <strong>A lineup decides what the Sign-Ups button shows.</strong>
-  Clicking Sign-Ups on the Schedule page lists every position in the same
-  lineup together — most often a mentor position beside its mentee position.
-  A position belongs to one lineup at a time.
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What does a lineup decide?</dt>
+    <dd>
+      What the Sign-Ups button shows. Clicking Sign-Ups on the Schedule page lists every position in the
+      same lineup together — most often a mentor position beside its mentee position.
+    </dd>
+    <dt>Can a position be in two lineups?</dt>
+    <dd>No. A position belongs to one lineup at a time.</dd>
+  </dl>
 <% end %>
 
 <div class="my-4">
@@ -34,20 +39,9 @@
 
           <%= t.cell do %>
             <% rows = @positions_by_lineup[lineup.id] %>
-            <% if rows.present? %>
-              <div class="flex flex-col gap-1">
-                <% rows.each do |_id, title, active| %>
-                  <div>
-                    <%= title %>
-                    <% unless active %>
-                      <span class="text-stone-muted italic">(inactive)</span>
-                    <% end %>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <span class="text-stone-muted italic">No positions linked yet</span>
-            <% end %>
+            <%= value_list(Array(rows).map { |_id, title, active|
+                  active ? title : safe_join([title, tag.span("(inactive)", class: "text-stone-muted italic")], " ")
+                }) %>
           <% end %>
 
           <%= t.cell right: true do %>

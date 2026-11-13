@@ -91,11 +91,7 @@
           <% end %>
 
           <%= t.cell do %>
-            <% if position.team %>
-              <%= position.team.title %>
-            <% else %>
-              <span class="text-stone-muted italic">No team</span>
-            <% end %>
+            <%= value_or_dash(position.team&.title) %>
           <% end %>
 
           <%= t.cell do %>

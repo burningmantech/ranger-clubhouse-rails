@@ -59,10 +59,10 @@
 
     <%# Said beside the button it is about, not in the hero: the hero is one
         sentence on what the page does. %>
-    <p class="mb-3">
+    <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
       <strong>Checking is always safe.</strong> It shows exactly what will change, and nothing
       is saved until you confirm.
-    </p>
+    <% end %>
 
     <%= button_row do %>
       <%= f.submit "Check Callsigns" %>

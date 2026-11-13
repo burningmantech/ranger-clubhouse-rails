@@ -19,7 +19,7 @@ module TeamsPositions::PositionSanityCheckerHelper
   # button, rather than in the hero. A test holds every check to both.
   CHECK_META = {
     deactivated_accounts: {
-      label: "Deactivated accounts with grants",
+      label: "Deactivated Accounts with Grants",
       icon: "user-slash",
       summary: "Bonked, resigned, or dismissed and still holding something",
       blurb: "These accounts are out — bonked, deceased, dismissed, past prospective, " \
@@ -27,83 +27,83 @@ module TeamsPositions::PositionSanityCheckerHelper
              "permissions.",
       repair: "Repairing revokes all three: positions, team membership, and permissions.",
       empty: "No deactivated account still holds a position, a team, or a permission.",
-      action: "Revoke everything"
+      action: "Revoke Everything"
     },
     retired_accounts: {
-      label: "Retired accounts holding too much",
+      label: "Retired Accounts Holding Too Much",
       icon: "box-archive",
       summary: "More than the new-user set",
       blurb: "A retired Ranger keeps the positions an auditor or prospective would have " \
              "and nothing else.",
       repair: "Repairing resets each account to the new-user set.",
       empty: "Every retired account holds only the new-user positions.",
-      action: "Reset to the new-user set"
+      action: "Reset to the New-User Set"
     },
     deactivated_positions: {
-      label: "Deactivated positions still granted",
+      label: "Deactivated Positions Still Granted",
       icon: "ban",
       summary: "A switched-off position someone still holds",
       blurb: "These positions have been switched off but are still granted.",
       repair: "Repairing revokes the position from the people you pick.",
       empty: "No switched-off position is still granted.",
-      action: "Revoke the position"
+      action: "Revoke the Position"
     },
     deactivated_teams: {
-      label: "Deactivated teams with members",
+      label: "Deactivated Teams with Members",
       icon: "users-slash",
       summary: "A switched-off team someone still belongs to",
       blurb: "These teams have been switched off but still have members.",
       repair: "Repairing removes each person from the team and revokes that team's positions with it.",
       empty: "No switched-off team still has members.",
-      action: "Remove from the team"
+      action: "Remove from the Team"
     },
     emyr: {
-      label: "Event Management Year Round granted directly",
+      label: "Event Management Year Round Granted Directly",
       icon: "key",
       summary: "The permission with nothing behind it",
       blurb: "This permission is meant to arrive through a position or a team.",
       repair: "These people were handed the permission directly and hold no position or team " \
               "that grants it, so the reason for it is gone. Repairing revokes the permission.",
       empty: "Everyone with Event Management Year Round holds a position or team that grants it.",
-      action: "Revoke the permission"
+      action: "Revoke the Permission"
     },
     missing_positions: {
-      label: "Accounts missing basic positions",
+      label: "Accounts Missing Basic Positions",
       icon: "user-plus",
       summary: "Short of the All Rangers or New User set",
       blurb: "Every Ranger account should hold the All Rangers positions, and every live " \
              "account the New User ones.",
       repair: "Repairing grants each account what its row lists.",
       empty: "Every account holds the basic positions for its status.",
-      action: "Grant the missing positions"
+      action: "Grant the Missing Positions"
     },
     team_positions: {
-      label: "Team members missing team positions",
+      label: "Team Members Missing Team Positions",
       icon: "clipboard-check",
       summary: "On the team, short of its basic positions",
       blurb: "A team member should hold all of that team's basic positions.",
       repair: "Each row is one missing position, so you can grant one and leave another.",
       empty: "Every team member holds their team's basic positions.",
-      action: "Grant the position"
+      action: "Grant the Position"
     },
     team_membership: {
-      label: "Team positions with no team membership",
+      label: "Team Positions with No Team Membership",
       icon: "user-group",
       summary: "Holds the positions, not on the team",
       blurb: "Holding a team's basic positions should mean belonging to the team.",
       repair: "Repairing adds each person to the team their positions point at.",
       empty: "Everyone holding a team's basic positions belongs to that team.",
-      action: "Add to the team"
+      action: "Add to the Team"
     },
     shiny_pennies: {
-      label: "Shiny Penny position",
+      label: "Shiny Penny Position",
       icon: "star",
       summary: "First-year Rangers, and only them",
       blurb: "Rangers who walked Alpha this year hold Dirt - Shiny Penny, and no one else does.",
       repair: "This check finds both mistakes at once, and each row is repaired whichever way " \
               "it is wrong — granted if it is missing, revoked if it is stale.",
       empty: "Every Shiny Penny holds the position, and no one else does.",
-      action: "Grant or revoke as each row needs"
+      action: "Grant or Revoke as Each Row Needs"
     }
   }.freeze
 
@@ -128,15 +128,15 @@ module TeamsPositions::PositionSanityCheckerHelper
   # position or team, and repeating it in every row of the section under it
   # would be the same word forty times.
   COLUMNS = {
-    deactivated_accounts: [["Still holds", :labels]],
-    retired_accounts: [["Positions beyond the new-user set", :labels]],
+    deactivated_accounts: [["Still Holds", :labels]],
+    retired_accounts: [["Positions Beyond the New-User Set", :labels]],
     deactivated_positions: [],
     deactivated_teams: [],
     emyr: [],
-    missing_positions: [["Missing positions", :titles]],
-    team_positions: [["Team", :group], ["Missing position", :target]],
-    team_membership: [["Missing team membership", :target], ["Team positions held", :labels]],
-    shiny_pennies: [["Mentor year", :mentor_year], ["Holds the position", :holds_position]]
+    missing_positions: [["Missing Positions", :titles]],
+    team_positions: [["Team", :group], ["Missing Position", :target]],
+    team_membership: [["Missing Team Membership", :target], ["Team Positions Held", :labels]],
+    shiny_pennies: [["Mentor Year", :mentor_year], ["Holds the Position", :holds_position]]
   }.freeze
 
   def position_check_meta(key) = CHECK_META.fetch(key.to_sym)

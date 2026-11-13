@@ -205,7 +205,7 @@ class TeamsPositions::TeamDocumentsControllerTest < ActionDispatch::IntegrationT
     assert_select ".lexxy-content h2", text: "Before your first shift"
     assert_select ".lexxy-content li", text: "Bring a radio"
     assert_select "a[href=?]", teams_positions_edit_team_document_path(@team)
-    assert_select "p.me-muted", text: /Last updated .+ by\s+#{@manager.callsign}\./m
+    assert_select "p.text-stone-muted", text: /Last updated .+ by\s+#{@manager.callsign}\./m
   end
 
   # Documents written through Clubhouse 2 never passed this app's editor, which

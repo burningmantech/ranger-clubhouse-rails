@@ -15,7 +15,9 @@
 <% end %>
 
 <%= ui_stat_row do %>
-  <%= ui_stat_box number_with_delimiter(@members.size), "Shown",
+  <%# The whole category, not the filtered roster: the line above the roster
+      already says "Showing X of Y". %>
+  <%= ui_stat_box number_with_delimiter(@total_members), "Holders",
                   icon: "users", icon_type: :solid %>
   <%# Dropped while the on-site filter is applied, where it could only repeat
       the box beside it -- the same call the index row meta makes. %>

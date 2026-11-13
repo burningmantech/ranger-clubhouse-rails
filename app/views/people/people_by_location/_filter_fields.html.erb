@@ -7,9 +7,9 @@
                width: "w-full", wrapper_class: "flex-1" %>
 <% end %>
 
-<fieldset class="mt-3">
-  <legend class="font-medium mb-2">Also include</legend>
-  <p class="text-sm text-stone-muted mb-2">
+<%= f.fieldset "Also Include", class: "form-fieldset mt-3",
+                aria: { describedby: "include-status-help" } do %>
+  <p id="include-status-help" class="<%= AppFormBuilder::HELP_TEXT_CLASSES %>">
     People who are not Rangers right now are hidden until you ask for them.
   </p>
   <%= render "common/checkbox_grid",
@@ -19,4 +19,4 @@
              },
              selected: @statuses,
              id_prefix: "include-status" %>
-</fieldset>
+<% end %>
