@@ -474,7 +474,7 @@ Rails' own messages already do this: `config/locales/en.yml` rewrites them as
   `none_stated` only. No hyphen, "none", "unknown", "Not specified", "(blank)" or other wording of
   nothing. A word that states a fact the data records is a value and stays: "Never" for something
   that has not happened, "Self", "Anonymous", "imported" for a record brought in without one,
-  "[hidden]", "No limit", "Shift deleted". It prints plain or in `text-stone-muted`, never in
+  "hidden", "No limit", "Shift deleted". It prints plain or in `text-stone-muted`, never in
   italics or wrapped in asterisks, hyphens or brackets. "—" means nothing recorded; a zero is a
   value and prints as a number, in a grid cell as in a total.
 - **No exclamation marks** in flash messages or error messages.
