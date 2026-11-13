@@ -18,15 +18,14 @@
                        help_text: "Printed on the badge exactly as typed." %>
       <%= f.select :title_line,
                    BmidTitle::TITLE_LINES.map { |line| ["Title #{line}", line] },
-                   { label: "Badge Line", required: true },
-                   { class: "w-full sm:w-44" } %>
+                   { label: "Badge Line", required: true, width: "w-full sm:w-44" } %>
     <% end %>
 
     <%= form_row do %>
       <%= f.collection_select :position_id, @positions, :id, :title,
                               { label: "Earned by Position", required: true,
-                                help_text: "Everyone holding this position earns the title." },
-                              { class: "w-full sm:w-72" } %>
+                                help_text: "Everyone holding this position earns the title.",
+                                width: "w-full sm:w-72" } %>
       <%= f.number_field :sort_index, label: "Preference", required: true,
                          width: "w-full sm:w-28",
                          help_text: "Lowest number wins when a line has more than one." %>
@@ -41,7 +40,8 @@
                         confirm_modal: {
                           title: "Confirm Badge Title Deletion",
                           message: "Delete \"#{@title.title}\"? #{bmid_title_position_name(@title)} will stop " \
-                                   "earning it. Badges already carrying it keep it until someone clears them.",
+                                   "earning it. Badges already carrying it keep it until someone clears them. " \
+                                   "This cannot be undone.",
                           confirm_label: "Delete Badge Title",
                           method: :delete
                         } %>

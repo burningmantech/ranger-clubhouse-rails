@@ -61,7 +61,7 @@ module Ticketing::AccessDocumentsHelper
   # name, a found date by its ISO day, spelled the way the column spells it.
   def arrival_filter_value(value)
     ARRIVAL_FILTERS.fetch(value) do
-      Date.iso8601(value).strftime(AccessDocumentSummaryRow::ARRIVAL_DATE_FORMAT)
+      wday_month_day_format(Date.iso8601(value))
     end
   end
 

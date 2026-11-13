@@ -61,24 +61,24 @@
 <%= ui_section "Meals, Showers & Vehicle Record", icon: "utensils", icon_type: :solid do %>
   <div class="grid gap-3 lg:grid-cols-3">
     <div>
-      <div class="text-sm text-stone-muted">Meals</div>
+      <div class="text-base text-stone-muted">Meals</div>
       <div class="flex min-h-9 items-center font-medium">
         <%= render "bmid/manage/meals_cell", bmid: @bmid, editable: true,
                    provisions: @provisions_by_type[Provision::MEALS] %>
       </div>
     </div>
     <div>
-      <div class="text-sm text-stone-muted">Showers</div>
+      <div class="text-base text-stone-muted">Showers</div>
       <div class="flex min-h-9 items-center font-medium">
         <%= render "bmid/manage/showers_cell", bmid: @bmid, editable: true,
                    provisions: @provisions_by_type[Provision::WET_SPOT] %>
       </div>
     </div>
     <div>
-      <div class="text-sm text-stone-muted">Motor Vehicle Record</div>
+      <div class="text-base text-stone-muted">Motor Vehicle Record</div>
       <div class="min-h-9">
         <span class="font-medium"><%= @bmid.org_vehicle_insurance ? "Yes" : "No" %></span>
-        <span class="text-sm text-stone-muted">(Read-only)</span>
+        <span class="text-base text-stone-muted">(Read-only)</span>
       </div>
     </div>
   </div>
@@ -106,7 +106,7 @@
   <%= render "common/bmids/fields", f: f, bmid: @bmid, ticketing_info: @ticketing_info %>
 
   <% unless is_new %>
-    <p class="me-muted mb-4">
+    <p class="text-stone-muted mb-4">
       Created <%= datetime_format(@bmid.created_at, year: true) %>
       &middot; Last modified <%= datetime_format(@bmid.updated_at, year: true) %>
     </p>

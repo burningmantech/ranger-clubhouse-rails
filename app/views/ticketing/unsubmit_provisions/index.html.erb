@@ -52,7 +52,7 @@
             <%= t.heading "Ticket" %>
             <%= t.heading "SAP" %>
             <%= t.heading "BMID Printed" %>
-            <%= t.heading "#{@year} Sign-Ups?" %>
+            <%= t.heading "#{@year} Sign-Ups" %>
             <%= t.heading "Provisions" %>
           <% end %>
           <%= t.body do %>
@@ -91,8 +91,10 @@
       <%= f.submit "Un-Submit Selected Provisions", variant: :error,
                    data: { turbo_confirm: confirm_modal_dialog(
                      title: "Confirm Un-Submit",
-                     message: "Return the selected people's provisions to available?",
-                     confirm_label: "Un-Submit Provisions"
+                     message: "Return the selected people's provisions to available? " \
+                                  "This cannot be undone from here.",
+                     confirm_label: "Un-Submit Provisions",
+                     variant: :error
                    ) } %>
       <%= cancel_button ticketing_maintenance_path %>
     <% end %>

@@ -42,10 +42,10 @@
           <% end %>
           <%= ui_card_footer do %>
             <% if entry.link? %>
-              <%= button_link "Open #{entry.title}", :primary, send(entry.path_helper),
+              <%= button_link "Open #{entry.title}", :secondary, send(entry.path_helper),
                               full_width: true %>
             <% else %>
-              <%= button_link "Preview #{entry.title}", :primary,
+              <%= button_link "Preview #{entry.title}", :secondary,
                               ticketing_maintenance_preview_path(entry.slug),
                               full_width: true %>
             <% end %>

@@ -1,24 +1,26 @@
 <%# One badge line on the Set BMID Titles preview: the picker, and the text box
     the Custom option hands over to. conditional-show only reacts to a change,
-    so the box's opening state has to be right from the server. %>
+    so the box's opening state has to be right from the server.
+
+    A grid cell: the column heading is the visible label, so each field hides
+    its own and carries an aria-label naming the person and the line. %>
 <% custom_id = "bmid-custom-title-#{cell[:key]}" %>
 <% label = "Title #{line} for #{person.callsign}" %>
 
-<%= select_tag "titles[#{cell[:key]}]",
-               options_for_select(
-                 [["Blank", ""]] + cell[:options] +
-                   [["Custom title…", Bmid::TitlesController::CUSTOM]],
-                 cell[:selected]
-               ),
-               class: "#{AppFormBuilder::SELECT_CLASSES} w-full",
-               aria: { label: label },
-               data: { controller: "conditional-show",
-                       conditional_show_id_value: custom_id,
-                       conditional_show_reveal_value: Bmid::TitlesController::CUSTOM } %>
+<%= fields_for "titles", nil, builder: AppFormBuilder do |tf| %>
+  <%= tf.select cell[:key],
+                [["Blank", ""]] + cell[:options] + [["Custom title…", Bmid::TitlesController::CUSTOM]],
+                { selected: cell[:selected], hide_label: true, width: "w-full", wrapper_class: "min-w-0",
+                  aria: { label: label },
+                  data: { controller: "conditional-show",
+                          conditional_show_id_value: custom_id,
+                          conditional_show_reveal_value: Bmid::TitlesController::CUSTOM } } %>
+<% end %>
 
 <div id="<%= custom_id %>" class="mt-1 <%= "hidden" if cell[:custom].blank? %>">
-  <%= text_field_tag "custom_titles[#{cell[:key]}]", cell[:custom],
-                     maxlength: BmidTitle::TITLE_LIMIT,
-                     class: "#{AppFormBuilder::INPUT_CLASSES} w-full",
-                     aria: { label: "Custom #{label.downcase}" } %>
+  <%= fields_for "custom_titles", nil, builder: AppFormBuilder do |cf| %>
+    <%= cf.text_field cell[:key], value: cell[:custom], hide_label: true,
+                      maxlength: BmidTitle::TITLE_LIMIT, width: "w-full", wrapper_class: "min-w-0",
+                      aria: { label: "Custom #{label.downcase}" } %>
+  <% end %>
 </div>

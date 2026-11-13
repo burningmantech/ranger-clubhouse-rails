@@ -20,7 +20,7 @@
       { label: "Submitted", icon: "paper-plane", bar: "bg-secondary", text: "text-secondary" }
   }
 %>
-<div class="card-standard p-4">
+<%= ui_card class: "p-4" do %>
   <div class="flex flex-wrap items-baseline justify-between gap-x-3 mb-2">
     <h3 class="heading-title text-heading"><%= type_count.label %></h3>
     <span class="text-base text-stone-muted">
@@ -44,4 +44,4 @@
       </span>
     <% end %>
   </div>
-</div>
+<% end %>

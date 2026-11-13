@@ -28,15 +28,14 @@
                empty_message: "No #{bmid_provision_noun(type)} on file for #{person.callsign}.",
                frame: "modal",
                action_label: "Edit" %>
-
-    <div class="mt-4">
-      <%= button_row do %>
-        <%= button_link bmid_provision_add_label(type), :primary,
-                        new_bmid_provision_path(provision_context.merge(type:)),
-                        icon: "plus", icon_type: :solid,
-                        data: { turbo_frame: "modal" } %>
-        <%= modal_close_button "Close" %>
-      <% end %>
-    </div>
+  <% end %>
+  <%= m.footer do %>
+    <%= button_row do %>
+      <%= button_link bmid_provision_add_label(type), :primary,
+                      new_bmid_provision_path(provision_context.merge(type:)),
+                      icon: "plus", icon_type: :solid,
+                      data: { turbo_frame: "modal" } %>
+      <%= modal_close_button "Close" %>
+    <% end %>
   <% end %>
 <% end %>

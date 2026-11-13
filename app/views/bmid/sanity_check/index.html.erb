@@ -2,12 +2,7 @@
                title: "#{@year} BMID Sanity Check",
                description: "Shift sign-ups that disagree with SAP and Staff Credential access dates." %>
 
-<%= ui_callout_box :info do %>
-  The sanity check is only available for the current year's badges: it compares
-  sign-ups with today's access documents and box office date.
-<% end %>
-
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 mb-2">
+<%= ui_stat_row do %>
   <% @report.counts.each do |key, count| %>
     <% meta = sanity_check_meta(key) %>
     <%= ui_stat_link bmid_sanity_check_path(check: key),
@@ -17,7 +12,7 @@
                       icon: count.positive? ? meta[:icon] : "circle-check" %>
     <% end %>
   <% end %>
-</div>
+<% end %>
 
 <%# The check the warning and the card both name, by the label on its tile. %>
 <% spt_label = sanity_check_meta(:spt_before_box_office)[:short_label] %>
@@ -32,6 +27,11 @@
     the date it measures against is set. %>
 <%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
   <dl class="instruction-list">
+    <dt>Which year does this check?</dt>
+    <dd>
+      The sanity check is only available for the current year's badges: it compares
+      sign-ups with today's access documents and box office date.
+    </dd>
     <dt>How do I clear a finding?</dt>
     <dd>Fix the access document or the sign-up — a clean year shows four zeros.</dd>
     <% if @report.box_office_open %>

@@ -4,10 +4,12 @@
                description: "The titles a position earns on a badge"
 %>
 
-<dl class="instruction-list my-4">
-  <dt>How many titles can one badge print?</dt>
-  <dd>Three, one per line. A position may earn a title on one of them.</dd>
-</dl>
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>How many titles can one badge print?</dt>
+    <dd>Three, one per line. A position may earn a title on one of them.</dd>
+  </dl>
+<% end %>
 
 <%= button_row class: "my-4" do %>
   <%= button_link "Add Badge Title", :primary, new_bmid_title_path,

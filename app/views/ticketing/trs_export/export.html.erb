@@ -55,7 +55,8 @@
                            turbo_confirm: confirm_modal_dialog(
                              title: "Confirm Mark Submitted",
                              message: "Mark the selected items as submitted? " \
-                                      "Only do this after TRS has accepted them.",
+                                      "Only do this after TRS has accepted them. Undoing it " \
+                                      "means changing each item's status back by hand.",
                              confirm_label: "Mark Submitted"
                            ) } %>
       <%= cancel_button ticketing_trs_export_path(filter: @filter.slug) %>

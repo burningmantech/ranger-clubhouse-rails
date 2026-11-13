@@ -32,9 +32,8 @@
         <%# The editor is this page's own, so it takes the year with it and
             comes back to this row with the whole view still in place. %>
         <%= t.cell do %>
-          <%= link_to "Edit", edit_bmid_badge_path(view_params.merge(person_id: bmid.person_id)),
-                      class: LinkHelper::TABLE_LINK_CLASSES,
-                      aria: { label: "Edit the badge for #{bmid.person.callsign}" } %>
+          <%= edit_link edit_bmid_badge_path(view_params.merge(person_id: bmid.person_id)),
+                        aria: { label: "Edit the badge for #{bmid.person.callsign}" } %>
         <% end %>
         <%= t.cell bmid_status_badge(bmid) %>
         <%= t.cell value_or_dash(bmid.title1) %>

@@ -72,10 +72,10 @@
                count: "Showing #{pluralize(@rows.size, 'item')}",
                url: ticketing_trs_export_path do |f| %>
   <%= f.select :filter, trs_filter_choices(@filter.slug),
-               label: "Export Filter", width: "w-full lg:w-96",
+               label: "Export Filter", width: "w-full sm:w-96",
                help_text: "Each filter matches one TRS spreadsheet format." %>
   <%= button_row do %>
-    <%= f.submit "Apply Filters" %>
+    <%= f.submit "Apply Filters", variant: :secondary %>
   <% end %>
 <% end %>
 
@@ -86,7 +86,7 @@
   <%= ui_form(nil, ticketing_trs_export_export_path, method: :post) do |f| %>
     <%# id: nil -- the filter_bar select above already owns id="filter". %>
     <%= hidden_field_tag :filter, @filter.slug, id: nil %>
-    <div data-controller="checkbox-select-all">
+    <%= bulk_select do %>
       <%= ui_section @filter.label, icon: "table-list", icon_type: :solid, border: false do %>
         <%= render "rows_table", rows: @rows, selectable: true, checked: false %>
       <% end %>
@@ -101,7 +101,8 @@
                      data: { checkbox_select_all_target: "submit",
                              turbo_confirm: confirm_modal_dialog(
                                title: "Confirm TRS Export",
-                               message: "Add an export comment to every selected item and build the TRS CSV?",
+                               message: "Add an export comment to every selected item and build the TRS CSV? " \
+                                        "The comments stay on the items and cannot be removed.",
                                confirm_label: "Export"
                              ) } %>
         <%= f.submit "Mark Selected as Submitted", variant: :secondary,
@@ -110,11 +111,12 @@
                              turbo_confirm: confirm_modal_dialog(
                                title: "Confirm Mark Submitted",
                                message: "Mark the selected items as submitted? " \
-                                        "Only do this after TRS has accepted them.",
+                                        "Only do this after TRS has accepted them. Undoing it " \
+                                        "means changing each item's status back by hand.",
                                confirm_label: "Mark Submitted"
                              ) } %>
       <% end %>
-    </div>
+    <% end %>
   <% end %>
 <% else %>
   <%= ui_section "All Claimed Items", icon: "table-list", icon_type: :solid, border: false do %>
