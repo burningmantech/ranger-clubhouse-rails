@@ -130,6 +130,7 @@ class ArtMentoring::Shifts
     @mentee_entries = []
     @mentor_entries = []
     @walks = {}
+    @promoting_passes = {}
     load_shifts if @mentee_position
   end
 
@@ -139,6 +140,14 @@ class ArtMentoring::Shifts
   def group_for(timesheet_id)
     @group_for ||= groups.flat_map { |group| group.mentee_entries.map { |entry| [entry.id, group] } }.to_h
     @group_for[timesheet_id]
+  end
+
+  # The group of the pass that promoted this entry's mentee, on any of their
+  # other entries: the roster says so, though the entry may still need a
+  # mentor (owner, 2026-11-14). Nil while a pass could still promote them.
+  def promoted_by_pass(entry)
+    pass_entry = @promoting_passes[entry.person_id]
+    group_for(pass_entry.id) if pass_entry && pass_entry.id != entry.id
   end
 
   def upcoming_shift(key) = upcoming.find { |shift| shift.slot.id.to_s == key }
@@ -210,9 +219,12 @@ class ArtMentoring::Shifts
                          .group_by(&:timesheet_id).transform_values { |rows| Walk.new(rows:) }
     # A pass on another shift is what promoted them, not a promotion without a
     # verdict: their unwalked shifts still need a mentor.
-    passed = walks.each_value.filter_map { |walk| walk.rows.first.person_id if walk.status == PersonMentor::STATUS_PASS }
+    # Each mentee's first pass of the year, by person id.
+    passes = mentee_entries.select { |entry| walks[entry.id]&.status == PersonMentor::STATUS_PASS }
+                           .uniq(&:person_id).index_by(&:person_id)
     promotable = pass.offers(mentee_entries).each_value.map { |offer| offer.person.id }
-    @promoted_without_verdict = mentee_entries.to_set(&:person_id) - promotable - passed
+    @promoted_without_verdict = mentee_entries.to_set(&:person_id) - promotable - passes.keys
+    @promoting_passes = passes.except(*promotable)
     @flags = PersonMentoringShift.for_entries(mentee_entries.map(&:id)).index_by(&:timesheet_id)
 
     @groups = build_groups(mentee_slots, mentor_slots)
