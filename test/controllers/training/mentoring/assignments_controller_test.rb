@@ -391,9 +391,10 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     assert_response :unprocessable_entity
     assert_includes response.body, "Pick a mentor before recording a result."
     assert_select "select#walks_#{@tinsel.id}_status option[selected][value=?]", PersonMentor::STATUS_BONK
-    # The reason sits right under the fields it is about, and the general notes
-    # below it are not shaded as though they had failed.
-    assert_select "div#walk-#{@tinsel.id}-notes-row + div#walk-#{@tinsel.id}-error + " \
+    # The reason sits right under the fields it is about, last in the card's
+    # body, and the general notes in the foot below it are not shaded as though
+    # they had failed.
+    assert_select "div:has(> div#walk-#{@tinsel.id}-notes-row + div#walk-#{@tinsel.id}-error:last-child) + " \
                   "div#walk-#{@tinsel.id}-general-notes-row:not([class*=bg-error])"
     assert_not PersonMentor.exists?(timesheet_id: @tinsel.id)
   end
