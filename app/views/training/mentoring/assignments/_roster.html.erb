@@ -214,6 +214,13 @@
             <% end %>
           </div>
           <%= ui_card_body class: "py-4 space-y-3" do %>
+            <%# Promoted without a verdict: out of Need a Mentor (Shifts::Group#promoted?),
+                though a walk may still be recorded. %>
+            <% if group.promoted?(entry) %>
+              <div class="text-success">
+                <%= fa_icon "circle-check", :solid, end: 2 %>Promoted. No mentor assignment is needed.
+              </div>
+            <% end %>
             <% if editable && pass_left.key?(entry.id) && !can_graduate? %>
               <div class="text-stone-muted">A <%= @training.title %> graduate can add them to the team.</div>
             <% end %>

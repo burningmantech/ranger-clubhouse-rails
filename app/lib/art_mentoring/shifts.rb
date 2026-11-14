@@ -20,8 +20,9 @@
 # mentee entry, not by group, and each entry is in one state: no walk yet
 # (needs a mentor -- on shift or after, since every verdict but a pass waits on
 # one), paired and signed out with the result still Pending (awaits a verdict),
-# or done. A mentee a pass can no longer promote -- promoted without a verdict
-# (owner, 2026-10-28) -- is done too, walk or not.
+# or done. A mentee a pass can no longer promote and no one passed this year --
+# promoted without a verdict (owner, 2026-10-28) -- is done too, walk or not;
+# one promoted by a pass on another shift still needs a mentor on this one.
 #
 # Built once per request, one query per source. A training whose team has no
 # ART mentee position flagged lists nothing.
@@ -59,14 +60,14 @@ class ArtMentoring::Shifts
   # `walks` is each entry's Walk by timesheet id, for the entries that have one.
   # Only a pass is recorded without a mentor, so an entry with no walk is a
   # mentee no one has been paired with. `on_shift_entries` are the entries still
-  # signed in (ON_SHIFT_WITHIN). `promotable` holds the person ids among the
-  # year's mentees that a pass could still promote (Pass#offers). `flags` holds
-  # the "No mentors available" rows (PersonMentoringShift, owner 2026-11-13) by
-  # the timesheet id of the mentee's first entry here, where the roster draws
-  # the box: the row is about the mentee and the shift, so someone signed in
-  # twice has one.
+  # signed in (ON_SHIFT_WITHIN). `promoted_without_verdict` holds the person ids
+  # among the year's mentees that a pass can no longer promote (Pass#offers) and
+  # who have no pass this year. `flags` holds the "No mentors available" rows
+  # (PersonMentoringShift, owner 2026-11-13) by the timesheet id of the mentee's
+  # first entry here, where the roster draws the box: the row is about the
+  # mentee and the shift, so someone signed in twice has one.
   Group = Data.define(:key, :slot, :begins, :mentee_entries, :on_shift_entries, :mentor_entries, :walks,
-                      :promotable, :flags) do
+                      :promoted_without_verdict, :flags) do
     def initialize(flags: {}, **) = super
 
     def unmatched? = slot.nil?
@@ -76,6 +77,8 @@ class ArtMentoring::Shifts
     def mentors = mentor_entries.map(&:person).uniq
     def mentee_count_for(mentor) = walks.values.count { |walk| walk.mentor_ids.include?(mentor.id) }
     def no_mentors?(entry) = flags.key?(entry.id)
+    # Promoted without a verdict: needs no mentor on any shift (needing_mentor).
+    def promoted?(entry) = promoted_without_verdict.include?(entry.person_id)
 
     # No walk, and a mentee still: one promoted without a verdict needs no mentor
     # (chosen by Claude 2026-10-28, reversible), and neither does one flagged
@@ -83,7 +86,7 @@ class ArtMentoring::Shifts
     def needing_mentor
       flagged = mentee_entries.select { |entry| no_mentors?(entry) }.to_set(&:person_id)
       mentee_entries.reject do |entry|
-        walks.key?(entry.id) || !promotable.include?(entry.person_id) || flagged.include?(entry.person_id)
+        walks.key?(entry.id) || promoted?(entry) || flagged.include?(entry.person_id)
       end
     end
     # Each mentee's first entry: someone signed in twice is one mentee, and the
@@ -205,7 +208,11 @@ class ArtMentoring::Shifts
     # files the walk here (ArtMentoring::Assignment).
     @walks = PersonMentor.where(timesheet_id: mentee_entries.map(&:id)).includes(:mentor).order(:id)
                          .group_by(&:timesheet_id).transform_values { |rows| Walk.new(rows:) }
-    @promotable = pass.offers(mentee_entries).each_value.to_set { |offer| offer.person.id }
+    # A pass on another shift is what promoted them, not a promotion without a
+    # verdict: their unwalked shifts still need a mentor.
+    passed = walks.each_value.filter_map { |walk| walk.rows.first.person_id if walk.status == PersonMentor::STATUS_PASS }
+    promotable = pass.offers(mentee_entries).each_value.map { |offer| offer.person.id }
+    @promoted_without_verdict = mentee_entries.to_set(&:person_id) - promotable - passed
     @flags = PersonMentoringShift.for_entries(mentee_entries.map(&:id)).index_by(&:timesheet_id)
 
     @groups = build_groups(mentee_slots, mentor_slots)
@@ -246,8 +253,8 @@ class ArtMentoring::Shifts
       at = begins.to_i
       on_shift = mentor_entries.select.with_index { |_entry, i| (mentor_starts[i] - at).abs <= window }
       Group.new(key:, slot:, begins:, mentee_entries: members, on_shift_entries: members.select { |entry| signed_in?(entry) },
-                mentor_entries: on_shift, walks: walks.slice(*members.map(&:id)), promotable: @promotable,
-                flags: flags_for(members))
+                mentor_entries: on_shift, walks: walks.slice(*members.map(&:id)),
+                promoted_without_verdict: @promoted_without_verdict, flags: flags_for(members))
     end.sort_by(&:begins)
   end
 

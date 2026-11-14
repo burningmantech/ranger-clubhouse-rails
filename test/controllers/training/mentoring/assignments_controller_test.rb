@@ -753,6 +753,17 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     assert_equal was, drawn_was, "still the walk it was drawn with, so the Save that follows refuses it and says why"
   end
 
+  test "a mentee promoted without a verdict is marked as needing no mentor" do
+    get shift_path
+    assert_select "div#walk-#{@tinsel.id}", text: /Promoted\./, count: 0
+
+    PersonTeam.create!(team_id: @training.team_id, person_id: @tinsel.person_id)
+    get shift_path
+
+    assert_select "div#walk-#{@tinsel.id} .text-success", text: "Promoted. No mentor assignment is needed."
+    assert_match(/\b0 ?Need a Mentor/, css_select("main").text.squish)
+  end
+
   test "Promote Without a Verdict with nothing left to promote says so, with no empty dialog" do
     become_graduate
     PersonTeam.create!(team_id: @training.team_id, person_id: @tinsel.person_id)
