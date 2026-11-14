@@ -4,7 +4,7 @@
   each with mentors, a result, each mentor's notes, and the general notes about
   the mentee with a box for one more, saved together, in any year (ruled
   2026-10-22: a past year's walks are recorded and corrected here too). A
-  reader without the trainer role gets the same table with nothing to change.
+  reader without the trainer role gets the same cards with nothing to change.
   `submitted` holds the rows a refused or questioned save shows again as typed
   (ArtMentoring::Assignment#typed_rows), so the reader keeps their edits, and
   `typed_notes` the general notes typed into it, by person id;
@@ -84,6 +84,12 @@
         <%= abstained %>: the mentor declined to give a verdict. <%= not_completed %>: the mentee did not complete
         the shift. Neither counts as a pass or a bonk.
       </dd>
+      <dt>What does <%= ArtMentoring::Assignment::NO_MENTORS_AVAILABLE %> mean?</dt>
+      <dd>
+        No mentor could walk with the mentee on this shift. Tick it with every mentor at
+        <%= MentorHelper::NO_MENTOR %> and the result at <%= mentor_result_label(PersonMentor::STATUS_PENDING) %>.
+        The mentee then no longer counts under Need a Mentor.
+      </dd>
       <dt>How do I undo a pairing?</dt>
       <dd>
         Set every mentor to <%= MentorHelper::NO_MENTOR %>, leave the result at
@@ -145,66 +151,66 @@
 <% mentees = capture do %>
   <%= ui_section "Mentees", icon: "person-walking", icon_type: :solid, class: "mt-6",
                  badge: group.mentee_entries.size.to_s do %>
-    <%# Not striped: an error row follows the row it describes. %>
-    <%= ui_table full_width: true, striped: false do |t| %>
-      <%= t.header do %>
-        <%= t.heading "Mentee" %>
-        <%= t.heading "Signed In" %>
-        <%= t.heading "Duration", right: true %>
-        <%= t.heading "Result" %>
-      <% end %>
-      <%= t.body do %>
-        <% result_options = mentor_result_options(PersonMentor::STATUSES) %>
-        <% first_entries = group.first_entries %>
-        <% group.mentee_entries.each do |entry| %>
-          <% walk = group.walk_for(entry) %>
-          <% typed = submitted&.dig(entry.id) %>
-          <%# Each mentor slot as typed, or as stored: a mentor and their notes. %>
-          <% slots = typed ? typed.mentors : walk&.mentors || [] %>
-          <% error = row_errors[entry.id] %>
-          <% callsign = entry.person.callsign %>
-          <%# The fields share one name scheme, so each carries an explicit
-              id: Turbo's morph drops fields whose ids collide. %>
-          <%= t.row id: "walk-#{entry.id}", state: (:error if error), align: :middle do %>
-            <%= t.row_header do %>
-              <%= person_display_link entry.person, entry.person_id %>
-            <% end %>
-            <%= t.cell datetime_format(entry.on_duty), class: "whitespace-nowrap" %>
-            <%= t.cell art_mentoring_duration(entry), right: true, class: "whitespace-nowrap" %>
-            <%= t.cell do %>
+    <%# One card per mentee entry (owner, 2026-11-13: each mentee has several
+        parts, which a table's rows and hover misread as separate records). %>
+    <% result_options = mentor_result_options(PersonMentor::STATUSES) %>
+    <% first_entries = group.first_entries %>
+    <div class="space-y-4 pb-2">
+      <% group.mentee_entries.each do |entry| %>
+        <% walk = group.walk_for(entry) %>
+        <% typed = submitted&.dig(entry.id) %>
+        <%# Each mentor slot as typed, or as stored: a mentor and their notes. %>
+        <% slots = typed ? typed.mentors : walk&.mentors || [] %>
+        <% error = row_errors[entry.id] %>
+        <% callsign = entry.person.callsign %>
+        <% first = first_entries.include?(entry) %>
+        <%# The fields share one name scheme, so each carries an explicit
+            id: Turbo's morph drops fields whose ids collide. %>
+        <%= ui_card id: "walk-#{entry.id}", shadow: :none do %>
+          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 pt-3">
+            <h3 class="heading-title text-heading"><%= person_display_link entry.person, entry.person_id %></h3>
+            <span class="text-stone-muted">
+              Signed in <%= datetime_format(entry.on_duty) %> &middot; <%= art_mentoring_duration(entry) %>
+            </span>
+          </div>
+          <%= ui_card_body class: "py-3 space-y-3" do %>
+            <%= form_row class: "lg:items-end" do %>
               <%= fields "walks[#{entry.id}]", builder: AppFormBuilder do |wf| %>
                 <%= wf.select :status,
                               options_for_select(result_options,
                                                  typed ? typed.status : walk&.status || PersonMentor::STATUS_PENDING),
-                              { hide_label: true, wrapper: false, width: "w-auto min-w-32" },
+                              { label: "Result", width: "w-full sm:w-44", wrapper_class: "" },
                               { disabled: !editable, aria: { label: "Result for #{callsign}" } } %>
+                <%# The mentee's one box for the shift, on their first entry
+                    (PersonMentoringShift; owner, 2026-11-13). %>
+                <% if first %>
+                  <%= wf.check_box :no_mentors, label: ArtMentoring::Assignment::NO_MENTORS_AVAILABLE,
+                                                checked: typed ? typed.no_mentors : group.no_mentors?(entry),
+                                                disabled: !editable, wrapper_class: "",
+                                                aria: { label: "#{ArtMentoring::Assignment::NO_MENTORS_AVAILABLE} for #{callsign}" } %>
+                <% end %>
               <% end %>
               <%# A recorded pass that has not yet joined them to the team or
                   revoked the mentee position: a graduate can finish it here. %>
               <% if editable && pass_left.key?(entry.id) %>
                 <% if can_graduate? %>
-                  <div class="mt-2">
-                    <%= button_action Training::MentoringHelper::GRANT_TEAM_POSITIONS, :secondary,
-                                      type: "submit", name: "grant_for", value: entry.id,
-                                      icon: "user-plus", icon_type: :solid,
-                                      aria: { label: "#{Training::MentoringHelper::GRANT_TEAM_POSITIONS} for #{callsign}" } %>
-                  </div>
-                <% else %>
-                  <br><span class="text-stone-muted">A <%= @training.title %> graduate can add them to the team.</span>
+                  <%= button_action Training::MentoringHelper::GRANT_TEAM_POSITIONS, :secondary,
+                                    type: "submit", name: "grant_for", value: entry.id,
+                                    icon: "user-plus", icon_type: :solid,
+                                    aria: { label: "#{Training::MentoringHelper::GRANT_TEAM_POSITIONS} for #{callsign}" } %>
                 <% end %>
               <% end %>
             <% end %>
-          <% end %>
-          <%# Each mentor slot on the line under the mentee: its select above its
-              notes (owner, 2026-10-28), numbered (ruled 2026-10-27), stacked,
-              side by side from lg. The hidden fields carry back what the row
-              and each slot held when the page was drawn
-              (ArtMentoring::Assignment). basis-full: below the fold the cell is
-              a flex item, and colspan means nothing there. %>
-          <%= t.row id: "walk-#{entry.id}-notes-row", state: (:error if error) do %>
-            <%= t.cell colspan: 4, class: "basis-full" do %>
+            <% if editable && pass_left.key?(entry.id) && !can_graduate? %>
+              <div class="text-stone-muted">A <%= @training.title %> graduate can add them to the team.</div>
+            <% end %>
+            <%# Each mentor slot: its select above its notes (owner, 2026-10-28),
+                numbered (ruled 2026-10-27), stacked, side by side from lg. The
+                hidden fields carry back what the row and each slot held when
+                the page was drawn (ArtMentoring::Assignment). %>
+            <%= tag.div id: "walk-#{entry.id}-notes-row" do %>
               <%= hidden_field_tag "walks[#{entry.id}][was]",
-                                   typed&.was || ArtMentoring::Assignment.stored_fingerprint(walk) %>
+                                   typed&.was || ArtMentoring::Assignment.stored_fingerprint(walk, group.no_mentors?(entry)) %>
               <div class="stack-to-row-lg">
                 <% ArtMentoring::Assignment::MENTOR_SLOTS.times do |i| %>
                   <div class="lg:flex-1">
@@ -222,21 +228,17 @@
                 <% end %>
               </div>
             <% end %>
-          <% end %>
-          <%# Right under the fields it is about, before the general notes. %>
-          <% if error %>
-            <%= t.row id: "walk-#{entry.id}-error", state: :error do %>
-              <%= t.cell colspan: 4 do %>
-                <span class="text-error" role="alert"><%= fa_icon "triangle-exclamation", :solid, end: 2 %><%= error %></span>
+            <%# Right under the fields it is about, before the general notes. %>
+            <% if error %>
+              <%= tag.div id: "walk-#{entry.id}-error", class: "text-error", role: "alert" do %>
+                <%= fa_icon "triangle-exclamation", :solid, end: 2 %><%= error %>
               <% end %>
             <% end %>
-          <% end %>
-          <%# The general notes about the mentee and the box for one more, on
-              the mentee's first entry only (Shifts::Group#first_entries). %>
-          <% notes = general_notes.fetch(entry.person_id, []) %>
-          <% if first_entries.include?(entry) && (notes.any? || editable) %>
-            <%= t.row id: "walk-#{entry.id}-general-notes-row" do %>
-              <%= t.cell colspan: 4, class: "basis-full" do %>
+            <%# The general notes about the mentee and the box for one more, on
+                the mentee's first entry only (Shifts::Group#first_entries). %>
+            <% notes = general_notes.fetch(entry.person_id, []) %>
+            <% if first && (notes.any? || editable) %>
+              <%= tag.div id: "walk-#{entry.id}-general-notes-row" do %>
                 <%= render "general_notes", notes:, person_id: entry.person_id, callsign:,
                                             typed: typed_notes[entry.person_id], editable: %>
               <% end %>
@@ -244,7 +246,7 @@
           <% end %>
         <% end %>
       <% end %>
-    <% end %>
+    </div>
   <% end %>
 <% end %>
 

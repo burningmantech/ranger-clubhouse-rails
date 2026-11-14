@@ -43,6 +43,29 @@ class ArtMentoring::ShiftsTest < ActiveSupport::TestCase
     assert_not_includes groups.map(&:key), nearer.id.to_s
   end
 
+  test "a mentee flagged No mentors available no longer needs a mentor, and the flag follows its entry" do
+    slot = mentee_shift(@evening)
+    first = mentee_entry(@mentees[0], @evening, off_duty: @evening + 6.hours, slot:)
+    again = mentee_entry(@mentees[0], @evening + 30.minutes, off_duty: @evening + 6.hours, slot:)
+    other = mentee_entry(@mentees[1], @evening, off_duty: @evening + 6.hours, slot:)
+    hold_mentee_position(@mentees[0])
+    hold_mentee_position(@mentees[1])
+    assert_equal [first, again, other].map(&:id).sort, shifts.group(slot.id.to_s).needing_mentor.map(&:id).sort
+
+    PersonMentoringShift.create!(person_id: @mentees[0].id, slot_id: slot.id, timesheet_id: first.id, incomplete: true)
+
+    group = shifts.group(slot.id.to_s)
+    assert_equal [other], group.needing_mentor, "both of the flagged mentee's entries are done"
+    assert group.no_mentors?(first)
+    assert_not group.no_mentors?(again), "the box is on the mentee's first entry"
+
+    # The entry is corrected onto another shift: the flag goes with it.
+    tomorrow = mentee_shift(@evening + 1.day)
+    first.update_columns(slot_id: tomorrow.id, on_duty: tomorrow.begins, off_duty: tomorrow.ends)
+    assert shifts.group(tomorrow.id.to_s).no_mentors?(first)
+    assert_not shifts.group(slot.id.to_s).no_mentors?(again)
+  end
+
   test "an entry with no shift named joins the nearer shift starting within the hour" do
     earlier = mentee_shift(@evening)
     later = mentee_shift(@evening + 1.hour)

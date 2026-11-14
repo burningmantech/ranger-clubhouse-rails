@@ -47,12 +47,79 @@ class ArtMentoring::AssignmentTest < ActiveSupport::TestCase
   # [person or nil, their notes, whom the slot showed when the page was drawn
   # (the person themself when not given)]. `was` is the walk's fingerprint as
   # drawn.
-  def row(sheet, *slots, status: PersonMentor::STATUS_PENDING, was: nil)
+  def row(sheet, *slots, status: PersonMentor::STATUS_PENDING, was: nil, no_mentors: false)
     mentors = slots.map do |slot|
       person, notes, loaded = slot.is_a?(Array) ? slot : [slot, ""]
       Mentor.new(id: person&.id, notes:, loaded_id: (loaded || person)&.id)
     end
-    Row.new(timesheet_id: sheet.id, mentors:, status:, mentor_malformed: false, was:)
+    Row.new(timesheet_id: sheet.id, mentors:, status:, mentor_malformed: false, was:, no_mentors:)
+  end
+
+  test "No mentors available writes one row for the mentee and the shift, and unticking deletes it" do
+    result = save(row(@first, no_mentors: true))
+
+    assert result.ok?
+    assert_equal 1, result.saved_count
+    assert_equal [[@tinsel.id, @slot.id, @first.id, true]],
+                 PersonMentoringShift.pluck(:person_id, :slot_id, :timesheet_id, :incomplete)
+
+    assert save(row(@first, no_mentors: true)).ok?, "saved again, it is left alone"
+    assert_equal 1, PersonMentoringShift.count
+
+    assert save(row(@first)).ok?
+    assert_not PersonMentoringShift.exists?
+  end
+
+  test "No mentors available is refused beside a mentor or a result" do
+    [row(@first, @ferrous, no_mentors: true), row(@first, status: PersonMentor::STATUS_PASS, no_mentors: true)].each do |typed|
+      result = save(typed)
+
+      assert_match(/No mentors available is ticked/, result.row_errors[@first.id])
+    end
+    assert_not PersonMentoringShift.exists?
+  end
+
+  test "the box speaks for a mentee's second entry on the shift too" do
+    again = mentee_entry(@tinsel, @slot.begins + 30.minutes, off_duty: @slot.ends, slot: @slot)
+
+    result = save(row(@first, no_mentors: true), row(again, @ferrous, status: PersonMentor::STATUS_PASS))
+
+    assert_match(/No mentors available is ticked/, result.row_errors[again.id])
+    assert_not PersonMentoringShift.exists?
+
+    PersonMentoringShift.create!(person_id: @tinsel.id, slot_id: @slot.id, timesheet_id: again.id, incomplete: true)
+    assert save(row(@first)).ok?, "ticked on the later entry, it is still the mentee's box"
+    assert_not PersonMentoringShift.exists?
+  end
+
+  test "ticking No mentors available with the mentors cleared removes the stored walk in the same save" do
+    walk(@first, @ferrous)
+
+    assert save(row(@first, no_mentors: true)).ok?
+
+    assert_not PersonMentor.exists?(timesheet_id: @first.id)
+    assert PersonMentoringShift.exists?(person_id: @tinsel.id, slot_id: @slot.id, timesheet_id: @first.id)
+  end
+
+  test "a row left as drawn keeps a box someone else ticked since" do
+    drawn = ArtMentoring::Assignment.stored_fingerprint(nil)
+    PersonMentoringShift.create!(person_id: @tinsel.id, slot_id: @slot.id, timesheet_id: @first.id, incomplete: true)
+
+    assert save(row(@first, was: drawn)).ok?
+
+    assert PersonMentoringShift.exists?(person_id: @tinsel.id)
+  end
+
+  test "a sign-in that matched no shift is flagged by its timesheet entry" do
+    loose = mentee_entry(create_person("Bramble"), @slot.begins + 1.day, off_duty: @slot.ends + 1.day, loose: true)
+    shifts = ArtMentoring::Shifts.new(@training, YEAR)
+    group = shifts.group("t#{loose.id}")
+
+    result = ArtMentoring::Assignment.new(shifts, group, { loose.id => row(loose, no_mentors: true) }).save!(written_by: @cinder)
+
+    assert result.ok?
+    assert_equal [[loose.person_id, nil, loose.id]], PersonMentoringShift.pluck(:person_id, :slot_id, :timesheet_id)
+    assert ArtMentoring::Shifts.new(@training, YEAR).group("t#{loose.id}").no_mentors?(loose)
   end
 
   test "a pairing is recorded against the mentee's timesheet entry" do

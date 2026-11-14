@@ -60,18 +60,32 @@ class ArtMentoring::Shifts
   # Only a pass is recorded without a mentor, so an entry with no walk is a
   # mentee no one has been paired with. `on_shift_entries` are the entries still
   # signed in (ON_SHIFT_WITHIN). `promotable` holds the person ids among the
-  # year's mentees that a pass could still promote (Pass#offers).
+  # year's mentees that a pass could still promote (Pass#offers). `flags` holds
+  # the "No mentors available" rows (PersonMentoringShift, owner 2026-11-13) by
+  # the timesheet id of the mentee's first entry here, where the roster draws
+  # the box: the row is about the mentee and the shift, so someone signed in
+  # twice has one.
   Group = Data.define(:key, :slot, :begins, :mentee_entries, :on_shift_entries, :mentor_entries, :walks,
-                      :promotable) do
+                      :promotable, :flags) do
+    def initialize(flags: {}, **) = super
+
     def unmatched? = slot.nil?
     def ends = slot&.ends
     def in_progress? = on_shift_entries.any?
     def walk_for(entry) = walks[entry.id]
     def mentors = mentor_entries.map(&:person).uniq
     def mentee_count_for(mentor) = walks.values.count { |walk| walk.mentor_ids.include?(mentor.id) }
+    def no_mentors?(entry) = flags.key?(entry.id)
+
     # No walk, and a mentee still: one promoted without a verdict needs no mentor
-    # (chosen by Claude 2026-10-28, reversible).
-    def needing_mentor = mentee_entries.reject { |entry| walks.key?(entry.id) || !promotable.include?(entry.person_id) }
+    # (chosen by Claude 2026-10-28, reversible), and neither does one flagged
+    # "No mentors available", whose shift is done (owner, 2026-11-13).
+    def needing_mentor
+      flagged = mentee_entries.select { |entry| no_mentors?(entry) }.to_set(&:person_id)
+      mentee_entries.reject do |entry|
+        walks.key?(entry.id) || !promotable.include?(entry.person_id) || flagged.include?(entry.person_id)
+      end
+    end
     # Each mentee's first entry: someone signed in twice is one mentee, and the
     # roster shows their general notes on that entry's rows.
     def first_entries = mentee_entries.uniq(&:person_id)
@@ -192,6 +206,7 @@ class ArtMentoring::Shifts
     @walks = PersonMentor.where(timesheet_id: mentee_entries.map(&:id)).includes(:mentor).order(:id)
                          .group_by(&:timesheet_id).transform_values { |rows| Walk.new(rows:) }
     @promotable = pass.offers(mentee_entries).each_value.to_set { |offer| offer.person.id }
+    @flags = PersonMentoringShift.for_entries(mentee_entries.map(&:id)).index_by(&:timesheet_id)
 
     @groups = build_groups(mentee_slots, mentor_slots)
     @upcoming = build_upcoming(mentee_slots, mentor_slots)
@@ -231,8 +246,20 @@ class ArtMentoring::Shifts
       at = begins.to_i
       on_shift = mentor_entries.select.with_index { |_entry, i| (mentor_starts[i] - at).abs <= window }
       Group.new(key:, slot:, begins:, mentee_entries: members, on_shift_entries: members.select { |entry| signed_in?(entry) },
-                mentor_entries: on_shift, walks: walks.slice(*members.map(&:id)), promotable: @promotable)
+                mentor_entries: on_shift, walks: walks.slice(*members.map(&:id)), promotable: @promotable,
+                flags: flags_for(members))
     end.sort_by(&:begins)
+  end
+
+  # A group's "No mentors available" rows, by the timesheet id of the mentee's
+  # first entry in it. A row is found by the entry it was ticked on -- any of
+  # the mentee's entries here -- so it follows an entry corrected onto another
+  # shift.
+  def flags_for(members)
+    members.group_by(&:person_id).filter_map do |_person_id, entries|
+      flag = entries.filter_map { |entry| @flags[entry.id] }.first
+      [entries.first.id, flag] if flag
+    end.to_h
   end
 
   def signed_in?(entry) = entry.off_duty.nil? && entry.on_duty.between?(now - ON_SHIFT_WITHIN, now)
