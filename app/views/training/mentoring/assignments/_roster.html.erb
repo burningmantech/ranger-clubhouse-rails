@@ -220,6 +220,14 @@
               <div class="text-success">
                 <%= fa_icon "circle-check", :solid, end: 2 %>Promoted. No mentor assignment is needed.
               </div>
+            <%# Promoted by a pass on another of their entries (Shifts#promoted_by_pass);
+                this one still counts in Need a Mentor. %>
+            <% elsif (pass_group = @shifts.promoted_by_pass(entry)) %>
+              <div class="text-success">
+                <%= fa_icon "circle-check", :solid, end: 2 %>Already promoted: passed on the shift
+                <%= link_to tag.span(art_mentoring_shift_label(pass_group)),
+                            training_mentoring_assignment_shift_path(training_slug, pass_group.key, year: @year) %>.
+              </div>
             <% end %>
             <% if editable && pass_left.key?(entry.id) && !can_graduate? %>
               <div class="text-stone-muted">A <%= @training.title %> graduate can add them to the team.</div>

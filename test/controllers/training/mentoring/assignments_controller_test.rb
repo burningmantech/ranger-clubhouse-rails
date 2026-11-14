@@ -764,6 +764,26 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     assert_match(/\b0 ?Need a Mentor/, css_select("main").text.squish)
   end
 
+  # Green Dot slot 33754, 2026: Zehir passed on a later shift.
+  test "a mentee promoted by a pass on another shift is marked so, with a link to it" do
+    later = mentee_shift(@slot.begins + 1.day)
+    walk(mentee_entry(@tinsel.person, later.begins, off_duty: later.ends, slot: later), @ferrous,
+         status: PersonMentor::STATUS_PASS)
+    get shift_path
+    assert_not_includes response.body, "Already promoted", "a pass could still promote them"
+
+    PersonTeam.create!(team_id: @training.team_id, person_id: @tinsel.person_id)
+    get shift_path
+
+    assert_select "div#walk-#{@tinsel.id} .text-success", text: /\AAlready promoted: passed on .+\.\z/ do
+      assert_select "a[href=?]", shift_path(later.id)
+    end
+    assert_match(/\b1 ?Need a Mentor/, css_select("main").text.squish, "this shift still needs its mentor")
+
+    get shift_path(later.id)
+    assert_not_includes response.body, "Already promoted", "the passing card reads Passed"
+  end
+
   test "Promote Without a Verdict with nothing left to promote says so, with no empty dialog" do
     become_graduate
     PersonTeam.create!(team_id: @training.team_id, person_id: @tinsel.person_id)
