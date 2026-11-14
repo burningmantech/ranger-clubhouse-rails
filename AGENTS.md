@@ -82,6 +82,8 @@ bin/rails db:migrate
 
 Look a feature up in `docs/FEATURES.md` before exploring the code. For every page, it lists the route, controller, owning class, tables and tests, plus traps checked against the code. When you move a route, owner or test, update its entry in the same commit.
 
+You are the owner and long-term maintainer of this codebase, and its design is up to you.
+
 ### Route Structure
 - Root redirects to login (`sessions#new`)
 - Main user routes are namespaced under `/me` (dashboard, profile, schedule, timesheet, tickets, vehicles, messages)
@@ -163,23 +165,12 @@ See `docs/UI-COMPONENTS.md` for complete API reference and `docs/DESIGN-GUIDE.md
 - Worktrees share those databases: run one `bin/rails test` at a time on this machine
 - Cache stores differ by env: test uses `null_store` (cache code silently no-ops in tests), dev uses `memory_store`, prod uses `redis_cache_store` (a Redis beside Puma: compose's `redis` service, or `redis-server` inside the AWS image under `bin/docker-server`; 128 MB, LRU, and `Rails.cache.clear` flushes it whole)
 
-### The Beta Server
-- The beta at `clubhouse3.dev` is live and serves real members. Never touch it: no command of any kind against it,
-  read-only included -- no `docker --context remote-server` (not `ps`, `logs` or `inspect` either), no `ssh` to its
-  host, no requests to `clubhouse3.dev` to check something
-- Deploying, migrating and verifying there are the maintainer's job -- never an agent's, a plan step's or an issue's
-- Take deploy facts from the repo (`docker-compose.yml`, `Dockerfile`, `bin/docker-entrypoint`,
-  `bin/docker-server`, `docker/nginx/`) and call them
-  unverified on beta
-
 ### Staging and Production on AWS
 - Staging and production run on ECS in the `rangers` cluster and are deployed only by the workflows in
   `.github/workflows/`: a merge to `main` rolls staging, and `deploy.yml` promotes staging's image to production
   when an allow-listed person runs it. Never dispatch, re-run or cancel those workflows
-- Never change the AWS services, task definitions or databases from a session: the task definition in AWS holds the
-  environment, and a deploy swaps only the image and rebuilds the `migrate` container from the web container.
+- Never change the AWS services, task definitions or databases from a session: the task definition in AWS holds the environment, and a deploy swaps only the image and rebuilds the `migrate` container from the web container.
   Read-only `aws` inventory is fine
-- `deploy/aws/` (the hand-run `amazon.clubhouse3.dev` stack) and `beta/` are the maintainer's as well
 
 ## Skills Reference
 
