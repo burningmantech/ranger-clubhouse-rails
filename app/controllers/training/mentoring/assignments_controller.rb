@@ -105,7 +105,7 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
     @general_notes ||= PersonMentoringNote.for_people(@group.first_entries.map(&:person_id)).group_by(&:person_id)
   end
 
-  # The roster arrives as walks[<timesheet id>][status|was] and, per mentor
+  # The roster arrives as walks[<timesheet id>][status|was|no_mentors] and, per mentor
   # slot, walks[<timesheet id>][mentors][<slot>][id|notes|loaded_id] -- the
   # keyed-hash shape this app's other many-row forms use. `was` and
   # `loaded_id` are what the row and the slot held when the page was drawn
@@ -128,6 +128,7 @@ class Training::Mentoring::AssignmentsController < Training::Mentoring::BaseCont
       # A row without its slots, or with slots in any other shape, is
       # malformed: never a request to clear them.
       [id, ArtMentoring::Assignment::Row.new(timesheet_id: id, status: status.to_s, mentors:, was: was.presence,
+                                             no_mentors: attributes[:no_mentors] == "1",
                                              mentor_malformed: !slots || !IdList.clean?(slots.map { |slot| slot[:id].to_s }))]
     end.to_h
   end

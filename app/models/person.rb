@@ -192,6 +192,7 @@ class Person < ApplicationRecord
   has_many :person_certification, dependent: :delete_all
   has_many :person_fka, -> { order(:fka_normalized) }, dependent: :destroy
   has_many :person_language, dependent: :delete_all
+  has_many :person_mentoring_shift, dependent: :delete_all
   has_many :person_favorite, dependent: :delete_all
   has_many :person_page_visit, dependent: :delete_all
   has_many :person_motd, dependent: :delete_all

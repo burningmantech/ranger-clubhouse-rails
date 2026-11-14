@@ -38,6 +38,10 @@
             <% end %>
             <%= t.cell do %>
               <%= mentor_result_badge(walk&.status || PersonMentor::STATUS_PENDING) %>
+              <%# The box sits on the mentee's first entry of a shift (Shifts::Group#flags). %>
+              <% if group.no_mentors?(entry) %>
+                <%= ui_badge ArtMentoring::Assignment::NO_MENTORS_AVAILABLE, :secondary, icon: "user-slash", icon_type: :solid %>
+              <% end %>
             <% end %>
             <%= t.cell art_walk_notes(walk) %>
           <% end %>

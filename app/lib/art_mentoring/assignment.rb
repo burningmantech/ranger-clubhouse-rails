@@ -18,6 +18,8 @@
 # the other save's work stays, and a row changed here and there both is refused.
 class ArtMentoring::Assignment
   NOTES_MAX = 2_000
+  # The roster's box, as its label, its badge and its refusal name it.
+  NO_MENTORS_AVAILABLE = "No mentors available"
   # Mentors per mentee shift, as the Alpha roster allows.
   MENTOR_SLOTS = 3
 
@@ -25,12 +27,16 @@ class ArtMentoring::Assignment
   # included (ArtMentoring::Shifts::WalkMentor), the result they share, and
   # the fingerprint of the walk the page was drawn with (nil when none was
   # sent). `mentor_malformed` marks slots sent in any shape but the form's, or
-  # a slot value that was neither blank nor an id.
-  Row = Data.define(:timesheet_id, :mentors, :status, :mentor_malformed, :was) do
+  # a slot value that was neither blank nor an id. `no_mentors` is the "No
+  # mentors available" box (owner, 2026-11-13), which only the mentee's first
+  # entry on the shift carries.
+  Row = Data.define(:timesheet_id, :mentors, :status, :mentor_malformed, :was, :no_mentors) do
+    def initialize(no_mentors: false, **) = super
+
     def passed? = status == PersonMentor::STATUS_PASS
     def mentor_ids = mentors.filter_map(&:id)
     def notes_for(mentor_id) = mentors.find { |mentor| mentor.id == mentor_id }&.notes.to_s
-    def fingerprint = ArtMentoring::Assignment.fingerprint(status, mentors)
+    def fingerprint = ArtMentoring::Assignment.fingerprint(status, mentors, no_mentors)
   end
 
   # `row_errors` is keyed by timesheet id. `conflict` is a save that lost a race
@@ -49,19 +55,23 @@ class ArtMentoring::Assignment
 
   # A walk's result and each mentor with their notes, in no order, as one
   # digest: what the roster draws into each row (Row#was), and what a save
-  # compares with the walk as stored by then.
-  def self.fingerprint(status, mentors)
+  # compares with the walk as stored by then. The "No mentors available" box
+  # joins it only when ticked, so a row drawn before the box existed still
+  # matches.
+  def self.fingerprint(status, mentors, no_mentors = false)
     # A blank slot's notes count too: typed with no mentor, they are a change.
     pairs = mentors.filter_map do |mentor|
       notes = clean(mentor.notes)
       [mentor.id.to_i, notes] if mentor.id || notes.present?
     end
-    Digest::SHA256.hexdigest([status, pairs.sort].to_json)
+    Digest::SHA256.hexdigest([status, pairs.sort, *(true if no_mentors)].to_json)
   end
 
   # A stored walk's fingerprint. An entry with none is drawn Pending, with no
   # mentor.
-  def self.stored_fingerprint(walk) = fingerprint(walk&.status || PersonMentor::STATUS_PENDING, walk&.mentors || [])
+  def self.stored_fingerprint(walk, no_mentors = false)
+    fingerprint(walk&.status || PersonMentor::STATUS_PENDING, walk&.mentors || [], no_mentors)
+  end
 
   # @param shifts [ArtMentoring::Shifts] the year the group belongs to
   # @param group [ArtMentoring::Shifts::Group]
@@ -134,7 +144,12 @@ class ArtMentoring::Assignment
       promoted = apply_grants(grants, passed.index_by(&:id))
       unrecorded = without_verdict ? passed_without_mentor.select { |entry| promoted.key?(entry.person) }.map(&:id) : []
       @rows.each do |row|
-        counts[sync(row, @entries.fetch(row.timesheet_id))] += 1 unless unrecorded.include?(row.timesheet_id)
+        next if unrecorded.include?(row.timesheet_id)
+
+        entry = @entries.fetch(row.timesheet_id)
+        outcome = sync(row, entry)
+        # A box ticked or unticked is a mentee recorded, cleared walk or not.
+        counts[sync_flag(row, entry) || outcome] += 1
       end
       @general_notes.each do |person, notes|
         next if PersonMentoringNote.resubmitted?(person:, written_by:, notes:)
@@ -194,8 +209,10 @@ class ArtMentoring::Assignment
   # A row left as drawn, as its walk is stored now: whatever someone else saved
   # since stands.
   def stored_row(row)
-    walk = @group.walk_for(@entries.fetch(row.timesheet_id))
-    row.with(mentors: walk&.mentors || [], status: walk&.status || PersonMentor::STATUS_PENDING)
+    entry = @entries.fetch(row.timesheet_id)
+    walk = @group.walk_for(entry)
+    row.with(mentors: walk&.mentors || [], status: walk&.status || PersonMentor::STATUS_PENDING,
+             no_mentors: @group.no_mentors?(entry))
   end
 
   # Changed here and, since the page was drawn, by someone else -- unless the
@@ -203,7 +220,8 @@ class ArtMentoring::Assignment
   def stale?(row)
     return false if row.was.blank?
 
-    now = self.class.stored_fingerprint(@group.walk_for(@entries.fetch(row.timesheet_id)))
+    entry = @entries.fetch(row.timesheet_id)
+    now = self.class.stored_fingerprint(@group.walk_for(entry), @group.no_mentors?(entry))
     row.was != now && row.fingerprint != now
   end
 
@@ -233,6 +251,13 @@ class ArtMentoring::Assignment
              "change again, then save."
     end
     return "Pick a result from the list." unless PersonMentor::STATUSES.include?(row.status)
+    # Nothing is cleared for the reader (owner, 2026-11-13): the box says no
+    # one walked with the mentee, so a mentor or a result beside it is refused.
+    # The box is the mentee's for the shift, so it speaks for each of their
+    # entries on it, not only the one whose card carries it.
+    if ticked_people.include?(entry.person_id) && (row.mentor_ids.any? || row.status != PersonMentor::STATUS_PENDING)
+      return "#{NO_MENTORS_AVAILABLE} is ticked. Set every mentor to No mentor and the result to Pending, or untick it."
+    end
 
     # Asked before any other slot's error, which would draw the box beside its
     # new mentor and so answer the question unasked.
@@ -314,6 +339,40 @@ class ArtMentoring::Assignment
       true
     end
     :saved if written.positive? || removed.any?
+  end
+
+  # The mentees whose box this save leaves ticked: ticked on the row of their
+  # first entry, the one that carries it.
+  def ticked_people
+    @ticked_people ||= @rows.filter_map do |row|
+      entry = @entries.fetch(row.timesheet_id)
+      entry.person_id if row.no_mentors && @first_entries[entry.person_id] == entry
+    end.to_set
+  end
+
+  # The "No mentors available" box (owner, 2026-11-13): ticked writes the
+  # mentee's row, on the entry that carries the box, unticked deletes it. Only the mentee's first
+  # entry carries the box; a crafted one on another entry is ignored.
+  # @return [Symbol, nil] :saved, or nil when nothing changed
+  def sync_flag(row, entry)
+    return unless @first_entries[entry.person_id] == entry
+
+    flag = @group.flags[entry.id]
+    slot_id = @group.slot&.id
+    if row.no_mentors && !flag
+      flag = PersonMentoringShift.new(person_id: entry.person_id, slot_id:, timesheet_id: entry.id, incomplete: true)
+      flag.audit_reason = "no mentors available"
+      flag.save!
+      :saved
+    elsif row.no_mentors
+      # Its entry was corrected onto this shift since: the row says so from now on.
+      flag.update!(slot_id:) if flag.slot_id != slot_id
+      nil
+    elsif flag
+      flag.audit_reason = "no mentors available cleared"
+      flag.destroy!
+      :saved
+    end
   end
 
   def audit_reason(walk)

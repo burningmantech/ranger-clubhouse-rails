@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_12_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_000001) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -739,6 +739,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_000002) do
     t.datetime "created_at", precision: nil, null: false
     t.index ["person_id"], name: "index_person_mentoring_note_on_person_id"
     t.index ["written_by_id"], name: "index_person_mentoring_note_on_written_by_id"
+  end
+
+  create_table "person_mentoring_shift", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.bigint "person_id", null: false
+    t.bigint "slot_id", unsigned: true
+    t.bigint "timesheet_id", unsigned: true
+    t.boolean "incomplete", default: false, null: false
+    t.index ["person_id", "slot_id"], name: "index_person_mentoring_shift_on_person_id_and_slot_id"
+    t.index ["slot_id"], name: "index_person_mentoring_shift_on_slot_id"
+    t.index ["timesheet_id"], name: "index_person_mentoring_shift_on_timesheet_id", unique: true
+    t.check_constraint "`slot_id` is not null or `timesheet_id` is not null", name: "person_mentoring_shift_has_a_key"
   end
 
   create_table "person_message", id: :integer, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|

@@ -97,13 +97,68 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
       assert_select "input[type=hidden][name=?]", "walks[#{@tinsel.id}][mentors][#{i}][loaded_id]", count: 1
       # Each mentor's select sits above that mentor's notes, on the line under the mentee.
       slot = "walks_#{@tinsel.id}_mentors_#{i}"
-      assert_select "tr#walk-#{@tinsel.id}-notes-row div:has(> label[for=#{slot}_id] + select##{slot}_id) + " \
+      assert_select "div#walk-#{@tinsel.id}-notes-row div:has(> label[for=#{slot}_id] + select##{slot}_id) + " \
                     "div > label[for=#{slot}_notes] + textarea##{slot}_notes"
     end
-    assert_select "tr#walk-#{@tinsel.id} select[id^=?]", "walks_#{@tinsel.id}_mentors_", count: 0
+    # One card holds the mentee: nothing of theirs is a table row.
+    assert_select "div#walk-#{@tinsel.id} h3", text: "Tinsel"
+    assert_select "tr[id^=walk-]", count: 0
     assert_select "select[id^=?]", "walks_#{@tinsel.id}_mentors_", count: ArtMentoring::Assignment::MENTOR_SLOTS
     assert_select "input[type=hidden][name=?]", "walks[#{@tinsel.id}][was]", count: 1
     assert_select "form[action=?]", shift_path
+  end
+
+  # ------------------------------------------------- no mentors available
+
+  test "ticking No mentors available records the mentee's shift and takes them out of Need a Mentor" do
+    get shift_path
+    assert_select "div#walk-#{@tinsel.id} input[type=checkbox][name=?]:not([checked])", "walks[#{@tinsel.id}][no_mentors]"
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params(was: drawn_was).merge(no_mentors: "1") } }
+
+    assert_redirected_to shift_path
+    assert_equal "Recorded 1 mentee.", flash[:success]
+    flag = PersonMentoringShift.find_by!(person_id: @tinsel.person_id, slot_id: @slot.id)
+    assert flag.incomplete
+    assert_equal @tinsel.id, flag.timesheet_id
+    assert ActionLog.exists?(event: "person-mentoring-shift-create"), "the box is audited"
+    follow_redirect!
+    assert_select "input[type=checkbox][name=?][checked]", "walks[#{@tinsel.id}][no_mentors]"
+    assert_match(/\b0 ?Need a Mentor/, css_select("main").text.squish)
+  end
+
+  test "unticking No mentors available deletes the row" do
+    PersonMentoringShift.create!(person_id: @tinsel.person_id, slot_id: @slot.id, timesheet_id: @tinsel.id, incomplete: true)
+    get shift_path
+
+    post shift_path, params: { walks: { @tinsel.id => walk_params(was: drawn_was).merge(no_mentors: "0") } }
+
+    assert_redirected_to shift_path
+    assert_not PersonMentoringShift.exists?(person_id: @tinsel.person_id)
+  end
+
+  test "No mentors available beside a mentor is refused and nothing is cleared" do
+    post shift_path, params: { walks: { @tinsel.id => walk_params([@ferrous.id, ""]).merge(no_mentors: "1") } }
+
+    assert_response :unprocessable_entity
+    assert_select "div#walk-#{@tinsel.id}-error", text: /No mentors available is ticked\. Set every mentor to No mentor/
+    assert_select "input[type=checkbox][name=?][checked]", "walks[#{@tinsel.id}][no_mentors]"
+    assert_select "select#walks_#{@tinsel.id}_mentors_0_id option[selected][value=?]", @ferrous.id.to_s
+    assert_not PersonMentoringShift.exists?
+    assert_not PersonMentor.exists?(timesheet_id: @tinsel.id)
+  end
+
+  test "a mentee signed in twice has one No mentors available box, and Other Shifts badges a flagged shift" do
+    mentee_entry(@tinsel.person, @slot.begins + 30.minutes, off_duty: @slot.ends, slot: @slot)
+    later = mentee_shift(@slot.begins + 1.day)
+    mentee_entry(@tinsel.person, later.begins, off_duty: later.ends, slot: later)
+    PersonMentoringShift.create!(person_id: @tinsel.person_id, slot_id: @slot.id, timesheet_id: @tinsel.id, incomplete: true)
+
+    get shift_path
+    assert_select "input[type=checkbox][name$=?]", "[no_mentors]", count: 1
+
+    get shift_path(later.id)
+    assert_select "table .badge", text: "No mentors available", count: 1
   end
 
   test "the roster renders no duplicate DOM ids with a mentee signed in twice" do
@@ -179,7 +234,7 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
                                                         notes: "An older page." } } }
 
     assert_response :unprocessable_entity
-    assert_select "tr#walk-#{@tinsel.id}-error", text: /This row could not be read, so it shows what is saved now\./
+    assert_select "div#walk-#{@tinsel.id}-error", text: /This row could not be read, so it shows what is saved now\./
     # Above the form, the refusal names the mentee whose row failed.
     assert_select "[role=alert]", text: /Nothing Was Recorded\s*1 row below still needs fixing: #{@tinsel.person.callsign}\./
     assert_select "select#walks_#{@tinsel.id}_mentors_0_id option[selected][value=?]", @ferrous.id.to_s
@@ -199,7 +254,7 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
       post shift_path, params: { walks: { @tinsel.id => { status: PersonMentor::STATUS_PENDING, mentors: } } }
 
       assert_response :unprocessable_entity, mentors.inspect
-      assert_select "tr#walk-#{@tinsel.id}-error", text: /This row could not be read/
+      assert_select "div#walk-#{@tinsel.id}-error", text: /This row could not be read/
     end
     assert_equal [@ferrous.id], PersonMentor.where(timesheet_id: @tinsel.id).pluck(:mentor_id)
   end
@@ -212,7 +267,7 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     post shift_path, params: { walks: { @tinsel.id => walk_params([@cinder.id, "Calm on the radio."], was:) } }
 
     assert_response :unprocessable_entity
-    assert_select "tr#walk-#{@tinsel.id}-error", text: /Someone else saved this mentee after you opened the page/
+    assert_select "div#walk-#{@tinsel.id}-error", text: /Someone else saved this mentee after you opened the page/
     assert_select "select#walks_#{@tinsel.id}_mentors_0_id option[selected][value=?]", @ferrous.id.to_s
     assert_select "textarea#walks_#{@tinsel.id}_mentors_0_notes", text: /Ready\./
     assert_equal [@ferrous.id], PersonMentor.where(timesheet_id: @tinsel.id).pluck(:mentor_id)
@@ -239,7 +294,7 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     post shift_path, params: { walks: { @tinsel.id => walk_params([@cinder.id, "Ready.", @ferrous.id], was: drawn_was) } }
 
     assert_response :unprocessable_entity
-    assert_select "tr#walk-#{@tinsel.id}-error", text: /Mentor 1 changed from Ferrous to Cinder, but its notes are Ferrous's\./
+    assert_select "div#walk-#{@tinsel.id}-error", text: /Mentor 1 changed from Ferrous to Cinder, but its notes are Ferrous's\./
     assert_select "select#walks_#{@tinsel.id}_mentors_0_id option[selected][value=?]", @cinder.id.to_s
     assert_select "input[name=?][value=?]", "walks[#{@tinsel.id}][mentors][0][loaded_id]", @cinder.id.to_s
     assert_equal [@ferrous.id], PersonMentor.where(timesheet_id: @tinsel.id).pluck(:mentor_id)
@@ -271,7 +326,7 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
 
     get shift_path
 
-    assert_select "tr#walk-#{@tinsel.id}-general-notes-row" do
+    assert_select "div#walk-#{@tinsel.id}-general-notes-row" do
       assert_select "li", count: 2
       assert_select "li:first-child", text: /Sep 2, 2026 @ \d\d:\d\d · Ferrous.*Much better this year\./m
       assert_select "li:last-child", text: /Sep 1, 2024 @ \d\d:\d\d · Cinder.*Quiet on the radio\./m
@@ -334,8 +389,8 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     assert_select "select#walks_#{@tinsel.id}_status option[selected][value=?]", PersonMentor::STATUS_BONK
     # The reason sits right under the fields it is about, and the general notes
     # below it are not shaded as though they had failed.
-    assert_select "tr#walk-#{@tinsel.id}-notes-row + tr#walk-#{@tinsel.id}-error + " \
-                  "tr#walk-#{@tinsel.id}-general-notes-row:not([class*=bg-error])"
+    assert_select "div#walk-#{@tinsel.id}-notes-row + div#walk-#{@tinsel.id}-error + " \
+                  "div#walk-#{@tinsel.id}-general-notes-row:not([class*=bg-error])"
     assert_not PersonMentor.exists?(timesheet_id: @tinsel.id)
   end
 
