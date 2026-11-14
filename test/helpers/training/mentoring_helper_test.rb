@@ -11,7 +11,7 @@ class Training::MentoringHelperTest < ActionView::TestCase
 
   def group(slot:, begins:)
     ArtMentoring::Shifts::Group.new(key: "k", slot:, begins:, mentee_entries: [], on_shift_entries: [],
-                                    mentor_entries: [], walks: {}, promotable: Set.new)
+                                    mentor_entries: [], walks: {}, promoted_without_verdict: Set.new)
   end
 
   test "the mentoring title drops a trailing Training, in any case, and leaves other titles alone" do

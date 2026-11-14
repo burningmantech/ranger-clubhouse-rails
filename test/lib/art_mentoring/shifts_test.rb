@@ -164,6 +164,22 @@ class ArtMentoring::ShiftsTest < ActiveSupport::TestCase
 
     assert_equal %w[Moonrake], current.group(slot.id.to_s).needing_mentor.map { |sheet| sheet.person.callsign }
     assert_equal 1, current.needing_mentor_count
+    assert current.group(slot.id.to_s).promoted?(promoted)
+  end
+
+  # Promoted by a pass on a later shift, not without a verdict: the earlier
+  # shift no one recorded still needs its mentor (green-dot slot 33754, 2026).
+  test "a mentee promoted by a pass on another shift still needs a mentor on this one" do
+    earlier = mentee_shift(@evening)
+    later = mentee_shift(@evening + 1.day)
+    unwalked = mentee_entry(@mentees[0], @evening, off_duty: @evening + 6.hours, slot: earlier)
+    walk(mentee_entry(@mentees[0], later.begins, off_duty: later.begins + 6.hours, slot: later), @mentors[0],
+         status: PersonMentor::STATUS_PASS)
+    PersonTeam.create!(team_id: @training.team_id, person_id: @mentees[0].id)
+
+    group = shifts.group(earlier.id.to_s)
+    assert_equal [unwalked], group.needing_mentor
+    assert_not group.promoted?(unwalked)
   end
 
   test "a sign-in left open for more than a day has ended" do
