@@ -1,0 +1,18 @@
+<%# locals: (t:, education:) -%>
+<%# The When and Where cells of a training row: the session signed up for or taught, or a dash each. -%>
+<% slot = education&.slot %>
+<%= t.cell do %>
+  <% if slot %>
+    <%= datetime_format slot.begins, tz: slot.timezone %> (<%= slot.timezone_abbr %>)
+  <% else %>
+    —
+  <% end %>
+<% end %>
+<%= t.cell do %>
+  <% if slot %>
+    <%= slot.description %>
+    <%= slot_virtual_venue_badge(slot) %>
+  <% else %>
+    —
+  <% end %>
+<% end %>

@@ -1,0 +1,33 @@
+<%# Rendered only for someone holding an ART position (the index guards it), so it has no empty state. %>
+<%= ui_section "Advanced Ranger Training (ART)", icon: "award", icon_type: :solid do %>
+  <%= ui_table striped: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Position" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "When" %>
+      <%= t.heading "Where" %>
+    <% end %>
+    <%= t.body do %>
+      <% @person_event.art_trainings.each do |art| %>
+        <%= t.row do %>
+          <%= t.row_header do %>
+            <%= art.position_title %>
+            <%= ui_badge "Teaching", :primary, size: "xs" if art.is_trainer %>
+          <% end %>
+          <%= t.cell class: "whitespace-nowrap" do %>
+            <% if art.status == Training::PASS %>
+              <%= ui_badge "Completed", :success, icon: "circle-check", icon_type: :solid %>
+            <% elsif [Training::NO_SHOW, Training::FAIL].include?(art.status) %>
+              <%= ui_badge "Not Passed", :error, icon: "circle-xmark", icon_type: :solid %>
+            <% elsif art.status == Training::NO_SHIFT %>
+              <%= ui_badge "Not Signed Up", :secondary, icon: "circle", icon_type: :regular %>
+            <% else %>
+              <%= ui_badge "Pending", :warning, icon: "hourglass-half", icon_type: :solid %>
+            <% end %>
+          <% end %>
+          <%= render "me/operational_summary/session_cells", t:, education: art %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

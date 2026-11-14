@@ -184,15 +184,33 @@ class PartialsRenderTest < ActionView::TestCase
   end
 
   test "the Operational Summary's ART table badges only a virtual session" do
-    @person_event = Struct.new(:online_course_passed, :training, :art_trainings).new(true, nil, art_rows)
+    @person_event = Struct.new(:art_trainings).new(art_rows)
+
+    render partial: "me/operational_summary/advanced_ranger_training"
+
+    assert_select ".badge", text: "Virtual / Online", count: 1
+    assert_select "td:has(.badge-secondary)", text: /Session virtual/
+  end
+
+  # In-Person Training is required of everyone: a sign-up not yet held reads Pending with its
+  # session, and no sign-up at all is an error, not the neutral chip an ART row gets.
+  test "the Operational Summary's Training table shows the In-Person Training status and session" do
+    person_event = Struct.new(:online_course_passed, :online_course_date, :training)
     @person = Struct.new(:ranger) do
       def is_ranger? = ranger
       def is_applicant? = false
     end.new(true)
 
+    @person_event = person_event.new(true, Time.zone.local(2026, 3, 14), art_rows.first)
     render partial: "me/operational_summary/training"
 
-    assert_select ".badge", text: "Virtual / Online", count: 1
-    assert_select "td:has(.badge-secondary)", text: /Session virtual/
+    assert_select "tr", text: /Online Course\s+Passed\s+Mar 14, 2026/
+    assert_select "tr", text: /In-Person Training.*Pending.*Aug 25 @ 10:00 \(PDT\)\s+Session virtual/m
+
+    @person_event = person_event.new(false, nil, Struct.new(:status, :slot, :is_trainer).new(Training::NO_SHIFT))
+    render partial: "me/operational_summary/training"
+
+    assert_select "tr", text: /Complete before signing up for In-Person Training\./
+    assert_select "td .badge-error", text: "Not Signed Up"
   end
 end

@@ -1,77 +1,52 @@
-<%= ui_section "Training", icon: "graduation-cap", icon_type: :solid do %>
-  <div class="grid gap-2 grid-cols-1 lg:grid-cols-2">
-    <%= ui_accent_card "Online Course", variant: :info, icon: "laptop", icon_type: :solid,
-                       heading_level: :h3 do %>
-      <% if @person_event.online_course_passed %>
-        <%= ui_badge "Passed", :success, icon: "circle-check", icon_type: :solid %>
-      <% else %>
-        <%= ui_badge "Not Passed", :warning, icon: "circle-exclamation", icon_type: :solid %>
-        <div class="mt-1 text-body">Complete before signing up for In-Person Training.</div>
-      <% end %>
+<% training = @person_event.training %>
+<% if @person.is_ranger? || @person.is_applicant? %>
+  <%= ui_accent_card "In-Person Training is required every event. No exceptions." do %>
+    You must complete it before you can Ranger on-playa. If you haven’t, you will be turned away. Advanced Ranger Training
+    sessions do not count.
+  <% end %>
+<% end %>
+<%= ui_section "Training", icon: "graduation-cap", icon_type: :solid, class: "mt-4" do %>
+  <%= ui_table striped: false do |t| %>
+    <%= t.header do %>
+      <%= t.heading "Training" %>
+      <%= t.heading "Status" %>
+      <%= t.heading "When" %>
+      <%= t.heading "Where" %>
     <% end %>
-
-    <%= ui_accent_card "In-Person Training", variant: :info, icon: "users", icon_type: :solid,
-                       heading_level: :h3 do %>
-      <% if @person_event.training&.status %>
-        <% case @person_event.training.status %>
-    <% when Training::NO_SHIFT %>
-          <%= ui_badge "Not Signed Up", :error, icon: "circle", icon_type: :regular %>
-        <% when Training::PASS %>
-          <%= ui_badge "Passed", :success, icon: "circle-check", icon_type: :solid %>
-        <% when Training::FAIL %>
-          <%= ui_badge "Not Completed", :error, icon: "circle-xmark", icon_type: :solid %>
-        <% when Training::NO_SHOW %>
-          <%= ui_badge "Did Not Attend", :error, icon: "circle-xmark", icon_type: :solid %>
-        <% else %>
-          <%= ui_badge "Status Unknown", :secondary %>
-        <% end %>
-      <% else %>
-        <%= ui_badge "Not Available", :secondary, icon: "circle", icon_type: :regular %>
-      <% end %>
-      <% if @person.is_ranger? || @person.is_applicant? %>
-        <div class="mt-1 text-body">
-          In-Person Training completion required to Ranger on-playa. No exceptions.
-        </div>
-      <% end %>
-    <% end %>
-  </div>
-  <% if @person_event.art_trainings.any? %>
-    <h3 class="heading-title text-heading mb-2">Advanced Ranger Training (ART)</h3>
-    <%= ui_table responsive: false do |t| %>
-      <%= t.header do %>
-        <%= t.heading "Position" %>
-        <%= t.heading "Status" %>
-        <%= t.heading "When/Where" %>
-      <% end %>
-      <%= t.body do %>
-        <% @person_event.art_trainings.each do |art| %>
-          <%= t.row do %>
-            <%= t.cell art.position_title %>
-            <%= t.cell do %>
-              <% if art.status == Training::PASS %>
-                <%= ui_badge "Completed", :success, icon: "circle-check", icon_type: :solid %>
-              <% elsif [Training::NO_SHOW, Training::FAIL].include?(art.status) %>
-                <%= ui_badge "Not Passed", :error, icon: "circle-xmark", icon_type: :solid %>
-              <% elsif art.status == Training::NO_SHIFT %>
-                <%= ui_badge "Not Signed Up", :secondary, icon: "circle", icon_type: :regular %>
-              <% else %>
-                <%= ui_badge "Pending", :warning, icon: "hourglass-half", icon_type: :solid %>
-              <% end %>
-            <% end %>
-            <%= t.cell do %>
-              <% if art.slot %>
-                <%= datetime_format art.slot.begins, tz: art.slot.timezone %> (<%= art.slot.timezone_abbr %>)<br>
-                <%= art.slot.description %>
-                <%= slot_virtual_venue_badge(art.slot) %>
-                <% if art.is_trainer %>
-                  <br><%= ui_badge "Teaching", :primary, size: "xs" %>
-                <% end %>
-              <% else %>
-                <span class="text-stone-muted">—</span>
-              <% end %>
-            <% end %>
+    <%= t.body do %>
+      <%= t.row do %>
+        <%= t.row_header do %>
+          Online Course
+          <% unless @person_event.online_course_passed %>
+            <div class="font-normal text-body mt-1">Complete before signing up for In-Person Training.</div>
           <% end %>
         <% end %>
+        <%= t.cell class: "whitespace-nowrap" do %>
+          <% if @person_event.online_course_passed %>
+            <%= ui_badge "Passed", :success, icon: "circle-check", icon_type: :solid %>
+          <% else %>
+            <%= ui_badge "Not Passed", :warning, icon: "circle-exclamation", icon_type: :solid %>
+          <% end %>
+        <% end %>
+        <%= t.cell value_or_dash(mdy_format(@person_event.online_course_date)) %>
+        <%= t.cell "—" %>
+      <% end %>
+      <%= t.row do %>
+        <%= t.row_header do %>
+          In-Person Training
+          <%= ui_badge "Teaching", :primary, size: "xs" if training&.is_trainer %>
+        <% end %>
+        <%= t.cell class: "whitespace-nowrap" do %>
+          <%# Required of everyone, so a missing sign-up is an error here, not the shared badge's neutral chip. %>
+          <% if training&.status.nil? %>
+            <%= ui_badge "Not Available", :secondary, icon: "circle", icon_type: :regular %>
+          <% elsif training.status == Training::NO_SHIFT %>
+            <%= ui_badge "Not Signed Up", :error, icon: "circle", icon_type: :regular %>
+          <% else %>
+            <%= render "common/training/status_badge", status: training.status %>
+          <% end %>
+        <% end %>
+        <%= render "me/operational_summary/session_cells", t:, education: training %>
       <% end %>
     <% end %>
   <% end %>
