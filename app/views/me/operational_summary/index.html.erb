@@ -11,6 +11,7 @@
   <% end %>
 <% else %>
   <%= render partial: "training" %>
+  <%= render partial: "advanced_ranger_training" if @person_event.art_trainings.any? %>
   <%= render partial: "teams_and_positions" %>
   <div class="two-column-lg">
     <%= render partial: "provisions_and_radios" %>
