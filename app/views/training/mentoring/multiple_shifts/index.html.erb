@@ -3,10 +3,10 @@
   mentee shift this year, each shift as a chip, the verdict on the latest ended
   one, and their mentors. The filter bar narrows the table and the CSV.
 %>
-<% content_for :title, "#{@training.title} Multiple Mentee Shifts" %>
+<% content_for :title, "#{mentoring_training_title(@training)} Multiple Mentee Shifts" %>
 
 <%= hero_panel icon: "clone", heading_level: :h1, id: "mentoring-multiple-shifts-header" do |panel| %>
-  <% panel.title do %><%= @training.title %> Multiple Mentee Shifts<% end %>
+  <% panel.title do %><%= mentoring_training_title(@training) %> Multiple Mentee Shifts<% end %>
   <% panel.description do %>
     Mentees who have rangered, or signed up for, more than one mentee shift this year.
   <% end %>

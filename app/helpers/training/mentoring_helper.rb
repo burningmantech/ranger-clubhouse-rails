@@ -24,12 +24,27 @@ module Training::MentoringHelper
   # card explains it.
   SHIFT_DELETED = "Shift deleted"
 
-  VERDICT_FILTER_LABELS = { status: "Verdict", mentor_id: "Mentor" }.freeze
+  # The Verdicts filters' chips. The order draws none: it narrows nothing, so it
+  # is not counted as a filter; the count line names it instead.
+  VERDICT_FILTER_LABELS = { status: "Verdict", mentor_id: "Mentor", notes: "Notes" }.freeze
+  VERDICT_NOTES_WITH = "with"
+  VERDICT_NOTES = { VERDICT_NOTES_WITH => "Has notes", "without" => "No notes" }.freeze
+  VERDICT_SORTS = {
+    ArtMentoring::VerdictsReport::SORT_MENTEE => "Mentee",
+    ArtMentoring::VerdictsReport::SORT_SHIFT => "Shift, newest first",
+    ArtMentoring::VerdictsReport::SORT_MENTOR => "Mentor"
+  }.freeze
   MULTIPLE_SHIFTS_FILTER_LABELS = { kind: "Kind", callsign: "Callsign" }.freeze
   MULTIPLE_SHIFTS_KINDS = {
     ArtMentoring::MultipleShiftsReport::RANGERED => "Rangered two or more",
     ArtMentoring::MultipleShiftsReport::SIGNED_UP => "Signed up again"
   }.freeze
+
+  # The mentoring pages' heading names the training without its own "Training":
+  # "Green Dot Mentor Assignment", not "Green Dot Training Mentor Assignment".
+  def mentoring_training_title(training)
+    training.title.sub(/\s+training\s*\z/i, "")
+  end
 
   # When a walk's shift started, or -- its entry deleted -- that, muted. The
   # Verdicts page and the Me/Person mentoring pages print it alike; `short`
@@ -126,23 +141,51 @@ module Training::MentoringHelper
     filter_select_options(MentorHelper::RESULT_LABELS.slice(*ArtMentoring::VerdictsReport::VERDICTS))
   end
 
-  # The mentors the verdicts name, { id => name }: one map for the Mentor
-  # filter's options and its chip, so the two read alike. A pass recorded
-  # without a mentor names none.
+  # The mentors the verdicts name, { key => name }: one map for the Mentor
+  # filter's options and its chip, so the two read alike. In the table's Mentor
+  # order (VerdictsReport#sort): by callsign, then deleted accounts, then No
+  # mentor when a verdict was recorded without one.
   def art_verdict_mentor_names(verdicts)
-    verdicts.select(&:mentor_id).to_h { |walk| [walk.mentor_id.to_s, person_display_name(walk.mentor, walk.mentor_id)] }
+    report = ArtMentoring::VerdictsReport
+    report.sort(verdicts.uniq { |walk| report.mentor_key(walk) }, report::SORT_MENTOR).to_h do |walk|
+      key = report.mentor_key(walk)
+      [key, walk.mentor_id ? person_display_name(walk.mentor, walk.mentor_id) : "No mentor"]
+    end
   end
 
-  # The mentors the verdicts name, by callsign.
   def art_verdict_mentor_options(verdicts)
-    filter_select_options(art_verdict_mentor_names(verdicts).sort_by { |_id, name| name.downcase })
+    filter_select_options(art_verdict_mentor_names(verdicts))
   end
 
+  def art_verdict_notes_options = filter_select_options(VERDICT_NOTES)
+
+  # No "All": every order is some order.
+  def art_verdict_sort_options = VERDICT_SORTS.invert.to_a
+
+  # "Showing 4 of 80 verdicts, by mentee".
+  def art_verdict_count(shown, total, sort)
+    "Showing #{shown} of #{pluralize(total, "verdict")}, by #{VERDICT_SORTS.fetch(sort).downcase}"
+  end
+
+  # The filters and order a Verdicts link carries: the active ones, and the
+  # order unless it is the default.
+  def art_verdict_url_params(filter_params)
+    active_filters(filter_params).reject { |key, value| key == :sort && value == ArtMentoring::VerdictsReport::SORT_MENTEE }
+  end
+
+  # A chip's link keeps the order: removing a filter does not re-sort.
   def art_verdict_filter_chips(filter_params, slug, year, verdicts)
     names = art_verdict_mentor_names(verdicts)
-    label = ->(key, value) { key == :status ? mentor_result_label(value) : names.fetch(value, value) }
-    filter_chips(active_filters(filter_params), VERDICT_FILTER_LABELS, value_label: label) do |remaining|
-      training_mentoring_verdicts_path(slug, **remaining, year:)
+    label = lambda do |key, value|
+      case key
+      when :status then mentor_result_label(value)
+      when :notes then VERDICT_NOTES.fetch(value, value)
+      else names.fetch(value, value)
+      end
+    end
+    order = art_verdict_url_params(filter_params).slice(:sort)
+    filter_chips(active_filters(filter_params.except(:sort)), VERDICT_FILTER_LABELS, value_label: label) do |remaining|
+      training_mentoring_verdicts_path(slug, **remaining, **order, year:)
     end
   end
 

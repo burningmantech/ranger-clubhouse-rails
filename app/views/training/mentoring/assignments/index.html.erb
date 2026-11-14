@@ -3,10 +3,10 @@
   that opens its roster -- the Alpha Sign-Out / Shift Report shape. Nothing is
   edited here. The shifts on now and still to come only exist this year.
 %>
-<% content_for :title, "#{@training.title} Mentor Assignment" %>
+<% content_for :title, "#{mentoring_training_title(@training)} Mentor Assignment" %>
 
 <%= hero_panel icon: "handshake", heading_level: :h1, id: "mentor-assignment-header" do |panel| %>
-  <% panel.title do %><%= @training.title %> Mentor Assignment<% end %>
+  <% panel.title do %><%= mentoring_training_title(@training) %> Mentor Assignment<% end %>
   <% panel.description do %>
     Pick a mentoring shift to pair its mentees with mentors and record how it went.
   <% end %>

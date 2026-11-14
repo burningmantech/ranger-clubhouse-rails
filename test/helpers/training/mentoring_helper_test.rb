@@ -14,6 +14,12 @@ class Training::MentoringHelperTest < ActionView::TestCase
                                     mentor_entries: [], walks: {}, promotable: Set.new)
   end
 
+  test "the mentoring title drops a trailing Training, in any case, and leaves other titles alone" do
+    assert_equal "Green Dot", mentoring_training_title(Position.new(title: "Green Dot Training"))
+    assert_equal "Tow Truck", mentoring_training_title(Position.new(title: "Tow Truck training "))
+    assert_equal "Sandman Mentoring", mentoring_training_title(Position.new(title: "Sandman Mentoring"))
+  end
+
   test "a matched group's shift and window are on the shift's own clock" do
     begins = Time.zone.local(2026, 1, 15, 7, 0)
     matched = group(slot: Slot.new(begins:, ends: begins + 6.hours, timezone: "America/Los_Angeles"), begins:)

@@ -42,7 +42,8 @@ class Training::Mentoring::LandingControllerTest < ActionDispatch::IntegrationTe
     get training_mentoring_path(SLUG)
 
     assert_response :success
-    assert_select "h1", text: /Green Dot Training Mentoring/
+    assert_select "h1", text: /Green Dot Mentoring/
+    assert_select "title", text: "Green Dot Mentoring"
     assert_select "a[href=?]", training_mentoring_assignment_shift_path(SLUG, slot.id, year: YEAR)
     assert_includes response.body, "Lodestar"
     assert_includes response.body, "No mentor yet"
