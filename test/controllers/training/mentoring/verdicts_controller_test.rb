@@ -48,7 +48,8 @@ class Training::Mentoring::VerdictsControllerTest < ActionDispatch::IntegrationT
     get verdicts_path
 
     assert_response :success
-    assert_select "h1", text: /Green Dot Training Mentoring Verdicts/
+    assert_select "h1", text: /Green Dot Mentoring Verdicts/
+    assert_select "title", text: "Green Dot Mentoring Verdicts"
     assert_report_card
     assert_select "tr#verdict-#{@passed.id}", text: /Tinsel.*Passed.*Ferrous.*Ready for the team\./m do
       assert_select "a[href=?]", training_mentoring_assignment_shift_path(SLUG, @slot.id, year: YEAR)
@@ -94,8 +95,81 @@ class Training::Mentoring::VerdictsControllerTest < ActionDispatch::IntegrationT
     assert_includes response.body, "Verdict: Abstained"
   end
 
+  test "the verdicts list by mentee unless sorted by shift or by mentor" do
+    zephyr = mentee_entry(create_person("Zephyr"), @slot.begins + 10.minutes, off_duty: @slot.ends, slot: @slot)
+    late = walk(zephyr, @ferrous, status: PersonMentor::STATUS_PASS)
+    order = -> { css_select("tr[id^='verdict-']").map { |row| row["id"] } }
+    ids = ->(*walks) { walks.map { |w| "verdict-#{w.id}" } }
+
+    get verdicts_path
+    assert_equal ids.call(@bonked, @passed, late), order.call, "Sable, Tinsel, Zephyr"
+    assert_select "select#sort option[selected]", text: "Mentee"
+    assert_includes response.body, "Showing 3 of 3 verdicts, by mentee"
+
+    get verdicts_path(sort: "shift")
+    assert_equal ids.call(late, @bonked, @passed), order.call, "newest shift first"
+    assert_includes response.body, "Showing 3 of 3 verdicts, by shift, newest first"
+    assert_select "button[aria-controls='mentoring-verdicts-filters-panel'] .badge", { count: 0 },
+                  "an order narrows nothing, so it is not counted as a filter"
+
+    get verdicts_path(sort: "mentor")
+    assert_equal ids.call(@bonked, late, @passed), order.call, "Cinder, then Ferrous's newest shift first"
+
+    get verdicts_path(sort: "mentor", format: :csv)
+    assert_equal %w[Sable Zephyr Tinsel], response.body.lines.drop(1).map { |line| line.split(",").first }
+  end
+
+  test "a filter's chip and the CSV keep a chosen order, and leave the default out" do
+    get verdicts_path(notes: "with", sort: "mentor")
+
+    assert_select "a[href=?]", verdicts_path(sort: "mentor"), text: /Notes: Has notes/
+    assert_select "button[aria-controls='mentoring-verdicts-filters-panel'] .badge", text: "1"
+    assert_select "a[href=?]", verdicts_path(notes: "with", sort: "mentor", format: :csv)
+
+    get verdicts_path(notes: "with", sort: "mentee")
+
+    assert_select "a[href=?]", verdicts_path, text: /Notes: Has notes/
+    assert_select "a[href=?]", verdicts_path(notes: "with", format: :csv)
+  end
+
+  test "a deleted mentor is listed after the others, in the Mentor filter as in the Mentor order" do
+    rook = mentee_entry(create_person("Rook"), @slot.begins + 10.minutes, off_duty: @slot.ends, slot: @slot)
+    gone = create_person("Aardvark")
+    orphaned = walk(rook, gone, status: PersonMentor::STATUS_PASS)
+    unpaired = walk(mentee_entry(create_person("Wren"), @slot.begins + 15.minutes, off_duty: @slot.ends, slot: @slot),
+                    nil, status: PersonMentor::STATUS_PASS)
+    gone.delete # the walk keeps naming the account
+
+    get verdicts_path(sort: "mentor")
+
+    assert_equal ["verdict-#{@bonked.id}", "verdict-#{@passed.id}", "verdict-#{orphaned.id}", "verdict-#{unpaired.id}"],
+                 css_select("tr[id^='verdict-']").map { |row| row["id"] }
+    assert_equal ["All", "Cinder", "Ferrous", "Deleted ##{gone.id}", "No mentor"],
+                 css_select("select#mentor_id option").map(&:text)
+  end
+
+  test "the verdicts filter by notes, and by no mentor" do
+    rook = mentee_entry(create_person("Rook"), @slot.begins + 10.minutes, off_duty: @slot.ends, slot: @slot)
+    unpaired = walk(rook, nil, status: PersonMentor::STATUS_PASS)
+
+    get verdicts_path(notes: "with")
+    assert_select "tr#verdict-#{@passed.id}"
+    assert_select "tr#verdict-#{@bonked.id}", count: 0
+    assert_includes response.body, "Notes: Has notes"
+
+    get verdicts_path(notes: "without")
+    assert_select "tr#verdict-#{@passed.id}", count: 0
+    assert_select "tr#verdict-#{@bonked.id}"
+
+    get verdicts_path(mentor_id: "none")
+    assert_select "tr[id^='verdict-']", count: 1
+    assert_select "tr#verdict-#{unpaired.id}"
+    assert_includes response.body, "Mentor: No mentor"
+    assert_select "select#mentor_id option:last-child[value=none]", text: "No mentor"
+  end
+
   test "a filter value the page does not offer reads as all" do
-    get verdicts_path(status: "promoted", mentor_id: "999999")
+    get verdicts_path(status: "promoted", mentor_id: "999999", notes: "maybe", sort: "verdict")
 
     assert_select "tr#verdict-#{@passed.id}"
     assert_select "tr#verdict-#{@bonked.id}"

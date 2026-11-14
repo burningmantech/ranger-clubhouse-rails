@@ -1,14 +1,14 @@
 <%#
-  Training › Mentoring › Verdicts: how the year's mentee shifts ended, newest
-  first, then each mentor's season with their shifts behind a detail row. The
+  Training › Mentoring › Verdicts: how the year's mentee shifts ended, by mentee
+  unless sorted otherwise, then each mentor's season with their shifts behind a detail row. The
   filter bar narrows the Verdicts table only; the Mentors table is the season.
   A walk whose mentee entry was deleted stays, as "Shift deleted" (ruled
   2026-10-21).
 %>
-<% content_for :title, "#{@training.title} Mentoring Verdicts" %>
+<% content_for :title, "#{mentoring_training_title(@training)} Mentoring Verdicts" %>
 
 <%= hero_panel icon: "flag-checkered", heading_level: :h1, id: "mentoring-verdicts-header" do |panel| %>
-  <% panel.title do %><%= @training.title %> Mentoring Verdicts<% end %>
+  <% panel.title do %><%= mentoring_training_title(@training) %> Mentoring Verdicts<% end %>
   <% panel.description do %>
     How each mentee shift ended, and each mentor's shifts, mentees and verdicts.
   <% end %>
@@ -75,11 +75,12 @@
 <% if @report.verdicts.any? %>
   <%= filter_bar id: "mentoring-verdicts-filters",
                  chips: art_verdict_filter_chips(@filter_params, training_slug, @year, @report.verdicts),
-                 clear_url: training_mentoring_verdicts_path(training_slug, year: @year),
-                 count: "Showing #{@verdicts.size} of #{pluralize(@report.verdicts.size, "verdict")}",
+                 clear_url: training_mentoring_verdicts_path(training_slug, year: @year,
+                                                             **art_verdict_url_params(@filter_params).slice(:sort)),
+                 count: art_verdict_count(@verdicts.size, @report.verdicts.size, @filter_params[:sort]),
                  actions: (if @verdicts.any?
                              export_csv_link(training_mentoring_verdicts_path(training_slug, year: @year, format: :csv,
-                                                                              **active_filters(@filter_params)))
+                                                                              **art_verdict_url_params(@filter_params)))
                            end),
                  url: training_mentoring_verdicts_path(training_slug) do |f| %>
     <%# The year rides the filter form: a GET form replaces the query string. %>
@@ -89,6 +90,12 @@
                    width: "w-full", wrapper_class: "flex-1" %>
       <%= f.select :mentor_id, art_verdict_mentor_options(@report.verdicts), label: "Mentor",
                    selected: @filter_params[:mentor_id], width: "w-full", wrapper_class: "flex-1" %>
+    <% end %>
+    <%= form_row do %>
+      <%= f.select :notes, art_verdict_notes_options, label: "Notes",
+                   selected: @filter_params[:notes], width: "w-full", wrapper_class: "flex-1" %>
+      <%= f.select :sort, art_verdict_sort_options, label: "Sort By",
+                   selected: @filter_params[:sort], width: "w-full", wrapper_class: "flex-1" %>
     <% end %>
     <%= button_row do %>
       <%= f.submit "Apply Filters" %>
@@ -165,7 +172,8 @@
         <% @report.mentors.each do |mentor| %>
           <% detail_id = "mentor-shifts-#{mentor.id}" %>
           <% name = person_display_name(mentor.person, mentor.id) %>
-          <%= t.row id: "mentor-#{mentor.id}" do %>
+          <%# Centred on the Shifts toggle, the row's tallest cell. %>
+          <%= t.row id: "mentor-#{mentor.id}", align: :middle do %>
             <%= t.row_header do %><%= person_display_link mentor.person, mentor.id %><% end %>
             <%# A dash for none, so the counts a mentor has stand out. %>
             <%= t.cell value_or_dash(mentor.entries.size.nonzero?), right: true %>

@@ -3,10 +3,10 @@
   its sign-ups -- followed by the year's other mentee shifts of the same people.
   See Training::Mentoring::AssignmentsController.
 %>
-<% content_for :title, "#{@training.title} Mentor Assignment" %>
+<% content_for :title, "#{mentoring_training_title(@training)} Mentor Assignment" %>
 
 <%= hero_panel icon: "handshake", heading_level: :h1, id: "mentor-assignment-shift-header" do |panel| %>
-  <% panel.title do %><%= @training.title %> Mentor Assignment<% end %>
+  <% panel.title do %><%= mentoring_training_title(@training) %> Mentor Assignment<% end %>
   <% panel.description do %>
     <% if @group %>
       Pair each mentee on this shift with a mentor and record how the shift went.

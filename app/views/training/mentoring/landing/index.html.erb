@@ -3,10 +3,10 @@
   mentoring pages, and -- this year only -- who is on a mentee shift right now
   and the next shifts people have signed up for.
 %>
-<% content_for :title, "#{@training.title} Mentoring" %>
+<% content_for :title, "#{mentoring_training_title(@training)} Mentoring" %>
 
 <%= hero_panel icon: "handshake", heading_level: :h1, id: "training-mentoring-header" do |panel| %>
-  <% panel.title do %><%= @training.title %> Mentoring<% end %>
+  <% panel.title do %><%= mentoring_training_title(@training) %> Mentoring<% end %>
   <% panel.description do %>
     Pair mentors with mentees on shift and record how each mentee shift went.
   <% end %>

@@ -50,7 +50,8 @@ class Training::Mentoring::MultipleShiftsControllerTest < ActionDispatch::Integr
     get multiple_shifts_path
 
     assert_response :success
-    assert_select "h1", text: /Green Dot Training Multiple Mentee Shifts/
+    assert_select "h1", text: /Green Dot Multiple Mentee Shifts/
+    assert_select "title", text: "Green Dot Multiple Mentee Shifts"
     assert_report_card
     assert_select "tr#multiple-shifts-#{@tinsel.id}", text: /Tue 9\/1 17:45.*Wed 9\/2 17:45 · on shift.*Passed.*Ferrous/m
     assert_select "tr#multiple-shifts-#{@moonrake.id}", text: /Thu 9\/3 05:45 · signed up/

@@ -50,6 +50,17 @@ class ArtMentoring::VerdictsReportTest < ActiveSupport::TestCase
     assert_equal [1, 2], [report.count(PersonMentor::STATUS_PASS), report.count(*ArtMentoring::VerdictsReport::BONKS)]
   end
 
+  test "sorting by mentee or mentor goes by callsign, with no mentor last" do
+    sort = ->(by) { ArtMentoring::VerdictsReport.sort(report.verdicts, by) }
+    @passed.update_column(:mentor_id, nil)
+
+    assert_equal [@bonked, @passed, @orphan], sort.call(ArtMentoring::VerdictsReport::SORT_SHIFT)
+    assert_equal [@bonked, @orphan, @passed], sort.call(ArtMentoring::VerdictsReport::SORT_MENTEE),
+                 "Moonrake, Quartz, Tinsel"
+    assert_equal [@bonked, @orphan, @passed], sort.call(ArtMentoring::VerdictsReport::SORT_MENTOR),
+                 "Cinder, Ferrous, then no mentor"
+  end
+
   test "Abstained and Not completed are verdicts, counted as neither a pass nor a bonk" do
     sable = mentee_entry(create_person("Sable"), @slot.begins + 20.minutes, off_duty: @slot.ends, slot: @slot)
     rook = mentee_entry(create_person("Rook"), @slot.begins + 25.minutes, off_duty: @slot.ends, slot: @slot)

@@ -70,6 +70,8 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
 
     assert_response :success
     assert_select "a[href=?]", shift_path, text: /Manage/
+    assert_select "h1", text: /Green Dot Mentor Assignment/
+    assert_select "title", text: "Green Dot Mentor Assignment"
     assert_includes response.body, "1 need a mentor", "the shift has ended, and no one was paired with Tinsel"
     assert_not_includes response.body, "awaiting a verdict", "a verdict waits on a mentor"
   end
@@ -88,6 +90,8 @@ class Training::Mentoring::AssignmentsControllerTest < ActionDispatch::Integrati
     get shift_path
 
     assert_response :success
+    assert_select "h1", text: /Green Dot Mentor Assignment/
+    assert_select "title", text: "Green Dot Mentor Assignment"
     select = "select#walks_#{@tinsel.id}_mentors_0_id"
     assert_select "#{select} optgroup[label=?] option", "On shift", text: /\AFerrous · signed in/
     assert_select "#{select} optgroup[label=?] option", "Other mentors", text: "Cinder"

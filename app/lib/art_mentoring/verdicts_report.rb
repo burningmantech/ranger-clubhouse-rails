@@ -14,6 +14,31 @@ class ArtMentoring::VerdictsReport
   VERDICTS = (PersonMentor::STATUSES - [PersonMentor::STATUS_PENDING]).freeze
   BONKS = [PersonMentor::STATUS_BONK, PersonMentor::STATUS_SELF_BONK].freeze
 
+  # The orders #sort takes; by mentee is the Verdicts page's default.
+  SORT_MENTEE = "mentee"
+  SORT_SHIFT = "shift"
+  SORT_MENTOR = "mentor"
+  SORTS = [SORT_MENTEE, SORT_SHIFT, SORT_MENTOR].freeze
+  # A walk's mentor as the Mentor filter keys it; a pass recorded without a
+  # mentor is NO_MENTOR.
+  NO_MENTOR = "none"
+
+  def self.mentor_key(walk) = walk.mentor_id&.to_s || NO_MENTOR
+
+  # Walks taken from #verdicts, in another order. By shift is the report's own,
+  # newest first; by mentee or by mentor, by callsign, ties keeping that order,
+  # then deleted accounts, then -- by mentor -- verdicts without one.
+  def self.sort(walks, by)
+    return walks if by == SORT_SHIFT
+
+    person = by == SORT_MENTOR ? :mentor : :person
+    walks.sort_by.with_index do |walk, index|
+      callsign = walk.public_send(person)&.callsign
+      rank = if callsign then 0 elsif walk.public_send(:"#{person}_id") then 1 else 2 end
+      [rank, callsign.to_s.downcase, index]
+    end
+  end
+
   # One mentor's season. `person` is nil once the account is deleted.
   Mentor = Data.define(:id, :person, :entries, :walks, :lines) do
     def mentee_count = walks.map(&:person_id).uniq.size

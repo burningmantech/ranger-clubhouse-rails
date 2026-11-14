@@ -12,7 +12,7 @@ class Training::Mentoring::VerdictsController < Training::Mentoring::BaseControl
   def index
     @report = ArtMentoring::VerdictsReport.new(@shifts)
     @filter_params = filter_params
-    @verdicts = @report.verdicts.select { |walk| shown?(walk) }
+    @verdicts = ArtMentoring::VerdictsReport.sort(@report.verdicts.select { |walk| shown?(walk) }, @filter_params[:sort])
 
     respond_to do |format|
       format.html
@@ -22,16 +22,22 @@ class Training::Mentoring::VerdictsController < Training::Mentoring::BaseControl
 
   private
 
-  # A value the page does not offer -- a stale bookmark, a typo -- reads as all.
+  # A value the page does not offer -- a stale bookmark, a typo -- reads as all,
+  # and an order it does not offer as by mentee.
   def filter_params
-    mentor_ids = @report.verdicts.filter_map { |walk| walk.mentor_id&.to_s }
-    { status: UiComponents::FilterBarHelper.known_filter(params[:status], ArtMentoring::VerdictsReport::VERDICTS),
-      mentor_id: UiComponents::FilterBarHelper.known_filter(params[:mentor_id], mentor_ids) }
+    report = ArtMentoring::VerdictsReport
+    mentor_keys = @report.verdicts.map { |walk| report.mentor_key(walk) }.uniq
+    { status: UiComponents::FilterBarHelper.known_filter(params[:status], report::VERDICTS),
+      mentor_id: UiComponents::FilterBarHelper.known_filter(params[:mentor_id], mentor_keys),
+      notes: UiComponents::FilterBarHelper.known_filter(params[:notes], Training::MentoringHelper::VERDICT_NOTES.keys),
+      sort: report::SORTS.include?(params[:sort]) ? params[:sort] : report::SORT_MENTEE }
   end
 
   def shown?(walk)
-    status, mentor_id = @filter_params.values_at(:status, :mentor_id)
-    (status == ALL_FILTER || walk.status == status) && (mentor_id == ALL_FILTER || walk.mentor_id.to_s == mentor_id)
+    status, mentor_id, notes = @filter_params.values_at(:status, :mentor_id, :notes)
+    (status == ALL_FILTER || walk.status == status) &&
+      (mentor_id == ALL_FILTER || ArtMentoring::VerdictsReport.mentor_key(walk) == mentor_id) &&
+      (notes == ALL_FILTER || walk.notes.present? == (notes == Training::MentoringHelper::VERDICT_NOTES_WITH))
   end
 
   def csv_rows
