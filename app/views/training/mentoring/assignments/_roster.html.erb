@@ -167,23 +167,34 @@
         <%# The fields share one name scheme, so each carries an explicit
             id: Turbo's morph drops fields whose ids collide. %>
         <%= ui_card id: "walk-#{entry.id}", shadow: :none do %>
-          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 pt-3">
-            <h3 class="heading-title text-heading"><%= person_display_link entry.person, entry.person_id %></h3>
-            <span class="text-stone-muted">
-              Signed in <%= datetime_format(entry.on_duty) %> &middot; <%= art_mentoring_duration(entry) %>
-            </span>
-          </div>
-          <%= ui_card_body class: "py-3 space-y-3" do %>
-            <%= form_row class: "lg:items-end" do %>
+          <%# The verdict band: who the mentee is and how the shift ended, over
+              the mentors who walked with them; from lg the result follows the
+              name, left-aligned past a divider (chosen in live review,
+              2026-11-13). %>
+          <div class="flex flex-col lg:flex-row lg:items-end gap-3 lg:gap-x-5 p-4 rounded-t-box
+                      bg-primary/10 border-b border-primary/30">
+            <div class="flex flex-col gap-0.5 min-w-0">
+              <h3 class="heading-title text-heading text-xl"><%= person_display_link entry.person, entry.person_id %></h3>
+              <span class="text-stone-muted">
+                Signed in <%= datetime_format(entry.on_duty) %> &middot; <%= art_mentoring_duration(entry) %>
+              </span>
+            </div>
+            <%# From lg: the result's label beside its select, a rule, then the
+                check box, centred on one line (chosen in live review, 2026-11-13). %>
+            <%= form_row class: "lg:items-center lg:gap-x-4 lg:mb-0 lg:ps-4 lg:border-s lg:border-primary/35" do %>
               <%= fields "walks[#{entry.id}]", builder: AppFormBuilder do |wf| %>
                 <%= wf.select :status,
                               options_for_select(result_options,
                                                  typed ? typed.status : walk&.status || PersonMentor::STATUS_PENDING),
-                              { label: "Result", width: "w-full sm:w-44", wrapper_class: "" },
+                              { label: "Result", width: "w-full sm:w-44",
+                                # The stacked label, set beside its select from lg; its
+                                # mb-1 is dropped there so the two centre together.
+                                wrapper_class: "flex flex-col lg:flex-row lg:items-center lg:gap-3 lg:*:mb-0" },
                               { disabled: !editable, aria: { label: "Result for #{callsign}" } } %>
                 <%# The mentee's one box for the shift, on their first entry
                     (PersonMentoringShift; owner, 2026-11-13). %>
                 <% if first %>
+                  <span class="hidden lg:block self-stretch w-px bg-primary/35" aria-hidden="true"></span>
                   <%= wf.check_box :no_mentors, label: ArtMentoring::Assignment::NO_MENTORS_AVAILABLE,
                                                 checked: typed ? typed.no_mentors : group.no_mentors?(entry),
                                                 disabled: !editable, wrapper_class: "",
@@ -201,23 +212,26 @@
                 <% end %>
               <% end %>
             <% end %>
+          </div>
+          <%= ui_card_body class: "py-4 space-y-3" do %>
             <% if editable && pass_left.key?(entry.id) && !can_graduate? %>
               <div class="text-stone-muted">A <%= @training.title %> graduate can add them to the team.</div>
             <% end %>
             <%# Each mentor slot: its select above its notes (owner, 2026-10-28),
-                numbered (ruled 2026-10-27), stacked, side by side from lg. The
-                hidden fields carry back what the row and each slot held when
-                the page was drawn (ArtMentoring::Assignment). %>
+                numbered (ruled 2026-10-27), stacked, in three columns from lg,
+                the first ruled in the band's colour. The hidden fields carry
+                back what the row and each slot held when the page was drawn
+                (ArtMentoring::Assignment). %>
             <%= tag.div id: "walk-#{entry.id}-notes-row" do %>
               <%= hidden_field_tag "walks[#{entry.id}][was]",
                                    typed&.was || ArtMentoring::Assignment.stored_fingerprint(walk, group.no_mentors?(entry)) %>
-              <div class="stack-to-row-lg">
+              <div class="grid gap-4 lg:grid-cols-3">
                 <% ArtMentoring::Assignment::MENTOR_SLOTS.times do |i| %>
-                  <div class="lg:flex-1">
+                  <div class="pt-2 border-t-3 border-line/45 first:border-primary/70">
                     <%= hidden_field_tag "walks[#{entry.id}][mentors][#{i}][loaded_id]", slots[i]&.id %>
                     <%= fields "walks[#{entry.id}][mentors][#{i}]", builder: AppFormBuilder do |mf| %>
                       <%= mf.select :id, art_mentor_choices(group, @shifts.mentor_holders, entry, slots[i]&.id),
-                                    { label: "Mentor #{i + 1}", width: "w-full" },
+                                    { label: "Mentor #{i + 1}", width: "w-full", wrapper_class: "mb-2" },
                                     { disabled: !editable, aria: { label: "Mentor #{i + 1} for #{callsign}" } } %>
                       <%= mf.text_area :notes, value: slots[i]&.notes, rows: 3, disabled: !editable,
                                                maxlength: ArtMentoring::Assignment::NOTES_MAX,
@@ -234,14 +248,16 @@
                 <%= fa_icon "triangle-exclamation", :solid, end: 2 %><%= error %>
               <% end %>
             <% end %>
-            <%# The general notes about the mentee and the box for one more, on
-                the mentee's first entry only (Shifts::Group#first_entries). %>
-            <% notes = general_notes.fetch(entry.person_id, []) %>
-            <% if first && (notes.any? || editable) %>
-              <%= tag.div id: "walk-#{entry.id}-general-notes-row" do %>
-                <%= render "general_notes", notes:, person_id: entry.person_id, callsign:,
-                                            typed: typed_notes[entry.person_id], editable: %>
-              <% end %>
+          <% end %>
+          <%# The general notes about the mentee and the box for one more, on
+              the mentee's first entry only (Shifts::Group#first_entries), set
+              apart as the card's foot: they outlast the shift. %>
+          <% notes = general_notes.fetch(entry.person_id, []) %>
+          <% if first && (notes.any? || editable) %>
+            <%= tag.div id: "walk-#{entry.id}-general-notes-row",
+                        class: "px-4 pt-3 pb-4 rounded-b-box border-t border-dashed border-line/40 bg-base-content/3" do %>
+              <%= render "general_notes", notes:, person_id: entry.person_id, callsign:,
+                                          typed: typed_notes[entry.person_id], editable: %>
             <% end %>
           <% end %>
         <% end %>
