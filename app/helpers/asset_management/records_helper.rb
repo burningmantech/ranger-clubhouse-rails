@@ -4,8 +4,6 @@ module AssetManagement::RecordsHelper
   ALL_FILTER_OPTION = UiComponents::FilterBarHelper::ALL_FILTER_OPTION
   BLANK_FILTER_OPTION = "Blank"
 
-  DEFAULT_GROUP_NAME = "Operations"
-
   # asset.type is nullable in the Laravel-shared schema, so a row can arrive
   # without one. Those records still need a URL segment to be reachable.
   UNTYPED = "unspecified"
@@ -26,7 +24,7 @@ module AssetManagement::RecordsHelper
 
   ASSET_FILTER_CHIP_LABELS = {
     description: "Description",
-    group_name: "Asset group",
+    asset_group_id: "Asset group",
     entity_assignment: "Entity assignment",
     order_number: "Order number",
     expire: "Expires"
@@ -40,7 +38,11 @@ module AssetManagement::RecordsHelper
   def asset_filter_chips(filter_params, type, year)
     active = active_filters(filter_params)
     display = lambda do |key, value|
-      key == :expire ? ASSET_EXPIRE_CHIP_VALUES.fetch(value, value) : value
+      case key
+      when :expire then ASSET_EXPIRE_CHIP_VALUES.fetch(value, value)
+      when :asset_group_id then AssetGroup.find_by(id: value)&.title || value
+      else value
+      end
     end
 
     filter_chips(active, ASSET_FILTER_CHIP_LABELS, value_label: display) do |remaining|
@@ -101,9 +103,9 @@ module AssetManagement::RecordsHelper
 
   def asset_duration_label(asset)
     if asset.type == Asset::TYPE_RADIO
-      asset.perm_assign? ? "Event" : "Shift"
+      asset.shift_only? ? "Shift" : "Event"
     else
-      asset.perm_assign? ? "Permanent" : "Temporary"
+      asset.shift_only? ? "Temporary" : "Permanent"
     end
   end
 
@@ -112,14 +114,36 @@ module AssetManagement::RecordsHelper
   # beside the label it wraps rather than on any one page's helper: three of the
   # namespace's pages badge assets this way.
   def asset_assignment_badge(asset)
-    ui_badge(asset_duration_label(asset), asset.perm_assign? ? :secondary : :warning)
+    ui_badge(asset_duration_label(asset), asset.shift_only? ? :warning : :secondary)
   end
 
-  def asset_duration_options(type)
-    if type == Asset::TYPE_RADIO
-      [["Shift", false], ["Event", true]]
-    else
-      [["Temporary", false], ["Permanent", true]]
+  # The groups the records in hand use, by title; "Blank" when any has none.
+  def asset_group_filter_options(records)
+    records = Array(records)
+    groups = records.filter_map(&:asset_group).uniq.sort_by { |group| group.title.downcase }
+    blank = records.any? { |asset| asset.asset_group_id.nil? } ? [BLANK_FILTER_OPTION] : []
+
+    [ALL_FILTER_OPTION, *blank, *groups.map { |group| [group.title, group.id] }]
+  end
+
+  def asset_group_status_badge(group)
+    group.active? ? ui_badge("Active", :success) : ui_badge("Inactive", :secondary)
+  end
+
+  # A merge target as its select names it: an inactive one says so.
+  def asset_group_merge_label(group)
+    group.active? ? group.title : "#{group.title} (inactive)"
+  end
+
+  # Every asset group as the asset form's select wants it: by asset type, then
+  # "Active" before "Inactive", an empty half left out. The asset-form
+  # controller redraws the select from the same hash when the type changes.
+  def asset_group_options_by_type
+    @asset_group_options_by_type ||= AssetGroup.by_title.group_by(&:type).transform_values do |groups|
+      active, inactive = groups.partition(&:active)
+      { "Active" => active, "Inactive" => inactive }
+        .reject { |_label, list| list.empty? }
+        .transform_values { |list| list.map { |group| [group.title, group.id] } }
     end
   end
 end

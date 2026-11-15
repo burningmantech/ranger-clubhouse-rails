@@ -306,7 +306,7 @@ class Scheduling::EarlyArrivalsControllerTest < ActionDispatch::IntegrationTest
   test "an issued radio is reported with its barcode and whether it is an event radio" do
     person = pass_holder("Holder", any_time: true)
     asset = Asset.create!(barcode: "R-900", type: Asset::TYPE_RADIO,
-                          year: YEAR, perm_assign: true)
+                          year: YEAR, shift_only: false)
     PersonAsset.create!(person:, asset:, checked_out: in_window(2))
 
     get scheduling_early_arrivals_path(year: YEAR)
@@ -320,7 +320,7 @@ class Scheduling::EarlyArrivalsControllerTest < ActionDispatch::IntegrationTest
   test "a radio checked out in another year is not reported" do
     person = pass_holder("Stale", any_time: true)
     asset = Asset.create!(barcode: "R-901", type: Asset::TYPE_RADIO,
-                          year: YEAR - 1, perm_assign: false)
+                          year: YEAR - 1, shift_only: true)
     PersonAsset.create!(person:, asset:,
                         checked_out: in_window(2) - 1.year)
 
@@ -540,7 +540,7 @@ class Scheduling::EarlyArrivalsControllerTest < ActionDispatch::IntegrationTest
     person = pass_holder("Loaded", any_time: true)
     ["R-902", "R-900"].each_with_index do |barcode, index|
       asset = Asset.create!(barcode:, type: Asset::TYPE_RADIO, year: YEAR,
-                            perm_assign: index.zero?)
+                            shift_only: !index.zero?)
       PersonAsset.create!(person:, asset:, checked_out: in_window(2))
     end
 

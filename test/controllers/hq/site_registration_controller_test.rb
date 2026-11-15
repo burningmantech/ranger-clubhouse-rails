@@ -108,7 +108,7 @@ class Hq::SiteRegistrationControllerTest < ActionDispatch::IntegrationTest
   test "checking out a radio streams the radios step back instead of redirecting" do
     authorize_subject_for_event_radios(item_count: 2)
     asset = Asset.create!(barcode: "SR-101", type: Asset::TYPE_RADIO, year: Current.year,
-                          perm_assign: false)
+                          shift_only: true)
 
     assert_difference "PersonAsset.count", 1 do
       post hq_site_registration_assets_path(@subject),

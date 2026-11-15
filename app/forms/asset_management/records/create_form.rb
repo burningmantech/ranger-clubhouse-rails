@@ -7,14 +7,13 @@ module AssetManagement
       include ActiveModel::Attributes
 
       BARCODE_SEGMENT_PATTERN = /\A(.*?)(\d+)(\D*)\z/
-      DEFAULT_GROUP_NAME = "Operations"
 
       attribute :type, :string
       attribute :barcode, :string
       attribute :description, :string
       attribute :entity_assignment, :string
-      attribute :perm_assign, :boolean, default: false
-      attribute :group_name, :string
+      attribute :shift_only, :boolean, default: true
+      attribute :asset_group_id, :integer
       # A string, not :datetime: the typed text is checked as typed (see
       # expires_at_must_be_readable) and shown back as typed.
       attribute :expires_at, :string
@@ -74,8 +73,6 @@ module AssetManagement
       def default_attributes
         {
           type: Asset::TYPE_RADIO,
-          group_name: DEFAULT_GROUP_NAME,
-          perm_assign: false,
           year: Current.year
         }
       end
@@ -117,8 +114,8 @@ module AssetManagement
           type:,
           description:,
           entity_assignment:,
-          perm_assign:,
-          group_name:,
+          shift_only:,
+          asset_group_id:,
           expires_at:,
           order_number:,
           notes:,

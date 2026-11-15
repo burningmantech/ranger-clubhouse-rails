@@ -22,9 +22,9 @@ class AssetManagement::RecordsController < ApplicationController
 
   UNTYPED = AssetManagement::RecordsHelper::UNTYPED
 
-  # What the asset form posts. expires_on is the name a page loaded before
-  # 20261108000001 still sends (renamed_expiry).
-  ASSET_FIELDS = %i[type barcode description entity_assignment perm_assign group_name
+  # What the asset form posts. expires_on and perm_assign are the names a page
+  # loaded before 20261108000001 and 20261115000002 still sends (renamed_fields).
+  ASSET_FIELDS = %i[type barcode description entity_assignment shift_only perm_assign asset_group_id
                     expires_at expires_on order_number notes].freeze
 
   def index
@@ -197,7 +197,7 @@ class AssetManagement::RecordsController < ApplicationController
     # exact view they left.
     # back_to_origin and type_records_path each drop the keys their own route
     # does not understand.
-    params.permit(:year, :type, :description, :group_name, :entity_assignment, :order_number,
+    params.permit(:year, :type, :description, :asset_group_id, :entity_assignment, :order_number,
                   :expire, :origin, :outcome, :duration, :view, :page, :barcode)
           .to_h
           .symbolize_keys
@@ -212,19 +212,26 @@ class AssetManagement::RecordsController < ApplicationController
   end
 
   def create_asset_params
-    renamed_expiry(params.expect(asset: [*ASSET_FIELDS, :copies]))
+    renamed_fields(params.expect(asset: [*ASSET_FIELDS, :copies]))
   end
 
   def update_asset_params
-    renamed_expiry(params.expect(asset: ASSET_FIELDS))
+    renamed_fields(params.expect(asset: ASSET_FIELDS))
   end
 
-  # A New or Edit Asset page loaded before the expires_on column became
-  # expires_at still posts the old name. Read it as the new one, or the save
-  # would drop the date and still say it saved. Remove a release after the deploy.
-  def renamed_expiry(asset_params)
-    old_value = asset_params.delete(:expires_on)
-    asset_params[:expires_at] = old_value if old_value && !asset_params.key?(:expires_at)
+  # A New or Edit Asset page loaded before a column was renamed still posts the
+  # old name: expires_on for expires_at, and perm_assign for shift_only, which
+  # also means the opposite. Read each as the new one, or the save would drop
+  # the value and still say it saved. Remove a release after the deploy.
+  def renamed_fields(asset_params)
+    old_expiry = asset_params.delete(:expires_on)
+    asset_params[:expires_at] = old_expiry if old_expiry && !asset_params.key?(:expires_at)
+
+    old_duration = asset_params.delete(:perm_assign)
+    unless old_duration.nil? || asset_params.key?(:shift_only)
+      asset_params[:shift_only] = !ActiveModel::Type::Boolean.new.cast(old_duration)
+    end
+
     asset_params
   end
 
@@ -266,7 +273,7 @@ class AssetManagement::RecordsController < ApplicationController
         helpers.asset_type_label(asset.type),
         asset.description,
         helpers.asset_duration_label(asset),
-        asset.group_name,
+        asset.group_title,
         asset.entity_assignment,
         asset.year,
         asset.expires_at&.strftime(DateTimeHelper::CSV_TIME),

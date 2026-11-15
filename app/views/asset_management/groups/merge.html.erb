@@ -1,0 +1,36 @@
+<%= hero_panel icon: "arrow-right-to-bracket", heading_level: :h1, id: "asset-groups-merge-header",
+               title: "Merge Asset Group",
+               description: "Move every asset of one group into another, then delete the emptied group.",
+               back_to: ["Edit Asset Group", edit_asset_management_group_path(@group)] %>
+
+<% if @targets.any? %>
+  <%= ui_form(nil, merge_asset_management_group_path(@group)) do |f| %>
+    <%= ui_section do %>
+      <p class="mb-3">
+        <strong><%= @group.title %></strong> (<%= asset_type_label(@group.type) %>) has
+        <%= pluralize @asset_count, "asset" %> across all years.
+        They move to the group you pick, <%= @group.title %>'s notes are added to that group's notes,
+        and <%= @group.title %> is deleted.
+      </p>
+      <%= f.select :target_id,
+                   @targets.map { |target| [asset_group_merge_label(target), target.id] },
+                   { label: "Merge Into", include_blank: true, required: true, width: "w-full sm:w-72" } %>
+    <% end %>
+
+    <%= button_row do %>
+      <%= f.submit "Merge Asset Group",
+                   data: { turbo_confirm: confirm_modal_dialog(
+                     title: "Merge Asset Group",
+                     message: "Merge #{@group.title} into the group you picked? " \
+                              "#{pluralize(@asset_count, "asset")} will move and #{@group.title} will be deleted. " \
+                              "This cannot be undone.",
+                     confirm_label: "Merge Asset Group",
+                     variant: :error
+                   ) } %>
+      <%= cancel_link edit_asset_management_group_path(@group) %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "#{@group.title} is the only #{asset_type_label(@group.type).downcase} group, so there is nothing to merge it into.",
+                     icon: "arrow-right-to-bracket", icon_type: :solid %>
+<% end %>

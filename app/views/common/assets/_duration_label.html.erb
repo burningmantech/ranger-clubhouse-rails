@@ -1,15 +1,15 @@
 <%# locals: (asset:) %>
 <%# Port of port/components/asset-duration-label.hbs: radios are issued for
     the event or a single shift; everything else is a permanent or temporary
-    assignment. Driven by asset.perm_assign. %>
+    assignment. Driven by asset.shift_only. %>
 <% if asset.type == Asset::TYPE_RADIO %>
-  <% if asset.perm_assign? %>
-    <%= ui_badge "Event", :secondary %>
-  <% else %>
+  <% if asset.shift_only? %>
     <%= ui_badge "Shift", :warning %>
+  <% else %>
+    <%= ui_badge "Event", :secondary %>
   <% end %>
-<% elsif asset.perm_assign? %>
-  <%= ui_badge "Permanent", :secondary %>
-<% else %>
+<% elsif asset.shift_only? %>
   <%= ui_badge "Temporary", :warning %>
+<% else %>
+  <%= ui_badge "Permanent", :secondary %>
 <% end %>

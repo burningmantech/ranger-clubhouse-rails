@@ -5,7 +5,7 @@ class PersonAsset < ApplicationRecord
   self.audit_model = true
 
   RELATIONSHIPS = [
-    :asset,
+    { asset: :asset_group },
     :attachment,
     :person,
     :check_out_person,

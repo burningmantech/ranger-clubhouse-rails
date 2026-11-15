@@ -70,7 +70,7 @@ class AssetManagement::SearchControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a known barcode renders the asset and its history" do
-    asset = gear(barcode: "GEAR-100", description: "Shade Structure", group_name: "Logistics")
+    asset = gear(barcode: "GEAR-100", description: "Shade Structure", asset_group: AssetGroup.create!(type: Asset::TYPE_GEAR, title: "Logistics"))
     check_in(check_out(asset, @editor))
     sign_in_as(@admin)
 

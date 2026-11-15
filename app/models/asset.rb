@@ -27,6 +27,12 @@ class Asset < ApplicationRecord
   TYPE_KEY = "key"
   TYPE_VEHICLE = "vehicle"
 
+  TYPES = [TYPE_GEAR, TYPE_RADIO, TYPE_TEMP_ID, TYPE_DESKTOP_RADIO, TYPE_MOBILE_RADIO, TYPE_RADIO_CHARGER,
+           TYPE_AMBER, TYPE_KEY, TYPE_VEHICLE].freeze
+
+  belongs_to :asset_group, optional: true
+  delegate :title, to: :asset_group, prefix: :group, allow_nil: true
+
   has_many :asset_history, -> { order(:checked_out) },
            class_name: "PersonAsset",
            foreign_key: :asset_id,
@@ -39,11 +45,11 @@ class Asset < ApplicationRecord
           inverse_of: :asset
 
   validates :barcode, presence: true, length: { maximum: 25 }, uniqueness: { scope: :year }
-  validates :group_name, length: { maximum: 25 }, allow_nil: true
   validates :description, length: { maximum: 64 }, allow_nil: true
   validates :type, presence: true
   validates :year, presence: true, numericality: { only_integer: true }
   validate :expires_at_is_readable
+  validate :asset_group_matches_type
 
   # The same rule as #has_expired?, for a whole relation: an expiry that has
   # arrived has expired, and no expiry never does.
@@ -55,7 +61,7 @@ class Asset < ApplicationRecord
   class << self
     def find_for_query(query = {})
       params = (query || {}).to_h.with_indifferent_access
-      scope = where(year: params[:year].presence || Current.year)
+      scope = where(year: params[:year].presence || Current.year).includes(:asset_group)
 
       scope = scope.where(barcode: params[:barcode]) if params[:barcode].present?
       scope = apply_exclude_filter(scope, params[:exclude])
@@ -63,7 +69,7 @@ class Asset < ApplicationRecord
       scope = apply_nullable_filter(scope, :description, params[:description])
       scope = apply_nullable_filter(scope, :order_number, params[:order_number])
       scope = apply_nullable_filter(scope, :entity_assignment, params[:entity_assignment])
-      scope = apply_nullable_filter(scope, :group_name, params[:group_name])
+      scope = apply_nullable_filter(scope, :asset_group_id, params[:asset_group_id])
       scope = apply_expire_filter(scope, params[:expire])
 
       if query_flag?(params, :checked_out)
@@ -174,8 +180,14 @@ class Asset < ApplicationRecord
 
   private
 
+  def asset_group_matches_type
+    return if asset_group_id.nil?
+    return if asset_group && asset_group.type == type
+
+    errors.add(:asset_group_id, "The asset group must be one of this asset type's groups.")
+  end
+
   def normalize_optional_fields
-    self.group_name = group_name.presence
     self.description = description.presence
     self.entity_assignment = entity_assignment.presence
     self.order_number = order_number.presence

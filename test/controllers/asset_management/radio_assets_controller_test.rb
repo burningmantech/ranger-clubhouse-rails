@@ -79,8 +79,8 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
   end
 
   test "each radio is badged event or shift rather than permanent or temporary" do
-    create_radio(barcode: "101", perm_assign: true)
-    create_radio(barcode: "500", perm_assign: false)
+    create_radio(barcode: "101", shift_only: false)
+    create_radio(barcode: "500", shift_only: true)
 
     sign_in_as(@admin)
     get asset_management_radio_assets_path
@@ -139,8 +139,8 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
   end
 
   test "the view toggle carries the year and the filters both ways" do
-    create_radio(barcode: "101", perm_assign: true)
-    create_radio(barcode: "500", perm_assign: false)
+    create_radio(barcode: "101", shift_only: false)
+    create_radio(barcode: "500", shift_only: true)
 
     sign_in_as(@admin)
     get asset_management_radio_assets_path(year: Current.year, duration: "event")
@@ -176,8 +176,8 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
   end
 
   test "the duration filter narrows the table and the stat boxes with it" do
-    create_radio(barcode: "101", perm_assign: true)
-    create_radio(barcode: "500", perm_assign: false)
+    create_radio(barcode: "101", shift_only: false)
+    create_radio(barcode: "500", shift_only: true)
 
     sign_in_as(@admin)
     get asset_management_radio_assets_path(duration: "shift")
@@ -254,8 +254,8 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
   end
 
   test "the description options are narrowed by the duration already chosen" do
-    create_radio(barcode: "101", description: "Event only", perm_assign: true)
-    create_radio(barcode: "500", description: "Shift only", perm_assign: false)
+    create_radio(barcode: "101", description: "Event only", shift_only: false)
+    create_radio(barcode: "500", description: "Shift only", shift_only: true)
 
     sign_in_as(@admin)
     get asset_management_radio_assets_path(duration: "shift")
@@ -331,8 +331,8 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
   end
 
   test "the year selector and the filter chip each carry the other's state" do
-    create_radio(barcode: "101", perm_assign: true)
-    create_radio(barcode: "500", perm_assign: false)
+    create_radio(barcode: "101", shift_only: false)
+    create_radio(barcode: "500", shift_only: true)
 
     sign_in_as(@admin)
     get asset_management_radio_assets_path(duration: "event", view: SUMMARY)
@@ -359,8 +359,8 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
     # This page carries two forms over one set of params -- the year selector
     # and the filter bar -- so a hidden field defaulting its id from its name is
     # one rename away from colliding with the select of the same name.
-    create_radio(barcode: "101", perm_assign: true)
-    create_radio(barcode: "500", perm_assign: false)
+    create_radio(barcode: "101", shift_only: false)
+    create_radio(barcode: "500", shift_only: true)
 
     sign_in_as(@admin)
 
@@ -374,7 +374,7 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
   end
 
   test "a filter that matches nothing says so" do
-    create_radio(barcode: "101", perm_assign: true)
+    create_radio(barcode: "101", shift_only: false)
 
     sign_in_as(@admin)
     get asset_management_radio_assets_path(duration: "shift")
@@ -430,7 +430,7 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
   end
 
   test "a barcode links to the record page, which offers a way back here" do
-    radio = create_radio(barcode: "101", perm_assign: false)
+    radio = create_radio(barcode: "101", shift_only: true)
 
     sign_in_as(@admin)
     get asset_management_radio_assets_path(duration: "shift")
@@ -451,7 +451,7 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
   test "editing a radio reached from this report cancels back to the radio inventory" do
     # type: rides along on the barcode link because Cancel and Delete key on it;
     # without it they land on the bare types index instead of the radio page.
-    radio = create_radio(barcode: "101", perm_assign: false)
+    radio = create_radio(barcode: "101", shift_only: true)
 
     sign_in_as(@editor)
     get edit_asset_management_record_path(radio, year: Current.year, duration: "shift",
@@ -487,8 +487,8 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
   end
 
   test "CSV export carries the roster columns and honors the filters" do
-    create_radio(barcode: "101", description: "Ranger Event 26-065", perm_assign: true)
-    create_radio(barcode: "500", description: "Ranger Shift 26-066", perm_assign: false)
+    create_radio(barcode: "101", description: "Ranger Event 26-065", shift_only: false)
+    create_radio(barcode: "500", description: "Ranger Shift 26-066", shift_only: true)
 
     sign_in_as(@admin)
     get asset_management_radio_assets_path(format: :csv)
@@ -539,8 +539,8 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
     # Descriptions are free text, so one can read exactly like a duration or the
     # view marker. Unlabelled, ?description=Event would export under the same
     # name as ?duration=event while holding different rows.
-    create_radio(barcode: "101", description: "Event", perm_assign: true)
-    create_radio(barcode: "500", description: "Other", perm_assign: false)
+    create_radio(barcode: "101", description: "Event", shift_only: false)
+    create_radio(barcode: "500", description: "Other", shift_only: true)
 
     sign_in_as(@admin)
 
@@ -638,7 +638,7 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
         barcode: "RADIO-#{next_sequence}",
         type: Asset::TYPE_RADIO,
         description: "Ranger Event 26-065",
-        perm_assign: true,
+        shift_only: false,
         year: Current.year
       }.merge(attributes)
     )

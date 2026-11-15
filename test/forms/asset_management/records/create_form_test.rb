@@ -31,7 +31,8 @@ class AssetManagement::Records::CreateFormTest < ActiveSupport::TestCase
     assert_equal "RAD-100", asset.barcode
     assert_equal Asset::TYPE_RADIO, asset.type
     assert_equal Current.year, asset.year
-    assert_equal "Operations", asset.group_name
+    assert asset.shift_only?
+    assert_nil asset.asset_group_id
   end
 
   test "multiple copies preserve zero padding" do

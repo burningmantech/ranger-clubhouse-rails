@@ -145,7 +145,7 @@ class AssetManagement::RadioCheckoutController < ApplicationController
         helpers.person_display_name(checkout.check_in_person, checkout.check_in_person_id,
                                     blank: nil),
         checkout.check_out_forced? ? "Yes" : "No",
-        row.asset.perm_assign? ? "Yes" : "No",
+        row.asset.shift_only? ? "No" : "Yes",
         row.eligible ? "Yes" : "No"
       ]
     end

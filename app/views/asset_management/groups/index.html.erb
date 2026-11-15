@@ -1,0 +1,48 @@
+<%= hero_panel icon: "layer-group", heading_level: :h1, id: "asset-groups-header",
+               title: "Asset Groups",
+               description: "The groups an asset can belong to, by asset type." %>
+
+<% if can?(:edit_assets) %>
+  <div class="my-4">
+    <%= button_row do %>
+      <%= button_link "Add Asset Group", :primary, new_asset_management_group_path,
+                      icon: "plus", icon_type: :solid %>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @groups_by_type.any? %>
+  <% @groups_by_type.each do |type, groups| %>
+    <%= ui_section asset_type_label(type), badge: groups.size.to_s do %>
+      <%= ui_table full_width: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Title" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Assets", right: true %>
+          <%= t.heading "Notes" %>
+          <% if can?(:edit_assets) %>
+            <%= t.heading "Actions", right: true %>
+          <% end %>
+        <% end %>
+
+        <%= t.body do %>
+          <% groups.each do |group| %>
+            <%= t.row do %>
+              <%= t.row_header group.title %>
+              <%= t.cell asset_group_status_badge(group) %>
+              <%= t.cell @asset_counts.fetch(group.id, 0), right: true %>
+              <%= t.cell value_or_dash(nl2br(group.notes)) %>
+              <% if can?(:edit_assets) %>
+                <%= t.cell right: true do %>
+                  <%= edit_link edit_asset_management_group_path(group), "Edit Asset Group" %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= ui_empty_state "No asset groups have been added yet.", icon: "layer-group", icon_type: :solid %>
+<% end %>

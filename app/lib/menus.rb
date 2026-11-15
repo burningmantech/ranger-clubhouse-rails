@@ -1137,7 +1137,10 @@ module Menus
           # would short-circuit prefix matching and light nothing at all there.
           { title: "Asset Inventory", path: :asset_management_records_path,
             active_prefix: true, year_scoped: true,
-            description: "Every barcoded asset for the year — add, edit, and export the inventory" }
+            description: "Every barcoded asset for the year — add, edit, and export the inventory" },
+          # Not year-scoped: a group spans years.
+          { title: "Asset Groups", path: :asset_management_groups_path, active_prefix: true,
+            description: "The groups an asset can belong to — add, retire, and merge them" }
         ]
       }
     ]

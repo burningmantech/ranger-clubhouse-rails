@@ -154,7 +154,7 @@ class RadioCheckoutReportTest < ActiveSupport::TestCase
 
   def radio(**attributes)
     Asset.create!(
-      { barcode: "RADIO-#{next_sequence}", type: Asset::TYPE_RADIO, perm_assign: false,
+      { barcode: "RADIO-#{next_sequence}", type: Asset::TYPE_RADIO, shift_only: true,
         year: Current.year }.merge(attributes)
     )
   end

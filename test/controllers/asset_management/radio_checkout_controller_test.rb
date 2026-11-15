@@ -510,7 +510,7 @@ class AssetManagement::RadioCheckoutControllerTest < ActionDispatch::Integration
         barcode: "RADIO-#{next_sequence}",
         type: Asset::TYPE_RADIO,
         description: "Ranger Event 26-065",
-        perm_assign: false,
+        shift_only: true,
         year: Current.year
       }.merge(attributes)
     )
