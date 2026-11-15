@@ -438,7 +438,7 @@ class TicketOverviewPresenter
 
   def provisions_undecided?
     package.provision_records.any? do |p|
-      !p.is_allocated && p.status == Provision::AVAILABLE
+      p.bankable? && p.status == Provision::AVAILABLE
     end
   end
 

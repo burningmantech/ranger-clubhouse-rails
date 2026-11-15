@@ -102,7 +102,7 @@ class Ticketing::ProvisionsController < ApplicationController
         provision.person&.callsign,
         provision.type_label,
         provision.status,
-        # Only event radios carry a count; the table blanks the rest the same way.
+        # Only event and shift radios carry a count; the table blanks the rest the same way.
         (provision.item_count if provision.item_count&.positive?),
         provision.is_allocated ? "Yes" : "No",
         provision.source_year

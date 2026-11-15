@@ -14,7 +14,7 @@
   have_event_radio = presenter.radios.positive?
 
   # Undecided = an earned (non-allocated) provision still sitting at its default.
-  undecided = pkg.provision_records.any? { |p| !p.is_allocated && p.status == Provision::AVAILABLE }
+  undecided = pkg.provision_records.any? { |p| p.bankable? && p.status == Provision::AVAILABLE }
 %>
 
 <%= hero_panel icon: "gear", heading_level: :h1, id: "provisions-header",

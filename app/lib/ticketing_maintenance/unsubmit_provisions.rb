@@ -18,8 +18,7 @@ module TicketingMaintenance
     end
 
     def unsubmit(person_ids)
-      walk(Provision.where(person_id: person_ids, status: CONSUMED_STATUSES,
-                           is_allocated: false)) do |provision|
+      walk(Provision.bankable.where(person_id: person_ids, status: CONSUMED_STATUSES)) do |provision|
         status_row(provision, to: Provision::AVAILABLE,
                    comment: "un-submit maintenance function",
                    audit_reason: "un-submit maintenance function")

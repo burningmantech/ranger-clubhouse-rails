@@ -12,6 +12,8 @@ module TicketingMaintenance
   #
   # Allocated provisions never roll over: consumed ones (claimed, submitted,
   # or the person's BMID was submitted that year) become used, the rest expire.
+  # Shift radio and radio group provisions are event-only too and take the same
+  # path, whether or not they are allocated.
   class CleanProvisions < Base
     CONSUMED_STATUSES = [Provision::CLAIMED, Provision::SUBMITTED].freeze
 
@@ -19,17 +21,18 @@ module TicketingMaintenance
 
     def self.description
       "Mark consumed provisions as used and expire the rest: earned provisions roll over unless they " \
-        "are unused event radios, allocated provisions never roll over. Run BEFORE Bank Provisions."
+        "are unused event radios; allocated, shift radio and radio group provisions never roll over. " \
+        "Run BEFORE Bank Provisions."
     end
 
     def self.earned_scope
-      base = Provision.where(is_allocated: false)
+      base = Provision.bankable
       base.where(status: CONSUMED_STATUSES)
           .or(base.where(status: Provision::AVAILABLE, type: Provision::EVENT_RADIO))
     end
 
     def self.allocated_scope
-      Provision.where(is_allocated: true, status: Provision::CURRENT_STATUSES)
+      Provision.event_only.where(status: Provision::CURRENT_STATUSES)
     end
 
     def execute
@@ -81,20 +84,24 @@ module TicketingMaintenance
     end
 
     def allocated_rows
-      rows = self.class.allocated_scope.includes(:person).to_a
+      rows = self.class.allocated_scope.includes(:person, :asset_group).to_a
       bmid_ids = Bmid.where(person_id: rows.map(&:person_id).uniq,
                             year: maintenance_year, status: Bmid::SUBMITTED)
                      .distinct.pluck(:person_id).to_set
 
       rows.map do |provision|
         if bmid_ids.include?(provision.person_id) || CONSUMED_STATUSES.include?(provision.status)
-          consume(provision, "marked as used via maintenance function", detail: "allocated, consumed")
+          consume(provision, "marked as used via maintenance function", detail: "#{event_only_kind(provision)}, consumed")
         else
-          status_row(provision, to: Provision::EXPIRED, detail: "allocated, not consumed",
+          status_row(provision, to: Provision::EXPIRED, detail: "#{event_only_kind(provision)}, not consumed",
                      comment: "marked as expired via maintenance function",
                      audit_reason: "marked as expired via maintenance function")
         end
       end
+    end
+
+    def event_only_kind(provision)
+      provision.is_allocated ? "allocated" : "event only"
     end
 
     def consume(provision, reason, detail: nil)

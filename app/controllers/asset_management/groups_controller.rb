@@ -76,7 +76,7 @@ class AssetManagement::GroupsController < ApplicationController
     moved = @group.merge_into!(target)
     redirect_to asset_management_groups_path,
                 success: "#{@group.title} merged into #{target.title}. " \
-                         "#{helpers.pluralize(moved, "asset")} moved."
+                         "#{helpers.asset_group_contents(moved, @provision_count)} moved."
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotDestroyed => e
     # The joined notes outgrew their column, or an asset joined the group mid-merge.
     redirect_to merge_asset_management_group_path(@group),
@@ -88,6 +88,7 @@ class AssetManagement::GroupsController < ApplicationController
   def set_group
     @group = AssetGroup.find(params[:id])
     @asset_count = @group.assets.count
+    @provision_count = @group.provisions.count
   end
 
   def merge_targets

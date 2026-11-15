@@ -53,6 +53,21 @@ class AssetGroupTest < ActiveSupport::TestCase
     assert @dupe.destroy
   end
 
+  test "a group a provision grants from keeps its type, cannot be deleted, and merges with its provisions" do
+    granted = Provision.create!(person: person(:active_ranger), type: Provision::RADIO_GROUP, asset_group: @dupe,
+                                status: Provision::AVAILABLE, source_year: 2026, expires_on: "2026")
+
+    assert_not @dupe.update(type: Asset::TYPE_GEAR, title: "Moved")
+    assert_includes @dupe.errors[:type], AssetGroup::TYPE_LOCKED_BY_PROVISIONS
+
+    assert_not @dupe.reload.destroy
+    assert_includes @dupe.errors[:base], AssetGroup::PROVISIONED
+
+    assert_equal 0, @dupe.merge_into!(@ops)
+    assert_equal @ops.id, granted.reload.asset_group_id
+    assert_equal 1, ActionLog.where(event: "asset-group-merge").last.data["provisions"]
+  end
+
   test "merging moves the assets of every year, appends the notes and deletes the group" do
     this_year = radio(@dupe, "R-1", year: 2026)
     last_year = radio(@dupe, "R-1", year: 2025)

@@ -44,7 +44,7 @@ class UnsubmitProvisionsReport
   end
 
   def execute
-    provisions = Provision.where(status: CONSUMABLE_STATUSES, is_allocated: false)
+    provisions = Provision.bankable.where(status: CONSUMABLE_STATUSES)
                           .includes(:person)
                           .order(:type)
                           .group_by(&:person_id)

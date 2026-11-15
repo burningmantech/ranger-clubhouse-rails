@@ -1,6 +1,6 @@
 <%= hero_panel icon: "arrow-right-to-bracket", heading_level: :h1, id: "asset-groups-merge-header",
                title: "Merge Asset Group",
-               description: "Move every asset of one group into another, then delete the emptied group.",
+               description: "Move every asset and radio group provision of one group into another, then delete the emptied group.",
                back_to: ["Edit Asset Group", edit_asset_management_group_path(@group)] %>
 
 <% if @targets.any? %>
@@ -8,7 +8,7 @@
     <%= ui_section do %>
       <p class="mb-3">
         <strong><%= @group.title %></strong> (<%= asset_type_label(@group.type) %>) has
-        <%= pluralize @asset_count, "asset" %> across all years.
+        <%= asset_group_contents(@asset_count, @provision_count) %> across all years.
         They move to the group you pick, <%= @group.title %>'s notes are added to that group's notes,
         and <%= @group.title %> is deleted.
       </p>
@@ -22,7 +22,7 @@
                    data: { turbo_confirm: confirm_modal_dialog(
                      title: "Merge Asset Group",
                      message: "Merge #{@group.title} into the group you picked? " \
-                              "#{pluralize(@asset_count, "asset")} will move and #{@group.title} will be deleted. " \
+                              "#{asset_group_contents(@asset_count, @provision_count)} will move and #{@group.title} will be deleted. " \
                               "This cannot be undone.",
                      confirm_label: "Merge Asset Group",
                      variant: :error

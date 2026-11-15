@@ -214,6 +214,17 @@ class Me::TicketsControllerTest < ActionDispatch::IntegrationTest
     assert_equal Current.year, earned.consumed_year
   end
 
+  test "update_provisions leaves a shift radio provision alone" do
+    shift = Provision.create!(person: person(:active_ranger), type: Provision::RADIO_SHIFT,
+                              status: Provision::AVAILABLE, source_year: Current.year, expires_on: Current.year)
+
+    patch me_tickets_provisions_url, params: { status: "banked" }
+
+    assert_redirected_to me_tickets_provisions_path
+    assert_equal Provision::BANKED, provision(:ar_meals).reload.status
+    assert_equal Provision::AVAILABLE, shift.reload.status
+  end
+
   test "update_provisions is rejected when the person has allocated provisions" do
     sign_out
     sign_in_as(person(:ranger_with_custom_gender))

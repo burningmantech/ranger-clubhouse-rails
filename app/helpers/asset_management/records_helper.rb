@@ -131,6 +131,21 @@ module AssetManagement::RecordsHelper
   end
 
   # A merge target as its select names it: an inactive one says so.
+  # What a group holds: "3 assets", and "3 assets and 1 provision" once a
+  # radio group provision grants from it.
+  def asset_group_contents(assets, provisions)
+    [pluralize(assets, "asset"), (pluralize(provisions, "provision") if provisions.positive?)].compact.to_sentence
+  end
+
+  # Why a group's type is locked, nil while nothing uses the group.
+  def asset_group_type_lock(assets, provisions)
+    if assets.positive?
+      AssetGroup::TYPE_LOCKED
+    elsif provisions.positive?
+      AssetGroup::TYPE_LOCKED_BY_PROVISIONS
+    end
+  end
+
   def asset_group_merge_label(group)
     group.active? ? group.title : "#{group.title} (inactive)"
   end
@@ -139,11 +154,7 @@ module AssetManagement::RecordsHelper
   # "Active" before "Inactive", an empty half left out. The asset-form
   # controller redraws the select from the same hash when the type changes.
   def asset_group_options_by_type
-    @asset_group_options_by_type ||= AssetGroup.by_title.group_by(&:type).transform_values do |groups|
-      active, inactive = groups.partition(&:active)
-      { "Active" => active, "Inactive" => inactive }
-        .reject { |_label, list| list.empty? }
-        .transform_values { |list| list.map { |group| [group.title, group.id] } }
-    end
+    @asset_group_options_by_type ||= AssetGroup.by_title.group_by(&:type)
+                                                .transform_values { |groups| AssetGroup.grouped_options(groups) }
   end
 end
