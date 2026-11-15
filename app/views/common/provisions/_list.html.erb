@@ -20,7 +20,7 @@
           <% end %>
           <%= t.cell do %>
             <%= provision.type_label %>
-            <% if provision.type == Provision::EVENT_RADIO %>
+            <% if Provision::COUNTED_TYPES.include?(provision.type) %>
               (<%= pluralize provision.item_count, "radio" %>)
             <% end %>
           <% end %>

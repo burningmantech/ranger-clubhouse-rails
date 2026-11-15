@@ -61,6 +61,19 @@ class Provision < ApplicationRecord
   EVENT_RADIO = "event_radio"
   WET_SPOT = "wet_spot"
   MEALS = "meals"
+  # One more shift radio than the person would otherwise be handed.
+  RADIO_SHIFT = "radio_shift"
+  # A radio from one radio asset group (asset_group_id).
+  RADIO_GROUP = "radio_group"
+
+  # Good for the present event only, whether earned or not: never banked, and
+  # ended by Clean Provisions once the event is over. Unlike an allocated
+  # provision, one of these does not pull the person's banked provisions into
+  # play, which is why they are a type list and not is_allocated.
+  EVENT_ONLY_TYPES = [RADIO_SHIFT, RADIO_GROUP].freeze
+
+  # The types item_count counts radios for.
+  COUNTED_TYPES = [EVENT_RADIO, RADIO_SHIFT].freeze
 
   ACTIVE_STATUSES = [AVAILABLE, CLAIMED, BANKED].freeze
   CURRENT_STATUSES = [AVAILABLE, CLAIMED, BANKED, SUBMITTED].freeze
@@ -76,6 +89,8 @@ class Provision < ApplicationRecord
   TYPE_LABELS = {
     EVENT_RADIO => "Event Radio",
     WET_SPOT => "Wet Spot Access",
+    RADIO_SHIFT => "Shift Radio",
+    RADIO_GROUP => "Radio Group",
     # Pseudo meal types - key built from {pre_event,event_week,post_event}_meals fields
     "pre+event+post" => "All Eats Pass",
     "event" => "Event Week Eat Pass",
@@ -86,21 +101,28 @@ class Provision < ApplicationRecord
     "pre+post" => "Pre-Event & Post Event Eat Pass"
   }.freeze
 
-  ALL_TYPES = [MEALS, EVENT_RADIO, WET_SPOT].freeze
+  ALL_TYPES = [MEALS, EVENT_RADIO, WET_SPOT, RADIO_SHIFT, RADIO_GROUP].freeze
+
+  NOT_ALLOCATABLE = "A shift radio or radio group provision cannot be allocated. It already expires after the event."
+  GROUP_REQUIRED = "Pick a radio group for a radio group provision."
 
   # Associations
   belongs_to :person
+  belongs_to :asset_group, optional: true
 
   # Virtual attributes
   attr_accessor :additional_comments
 
   # Callbacks
+  before_validation :clear_asset_group_unless_radio_group
   before_save :set_default_item_count_for_radio
-  before_save :set_expires_on_for_allocated
+  before_save :set_expires_on_for_event_only
   before_save :prepend_additional_comments
 
   # Validations
-  validate :allocated_cannot_be_banked
+  validate :event_only_cannot_be_banked
+  validate :event_only_type_is_not_allocated
+  validate :radio_group_has_a_radio_group
   validate :meals_must_have_period
 
   # Scopes
@@ -108,6 +130,9 @@ class Provision < ApplicationRecord
   scope :current, -> { where(status: CURRENT_STATUSES) }
   scope :valid, -> { where.not(status: INVALID_STATUSES) }
   scope :can_use, -> { where(status: CAN_USE_STATUSES) }
+  # Earned and able to carry over to a later event; event_only is the rest.
+  scope :bankable, -> { where(is_allocated: false).where.not(type: EVENT_ONLY_TYPES) }
+  scope :event_only, -> { where(is_allocated: true).or(where(type: EVENT_ONLY_TYPES)) }
 
   class << self
     # Find records matching given criteria.
@@ -122,7 +147,7 @@ class Provision < ApplicationRecord
     #   is_allocated: true for allocated only, false for earned only
     #
     def find_for_query(query)
-      scope = order(:type, :source_year)
+      scope = order(:type, :source_year).includes(:asset_group)
 
       status = query[:status]
       person_id = query[:person_id]
@@ -199,6 +224,10 @@ class Provision < ApplicationRecord
     #
     # Banked earned provisions are included if the person has allocated provisions.
     # (You get an allocated cookie, then all the cookies have to be used that year.)
+    #
+    # The event-only radio types are left out. They are not wellness provisions:
+    # no caller prints them for the member or on a badge, and a BMID export,
+    # which consumes everything this returns, must not consume them.
     def retrieve_usable_for_person_ids(person_ids)
       allocated_person_ids = where(person_id: person_ids, is_allocated: true, status: CAN_USE_STATUSES)
                                .distinct
@@ -209,6 +238,7 @@ class Provision < ApplicationRecord
         .or(
           where(person_id: allocated_person_ids, status: BANKED)
         )
+        .where.not(type: EVENT_ONLY_TYPES)
     end
 
     # Build a package summary from provisions
@@ -256,11 +286,10 @@ class Provision < ApplicationRecord
         .exists?
     end
 
-    # Retrieve all un-submitted earned provisions
+    # Retrieve all un-submitted earned provisions the person may bank or claim
     def retrieve_earned(person_id)
-      where(person_id: person_id)
-        .where(status: [AVAILABLE, CLAIMED, BANKED])
-        .where(is_allocated: false)
+      bankable.where(person_id:)
+              .where(status: [AVAILABLE, CLAIMED, BANKED])
     end
 
     # Find all item types for a given person, and mark as submitted (consumed).
@@ -333,6 +362,7 @@ class Provision < ApplicationRecord
 
   # Get the human-readable type label
   def type_label
+    return "#{TYPE_LABELS[type]}: #{asset_group.title}" if type == RADIO_GROUP && asset_group
     return TYPE_LABELS[type] || type unless type == MEALS
 
     periods = []
@@ -342,6 +372,15 @@ class Provision < ApplicationRecord
 
     meal_type = periods.join("+")
     TYPE_LABELS[meal_type] || meal_type
+  end
+
+  # Good for the present event only: allocated, or one of the event-only types.
+  def event_only?
+    is_allocated || EVENT_ONLY_TYPES.include?(type)
+  end
+
+  def bankable?
+    !event_only?
   end
 
   # Is this a shower/wet spot type provision?
@@ -356,16 +395,28 @@ class Provision < ApplicationRecord
 
   private
 
+  def clear_asset_group_unless_radio_group
+    self.asset_group_id = nil unless type == RADIO_GROUP
+  end
+
   def set_default_item_count_for_radio
-    return unless type == EVENT_RADIO && item_count.blank?
+    return unless COUNTED_TYPES.include?(type) && item_count.blank?
 
     self.item_count = 1
   end
 
-  def set_expires_on_for_allocated
-    return unless is_allocated && new_record?
+  # An allocated provision gets the present year when it is made. The radio
+  # types get it whenever the type or the year is set, so a provision changed
+  # into one, or given a later year on the form, cannot read as outliving the
+  # event that ends it.
+  def set_expires_on_for_event_only
+    return unless new_record? ? event_only? : radio_expiry_edited?
 
     self.expires_on = Current.year
+  end
+
+  def radio_expiry_edited?
+    EVENT_ONLY_TYPES.include?(type) && (will_save_change_to_type? || will_save_change_to_expires_on?)
   end
 
   def prepend_additional_comments
@@ -376,10 +427,27 @@ class Provision < ApplicationRecord
     self.comments = "#{timestamp} #{callsign}: #{additional_comments}\n#{comments}"
   end
 
-  def allocated_cannot_be_banked
-    return unless is_allocated && status == BANKED
+  def event_only_cannot_be_banked
+    return unless status == BANKED
 
-    errors.add(:status, "An allocated provision cannot be banked")
+    if is_allocated
+      errors.add(:status, "An allocated provision cannot be banked")
+    elsif EVENT_ONLY_TYPES.include?(type)
+      errors.add(:status, "A #{TYPE_LABELS[type].downcase} provision cannot be banked. It expires after the event.")
+    end
+  end
+
+  # Allocated means "use everything this event", banked provisions included,
+  # which a radio grant must never set off.
+  def event_only_type_is_not_allocated
+    errors.add(:is_allocated, NOT_ALLOCATABLE) if is_allocated && EVENT_ONLY_TYPES.include?(type)
+  end
+
+  def radio_group_has_a_radio_group
+    return unless type == RADIO_GROUP
+    return if asset_group&.type == Asset::TYPE_RADIO
+
+    errors.add(:asset_group_id, GROUP_REQUIRED)
   end
 
   def meals_must_have_period

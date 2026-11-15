@@ -122,6 +122,25 @@ class AssetManagement::GroupsControllerTest < ActionDispatch::IntegrationTest
     assert_not AssetGroup.exists?(@gear.id)
   end
 
+  test "a group only provisions use locks its type and merges with them" do
+    granted = Provision.create!(person: @unauthorized, type: Provision::RADIO_GROUP, asset_group: @dupe,
+                                status: Provision::AVAILABLE, source_year: Current.year, expires_on: Current.year)
+    sign_in_as(@editor)
+
+    get edit_asset_management_group_path(@dupe)
+    assert_select "select[name='asset_group[type]'][disabled]"
+    assert_select "body", text: /#{Regexp.escape(AssetGroup::TYPE_LOCKED_BY_PROVISIONS)}/
+
+    get merge_asset_management_group_path(@dupe)
+    assert_select "body", text: /0 assets and 1 provision across all years/
+
+    post merge_asset_management_group_path(@dupe), params: { target_id: @ops.id }
+
+    assert_equal "Cmmd Ops merged into Command Operations. 0 assets and 1 provision moved.", flash[:success]
+    assert_equal @ops.id, granted.reload.asset_group_id
+    granted.destroy!
+  end
+
   test "an editor merges a group into another of its type" do
     asset = radio(@dupe, "R-1")
     sign_in_as(@editor)

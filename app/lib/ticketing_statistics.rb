@@ -118,7 +118,7 @@ module TicketingStatistics
 
     def provision_counts
       {
-        earned: distinct_people(Provision.where(status: Provision::AVAILABLE, is_allocated: false)),
+        earned: distinct_people(Provision.bankable.where(status: Provision::AVAILABLE)),
         allocated: distinct_people(Provision.where(status: [Provision::AVAILABLE, Provision::SUBMITTED],
                                                     is_allocated: true)),
         # Upstream asks this as "has a sibling provision whose allocation flag
@@ -126,7 +126,7 @@ module TicketingStatistics
         # says so without the correlated subquery.
         both: distinct_people(
           Provision.valid.where(is_allocated: true)
-                   .where(person_id: Provision.valid.where(is_allocated: false).select(:person_id))
+                   .where(person_id: Provision.valid.bankable.select(:person_id))
         ),
         banked: distinct_people(Provision.where(status: Provision::BANKED))
       }

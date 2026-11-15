@@ -3,8 +3,9 @@
 module TicketingMaintenance
   # Post-event: carry earned available provisions forward as banked -- except
   # event radios, which expire unclaimed (Clean Provisions already consumed the
-  # ones backed by attendance). Run AFTER Clean Provisions. Port of the Laravel
-  # ProvisionMaintenance.bankProvisions.
+  # ones backed by attendance). Shift radio and radio group provisions are not
+  # bankable and never reach this task: Clean Provisions ends them. Run AFTER
+  # Clean Provisions. Port of the Laravel ProvisionMaintenance.bankProvisions.
   class BankProvisions < Base
     def self.title = "Bank Provisions From Prior Event"
 
@@ -13,7 +14,7 @@ module TicketingMaintenance
         "Only run AFTER Clean Provisions so event radios are properly handled."
     end
 
-    def self.scope = Provision.where(status: Provision::AVAILABLE, is_allocated: false)
+    def self.scope = Provision.bankable.where(status: Provision::AVAILABLE)
 
     def execute
       walk do |provision|

@@ -36,7 +36,9 @@ module TicketsProvisionsHelper
   PROVISION_TYPE_OPTIONS = [
     ["Meals", Provision::MEALS],
     [Provision::TYPE_LABELS.fetch(Provision::WET_SPOT), Provision::WET_SPOT],
-    [Provision::TYPE_LABELS.fetch(Provision::EVENT_RADIO), Provision::EVENT_RADIO]
+    [Provision::TYPE_LABELS.fetch(Provision::EVENT_RADIO), Provision::EVENT_RADIO],
+    [Provision::TYPE_LABELS.fetch(Provision::RADIO_SHIFT), Provision::RADIO_SHIFT],
+    [Provision::TYPE_LABELS.fetch(Provision::RADIO_GROUP), Provision::RADIO_GROUP]
   ].freeze
 
   PROVISION_STATUS_OPTIONS =
@@ -54,6 +56,12 @@ module TicketsProvisionsHelper
 
   def provision_year_options
     year_span(4)
+  end
+
+  # The radio asset groups a radio group provision can grant from, for
+  # grouped_options_for_select: "Active" before "Inactive", an empty half left out.
+  def provision_radio_group_options
+    AssetGroup.grouped_options(AssetGroup.where(type: Asset::TYPE_RADIO).by_title)
   end
 
   # Access date choices for SC / SAP / S.O. SAP documents: unspecified, any

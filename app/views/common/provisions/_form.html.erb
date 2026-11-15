@@ -25,14 +25,19 @@
       <%= f.select :expires_on, provision_year_options,
                    { label: "Expires After", width: "w-full sm:w-32",
                      selected: provision.expires_on&.year,
-                     help_text: "Expires September 15 of this year. Allocated provisions always expire after the event." } %>
+                     help_text: "Expires September 15 of this year. Allocated, shift radio, and radio group provisions always expire after the event." } %>
     <% end %>
   <% end %>
 
   <%= ui_section "Type-Specific Details", icon: "sliders", icon_type: :solid do %>
     <%= f.number_field :item_count, label: "Radio Count",
                        width: "w-24", min: 1,
-                       help_text: "Only applies to Event Radios." %>
+                       help_text: "Only applies to Event Radios and Shift Radios." %>
+
+    <%= f.select :asset_group_id,
+                 grouped_options_for_select(provision_radio_group_options, provision.asset_group_id),
+                 { include_blank: true, label: "Radio Group", width: "w-full sm:w-64",
+                   help_text: "Only applies to Radio Group provisions: the group the radio is granted from." } %>
 
     <%= f.fieldset "Meal Periods" do %>
       <p class="text-stone-muted">Only apply to Meals — pick at least one period.</p>
@@ -54,7 +59,8 @@
       <dt>What happens when one is set?</dt>
       <dd>All of the person's provisions — including earned ones that were banked — will be used this event.</dd>
     </dl>
-    <%= f.check_box :is_allocated, label: "Is an allocated provision" %>
+    <%= f.check_box :is_allocated, label: "Is an allocated provision",
+                    help_text: "Not for shift radio or radio group provisions. They already expire after the event, and cannot be banked." %>
   <% end %>
 
   <%= ui_section "Comments", icon: "comment", icon_type: :solid do %>

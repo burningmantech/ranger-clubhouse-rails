@@ -428,8 +428,10 @@ Trap: `Passkeys.enabled?` needs `RANGER_CLUBHOUSE_PASSKEY_ORIGIN` (dev/test: non
 ### Provision CRUD (ProvisionCrudConcern)
 Used by: Person › Tickets & Provisions and Person › BMID (`Person::ProvisionsController`, `Person::TicketsProvisionsController`, `Person::BmidsController`), BMID provisions (`Bmid::ProvisionsController`), Ticketing › Provisions (`Ticketing::ProvisionsController`)
 Owner: `ProvisionCrudConcern` (`app/controllers/concerns/provision_crud_concern.rb`), `ProvisionManagementConcern` (`app/controllers/concerns/provision_management_concern.rb`), `Provision` (`app/models/provision.rb`)
-Touches: `provision` (w), `action_logs` (w)
-Verify: `test/controllers/person/provisions_controller_test.rb`, `test/controllers/person/tickets_provisions_controller_test.rb`, `test/controllers/bmid/provisions_controller_test.rb`, `test/controllers/ticketing/provisions_controller_test.rb`
+Touches: `provision` (w), `asset_group`, `action_logs` (w)
+Verify: `test/models/provision_test.rb`, `test/controllers/person/provisions_controller_test.rb`, `test/controllers/person/tickets_provisions_controller_test.rb`, `test/controllers/bmid/provisions_controller_test.rb`, `test/controllers/ticketing/provisions_controller_test.rb`
+Trap: `radio_shift` and `radio_group` (`Provision::EVENT_ONLY_TYPES`) expire with the event like an allocated provision but are not `is_allocated`, which would pull the person's banked provisions into play — ask `event_only?` / `bankable?` (scopes `event_only`, `bankable`), never `is_allocated` alone, for a banking or expiry rule. `Provision.retrieve_usable_for_person_ids` leaves the two types out, so the member's pages, the badge pages and the BMID export never see or consume them; nothing at radio checkout reads them yet.
+Trap: a `radio_group` provision points at a radio `asset_group` (`provision.asset_group_id`), so that group cannot be deleted or change type, and `AssetGroup#merge_into!` moves the provisions with the assets.
 Trap: `Person::ProvisionsController` returns to the `origin` param only if it is in `ProvisionManagementConcern::PROVISION_ORIGINS`, else silently to Tickets & Provisions — add a new person-side entry page there.
 
 ### Unified flagging (UnifiedFlaggingConcern, Intake)

@@ -2,9 +2,10 @@
 
 module TicketingMaintenance
   # Expire every earned live provision whose expiration date has passed.
-  # Allocated provisions are excluded -- they live and die with their event via
-  # Clean Provisions. Port of the Laravel ProvisionMaintenance.expire. Emails
-  # are shown so the operator can tell people their provisions lapsed.
+  # Allocated, shift radio and radio group provisions are excluded -- they live
+  # and die with their event via Clean Provisions. Port of the Laravel
+  # ProvisionMaintenance.expire. Emails are shown so the operator can tell
+  # people their provisions lapsed.
   class ExpireProvisions < Base
     def self.title = "Expire Provisions"
 
@@ -15,8 +16,7 @@ module TicketingMaintenance
     def self.show_email? = true
 
     def self.scope
-      Provision.where(status: Provision::ACTIVE_STATUSES, is_allocated: false,
-                      expires_on: ..Date.current)
+      Provision.bankable.where(status: Provision::ACTIVE_STATUSES, expires_on: ..Date.current)
     end
 
     def execute

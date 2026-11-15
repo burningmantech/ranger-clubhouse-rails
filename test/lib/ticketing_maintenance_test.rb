@@ -285,6 +285,38 @@ class TicketingMaintenanceTest < ActiveSupport::TestCase
     assert_equal YEAR, consumed_bmid.consumed_year
   end
 
+  test "clean provisions ends shift radio and radio group provisions with the event" do
+    group = AssetGroup.create!(type: Asset::TYPE_RADIO, title: "Command Operations")
+    unused = provision_for(@person, type: Provision::RADIO_SHIFT, status: Provision::AVAILABLE)
+    claimed = Provision.create!(person: @other, type: Provision::RADIO_GROUP, asset_group: group,
+                                status: Provision::CLAIMED, source_year: YEAR, expires_on: "#{YEAR}-09-15")
+
+    rows = TicketingMaintenance::CleanProvisions.execute(commit: true)
+
+    assert_equal 2, rows.size
+    assert_equal Provision::EXPIRED, unused.reload.status
+    assert_equal "event only, not consumed", rows.find { |row| row.person.id == @person.id }.detail
+    assert_equal Provision::USED, claimed.reload.status
+    assert_equal YEAR, claimed.consumed_year
+  end
+
+  test "bank and expire provisions leave shift radio provisions to clean provisions" do
+    shift = provision_for(@person, type: Provision::RADIO_SHIFT, status: Provision::AVAILABLE,
+                          expires_on: Date.current)
+
+    assert_empty TicketingMaintenance::BankProvisions.execute(commit: true)
+    assert_empty TicketingMaintenance::ExpireProvisions.execute(commit: true)
+    assert_equal Provision::AVAILABLE, shift.reload.status
+  end
+
+  test "un-submit provisions never offers or returns a shift radio provision" do
+    shift = provision_for(@person, type: Provision::RADIO_SHIFT, status: Provision::SUBMITTED)
+
+    assert_empty UnsubmitProvisionsReport.execute(YEAR)
+    assert_empty TicketingMaintenance::UnsubmitProvisions.unsubmit([@person.id])
+    assert_equal Provision::SUBMITTED, shift.reload.status
+  end
+
   test "bank provisions banks earned available provisions and expires unclaimed radios" do
     shower = provision_for(@person, status: Provision::AVAILABLE)
     radio = provision_for(@other, type: Provision::EVENT_RADIO, status: Provision::AVAILABLE)

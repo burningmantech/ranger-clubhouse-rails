@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_000003) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -1169,6 +1169,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_000002) do
     t.boolean "pre_event_meals", default: false, null: false
     t.boolean "event_week_meals", default: false, null: false
     t.boolean "post_event_meals", default: false, null: false
+    t.integer "asset_group_id"
+    t.index ["asset_group_id"], name: "index_provision_on_asset_group_id"
     t.index ["person_id"], name: "fk_rails_ac39c5a71c"
   end
 
@@ -1766,6 +1768,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_000002) do
   add_foreign_key "prospective_application", "person", on_delete: :nullify
   add_foreign_key "prospective_application_log", "prospective_application"
   add_foreign_key "prospective_application_note", "prospective_application"
+  add_foreign_key "provision", "asset_group"
   add_foreign_key "provision", "person"
   add_foreign_key "sessions", "person"
   add_foreign_key "shift_coverage_position", "shift_coverage_group"

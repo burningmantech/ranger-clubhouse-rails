@@ -29,7 +29,8 @@ module ProvisionCrudConcern
   end
 
   # A provision starts available and earned in the current year. The expiry
-  # default of three years out matches how long an earned provision keeps.
+  # default of three years out matches how long an earned provision keeps; an
+  # event-only radio type shows the year the model will hold it to.
   def new
     year = Current.year
     type = Provision::ALL_TYPES.include?(params[:type]) ? params[:type] : Provision::MEALS
@@ -39,9 +40,9 @@ module ProvisionCrudConcern
       type: type,
       status: Provision::AVAILABLE,
       source_year: year,
-      expires_on: year + 3
+      expires_on: Provision::EVENT_ONLY_TYPES.include?(type) ? year : year + 3
     )
-    @provision.item_count = 1 if type == Provision::EVENT_RADIO
+    @provision.item_count = 1 if Provision::COUNTED_TYPES.include?(type)
   end
 
   def create
@@ -81,7 +82,7 @@ module ProvisionCrudConcern
   end
 
   def provision_params
-    params.expect(provision: [:type, :status, :source_year, :expires_on, :item_count,
+    params.expect(provision: [:type, :status, :source_year, :expires_on, :item_count, :asset_group_id,
                               :pre_event_meals, :event_week_meals, :post_event_meals,
                               :is_allocated, :additional_comments])
   end

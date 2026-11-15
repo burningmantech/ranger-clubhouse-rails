@@ -1,4 +1,4 @@
-<% in_use = @group.persisted? && @asset_count.positive? %>
+<% type_lock = (asset_group_type_lock(@asset_count, @provision_count) if @group.persisted?) %>
 <%= ui_form(@group,
             @group.persisted? ? asset_management_group_path(@group) : asset_management_groups_path,
             method: @group.persisted? ? :patch : :post) do |f| %>
@@ -11,9 +11,9 @@
                      label: "Asset Type",
                      width: "w-full",
                      wrapper_class: "flex-1",
-                     help_text: (AssetGroup::TYPE_LOCKED if in_use)
+                     help_text: type_lock
                    },
-                   { disabled: in_use } %>
+                   { disabled: type_lock.present? } %>
       <%= f.text_field :title,
                        label: "Title",
                        required: true,
