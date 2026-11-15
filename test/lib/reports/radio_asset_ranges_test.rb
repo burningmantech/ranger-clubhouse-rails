@@ -126,7 +126,7 @@ class RadioAssetRangesTest < ActiveSupport::TestCase
                          ["102", "Ranger Event", false]])
 
     assert_equal ["100 - 101", "102"], ranges.map(&:label)
-    assert_equal [true, false], ranges.map { |range| range.exemplar.perm_assign? }
+    assert_equal [false, true], ranges.map { |range| range.exemplar.shift_only? }
   end
 
   test "a NULL description groups like any other value" do
@@ -143,8 +143,8 @@ class RadioAssetRangesTest < ActiveSupport::TestCase
   end
 
   def build_with(rows)
-    assets = rows.map do |barcode, description, perm_assign|
-      Asset.new(barcode:, description:, perm_assign:, type: Asset::TYPE_RADIO, year: 2024)
+    assets = rows.map do |barcode, description, event|
+      Asset.new(barcode:, description:, shift_only: !event, type: Asset::TYPE_RADIO, year: 2024)
     end
 
     RadioAssetRanges.build(assets)

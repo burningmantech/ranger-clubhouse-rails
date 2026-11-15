@@ -72,7 +72,7 @@ class RadioAssetRanges
     return [:alone, index] if segments.nil? || duplicated.include?(asset.barcode)
 
     [segments[:prefix], segments[:suffix], segments[:width],
-     asset.description, asset.perm_assign?]
+     asset.description, asset.shift_only?]
   end
 
   def duplicated_barcodes

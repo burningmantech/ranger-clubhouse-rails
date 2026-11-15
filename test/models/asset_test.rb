@@ -34,14 +34,12 @@ class AssetTest < ActiveSupport::TestCase
 
   test "optional blank fields normalize to nil" do
     asset = create_asset(
-      group_name: "",
       description: "",
       entity_assignment: "",
       order_number: "",
       expires_at: ""
     )
 
-    assert_nil asset.group_name
     assert_nil asset.description
     assert_nil asset.entity_assignment
     assert_nil asset.order_number
@@ -130,7 +128,6 @@ class AssetTest < ActiveSupport::TestCase
     blank_asset = create_asset(
       barcode: "BLANK-100",
       description: nil,
-      group_name: nil,
       entity_assignment: nil,
       order_number: nil,
       expires_at: nil
@@ -138,7 +135,7 @@ class AssetTest < ActiveSupport::TestCase
     expired_asset = create_asset(
       barcode: "EXP-100",
       description: "Portable",
-      group_name: "Ops",
+      asset_group: asset_group("Ops"),
       entity_assignment: "Alpha",
       order_number: "PO-1",
       expires_at: Current.time
@@ -146,7 +143,7 @@ class AssetTest < ActiveSupport::TestCase
     future_asset = create_asset(
       barcode: "FUTURE-100",
       description: "Portable",
-      group_name: "Ops",
+      asset_group: asset_group("Ops"),
       entity_assignment: "Bravo",
       order_number: "PO-2",
       expires_at: Current.time + 1.day
@@ -154,7 +151,7 @@ class AssetTest < ActiveSupport::TestCase
 
     assert_equal [blank_asset.id],
                  Asset.find_for_query(description: "Blank",
-                                      group_name: "Blank",
+                                      asset_group_id: "Blank",
                                       entity_assignment: "Blank",
                                       order_number: "Blank").map(&:id)
     assert_equal [expired_asset.id], Asset.find_for_query(expire: "expired").map(&:id)
@@ -217,6 +214,10 @@ class AssetTest < ActiveSupport::TestCase
         year: Current.year
       }.merge(attributes)
     )
+  end
+
+  def asset_group(title, type = Asset::TYPE_RADIO)
+    AssetGroup.find_or_create_by!(type:, title:)
   end
 
   def create_asset(**attributes)

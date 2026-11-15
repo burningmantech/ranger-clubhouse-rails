@@ -38,10 +38,10 @@
                    selected: @filter_params[:description].presence || "all",
                    width: "w-full",
                    wrapper_class: "flex-1" %>
-      <%= f.select :group_name,
-                   asset_filter_options(@filter_option_assets, :group_name),
+      <%= f.select :asset_group_id,
+                   asset_group_filter_options(@filter_option_assets),
                    label: "Asset Group",
-                   selected: @filter_params[:group_name].presence || "all",
+                   selected: @filter_params[:asset_group_id].presence || "all",
                    width: "w-full",
                    wrapper_class: "flex-1" %>
       <%= f.select :entity_assignment,
@@ -93,7 +93,7 @@
           <%= t.cell value_or_dash(asset.description) %>
           <%= t.cell asset_duration_label(asset), center: true %>
           <%= t.cell value_or_dash(asset.entity_assignment) %>
-          <%= t.cell value_or_dash(asset.group_name) %>
+          <%= t.cell value_or_dash(asset.group_title) %>
           <%= t.cell value_or_dash(asset.order_number) %>
           <%= t.cell expires_at_cell(asset) %>
           <%= t.cell right: true do %>

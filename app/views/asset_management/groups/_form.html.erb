@@ -1,0 +1,52 @@
+<% in_use = @group.persisted? && @asset_count.positive? %>
+<%= ui_form(@group,
+            @group.persisted? ? asset_management_group_path(@group) : asset_management_groups_path,
+            method: @group.persisted? ? :patch : :post) do |f| %>
+  <%= ui_section do %>
+    <%= form_row do %>
+      <%# A disabled select posts nothing, so the type stays as it is. %>
+      <%= f.select :type,
+                   asset_type_select_options,
+                   {
+                     label: "Asset Type",
+                     width: "w-full",
+                     wrapper_class: "flex-1",
+                     help_text: (AssetGroup::TYPE_LOCKED if in_use)
+                   },
+                   { disabled: in_use } %>
+      <%= f.text_field :title,
+                       label: "Title",
+                       required: true,
+                       width: "w-full",
+                       wrapper_class: "flex-1" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.text_area :notes,
+                      label: "Notes",
+                      rows: 3,
+                      wrapper_class: "w-full" %>
+    <% end %>
+
+    <%= form_row do %>
+      <%= f.check_box :active,
+                      label: "Active",
+                      help_text: "An inactive group stays on the assets that have it, and is listed last when picking a group." %>
+    <% end %>
+  <% end %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Asset Group" %>
+    <%= cancel_link asset_management_groups_path %>
+    <% if @group.persisted? %>
+      <%= button_link "Merge into Another Group", :secondary, merge_asset_management_group_path(@group),
+                      icon: "arrow-right-to-bracket", icon_type: :solid %>
+      <%= delete_button asset_management_group_path(@group),
+                        "Delete Asset Group",
+                        confirm_modal: {
+                          title: "Delete Asset Group",
+                          message: "Delete asset group #{@group.title}? This cannot be undone."
+                        } %>
+    <% end %>
+  <% end %>
+<% end %>

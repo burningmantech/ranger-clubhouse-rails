@@ -31,13 +31,13 @@ module RadioAccounting
   #
   # @param assets_checked_out [Enumerable] the person's currently checked-out
   #   PersonAsset rows (each responds to +asset+, whose +type+ and
-  #   +perm_assign+ are read — perm_assign marks an event radio)
+  #   +shift_only+ are read — a radio that is not shift-only is an event radio)
   # @param radio_max [Integer] the event radio_max limit for the person
   # @return [Result]
   def accounting(assets_checked_out, radio_max)
     radios = assets_checked_out.select { |row| row.asset.type == Asset::TYPE_RADIO }
-    shift_radios = radios.count { |row| !row.asset.perm_assign }
-    event_radios = radios.count { |row| row.asset.perm_assign }
+    shift_radios = radios.count { |row| row.asset.shift_only }
+    event_radios = radios.count { |row| !row.asset.shift_only }
 
     collect_at_shift_end = event_radios > radio_max ? event_radios - radio_max : 0
 

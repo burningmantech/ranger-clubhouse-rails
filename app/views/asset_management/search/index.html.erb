@@ -98,7 +98,7 @@
         <% list.row "Assignment", asset_assignment_badge(@asset) %>
         <% list.row "Description", value_or_dash(@asset.description) %>
         <% list.row "Entity assignment", value_or_dash(@asset.entity_assignment) %>
-        <% list.row "Asset group", value_or_dash(@asset.group_name) %>
+        <% list.row "Asset group", value_or_dash(@asset.group_title) %>
         <% list.row "Order number", value_or_dash(@asset.order_number) %>
         <% list.row "Expires on", expires_at_cell(@asset) %>
         <% list.row "Event year", @asset.year %>

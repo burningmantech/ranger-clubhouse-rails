@@ -215,9 +215,9 @@ class EarlyArrivalReport
                  .where(asset: { type: Asset::TYPE_RADIO })
                  .where_year("checked_out", year)
                  .order("asset.barcode")
-                 .pluck(:person_id, "asset.barcode", "asset.perm_assign")
-                 .each_with_object({}) { |(person_id, barcode, perm_assign), held|
-                   (held[person_id] ||= []) << Radio.new(barcode, perm_assign)
+                 .pluck(:person_id, "asset.barcode", "asset.shift_only")
+                 .each_with_object({}) { |(person_id, barcode, shift_only), held|
+                   (held[person_id] ||= []) << Radio.new(barcode, !shift_only)
                  }
     end
   end

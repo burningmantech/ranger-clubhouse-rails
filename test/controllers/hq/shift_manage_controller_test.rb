@@ -382,7 +382,7 @@ class Hq::ShiftManageControllerTest < ActionDispatch::IntegrationTest
 
   test "checking out a radio streams the section back and completes the radio task" do
     asset = Asset.create!(barcode: "HQRADIO1", type: Asset::TYPE_RADIO, year: Current.year,
-                          perm_assign: false)
+                          shift_only: true)
 
     assert_difference -> { PersonAsset.count }, 1 do
       post hq_shift_manage_assets_path(@subject),
@@ -406,7 +406,7 @@ class Hq::ShiftManageControllerTest < ActionDispatch::IntegrationTest
 
   test "checking a radio back in streams the section and completes the collect tasks" do
     asset = Asset.create!(barcode: "HQRADIO2", type: Asset::TYPE_RADIO, year: Current.year,
-                          perm_assign: false)
+                          shift_only: true)
     person_asset = PersonAsset.create!(person_id: @subject.id, asset_id: asset.id,
                                        checked_out: Current.time)
 
@@ -466,9 +466,9 @@ class Hq::ShiftManageControllerTest < ActionDispatch::IntegrationTest
     @subject.update_columns(on_site: true)
     issue_event_radio!(barcode: "HQEVENT2")
     shift_radio = Asset.create!(barcode: "HQRADIO3", type: Asset::TYPE_RADIO,
-                                year: Current.year, perm_assign: false)
+                                year: Current.year, shift_only: true)
     extra = Asset.create!(barcode: "HQRADIO4", type: Asset::TYPE_RADIO,
-                          year: Current.year, perm_assign: false)
+                          year: Current.year, shift_only: true)
     PersonAsset.create!(person_id: @subject.id, asset_id: extra.id, checked_out: Current.time)
     person_asset = PersonAsset.create!(person_id: @subject.id, asset_id: shift_radio.id,
                                        checked_out: Current.time)
@@ -608,7 +608,7 @@ class Hq::ShiftManageControllerTest < ActionDispatch::IntegrationTest
   test "in-page actions preserve the shift context in their targets" do
     entry = create_timesheet!(review_status: Timesheet::STATUS_VERIFIED)
     asset = Asset.create!(barcode: "HQCTX1", type: Asset::TYPE_RADIO, year: Current.year,
-                          perm_assign: false)
+                          shift_only: true)
     person_asset = PersonAsset.create!(person_id: @subject.id, asset_id: asset.id,
                                        checked_out: Current.time)
 
@@ -628,7 +628,7 @@ class Hq::ShiftManageControllerTest < ActionDispatch::IntegrationTest
 
   def issue_event_radio!(barcode: "HQEVENT1")
     asset = Asset.create!(barcode:, type: Asset::TYPE_RADIO, year: Current.year,
-                          perm_assign: true)
+                          shift_only: false)
     PersonAsset.create!(person_id: @subject.id, asset_id: asset.id, checked_out: Current.time)
   end
 

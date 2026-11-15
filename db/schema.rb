@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_000002) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -103,14 +103,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_000001) do
     t.string "type"
     t.string "barcode", limit: 25, null: false
     t.string "description", limit: 64, comment: "placed by staff"
-    t.boolean "perm_assign", default: false, null: false, comment: "assigned \"permanently\" to a person?"
+    t.boolean "shift_only", default: true, null: false, comment: "checked out for one shift, not for the event?"
     t.datetime "created_at", precision: nil, default: -> { "current_timestamp()" }, null: false
-    t.string "group_name", limit: 25
     t.text "notes"
     t.integer "year", default: 0, null: false
     t.datetime "expires_at", precision: nil
     t.string "order_number"
     t.string "entity_assignment"
+    t.integer "asset_group_id"
+    t.index ["asset_group_id"], name: "index_asset_on_asset_group_id"
     t.index ["order_number", "year"], name: "asset_order_number_year_index"
     t.index ["type", "year", "barcode"], name: "asset_type_year_barcode_index"
     t.index ["year", "barcode"], name: "asset_year_barcode_index"
@@ -119,6 +120,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_000001) do
   create_table "asset_attachment", id: { type: :bigint, unsigned: true, default: nil }, charset: "utf8mb3", collation: "utf8mb3_general_ci", force: :cascade do |t|
     t.column "parent_type", "enum('Radio','Vehicle')", null: false
     t.string "description", limit: 32, null: false
+  end
+
+  create_table "asset_group", id: :integer, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.string "type", null: false
+    t.string "title", null: false
+    t.text "notes"
+    t.boolean "active", default: true, null: false
+    t.index ["type", "title"], name: "index_asset_group_on_type_and_title", unique: true
   end
 
   create_table "award", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -1682,6 +1691,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_000001) do
   add_foreign_key "access_document", "person"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "asset", "asset_group"
   add_foreign_key "bmid", "person"
   add_foreign_key "bmid_title", "position"
   add_foreign_key "broadcast", "alert"

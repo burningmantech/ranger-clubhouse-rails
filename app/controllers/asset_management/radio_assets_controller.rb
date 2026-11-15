@@ -18,7 +18,7 @@ class AssetManagement::RadioAssetsController < ApplicationController
   # would lose it here on a year change or an Apply Filters too.
   SUMMARY_VIEW = "summary"
 
-  # Radios are the one asset type whose perm_assign reads as event-vs-shift
+  # Radios are the one asset type whose shift_only reads as shift-vs-event
   # rather than permanent-vs-temporary (see asset_duration_label). Named in
   # words rather than passed as the underlying boolean: "?duration=false"
   # arrives as the string "false", which is truthy.
@@ -164,7 +164,7 @@ class AssetManagement::RadioAssetsController < ApplicationController
     duration = requested_duration
     return @radios if duration == ALL_FILTER
 
-    @radios.select { |radio| radio.perm_assign? == (duration == DURATION_EVENT) }
+    @radios.select { |radio| radio.shift_only? == (duration == DURATION_SHIFT) }
   end
 
   # Free text, and deliberately not validated against the roster: an unmatched
@@ -181,7 +181,7 @@ class AssetManagement::RadioAssetsController < ApplicationController
     radios = @radios
 
     unless duration == ALL_FILTER
-      radios = radios.select { |radio| radio.perm_assign? == (duration == DURATION_EVENT) }
+      radios = radios.select { |radio| radio.shift_only? == (duration == DURATION_SHIFT) }
     end
     radios = radios.select { |radio| matches_description?(radio, description) } unless
       description == ALL_FILTER
@@ -209,7 +209,7 @@ class AssetManagement::RadioAssetsController < ApplicationController
   # bar's count line to state.
   def load_stats
     @radio_count = @filtered_radios.size
-    @event_count = @filtered_radios.count(&:perm_assign?)
+    @event_count = @filtered_radios.count { |radio| !radio.shift_only? }
     @shift_count = @radio_count - @event_count
     @range_count = @ranges.size
   end

@@ -378,9 +378,9 @@ class Person::AssetsControllerTest < ActionDispatch::IntegrationTest
 
   test "table shows the event-vs-shift assignment badge" do
     create_checkout(asset: create_asset(barcode: "RAD-SHIFT"), person: @target)
-    create_checkout(asset: create_asset(barcode: "RAD-EVENT", perm_assign: true), person: @target)
+    create_checkout(asset: create_asset(barcode: "RAD-EVENT", shift_only: false), person: @target)
     create_checkout(asset: create_asset(barcode: "GEAR-TEMP", type: Asset::TYPE_GEAR), person: @target)
-    create_checkout(asset: create_asset(barcode: "GEAR-PERM", type: Asset::TYPE_GEAR, perm_assign: true),
+    create_checkout(asset: create_asset(barcode: "GEAR-PERM", type: Asset::TYPE_GEAR, shift_only: false),
                     person: @target)
 
     sign_in_as(@event_manager)

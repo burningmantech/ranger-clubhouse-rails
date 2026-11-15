@@ -151,8 +151,8 @@ class AssetManagement::RecordsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "the type page narrows to its own type and carries the filters" do
-    create_asset(barcode: "RAD-100", type: Asset::TYPE_RADIO, group_name: "Operations")
-    create_asset(barcode: "RAD-101", type: Asset::TYPE_RADIO, group_name: "SITE")
+    create_asset(barcode: "RAD-100", type: Asset::TYPE_RADIO, asset_group: asset_group("Operations"))
+    create_asset(barcode: "RAD-101", type: Asset::TYPE_RADIO, asset_group: asset_group("SITE"))
     create_asset(barcode: "GEAR-100", type: Asset::TYPE_GEAR)
 
     sign_in_as(@editor)
@@ -163,7 +163,8 @@ class AssetManagement::RecordsControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /GEAR-100/, count: 0
     assert_select "a[href=?]", asset_management_records_path(year: Current.year), text: /Asset Inventory/
 
-    get asset_management_records_type_path(Asset::TYPE_RADIO, year: Current.year, group_name: "SITE")
+    get asset_management_records_type_path(Asset::TYPE_RADIO, year: Current.year,
+                                                             asset_group_id: asset_group("SITE").id)
     assert_response :success
     assert_select "body", text: /RAD-101/
     assert_select "body", text: /RAD-100/, count: 0
@@ -263,7 +264,7 @@ class AssetManagement::RecordsControllerTest < ActionDispatch::IntegrationTest
           copies: "3",
           type: Asset::TYPE_RADIO,
           description: "Portable",
-          group_name: "Operations"
+          asset_group_id: asset_group("Operations").id
         }
       }
     end
@@ -328,9 +329,83 @@ class AssetManagement::RecordsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "2026-09-15 14:30"
   end
 
+  test "the asset form offers the type's groups, active before inactive, and a Shift Only box" do
+    active = asset_group("SITE")
+    retired = AssetGroup.create!(type: Asset::TYPE_RADIO, title: "Zendo", active: false)
+    gear_group = asset_group("Sandman", Asset::TYPE_GEAR)
+    asset = create_asset(barcode: "RAD-100", asset_group: retired, shift_only: false)
+
+    sign_in_as(@editor)
+
+    get new_asset_management_record_path(type: Asset::TYPE_RADIO)
+
+    assert_response :success
+    assert_select "input[type=checkbox][name=?][checked]", "asset[shift_only]"
+    assert_select "label", text: "Shift Only"
+    assert_select "select[name=?]", "asset[asset_group_id]" do
+      assert_select "option[value='']"
+      assert_select "optgroup[label=Active] option[value=?]", active.id.to_s, text: "SITE"
+      assert_select "optgroup[label=Inactive] option[value=?]", retired.id.to_s, text: "Zendo"
+      assert_select "option[value=?]", gear_group.id.to_s, count: 0
+      assert_select "option[selected]", count: 0
+    end
+    assert_select "[data-asset-form-target=groupField]:not([hidden])"
+    assert_equal({ "Active" => [["Sandman", gear_group.id]] },
+                 JSON.parse(css_select("form[data-asset-form-groups-value]").first["data-asset-form-groups-value"])
+                     .fetch(Asset::TYPE_GEAR))
+
+    get edit_asset_management_record_path(asset)
+
+    assert_select "input[type=checkbox][name=?]:not([checked])", "asset[shift_only]"
+    assert_select "select[name=?] option[selected][value=?]", "asset[asset_group_id]", retired.id.to_s
+
+    # A type with no groups: the field is there for the controller to fill, hidden.
+    get new_asset_management_record_path(type: Asset::TYPE_KEY)
+
+    assert_select "[data-asset-form-target=groupField][hidden]"
+    assert_select "select[name=?] optgroup", "asset[asset_group_id]", count: 0
+  end
+
+  test "an editor sets the group and the Shift Only box, and another type's group is refused" do
+    site = asset_group("SITE")
+    gear_group = asset_group("Sandman", Asset::TYPE_GEAR)
+    asset = create_asset(barcode: "RAD-100")
+    sign_in_as(@editor)
+
+    patch asset_management_record_path(asset), params: { asset: { asset_group_id: site.id, shift_only: "0" } }
+
+    assert_redirected_to asset_management_record_path(asset, year: asset.year)
+    assert_equal [site.id, false], asset.reload.values_at(:asset_group_id, :shift_only)
+
+    patch asset_management_record_path(asset), params: { asset: { asset_group_id: gear_group.id } }
+
+    assert_response :unprocessable_entity
+    assert_equal site.id, asset.reload.asset_group_id
+
+    patch asset_management_record_path(asset), params: { asset: { asset_group_id: "", shift_only: "1" } }
+
+    assert_equal [nil, true], asset.reload.values_at(:asset_group_id, :shift_only)
+
+    get asset_management_record_path(asset.tap { |record| record.update!(asset_group: site) })
+    assert_select "body", text: /Asset groupSITE/
+  end
+
+  test "a form loaded before the shift_only rename still sets the duration, inverted" do
+    asset = create_asset(barcode: "RAD-100")
+    sign_in_as(@editor)
+
+    patch asset_management_record_path(asset), params: { asset: { perm_assign: "true" } }
+
+    assert_not asset.reload.shift_only?
+
+    patch asset_management_record_path(asset), params: { asset: { perm_assign: "false" } }
+
+    assert asset.reload.shift_only?
+  end
+
   test "the index csv exports the whole year" do
-    create_asset(barcode: "RAD-100", type: Asset::TYPE_RADIO, perm_assign: true)
-    create_asset(barcode: "GEAR-100", type: Asset::TYPE_GEAR, perm_assign: false)
+    create_asset(barcode: "RAD-100", type: Asset::TYPE_RADIO, shift_only: false)
+    create_asset(barcode: "GEAR-100", type: Asset::TYPE_GEAR, shift_only: true)
 
     sign_in_as(@event_manager)
 
@@ -344,15 +419,15 @@ class AssetManagement::RecordsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "the type csv exports the type label and the filtered scope" do
-    create_asset(barcode: "RAD-100", type: Asset::TYPE_RADIO, perm_assign: true,
-                 group_name: "Operations")
-    create_asset(barcode: "RAD-101", type: Asset::TYPE_RADIO, perm_assign: true, group_name: "SITE")
-    create_asset(barcode: "GEAR-100", type: Asset::TYPE_GEAR, perm_assign: false)
+    create_asset(barcode: "RAD-100", type: Asset::TYPE_RADIO, shift_only: false,
+                 asset_group: asset_group("Operations"))
+    create_asset(barcode: "RAD-101", type: Asset::TYPE_RADIO, shift_only: false, asset_group: asset_group("SITE"))
+    create_asset(barcode: "GEAR-100", type: Asset::TYPE_GEAR, shift_only: true)
 
     sign_in_as(@event_manager)
 
     get asset_management_records_type_path(Asset::TYPE_RADIO, format: :csv, year: Current.year,
-                                                             group_name: "SITE")
+                                                             asset_group_id: asset_group("SITE").id)
 
     assert_response :success
     assert_includes response.headers["Content-Disposition"], "#{Current.year}-radio-assets.csv"
@@ -404,6 +479,10 @@ class AssetManagement::RecordsControllerTest < ActionDispatch::IntegrationTest
         year: Current.year
       }.merge(attributes)
     )
+  end
+
+  def asset_group(title, type = Asset::TYPE_RADIO)
+    AssetGroup.find_or_create_by!(type:, title:)
   end
 
   def next_sequence

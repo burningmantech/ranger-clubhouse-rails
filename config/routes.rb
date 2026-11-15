@@ -519,6 +519,14 @@ Rails.application.routes.draw do
     # slots. Declared before the resource so it is not read as records#show.
     get "records/type/:type", to: "records#type", as: :records_type
     resources :records
+    # The groups the asset form offers. Merge moves a group's assets to another
+    # group of its type and deletes it: the page, then the POST that does it.
+    resources :groups, except: :show do
+      member do
+        get :merge
+        post :merge, action: :merge_into
+      end
+    end
     # Barcode lookup for one asset. A GET so the barcode and year ride the query
     # string: a result can be linked, and the Back button re-runs the lookup
     # instead of landing on an empty form.

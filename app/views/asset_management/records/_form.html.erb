@@ -1,7 +1,8 @@
 <%= ui_form(@asset,
             @asset.persisted? ? asset_management_record_path(@asset, @return_index_params) : asset_management_records_path(@return_index_params),
             method: @asset.persisted? ? :patch : :post,
-            data: { controller: "asset-form" }) do |f| %>
+            data: { controller: "asset-form", asset_form_groups_value: asset_group_options_by_type }) do |f| %>
+  <% group_options = asset_group_options_by_type.fetch(@asset.type, {}) %>
   <%= ui_section "Asset Details", icon: "barcode", icon_type: :solid do %>
     <%= form_row do %>
       <%= f.select :type,
@@ -31,15 +32,9 @@
     <% end %>
 
     <%= form_row do %>
-      <div data-asset-form-target="durationGroup" class="w-full">
-        <%= f.collection_radio_buttons :perm_assign,
-                                       asset_duration_options(@asset.type),
-                                       :last,
-                                       :first,
-                                       label: "Usage Duration",
-                                       layout: :horizontal,
-                                       wrapper_class: "w-full" %>
-      </div>
+      <%= f.check_box :shift_only,
+                      label: "Shift Only",
+                      help_text: "Tick for an asset that is due back at the end of a shift. Leave it unticked for one assigned for the event or permanently." %>
     <% end %>
   <% end %>
 
@@ -51,12 +46,17 @@
                        width: "w-full",
                        wrapper_class: "flex-1",
                        help_text: "If filled in, this asset cannot be checked out. Use it for team or non-Clubhouse assignments." %>
-      <%= f.text_field :group_name,
+      <%# Redrawn by asset-form when the type changes; hidden while the type has no groups. %>
+      <%= tag.div class: "flex-1", hidden: group_options.empty?, data: { asset_form_target: "groupField" } do %>
+        <%= f.select :asset_group_id,
+                     grouped_options_for_select(group_options, @asset.asset_group_id),
+                     {
+                       include_blank: true,
                        label: "Asset Group",
-                       maxlength: 25,
-                       width: "w-full",
-                       wrapper_class: "flex-1",
-                       help_text: "Use a team or collection name such as SITE, Event, or HRS." %>
+                       width: "w-full"
+                     },
+                     { data: { asset_form_target: "groupSelect" } } %>
+      <% end %>
     <% end %>
 
     <%= form_row do %>

@@ -29,7 +29,7 @@
                             data: { turbo_stream: true } %>
           </div>
         <% end %>
-        <%= t.cell [person_asset.asset.description, person_asset.asset.group_name]
+        <%= t.cell [person_asset.asset.description, person_asset.asset.group_title]
                      .compact_blank.join(" — ").presence || "—" %>
         <%= t.cell datetime_format(person_asset.checked_out) %>
         <%= t.cell do %>

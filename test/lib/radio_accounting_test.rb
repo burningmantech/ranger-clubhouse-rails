@@ -7,23 +7,23 @@ require "test_helper"
 # and the HqTodo vocabulary ported from clubhouse/constants/hq-todo.js.
 #
 # Inputs are plain structs shaped like PersonAsset rows (row.asset.type /
-# row.asset.perm_assign) — no fixtures involved.
+# row.asset.shift_only) — no fixtures involved.
 class RadioAccountingTest < ActiveSupport::TestCase
-  FakeAsset = Struct.new(:type, :perm_assign)
+  FakeAsset = Struct.new(:type, :shift_only)
   FakeRow = Struct.new(:asset)
 
-  def radio_row(perm_assign: false)
-    FakeRow.new(FakeAsset.new(Asset::TYPE_RADIO, perm_assign))
+  def radio_row(shift_only: true)
+    FakeRow.new(FakeAsset.new(Asset::TYPE_RADIO, shift_only))
   end
 
-  def gear_row(perm_assign: false)
-    FakeRow.new(FakeAsset.new(Asset::TYPE_GEAR, perm_assign))
+  def gear_row(shift_only: true)
+    FakeRow.new(FakeAsset.new(Asset::TYPE_GEAR, shift_only))
   end
 
-  # Build a Result the way the HQ shift page does: shift radios are radios NOT
-  # permanently assigned, event radios are the permanently assigned ones.
+  # Build a Result the way the HQ shift page does: shift radios are the
+  # shift-only radios, event radios are the rest.
   def accounting_for(shift: 0, event: 0, max: 0)
-    rows = Array.new(shift) { radio_row } + Array.new(event) { radio_row(perm_assign: true) }
+    rows = Array.new(shift) { radio_row } + Array.new(event) { radio_row(shift_only: false) }
     RadioAccounting.accounting(rows, max)
   end
 
@@ -42,7 +42,7 @@ class RadioAccountingTest < ActiveSupport::TestCase
   end
 
   test "non-radio assets are ignored" do
-    result = RadioAccounting.accounting([gear_row, gear_row(perm_assign: true)], 1)
+    result = RadioAccounting.accounting([gear_row, gear_row(shift_only: false)], 1)
 
     assert_equal 0, result.radio_count
     assert_equal 0, result.collect_count
