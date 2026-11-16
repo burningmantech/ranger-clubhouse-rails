@@ -95,8 +95,13 @@ class RegisterController < ApplicationController
   def halt_if_closed
     return unless Setting.get_value(Setting::AUDITOR_REGISTRATION_DISABLED) || Current.is_ghd_server?
 
+    # The page is an ordinary answer, not a failure: an answer in the 500s is
+    # written to the Error Log. A form sent after the doors closed is turned
+    # around to it, since Turbo shows nothing for a form answered with a 200.
+    return redirect_to(register_path, status: :see_other) unless request.get?
+
     @step = "closed"
-    render :show, status: :service_unavailable
+    render :show
   end
 
   # The page naming an account that has just been opened. Closing the season

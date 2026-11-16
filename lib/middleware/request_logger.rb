@@ -40,11 +40,14 @@ class RequestLogger
     started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
     status, headers, body = @app.call(env)
     record(env, status, headers, body, started_at)
+    record_failure(env, status)
     [status, headers, body]
   rescue => e
     # Nothing has turned this into a response yet, so record the status it is
     # about to become and let it carry on.
-    record(env, status_for(e), {}, nil, started_at)
+    status = status_for(e)
+    record(env, status, {}, nil, started_at)
+    record_failure(env, status, e)
     raise
   end
 
@@ -58,6 +61,28 @@ class RequestLogger
     ActionDispatch::ExceptionWrapper.new(nil, exception).status_code
   rescue
     500
+  end
+
+  # A crash, or an answer in the 500s, goes in the Error Log -- whether or not
+  # requests are being recorded. An exception that becomes a 404 or a 422 is
+  # the Clubhouse working, and is left out.
+  def record_failure(env, status, exception = nil)
+    return if status.to_i < 500
+    # With no database there is nowhere to write it, and each attempt would
+    # hold the request for as long as a connection takes to give up.
+    return if exception.is_a?(ActiveRecord::ConnectionNotEstablished) || exception.is_a?(ActiveRecord::ConnectionFailed)
+    # An answer in the 500s the application gave on purpose, or has already
+    # written a row for. A crash is always recorded.
+    return if exception.nil? && env[ErrorLog::HANDLED_ENV]
+
+    request = ActionDispatch::Request.new(env)
+    if exception
+      ErrorLog.record_exception(exception, "server-exception", extra: { status: }, request:)
+    else
+      ErrorLog.record("server-error-status", data: { status: }, request:)
+    end
+  rescue => e
+    Rails.logger.error("RequestLogger could not record a failure: #{e.class}: #{e.message}")
   end
 
   def record(env, status, headers, body, started_at)

@@ -141,8 +141,8 @@ class Sso::ApiControllerTest < ActionDispatch::IntegrationTest
 
     entry = ErrorLog.where(error_type: "oauth2-invalid-client").last
     assert_equal "127.0.0.1", entry.ip
-    assert_equal "not-the-secret", entry.data.dig("parameters", "client_secret")
-    assert_equal @code.code, entry.data.dig("parameters", "code")
+    assert_equal "[FILTERED]", entry.data.dig("parameters", "client_secret")
+    assert_equal "[FILTERED]", entry.data.dig("parameters", "code")
   end
 
   test "a token request without the return address is refused" do

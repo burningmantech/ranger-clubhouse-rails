@@ -149,6 +149,90 @@ class RequestLoggerTest < ActionDispatch::IntegrationTest
     assert_equal 500, RequestLog.last.status
   end
 
+  test "writes a crash to the error log, even with request recording off" do
+    enable_recording(false)
+    Current.person = @person
+
+    assert_raises(ArgumentError) { run_failing_request(ArgumentError.new("boom")) }
+
+    log = ErrorLog.last
+    assert_equal "server-exception", log.error_type
+    assert_equal "boom", log.data.dig("exception", "message")
+    assert_equal @person.id, log.person_id
+    assert_match %r{/me/dashboard\z}, log.url
+  end
+
+  test "writes an answer in the 500s to the error log" do
+    Current.person = @person
+
+    run_request("/me/dashboard?name=Hubcap", status: 503)
+
+    log = ErrorLog.last
+    assert_equal "server-error-status", log.error_type
+    assert_equal 503, log.data["status"]
+    assert_equal @person.id, log.person_id
+    assert_equal "http://example.org/me/dashboard", log.url
+  end
+
+  test "writes no second row for a failure the application already accounted for" do
+    app = lambda do |env|
+      ErrorLog.record("oauth2-client-failed", request: ActionDispatch::Request.new(env))
+      [502, {}, StubBody.new("no")]
+    end
+    RequestLogger.new(app).call(Rack::MockRequest.env_for("/sso/callback"))
+    run_request("/register", status: 503, ErrorLog::HANDLED_ENV => true)
+
+    assert_equal ["oauth2-client-failed"], ErrorLog.pluck(:error_type)
+  end
+
+  test "keeps nothing a stranger typed into the registration form" do
+    app = ->(_env) { raise "boom" }
+    env = Rack::MockRequest.env_for("/register", method: "POST", params: { register_form: { street1: "1 Main" } })
+
+    assert_raises(RuntimeError) { RequestLogger.new(app).call(env) }
+
+    assert_equal "[NOT STORED]", ErrorLog.last.data["parameters"]
+  end
+
+  test "still records a crash whose request cannot be read or holds bytes that are not text" do
+    app = ->(_env) { raise "boom" }
+    env = Rack::MockRequest.env_for("/me/dashboard?a=%ff", "HTTP_X_ODD" => "caf\xE9".b,
+                                                           "HTTP_X_CSRF_TOKEN" => "abc")
+
+    assert_raises(RuntimeError) { RequestLogger.new(app).call(env) }
+
+    data = ErrorLog.last.data
+    assert_equal "caf\uFFFD", data.dig("headers", "HTTP_X_ODD")
+    assert_equal "[FILTERED]", data.dig("headers", "HTTP_X_CSRF_TOKEN")
+  end
+
+  test "does not try the error log when the database is what failed" do
+    assert_raises(ActiveRecord::ConnectionNotEstablished) do
+      run_failing_request(ActiveRecord::ConnectionNotEstablished.new("down"))
+    end
+
+    assert_equal 0, ErrorLog.where(error_type: "server-exception").count
+  end
+
+  test "keeps passwords and the session cookie out of the error log" do
+    app = ->(_env) { raise "boom" }
+    env = Rack::MockRequest.env_for("/session", method: "POST", params: { password: "hunter2" },
+                                                "HTTP_COOKIE" => "session=abc")
+
+    assert_raises(RuntimeError) { RequestLogger.new(app).call(env) }
+
+    data = ErrorLog.last.data
+    assert_equal "[FILTERED]", data.dig("parameters", "password")
+    assert_not data["headers"].key?("HTTP_COOKIE")
+  end
+
+  test "writes nothing to the error log for a missing record or a rejection" do
+    assert_raises(ActiveRecord::RecordNotFound) { run_failing_request(ActiveRecord::RecordNotFound.new("nope")) }
+    run_request("/me/dashboard", status: 422)
+
+    assert_equal 0, ErrorLog.count
+  end
+
   test "records the status the reader will actually be shown, not always 500" do
     assert_raises(ActiveRecord::RecordNotFound) { run_failing_request(ActiveRecord::RecordNotFound.new("nope")) }
 
