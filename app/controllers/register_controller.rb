@@ -98,7 +98,7 @@ class RegisterController < ApplicationController
     # The page is an ordinary answer, not a failure: an answer in the 500s is
     # written to the Error Log. A form sent after the doors closed is turned
     # around to it, since Turbo shows nothing for a form answered with a 200.
-    return redirect_to(register_path, status: :see_other) unless request.get?
+    return redirect_to(register_path, status: :see_other) if request.post?
 
     @step = "closed"
     render :show
