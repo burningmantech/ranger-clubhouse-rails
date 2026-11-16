@@ -94,7 +94,7 @@ class Person::ProvisionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 2026, granted.expires_on.year
 
     get person_tickets_provisions_path(@target)
-    assert_select "td", text: /Radio Group: Command Operations/
+    assert_select "td", text: /Specialized Radio: Command Operations/
   end
 
   test "create rejects a radio group provision without a group, and a banked shift radio" do
