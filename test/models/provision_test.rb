@@ -67,7 +67,7 @@ class ProvisionTest < ActiveSupport::TestCase
 
     granted = build(type: Provision::RADIO_GROUP, asset_group: @radios)
     assert granted.save
-    assert_equal "Radio Group: Command Operations", granted.type_label
+    assert_equal "Specialized Radio: Command Operations", granted.type_label
   end
 
   test "an inactive radio group can still be granted from" do

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_000004) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -382,44 +382,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_000003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["tag"], name: "index_mail_template_on_tag", unique: true
-  end
-
-  create_table "mailing_list", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.string "google_group_id", null: false
-    t.string "email", null: false
-    t.string "name", null: false
-    t.bigint "team_id", unsigned: true
-    t.datetime "synced_at", precision: nil
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["google_group_id"], name: "index_mailing_list_on_google_group_id", unique: true
-    t.index ["team_id"], name: "index_mailing_list_on_team_id"
-  end
-
-  create_table "mailing_list_member", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.bigint "mailing_list_id", null: false, unsigned: true
-    t.string "google_member_id", null: false
-    t.string "email", null: false
-    t.string "alias_email"
-    t.bigint "person_id"
-    t.boolean "is_special", default: false, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["mailing_list_id", "google_member_id"], name: "index_mailing_list_member_on_list_and_member", unique: true
-    t.index ["person_id"], name: "index_mailing_list_member_on_person_id"
-  end
-
-  create_table "mailing_list_member_log", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
-    t.bigint "mailing_list_id", null: false, unsigned: true
-    t.bigint "person_id", null: false
-    t.string "event", null: false
-    t.string "email", null: false
-    t.string "old_email"
-    t.string "reason", null: false
-    t.bigint "actor_id"
-    t.datetime "created_at", precision: nil, null: false
-    t.index ["mailing_list_id", "created_at"], name: "index_mailing_list_member_log_on_list_and_created_at"
-    t.index ["person_id", "created_at"], name: "index_mailing_list_member_log_on_person_id_and_created_at"
   end
 
   create_table "manual_review", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
@@ -1699,9 +1661,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_000003) do
   add_foreign_key "broadcast", "alert"
   add_foreign_key "broadcast_message", "broadcast"
   add_foreign_key "email_history", "person"
-  add_foreign_key "mailing_list", "team", on_delete: :nullify
-  add_foreign_key "mailing_list_member", "mailing_list", on_delete: :cascade
-  add_foreign_key "mailing_list_member", "person", on_delete: :nullify
   add_foreign_key "oauth_code", "oauth_client"
   add_foreign_key "oauth_code", "person"
   add_foreign_key "online_course", "position"
