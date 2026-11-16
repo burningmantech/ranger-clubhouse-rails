@@ -25,7 +25,7 @@
       <%= f.select :expires_on, provision_year_options,
                    { label: "Expires After", width: "w-full sm:w-32",
                      selected: provision.expires_on&.year,
-                     help_text: "Expires September 15 of this year. Allocated, shift radio, and radio group provisions always expire after the event." } %>
+                     help_text: "Expires September 15 of this year. Allocated, shift radios, and specialized radios provisions always expire after the event." } %>
     <% end %>
   <% end %>
 
@@ -36,7 +36,7 @@
 
     <%= f.select :asset_group_id,
                  grouped_options_for_select(provision_radio_group_options, provision.asset_group_id),
-                 { include_blank: true, label: "Radio Group", width: "w-full sm:w-64",
+                 { include_blank: true, label: "Specialized Radio", width: "w-full sm:w-64",
                    help_text: "Only applies to Radio Group provisions: the group the radio is granted from." } %>
 
     <%= f.fieldset "Meal Periods" do %>

@@ -89,8 +89,8 @@ class Provision < ApplicationRecord
   TYPE_LABELS = {
     EVENT_RADIO => "Event Radio",
     WET_SPOT => "Wet Spot Access",
-    RADIO_SHIFT => "Shift Radio",
-    RADIO_GROUP => "Radio Group",
+    RADIO_SHIFT => "Additional Shift Radio",
+    RADIO_GROUP => "Specialized Radio",
     # Pseudo meal types - key built from {pre_event,event_week,post_event}_meals fields
     "pre+event+post" => "All Eats Pass",
     "event" => "Event Week Eat Pass",
