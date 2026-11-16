@@ -261,6 +261,20 @@ class Hq::SiteRegistrationControllerTest < ActionDispatch::IntegrationTest
     assert_no_match "No Event Radios Checked Out", response.body
   end
 
+  test "radio check still confirms when the only radio out is a granted specialized radio" do
+    authorize_subject_for_event_radios
+    group = AssetGroup.create!(type: Asset::TYPE_RADIO, title: "Command Operations")
+    Provision.create!(person_id: @subject.id, type: Provision::RADIO_GROUP, asset_group: group,
+                      status: Provision::AVAILABLE, source_year: Current.year)
+    asset(:radio_current_year).update_columns(asset_group_id: group.id)
+    PersonAsset.create!(person_id: @subject.id, asset_id: asset(:radio_current_year).id,
+                        checked_out: Current.time)
+
+    get hq_site_registration_radio_check_path(@subject), as: :turbo_stream
+
+    assert_match "No Event Radios Checked Out", response.body
+  end
+
   test "radio check advances when the person is not allowed an event radio" do
     get hq_site_registration_radio_check_path(@subject), as: :turbo_stream
 

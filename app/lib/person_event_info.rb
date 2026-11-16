@@ -14,7 +14,9 @@ class PersonEventInfo
                 :radio_info_available,
                 :showers,
                 :signed_motorpool_agreement,
-                :radio_max,
+                :event_radio_count,
+                :shift_radio_count,
+                :radio_groups,
                 :training,
                 :art_trainings,
                 :vehicles,
@@ -56,11 +58,17 @@ class PersonEventInfo
     if info.radio_info_available
       provisions = Provision.retrieve_usable_for_person_ids([person_id])
       package = Provision.build_package(provisions)
-      if package.radios.positive?
+      if package.event_radios.positive?
         info.radio_eligible = true
-        info.radio_max = package.radios
+        info.event_radio_count = package.event_radios
       end
     end
+
+    # The radio grants are explicit and good for this event only, so they do not
+    # wait on the setting: HQ's radio accounting needs them either way.
+    grants = Provision.build_package(Provision.radio_grants.where(person_id:))
+    info.shift_radio_count = grants.shift_radios
+    info.radio_groups = grants.radio_groups
 
     # Meals and showers from BMID
     bmid = Bmid.find_for_person_manage(person_id, year)
@@ -118,7 +126,9 @@ class PersonEventInfo
     @radio_info_available = false
     @showers = false
     @signed_motorpool_agreement = false
-    @radio_max = 0
+    @event_radio_count = 0
+    @shift_radio_count = 0
+    @radio_groups = []
     @training = nil
     @art_trainings = []
     @training_passed = false

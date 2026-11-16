@@ -71,6 +71,21 @@ class Hq::ShiftManageControllerTest < ActionDispatch::IntegrationTest
     assert_select "div[data-hq-shift-target='startPanel'][hidden]"
   end
 
+  test "the assets section names the person's radio grants" do
+    # Whatever RadioInfoAvailable says: the grants do not wait on it.
+    group = AssetGroup.create!(type: Asset::TYPE_RADIO, title: "Command Operations")
+    Provision.create!(person: @subject, type: Provision::RADIO_SHIFT, status: Provision::AVAILABLE, source_year: 2026)
+    Provision.create!(person: @subject, type: Provision::RADIO_GROUP, asset_group: group,
+                      status: Provision::AVAILABLE, source_year: 2026)
+
+    get hq_shift_manage_path(@subject)
+
+    assert_response :success
+    assert_select "#hq-assets-section", text: /1 additional shift radio/
+    assert_select "#hq-assets-section", text: /specialized radio from:\s+Command Operations/
+    assert_select "#hq-assets-section", text: /only authorized for/, count: 0
+  end
+
   # The "a different entry" actions sit below the current shift and OUTSIDE
   # #hq-verification. render_verification_update does
   # turbo_stream.update("hq-verification", ...), so anything left inside that

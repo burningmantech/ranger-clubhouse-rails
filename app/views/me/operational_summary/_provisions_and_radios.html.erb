@@ -41,13 +41,23 @@
         <% if @person_event.radio_eligible %>
           <%= ui_badge "Event Radio Eligible", :success, icon: "circle-check", icon_type: :solid %>
           <div class="mt-2">
-            You may check out up to <%= pluralize @person_event.radio_max, "Event radio" %> for the duration of the
+            You may check out up to <%= pluralize @person_event.event_radio_count, "Event radio" %> for the duration of the
             event.
           </div>
         <% else %>
           <%= ui_badge "Shift Radios Only", :secondary, icon: "circle", icon_type: :regular %>
           <div class="mt-2">
             Check out a radio when you arrive at Ranger HQ for your shift. Return it at the end of your shift.
+          </div>
+        <% end %>
+        <% if @person_event.shift_radio_count.positive? %>
+          <div class="mt-2">
+            You may also check out <%= pluralize @person_event.shift_radio_count, "additional shift radio" %> for each shift.
+          </div>
+        <% end %>
+        <% if @person_event.radio_groups.any? %>
+          <div class="mt-2">
+            You may also check out a specialized radio from: <%= @person_event.radio_groups.map(&:title).to_sentence %>.
           </div>
         <% end %>
       <% end %>

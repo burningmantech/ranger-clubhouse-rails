@@ -9,7 +9,7 @@ require "test_helper"
 # Inputs are plain structs shaped like PersonAsset rows (row.asset.type /
 # row.asset.shift_only) — no fixtures involved.
 class RadioAccountingTest < ActiveSupport::TestCase
-  FakeAsset = Struct.new(:type, :shift_only)
+  FakeAsset = Struct.new(:type, :shift_only, :asset_group_id)
   FakeRow = Struct.new(:asset)
 
   def radio_row(shift_only: true)
@@ -29,6 +29,31 @@ class RadioAccountingTest < ActiveSupport::TestCase
 
   # --- accounting ---
 
+  test "a radio from a granted group stays outside the event radio limit" do
+    granted = FakeRow.new(FakeAsset.new(Asset::TYPE_RADIO, false, 7))
+    result = RadioAccounting.accounting([granted, radio_row(shift_only: false)], 1, granted_group_ids: [7])
+
+    assert_equal 1, result.event_radios
+    assert_equal 1, result.granted_radios
+    assert_equal 0, result.collect_count
+    assert_equal 2, result.radio_count
+
+    # Holding only the granted radio, the person is still owed an event radio,
+    # and hands the granted one back once done.
+    only = RadioAccounting.accounting([granted], 1, granted_group_ids: [7])
+    assert_equal HqTodo::ISSUE_RADIO, RadioAccounting.radio_todo(off_duty: true, no_more_scheduled: false, accounting: only)
+    assert_equal HqTodo::COLLECT_RADIO_IF_DONE,
+                 RadioAccounting.radio_todo(off_duty: false, no_more_scheduled: true, accounting: only)
+
+    # With no event radio authorization and no shifts left, it is collected, not joined by another.
+    unauthorized = RadioAccounting.accounting([granted], 0, granted_group_ids: [7])
+    assert_equal HqTodo::COLLECT_RADIO_IF_DONE,
+                 RadioAccounting.radio_todo(off_duty: true, no_more_scheduled: true, accounting: unauthorized)
+
+    # Without the grant it is an event radio over the limit.
+    assert_equal 1, RadioAccounting.accounting([granted, radio_row(shift_only: false)], 1).collect_count
+  end
+
   test "no checked-out assets yields all-zero accounting" do
     result = RadioAccounting.accounting([], 2)
 
@@ -37,7 +62,7 @@ class RadioAccountingTest < ActiveSupport::TestCase
     assert_equal 0, result.collect_count
     assert_equal 0, result.collect_at_shift_end
     assert_equal 0, result.over_max
-    assert_equal 2, result.radio_max
+    assert_equal 2, result.event_radio_count
     assert_equal 0, result.radio_count
   end
 
@@ -133,7 +158,7 @@ class RadioAccountingTest < ActiveSupport::TestCase
     assert_nil todo
   end
 
-  # --- radio_todo: person off duty, event authorized (radio_max > 0) ---
+  # --- radio_todo: person off duty, event authorized (event_radio_count > 0) ---
 
   test "off duty with a shift radio out is nagged to collect before any issue prompt" do
     todo = RadioAccounting.radio_todo(off_duty: true, no_more_scheduled: false,
@@ -177,7 +202,7 @@ class RadioAccountingTest < ActiveSupport::TestCase
     assert_nil todo
   end
 
-  # --- radio_todo: person off duty, shift radios only (radio_max == 0) ---
+  # --- radio_todo: person off duty, shift radios only (event_radio_count == 0) ---
 
   test "off duty shift-radio-only person with a radio out is nagged to collect" do
     todo = RadioAccounting.radio_todo(off_duty: true, no_more_scheduled: false,
