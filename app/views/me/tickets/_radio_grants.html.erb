@@ -1,0 +1,12 @@
+<%# locals: (presenter:) %>
+<%# The shift radio and specialized radio grants. Read-only, and apart from
+    provision_items on purpose: they are good for this event only, so they are
+    never banked or claimed and show whatever the banking choice is. %>
+<ul class="space-y-1">
+  <% presenter.radio_grant_items.each do |item| %>
+    <%= ui_icon_item item.icon, :solid, tone: "text-stone-icon" do %>
+      <%= item.label %>
+    <% end %>
+  <% end %>
+</ul>
+<p class="text-stone-muted mt-2">Good for this event only. Check them out at Ranger HQ.</p>

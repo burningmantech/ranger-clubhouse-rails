@@ -14,7 +14,7 @@
   <% if event_info.radio_eligible %>
     <% if person_event.asset_authorized %>
       <p class="font-semibold text-success">
-        <%= fa_icon "tower-broadcast", :solid, end: 2 %>Authorized for <%= pluralize(event_info.radio_max, "Event Radio") %>
+        <%= fa_icon "tower-broadcast", :solid, end: 2 %>Authorized for <%= pluralize(event_info.event_radio_count, "Event Radio") %>
       </p>
       <p class="mb-3">
         Check the radio out now or at the start of their first shift.
@@ -29,7 +29,7 @@
     <% else %>
       <p class="text-error">
         <%= fa_icon "ban", :solid, end: 2 %><%= person.callsign %> is authorized for
-        <%= pluralize(event_info.radio_max, "Event Radio") %>.
+        <%= pluralize(event_info.event_radio_count, "Event Radio") %>.
         Do not issue radios or gear until they sign the Radio Checkout Agreement.
       </p>
     <% end %>

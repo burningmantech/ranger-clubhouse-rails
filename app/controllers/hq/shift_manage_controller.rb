@@ -336,7 +336,8 @@ class Hq::ShiftManageController < ApplicationController
     @attachments = AssetAttachment.find_all
     @checkout_form = AssetCheckoutForm.new
     @radio_accounting = RadioAccounting.accounting(@assets_checked_out,
-                                                   @event_info&.radio_max.to_i)
+                                                   @event_info&.event_radio_count.to_i,
+                                                   granted_group_ids: @event_info&.radio_groups.to_a.map(&:id))
   end
 
   def load_pogs

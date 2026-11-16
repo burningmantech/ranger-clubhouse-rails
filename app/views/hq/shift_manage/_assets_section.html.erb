@@ -23,7 +23,8 @@
 
   <% if radio_accounting.shift_radios.positive? ||
         radio_accounting.collect_at_shift_end.positive? ||
-        radio_accounting.over_max.positive? %>
+        radio_accounting.over_max.positive? ||
+        radio_accounting.granted_radios.positive? %>
     <ul class="list-bulleted mb-2">
       <% if radio_accounting.shift_radios.positive? %>
         <li>
@@ -43,15 +44,30 @@
           is finished rangering the event.
         </li>
       <% end %>
+      <% if radio_accounting.granted_radios.positive? %>
+        <li>
+          Collect <%= pluralize(radio_accounting.granted_radios, "specialized radio") %> when the
+          person is finished rangering the event.
+        </li>
+      <% end %>
     </ul>
   <% end %>
 
   <div class="mb-3">
     <% if event_info&.radio_eligible %>
       <%= person.callsign %> is authorized for
-      <strong><%= pluralize(event_info.radio_max.to_i, "event radio") %></strong>.
+      <strong><%= pluralize(event_info.event_radio_count.to_i, "event radio") %></strong>.
+    <% elsif event_info&.radio_groups.present? %>
+      <%= person.callsign %> is authorized for <strong>shift radios</strong>.
     <% else %>
       <%= person.callsign %> is only authorized for <strong>shift radios</strong>.
+    <% end %>
+    <% if event_info&.shift_radio_count.to_i.positive? %>
+      Also granted <strong><%= pluralize(event_info.shift_radio_count, "additional shift radio") %></strong>.
+    <% end %>
+    <% if event_info&.radio_groups.present? %>
+      Also granted a specialized radio from:
+      <strong><%= event_info.radio_groups.map(&:title).to_sentence %></strong>.
     <% end %>
   </div>
 

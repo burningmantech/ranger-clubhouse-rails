@@ -118,6 +118,14 @@
       <% end %>
     <% end %>
 
+    <%# Outside the section cards: a member with nothing but a radio grant has
+        no Provisions section for it to sit in. %>
+    <% if presenter.radio_grant_items.any? %>
+      <%= ui_section "Radios for This Event", icon: "walkie-talkie", icon_type: :solid do %>
+        <%= render "me/tickets/radio_grants", presenter: presenter %>
+      <% end %>
+    <% end %>
+
     <% if finished %>
       <%# --- Finished: confirmation + adjustable overview -------------------- %>
       <%= ui_callout_box :success, accent: true, title: "Your Ticketing Choices Are Recorded" do %>

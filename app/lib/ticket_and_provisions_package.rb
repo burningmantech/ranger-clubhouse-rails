@@ -22,6 +22,7 @@ class TicketAndProvisionsPackage
   #
   # @param person_id [Integer] The ID of the person
   def initialize(person_id)
+    @person_id = person_id
     @year_earned = Current.year - 1
     person_event = PersonEvent.first_or_new_for_person_year(person_id, Current.year)
 
@@ -53,7 +54,18 @@ class TicketAndProvisionsPackage
     build_provisions(person_id)
   end
 
+  # The shift radio and specialized radio grants, for display only: never banked
+  # or claimed, so they stay out of provision_records and provisions. Read on
+  # demand, since the dashboard builds this package and never shows them.
+  def shift_radios = radio_grant_package.shift_radios
+
+  def radio_groups = radio_grant_package.radio_groups
+
   private
+
+  def radio_grant_package
+    @radio_grant_package ||= Provision.build_package(Provision.radio_grants.where(person_id: @person_id))
+  end
 
   # Build up the provisions package.
   # - Combine all provisions types to a single effective type
@@ -87,14 +99,14 @@ class TicketAndProvisionsPackage
       end
     end
 
-    return unless package.have_meals || package.showers || package.radios.positive?
+    return unless package.have_meals || package.showers || package.event_radios.positive?
 
     @provisions = package
 
     unless have_allocated
       @provisions.meals_expire = meals_expire
       @provisions.showers_expire = showers_expire
-      @provisions.radio_expire = radio_expires
+      @provisions.event_radio_expire = radio_expires
     end
 
     @provisions_bankable = !have_allocated

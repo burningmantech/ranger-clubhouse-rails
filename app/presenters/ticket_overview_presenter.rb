@@ -113,8 +113,8 @@ class TicketOverviewPresenter
     package.lsd_items.count { |ad| ad.type == AccessDocument::VEHICLE_PASS_LSD }
   end
 
-  def radios
-    package.provisions&.radios || 0
+  def event_radios
+    package.provisions&.event_radios || 0
   end
 
   class ProvisionItem
@@ -135,13 +135,29 @@ class TicketOverviewPresenter
     items = []
     items << ProvisionItem.new("utensils", provisions.meals.title) if provisions.have_meals
     items << ProvisionItem.new("shower", "Wet Spot Access") if provisions.showers
-    if provisions.radios.positive?
+    if provisions.event_radios.positive?
       items << ProvisionItem.new(
         "walkie-talkie",
-        (provisions.radios > 1) ? "#{provisions.radios} Event Radios" : "Event Radio"
+        (provisions.event_radios > 1) ? "#{provisions.event_radios} Event Radios" : "Event Radio"
       )
     end
 
+    items
+  end
+
+  # The shift radio and specialized radio grants. Kept out of provision_items,
+  # which is what gets claimed and banked: these are good for this event only.
+  def radio_grant_items
+    @radio_grant_items ||= build_radio_grant_items
+  end
+
+  def build_radio_grant_items
+    items = []
+    shift_label = Provision::TYPE_LABELS.fetch(Provision::RADIO_SHIFT)
+    count = package.shift_radios
+    items << ProvisionItem.new("walkie-talkie", count > 1 ? "#{count} #{shift_label.pluralize}" : shift_label) if count.positive?
+    group_label = Provision::TYPE_LABELS.fetch(Provision::RADIO_GROUP)
+    package.radio_groups.each { |group| items << ProvisionItem.new("tower-broadcast", "#{group_label}: #{group.title}") }
     items
   end
 

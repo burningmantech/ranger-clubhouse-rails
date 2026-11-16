@@ -9,13 +9,17 @@
     <span class="mx-1">&middot;</span>
     <strong>Showers:</strong> <%= package.showers ? "Yes" : "No" %>
     <span class="mx-1">&middot;</span>
-    <strong>Event Radios:</strong> <%= package.radios %>
+    <strong>Event Radios:</strong> <%= package.event_radios.nonzero? || "none" %>
+    <span class="mx-1">&middot;</span>
+    <strong>Additional Shift Radios:</strong> <%= package.shift_radios.nonzero? || "none" %>
+    <span class="mx-1">&middot;</span>
+    <strong>Specialized Radios:</strong> <%= package.radio_groups.map(&:title).to_sentence.presence || "none" %>
   </p>
 
   <% body = capture do %>
     <p class="mb-3 me-muted">
       Calculated from available, claimed, and submitted provisions. For multiple event radio
-      provisions, the record with the highest count is used — radio counts do not add up.
+      or shift radio provisions, the record with the highest count is used — radio counts do not add up.
     </p>
 
     <% if package.have_allocated %>

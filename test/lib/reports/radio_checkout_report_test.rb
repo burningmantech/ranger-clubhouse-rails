@@ -114,7 +114,7 @@ class RadioCheckoutReportTest < ActiveSupport::TestCase
   end
 
   test "a banked provision does not count, matching upstream" do
-    # Deliberate divergence from PersonEventInfo#radio_max -- see the report's
+    # Deliberate divergence from PersonEventInfo#event_radio_count -- see the report's
     # own note. Pinned so a change to it is a decision, not a drift.
     check_out(radio, @holder, hours_ago: 20)
     grant_event_radio(status: Provision::BANKED)

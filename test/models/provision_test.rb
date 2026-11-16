@@ -103,6 +103,22 @@ class ProvisionTest < ActiveSupport::TestCase
 
   private
 
+  test "build_package takes the highest shift radio count and each radio group once" do
+    create(type: Provision::RADIO_SHIFT, item_count: 2)
+    create(type: Provision::RADIO_SHIFT)
+    2.times { create(type: Provision::RADIO_GROUP, asset_group: @radios) }
+    create(type: Provision::RADIO_SHIFT, item_count: 5, status: Provision::CANCELLED)
+    # Left over from a past event, not yet ended by Clean Provisions.
+    create(type: Provision::RADIO_SHIFT, item_count: 4).update_columns(expires_on: Date.new(2025, 9, 15))
+
+    package = Provision.build_package(Provision.radio_grants.where(person_id: @person.id))
+
+    assert_equal 2, package.shift_radios
+    assert_equal [@radios], package.radio_groups
+    assert_equal 0, package.event_radios
+    assert_not package.have_allocated
+  end
+
   def build(**attributes)
     Provision.new(person: @person, status: Provision::AVAILABLE, source_year: 2026, expires_on: "2026", **attributes)
   end

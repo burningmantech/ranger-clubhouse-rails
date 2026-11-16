@@ -223,6 +223,29 @@ class Me::TicketsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to me_tickets_provisions_path
     assert_equal Provision::BANKED, provision(:ar_meals).reload.status
     assert_equal Provision::AVAILABLE, shift.reload.status
+
+    # Still listed after banking, and as a radio for this event, apart from the banked items.
+    post me_tickets_finish_url
+    get me_tickets_provisions_path
+    assert_select "section, div", text: /Radios for This Event\s+Additional Shift Radio/
+  end
+
+  test "a radio grant alone gives the member nothing to bank" do
+    Provision.where(person: person(:active_ranger)).delete_all
+    Provision.create!(person: person(:active_ranger), type: Provision::RADIO_SHIFT, item_count: 2,
+                      status: Provision::AVAILABLE, source_year: Current.year)
+
+    post me_tickets_finish_url
+    get me_tickets_provisions_path
+
+    assert_response :success
+    assert_select "body", text: /2 Additional Shift Radios/
+    assert_select "body", text: /You have no earned provisions this year/
+    assert_select "a, button", text: /Bank My Provisions/, count: 0
+
+    # With no Provisions section to sit in, the hub still shows it.
+    get me_tickets_path
+    assert_select "body", text: /Radios for This Event\s+2 Additional Shift Radios/
   end
 
   test "update_provisions is rejected when the person has allocated provisions" do

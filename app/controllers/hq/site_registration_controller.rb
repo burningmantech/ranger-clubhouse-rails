@@ -179,12 +179,16 @@ class Hq::SiteRegistrationController < ApplicationController
   # Upstream allowedEventRadio — eligible, agreement signed, and a positive cap.
   def allowed_event_radio?
     @event_info.radio_eligible && @person_event.asset_authorized &&
-      @event_info.radio_max.to_i.positive?
+      @event_info.event_radio_count.to_i.positive?
   end
 
-  # Any current-year, not-checked-in radio (upstream activeAssets radio scan).
+  # Any current-year, not-checked-in radio (upstream activeAssets radio scan),
+  # bar one from a group the person holds a radio group provision for: that
+  # radio is not their event radio, as in RadioAccounting.
   def event_radio_checked_out?
-    PersonAsset.retrieve_type_for_person_ids(Asset::TYPE_RADIO, [@person.id]).present?
+    granted_group_ids = @event_info.radio_groups.map(&:id)
+    PersonAsset.retrieve_type_for_person_ids(Asset::TYPE_RADIO, [@person.id]).values.flatten
+               .any? { |row| granted_group_ids.exclude?(row.asset.asset_group_id) }
   end
 
   def render_step_saved(step, message)

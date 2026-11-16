@@ -10,11 +10,13 @@ class Provision < ApplicationRecord
     attr_accessor :have_allocated,
                   :have_meals,
                   :meals,
-                  :radios,
+                  :event_radios,
+                  :shift_radios,
+                  :radio_groups,
                   :showers,
                   :meals_expire,
                   :showers_expire,
-                  :radio_expire
+                  :event_radio_expire
 
     # Nested class for meal period flags
     class Meals
@@ -36,15 +38,18 @@ class Provision < ApplicationRecord
       end
     end
 
-    def initialize(have_allocated: false, have_meals: false, meals: nil, radios: 0, showers: false)
+    def initialize(have_allocated: false, have_meals: false, meals: nil, event_radios: 0, showers: false,
+                   shift_radios: 0, radio_groups: [])
       @have_allocated = have_allocated
       @have_meals = have_meals
       @meals = meals || Meals.new
-      @radios = radios
+      @event_radios = event_radios
+      @shift_radios = shift_radios
+      @radio_groups = radio_groups
       @showers = showers
       @meals_expire = nil
       @showers_expire = nil
-      @radio_expire = nil
+      @event_radio_expire = nil
     end
   end
 
@@ -133,6 +138,12 @@ class Provision < ApplicationRecord
   # Earned and able to carry over to a later event; event_only is the rest.
   scope :bankable, -> { where(is_allocated: false).where.not(type: EVENT_ONLY_TYPES) }
   scope :event_only, -> { where(is_allocated: true).or(where(type: EVENT_ONLY_TYPES)) }
+  # The shift radio and radio group grants in force. retrieve_usable_for_person_ids
+  # leaves them out, so this is the only way they reach build_package. A grant
+  # of a past event that Clean Provisions has not ended yet is not in force.
+  scope :radio_grants, lambda {
+    can_use.where(type: EVENT_ONLY_TYPES, expires_on: Date.new(Current.year)..).includes(:asset_group)
+  }
 
   class << self
     # Find records matching given criteria.
@@ -248,7 +259,9 @@ class Provision < ApplicationRecord
     def build_package(provisions)
       showers = false
       have_allocated = false
-      radios = 0
+      event_radios = 0
+      shift_radios = 0
+      radio_groups = []
       pre_meals = false
       post_meals = false
       event_meals = false
@@ -259,7 +272,13 @@ class Provision < ApplicationRecord
         case provision.type
         when EVENT_RADIO
           count = provision.item_count.presence || 1
-          radios = count if count > radios
+          event_radios = count if count > event_radios
+        when RADIO_SHIFT
+          # Highest count wins, as for event radios: a second grant never adds up.
+          count = provision.item_count.presence || 1
+          shift_radios = count if count > shift_radios
+        when RADIO_GROUP
+          radio_groups << provision.asset_group if provision.asset_group
         when WET_SPOT
           showers = true
         when MEALS
@@ -273,7 +292,9 @@ class Provision < ApplicationRecord
         have_allocated: have_allocated,
         have_meals: pre_meals || event_meals || post_meals,
         meals: Package::Meals.new(pre: pre_meals, event: event_meals, post: post_meals),
-        radios: radios,
+        event_radios:,
+        shift_radios:,
+        radio_groups: radio_groups.uniq.sort_by { |group| group.title.downcase },
         showers: showers
       )
     end

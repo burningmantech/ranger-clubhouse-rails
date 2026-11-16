@@ -45,6 +45,24 @@ class Person::TicketsProvisionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "#provisions-collapsible-body"
   end
 
+  test "the provisions summary counts shift radios and names radio groups" do
+    # Nothing granted reads "none", not a zero or a dash.
+    sign_in_as(@ticketing_admin)
+    get person_tickets_provisions_path(@target)
+    assert_select "#provisions p", text: /Additional Shift Radios:\s+none\s+·\s+Specialized Radios:\s+none/
+
+    group = AssetGroup.create!(type: Asset::TYPE_RADIO, title: "Command Operations")
+    Provision.create!(person: @target, type: Provision::RADIO_SHIFT, item_count: 2,
+                      status: Provision::AVAILABLE, source_year: 2026)
+    Provision.create!(person: @target, type: Provision::RADIO_GROUP, asset_group: group,
+                      status: Provision::AVAILABLE, source_year: 2026)
+    sign_in_as(@ticketing_admin)
+
+    get person_tickets_provisions_path(@target)
+
+    assert_select "#provisions p", text: /Additional Shift Radios:\s+2\s+·\s+Specialized Radios:\s+Command Operations/
+  end
+
   test "person-page user without the ticketing role is denied" do
     sign_in_as(@viewer)
 

@@ -101,9 +101,9 @@ class RadioCheckoutReport
   # KNOWN DIVERGENCE, inherited from upstream and left alone on purpose. This is
   # a second answer to "may this Ranger keep an event radio"; HQ site
   # registration asks Provision.retrieve_usable_for_person_ids + build_package
-  # (PersonEventInfo#radio_max) instead, and the two disagree at the edges. A
+  # (PersonEventInfo#event_radio_count) instead, and the two disagree at the edges. A
   # provision marked used with consumed_year == the current year drops out of
-  # radio_max -- HQ tells the holder to hand the radio back -- while it counts
+  # event_radio_count -- HQ tells the holder to hand the radio back -- while it counts
   # as eligible here; and CAN_USE_STATUSES omits BANKED, which build_package can
   # still allocate from. Upstream spells exactly these three statuses, so
   # reconciling the two is a policy change for the quartermaster to call, not a

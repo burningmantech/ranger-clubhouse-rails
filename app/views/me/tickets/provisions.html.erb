@@ -11,7 +11,7 @@
   have_provisions  = pkg.provisions.present?
   bankable         = have_provisions && pkg.provisions_bankable
   banked           = have_provisions && pkg.provisions_banked
-  have_event_radio = presenter.radios.positive?
+  have_event_radio = presenter.event_radios.positive?
 
   # Undecided = an earned (non-allocated) provision still sitting at its default.
   undecided = pkg.provision_records.any? { |p| p.bankable? && p.status == Provision::AVAILABLE }
@@ -21,6 +21,12 @@
                title: "Provisions",
                description: "One choice: use your earned provisions at this event, or bank them for a future year.",
                back_to: ["Tickets & Provisions", me_tickets_path] %>
+
+<% if presenter.radio_grant_items.any? %>
+  <%= ui_section "Radios for This Event", icon: "walkie-talkie", icon_type: :solid do %>
+    <%= render "me/tickets/radio_grants", presenter: presenter %>
+  <% end %>
+<% end %>
 
 <% unless have_provisions %>
   <%# --- Nothing to decide -------------------------------------------------- %>
@@ -101,7 +107,7 @@
 
   <%# Event-radio disclaimer — relevant whenever an event radio is included %>
   <% if have_event_radio %>
-    <%= ui_callout_box :secondary, icon: "walkie-talkie", title: "About Your Event #{"Radio".pluralize(presenter.radios)}" do %>
+    <%= ui_callout_box :secondary, icon: "walkie-talkie", title: "About Your Event #{"Radio".pluralize(presenter.event_radios)}" do %>
       <p class="text-body"><strong>Event radios are limited.</strong> Qualifying for one doesn't guarantee you'll receive it.</p>
     <% end %>
   <% end %>
