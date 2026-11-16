@@ -529,7 +529,7 @@ Trap: `SessionsController` runs `redirect_if_authenticated` before every action 
 
 ### Auditor Registration
 Reach it: `GET /register` → sign-in page "Auditing a training? Create an account" link; submit `POST /register`
-Gate: public; signed-in → /me; closed (503, `closed` step) when setting: `AUDITOR_REGISTRATION_DISABLED` is on or on the Groundhog Day clock (`Current.is_ghd_server?`); `create` rate limit 5/60s
+Gate: public; signed-in → /me; closed (200 `closed` step; a POST is sent back to it with 303) when setting: `AUDITOR_REGISTRATION_DISABLED` is on or on the Groundhog Day clock (`Current.is_ghd_server?`); `create` rate limit 5/60s
 Controller: `app/controllers/register_controller.rb` (`show`, `create`)
 Owner: `RegisterForm` (`app/forms/register_form.rb`), `PersonStatusManagement.change` (`app/lib/person_status_management.rb`), `AccountCreationMailer` (`app/mailers/account_creation_mailer.rb`)
 Touches: `person` (w), `person_status` (w), `person_role` (w), `person_position` (w), `person_position_log` (w), `action_logs` (w), `setting`
@@ -3544,7 +3544,8 @@ Controller: `app/controllers/admin/error_logs_controller.rb` (`index`, `purge`)
 Owner: `ErrorLog` (`app/models/error_log.rb`), `ErrorLogFilterForm` (`app/forms/error_log_filter_form.rb`), `Admin::ErrorLogsHelper` (`app/helpers/admin/error_logs_helper.rb`)
 Touches: `error_logs` (w), `person`, `action_logs` (w)
 Verify: `test/controllers/admin/error_logs_controller_test.rb`
-Trap: `ErrorLog.record` and `record_exception` store `request.parameters.to_hash` unfiltered despite a "filtered copy" comment — a new `data` reader must mask, as `Admin::ErrorLogsHelper#error_log_filtered_data` does at render.
+Trap: A crash or a 50x answer is written by `RequestLogger#record_failure` (`lib/middleware/request_logger.rb`; `server-exception` / `server-error-status`), whatever `RequestLogEnabled` says; an exception that becomes a 404 or 422 is not, nor a lost database connection (nowhere to write it). A controller that answers 50x on purpose, or after recording its own row without the request (`Infrastructure::SmsController#parse_incoming`), sets `request.env[ErrorLog::HANDLED_ENV]` or every such answer becomes a `server-error-status` row; passing `request:` to `ErrorLog.record` / `record_exception` sets it for you. A crash is recorded regardless. Verify: `test/integration/request_logger_test.rb`.
+Trap: `ErrorLog.record` and `record_exception` store a request masked (`request_data`), since 2026-11-16: parameters and headers through `filter_parameters`, no `Cookie` or `Authorization` header, `url` without its query string, and no parameters at all for `RequestLogger::UNFILTERABLE_RESPONSE_PATHS` (`/register`). Older rows are unmasked, so a `data` reader must still mask, as `Admin::ErrorLogsHelper#error_log_filtered_data` does at render.
 Trap: `ErrorLog#data` raises `JSON::ParserError` on legacy non-JSON rows — use `data_or_nil`; `find_for_query` takes `start_at`/`ends_at`, not the `start_time`/`end_time` of its sibling logs.
 
 ### Admin › Mail Log (System Mail Log)

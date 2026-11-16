@@ -3,6 +3,15 @@
 class ErrorLog < ApplicationRecord
   PAGE_SIZE_DEFAULT = 50
 
+  # Set on a request's env once its failure is accounted for -- a row written
+  # here with the request, or an answer in the 500s given on purpose -- so
+  # RequestLogger does not add a second, generic row for the same answer.
+  HANDLED_ENV = "clubhouse.failure_handled"
+
+  # Headers that are a session or a login in themselves. The parameter filter
+  # catches the ones named for a token or a key; these it does not.
+  SECRET_HEADER = /COOKIE|AUTHORIZATION/
+
   belongs_to :person, optional: true
 
   # JSON serialization for the data column
@@ -94,19 +103,13 @@ class ErrorLog < ApplicationRecord
       }
 
       if request
-        data[:method] = request.method
-        # The filtered copy: request.params is a plain hash with no
-        # to_unsafe_h, and the filter keeps passwords and secrets out of a log
-        # more people can read than should hold them.
-        data[:parameters] = request.parameters.to_hash
-        data[:headers] = request.headers.env.select { |k, _| k =~ /^HTTP_/ }
+        data.merge!(request_data(request))
 
-        error[:ip] = request.remote_ip
-        error[:user_agent] = request.user_agent
-        error[:url] = request.original_url
+        error.merge!(request_columns(request))
       end
 
-      error[:data] = data
+      error[:person_id] = Current.person.id if Current.person
+      error[:data] = storable(data)
 
       create!(error)
     end
@@ -139,25 +142,18 @@ class ErrorLog < ApplicationRecord
 
       # Record the method and parameters from request
       if request
-        data[:method] = request.method
-        data[:url] = request.original_url
-        data[:parameters] = request.parameters.to_hash
-        data[:headers] = request.headers.env.select { |k, _| k =~ /^HTTP_/ }
+        data.merge!(request_data(request), url: stored_url(request))
       end
 
       data.merge!(extra)
 
       error = {
         error_type: error_type,
-        data: data
+        data: storable(data)
       }
 
       # Include the IP, user_agent and URL location
-      if request
-        error[:ip] = request.remote_ip
-        error[:user_agent] = request.user_agent
-        error[:url] = request.original_url
-      end
+      error.merge!(request_columns(request)) if request
 
       # Who is the user?
       if Current.person
@@ -171,6 +167,61 @@ class ErrorLog < ApplicationRecord
         # Could add emergency logging here if needed
       end
     end
+
+    private
+
+    # What a request carried, fit to store. Every crash lands here, the
+    # sign-in form's included, so parameters and headers are masked the way
+    # the Rails log masks parameters. The filter is built here: a request
+    # carries one only once the application has put it there.
+    def request_data(request)
+      headers = request.headers.env.select { |k, _| k.start_with?("HTTP_") }.reject { |k, _| k.match?(SECRET_HEADER) }
+
+      { method: request.method, parameters: stored_parameters(request), headers: parameter_filter.filter(headers) }
+    end
+
+    # The columns every row with a request fills in. Writing them also marks
+    # the request, so its failure is not recorded a second time.
+    def request_columns(request)
+      request.env[HANDLED_ENV] = true
+
+      { ip: request.remote_ip, user_agent: request.user_agent, url: stored_url(request) }
+    end
+
+    # Without the query string: its values are in the parameters, masked, and
+    # in the address they would not be.
+    def stored_url(request)
+      "#{request.base_url}#{request.path}"
+    end
+
+    # Nothing is kept from a page a stranger fills in (RequestLogger says
+    # which), and a request whose parameters cannot be read -- often the very
+    # reason it failed -- still gets its row.
+    def stored_parameters(request)
+      return "[NOT STORED]" if RequestLogger::UNFILTERABLE_RESPONSE_PATHS.include?(request.path)
+
+      parameter_filter.filter(request.parameters.to_hash)
+    rescue ActionController::BadRequest
+      "[UNREADABLE]"
+    end
+
+    def parameter_filter
+      @parameter_filter ||= ActiveSupport::ParameterFilter.new(Rails.application.config.filter_parameters)
+    end
+
+    # Text the JSON column can take: bytes that are not UTF-8 would refuse the
+    # whole row, and an uploaded file has no text form but its name.
+    def storable(value)
+      case value
+      when String then value.dup.force_encoding(Encoding::UTF_8).scrub
+      when ActionDispatch::Http::UploadedFile then value.original_filename
+      when Hash then value.transform_values { |entry| storable(entry) }
+      when Array then value.map { |entry| storable(entry) }
+      else value
+      end
+    end
+
+    public
 
     # Delete the entire error log and record who did it.
     #

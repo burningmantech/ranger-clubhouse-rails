@@ -63,6 +63,7 @@ class Infrastructure::SmsController < ApplicationController
     SmsService.process_incoming(params)
   rescue => e
     ErrorLog.record_exception(e, "sms-inbound-exception")
+    request.env[ErrorLog::HANDLED_ENV] = true
     render json: { status: "error" }, status: :internal_server_error
     nil
   end

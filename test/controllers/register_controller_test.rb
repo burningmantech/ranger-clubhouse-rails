@@ -202,9 +202,11 @@ class RegisterControllerTest < ActionDispatch::IntegrationTest
   test "a closed season says so instead of showing the form" do
     close_registration(true)
 
-    get register_path
+    assert_no_difference "ErrorLog.count" do
+      get register_path
+    end
 
-    assert_response :service_unavailable
+    assert_response :success
     assert_match "Registration Is Closed", response.body
   end
 
@@ -215,20 +217,22 @@ class RegisterControllerTest < ActionDispatch::IntegrationTest
       post register_path, params: account_params
     end
 
-    assert_response :service_unavailable
+    assert_redirected_to register_path
+    follow_redirect!
+    assert_match "Registration Is Closed", response.body
   end
 
   test "the training server never opens accounts" do
     on_training_server do
       get register_path
 
-      assert_response :service_unavailable
+      assert_response :success
       assert_match "Registration Is Closed", response.body
 
       assert_no_difference "Person.count" do
         post register_path, params: account_params
       end
-      assert_response :service_unavailable
+      assert_redirected_to register_path
     end
   end
 end
