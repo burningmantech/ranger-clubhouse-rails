@@ -3515,6 +3515,17 @@ Trap: a running job cannot be deleted — `SolidQueue::ClaimedExecution#discard`
 Trap: `SolidQueue::Job#status` reads five `has_one` executions in the order ready, claimed, failed, scheduled, blocked, and `BackgroundJobs.page` preloads them all. A status filter joins its execution, and a join on a preloaded association makes Rails eager-load every preload as a join, so `page` hands Pagy the count of the scope without them; a page past the last is asked for again as the last. In a test, `SolidQueue::Job.create!` makes a `ReadyExecution` for a due job (`after_create :prepare_for_execution`), so a failed fixture destroys that row before `failed_with`, or `status` reads `:ready`.
 Trap: `arguments` is the whole Active Job payload and can carry addresses (mail jobs); `Admin::JobsHelper#job_arguments_json` runs it through `filter_parameters` before printing. In development and production the queue models read through the `queue` connection (`connects_to`), so they cannot join `person` or any primary table.
 
+### Resource Dashboard
+Reach it: `GET /admin/resource-dashboard` → Administration › System Logs › Resource Dashboard
+Gate: `TECH_NINJA` only (no Admin pass)
+Controller: `app/controllers/admin/resource_dashboard_controller.rb` (`index`)
+Owner: `FargateUsage` (`app/lib/fargate_usage.rb`)
+Touches: none (reads the ECS task metadata endpoint, `ECS_CONTAINER_METADATA_URI_V4`: no AWS credentials, no cache, no history)
+Verify: `test/controllers/admin/resource_dashboard_controller_test.rb`, `test/lib/fargate_usage_test.rb`, `test/lib/admin_menu_test.rb`
+Trap: it reports the one task that served the request, so a service running several tasks shows a different one from reload to reload. Off Fargate (development, compose) the variable is unset and the page says so.
+Trap: the percentages are of the task-level `Limits` (vCPUs and MiB). CPU is the change between the two samples in `/task/stats`, about a second: it is `nil` (a dash) with no earlier sample, and only memory sets Near Limit.
+Trap: every endpoint failure, a bad status and an answer of the wrong shape included, is raised as `FargateUsage::Unavailable`, which the page shows as "Usage Is Not Available". Tests replace `FargateUsage.answers`; one lib test serves the endpoint from a local socket.
+
 ### Bug Reports
 Reach it: `GET /admin/bug-reports` → Administration › System Logs › Bug Reports; purge `DELETE /admin/bug-reports`
 Gate: `TECH_NINJA` only (no Admin pass)

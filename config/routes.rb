@@ -1756,6 +1756,9 @@ Rails.application.routes.draw do
       delete :expire, on: :collection
     end
 
+    # The CPU and memory the Fargate task serving the request is using.
+    get "resource-dashboard", to: "resource_dashboard#index", as: :resource_dashboard
+
     # Twilio, which the Clubhouse sends and receives texts through: the texts
     # Twilio sent and received, what it says about the account, and the
     # settings the Clubhouse texts with. The account panel and the log are
