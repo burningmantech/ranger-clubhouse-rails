@@ -32,8 +32,8 @@
                  badge: (@usage.near_limit? ? "Near Limit" : "Healthy"),
                  badge_color: (@usage.near_limit? ? :warning : :success) do %>
     <div>
-      <%= safe_join(["#{@usage.cluster} cluster", "task #{@usage.task_id}", @usage.zone,
-                     "as of #{datetime_format(Time.current)}"].compact, " · ") %>
+      <%= ["#{@usage.cluster} cluster", "task #{@usage.task_id}", @usage.zone,
+                     "as of #{datetime_format(Time.current)}"].compact.join(" · ").html_safe %>
     </div>
     <%= render "meter", label: "CPU", percent: @usage.cpu_percent, detail: "of #{@usage.cpu_limit} vCPU, last second", limit: false %>
     <%= render "meter", label: "Memory", percent: @usage.memory_percent,
