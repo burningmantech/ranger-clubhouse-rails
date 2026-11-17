@@ -1,5 +1,7 @@
 <%# locals: (rows:, nda_blocked:) %>
-<%= ui_section "Permissions", icon: "shield-halved", icon_type: :solid, badge: rows.size.to_s,
+<% active, inactive = rows.partition(&:active) %>
+<%= ui_section "Permissions", icon: "shield-halved", icon_type: :solid,
+    badge: (rows.empty? ? "0" : "#{active.size} of #{rows.size} active"),
     edit_link: (can_edit_permissions? ? person_permissions_path(@person) : nil) do %>
   <% if rows.empty? %>
     <%= ui_empty_state "No permissions granted.", icon: "shield-halved", icon_type: :solid %>
@@ -13,21 +15,25 @@
         <% end %>
       <% end %>
     <% end %>
-    <% active_count = rows.count(&:active) %>
-    <%= ui_accordion("#{pluralize(active_count, "active permission")}, #{rows.size - active_count} inactive",
-                     open: rows.size <= 4) do %>
-      <%= ui_table full_width: true do |t| %>
-        <%= t.header do %>
-          <%= t.heading "Permission" %>
-          <%= t.heading "Status" %>
-          <%= t.heading "Granted Through" %>
-        <% end %>
-        <%= t.body do %>
-          <% rows.each do |row| %>
-            <%= t.row do %>
-              <%= t.row_header row.title %>
-              <%= t.cell permission_status(row.active) %>
-              <%= t.cell permission_paths(row, nda_blocked:) %>
+    <%# Two lists, as Teams & Positions above: a list with no rows is left out.
+        The unsigned policy turns every permission off, and the callout says so. %>
+    <% [["Active", active, active.size <= 4], ["Inactive", inactive, !nda_blocked]].each do |label, list, open| %>
+      <% next if list.empty? %>
+      <% reasons = list.equal?(inactive) %>
+      <%= ui_accordion("#{label} (#{pluralize(list.size, "permission")})", open:) do %>
+        <%= ui_table full_width: true do |t| %>
+          <%= t.header do %>
+            <%= t.heading "Permission" %>
+            <%= t.heading "Why It Is Inactive" if reasons %>
+            <%= t.heading "Granted Through" %>
+          <% end %>
+          <%= t.body do %>
+            <% list.each do |row| %>
+              <%= t.row do %>
+                <%= t.row_header row.title %>
+                <%= t.cell permission_inactive_reasons(row, nda_blocked:) if reasons %>
+                <%= t.cell permission_paths(row) %>
+              <% end %>
             <% end %>
           <% end %>
         <% end %>
