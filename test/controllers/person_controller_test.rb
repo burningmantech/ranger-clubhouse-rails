@@ -61,7 +61,9 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "details.collapse", count: 3
     assert_select "details summary", text: /Positions \(3 positions\)/
-    assert_select "details summary", text: /2 active permissions, 0 inactive/
+    assert_select "details summary", text: "Active (2 permissions)"
+    assert_select "details summary", text: /Inactive/, count: 0
+    assert_select "[role='heading'] .badge", text: "2 of 2 active"
     assert_select "th", text: "Granted Through"
     assert_select "td", text: /Granted manually/, count: 2
   end
@@ -80,11 +82,15 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
 
     get person_path(@target)
 
-    assert_select "details summary", text: /2 active permissions, 1 inactive/
+    assert_select "details summary", text: "Active (2 permissions)"
+    assert_select "details summary", text: "Inactive (1 permission)"
+    assert_select "th", text: "Why It Is Inactive"
+    assert_equal ["Active (2 permissions)", "Inactive (1 permission)"], css_select("details summary").to_a.last(2).map { |s| s.text.strip }
+    assert_select "details[open] summary", text: "Inactive (1 permission)"
     assert_select "td", text: /Position: Gated Position/
     assert_select "td", text: /Has not passed or taught In-Person Training in #{Current.year}/
     assert_select "td", text: /Not signed in to Gated Position/
-    assert_select "td .badge", text: "deactivated"
+    assert_select "td[data-label='Why It Is Inactive'] li", text: "Not signed in to Gated Position"
   end
 
   test "an unsigned NDA shows one callout and marks every permission inactive" do
@@ -95,7 +101,10 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "[role='alert']", text: /All permissions are off because #{@target.callsign} has not signed/
     assert_select "a.tap-target-link[href='#{person_agreements_path(@target)}']", text: "View Agreements"
-    assert_select "details summary", text: /0 active permissions, 2 inactive/
+    assert_select "details summary", text: /Active/, count: 0
+    assert_select "details summary", text: "Inactive (2 permissions)"
+    assert_select "details[open] summary", text: /Inactive/, count: 0
+    assert_select "td[data-label='Why It Is Inactive']", text: /Policy not signed/, count: 2
   end
 
   # Person::AgreementsController admits only Admin and Event Management.

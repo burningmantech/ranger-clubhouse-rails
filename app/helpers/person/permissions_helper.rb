@@ -1,28 +1,40 @@
 # frozen_string_literal: true
 
-# The person page's permission table: a permission's status, and the paths
-# that grant it (PersonPermissionPresenter::Row).
+# The person page's permission tables: the paths that grant a permission, and
+# why an inactive one is not in effect (PersonPermissionPresenter::Row).
 module Person::PermissionsHelper
   PERMISSION_PATH_ICONS = { manual: "user-pen", team: "people-group", position: "user-shield", conferred: "gear" }.freeze
 
-  def permission_status(active)
-    return ui_badge("deactivated", :secondary) unless active
-
-    safe_join([fa_icon("circle-check", :solid, class: "icon-success", end: 1), "active"])
-  end
-
-  # One line per path, a position's conditions nested beneath it, and last the
-  # setting holding the permission off.
-  def permission_paths(row, nda_blocked: false)
-    items = row.paths.map { |path| permission_path_item(path) }
-    # The status comes from RoleManager's cached set and the paths are read
-    # fresh, so until a purge refreshes the set the two can disagree.
-    if row.active && row.paths.none?(&:confers?)
-      items << ui_icon_item("clock-rotate-left", tone: "text-stone-icon") { "Still in effect from an earlier grant" }
-    elsif !row.active && !nda_blocked && row.off_setting.nil? && row.paths.any?(&:confers?)
+  # Everything holding the permission off, most sweeping first: the unsigned
+  # policy, the setting, then each position whose conditions are unmet. A
+  # position is named with its conditions, since meeting any one position's
+  # is enough.
+  def permission_inactive_reasons(row, nda_blocked: false)
+    items = []
+    items << ui_icon_item("ban", :solid, tone: "text-stone-icon") { "Sensitive Data Access and Use Policy not signed" } if nda_blocked
+    items << ui_icon_item("gear", tone: "text-stone-icon") { "#{row.off_setting_label} setting is off" } if row.off_setting
+    if row.paths.none?(&:confers?)
+      blocked = row.paths.uniq
+      items << tag.li("Any one of these would make it active:") if blocked.many?
+      items.concat(blocked.map { |path| permission_path_item(path.with(conditions: path.conditions.reject(&:met))) })
+    elsif items.empty?
+      # RoleManager's set is cached and the paths are read fresh, so until a
+      # purge refreshes the set a path can confer what is not in effect yet.
       items << ui_icon_item("clock-rotate-left", tone: "text-stone-icon") { "Granted, but not in effect yet" }
     end
-    items << ui_icon_item("gear", tone: "text-stone-icon") { "Off while the #{row.off_setting_label} setting is off" } if row.off_setting
+    return value_or_dash(nil) if items.empty?
+
+    tag.ul(safe_join(items), class: "space-y-1")
+  end
+
+  # One line per path, a position's conditions nested beneath it.
+  def permission_paths(row)
+    items = row.paths.map { |path| permission_path_item(path) }
+    # RoleManager's set is cached and the paths are read fresh, so until a
+    # purge refreshes the set it can hold what no path confers any longer.
+    if row.active && row.paths.none?(&:confers?)
+      items << ui_icon_item("clock-rotate-left", tone: "text-stone-icon") { "Still in effect from an earlier grant" }
+    end
     tag.ul(safe_join(items), class: "space-y-1")
   end
 
