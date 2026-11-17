@@ -99,7 +99,9 @@ class RoleManagerTest < ActiveSupport::TestCase
     grant_role(@person, Role::TRAINER_SEASONAL)
 
     set_setting(Setting::TRAINING_SEASONAL_ROLE_ENABLED, false)
-    assert_not RoleManager.retrieve(@person).has_role?(Role::TRAINER)
+    roles = RoleManager.retrieve(@person)
+    assert_not roles.has_role?(Role::TRAINER)
+    assert_not roles.has_role?(Role::TRAINER_SEASONAL), "the seasonal permission itself is off with its setting"
 
     set_setting(Setting::TRAINING_SEASONAL_ROLE_ENABLED, true)
     roles = RoleManager.retrieve(@person)

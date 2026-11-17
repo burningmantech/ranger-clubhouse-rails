@@ -19,12 +19,14 @@ class RoleManager
     Role::EVENT_MANAGEMENT_ON_PLAYA => Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED,
     Role::MEGAPHONE_EMERGENCY_ONPLAYA => Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED,
     Role::MEGAPHONE_TEAM_ONPLAYA => Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED,
-    Role::SHIFT_MANAGEMENT_SELF => Setting::SHIFT_MANAGEMENT_SELF_ENABLED
+    Role::SHIFT_MANAGEMENT_SELF => Setting::SHIFT_MANAGEMENT_SELF_ENABLED,
+    Role::TRAINER_SEASONAL => Setting::TRAINING_SEASONAL_ROLE_ENABLED
   }.freeze
 
   SETTING_GATES_LABELS = {
     Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED => "Event Management On Playa",
-    Setting::SHIFT_MANAGEMENT_SELF_ENABLED => "Shift Management Self"
+    Setting::SHIFT_MANAGEMENT_SELF_ENABLED => "Shift Management Self",
+    Setting::TRAINING_SEASONAL_ROLE_ENABLED => "Training Interface Seasonal"
   }.freeze
 
   # Saving one of these invalidates every person's cached role set.
