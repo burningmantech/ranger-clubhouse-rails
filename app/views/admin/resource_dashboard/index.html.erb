@@ -1,0 +1,42 @@
+<% content_for :title, "Resource Dashboard" %>
+
+<%= hero_panel icon: "server", heading_level: :h1, id: "admin-resource-dashboard-header",
+               title: "Resource Dashboard",
+               description: "See how much CPU and memory this server's Fargate task is using." %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Where do the numbers come from?</dt>
+    <dd>The task metadata endpoint Amazon ECS gives every Fargate task, which reports what the task's containers are using.</dd>
+    <dt>Which server is this?</dt>
+    <dd>The one task that answered this page. When the service runs more than one task, a reload may show another.</dd>
+    <dt>What are the percentages of?</dt>
+    <dd>The CPU and memory the task definition reserves for the whole task.</dd>
+    <dt>When is the task near its limit?</dt>
+    <dd>When its memory is at <%= FargateUsage::NEAR_LIMIT %>% or more.</dd>
+    <dt>Why does CPU swing between reloads?</dt>
+    <dd>It covers about the last second, and a single request can fill a small task for that long. It shows a dash when the task has no reading yet, and never marks the task near its limit.</dd>
+    <dt>How current is this page?</dt>
+    <dd>It reads the task when it opens and keeps no history. Reload to see what has changed since.</dd>
+  </dl>
+<% end %>
+
+<% if @error %>
+  <%= ui_callout_box :warning, title: "Usage Is Not Available" do %>
+    The task metadata endpoint could not be read: <%= @error %>
+  <% end %>
+<% elsif @usage.nil? %>
+  <%= ui_empty_state "This server is not running on Fargate, so it has no usage to report.", icon: "server", icon_type: :solid %>
+<% else %>
+  <%= ui_section @usage.service.presence || "Fargate Task", icon: "server", icon_type: :solid,
+                 badge: (@usage.near_limit? ? "Near Limit" : "Healthy"),
+                 badge_color: (@usage.near_limit? ? :warning : :success) do %>
+    <div>
+      <%= safe_join(["#{@usage.cluster} cluster", "task #{@usage.task_id}", @usage.zone,
+                     "as of #{datetime_format(Time.current)}"].compact, " · ") %>
+    </div>
+    <%= render "meter", label: "CPU", percent: @usage.cpu_percent, detail: "of #{@usage.cpu_limit} vCPU, last second", limit: false %>
+    <%= render "meter", label: "Memory", percent: @usage.memory_percent,
+                        detail: "#{number_with_delimiter(@usage.memory_used)} of #{number_with_delimiter(@usage.memory_limit)} MB" %>
+  <% end %>
+<% end %>

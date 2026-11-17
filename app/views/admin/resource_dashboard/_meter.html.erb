@@ -1,0 +1,14 @@
+<%# locals: (label:, percent:, detail:, limit: true) -%>
+<%# limit: false draws a reading that never marks the task Near Limit (CPU). %>
+<% high = limit && percent.to_f >= FargateUsage::NEAR_LIMIT %>
+<div class="mt-3">
+  <div class="flex justify-between gap-2 mb-1">
+    <span class="font-semibold"><%= label %></span>
+    <span>
+      <%= value_or_dash(percent && number_to_percentage(percent, precision: 0)) %> · <%= detail %>
+      <%= fa_icon "triangle-exclamation", :solid, class: "icon-warning", start: 1, label: "Near limit" if high %>
+    </span>
+  </div>
+  <%= ui_progress_bar percent.to_f.clamp(0, 100).round, (high ? :warning : (limit ? :success : :secondary)),
+                      aria: { label: "#{label} in use" } %>
+</div>
