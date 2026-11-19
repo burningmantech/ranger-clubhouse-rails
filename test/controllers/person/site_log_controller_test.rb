@@ -89,6 +89,20 @@ class Person::SiteLogControllerTest < ActionDispatch::IntegrationTest
 
   # --- Rows ---------------------------------------------------------------------
 
+  # The cleanup's mark is dated at the person's last activity and made under
+  # the name of whoever ran it, so the row has to say it was not made by hand.
+  test "a mark the cleanup made says Automatic, and a mark made by hand does not" do
+    @left.update_columns(reason: PersonOnSite::AUTOMATIC)
+    sign_in_as(@manager)
+
+    get person_site_log_path(@target)
+
+    rows = table_rows
+    assert_match(/Off Site\s+Automatic/, rows.first)
+    assert_no_match(/Automatic/, rows.second)
+    assert_select "dt", text: "What does Automatic mean?"
+  end
+
   test "changes made in the same second keep the order they were made in" do
     on_site_row(PersonOnSite::ON_SITE, @manager.id, @left.created_at)
     sign_in_as(@manager)

@@ -20,10 +20,22 @@
     <dl class="instruction-list">
       <dt>How far back does this go?</dt>
       <dd><%= history_start %></dd>
+      <dt>What does Automatic mean?</dt>
+      <dd>
+        The on-site cleanup marked the person off site once they were off duty, had returned their assets,
+        and had no shifts left. The time shown is their last shift sign-out or asset return, not the
+        moment the cleanup ran.
+      </dd>
       <dt>Why is someone marked off site months after the event?</dt>
-      <dd>A yearly reset marks everyone still on site as off site, under the name of the admin who ran it.</dd>
+      <dd>
+        Before the cleanup existed, a yearly reset marked everyone still on site as off site. A mark with
+        no sign-out or asset return to date it from still shows the day of that reset.
+      </dd>
       <dt>What does System mean?</dt>
-      <dd>No one was signed in: the Clubhouse made the change itself, for example while building a training copy.</dd>
+      <dd>
+        No one was signed in: the Clubhouse made the change itself, in the cleanup that runs after
+        Labor Day or while building a training copy.
+      </dd>
       <dt>What does Duration measure?</dt>
       <dd>How long the person was on site: the time from an On Site mark to the Off Site mark that ended it.</dd>
     </dl>
@@ -81,6 +93,11 @@
                   <%= ui_badge "On Site", :success, icon: "person-walking" %>
                 <% else %>
                   <%= ui_badge "Off Site", :secondary, icon: "moon", icon_type: "regular" %>
+                <% end %>
+                <%# The cleanup's mark: its time is the person's last activity, and
+                    Marked By is whoever ran the cleanup, not someone at the window. %>
+                <% if row.automatic? %>
+                  <%= ui_badge "Automatic", :info, class: "ms-1" %>
                 <% end %>
               <% end %>
               <%= t.cell person_site_log_duration(row, @durations) %>
