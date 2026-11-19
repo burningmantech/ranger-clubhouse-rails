@@ -38,7 +38,7 @@ Paths are relative to the repository root. To find a feature, grep this file for
 - [Scheduling: reports](#scheduling-reports) (12)
 - [Shift Operations](#shift-operations) (7)
 - [Timesheets](#timesheets) (13)
-- [People, Certificates & Agreements](#people-certificates--agreements) (13)
+- [People, Certificates & Agreements](#people-certificates--agreements) (14)
 - [Teams & Positions](#teams--positions) (12)
 - [Volunteer Coordinators](#volunteer-coordinators) (14)
 - [Ticketing](#ticketing) (14)
@@ -48,7 +48,7 @@ Paths are relative to the repository root. To find a feature, grep this file for
 - [Quartermaster](#quartermaster) (7)
 - [Communication](#communication) (10)
 - [Admin](#admin) (18)
-- [Background jobs & mail](#background-jobs--mail) (19)
+- [Background jobs & mail](#background-jobs--mail) (20)
 
 ## Shared engines
 
@@ -296,11 +296,12 @@ Trap: The message recipient search (`search_callsigns_for_messaging`, `messageab
 Trap: For a viewer who may see email, a query containing "@" runs only `search_email` / `search_old_email`, ignoring `search_fields` and `statuses` (`exclude_statuses` still applies) — a status-restricted caller still gets other statuses.
 
 ### Person record side effects (Person callbacks)
-Used by: every page that saves a `person` row — Person › Edit Status and Edit Callsign (`Person::StatusesController`, `Person::CallsignsController`), Mark On Site / Off Site (`PersonController#toggle_onsite`), Me/Person › Profile (`ProfileSubjectConcern`), Me/Person › Change Password, HQ › On-Site Registration, Create Account and `/register`, bulk status and person-flag uploads (`BulkUpload::StatusHandler`, `BulkUpload::PersonFlagHandler`), SES bounces (`Infrastructure::AwsSnsController`); read back by Person › Site Log and Status History
+Used by: every page that saves a `person` row — Person › Edit Status and Edit Callsign (`Person::StatusesController`, `Person::CallsignsController`), Mark On Site / Off Site (`PersonController#toggle_onsite`), People › On-Site Cleanup and its nightly job (`OnSiteCleanup`), Me/Person › Profile (`ProfileSubjectConcern`), Me/Person › Change Password, HQ › On-Site Registration, Create Account and `/register`, bulk status and person-flag uploads (`BulkUpload::StatusHandler`, `BulkUpload::PersonFlagHandler`), SES bounces (`Infrastructure::AwsSnsController`); read back by Person › Site Log and Status History
 Owner: `Person` (`app/models/person.rb`), `PersonOnSite` (`app/models/person_on_site.rb`), `PersonStatusManagement` (`app/lib/person_status_management.rb`)
 Touches: `person` (w), `action_logs` (w), `person_status` (w), `email_history` (w), `person_on_site` (w), `person_fka` (w)
 Verify: `test/models/person_test.rb`, `test/models/person_on_site_test.rb`, `test/controllers/person_controller_test.rb`, `test/controllers/person/site_log_controller_test.rb`, `test/models/application_record_audit_test.rb`
 Trap: For an existing person, `Person` save callbacks write the `person_status`, `email_history`, `person_on_site` and `person_fka` rows — `update_columns` / `update_all` write no history; bulk `on_site` writers must call `PersonOnSite.reconcile`.
+Trap: `person_on_site.reason` is `manual` unless the save sets `person.on_site_reason` (and `on_site_changed_at`, the mark's `created_at`) first — only `OnSiteCleanup` does; `Person#log_on_site_change` clears both after one change, and `PersonOnSite.reconcile` rows take the column default.
 Trap: A save changing `sms_number` blanks `sms_code` and clears `sms_verified` / `sms_stopped` (`before_update :clear_sms_flags`) unless it assigns them — set a new verification code in the same save as the number.
 Trap: the deliverable-address check (`EmailAddresses.sendable?`, said as `Person::EMAIL_MESSAGE`; refuses `name@gmailcom`, `a@b.c`, `a..b@example.com`) runs only when the email changes beyond case and surrounding spaces (`Person#email_changed_beyond_case?`), because `normalizes :email` applies on assignment and in queries, never to a value loaded from the database: Clubhouse 2 stored addresses as typed, and the identity form sends a stored `Name@GmailCom` back on every save, which `email_changed?` reads as a change. A stored address the rule refuses never blocks saving something else; the `URI::MailTo::EMAIL_REGEXP` format check still runs on every save. Test a legacy row with string-form `update_all("email = ...")` — `update_columns` runs the normalizer.
 
@@ -1123,6 +1124,7 @@ Verify: `test/controllers/person/site_log_controller_test.rb`, `test/models/pers
 Trap: the page reads only `person_on_site` (marks from `Person#log_on_site_change`), never `action_logs`; its filter key is `filter[marked]` because Rails overwrites a param named `action`.
 Trap: `PersonOnSiteFilterForm#apply_all_but_creator` bounds days with `Date#to_time` (local clock, as the DB stores times), not `Time.zone`; only `PersonOnSite.history_for` orders, so `creator_counts` must run on unordered `PersonOnSite.where(person:)`.
 Trap: the rows are one section per year, and the Duration column is filled on the off-site mark that ends a stay; `PersonOnSite.on_site_durations` pairs marks over the whole history, not the filtered rows, so a `filter[marked]=off-site` page keeps its spans.
+Trap: a row with `reason` `automatic` (`PersonOnSite#automatic?`, badged Automatic) was made by `OnSiteCleanup` or re-dated by the `RedateBulkOffSiteMarks` migration: its `created_at` is the person's last sign-out or asset return, not when the row was written, and Marked By is whoever ran the cleanup or the old yearly reset.
 
 ### Person › Upload BMID Photo (photos)
 Reach it: `GET /person/:person_id/photos/new` → Person › Overview › Actions › Manage Photo, Person › Profile BMID card; upload `POST /person/:person_id/photos`; crop `GET /person/:person_id/photos/:id/crop`; submit `PATCH /person/:person_id/photos/:id/crop_save`; cancel `DELETE /person/:person_id/photos/:id`
@@ -2495,6 +2497,17 @@ Verify: `test/controllers/people/bulk_status_controller_test.rb`, `test/lib/pers
 Trap: `StatusHandler#apply` only sets `person.status` and `audit_reason`, then `save!(validate: false)`: `Person#log_status_change` (after_save) runs `PersonStatusManagement.change` — calling it from the handler too doubles history rows, grants and strips.
 Trap: `StatusHandler#refuses_locked_statuses?` is false — unlike every other bulk handler it moves deceased, dismissed, resigned, suspended and uberbonked accounts, since reinstatements start there.
 
+### On-Site Cleanup
+Reach it: `GET /people/on-site` → People › Account Maintenance › On-Site Cleanup; run `POST /people/on-site` (behind the button's confirm dialog; redirects back)
+Gate: `ADMIN`
+Controller: `app/controllers/people/on_site_controller.rb` (`index`, `create`)
+Owner: `OnSiteCleanup` (`app/lib/on_site_cleanup.rb`), `Person#log_on_site_change` (`app/models/person.rb`), `PersonOnSite.record` (`app/models/person_on_site.rb`)
+Touches: `person` (w), `person_on_site` (w), `action_logs` (w), `timesheet`, `person_asset`, `person_slot`, `slot`
+Verify: `test/controllers/people/on_site_controller_test.rb`, `test/lib/on_site_cleanup_test.rb`, `test/models/person_on_site_test.rb`, `test/lib/people_menu_test.rb`
+Trap: a person stays on site while on duty (any open `timesheet`), holding an asset checked out in `Current.year`, or signed up for a `Current.year` slot whose `ends` is still ahead (a shift in progress counts) — an asset from an earlier year does not hold them, and a run in a later year judges by that later year.
+Trap: the off-site mark is dated at the person's last `timesheet.off_duty` / `person_asset.checked_in` of the year only when that is after their newest on-site mark, else at the run's `now` — a mark dated before the on-site mark it closes would end the history on "on-site" (`history_for`, `on_site_durations` and `reconcile` all read by `created_at`).
+Trap: `create` builds a fresh `OnSiteCleanup`, never the list the GET drew; each person is saved with `save!(validate: false)` so `Person`'s hook writes the site log and audit rows — a raise stops the run, and the next run picks up the rest.
+
 ### Status Change Recommendations
 Reach it: `GET /people/status-change-recommendations` → People › Account Maintenance › Status Change Recommendations; group `GET /people/status-change-recommendations/:group` (exports `.csv`, filtered like the page); convert `POST /people/status-change-recommendations/:group`
 Gate: `ADMIN`
@@ -3738,6 +3751,15 @@ Owner: `BmidExport.delete_all_for_post_event` (`app/models/bmid_export.rb`)
 Touches: `bmid_export` (w), `active_storage_attachments` (w), `active_storage_blobs` (w)
 Verify: `test/jobs/delete_bmid_exports_job_test.rb`
 Trap: `BmidExport.delete_all_for_post_event` destroys every year's archives (`destroy_each(all)`), not just the present year's — use `delete_all_for_year` for one year.
+
+### On-site cleanup after Labor Day (OnSiteCleanupJob)
+Runs: `on_site_cleanup` 4am on September 6-14 (`0 4 6-14 9 *`) — production only, not GHD; the job does nothing unless the day is Labor Day + 5, + 6 or + 7 (the Saturday, Sunday and Monday after it); by hand People › On-Site Cleanup
+Job: `app/jobs/on_site_cleanup_job.rb`
+Owner: `OnSiteCleanup` (`app/lib/on_site_cleanup.rb`)
+Touches: `person` (w), `person_on_site` (w), `action_logs` (w), `timesheet`, `person_asset`, `person_slot`, `slot`
+Verify: `test/jobs/on_site_cleanup_job_test.rb`, `test/lib/on_site_cleanup_test.rb`, `test/jobs/recurring_schedule_test.rb`
+Trap: the date range in `config/recurring.yml` is only the nine dates the three days can fall on — the Saturday after Labor Day is the first Saturday of September in some years and the second in others, so the day check lives in the job (`DAYS_AFTER_LABOR_DAY`), not in cron.
+Trap: no one is signed in, so its `person_on_site` rows have no creator and Person › Site Log names them "System"; the same rows from the page name the admin who ran it.
 
 ### Empty shift alert (AlertWhenSignUpsEmptyJob)
 Runs: enqueued with `set(wait: 5.minutes)` by `Scheduling::EmailNotification.handle_empty_signups_alerts` (`app/lib/scheduling/email_notification.rb`) when signup intake removes a slot's last person (private `Scheduling::Signup.delete_signup`, also reached by `Scheduling::Signup::Bulk` removals from a status change in `PersonStatusManagement` or a revoked position in `PersonPosition`) — if the position has `alert_when_no_trainers` and trainees remain on the linked trainee slot, or `alert_when_becomes_empty` with setting `EVENT_MANAGEMENT_ON_PLAYA_ENABLED` on; re-reads the counts and sends nothing if someone signed back up
