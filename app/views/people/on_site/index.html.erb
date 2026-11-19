@@ -37,7 +37,7 @@
 <% else %>
   <%= ui_section "Ready to Mark Off Site", badge: @leaving.size.to_s do %>
     <% if @leaving.any? %>
-      <%= ui_form(nil, people_on_site_path, method: :post) do |f| %>
+      <%= ui_form(nil, people_on_site_path, method: :post, class: "mb-4") do |f| %>
         <%= button_row do %>
           <%= f.submit "Mark #{pluralize(@leaving.size, "Person")} Off Site",
                        data: { turbo_confirm: confirm_modal_dialog(
@@ -49,7 +49,7 @@
         <% end %>
       <% end %>
 
-      <%= ui_table striped: true, class: "mt-4" do |t| %>
+      <%= ui_table striped: true do |t| %>
         <%= t.header do %>
           <%= t.heading "Callsign" %>
           <%= t.heading "Status" %>
