@@ -1,0 +1,101 @@
+<%#
+  On-Site Cleanup: everyone still marked on site, in two lists. The first is
+  the people the cleanup would mark off site, with the one button that does it;
+  the second is the people something still holds on site, and what. Nothing
+  here changes anyone until the button's dialog is confirmed. See
+  People::OnSiteController and OnSiteCleanup.
+%>
+
+<%= hero_panel icon: "right-from-bracket", heading_level: :h1, id: "on-site-cleanup-header",
+               title: "On-Site Cleanup",
+               description: "Mark people off site once they are off duty, hold no assets, and have no shifts left." %>
+
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>Who can be marked off site?</dt>
+    <dd>
+      Anyone marked on site who is off duty, has returned every asset checked out in
+      <%= Current.year %>, and has no <%= Current.year %> shift that has yet to end.
+    </dd>
+    <dt>What time goes in their site log?</dt>
+    <dd>
+      Their last shift sign-out or asset return, whichever is later. Someone with neither since
+      they were marked on site is dated at the moment you confirm.
+    </dd>
+    <dt>Does this run by itself?</dt>
+    <dd>
+      Yes, at 04:00 on the Saturday, Sunday, and Monday after Labor Day. Use this page for
+      anyone still on site after that.
+    </dd>
+    <dt>Can I undo it?</dt>
+    <dd>Not from here. Anyone marked off site by mistake can be marked on site again from their person page.</dd>
+  </dl>
+<% end %>
+
+<% if @leaving.empty? && @staying.empty? %>
+  <%= ui_empty_state "No one is marked on site.", icon: "moon" %>
+<% else %>
+  <%= ui_section "Ready to Mark Off Site", badge: @leaving.size.to_s do %>
+    <% if @leaving.any? %>
+      <%= ui_form(nil, people_on_site_path, method: :post) do |f| %>
+        <%= button_row do %>
+          <%= f.submit "Mark #{pluralize(@leaving.size, "Person")} Off Site",
+                       data: { turbo_confirm: confirm_modal_dialog(
+                         title: "Mark Off Site",
+                         message: "Mark #{pluralize(@leaving.size, "person")} off site? " \
+                                  "Each can be marked on site again from their person page.",
+                         confirm_label: "Mark Off Site"
+                       ) } %>
+        <% end %>
+      <% end %>
+
+      <%= ui_table striped: true, class: "mt-4" do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Mark Dated" %>
+        <% end %>
+        <%= t.body do %>
+          <% @leaving.each do |row| %>
+            <%= t.row do %>
+              <%= t.row_header do %>
+                <%= callsign_link row.person %>
+              <% end %>
+              <%= t.cell row.person.status %>
+              <%# No activity to date the mark from: it is dated when the run happens. %>
+              <%= t.cell row.left_at == @now ? "Today" : datetime_format(row.left_at, year: true) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= ui_empty_state "No one can be marked off site yet. Everyone on site is listed below with what keeps them there.",
+                         icon: "moon" %>
+    <% end %>
+  <% end %>
+
+  <%# Supplementary: with no one held on site there is nothing to explain, and
+      the count above already says everyone can leave. %>
+  <% if @staying.any? %>
+    <%= ui_section "Staying On Site", badge: @staying.size.to_s do %>
+      <%= ui_table striped: true do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Callsign" %>
+          <%= t.heading "Status" %>
+          <%= t.heading "Held By" %>
+        <% end %>
+        <%= t.body do %>
+          <% @staying.each do |row| %>
+            <%= t.row do %>
+              <%= t.row_header do %>
+                <%= callsign_link row.person %>
+              <% end %>
+              <%= t.cell row.person.status %>
+              <%= t.cell row.blockers.map { OnSiteCleanup::BLOCKER_LABELS.fetch(it) }.join(", ") %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

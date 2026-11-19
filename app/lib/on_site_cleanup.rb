@@ -19,8 +19,18 @@ class OnSiteCleanup
   ASSET_OUT = :asset_out
   UPCOMING_SHIFT = :upcoming_shift
 
+  BLOCKER_LABELS = {
+    ON_DUTY => "On duty",
+    ASSET_OUT => "Asset checked out",
+    UPCOMING_SHIFT => "Shift still to come"
+  }.freeze
+
   # left_at: the time the off-site mark will carry; nil for someone staying.
   Row = Data.define(:person, :left_at, :blockers)
+
+  # The moment the cleanup judges by, and the date of a mark with no activity
+  # behind it.
+  attr_reader :now
 
   def initialize(now: Current.time, year: Current.year)
     @now = now

@@ -395,6 +395,13 @@ Rails.application.routes.draw do
       post "/", action: :create
     end
 
+    # On-Site Cleanup: the GET previews who would be marked off site, the POST
+    # does it and comes back.
+    scope path: "on-site", controller: :on_site do
+      get "/", action: :index, as: :on_site
+      post "/", action: :create
+    end
+
     scope path: "bulk-status", controller: :bulk_status do
       get "/", action: :index, as: :bulk_status
       post "edit", action: :index, as: :edit_bulk_status
