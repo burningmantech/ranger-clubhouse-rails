@@ -2505,7 +2505,7 @@ Owner: `OnSiteCleanup` (`app/lib/on_site_cleanup.rb`), `Person#log_on_site_chang
 Touches: `person` (w), `person_on_site` (w), `action_logs` (w), `timesheet`, `person_asset`, `person_slot`, `slot`
 Verify: `test/controllers/people/on_site_controller_test.rb`, `test/lib/on_site_cleanup_test.rb`, `test/models/person_on_site_test.rb`, `test/lib/people_menu_test.rb`
 Trap: a person stays on site while on duty (any open `timesheet`), holding an asset checked out in `Current.year`, or signed up for a `Current.year` slot whose `ends` is still ahead (a shift in progress counts) — an asset from an earlier year does not hold them, and a run in a later year judges by that later year.
-Trap: the off-site mark is dated at the person's last `timesheet.off_duty` / `person_asset.checked_in` of the year only when that is after their newest on-site mark, else at the run's `now` — a mark dated before the on-site mark it closes would end the history on "on-site" (`history_for`, `on_site_durations` and `reconcile` all read by `created_at`).
+Trap: the off-site mark is dated at the person's last `timesheet.off_duty` / `person_asset.checked_in` of the year only when that is after their newest on-site mark, else when the run happens (`Row#left_at` is nil and the page says Today) — a mark dated before the on-site mark it closes would end the history on "on-site" (`history_for`, `on_site_durations` and `reconcile` all read by `created_at`).
 Trap: `create` builds a fresh `OnSiteCleanup`, never the list the GET drew; each person is saved with `save!(validate: false)` so `Person`'s hook writes the site log and audit rows — a raise stops the run, and the next run picks up the rest.
 
 ### Status Change Recommendations

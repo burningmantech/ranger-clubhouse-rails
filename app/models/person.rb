@@ -876,8 +876,7 @@ class Person < ApplicationRecord
   def log_on_site_change
     return unless saved_change_to_on_site?
 
-    PersonOnSite.record(self, audit_actor_id, reason: on_site_reason || PersonOnSite::MANUAL,
-                                              at: on_site_changed_at || Current.time)
+    PersonOnSite.record(self, audit_actor_id, **{ reason: on_site_reason, at: on_site_changed_at }.compact)
     self.on_site_reason = self.on_site_changed_at = nil
   end
 

@@ -3,6 +3,8 @@
 require "test_helper"
 
 class OnSiteCleanupTest < ActiveSupport::TestCase
+  include TrainingSlotTestHelper # create_slot / sign_up
+
   # The Saturday after Labor Day 2026, when the nightly job first runs.
   NOW = Time.zone.local(2026, 9, 12, 4, 0, 0)
 
@@ -22,7 +24,7 @@ class OnSiteCleanupTest < ActiveSupport::TestCase
     scheduled = on_site(person(:inactive_ranger))
     timesheet(@ranger, NOW - 2.hours, nil)
     asset_loan(holder, NOW - 3.days, nil)
-    sign_up(scheduled, NOW + 6.hours, NOW + 12.hours)
+    sign_up(scheduled, shift(NOW + 6.hours, NOW + 12.hours))
 
     cleanup = OnSiteCleanup.new
 
@@ -37,8 +39,8 @@ class OnSiteCleanupTest < ActiveSupport::TestCase
   test "last year's asset and a finished shift hold no one; a shift still running does" do
     working = on_site(person(:retired_ranger))
     asset_loan(@ranger, NOW - 1.year, nil)
-    sign_up(@ranger, NOW - 10.hours, NOW - 4.hours)
-    sign_up(working, NOW - 2.hours, NOW + 4.hours)
+    sign_up(@ranger, shift(NOW - 10.hours, NOW - 4.hours))
+    sign_up(working, shift(NOW - 2.hours, NOW + 4.hours))
 
     cleanup = OnSiteCleanup.new
 
@@ -61,14 +63,16 @@ class OnSiteCleanupTest < ActiveSupport::TestCase
 
   # Activity from before the on-site mark says nothing about leaving, and a mark
   # dated then would sort ahead of the on-site mark it is meant to close.
-  test "with no activity since they were marked on site, the mark is dated now" do
+  test "with no activity since they were marked on site, the mark is dated when the run happens" do
     idle = on_site(person(:retired_ranger))
     timesheet(@ranger, NOW - 9.days, NOW - 9.days + 6.hours)
     arrived(@ranger, NOW - 8.days)
+    cleanup = OnSiteCleanup.new
 
-    left_at = OnSiteCleanup.new.leaving.to_h { [it.person.id, it.left_at] }
+    assert_equal({ @ranger.id => nil, idle.id => nil }, cleanup.leaving.to_h { [it.person.id, it.left_at] })
 
-    assert_equal({ @ranger.id => NOW, idle.id => NOW }, left_at)
+    cleanup.run!
+    assert_equal [NOW, NOW], [@ranger, idle].map { PersonOnSite.history_for(it).first.created_at }
   end
 
   test "run! marks the leavers off site, automatic, at the time they left, and leaves the rest" do
@@ -116,8 +120,5 @@ class OnSiteCleanupTest < ActiveSupport::TestCase
     PersonAsset.create!(person:, asset: @asset, checked_out:, checked_in:)
   end
 
-  def sign_up(person, begins, ends)
-    slot = Slot.create!(position: positions(:ood_position), begins:, ends:, max: 10, active: true)
-    PersonSlot.create!(person:, slot:)
-  end
+  def shift(begins, ends) = create_slot(positions(:ood_position), begins:, ends:)
 end

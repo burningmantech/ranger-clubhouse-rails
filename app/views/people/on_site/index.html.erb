@@ -63,7 +63,7 @@
               <% end %>
               <%= t.cell row.person.status %>
               <%# No activity to date the mark from: it is dated when the run happens. %>
-              <%= t.cell row.left_at == @now ? "Today" : datetime_format(row.left_at, year: true) %>
+              <%= t.cell row.left_at ? datetime_format(row.left_at, year: true) : "Today" %>
             <% end %>
           <% end %>
         <% end %>

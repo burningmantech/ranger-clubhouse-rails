@@ -10,7 +10,7 @@
 # got round to the housekeeping. Activity from before they were marked on site
 # is no evidence of leaving, and an off-site mark dated before the on-site mark
 # it closes would turn the history upside down -- PersonOnSite reads it by
-# date -- so with nothing later to go by the mark is dated now.
+# date -- so with nothing later to go by the mark is dated when the run happens.
 class OnSiteCleanup
   AUDIT_REASON = "on-site cleanup"
 
@@ -25,12 +25,10 @@ class OnSiteCleanup
     UPCOMING_SHIFT => "Shift still to come"
   }.freeze
 
-  # left_at: the time the off-site mark will carry; nil for someone staying.
+  # left_at: the time the off-site mark will carry. nil for someone staying,
+  # and for someone leaving with no activity to date the mark from: theirs is
+  # dated when the run happens.
   Row = Data.define(:person, :left_at, :blockers)
-
-  # The moment the cleanup judges by, and the date of a mark with no activity
-  # behind it.
-  attr_reader :now
 
   def initialize(now: Current.time, year: Current.year)
     @now = now
@@ -79,7 +77,7 @@ class OnSiteCleanup
       ASSET_OUT => PersonAsset.where(person_id: ids, checked_in: nil).where_year("checked_out", @year),
       # A shift still running counts: someone working it without having signed
       # in is not gone. Slot times are compared as stored, as the schedule does.
-      UPCOMING_SHIFT => PersonSlot.joins(:slot).where(person_id: ids, slot: { begins_year: @year })
+      UPCOMING_SHIFT => PersonSlot.joins(:slot).merge(Slot.for_year(@year)).where(person_id: ids)
                                   .where("slot.ends > ?", @now)
     }.each_with_object({}) do |(blocker, held), found|
       held.distinct.pluck(:person_id).each { (found[it] ||= []) << blocker }
@@ -87,7 +85,7 @@ class OnSiteCleanup
   end
 
   # {person_id => time}: this year's last sign-out or asset return when it came
-  # after the person's newest on-site mark, else now.
+  # after the person's newest on-site mark, else nil.
   def left_at_for(ids)
     signed_out = Timesheet.for_year(@year).where(person_id: ids).group(:person_id).maximum(:off_duty)
     returned = PersonAsset.where(person_id: ids).where_year("checked_out", @year)
@@ -97,7 +95,7 @@ class OnSiteCleanup
 
     ids.index_with do |id|
       last = [signed_out[id], returned[id]].compact.max
-      last && (marked[id].nil? || last > marked[id]) ? last : @now
+      last if last && (marked[id].nil? || last > marked[id])
     end
   end
 end

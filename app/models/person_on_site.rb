@@ -17,7 +17,6 @@ class PersonOnSite < ApplicationRecord
   # nothing tied them to the site, and dated the mark at their last activity.
   MANUAL = "manual"
   AUTOMATIC = "automatic"
-  REASONS = [MANUAL, AUTOMATIC].freeze
 
   belongs_to :person
 

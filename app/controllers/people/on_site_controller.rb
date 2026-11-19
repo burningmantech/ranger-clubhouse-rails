@@ -15,7 +15,6 @@ class People::OnSiteController < ApplicationController
 
   def index
     cleanup = OnSiteCleanup.new
-    @now = cleanup.now
     @leaving = cleanup.leaving
     @staying = cleanup.staying
   end
