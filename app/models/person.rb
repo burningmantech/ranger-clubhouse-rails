@@ -318,6 +318,9 @@ class Person < ApplicationRecord
   # Virtual attributes
   attr_accessor :has_reviewed_pi
   attr_accessor :role_manager
+  # Why and when the next on_site change happened, for OnSiteCleanup: the
+  # reason and the time log_on_site_change records instead of "manual, now".
+  attr_accessor :on_site_reason, :on_site_changed_at
 
   class << self
     # Find person by callsign
@@ -868,10 +871,14 @@ class Person < ApplicationRecord
   # Every on-site or off-site change, for the person's site log, in the same
   # transaction as the change itself. An account created on site counts: with
   # no row it would read as off site. The actor is the one the audit row names.
+  # on_site_reason and on_site_changed_at are spent on the one change they were
+  # set for, so a later save of the same object is a manual mark made now.
   def log_on_site_change
     return unless saved_change_to_on_site?
 
-    PersonOnSite.record(self, audit_actor_id)
+    PersonOnSite.record(self, audit_actor_id, reason: on_site_reason || PersonOnSite::MANUAL,
+                                              at: on_site_changed_at || Current.time)
+    self.on_site_reason = self.on_site_changed_at = nil
   end
 
   # A new number is unverified until proven otherwise -- but only clobber the

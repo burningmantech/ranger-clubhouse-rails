@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_000004) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_18_000001) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -775,6 +775,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_000004) do
     t.bigint "creator_person_id"
     t.column "action", "enum('on-site','off-site')", null: false
     t.datetime "created_at", null: false
+    t.column "reason", "enum('manual','automatic')", default: "manual", null: false
     t.index ["creator_person_id"], name: "index_person_on_site_on_creator_person_id"
     t.index ["person_id", "created_at"], name: "index_person_on_site_on_person_id_and_created_at"
   end
