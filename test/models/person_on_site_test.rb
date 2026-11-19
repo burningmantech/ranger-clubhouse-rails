@@ -60,6 +60,31 @@ class PersonOnSiteTest < ActiveSupport::TestCase
     assert_equal Current.groundhog_day_time, rows_for(@subject).last.created_at
   end
 
+  test "a mark is manual unless the save says otherwise" do
+    mark(@subject, true)
+
+    assert_equal PersonOnSite::MANUAL, rows_for(@subject).last.reason
+  end
+
+  # OnSiteCleanup's path: the reason and the time travel with the one save.
+  test "a save told its reason and time records them, once" do
+    @subject.update_columns(on_site: true)
+    left_at = Time.zone.local(2026, 9, 7, 18, 30)
+    @subject.on_site_reason = PersonOnSite::AUTOMATIC
+    @subject.on_site_changed_at = left_at
+
+    mark(@subject, false)
+
+    row = rows_for(@subject).last
+    assert_equal [PersonOnSite::OFF_SITE, PersonOnSite::AUTOMATIC, left_at], [row.action, row.reason, row.created_at]
+    assert_predicate row, :automatic?
+
+    mark(@subject, true)
+    again = rows_for(@subject).order(:id).last
+    assert_equal PersonOnSite::MANUAL, again.reason
+    assert_operator again.created_at, :>, left_at
+  end
+
   # With no row, an account created on site would read as off site.
   test "an account created on site records it, and one created off site records nothing" do
     arrived = create_person("Brandnew", on_site: true)

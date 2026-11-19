@@ -335,6 +335,11 @@ module Menus
             root: true, active_prefix: true,
             description: "Set the status, or the vintage flag, for a pasted list of callsigns",
             visible_if: { roles: [Role::ADMIN] } },
+          # Exact match only, as above: the button posts back to the page's own path.
+          { title: "On-Site Cleanup", path: :people_on_site_path,
+            root: true, active_prefix: true,
+            description: "Mark people off site once they are off duty, hold no assets, and have no shifts left",
+            visible_if: { roles: [Role::ADMIN] } },
           { title: "Status Change Recommendations", path: :people_status_change_recommendations_path,
             active_prefix: true,
             description: "Status changes to consider now that an event is over (fka People By Status Change)",

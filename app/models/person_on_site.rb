@@ -12,15 +12,22 @@ class PersonOnSite < ApplicationRecord
   OFF_SITE = "off-site"
   ACTIONS = [ON_SITE, OFF_SITE].freeze
 
+  # Why the mark was made. MANUAL: someone marked the person, at the HQ window
+  # or on their person page. AUTOMATIC: OnSiteCleanup marked them off site once
+  # nothing tied them to the site, and dated the mark at their last activity.
+  MANUAL = "manual"
+  AUTOMATIC = "automatic"
+
   belongs_to :person
 
   # The change a save just made to person.on_site. Stamped with the present
-  # instant, as the action log is, so a Groundhog Day server records its
-  # pinned time on both. creator_person_id is empty when no one was signed in,
-  # and may name an account since deleted: the table carries no foreign key.
-  def self.record(person, creator_person_id)
+  # instant unless told otherwise, as the action log is, so a Groundhog Day
+  # server records its pinned time on both. creator_person_id is empty when no
+  # one was signed in, and may name an account since deleted: the table
+  # carries no foreign key.
+  def self.record(person, creator_person_id, reason: MANUAL, at: Current.time)
     create!(person:, creator_person_id:, action: person.on_site ? ON_SITE : OFF_SITE,
-            created_at: Current.time)
+            reason:, created_at: at)
   end
 
   # Ends every history on its person's flag after a bulk change to on_site: one
@@ -66,4 +73,6 @@ class PersonOnSite < ApplicationRecord
   end
 
   def on_site? = action == ON_SITE
+
+  def automatic? = reason == AUTOMATIC
 end
