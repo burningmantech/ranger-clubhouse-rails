@@ -28,21 +28,23 @@
       <%= team.email.present? ? mail_to(team.email, team.email) : value_or_dash(nil) %>
     </div>
 
-    <div class="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 mt-4"
+    <%# The columns follow the photo: none narrower than it, as many as fit, and a photo box in
+        the photo's own proportions, so no width crops it. Its size travels as custom properties
+        (computed numbers, not a style) %>
+    <div class="grid grid-cols-(--avatar-columns) gap-4 mt-4"
+         style="--avatar-columns: repeat(auto-fill, minmax(<%= PersonPhoto::AVATAR_WIDTH %>px, 1fr)); --avatar-ratio: <%= PersonPhoto::AVATAR_WIDTH %> / <%= PersonPhoto::AVATAR_HEIGHT %>"
          role="list"
          aria-label="<%= team.title %> members">
       <% team.members.each do |member| %>
         <% person = member.person %>
-        <%# The photo height travels as a custom property (a computed number, not a style) %>
-        <%= ui_card role: "listitem", class: "overflow-hidden",
-                    style: "--avatar-height: #{PersonPhoto::AVATAR_HEIGHT}px" do %>
+        <%= ui_card role: "listitem", class: "overflow-hidden" do %>
           <% if person.avatar_photo %>
             <%= image_tag person.avatar_photo,
-                          class: "w-full h-(--avatar-height) object-cover",
+                          class: "w-full aspect-(--avatar-ratio) object-cover",
                           loading: "lazy",
                           alt: "Photo of #{person.callsign}#{member.overseer_positions.present? ? ", #{member.overseer_positions.first.title}" : ""}" %>
           <% else %>
-            <div class="flex items-center justify-center h-(--avatar-height) bg-secondary-content">
+            <div class="flex items-center justify-center aspect-(--avatar-ratio) bg-secondary-content">
               <div class="text-center">
                 <%= fa_icon :user, :solid, class: "fa-4x mb-2" %>
                 <div class="text-sm text-body">No Photo</div>
