@@ -70,6 +70,11 @@ bin/rails db:migrate
 - The dev server runs Solid Queue inside Puma (`config/puma.rb`, `plugin :solid_queue`), so it performs
   queued jobs, mail included. Development mail goes to an SMTP sink on localhost:1025 and nothing leaves the
   machine; with no sink running the mail jobs fail. Leave failed dev jobs alone, and keep ad-hoc servers short
+- A database restored from AWS says every uploaded file is on S3 (`active_storage_blobs.service_name = "amazon"`),
+  so photos do not load. `bin/rails storage:localize` (`BlobLocalizer`) copies each file to `storage/` and
+  points its row at the disk; it needs `RANGER_CLUBHOUSE_S3_BUCKET`, `AWS_REGION` and AWS credentials only for
+  files not already there. It writes rows, so on the dev database it is the user's to run. Nothing moves a row
+  back: a moved row keeps its old service in `metadata["localized_from"]`, and S3 is never changed
 - Development logs to STDOUT: there is no `log/development.log` to tail
 - Browser preview servers are in `.claude/launch.json`: `clubhouse3` (:3010), `clubhouse3-alt` (:3210 or the
   next free port), `clubhouse3-sf-mock` (:3211, `SF_MOCK_DATA=1`)
