@@ -11,7 +11,7 @@
 ARG RUBY_VERSION=4.0.10
 ARG NODE_VERSION=24.2.0
 FROM node:${NODE_VERSION}-slim AS node
-FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
+FROM docker.io/library/ruby:${RUBY_VERSION}-slim AS base
 
 # Rails app lives here
 WORKDIR /app
