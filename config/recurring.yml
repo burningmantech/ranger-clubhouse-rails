@@ -84,6 +84,12 @@ production:
   rangers_who_need_saps:
     class: RangersWhoNeedSapsJob
     schedule: "30 2 * 7-8 1"
+  # The Saturday, Sunday and Monday after Labor Day always fall on September
+  # 6-14. Cron cannot say "after the first Monday", so the job checks the day
+  # and does nothing on the other six.
+  on_site_cleanup:
+    class: OnSiteCleanupJob
+    schedule: "0 4 6-14 9 *"
   # Once the event is over, the badge export archives are no longer needed.
   delete_bmid_exports:
     class: DeleteBmidExportsJob
