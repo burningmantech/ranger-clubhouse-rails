@@ -41,20 +41,17 @@ module People::RetentionReportHelper
     (year == RetentionReport::NO_YEARS) ? RetentionReport::NO_YEARS_LABEL : year
   end
 
-  # The badge per event year, so a reader can see at a glance whether somebody
-  # comes every year or turns up now and then. Green for a year they rangered,
-  # grey for one they did not.
-  # A year they rangered is a ticked badge; one they did not is plain muted
-  # text. Shape, not just colour, so the strip reads the same to someone who
-  # cannot tell green from grey -- and the plain years keep the column narrow
-  # enough to stay on one line.
-  def retention_report_year_strip(row, years)
-    marks = years.map do |year|
-      if row.rangered?(year)
-        ui_badge year.to_s, :success, size: "base", icon: "check", icon_type: :solid
-      else
-        tag.span year, class: "px-1 text-stone-muted"
-      end
+  # A badge per event in the window the Ranger has a shift in, oldest first, so
+  # a reader can see at a glance whether somebody comes every year or turns up
+  # now and then. An event they missed is left out.
+  #
+  # A dash only when the window reaches over 2020 and 2021 and the one shift
+  # that listed them was recorded there.
+  def retention_report_year_strip(row)
+    return value_or_dash(nil) if row.worked_years.empty?
+
+    marks = row.worked_years.map do |year|
+      ui_badge year.to_s, :success, size: "base", icon: "check", icon_type: :solid
     end
 
     tag.div safe_join(marks, " "), class: "flex flex-wrap items-center gap-1"

@@ -2472,7 +2472,8 @@ Controller: `app/controllers/people/retention_report_controller.rb` (`index`)
 Owner: `RetentionReport` (`app/lib/reports/retention_report.rb`), `EventYearSpan` (`app/lib/event_year_span.rb`)
 Touches: `person`, `timesheet`
 Verify: `test/controllers/people/retention_report_controller_test.rb`, `test/lib/reports/retention_report_test.rb`, `test/lib/event_year_span_test.rb`, `test/lib/people_menu_test.rb`
-Trap: `RetentionReport.rangered_in` (non-echelon timesheets outside Alpha, Training and Deep Freeze, five events to the present year) picks who is listed; First, Last and Total come from `person.years_as_ranger` — they disagree on purpose, don't reconcile.
+Trap: `RetentionReport.worked_years` (non-echelon timesheets outside Training and Deep Freeze, five events to the present year; Alpha counts) picks who is listed and fills the year strip (`Row#worked_years`); First, Last and Total, the Last Rangered filter and the stat boxes come from `person.years_as_ranger` — they disagree on purpose, don't reconcile.
+Trap: the Shiny Penny badge and CSV column mean an Alpha timesheet entry in the window's last event (`Row#shiny_penny`), whatever the person's status history — not the `ShinyPennyReport` rule, which also needs the year to end on Active.
 Trap: `YearsManagement` is stubbed to no-ops in `test/test_helper.rb`, so test Timesheets never update `years_as_ranger` — set it via `PersonTestFactory#create_person(years:)` or `update_columns`.
 
 ### People › Unified Flagging

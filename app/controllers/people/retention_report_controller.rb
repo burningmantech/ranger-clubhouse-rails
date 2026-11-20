@@ -14,9 +14,9 @@ class People::RetentionReportController < ApplicationController
 
   ALL = UiComponents::FilterBarHelper::ALL_FILTER
 
-  # Upstream's columns, in upstream's order.
+  # Upstream's columns, in upstream's order, then the one this app adds.
   CSV_HEADER = ["Callsign", "Name", "Status", "Email",
-                "First Year", "Last Year", "Total Years"].freeze
+                "First Year", "Last Year", "Total Years", "Shiny Penny"].freeze
 
   def index
     @report = RetentionReport.execute
@@ -88,7 +88,8 @@ class People::RetentionReportController < ApplicationController
   def csv_rows
     @rows.each_with_object([CSV_HEADER]) do |row, rows|
       rows << [row.callsign, row.name, row.status, row.email,
-               row.first_year, row.last_year, row.total_years]
+               row.first_year, row.last_year, row.total_years,
+               ("Yes" if row.shiny_penny)]
     end
   end
 end

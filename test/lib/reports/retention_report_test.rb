@@ -35,9 +35,15 @@ class RetentionReportTest < ActiveSupport::TestCase
     assert_includes callsigns, person.callsign
   end
 
+  # Whoever passed their Alpha shift is on the roster, and is asked like anyone.
+  test "an Alpha shift lists a Ranger" do
+    person = create_person("AlphaOnly", years: [])
+    shift(person, position: @alpha)
+
+    assert_includes callsigns, person.callsign
+  end
+
   test "shifts that do not count as rangering leave a Ranger out" do
-    alpha = create_person("AlphaOnly", years: [IN_WINDOW])
-    shift(alpha, position: @alpha)
     training = create_person("TrainingOnly", years: [IN_WINDOW])
     shift(training, position: @training)
     deep_freeze = create_person("FreezeOnly", years: [IN_WINDOW])
@@ -46,7 +52,7 @@ class RetentionReportTest < ActiveSupport::TestCase
     shift(echelon, is_echelon: true)
 
     listed = callsigns
-    [alpha, training, deep_freeze, echelon].each do |person|
+    [training, deep_freeze, echelon].each do |person|
       assert_not_includes listed, person.callsign
     end
   end
@@ -76,8 +82,45 @@ class RetentionReportTest < ActiveSupport::TestCase
     assert_equal 2015, row.first_year
     assert_equal IN_WINDOW, row.last_year
     assert_equal 3, row.total_years
-    assert row.rangered?(2019)
-    assert_not row.rangered?(2018)
+  end
+
+  # The strip reads the shifts and the three columns the credited years, so a
+  # year can be in one and not the other.
+  test "the worked years are the events in the window with a shift that counts" do
+    person = rangering_person("Sometimes", years: [2015])
+    shift(person, year: Current.year)
+    shift(person, year: BEFORE_WINDOW)
+    shift(person, position: @training, year: RetentionReport.years(Current.year).first)
+    row = row_for(person)
+
+    assert_equal [IN_WINDOW, Current.year], row.worked_years
+    assert_equal 2015, row.last_year
+  end
+
+  # Five events through 2025 reach over 2020 and 2021. A shift recorded there
+  # still lists its Ranger, and is no event the year strip could show.
+  test "a shift in a year with no event is left out of the worked years" do
+    stray = create_person("StrayYear", years: [])
+    shift(stray, year: 2021)
+    regular = create_person("StrayAndReal", years: [])
+    shift(regular, year: 2020)
+    shift(regular, year: 2025)
+    rows = RetentionReport.execute(end_year: 2025).rows.index_by(&:callsign)
+
+    assert_equal [], rows.fetch(stray.callsign).worked_years
+    assert_equal [2025], rows.fetch(regular.callsign).worked_years
+  end
+
+  test "an Alpha shift in the newest event marks a Shiny Penny" do
+    penny = rangering_person("Penny")
+    shift(penny, position: @alpha, year: Current.year)
+    earlier = rangering_person("OldPenny")
+    shift(earlier, position: @alpha)
+    never = rangering_person("NoAlpha")
+
+    assert row_for(penny).shiny_penny
+    assert_not row_for(earlier).shiny_penny
+    assert_not row_for(never).shiny_penny
   end
 
   # A shift can put someone in the report without earning them the year -- six
