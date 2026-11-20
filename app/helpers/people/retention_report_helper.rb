@@ -41,22 +41,6 @@ module People::RetentionReportHelper
     (year == RetentionReport::NO_YEARS) ? RetentionReport::NO_YEARS_LABEL : year
   end
 
-  # A badge per event in the window the Ranger has a shift in, oldest first, so
-  # a reader can see at a glance whether somebody comes every year or turns up
-  # now and then. An event they missed is left out.
-  #
-  # A dash only when the window reaches over 2020 and 2021 and the one shift
-  # that listed them was recorded there.
-  def retention_report_year_strip(row)
-    return value_or_dash(nil) if row.worked_years.empty?
-
-    marks = row.worked_years.map do |year|
-      ui_badge year.to_s, :success, size: "base", icon: "check", icon_type: :solid
-    end
-
-    tag.div safe_join(marks, " "), class: "flex flex-wrap items-center gap-1"
-  end
-
   # How many Rangers stopped after each of the last two events, for the count
   # boxes. Anyone earlier than that, and anyone with no credited year, is
   # counted together: the survey treats them the same.

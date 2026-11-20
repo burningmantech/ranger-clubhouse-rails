@@ -98,7 +98,7 @@ class RetentionReportTest < ActiveSupport::TestCase
   end
 
   # Five events through 2025 reach over 2020 and 2021. A shift recorded there
-  # still lists its Ranger, and is no event the year strip could show.
+  # still lists its Ranger, and is no event the year column could show.
   test "a shift in a year with no event is left out of the worked years" do
     stray = create_person("StrayYear", years: [])
     shift(stray, year: 2021)

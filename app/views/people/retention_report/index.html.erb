@@ -106,7 +106,10 @@
               <%= t.cell value_or_dash(row.first_year), right: true %>
               <%= t.cell value_or_dash(row.last_year), right: true %>
               <%= t.cell row.total_years, right: true %>
-              <%= t.cell retention_report_year_strip(row) %>
+              <%# The events in the window the Ranger has a shift in, as plain
+                  text. A dash only when the window reaches over 2020 and 2021
+                  and the one shift that listed them was recorded there. %>
+              <%= t.cell value_or_dash(row.worked_years.join(", ")) %>
             <% end %>
           <% end %>
         <% end %>

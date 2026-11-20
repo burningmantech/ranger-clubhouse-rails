@@ -6,8 +6,8 @@
 # Someone counts as having rangered an event if they hold a timesheet entry in
 # it that is not Training or Deep Freeze, and is not an echelon shift. An Alpha
 # shift counts: whoever passed is on the roster, and is asked like anyone else.
-# That check decides who is listed, and the same entries fill the year strip
-# (worked_years), so the strip shows the events that put them in the report.
+# That check decides who is listed, and the same entries fill the year column
+# (worked_years), so the column shows the events that put them in the report.
 #
 # First Year, Last Year and Total Years come from person.years_as_ranger, which
 # YearsManagement (app/lib/years_management.rb) keeps up to date, so they and a
@@ -15,7 +15,7 @@
 #
 # The two rules are close but not identical. years_as_ranger counts Deep Freeze,
 # needs six hours in a year from 2025 on, and credits an Alpha year only from
-# 2025 and only to someone who passed mentoring -- so the strip can show a year
+# 2025 and only to someone who passed mentoring -- so the column can show a year
 # the three columns do not count, and someone listed for an Alpha shift alone
 # can have no credited year at all.
 class RetentionReport
