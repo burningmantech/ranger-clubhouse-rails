@@ -1,0 +1,9 @@
+<% content_for :title, "Volunteer Voucher" %>
+
+<%= render "masthead" %>
+
+<main class="mx-auto w-full max-w-lg px-4 pt-4">
+  <%= ui_callout_box :warning, title: "Too Many Checks", heading_level: :h2 do %>
+    Too many vouchers were opened from this network in the last minute. Wait a minute, then reload this page.
+  <% end %>
+</main>

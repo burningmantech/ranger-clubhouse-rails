@@ -298,6 +298,10 @@ class Person < ApplicationRecord
   scope :by_status, ->(statuses) { where(status: Array(statuses)) }
   scope :basic_info, -> { select("id", "callsign", "status") }
 
+  # The person's public name on the voucher page (Voucher). Rows older than
+  # the column were given one by its migration.
+  attribute :uuid, default: -> { SecureRandom.uuid_v7 }
+
   # Attributes that should be serialized as coder: JSON
   serialize :years_as_contributor, coder: JSON
   serialize :years_as_ranger, coder: JSON
@@ -313,6 +317,18 @@ class Person < ApplicationRecord
   # [] here retires the ad-hoc is_a?(Array) guards.
   def years_as_ranger
     super || []
+  end
+
+  # The uuid, given now when the row has none: one inserted by code older than
+  # the column, which the migration ran too early to reach. The first writer
+  # wins, so two readers at once are never handed different links.
+  def ensure_uuid!
+    return uuid if uuid.present?
+
+    self.class.where(id:, uuid: nil).update_all(uuid: SecureRandom.uuid_v7)
+    self.uuid = self.class.where(id:).pick(:uuid)
+    clear_attribute_change(:uuid)
+    uuid
   end
 
   # Virtual attributes

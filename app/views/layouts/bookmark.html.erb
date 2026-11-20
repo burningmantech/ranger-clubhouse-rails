@@ -1,5 +1,8 @@
-<%# Layout for the kiosk bookmark pages. No navbar, sidebar, modal frame, or
-    toasts -- no one is signed in here, so there is nothing behind them.
+<%# Layout for the pages read with no one signed in and no app shell: the kiosk
+    bookmark pages (BookmarksController) and the public voucher page
+    (VouchersController). No navbar, sidebar, modal frame, or toasts -- there
+    is nothing behind them. A change here lands on both, so anything only the
+    kiosk needs belongs in its own view, not in this file.
 
     Unlike the wall display, the theme is not fixed: these machines stand in
     daylight and in dim rooms both, so the page follows whatever the machine is
