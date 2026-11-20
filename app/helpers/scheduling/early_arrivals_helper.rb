@@ -115,15 +115,17 @@ module Scheduling::EarlyArrivalsHelper
     early_arrival_bmid_label(status)
   end
 
-  # The radios somebody is holding, under how many they may draw. Colour never
-  # carries the answer on its own: each line says event or shift in words.
+  # The radios somebody is holding, under how many they may draw: event radios
+  # first, then one line for each radio group they hold a provision for. Colour
+  # never carries the answer on its own: each issued line says event, shift, or
+  # the group the radio came from in words.
   #
   # "None issued" is printed whatever the allowance, so a reader scanning the
   # column always sees an answer. A cell holding only a number reads like a row
   # that failed to finish drawing.
   def early_arrival_radios_cell(row)
-    allowed = row.live ? "#{row.radios_allowed} allowed" : "Allowance not recorded"
-    lines = [tag.div(allowed, class: "font-medium")]
+    allowed = row.live ? early_arrival_radio_allowances(row) : ["Allowance not recorded"]
+    lines = allowed.map { |line| tag.div(line, class: "font-medium") }
 
     lines += if row.radios.any?
                row.radios.map { |radio|
@@ -134,6 +136,18 @@ module Scheduling::EarlyArrivalsHelper
              end
 
     safe_join(lines)
+  end
+
+  # What somebody may draw, one line per kind: "Event: 2 allowed", then
+  # "DPW/SITE: 1 allowed" for each radio group. The page and the export both
+  # list the groups from here, so they cannot word them two ways.
+  def early_arrival_radio_allowances(row)
+    (["Event: #{row.radios_allowed}"] + early_arrival_group_radio_lines(row))
+      .map { |line| "#{line} allowed" }
+  end
+
+  def early_arrival_group_radio_lines(row)
+    row.group_radios.map { |title, count| "#{title}: #{count}" }
   end
 
   # The one summary line above the table. "of N" appears only while a filter is

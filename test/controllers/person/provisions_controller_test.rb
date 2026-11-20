@@ -66,6 +66,8 @@ class Person::ProvisionsControllerTest < ActionDispatch::IntegrationTest
     # The year the model will hold it to, not the three years an earned one keeps.
     assert_select "select[name='provision[expires_on]'] option[selected]", text: "2026"
     assert_select "select[name='provision[type]'] option[selected][value=?]", Provision::RADIO_GROUP
+    # A radio group provision is counted, so the form starts it at one radio.
+    assert_select "input[name='provision[item_count]'][value='1']"
     assert_select "select[name='provision[asset_group_id]']" do
       assert_select "optgroup[label='Active'] option", text: "Command Operations"
       assert_select "optgroup[label='Inactive'] option", text: "Old Pool"

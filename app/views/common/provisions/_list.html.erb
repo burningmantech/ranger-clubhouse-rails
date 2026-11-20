@@ -21,7 +21,8 @@
           <%= t.cell do %>
             <%= provision.type_label %>
             <% if Provision::COUNTED_TYPES.include?(provision.type) %>
-              (<%= pluralize provision.item_count, "radio" %>)
+              <%# A blank count means one radio: a row saved before its type was counted has none. %>
+              (<%= pluralize provision.item_count || 1, "radio" %>)
             <% end %>
           <% end %>
           <%= t.cell provision.is_allocated ? "Allocated" : "Earned" %>

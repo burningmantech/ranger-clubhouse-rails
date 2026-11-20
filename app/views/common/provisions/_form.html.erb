@@ -32,7 +32,7 @@
   <%= ui_section "Type-Specific Details", icon: "sliders", icon_type: :solid do %>
     <%= f.number_field :item_count, label: "Radio Count",
                        width: "w-24", min: 1,
-                       help_text: "Only applies to Event Radios and Shift Radios." %>
+                       help_text: "Only applies to Event Radios, Shift Radios, and Specialized Radios." %>
 
     <%= f.select :asset_group_id,
                  grouped_options_for_select(provision_radio_group_options, provision.asset_group_id),

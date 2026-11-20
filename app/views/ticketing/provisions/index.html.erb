@@ -63,7 +63,7 @@
             <% end %>
             <%= t.cell provision.type_label %>
             <%= t.cell provision.status %>
-            <%# Only event and shift radios carry a count; the rest dash. %>
+            <%# Only the radio types carry a count; the rest dash. %>
             <%= t.cell value_or_dash(provision.item_count&.positive? ? provision.item_count : nil), right: true %>
             <%= t.cell provision.is_allocated ? "Yes" : "No" %>
             <%= t.cell value_or_dash(provision.source_year), right: true %>

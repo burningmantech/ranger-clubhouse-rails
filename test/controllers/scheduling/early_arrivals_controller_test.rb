@@ -416,7 +416,7 @@ class Scheduling::EarlyArrivalsControllerTest < ActionDispatch::IntegrationTest
     lines = response.body.split("\n")
     assert_equal "Callsign,SAP,First Pre-Event Position,Shift Start," \
                  "Shift Description,BMID Status,On Site,Radio Agreement," \
-                 "Radio Count,Radio Barcode,Radio Type",
+                 "Radio Count,Radio Barcode,Radio Type,Specialized Radios",
                  lines.first
 
     # Both people, though the URL asked for only the any-time one.
@@ -462,6 +462,26 @@ class Scheduling::EarlyArrivalsControllerTest < ActionDispatch::IntegrationTest
     row = assigns_rows.first
     assert_nil row.on_site, "the on-playa flag is live, so an earlier year cannot answer it"
     assert_equal 0, row.radios_allowed
+  end
+
+  # Radio group provisions are live too: today's say nothing about who was
+  # granted what at an earlier event, so the radio keeps its plain label.
+  test "an earlier year reads no radio group provisions" do
+    cutoff = past_event_dates
+    begins = Time.zone.local(cutoff.year, cutoff.month, cutoff.day - 2, 8)
+    person = shift_holder("Setup", begins:, year: PAST_YEAR)
+    site = radio_group("DPW/SITE")
+    group_grant(person, site, item_count: 2)
+    asset = Asset.create!(barcode: "R-800", type: Asset::TYPE_RADIO, year: PAST_YEAR,
+                          shift_only: false, asset_group: site)
+    PersonAsset.create!(person:, asset:, checked_out: begins)
+
+    get scheduling_early_arrivals_path(year: PAST_YEAR)
+
+    row = assigns_rows.first
+    assert_empty row.group_radios
+    assert_equal ["event"], row.radios.map(&:label)
+    assert_empty report.group_radio_totals
   end
 
   test "an earlier year says why it is reading shifts alone" do
@@ -534,6 +554,122 @@ class Scheduling::EarlyArrivalsControllerTest < ActionDispatch::IntegrationTest
 
     get scheduling_early_arrivals_path(year: YEAR)
     assert_equal 1, assigns_rows.first.radios_allowed
+  end
+
+  # --- radio group provisions -------------------------------------------------
+
+  def radio_group(title) = AssetGroup.create!(type: Asset::TYPE_RADIO, title:)
+
+  # A radio group provision. The model dates it to end with the present event.
+  def group_grant(person, group, item_count: nil, status: Provision::AVAILABLE)
+    Provision.create!(person:, type: Provision::RADIO_GROUP, asset_group: group,
+                      status:, item_count:, source_year: YEAR)
+  end
+
+  test "the largest count for each radio group is the one that counts" do
+    person = pass_holder("Grouped", any_time: true)
+    site = radio_group("DPW/SITE")
+    ops = radio_group("Command Operations")
+    group_grant(person, site, item_count: 1)
+    group_grant(person, site, item_count: 3)
+    group_grant(person, ops, item_count: 2)
+
+    get scheduling_early_arrivals_path(year: YEAR)
+
+    row = assigns_rows.first
+    # Title order, and none of it counted as an event radio.
+    assert_equal [["Command Operations", 2], ["DPW/SITE", 3]], row.group_radios.to_a
+    assert_equal 0, row.radios_allowed
+    assert_select "td", text: /Event: 0 allowed\s*Command Operations: 2 allowed\s*DPW\/SITE: 3 allowed/
+  end
+
+  test "a radio group provision with no count means one radio, and one that is over is left out" do
+    person = pass_holder("Uncounted", any_time: true)
+    site = radio_group("DPW/SITE")
+    # The model fills a blank count in on save, so it is put back underneath.
+    group_grant(person, site).update_column(:item_count, nil)
+    group_grant(person, radio_group("Tech"), item_count: 2, status: Provision::CANCELLED)
+    # An earlier event's grant that Clean Provisions has not ended yet.
+    group_grant(person, radio_group("WESL"), item_count: 2)
+      .update_column(:expires_on, Date.new(YEAR - 1, 9, 15))
+
+    get scheduling_early_arrivals_path(year: YEAR)
+    assert_equal({ "DPW/SITE" => 1 }, assigns_rows.first.group_radios)
+  end
+
+  test "the radio boxes add up what each person may draw" do
+    site = radio_group("DPW/SITE")
+    ops = radio_group("Command Operations")
+    first = pass_holder("First", any_time: true)
+    second = pass_holder("Second", any_time: true)
+    [[first, 2], [second, 1]].each do |person, item_count|
+      Provision.create!(person:, type: Provision::EVENT_RADIO, status: Provision::AVAILABLE,
+                        item_count:, source_year: YEAR, expires_on: Date.new(YEAR, 12, 31))
+    end
+    group_grant(first, site, item_count: 3)
+    group_grant(second, site, item_count: 1)
+    group_grant(second, ops, item_count: 2)
+
+    # A filter narrows the table and leaves the boxes alone.
+    get scheduling_early_arrivals_path(year: YEAR, shift: "yes")
+
+    assert_equal 3, report.event_radio_total
+    assert_equal [["Command Operations", 2], ["DPW/SITE", 4]], report.group_radio_totals.to_a
+    assert_select "div", text: /\A\s*4\s*DPW\/SITE Radios\s*\z/
+    assert_select "div", text: /\A\s*3\s*Event Radios\s*\z/
+  end
+
+  test "a kept radio from a group the person is granted is named for that group" do
+    person = pass_holder("Granted", any_time: true)
+    site = radio_group("DPW/SITE")
+    ops = radio_group("Command Operations")
+    group_grant(person, site)
+    # Kept from the granted group, kept from a group with no grant behind it,
+    # and a shift radio that happens to sit in the granted group.
+    [["R-910", site, false], ["R-911", ops, false], ["R-912", site, true]].each do |barcode, group, shift_only|
+      asset = Asset.create!(barcode:, type: Asset::TYPE_RADIO, year: YEAR,
+                            shift_only:, asset_group: group)
+      PersonAsset.create!(person:, asset:, checked_out: in_window(2))
+    end
+
+    get scheduling_early_arrivals_path(year: YEAR)
+    assert_equal %w[DPW/SITE event shift], assigns_rows.first.radios.map(&:label)
+    assert_select "td", text: %r{R-910 \(DPW/SITE\)}
+
+    get scheduling_early_arrivals_path(year: YEAR, format: :csv)
+    # The group column comes last, after the columns the export already had.
+    assert_match(%r{,"R-910\nR-911\nR-912","DPW/SITE\nevent\nshift",DPW/SITE: 1$}, response.body)
+  end
+
+  # Only validation gives a radio group provision its group, and a row written
+  # around it has none. The type says what it is: it must not pass for an event
+  # radio because the join found no group.
+  test "a radio group provision naming no group is not counted as an event radio" do
+    person = pass_holder("Groupless", any_time: true)
+    Provision.create!(person:, type: Provision::EVENT_RADIO, status: Provision::AVAILABLE,
+                      item_count: 1, source_year: YEAR, expires_on: Date.new(YEAR, 12, 31))
+    group_grant(person, radio_group("DPW/SITE"), item_count: 3).update_column(:asset_group_id, nil)
+
+    get scheduling_early_arrivals_path(year: YEAR)
+
+    row = assigns_rows.first
+    assert_equal 1, row.radios_allowed
+    assert_empty row.group_radios
+  end
+
+  test "a radio group provision allowing no radios grants none" do
+    person = pass_holder("Zeroed", any_time: true)
+    site = radio_group("DPW/SITE")
+    group_grant(person, site, item_count: 0)
+    asset = Asset.create!(barcode: "R-920", type: Asset::TYPE_RADIO, year: YEAR,
+                          shift_only: false, asset_group: site)
+    PersonAsset.create!(person:, asset:, checked_out: in_window(2))
+
+    get scheduling_early_arrivals_path(year: YEAR)
+
+    row = assigns_rows.first
+    assert_equal({ "DPW/SITE" => 0 }, row.group_radios)
+    assert_equal ["event"], row.radios.map(&:label)
   end
 
   test "the export carries every radio a person holds, in barcode order" do

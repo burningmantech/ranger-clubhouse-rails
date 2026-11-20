@@ -68,6 +68,15 @@
         <%= ui_stat_box @report.on_site_count.to_s, "On Site",
                         variant: @report.on_site_count.positive? ? :success : :secondary,
                         icon: "location-dot", icon_type: :solid %>
+        <%# How many radios may be handed out: everybody's allowance added up,
+            event radios first and then one box for each radio group somebody
+            on the list holds a provision for. A group no one holds has no box. %>
+        <%= ui_stat_box @report.event_radio_total.to_s, "Event Radios",
+                        icon: "tower-broadcast", icon_type: :solid %>
+        <% @report.group_radio_totals.each do |title, count| %>
+          <%= ui_stat_box count.to_s, "#{title} Radios",
+                          icon: "tower-broadcast", icon_type: :solid %>
+        <% end %>
       <% end %>
     <% end %>
 
@@ -111,6 +120,17 @@
           are each called out in the table. The boxes above count them across
           everybody, whatever the filters are set to.
         </dd>
+
+        <% if @report.live? %>
+          <dt>What do the radio boxes count?</dt>
+          <dd>
+            The radios that may be handed out, not the ones already issued.
+            Event Radios adds up each person's event radio allowance. Each
+            specialized radio group has a box of its own, adding up what each
+            person may draw from that group. Where somebody holds more than one
+            provision of a kind, the largest count is the one used.
+          </dd>
+        <% end %>
       </dl>
     <% end %>
 
