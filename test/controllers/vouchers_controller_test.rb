@@ -24,7 +24,7 @@ class VouchersControllerTest < ActionDispatch::IntegrationTest
     assert_select "main", text: /Years as a Ranger\s+2\s+2023 - 2024/
     assert_select "th", text: positions(:ood_position).title
     assert_select "main img[alt=?]", "Photo of #{@person.callsign}"
-    assert_select "footer", text: /Burning Man Project\. This information is copyrighted/
+    assert_select "article", text: /Burning Man Project\. This information is copyrighted/
     assert_select "nav", false
     assert_select "meta[name=robots][content='noindex,nofollow']"
   end

@@ -5,6 +5,10 @@
 <%= render "masthead" %>
 
 <main class="mx-auto w-full max-w-lg px-4 pt-4">
+  <%= ui_accent_card "Information Disclaimer", variant: :warning, options: { class: "mb-3"} do %>
+    &copy; <%= Time.current.year %> Burning Man Project. This information is copyrighted.
+    It may be used only to verify the status of a person applying to an approved Burning Man Regional Event.
+  <% end %>
   <%# The answer first: whoever opened this link came to learn one thing. %>
   <%= ui_callout_box variant, title:, icon:, icon_type: :solid, heading_level: :h2, role: "status" do %>
     <%= sentence %>
@@ -78,9 +82,5 @@
       This page is issued by the Black Rock Rangers, a department of Burning Man Project.
     </p>
     <p class="mt-1">Questions? Email <%= mail_to EmailAddresses::RANGERS %>.</p>
-    <p class="mt-3">
-      &copy; <%= Time.current.year %> Burning Man Project. This information is copyrighted.
-      It may be used only to verify the status of a person applying to an approved Burning Man Regional Event.
-    </p>
   </footer>
 </main>
