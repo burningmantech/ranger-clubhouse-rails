@@ -35,6 +35,21 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     Rails.cache.clear
   end
 
+  test "the summary strip links the public voucher page, giving the person a uuid when the row has none" do
+    sign_in_as(@pii_viewer)
+    assert_nil @target.uuid, "fixtures are loaded without a uuid"
+
+    get person_path(@target)
+
+    uuid = @target.reload.uuid
+    assert_match(/\A\h{8}-\h{4}-7\h{3}-\h{4}-\h{12}\z/, uuid)
+    assert_select "#person-summary-strip a[href=?]", voucher_path(uuid)
+    assert_select "#person-summary-strip button[data-copy-to-clipboard-content-value=?]", voucher_url(uuid)
+
+    get person_path(@target)
+    assert_equal uuid, @target.reload.uuid, "a second visit keeps the link it handed out"
+  end
+
   test "shows the summary strip and collapsible sections for pii-capable viewers" do
     sign_in_as(@pii_viewer)
 

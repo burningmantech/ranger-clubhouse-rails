@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_18_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_20_000001) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -518,6 +518,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_18_000002) do
     t.string "sms_code"
     t.boolean "sms_verified", default: false, null: false
     t.datetime "on_boarded_at"
+    t.string "uuid", limit: 36
     t.index ["callsign"], name: "callsign", unique: true
     t.index ["callsign_normalized"], name: "person_callsign_normalized_index"
     t.index ["callsign_soundex"], name: "person_callsign_soundex_index"
@@ -529,6 +530,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_18_000002) do
     t.index ["status"], name: "person_status_index"
     t.index ["tshirt_secondary_swag_id"], name: "fk_rails_caca9f7594"
     t.index ["tshirt_swag_id"], name: "fk_rails_d4ce3b4b17"
+    t.index ["uuid"], name: "index_person_on_uuid", unique: true
     t.check_constraint "json_valid(`years_as_contributor`)", name: "years_as_contributor"
     t.check_constraint "json_valid(`years_as_ranger`)", name: "years_as_ranger"
     t.check_constraint "json_valid(`years_combined`)", name: "years_combined"

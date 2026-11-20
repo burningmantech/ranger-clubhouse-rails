@@ -560,6 +560,19 @@ Verify: `test/controllers/sso_controller_test.rb`, `test/lib/sso/client_test.rb`
 Trap: `Sso.client?` is always false, so the sign-in page never shows `sessions/_sso_door` and a refused callback (a locked person included, 403) renders the password form without its `@sso_error` reason; `/sso/login` still answers by URL.
 Trap: `Sso.validate!` (`config/initializers/sso.rb`) returns before checking the five `RANGER_CLUBHOUSE_SSO_*` client variables, since the mode is never client — a missing one is never caught at boot.
 
+### Voucher (public)
+Reach it: `GET /voucher/:id` (`:id` is `person.uuid`, a UUIDv7) → Person › Overview, Account group, "Voucher Link" (open or copy)
+Gate: public; route matches only a UUID-shaped id; rate limit 30/min per IP (429 with the `rate_limited` page, which says to wait); `Voucher::STATES` decides what a status shows, and a status with no entry is a 404
+Controller: `app/controllers/vouchers_controller.rb` (`show`); `PersonController#show` calls `Person#ensure_uuid!`
+Owner: `Voucher` (`app/lib/voucher.rb`), `Person#ensure_uuid!` (`app/models/person.rb`), `VouchersHelper::VOUCHER_VERDICTS` (`app/helpers/vouchers_helper.rb`)
+Touches: `person` (w: `uuid`, from the Person page), `person_photo`, `timesheet`, `position`
+Verify: `test/lib/voucher_test.rb`, `test/controllers/vouchers_controller_test.rb`, `test/controllers/person_controller_test.rb` (the link)
+Trap: the controller skips `set_current_user` and `build_menu_items` and shares the `bookmark` layout with the kiosk pages, so `Current.person` is nil even with a sign-in cookie, and a change to that layout lands on both. Sharing it, with a comment in the layout naming both pages, was chosen by Claude over a layout of its own (reversible).
+Trap: `person.uuid` is nullable: a row inserted by code older than the column has none, and no voucher page, until someone opens its Person page. `PersonController#show` then gives it one (`Person#ensure_uuid!`, a write on a GET, first writer wins) — chosen by Claude over a callback or a second backfill (reversible). `Voucher.find` refuses a blank id so it can never match such a row. The link cannot be revoked short of changing the uuid.
+Trap: hours leave out `Position::ALPHA` and positions of type `Position::TYPE_TRAINING` only, so they differ from Work History (which also drops Deep Freeze and any title containing "Training"). `position.type` is nullable: the query keeps NULL types on purpose. An entry signed out before it was signed in counts as nothing (`EventYearSpan::ENTRY_SECONDS`), where Work History subtracts it.
+Trap: the rate limit keeps its count in the cache, so it does nothing in the test environment (`null_store`): the test renders `vouchers/rate_limited` directly.
+Trap: the photo is an Active Storage signed address, which keeps working for anyone who saved it after the status changes.
+
 ### Bookmark Kiosk
 Reach it: `GET /bookmark/:tag` → Administration › Admin Menu › Documents, "Open" beside a `bookmark-` document; timer refresh `GET /bookmark/:tag/document`
 Gate: public; only documents tagged `bookmark-<tag>` (prefix added server-side, `Document::BOOKMARK_TAG_PREFIX`)

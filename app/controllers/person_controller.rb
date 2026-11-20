@@ -49,6 +49,8 @@ class PersonController < ApplicationController
     @photo = @person.avatar_photo_attachment
     @person_banners = PersonBanner.find_for_query(person_id: @person.id, active: true)
     @email_suppression = EmailSuppression.find_by(email: @person.email)
+    # The Voucher Link row needs one, and a row older than the column has none.
+    @person.ensure_uuid!
   end
 
   def toggle_onsite

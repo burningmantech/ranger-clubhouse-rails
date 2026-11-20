@@ -1,0 +1,86 @@
+<% content_for :title, "Volunteer Voucher" %>
+<% person = @voucher.person %>
+<% variant, icon, title, sentence = voucher_verdict(@voucher) %>
+
+<%= render "masthead" %>
+
+<main class="mx-auto w-full max-w-lg px-4 pt-4">
+  <%# The answer first: whoever opened this link came to learn one thing. %>
+  <%= ui_callout_box variant, title:, icon:, icon_type: :solid, heading_level: :h2, role: "status" do %>
+    <%= sentence %>
+    <% if @voucher.state == :unavailable %>
+      For help, email <%= mail_to EmailAddresses::RANGERS %>.
+    <% end %>
+  <% end %>
+
+  <% if @voucher.shows?(:photo) %>
+    <div class="flex gap-4 items-start my-4">
+      <% if (photo = person.profile_photo) %>
+        <%= photo_tag photo, class: "rounded-2xl w-40",
+                      alt: @voucher.shows?(:callsign) ? "Photo of #{person.callsign}" : "Photo of this person" %>
+      <% else %>
+        <div class="text-stone-muted">No photo on file.</div>
+      <% end %>
+      <% if @voucher.shows?(:callsign) %>
+        <%# items-baseline: from lg up the label sits beside a callsign set larger than it. %>
+        <%= ui_label_value class: "min-w-0 items-baseline" do |list| %>
+          <% list.row "Callsign" do %>
+            <span class="text-2xl font-semibold text-heading break-words"><%= person.callsign %></span>
+          <% end %>
+          <% if @voucher.shows?(:status) %>
+            <% list.row "Status" do %>
+              <%= person_status_badge person.status, size: "base" %>
+            <% end %>
+          <% end %>
+          <% if @voucher.shows?(:years) %>
+            <% list.row "Years as a Ranger" do %>
+              <%= person.years_as_ranger.size %>
+              <% if person.years_as_ranger.any? %>
+                <div class="text-stone-muted"><%= year_range person.years_as_ranger %></div>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @voucher.shows?(:positions) %>
+    <h2 class="heading-section text-heading mt-6 mb-2">Volunteer Hours by Position</h2>
+    <% if @voucher.positions.any? %>
+      <%# Two short columns read as a table on a phone, so no fold to cards. %>
+      <%= ui_table full_width: true, responsive: false do |t| %>
+        <%= t.header do %>
+          <%= t.heading "Position" %>
+          <%= t.heading "Hours", right: true %>
+        <% end %>
+        <%= t.body do %>
+          <% @voucher.positions.each do |position_title, seconds| %>
+            <%= t.row do %>
+              <%= t.row_header position_title %>
+              <%= t.cell hour_format(seconds), right: true, class: "tabular-nums" %>
+            <% end %>
+          <% end %>
+          <%= t.row do %>
+            <%= t.row_header "Total", class: "font-semibold" %>
+            <%= t.cell hour_format(@voucher.positions.values.sum), right: true, class: "font-semibold tabular-nums" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= ui_empty_state "No volunteer hours are on record.", icon: "clock", icon_type: :regular %>
+    <% end %>
+  <% end %>
+
+  <footer class="text-sm text-stone-muted border-t border-line mt-4 pt-3 pb-6">
+    <p>
+      Checked <%= datetime_format Time.current.in_time_zone(DateTimeHelper::PACIFIC), tz: DateTimeHelper::PACIFIC, year: true %> (Pacific).
+      This page is issued by the Black Rock Rangers, a department of Burning Man Project.
+    </p>
+    <p class="mt-1">Questions? Email <%= mail_to EmailAddresses::RANGERS %>.</p>
+    <p class="mt-3">
+      &copy; <%= Time.current.year %> Burning Man Project. This information is copyrighted.
+      It may be used only to verify the status of a person applying to an approved Burning Man Regional Event.
+    </p>
+  </footer>
+</main>

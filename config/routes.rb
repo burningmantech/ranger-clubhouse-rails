@@ -44,6 +44,12 @@ Rails.application.routes.draw do
   get "register", to: "register#show", as: :register
   post "register", to: "register#create"
 
+  # The public voucher page: whether one person is a Ranger, for whoever was
+  # handed the link. No sign-in. The id is person.uuid, never the row id, and
+  # anything not shaped like one is no route at all.
+  get "voucher/:id", to: "vouchers#show", as: :voucher,
+      constraints: { id: /\h{8}-\h{4}-\h{4}-\h{4}-\h{12}/ }, format: false
+
   # The kiosk bookmark pages. No sign-in, no menus, one segment below the root --
   # the link lists inside these documents point back at the Clubhouse with a
   # relative "../", which only lands on the front page from here. The second

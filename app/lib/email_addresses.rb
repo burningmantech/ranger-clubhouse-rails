@@ -4,6 +4,7 @@ module EmailAddresses
   DO_NOT_REPLY = "do-not-reply@burningman.org"
   MENTOR_CADRE = "ranger-mentorcadre-list@burningman.org"
   PERSONNEL = "ranger-personnel@burningman.org"
+  RANGERS = "rangers@burningman.org"
   TECH_CADRE = "ranger-tech-cadre@burningman.org"
   TICKETING = "ranger-ticketing-stuff@burningman.org"
   TRAINING_ACADEMY = "ranger-trainingacademy-list@burningman.org"

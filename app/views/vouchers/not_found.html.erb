@@ -1,0 +1,9 @@
+<% content_for :title, "Voucher Not Found" %>
+
+<%= render "masthead" %>
+
+<main class="mx-auto w-full max-w-lg px-4 pt-4">
+  <%= ui_empty_state nil, icon: "circle-question", icon_type: :regular do %>
+    That voucher was not found. Check the address, or email <%= mail_to EmailAddresses::RANGERS %> for help.
+  <% end %>
+</main>

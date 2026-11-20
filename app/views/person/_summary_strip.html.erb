@@ -124,6 +124,15 @@
           <% list.row "Created" do %>
             <%= render "person/timestamp_value", at: person.created_at, none: "Before 2010" %>
           <% end %>
+
+          <%# The public page a Regional Event checks this person on (Voucher).
+              PersonController#show gives the person a uuid when the row has none. %>
+          <% list.row "Voucher Link" do %>
+            <%= clipboard_button voucher_url(person.uuid), label: "Copy voucher link" do %>
+              <%= link_to "Open voucher page", voucher_path(person.uuid), class: "tap-target-link",
+                          target: "_blank", rel: "noopener" %>
+            <% end %>
+          <% end %>
         <% end %>
       </div>
     </div>
