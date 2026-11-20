@@ -24,9 +24,11 @@ class EarlyArrivalReport
   WINDOW_DAYS = 5
 
   # One radio somebody is holding. An event radio is theirs for the whole event;
-  # anything else was handed out for a single shift.
-  Radio = Struct.new(:barcode, :event_radio) do
-    def label = event_radio ? "event" : "shift"
+  # anything else was handed out for a single shift. `group_title` is set when
+  # the radio is kept under a radio group provision: it names the group, and
+  # the radio does not count against the person's event radios.
+  Radio = Struct.new(:barcode, :event_radio, :group_title) do
+    def label = group_title || (event_radio ? "event" : "shift")
   end
 
   # The first shift somebody stands inside the window.
@@ -41,8 +43,10 @@ class EarlyArrivalReport
   # is false, and the fields that keep no history -- the pass, the radio
   # allowance, whether the person is on playa -- are left empty rather than
   # answered with today's values.
+  # `radios_allowed` counts event radios alone. `group_radios` is the radio
+  # group provisions beside them: group title => how many, in title order.
   Row = Struct.new(:person, :sap_date, :bmid_status, :first_shift,
-                   :radio_agreement, :radios_allowed, :radios, :live) do
+                   :radio_agreement, :radios_allowed, :group_radios, :radios, :live) do
     def person_id = person.id
     def callsign = person.callsign
 
@@ -62,9 +66,9 @@ class EarlyArrivalReport
     def shift_date = first_shift&.begins&.to_date
   end
 
-  # The whole report. Every figure the page prints is counted here in one walk
-  # of the list, so the boxes above the table and the table itself cannot
-  # disagree about what was found.
+  # The whole report. Every figure the page prints is counted here, from the
+  # same rows the table draws, so the boxes above the table and the table
+  # itself cannot disagree about what was found.
   Result = Struct.new(:status, :rows, :pre_event_start, :pre_event_end, :live) do
     def no_event_dates? = status == :no_event_dates
     def none? = rows.empty?
@@ -79,6 +83,16 @@ class EarlyArrivalReport
     def no_shift_count = counts[:no_shift]
     def unsigned_count = counts[:unsigned]
     def on_site_count = counts[:on_site]
+
+    # How many radios may be handed out across the whole list: each person's
+    # allowance added up, event radios first and then one figure per group.
+    def event_radio_total = counts[:event_radios]
+
+    def group_radio_totals
+      @group_radio_totals ||= rows.each_with_object(Hash.new(0)) { |row, totals|
+        row.group_radios.each { |title, count| totals[title] += count }
+      }.sort_by { |title, _count| title.downcase }.to_h
+    end
 
     # The days people actually arrive on, for the arrival filter. Only days
     # somebody is listed under are offered: a choice that can only come back
@@ -104,6 +118,7 @@ class EarlyArrivalReport
         tally[:no_shift] += 1 unless row.shift?
         tally[:unsigned] += 1 unless row.radio_agreement
         tally[:on_site] += 1 if row.on_site
+        tally[:event_radios] += row.radios_allowed
       }
     end
   end
@@ -165,7 +180,7 @@ class EarlyArrivalReport
                      .select(:id, :callsign, :on_site, :status).index_by(&:id)
       bmids = Bmid.where(year:, person_id: person_ids).pluck(:person_id, :status).to_h
       allowed = live ? radios_allowed(person_ids) : {}
-      issued = radios_issued(year:, person_ids:)
+      issued = radios_issued(year:, person_ids:, allowed:)
       signed = PersonEvent.where(year:, person_id: person_ids, asset_authorized: true)
                           .pluck(:person_id).to_set
 
@@ -173,9 +188,12 @@ class EarlyArrivalReport
         person = people[person_id]
         next unless person
 
+        grants = allowed[person_id] || {}
+
         Row.new(person, sap_date_for(saps[person_id]), bmids[person_id],
                 shifts[person_id], signed.include?(person_id),
-                allowed[person_id].to_i, issued[person_id] || [], live)
+                grants[nil].to_i, group_radios(grants),
+                issued[person_id] || [], live)
       }.sort_by { |row|
         # person_id breaks ties so two people sharing a callsign keep a stable
         # order -- sort_by is not stable on its own, and the page and its export
@@ -193,31 +211,62 @@ class EarlyArrivalReport
       sap.access_date&.to_date
     end
 
-    # How many radios each person may draw. Somebody can hold more than one
-    # entitlement, so the largest is the number that counts.
+    # How many radios each person may draw, as person => { asset group => count }.
+    # The nil group is their event radios; every other key is a radio group they
+    # hold a provision for. Somebody can hold more than one entitlement of a
+    # kind, so the largest of each is the number that counts.
     #
     # An entitlement with no count on it means one radio, which is what the HQ
     # window hands over. Left as it is stored, the largest of a set of blanks is
     # nothing at all, and the packet would be assembled for a person the window
     # is about to give a radio to.
+    #
+    # A radio group provision ends with its event, so one from an earlier event
+    # that Clean Provisions has not ended yet is left out, as
+    # Provision.radio_grants leaves it out.
+    #
+    # Keyed by the group's title, which is what the page prints and is unique
+    # among radio groups. The type decides which kind a row is, never whether
+    # the join found a group: a radio group row that names no group grants
+    # nothing, and must not be read as an event radio.
     def radios_allowed(person_ids)
-      Provision.where(person_id: person_ids, type: Provision::EVENT_RADIO,
-                      status: Provision::CAN_USE_STATUSES)
-               .group(:person_id)
-               .maximum(Arel.sql("COALESCE(item_count, 1)"))
+      grants = Provision.can_use.left_joins(:asset_group).where(person_id: person_ids)
+
+      grants.where(type: Provision::EVENT_RADIO)
+            .or(grants.unexpired.where(type: Provision::RADIO_GROUP))
+            .group(:person_id, :type, "asset_group.title")
+            .maximum(Arel.sql("COALESCE(item_count, 1)"))
+            .each_with_object({}) { |((person_id, type, title), count), allowed|
+              group = (title if type == Provision::RADIO_GROUP)
+              next if type == Provision::RADIO_GROUP && group.nil?
+
+              held = (allowed[person_id] ||= {})
+              held[group] = [held[group].to_i, count].max
+            }
+    end
+
+    # One person's radio group allowances by group title, in title order.
+    def group_radios(grants)
+      grants.except(nil).sort_by { |title, _count| title.downcase }.to_h
     end
 
     # The radios each person is actually holding, still out and drawn in the
     # report's own year. Barcode order so a packet lists them the same way twice.
-    def radios_issued(year:, person_ids:)
-      PersonAsset.joins(:asset)
+    #
+    # A radio kept from a group the person holds a provision for is named for
+    # that group, the rule RadioAccounting applies at the HQ window. A shift
+    # radio is a shift radio whatever group it sits in, and a provision that
+    # allows no radios grants none.
+    def radios_issued(year:, person_ids:, allowed:)
+      PersonAsset.joins(:asset).left_joins(asset: :asset_group)
                  .where(person_id: person_ids, checked_in: nil)
                  .where(asset: { type: Asset::TYPE_RADIO })
                  .where_year("checked_out", year)
                  .order("asset.barcode")
-                 .pluck(:person_id, "asset.barcode", "asset.shift_only")
-                 .each_with_object({}) { |(person_id, barcode, shift_only), held|
-                   (held[person_id] ||= []) << Radio.new(barcode, !shift_only)
+                 .pluck(:person_id, "asset.barcode", "asset.shift_only", "asset_group.title")
+                 .each_with_object({}) { |(person_id, barcode, shift_only, group), held|
+                   granted = !shift_only && group && allowed.dig(person_id, group).to_i.positive?
+                   (held[person_id] ||= []) << Radio.new(barcode, !shift_only, (group if granted))
                  }
     end
   end

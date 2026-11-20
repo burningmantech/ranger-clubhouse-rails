@@ -50,7 +50,11 @@ class PasskeysSystemTest < ApplicationSystemTestCase
     assert_selector "dialog[open]", text: "Delete Test Laptop?"
     accept_confirm_dialog
 
-    assert_text "Test Laptop can no longer sign you in."
+    # The page it lands on is the page it left, so Turbo morphs it, with the
+    # "can now sign you in" toast still on screen. Asked for by its "show"
+    # class: a toast morphed into the old one arrives without it and fades out
+    # at once, which a quick read of the text can catch mid-fade and pass.
+    assert_selector ".toast-base.show", text: "Test Laptop can no longer sign you in."
     assert_text "No passkeys yet."
     assert_equal 0, @person.passkeys.count
   end

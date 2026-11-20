@@ -77,8 +77,9 @@ class Provision < ApplicationRecord
   # play, which is why they are a type list and not is_allocated.
   EVENT_ONLY_TYPES = [RADIO_SHIFT, RADIO_GROUP].freeze
 
-  # The types item_count counts radios for.
-  COUNTED_TYPES = [EVENT_RADIO, RADIO_SHIFT].freeze
+  # The types item_count counts radios for. A radio group's count is how many
+  # radios of that group the person may be handed.
+  COUNTED_TYPES = [EVENT_RADIO, RADIO_SHIFT, RADIO_GROUP].freeze
 
   ACTIVE_STATUSES = [AVAILABLE, CLAIMED, BANKED].freeze
   CURRENT_STATUSES = [AVAILABLE, CLAIMED, BANKED, SUBMITTED].freeze
@@ -141,9 +142,9 @@ class Provision < ApplicationRecord
   # The shift radio and radio group grants in force. retrieve_usable_for_person_ids
   # leaves them out, so this is the only way they reach build_package. A grant
   # of a past event that Clean Provisions has not ended yet is not in force.
-  scope :radio_grants, lambda {
-    can_use.where(type: EVENT_ONLY_TYPES, expires_on: Date.new(Current.year)..).includes(:asset_group)
-  }
+  scope :radio_grants, -> { can_use.unexpired.where(type: EVENT_ONLY_TYPES).includes(:asset_group) }
+  # Not yet past its expiry year: the opposite of past_expire_date?.
+  scope :unexpired, -> { where(expires_on: Date.new(Current.year)..) }
 
   class << self
     # Find records matching given criteria.

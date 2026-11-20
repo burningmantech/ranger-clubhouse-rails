@@ -68,6 +68,7 @@ class ProvisionTest < ActiveSupport::TestCase
     granted = build(type: Provision::RADIO_GROUP, asset_group: @radios)
     assert granted.save
     assert_equal "Specialized Radio: Command Operations", granted.type_label
+    assert_equal 1, granted.item_count, "a radio group provision is counted, and a blank count is one radio"
   end
 
   test "an inactive radio group can still be granted from" do

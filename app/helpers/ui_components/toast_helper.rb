@@ -38,6 +38,12 @@ module UiComponents
       locals = {
         toast_message:,
         attrs: {
+          # An id of its own, so a page refresh never morphs a toast still on
+          # screen into the next one: the morph does not reuse an element
+          # whose id differs. A reused toast keeps its controller, which is
+          # not connected a second time, so the new message would lose "show"
+          # and fade out as it arrived, on what was left of the old timer.
+          id: "toast-#{SecureRandom.hex(4)}",
           class: "#{TOAST_BASE} #{color_class}",
           role: type_info[:role],
           "data-controller": "toast",

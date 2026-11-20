@@ -63,6 +63,19 @@ class Person::TicketsProvisionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "#provisions p", text: /Additional Shift Radios:\s+2\s+·\s+Specialized Radios:\s+Command Operations/
   end
 
+  # A radio group provision saved before the type carried a count has none.
+  test "the provisions list reads a radio group provision with no count as one radio" do
+    group = AssetGroup.create!(type: Asset::TYPE_RADIO, title: "Command Operations")
+    Provision.create!(person: @target, type: Provision::RADIO_GROUP, asset_group: group,
+                      status: Provision::AVAILABLE, source_year: 2026)
+             .update_column(:item_count, nil)
+    sign_in_as(@ticketing_admin)
+
+    get person_tickets_provisions_path(@target)
+
+    assert_select "td", text: /Specialized Radio: Command Operations\s+\(1 radio\)/
+  end
+
   test "person-page user without the ticketing role is denied" do
     sign_in_as(@viewer)
 
