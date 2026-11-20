@@ -30,8 +30,15 @@
     <dl class="instruction-list">
       <dt>Who is listed?</dt>
       <dd>
-        A Ranger is listed once they have rangered any of the last five events. Alpha,
-        Training, and Deep Freeze shifts do not count, and neither do echelon shifts.
+        A Ranger is listed once they have rangered any of the last five events. Training
+        and Deep Freeze shifts do not count, and neither do echelon shifts.
+      </dd>
+      <dt>Who is a Shiny Penny?</dt>
+      <dd>A Ranger with an Alpha shift in <%= @report.end_year %>.</dd>
+      <dt>Which years does the last column show?</dt>
+      <dd>
+        The events the Ranger has a shift in. First Year, Last Year, and Total Years count
+        the years the Clubhouse credits, so they can leave out a year shown there.
       </dd>
       <%= render "common/skipped_years_pair" if @report.skips_years? %>
       <dt>What is the report for?</dt>
@@ -90,13 +97,19 @@
                   link needs the path built for it. Both roles that may read
                   this page may open a person page, so the callsign always
                   links. %>
-              <%= t.row_header callsign_link(row, person_path(row.id)) %>
+              <%= t.row_header do %>
+                <%= callsign_link(row, person_path(row.id)) %>
+                <%= ui_badge "Shiny Penny", :primary, size: "sm", class: "ms-1" if row.shiny_penny %>
+              <% end %>
               <%= t.cell row.status %>
               <%= t.cell row.name %>
               <%= t.cell value_or_dash(row.first_year), right: true %>
               <%= t.cell value_or_dash(row.last_year), right: true %>
               <%= t.cell row.total_years, right: true %>
-              <%= t.cell retention_report_year_strip(row, @report.years) %>
+              <%# The events in the window the Ranger has a shift in, as plain
+                  text. A dash only when the window reaches over 2020 and 2021
+                  and the one shift that listed them was recorded there. %>
+              <%= t.cell value_or_dash(row.worked_years.join(", ")) %>
             <% end %>
           <% end %>
         <% end %>

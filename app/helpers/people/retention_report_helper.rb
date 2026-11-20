@@ -41,25 +41,6 @@ module People::RetentionReportHelper
     (year == RetentionReport::NO_YEARS) ? RetentionReport::NO_YEARS_LABEL : year
   end
 
-  # The badge per event year, so a reader can see at a glance whether somebody
-  # comes every year or turns up now and then. Green for a year they rangered,
-  # grey for one they did not.
-  # A year they rangered is a ticked badge; one they did not is plain muted
-  # text. Shape, not just colour, so the strip reads the same to someone who
-  # cannot tell green from grey -- and the plain years keep the column narrow
-  # enough to stay on one line.
-  def retention_report_year_strip(row, years)
-    marks = years.map do |year|
-      if row.rangered?(year)
-        ui_badge year.to_s, :success, size: "base", icon: "check", icon_type: :solid
-      else
-        tag.span year, class: "px-1 text-stone-muted"
-      end
-    end
-
-    tag.div safe_join(marks, " "), class: "flex flex-wrap items-center gap-1"
-  end
-
   # How many Rangers stopped after each of the last two events, for the count
   # boxes. Anyone earlier than that, and anyone with no credited year, is
   # counted together: the survey treats them the same.

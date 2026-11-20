@@ -4,18 +4,20 @@
 # Retention Team can send the post-event survey and see who has been away.
 #
 # Someone counts as having rangered an event if they hold a timesheet entry in
-# it that is not Alpha, Training, or Deep Freeze, and is not an echelon shift.
-# That check decides who is listed; the year columns then come from
-# person.years_as_ranger, which YearsManagement (app/lib/years_management.rb)
-# keeps up to date, so this page and a person's profile cannot disagree.
+# it that is not Training or Deep Freeze, and is not an echelon shift. An Alpha
+# shift counts: whoever passed is on the roster, and is asked like anyone else.
+# That check decides who is listed, and the same entries fill the year column
+# (worked_years), so the column shows the events that put them in the report.
+#
+# First Year, Last Year and Total Years come from person.years_as_ranger, which
+# YearsManagement (app/lib/years_management.rb) keeps up to date, so they and a
+# person's profile cannot disagree.
 #
 # The two rules are close but not identical. years_as_ranger counts Deep Freeze,
-# needs six hours in a year from 2025 on, and from 2025 credits an Alpha year to
-# someone who passed mentoring -- so a Ranger can be listed with a shorter year
-# list than the check that listed them, and a first-year Ranger whose only shift
-# was the Alpha they passed is credited that year here but is not listed at all.
-# The columns say which years the Clubhouse credits, which is the question the
-# Retention Team asks; who is listed follows the upstream report.
+# needs six hours in a year from 2025 on, and credits an Alpha year only from
+# 2025 and only to someone who passed mentoring -- so the column can show a year
+# the three columns do not count, and someone listed for an Alpha shift alone
+# can have no credited year at all.
 class RetentionReport
   # How many events the report looks back over, counting the current one.
   EVENT_SPAN = 5
@@ -33,12 +35,16 @@ class RetentionReport
               Person::INACTIVE_EXTENSION, Person::RETIRED].freeze
 
   # Shifts that do not count as having rangered an event.
-  EXCLUDED_POSITIONS = [Position::ALPHA, Position::TRAINING,
-                        Position::DEEP_FREEZE].freeze
+  EXCLUDED_POSITIONS = [Position::TRAINING, Position::DEEP_FREEZE].freeze
 
   # One person. Plain values rather than Person records: the report runs to
   # well over a thousand rows and nothing on the page needs an association.
-  Row = Data.define(:id, :callsign, :first_name, :last_name, :status, :email, :years) do
+  #
+  # years are the years the Clubhouse credits, from any time; worked_years are
+  # the events in the window with a shift that counts. shiny_penny is true for
+  # someone with an Alpha shift in the window's last event.
+  Row = Data.define(:id, :callsign, :first_name, :last_name, :status, :email, :years,
+                    :worked_years, :shiny_penny) do
     def name = "#{first_name} #{last_name}".strip
 
     def first_year = years.min
@@ -46,8 +52,6 @@ class RetentionReport
     def last_year = years.max
 
     def total_years = years.size
-
-    def rangered?(year) = years.include?(year)
 
     # The last credited year as a filter value. A Ranger with no credited year
     # is still in the report, so the filter has to be able to name them.
@@ -80,14 +84,20 @@ class RetentionReport
   # @return [Report] rows ordered by callsign
   def self.execute(end_year: Current.year)
     span = years(end_year)
+    worked = worked_years(span)
+    pennies = Timesheet.where(position_id: Position::ALPHA)
+                       .where_year("timesheet.on_duty", span.last)
+                       .distinct.pluck(:person_id).to_set
 
     rows = Person.where(status: STATUSES)
-                 .where(id: rangered_in(span))
+                 .where(id: worked.keys)
                  .order(:callsign)
                  .pluck(:id, :callsign, :first_name, :preferred_name, :last_name,
                         :status, :email, :years_as_ranger)
                  .map { |id, callsign, first, preferred, last, status, email, years|
                    Row.new(id:, callsign:, status:, email:,
+                           worked_years: worked.fetch(id),
+                           shiny_penny: pennies.include?(id),
                            first_name: preferred.presence || first.to_s,
                            last_name: last.to_s,
                            # The column is JSON text on a table the Laravel app
@@ -102,21 +112,28 @@ class RetentionReport
     Report.new(years: span, rows:)
   end
 
-  # Everyone holding a shift that counts as rangering one of the events in the
-  # window. One pass over the window rather than a lookup per person, matching
-  # how the other person-by-timesheet reports ask.
+  # The events in the window each person has a shift that counts in, oldest
+  # first, as {person_id => [year, ...]}. Its keys are everyone with such a
+  # shift, whom the report then narrows by status. One pass over the window
+  # rather than a lookup per person, matching how the other person-by-timesheet
+  # reports ask.
   #
   # The window is closed at both ends: a shift after it belongs to an event this
   # report is not about, and on a clock set to a past year there are such rows.
+  # A window crossing 2020 and 2021 takes them into its range; a shift recorded
+  # there still lists its Ranger, as it always has, but belongs to no event and
+  # is left out of their years.
   #
   # @param span [Array<Integer>] the event years, oldest first
-  # @return [ActiveRecord::Relation]
-  def self.rangered_in(span)
+  # @return [Hash{Integer => Array<Integer>}]
+  def self.worked_years(span)
     Timesheet.where.not(position_id: EXCLUDED_POSITIONS)
              .where(is_echelon: false)
              .where_years("timesheet.on_duty", span.first, span.last)
-             .select(:person_id)
+             .distinct.pluck(:person_id, EventYearSpan::ENTRY_YEAR)
+             .group_by(&:first)
+             .transform_values { |pairs| span & pairs.map(&:last) }
   end
 
-  private_class_method :rangered_in
+  private_class_method :worked_years
 end

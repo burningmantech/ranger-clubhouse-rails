@@ -74,6 +74,7 @@ class People::RetentionReportControllerTest < ActionDispatch::IntegrationTest
 
     assert_report_card
     assert_match(/any of the last five events/, card_answer("Who is listed?"))
+    assert_match(/Alpha shift in #{@years.last}/, card_answer("Who is a Shiny Penny?"))
 
     Timesheet.destroy_all
     get people_retention_report_path
@@ -160,6 +161,46 @@ class People::RetentionReportControllerTest < ActionDispatch::IntegrationTest
                   @years.first.to_s, @years.last.to_s, @years.size.to_s], row.split(",")
   end
 
+  test "a Shiny Penny is marked on the page and in the CSV" do
+    alpha = Position.find_or_initialize_by(id: Position::ALPHA)
+    alpha.update!(title: "Alpha")
+    penny = rangering_person("Penny", years: [@years.last])
+    shift(penny, position: alpha)
+
+    get people_retention_report_path
+
+    marked = css_select("#retention-report-roster tbody tr")
+               .select { |tr| tr.css("th").text.include?("Shiny Penny") }
+    assert_equal [penny.callsign], marked.map { |tr| tr.css("th a").text.strip }
+
+    get people_retention_report_path(format: :csv)
+
+    lines = response.body.split("\n").drop(1).map { |line| line.split(",", -1) }
+    assert_equal [penny.callsign], lines.select { |line| line.last == "Yes" }.map(&:first)
+    assert_equal [""], (lines.map(&:last) - ["Yes"]).uniq, "everyone else's cell is blank"
+  end
+
+  # The strip reads the shifts: one in the newest event for everybody here. The
+  # credited years, which fill the three columns before it, go their own way.
+  test "the year column lists only the events with a shift" do
+    get people_retention_report_path
+
+    assert_equal [@years.first(2).last.to_s, "2", @years.last.to_s], roster_cells(@lapsed)[3..]
+  end
+
+  # On a clock set to 2025 the five events reach over 2020 and 2021, and a
+  # shift recorded there is the only thing that lists this Ranger.
+  test "a Ranger with no event to show has a dash for the years" do
+    travel_to Time.zone.local(2025, 10, 1, 12, 0, 0) do
+      stray = create_person("Stray", years: [])
+      shift(stray, year: 2021)
+
+      get people_retention_report_path
+
+      assert_equal "—", roster_cells(stray).last
+    end
+  end
+
   test "the CSV export honours the filters" do
     get people_retention_report_path(format: :csv, status: Person::RETIRED)
 
@@ -200,16 +241,19 @@ class People::RetentionReportControllerTest < ActionDispatch::IntegrationTest
   private
 
   def roster_callsigns
-    css_select("#retention-report-roster th[scope=row]").map { |cell| cell.text.strip }
+    css_select("#retention-report-roster th[scope=row] a").map { |link| link.text.strip }
   end
 
   # The First Year and Last Year cells of one person's row.
-  def year_cells(person)
+  def year_cells(person) = roster_cells(person)[2..3]
+
+  # The text of each cell after the callsign in one person's row.
+  def roster_cells(person)
     row = css_select("#retention-report-roster tbody tr")
-            .find { |tr| tr.css("th").text.strip == person.callsign }
+            .find { |tr| tr.css("th a").text.strip == person.callsign }
     assert_not_nil row, "#{person.callsign} is not on the page"
 
-    row.css("td").map { |cell| cell.text.strip }[2..3]
+    row.css("td").map { |cell| cell.text.strip }
   end
 
   def stats_text
@@ -218,10 +262,14 @@ class People::RetentionReportControllerTest < ActionDispatch::IntegrationTest
 
   def rangering_person(callsign, status: Person::ACTIVE, years: [])
     person = create_person(callsign, status:, years:)
-    Timesheet.create!(person:, position: @ood, is_echelon: false,
-                      on_duty: Time.local(@years.last, 8, 28, 10, 0, 0),
-                      off_duty: Time.local(@years.last, 8, 28, 18, 0, 0),
-                      additional_notes: "test shift")
+    shift(person)
     person
+  end
+
+  def shift(person, position: @ood, year: @years.last)
+    Timesheet.create!(person:, position:, is_echelon: false,
+                      on_duty: Time.local(year, 8, 28, 10, 0, 0),
+                      off_duty: Time.local(year, 8, 28, 18, 0, 0),
+                      additional_notes: "test shift")
   end
 end
