@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_20_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_20_000003) do
   create_table "access_document", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.column "type", "enum('gift_ticket','lsd_ticket','special_price_ticket','staff_credential','vehicle_pass_sp','vehicle_pass_gift','vehicle_pass_lsd','work_access_pass','work_access_pass_so')", null: false
@@ -1624,6 +1624,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_000002) do
     t.index ["person_id", "slot_id"], name: "person_id_and_slot_id", unique: true
     t.index ["slot_id"], name: "index_trainer_status_on_slot_id"
     t.index ["trainer_slot_id"], name: "fk_rails_0e396e1fac"
+  end
+
+  create_table "trs_format", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.string "slug", null: false
+    t.text "columns", size: :long, null: false, collation: "utf8mb4_bin"
+    t.index ["slug"], name: "index_trs_format_on_slug", unique: true
+    t.check_constraint "json_valid(`columns`)", name: "columns"
   end
 
   create_table "vehicle", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|

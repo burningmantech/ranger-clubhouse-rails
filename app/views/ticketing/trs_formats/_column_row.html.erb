@@ -1,0 +1,51 @@
+<%# locals: (t:, index:, total:, header: nil, source: nil, invalid: false, describedby: nil) %>
+<%# One row of the columns grid: the column's header, the button that names its
+    source and opens the picker (source-picker), and the buttons that move it,
+    insert a blank column under it and delete it, all in the page (form-rows).
+    index: is the row's place from 0; nil draws the blank row the grid's
+    <template> holds, which the controller numbers when it inserts it.
+
+    Each control says where it stands and carries the pattern the controller
+    rewrites that from (Ticketing::TrsFormatsHelper). The names repeat, so the
+    fields are raw tags with ids of their own (an id derived from the name would
+    collide under Turbo morph) and the builder's classes.
+
+    The four buttons are one toolbar: Tab stops on the first one that shows and
+    the arrow keys reach the rest, so tabbing down the grid passes each row in
+    three stops, not six. Both arrows are always drawn, and the one an end row
+    cannot use is hidden. %>
+<% first = index == 0 %>
+<% last = index == total - 1 %>
+<% input_class = invalid ? AppFormBuilder::INPUT_ERROR_CLASSES : AppFormBuilder::INPUT_CLASSES %>
+
+<%= t.row data: { form_rows_target: "row" } do %>
+  <%= t.row_header (index + 1 if index), data: { form_rows_number: true } %>
+  <%= t.cell do %>
+    <%# size: Rails copies maxlength into size, and a 255-character input would set the table's width.
+        max-lg:w-full: below lg the row folds into a card, and an input sized for 48 characters is
+        wider than a phone. A percentage width lets it shrink; the variant outranks w-auto. %>
+    <%= text_field_tag "trs_format[row_headers][]", header,
+                       maxlength: TrsFormat::HEADER_LIMIT, size: 48,
+                       class: [input_class, "font-mono max-lg:w-full"],
+                       **trs_column_naming(index, label: "CSV header of column {n}", id: "trs-column-{i}-header")
+                         .deep_merge(aria: { describedby:, invalid: ("true" if invalid) }) %>
+  <% end %>
+  <%# max-lg:grow: a folded row's cell is a flex item as wide as what it holds, and the button's
+      width is a share of it. Grown to the line, the button is the same width on every row. %>
+  <%= t.cell class: "max-lg:grow" do %>
+    <%= trs_column_source index, source %>
+  <% end %>
+  <%= t.cell class: "whitespace-nowrap" do %>
+    <%= tag.div class: "flex-center-gap-2", role: "toolbar",
+                **trs_column_naming(index, label: "Column {n} actions")
+                  .deep_merge(data: { action: "keydown->form-rows#step" }) do %>
+      <%= trs_column_button "up", index, icon: "arrow-up", title: "Move up", label: "Move column {n} up",
+                                         hidden: first, tab_stop: !first %>
+      <%= trs_column_button "down", index, icon: "arrow-down", title: "Move down", label: "Move column {n} down",
+                                           hidden: last, tab_stop: first && !last %>
+      <%= trs_column_button "insert", index, icon: "plus", title: "Insert a column below",
+                                             label: "Insert a column below column {n}", tab_stop: first && last %>
+      <%= trs_column_button "remove", index, icon: "trash", title: "Delete column", label: "Delete column {n}" %>
+    <% end %>
+  <% end %>
+<% end %>

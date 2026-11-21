@@ -20,12 +20,19 @@
   <% if @bad_documents.any? %>
     <%= ui_stat_box @bad_documents.size, "Problems", variant: :warning %>
   <% end %>
+  <%# This filter's own count. Problems above is page-wide and by document; a row
+      with no column in the filter's format is a problem on this filter alone. %>
+  <% passed_over = @filter.exportable? ? @rows.count { |row| !row.selectable? } : 0 %>
+  <% if passed_over.positive? %>
+    <%= ui_stat_box number_with_delimiter(passed_over), "Skipped by Select All", variant: :warning %>
+  <% end %>
 <% end %>
 
 <%= ui_callout_box :info do %>
   <strong>Three steps, in order.</strong>
   <ol class="list-numbered mt-1">
-    <li>Pick an export filter &mdash; each filter fills one TRS spreadsheet format.</li>
+    <li>Pick an export filter &mdash; each filter fills one
+      <%= link_to "TRS spreadsheet format", ticketing_trs_formats_path %>.</li>
     <li>Select items and export. Every exported item gets an audit comment, and the CSV
       downloads for upload to TRS.</li>
     <li>Once TRS accepts the upload, uncheck anything TRS rejected and mark the rest submitted.</li>

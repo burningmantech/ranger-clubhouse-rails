@@ -14,6 +14,13 @@ class Ticketing::TrsExportController < ApplicationController
   authorize_role [Role::ADMIN, Role::EDIT_ACCESS_DOCS],
                  message: "Admin or Edit Access Documents role required to export to TRS."
 
+  # Raised before anything is written: the format is read ahead of the first
+  # export comment. Back to the All view, which needs no format.
+  rescue_from TrsExport::MissingFormat do |error|
+    redirect_to ticketing_trs_export_path,
+                alert: "#{error.message} Nothing was written. Contact the Tech Team to restore it."
+  end
+
   def index
     @filter = TrsExport.find_filter(params[:filter]) || TrsExport.all_filter
     result = TrsExport.build_rows(@filter)

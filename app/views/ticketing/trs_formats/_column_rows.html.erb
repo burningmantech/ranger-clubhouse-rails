@@ -1,0 +1,44 @@
+<%# locals: (f:) %>
+<%# The format's columns as a grid, one row per column. The column heading is
+    each control's visible label, and its aria-label names the row as well.
+
+    The rows are saved in the order they stand, and a row left without a header
+    and a source is ignored. Each row's buttons move it, insert a blank row
+    under it or delete it in the page (form-rows); nothing is saved until the
+    form is. The blank row a click inserts is the one in the <template>.
+
+    After a refused save the rows are redrawn as they were sent, with the rows
+    the model named marked. There is always one row, so there is always a row
+    to insert under. %>
+<% format = f.object %>
+<% columns = Array(format.columns).presence || [[nil, nil]] %>
+<% headings = ["#", "CSV Header", "Source", "Actions"] %>
+<% rows_in_error = format.errors.details[:columns].filter_map { |detail| detail[:row] } %>
+<% describedby = token_list("trs-columns-help", "trs-columns-error": format.errors.include?(:columns)) %>
+
+<%= f.fieldset "Columns", aria: { describedby: } do %>
+  <%= f.help_text_tag "Columns export in this order. A column whose Source is Not Used exports empty.", "trs-columns-help" %>
+  <%= f.error_message :columns, "trs-columns-error" %>
+
+  <div data-controller="form-rows" data-form-rows-noun-value="column">
+    <%= ui_table striped: true do |t| %>
+      <%= t.header do %>
+        <% headings.each do |heading| %>
+          <%= t.heading heading %>
+        <% end %>
+      <% end %>
+      <%= t.body do %>
+        <% columns.each_with_index do |(header, source), index| %>
+          <%= render "column_row", t:, index:, total: columns.size, header:, source:, describedby:,
+                                   invalid: rows_in_error.include?(index) %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <template data-form-rows-target="template">
+      <%= ui_table_rows(headings:, striped: true) do |t| %>
+        <%= render "column_row", t:, index: nil, total: columns.size, describedby: %>
+      <% end %>
+    </template>
+  </div>
+<% end %>

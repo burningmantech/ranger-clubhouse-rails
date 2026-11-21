@@ -73,6 +73,19 @@ _Avoid_: group, coverage group (the table's name, not the word users see).
 One column of the Shift Coverage report: positions read together, named by callsign or only counted.
 _Avoid_: column, coverage position.
 
+### Ticketing
+
+**TRS format** (`TrsFormat`):
+One of the ticket vendor's three TRS import templates (Paid & Gift Tickets, Unpaid, LSD): the CSV columns a TRS
+export carries, in order. Each export filter is tied to one.
+_Avoid_: export format array, template (the vendor's file, not our row).
+
+**Source** (of a TRS format column):
+What fills the column: a detail of the person (First Name, Notes) or how many of one item they have (Special
+Price Tickets, Setup Access Pass · Aug 14). A column with no source is exported empty. People see the label
+(`TrsExport.source_label`); the stored key (`first_name`, `sap_0814`) stays in code.
+_Avoid_: key (in anything a person reads).
+
 ### Dashboard
 
 **Milestones**:
