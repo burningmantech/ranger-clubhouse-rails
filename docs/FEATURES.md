@@ -3785,6 +3785,15 @@ Touches: `slot`, `position`, `person`, `setting`, `mail_template`
 Verify: `test/jobs/alert_when_sign_ups_empty_job_test.rb`
 Trap: the job takes the `Position` and `Slot` records (GlobalID) and `ApplicationJob`'s `discard_on ActiveJob::DeserializationError` is commented out, so a slot deleted during the five-minute wait fails the job instead of skipping it.
 
+### Trainer roster change email (TrainerRosterChangeJob)
+Runs: enqueued with `set(wait: 5.minutes)` by `Scheduling::EmailNotification.handle_trainer_roster_change` (`app/lib/scheduling/email_notification.rb`), called from `Scheduling::Signup` after every accepted add (`decide_add`) and every successful removal (private `delete_signup`, so `Scheduling::Signup::Bulk` sweeps too) — only for a trainer-position slot (`Position::TRAINERS` values) matched to a session (`Training::SessionList.trainer_slot_match?`) that has not ended and has a `trainer_status.is_lead` row for someone else; re-reads the roster and sends nothing if the change was undone
+Job: `app/jobs/trainer_roster_change_job.rb`
+Owner: `Scheduling::EmailNotification` (`app/lib/scheduling/email_notification.rb`), `TrainerRosterChangeMailer` (`app/mailers/trainer_roster_change_mailer.rb`), `TrainingSession#trainer_groups` (`app/lib/training_session.rb`)
+Touches: `slot`, `person_slot`, `trainer_status`, `position`, `person`, `mail_template`, `mail_log` (w)
+Verify: `test/jobs/trainer_roster_change_job_test.rb`, `test/lib/scheduling/email_notification_test.rb`
+Trap: recipients are leads still on the trainer roster, minus the trainer who changed and minus whoever made the change; a removed trainer keeps their `trainer_status` row, so never read leads from `trainer_status` alone.
+Trap: a session lists only the first matching slot per trainer position (`TrainingSession#build_trainer_groups`), so the job drops a change on a second matching trainer slot.
+
 ### RBS › Broadcast emails (RbsTransmitEmailJob)
 Runs: enqueued by `Rbs.transmit` (`app/lib/rbs.rb`) for a broadcast sent with email — `POST /communication/rbs/broadcasts/:type` (`Communication::RbsBroadcastsController#create`, Communication Management › Ranger Broadcast)
 Job: `app/jobs/rbs_transmit_email_job.rb` (`< RbsEmailJob`, `app/jobs/rbs_email_job.rb`: the shared lock and continuation settings)
@@ -3866,6 +3875,7 @@ Mail: `PhotoPendingMailer` ← `PhotoPendingJob`; links to `GET /vc/photos-revie
 Mail: `PhotosExpiredMailer` ← no caller (ported, not wired up) — `db/mail_templates/photos_expired_mailer/notify.yml`
 Mail: `RangersWhoNeedSapsMailer` ← `RangersWhoNeedSapsJob` — `db/mail_templates/rangers_who_need_saps_mailer/notify.yml`
 Mail: `RbsMailer#broadcast` ← `Rbs.render_broadcast` in `RbsTransmitEmailJob` (drawn once per broadcast with no recipient, sent through SES `SendBulkEmail` by `Rbs.broadcast_email`, a `mail_log` row per email SES took; nothing while `Rbs.email_mode` is `:held`), and in `RbsRetryEmailJob` the same way through `Rbs.deliver_retried_emails` — `db/mail_templates/rbs_mailer/broadcast.yml`
+Mail: `TrainerRosterChangeMailer` ← `TrainerRosterChangeJob` (to the session's lead trainers, From `DoNotReplyEmail` as "Ranger Clubhouse", Reply-To the position's contacts) — `db/mail_templates/trainer_roster_change_mailer/notify.yml`
 Mail: `TrainerReminderMailer` ← no caller (ported, not wired up); to the position's contacts and the trainers, From `DoNotReplyEmail` as "Ranger Clubhouse", Reply-To the contacts — `db/mail_templates/trainer_reminder_mailer/notify.yml`
 Mail: `TrainingSessionFullMailer` ← `Scheduling::Signup` when signup intake fills a training slot whose position has a contact email (deliver_later); to every contact address, From `DoNotReplyEmail` as "Ranger Clubhouse", Reply-To the contacts — `db/mail_templates/training_session_full_mailer/notify.yml`
 Mail: `TrainingSignupMailer` ← no caller (the `TrainingSignupEmailJob` line in `Scheduling::Signup` is commented out) — `db/mail_templates/training_signup_mailer/notify.yml`

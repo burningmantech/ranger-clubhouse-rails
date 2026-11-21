@@ -189,6 +189,7 @@ module Scheduling
       log_data[:unsigned_sandman_affidavit] = true if is_sandman_shift && !did_sign_sandman_affidavit
 
       ActionLog.record(Current.person, "person-slot-add", nil, log_data, person.id)
+      Scheduling::EmailNotification.handle_trainer_roster_change(slot, person.id, TrainerRosterChangeJob::ADDED)
 
       # Notify the person about the Training signing up
       if slot.training? && !slot.has_started
@@ -278,6 +279,7 @@ module Scheduling
       if status == Scheduling::STATUS_SUCCESS
         Scheduling::Query.adjust_parent_child_signups([slot])
         Scheduling::EmailNotification.handle_empty_signups_alerts(slot, person_id)
+        Scheduling::EmailNotification.handle_trainer_roster_change(slot, person_id, TrainerRosterChangeJob::REMOVED, reason:)
         # slot_id is what makes the removal answerable later: ScheduleLog and the
         # shift drop report both key on it, and a row without one groups under nil
         # and is invisible to both. Every other writer of this event records it.
