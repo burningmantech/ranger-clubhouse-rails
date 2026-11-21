@@ -1,0 +1,61 @@
+<% content_for :title, "Edit #{@format.title} Format" %>
+<%# Columns are moved, inserted and deleted in the page. A copy of it from Turbo's cache
+    would show those unsaved columns again, as if they were the format, with nothing to
+    say they are not. %>
+<% turbo_exempts_page_from_cache %>
+
+<%= hero_panel icon: "table-cells", heading_level: :h1, id: "ticketing-trs-format-header",
+               title: "Edit #{@format.title} Format",
+               back_to: ["TRS Formats", ticketing_trs_formats_path] %>
+
+<%= ui_disclosure "How This Page Works", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What goes in CSV Header?</dt>
+    <dd>The header exactly as the vendor's template spells it. TRS matches it to the character, so keep its capitals, its spacing and a literal <code>&amp;amp;</code>.</dd>
+    <dt>How do I choose what fills a column?</dt>
+    <dd>Press its Source button and pick from the list: a detail of the person, how many of an item they have, or a Staff Credential or Setup Access Pass for one access date. Not Used is for a column the template needs and the Clubhouse never fills.</dd>
+    <dt>Why is a choice greyed out?</dt>
+    <dd>It already fills another column, and a source can fill only one. Press it to see which column, then change that column first to free it.</dd>
+    <dt>How do I move a column?</dt>
+    <dd>Use the arrows on its line. Each press moves it one place.</dd>
+    <dt>How do I add or remove a column?</dt>
+    <dd>The plus inserts a blank column under the one it is on, and the bin deletes that one. A column left blank is ignored.</dd>
+    <dt>When are my changes saved?</dt>
+    <dd>Not until you press Save Format. Moving, inserting and deleting columns only changes this page, so leaving it without saving puts everything back.</dd>
+  </dl>
+<% end %>
+
+<%# Someone else saved first: nothing was written, and the columns come back as sent. The
+    form now carries the saved format's fingerprint, so saving again replaces it knowingly. %>
+<% if @stale %>
+  <%= ui_callout_box :warning, icon: "triangle-exclamation", id: "trs-format-stale", role: "alert", tabindex: "-1",
+                     data: { refusal: true } do %>
+    <strong>Someone else saved this format after you opened the page, so nothing was saved.</strong>
+    The columns below are still yours. Check them against
+    <%= link_to "the format as saved", edit_ticketing_trs_format_path(@format), target: "_blank", rel: "noopener" %>
+    (opens in a new tab), then press Save Format again to replace it.
+  <% end %>
+<% end %>
+
+<%# The picker's template is outside the form (a form cannot hold the dialog's own), so the
+    controller that opens it sits around both. %>
+<div data-controller="source-picker">
+<%# A change made in the page is unsaved until the form is, so leaving asks first. A refused save
+    comes back with its edits still unsaved, and says so, since the submit disarmed the guard.
+
+    autocomplete off: a browser that puts back what was typed after a reload does it by id, and
+    the ids are numbered again as columns come and go, so it would fill the wrong lines. %>
+<%= ui_form(@format, ticketing_trs_format_path(@format), html: { autocomplete: "off" },
+            data: { controller: "unsaved-changes", unsaved_changes_dirty_value: (true if @format.changed?) }) do |f| %>
+  <%# The columns as saved when this page was drawn; a refused save keeps it. %>
+  <%= hidden_field_tag "trs_format[version]", @format.version, id: nil %>
+  <%= render "column_rows", f: %>
+
+  <%= button_row do %>
+    <%= f.submit "Save Format" %>
+    <%= cancel_link ticketing_trs_formats_path %>
+  <% end %>
+<% end %>
+
+<%= render "source_picker", sources: @format.sources %>
+</div>

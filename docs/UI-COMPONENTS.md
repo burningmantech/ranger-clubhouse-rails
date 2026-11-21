@@ -1873,6 +1873,102 @@ the page when it connects. Only /me renders it: Person and HQ never mark a threa
 
 ---
 
+### form-rows (Stimulus)
+
+**File:** `app/javascript/controllers/form_rows_controller.js`
+
+```erb
+<div data-controller="form-rows" data-form-rows-noun-value="column">
+  <%= ui_table do |t| %>
+    ...
+    <%= t.row data: { form_rows_target: "row" } do %>
+      <%= t.row_header 3, data: { form_rows_number: true } %>
+      <%= text_field_tag "thing[row_names][]", name, id: "thing-2-name", aria: { label: "Name of row 3" },
+                         data: { form_rows_label: "Name of row {n}", form_rows_id: "thing-{i}-name" } %>
+      <div role="toolbar" aria-label="Row 3 actions" data-form-rows-label="Row {n} actions"
+           data-action="keydown->form-rows#step">
+        <%= button_action "", :secondary, class: "btn-square", icon: "arrow-up", icon_type: :solid,
+                          tabindex: 0, data: { action: "form-rows#up" } %>
+        <%# ... form-rows#down, form-rows#insert, form-rows#remove, each tabindex: -1 %>
+      </div>
+    <% end %>
+  <% end %>
+  <template data-form-rows-target="template"><%# one blank row, drawn by ui_table_rows %></template>
+</div>
+```
+
+The rows of a form edited in the page: `up` and `down` move a row one place, `insert` puts a copy
+of the template's blank row under it and focuses its first field, and `remove` deletes it. Nothing
+is sent to the server: the form posts its rows in the order they stand, so the server reads the
+order, and what is gone, from the lists it is sent. Every change fires an `input` event on the
+controller's element.
+
+- **A move** reorders the row elements, so everything in a row travels with it: what its fields
+  hold, a hidden field and the label drawn beside it, the mark of a refused save. The focus is put
+  back on the arrow that was pressed.
+- **A delete** of a row that holds anything asks first, in the app's confirm dialog, naming the row
+  by `data-form-rows-noun-value` ("row" when not given), its number and the first value a reader can see. A blank
+  row goes without a question; a hidden field counts as holding something. The only row left is
+  swapped for a copy of the template's blank row, so there is always one to insert under.
+- **Any of the three** changes where rows stand, so every row is numbered again from the patterns its
+  elements carry, `{n}` for the row's number and `{i}` for its index: `data-form-rows-number` (the
+  text), `data-form-rows-label` (the `aria-label`) and `data-form-rows-id` (the `id`, which keeps
+  ids unique and as the server would draw them, so a morphed 422 lines the rows up).
+- **The arrows at the ends**: draw both on every row and put `invisible` on the first row's up and
+  the last row's down; the controller moves that class as the ends change.
+- **One tab stop a row**: the buttons sit in a `role="toolbar"`, `tabindex="0"` on the first that
+  shows and `-1` on the rest; `step` walks them with the left and right arrow keys (Home and End
+  go to the two ends), and the controller moves the stop when the first button changes. Both come from
+  `app/javascript/controllers/toolbar.js` (`stepToolbar`, `setTabStop`), which any controller
+  drawing such a group can import.
+
+Three things the page around it has to do, because its unsaved state lives in the DOM:
+`data: { controller: "unsaved-changes" }` on the form, so leaving asks first;
+`html: { autocomplete: "off" }` on the form, so a browser does not put typed values back by id
+after a reload (the ids are renumbered); and `turbo_exempts_page_from_cache`, so Back fetches the
+page instead of showing the unsaved rows again.
+
+Use it for rows that are fields of one form saved as a whole. A list with nothing unsaved beside
+it keeps `common/_move_buttons`, a PATCH and a reload per click.
+
+In use on `app/views/ticketing/trs_formats/_column_row.html.erb` (controls from
+`Ticketing::TrsFormatsHelper`); exercised by `test/system/ticketing/trs_format_rows_test.rb`.
+
+### source-picker (Stimulus)
+
+**File:** `app/javascript/controllers/source_picker_controller.js`
+
+```erb
+<div data-controller="source-picker">
+  <%= ui_form(@format, path) do |f| %>
+    ...
+    <%= trs_column_source index, source %>  <%# hidden key + a button naming it, per row %>
+  <% end %>
+  <%= render "source_picker" %>            <%# <template> holding the dialog, outside the form %>
+</div>
+```
+
+Chooses a value for a hidden field from a dialog of buttons instead of typing it: what fills a
+column of a TRS format. A press on a row's button (`source-picker#open`) copies the template's
+dialog, titles it for that row, marks the current choice (`aria-pressed`, primary, and the
+`autofocus` the dialog opens on) and greys every choice another row's hidden field already
+holds (`aria-disabled`, with the row that holds it in its tooltip). A press on a choice
+(`source-picker#choose`) writes its `data-source` to the hidden field and its `data-label` to the
+button, fires an `input` event and closes; the dialog hands the focus back to the row's button
+itself. A press on the current choice only closes, and a press on a greyed one changes nothing
+and names the row that holds it in the `note` target, a `role="status"` line. The second press
+of a double-click on a row's button is dropped, since it lands inside the dialog. Each
+group of choices is a `role="toolbar"` with one tab stop (`controllers/toolbar`).
+
+The dialog is built with `ModalHelper#modal`, which makes it single-use: its own controller shows
+it on connect and removes it on close, and loads lazily. So the picker is a copy each time, shown
+and removed by this controller, and any button in it that is not a choice closes it. Keep the
+template outside the form: the modal's backdrop is a `<form method="dialog">`.
+
+In use on `app/views/ticketing/trs_formats/edit.html.erb` (`_source_picker`, choices from
+`Ticketing::TrsFormatsHelper#trs_source_groups`); exercised by
+`test/system/ticketing/trs_format_rows_test.rb`.
+
 ### scroll-to-element (Stimulus)
 
 **File:** `app/javascript/controllers/scroll_to_element_controller.js`

@@ -1,0 +1,40 @@
+<% content_for :title, "TRS Formats" %>
+
+<%= hero_panel icon: "table-cells", heading_level: :h1, id: "ticketing-trs-formats-header",
+               title: "TRS Formats",
+               description: "Set the CSV columns each TRS export carries, to match the ticket vendor's import templates." %>
+
+<%= ui_disclosure "About This Report", variant: :card, class: "my-4" do %>
+  <dl class="instruction-list">
+    <dt>What is a format?</dt>
+    <dd>The header row of one TRS import template, and what the Clubhouse puts under each header.</dd>
+    <dt>Why are there exactly three?</dt>
+    <dd>The ticket vendor has three templates, and each TRS Export filter is tied to one of them. Their columns can be edited; formats cannot be added or deleted.</dd>
+    <dt>What is a column that is not used?</dt>
+    <dd>One the vendor's template needs and the Clubhouse always leaves empty.</dd>
+  </dl>
+<% end %>
+
+<%= ui_table striped: true do |t| %>
+  <%= t.header do %>
+    <%= t.heading "Format" %>
+    <%= t.heading "Used By" %>
+    <%= t.heading "Columns", right: true %>
+    <%= t.heading "Not Used", right: true %>
+    <%= t.heading "Actions" %>
+  <% end %>
+  <%= t.body do %>
+    <% @formats.each do |format| %>
+      <%= t.row do %>
+        <%= t.row_header format.title %>
+        <%= t.cell @filters_by_slug.fetch(format.slug, []).map(&:label).join(", ") %>
+        <%= t.cell format.columns.size, right: true %>
+        <%= t.cell format.columns.size - format.sources.size, right: true %>
+        <%= t.cell do %>
+          <%= edit_link edit_ticketing_trs_format_path(format), "Edit",
+                        aria: { label: "Edit the #{format.title} format" } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

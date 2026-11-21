@@ -72,62 +72,89 @@ class TrsExportTest < ActiveSupport::TestCase
   end
 
   # --- CSV formats ---------------------------------------------------------
-  # The header rows are pinned byte-for-byte: the literal &amp;, the
-  # out-of-order dates, the double space in "Setup Access Pass  8/15", and the
-  # "Method of"/"Method Of" case difference all mirror the vendor template.
-
-  test "the paid and gift ticket format header is byte-exact" do
-    expected = "First Name,Last Name,Email,Question: Method Of Delivery:,Question: Nickname/Project:," \
-               "Question: Notes:,Request: $250 Ticket,Request: $165 Vehicle Pass,Request: Gift Ticket," \
-               "Request: Gift Vehicle Pass,Request: Transferrable $250 Ticket," \
-               "Request: Transferrable $165 Vehicle Pass,Request: Transferrable Gift Ticket," \
-               "Request: Transferrable Gift Vehicle Pass,Request: Transferrable $75 Vehicle Pass," \
-               "Request: $75 Vehicle Pass"
-
-    assert_equal expected, CsvExportConcern.build([TrsExport::PAID_AND_GIFT_TICKET_EXPORT_FORMAT.map(&:first)])
-  end
-
-  test "the unpaid format header is byte-exact" do
-    sap_days = %w[8/26 8/27 8/28 8/29 8/8 8/9 8/10 8/11 8/12 8/13 8/14]
-                 .map { |day| "Request: Setup Access Pass #{day} &amp; Later" }
-    sap_days << "Request: Setup Access Pass  8/15 &amp; Later"
-    sap_days += %w[8/16 8/17 8/18 8/19 8/20 8/21 8/22 8/23 8/24 8/25]
-                  .map { |day| "Request: Setup Access Pass #{day} &amp; Later" }
-    sc_days = %w[8/14 8/13 8/26 8/27 8/28 8/29 8/8 8/9 8/10 8/11 8/12 8/15 8/16 8/17 8/18 8/19 8/20 8/21 8/22 8/23 8/24]
-                .map { |day| "Request: Staff Credential Pickup #{day} &amp; After" }
-
-    expected = ["First Name", "Last Name", "Email", "Question: Method of Delivery:",
-                "Question: Nickname/Project:", "Question: Notes:", "Request: Gift Vehicle Pass",
-                *sap_days, "Request: Setup Access Pass - Anytime",
-                *sc_days, "Request: Staff Credential Pickup Anytime",
-                "Request: Staff Credential Pickup 8/25 &amp; After"].join(",")
-
-    assert_equal expected, CsvExportConcern.build([TrsExport::UNPAID_EXPORT_FORMAT.map(&:first)])
-  end
-
-  test "the lsd format header is byte-exact" do
-    expected = "First Name,Last Name,Email,Question: Method Of Delivery:,Question: Nickname/Project:," \
-               "Question: Notes:,Shipping Address:: Country,Shipping Address:: Full Name," \
-               "Shipping Address:: Address,Shipping Address:: Address Line 2,Shipping Address:: City," \
-               "Shipping Address:: State,Shipping Address:: Zip,Shipping Address:: Phone," \
-               "Request: $165 Vehicle Pass - Directed,Request: $550 Ticket - Directed," \
-               "Request: $675 Ticket - Directed,Request: $775 Ticket - Directed," \
-               "Request: $975 Ticket - Directed,Request: $1500 Ticket - Directed," \
-               "Request: $3000 Ticket - Directed,Request: Non-Transferrable $550 Ticket"
-
-    assert_equal expected, CsvExportConcern.build([TrsExport::LSD_EXPORT_FORMAT.map(&:first)])
-  end
+  # The formats are TrsFormat rows; test/migrations/create_trs_format_test.rb
+  # pins their seeded header rows byte for byte.
 
   test "each filter picks the upstream format" do
     %w[special_price_ticket spt_vp vehicle_pass_sp gift_ticket].each do |slug|
-      assert_equal TrsExport::PAID_AND_GIFT_TICKET_EXPORT_FORMAT, TrsExport.export_format(filter(slug)), slug
+      assert_equal trs_format(:paid), TrsExport.export_format(filter(slug)), slug
     end
     %w[lsd_ticket lsd_vp vehicle_pass_lsd].each do |slug|
-      assert_equal TrsExport::LSD_EXPORT_FORMAT, TrsExport.export_format(filter(slug)), slug
+      assert_equal trs_format(:lsd), TrsExport.export_format(filter(slug)), slug
     end
     %w[staff_credential staff_credential_vp vehicle_pass_gift work_access_pass_ranger work_access_pass_so].each do |slug|
-      assert_equal TrsExport::UNPAID_EXPORT_FORMAT, TrsExport.export_format(filter(slug)), slug
+      assert_equal trs_format(:unpaid), TrsExport.export_format(filter(slug)), slug
     end
+  end
+
+  test "a source is a row field or a request column, dated ones by date or anytime" do
+    %w[first_name note spt sp_vp gift_ticket gift_vp lsd lsd_vp sc_0814 sap_0808 sc_anytime sap_anytime].each do |key|
+      assert TrsExport.source?(key), key
+    end
+    [nil, "", "ignore", "sap", "sc", "sap_814", "sap_unspecified", "spt_0814", "gift_vp_anytime", " spt", "SPT",
+     "sap_0862", "sap_1301", "sc_0800", "sap_9999"].each do |key|
+      assert_not TrsExport.source?(key), key.inspect
+    end
+  end
+
+  test "a source is named the way a person reads it" do
+    { nil => "Not Used", "" => "Not Used", "email" => "Email", "project_name" => "Nickname / Project",
+      "gift_vp" => "Gift Vehicle Passes", "spt" => "Special Price Tickets",
+      "sap_0826" => "Setup Access Pass · Aug 26", "sc_0801" => "Staff Credential · Aug 1",
+      "sap_anytime" => "Setup Access Pass · Any time", "sc_0907" => "Staff Credential · Sep 7",
+      "sap_826" => "sap_826", "ignore" => "ignore" }.each do |key, label|
+      assert_equal label, TrsExport.source_label(key), key.inspect
+    end
+  end
+
+  # A request column with no label would be offered, and reported, by its key.
+  test "every row field and request column has a label" do
+    labelled = TrsExport::ROW_FIELD_LABELS.keys + TrsExport::REQUEST_LABELS.keys + TrsExport::DATED_LABELS.keys
+
+    assert_equal (TrsExport::ROW_FIELDS + TrsExport::TRS_COLUMN.values).uniq.sort, labelled.sort
+    assert_equal TrsExport::DATED_COLUMNS.sort, TrsExport::DATED_LABELS.keys.sort
+  end
+
+  test "every row field is answered by the row itself, never by a count" do
+    document(@ranger, type: AccessDocument::SPT, delivery_method: AccessDocument::DELIVERY_POSTAL)
+    row = rows("special_price_ticket").sole
+
+    TrsExport::ROW_FIELDS.each { |field| assert_predicate row.cell(field), :present?, field }
+    assert_equal "", row.cell(nil), "a column with no source exports empty"
+  end
+
+  test "the export follows the format as it is edited" do
+    sc = document(@ranger, type: AccessDocument::STAFF_CREDENTIAL, access_date: august(14))
+    trs_format(:unpaid).update!(columns: [["Who", "project_name"], ["Unused", nil], ["Aug 14 &amp; After", "sc_0814"]])
+
+    result = TrsExport.export!(filter("staff_credential"), [sc.id], person(:active_ranger))
+
+    assert_equal ["Who,Unused,Aug 14 &amp; After", "Ranger #{@ranger.callsign},,1"], result[:csv].split("\n")
+  end
+
+  test "a filter whose format has no row says which one, and the All view still builds" do
+    trs_format(:lsd).delete
+
+    error = assert_raises(TrsExport::MissingFormat) { rows("lsd_ticket") }
+    assert_equal "The LSD TRS format is missing from the database.", error.message
+    assert_nothing_raised { rows("all") }
+    assert_nothing_raised { rows("gift_ticket") }
+  end
+
+  test "a request with no column in the format is flagged on its filter only" do
+    fine = document(@ranger, type: AccessDocument::SAP, access_date: august(14))
+    early = document(@alpha, type: AccessDocument::SAP, access_date: august(7))
+    dateless = document(@prospective, type: AccessDocument::SAP)
+
+    by_id = rows("work_access_pass_all").index_by { |row| row.documents.sole.id }
+    assert_empty by_id[fine.id].errors
+    assert_equal ["no column for Setup Access Pass · Aug 7 in the Unpaid format"], by_id[early.id].errors
+    assert_not by_id[early.id].selectable?
+    assert_equal ["missing access date"], by_id[dateless.id].errors, "an unspecified date is no source"
+
+    assert_empty rows("all").flat_map(&:errors) - ["missing access date"]
+    assert_nil TrsExport.build_rows(filter("all"))[:format]
+    assert_equal trs_format(:unpaid), TrsExport.build_rows(filter("work_access_pass_all"))[:format]
   end
 
   # --- TRS column and date -------------------------------------------------
@@ -236,8 +263,8 @@ class TrsExportTest < ActiveSupport::TestCase
 
     # Untouched request columns export as empty cells, never "0" -- the
     # combined-row counts hash defaults to 0 and must not leak into the CSV.
-    cells = TrsExport.csv_rows(filter("staff_credential_vp"), [row]).last
-    keys = TrsExport::UNPAID_EXPORT_FORMAT.map(&:last)
+    cells = TrsExport.csv_rows(trs_format(:unpaid), [row]).last
+    keys = trs_format(:unpaid).columns.map(&:last)
     assert_equal 1, cells[keys.index("sc_0814")]
     assert_equal 2, cells[keys.index("gift_vp")]
     assert_equal "", cells[keys.index("sap_0814")]
@@ -310,10 +337,10 @@ class TrsExportTest < ActiveSupport::TestCase
 
     assert_match(/\Atrs-staff-credential-#{YEAR}-07-01-\d{2}-\d{2}\.csv\z/, result[:filename])
     header, line = result[:csv].split("\n")
-    assert_equal TrsExport::UNPAID_EXPORT_FORMAT.map(&:first).join(","), header
+    assert_equal trs_format(:unpaid).headers.join(","), header
 
     cells = line.split(",")
-    format_keys = TrsExport::UNPAID_EXPORT_FORMAT.map(&:last)
+    format_keys = trs_format(:unpaid).columns.map(&:last)
     assert_equal @ranger.first_name, cells[format_keys.index("first_name")]
     assert_equal "Ranger #{@ranger.callsign}", cells[format_keys.index("project_name")]
     assert_equal TrsExport::CREDENTIAL_PICKUP, cells[format_keys.index("delivery_type")]

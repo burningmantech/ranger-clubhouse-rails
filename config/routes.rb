@@ -1096,6 +1096,10 @@ Rails.application.routes.draw do
     get "trs-export", to: "trs_export#index", as: :trs_export
     post "trs-export/export", to: "trs_export#export", as: :trs_export_export
     post "trs-export/mark-submitted", to: "trs_export#mark_submitted", as: :trs_export_mark_submitted
+    # The CSV columns of the three TRS formats the export fills. The set is
+    # fixed -- TrsExport picks a format by slug, which is the :id here -- so the
+    # only write is an edit.
+    resources :trs_formats, path: "trs-format-manage", only: [:index, :edit, :update]
 
     # The three ticketing groups of upstream's admin/bulk-upload. Bulk BMID sits
     # here by URL but is reached from the BMID menu, whose gate already matches

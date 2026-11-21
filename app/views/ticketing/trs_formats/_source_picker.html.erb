@@ -1,0 +1,53 @@
+<%# locals: (sources: []) %>
+<%# The picker a column's source is chosen from: every source as a button, under
+    a heading for its kind, with a credential's and a pass's access dates as
+    the days of the month (trs_source_groups). sources: is what the format's
+    columns hold, so a date in another month keeps a choice of its own.
+
+    One for the page, kept in a <template>. A dialog from the modal helper is
+    shown when its controller connects and taken out of the page when it
+    closes, so it cannot be opened twice: source_picker_controller.js copies
+    this one each time, fills in the column it is for, marks the current choice
+    and greys the choices other columns already use. A greyed choice can still
+    be pressed: the line under the column's header then says which column
+    holds it.
+
+    It is rendered outside the grid's form. The modal's backdrop is a form of
+    its own, and a form cannot sit inside another.
+
+    Each group is one tab stop, as a row's buttons are (controllers/toolbar):
+    the left and right arrow keys reach the rest. %>
+<template data-source-picker-target="template">
+  <%= modal id: "trs-source-picker", size: :lg do |m| %>
+    <%= m.title "Source for Column", data: { source_picker_target: "title" } %>
+    <%= m.body do %>
+      <p class="font-mono text-stone-muted" data-source-picker-target="header"></p>
+      <p class="mt-1 text-sm text-stone-muted" role="status" data-source-picker-target="note">
+        A greyed choice already fills another column. Press it to see which.
+      </p>
+
+      <% trs_source_groups(sources).each do |group| %>
+        <% if group.title %>
+          <h4 class="heading-title mt-4 mb-2"><%= group.title %></h4>
+        <% end %>
+        <%= tag.div class: class_names("flex flex-wrap gap-2", "mt-3": group.title.nil?), role: "toolbar",
+                    aria: { label: group.title || TrsExport::NOT_USED },
+                    data: { action: "keydown->source-picker#step" } do %>
+          <% group.choices.each do |choice| %>
+            <%# A date's button shows the day alone, so it is given its whole name to be read by.
+                Not Used shows more than its name, and is read as it is written. %>
+            <%= button_action choice.text, :secondary,
+                              class: ("btn-square" if choice.text.match?(/\A\d+\z/)),
+                              aria: { label: (choice.label unless choice.key.empty? || choice.text == choice.label),
+                                      pressed: "false" },
+                              data: { action: "source-picker#choose", source_picker_target: "choice",
+                                      source: choice.key, label: choice.label } %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= m.footer do %>
+      <%= m.close_button "Cancel" %>
+    <% end %>
+  <% end %>
+</template>

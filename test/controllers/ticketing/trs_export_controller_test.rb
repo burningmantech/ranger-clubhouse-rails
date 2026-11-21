@@ -84,6 +84,36 @@ class Ticketing::TrsExportControllerTest < ActionDispatch::IntegrationTest
     assert_match "missing access date", response.body
   end
 
+  test "items select all passes over are counted for the filter, missing columns included" do
+    document(@holder, AccessDocument::SAP, access_any_time: true)
+    early = document(@holder, AccessDocument::SAP, access_date: Time.zone.local(YEAR, 8, 7, 12, 0, 0))
+    document(@holder, AccessDocument::SAP)
+
+    get ticketing_trs_export_path(filter: "work_access_pass_ranger")
+
+    assert_response :success
+    assert_select "input[name='ids[]'][value=?][data-skip-select-all]", early.id.to_s
+    assert_match "no column for Setup Access Pass · Aug 7 in the Unpaid format", response.body
+    assert_match(/2\s*<.*?Skipped by Select All/m, response.body)
+
+    get ticketing_trs_export_path
+    assert_no_match(/Skipped by Select All/, response.body)
+  end
+
+  test "a filter whose format is missing goes back to the All view and writes nothing" do
+    sc = document(@holder, AccessDocument::STAFF_CREDENTIAL, access_any_time: true)
+    TrsFormat.find_by!(slug: "unpaid").delete
+
+    get ticketing_trs_export_path(filter: "staff_credential")
+    assert_redirected_to ticketing_trs_export_path
+    assert_equal "The Unpaid TRS format is missing from the database. Nothing was written. " \
+                 "Contact the Tech Team to restore it.", flash[:alert]
+
+    post ticketing_trs_export_export_path, params: { filter: "staff_credential", ids: [sc.id.to_s] }
+    assert_redirected_to ticketing_trs_export_path
+    assert_no_match(/exported with filter/, sc.reload.comments.to_s)
+  end
+
   test "the export form carries the filter without colliding with the filter select" do
     document(@holder, AccessDocument::SAP, access_any_time: true)
 

@@ -725,6 +725,8 @@ module Menus
             description: "Every current meal pass, shower pass, and event radio, with filters and CSV export" },
           { title: "TRS Export", path: :ticketing_trs_export_path, active_prefix: true,
             description: "Send claimed tickets, passes, and credentials to the ticket vendor, then mark them submitted" },
+          { title: "TRS Formats", path: :ticketing_trs_formats_path, active_prefix: true,
+            description: "Set the CSV columns each TRS export carries, to match the ticket vendor's templates" },
           { title: "Statistics", path: :ticketing_statistics_path, active_prefix: true,
             description: "How many tickets, passes, and credentials sit in each status right now" }
         ]
