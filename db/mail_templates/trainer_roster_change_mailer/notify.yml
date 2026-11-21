@@ -1,0 +1,44 @@
+description: "Tells a session's lead trainers that a trainer joined or left"
+
+subject: "[Clubhouse] Trainer {{ change }}: {{ trainer.callsign }}, {{ slot.description }}, {{ slot.date }}"
+
+body: |
+  <p>
+    {%- if change == "added" %}
+      <b>{{ trainer.callsign }} ({{ trainer.position_title }}) is now signed up for a session you lead.</b>
+      {% if changed_by %}Added by {{ changed_by }}.{% else %}{{ trainer.callsign }} signed up from their schedule.{% endif %}
+    {%- else %}
+      <b>{{ trainer.callsign }} ({{ trainer.position_title }}) is no longer signed up for a session you lead.</b>
+      {% if changed_by %}Removed by {{ changed_by }}{% if reason %} ({{ reason }}){% endif %}.{% else %}{{ trainer.callsign }} removed the shift from their schedule.{% endif %}
+    {%- endif %}
+  </p>
+
+  <p>
+    <b>What:</b> {{ slot.position_title }} - {{ slot.description }}<br>
+    <b>When:</b> {{ slot.begins }}
+  </p>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Trainers Signed Up ({{ trainer_count }})</th>
+        <th>Position</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for row in trainers %}
+        <tr>
+          <td>{% if row.is_changed %}<b>{{ row.callsign }}</b>{% else %}{{ row.callsign }}{% endif %}</td>
+          <td>{{ row.position_title }}</td>
+          <td>{% if row.is_changed %}<b>Added</b>{% elsif row.is_lead %}Lead{% endif %}</td>
+        </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+
+  <p>
+    <a href="{{ session_url }}" class="btn">Open Training Session</a>
+  </p>
+
+  {% render "shared/mailer/bot_sign_off" %}

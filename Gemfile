@@ -91,6 +91,7 @@ gem "aws-sdk-sesv2"
 gem "aws-sdk-s3", require: false
 
 gem "ostruct"
+gem "naturally", ">= 2.4"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
@@ -110,6 +111,7 @@ group :development, :test do
 end
 
 group :development do
+  gem "rails-hyperdrive", "~> 0.10.1"
   gem "web-console"
 end
 
@@ -118,9 +120,7 @@ group :test do
   gem "selenium-webdriver"
 end
 
-gem "naturally", "~> 2.3"
 
-gem "rails-hyperdrive", "~> 0.10.1", group: :development
 plugin "bundler-hyperdrive"
 
 gem "herb", "~> 0.11.1"
