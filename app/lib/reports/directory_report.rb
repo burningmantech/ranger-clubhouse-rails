@@ -82,7 +82,7 @@ class DirectoryReport
   # @return [TeamDirectory]
 
   def self.build_team_directory(team, overseer_positions_by_person)
-    members = team.members.map do |person|
+    members = team.members.sort_by(&:callsign).map do |person|
       TeamMember.new(person:, overseer_positions: overseer_positions_by_person[person.id])
     end
 
