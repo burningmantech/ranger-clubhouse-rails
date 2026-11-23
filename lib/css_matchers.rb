@@ -12,30 +12,33 @@
 # directional infix or an `/opacity` suffix all made a raw colour invisible --
 # and the arbitrary-value rule counted `has-[:checked]:` variants as values.
 module CssMatchers
-  # A palette colour rarely appears bare. Three things sit around it:
+  # A palette colour rarely appears bare. Four things sit around it:
   #
-  #   a variant prefix     dark:  hover:  lg:  group-hover:   (any number)
+  #   a variant prefix     dark:  hover:  lg:  group-hover/item:  [&_th]:  (any number)
+  #   an important         !bg-red-500  bg-red-500!
   #   a directional infix  border-l-  border-t-  divide-x-
-  #   an opacity modifier  /50  /10
+  #   an opacity modifier  /50  /[0.5]  /(--o)
+  #
+  # The variants and the important come off first (bare, below), so the patterns
+  # describe the utility alone. They used to carry a pattern for variants, and
+  # it knew no brackets, slashes or stars: `[&_th]:bg-red-500` read as clean.
   #
   # `neutral` is in the hue list, but a shade is required, so daisyUI's semantic
   # `bg-neutral` stays clean while `bg-neutral-600` does not.
-  VARIANT_PREFIX = /(?:[a-z0-9@_-]+:)*/
   SIDE_INFIX     = /(?:-[trblxyse])?/
-  OPACITY_SUFFIX = %r{(?:/\d{1,3})?}
-  COLOR_UTILS    = /bg|text|border|ring|ring-offset|from|via|to|decoration|outline|divide|
-                    placeholder|accent|caret|fill|stroke|shadow/x
-  HUES           = /slate|gray|grey|zinc|stone|neutral|red|orange|amber|yellow|lime|green|emerald|
-                    teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose/x
+  OPACITY_SUFFIX = %r{(?:/(?:\d{1,3}(?:\.\d+)?|\[[^\]]+\]|\([^)]+\)))?}
+  COLOR_UTILS    = /bg|text|border|ring|ring-offset|inset-ring|from|via|to|decoration|outline|divide|
+                    placeholder|accent|caret|fill|stroke|shadow|inset-shadow|text-shadow|drop-shadow/x
+  HUES           = /slate|gray|grey|zinc|stone|neutral|mauve|olive|mist|taupe|red|orange|amber|yellow|
+                    lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose/x
 
-  PALETTE = /\A#{VARIANT_PREFIX}(?:#{COLOR_UTILS})#{SIDE_INFIX}-(?:#{HUES})-\d{2,3}#{OPACITY_SUFFIX}\z/
-  BARE_BW = /\A#{VARIANT_PREFIX}(?:bg|text|border|ring|fill|stroke|divide)#{SIDE_INFIX}-
-              (?:white|black)#{OPACITY_SUFFIX}\z/x
+  PALETTE = /\A(?:#{COLOR_UTILS})#{SIDE_INFIX}-(?:#{HUES})-\d{2,3}#{OPACITY_SUFFIX}\z/
+  BARE_BW = /\A(?:bg|text|border|ring|fill|stroke|divide)#{SIDE_INFIX}-(?:white|black)#{OPACITY_SUFFIX}\z/
 
-  # Both of the rules below describe the utility, not the variants in front of
-  # it, and a variant can carry brackets of its own (`has-[:checked]:`) with a
-  # colon inside them. So: the last colon at bracket depth zero ends the
-  # variants, and what follows is the utility.
+  # The rules below describe the utility, not the variants in front of it, and
+  # a variant can carry brackets of its own (`has-[:checked]:`) with a colon
+  # inside them. So: the last colon at bracket depth zero ends the variants,
+  # and what follows is the utility.
   def self.utility_part(token)
     depth = 0
     start = 0
@@ -49,13 +52,38 @@ module CssMatchers
     token[start..] || ""
   end
 
-  def self.palette?(token) = token.match?(PALETTE) || token.match?(BARE_BW)
-  def self.arbitrary?(token) = utility_part(token).match?(/-\[[^\]]+\]/)
+  # The utility with nothing around it: no variants, no important.
+  def self.bare(token) = utility_part(token).delete_prefix("!").delete_suffix("!")
+
+  def self.palette_hue?(token) = bare(token).match?(PALETTE)
+  def self.black_white?(token) = bare(token).match?(BARE_BW)
+  def self.palette?(token) = palette_hue?(token) || black_white?(token)
+
+  # Three shapes: a value (`p-[13px]`), a modifier (`text-base/[1.3]`) and a
+  # whole property (`[mask-type:luminance]`). The `(--name)` shorthand is not
+  # one: a custom property is where docs/css-dry-rules.md sends a dynamic number.
+  def self.arbitrary?(token)
+    utility = bare(token)
+    utility.match?(%r{[-/]\[[^\]]+\]}) || utility.match?(/\A\[[^\]]*:[^\]]*\]\z/)
+  end
 
   def self.important?(token)
     utility = utility_part(token)
     utility.start_with?("!") || utility.end_with?("!")
   end
+
+  # A class list handed to a helper. `class:` is the obvious key, and most
+  # helpers take more than one: wrapper_class:, summary_class:, icon_class:.
+  # Reading `class:` alone left some 350 strings in the views uncounted, an
+  # eight-class icon_class: written out five times among them. Any key ending
+  # in _class or _classes counts; class_name: and a word that merely ends in
+  # "class" do not.
+  CLASS_KWARG = /\b(?:\w+_)?class(?:es)?:\s*(["'])(.*?)\1/m
+
+  # Not every such key holds classes: `status_class: "Outcome"` is a column's
+  # label. No utility or component class has a capital outside brackets, so a
+  # value with one is something else.
+  def self.class_list?(value) = !value.gsub(/\[[^\]]*\]/, "").match?(/[A-Z]/)
 
   # Which string literals in a code file are worth asking classy? about at all.
   # A class list may open with an important, so a leading ! starts one too --
@@ -108,10 +136,11 @@ module CssMatchers
   # Every style rule in a compiled stylesheet: its selector, and the blocks it
   # sits inside, outermost first. A rule opens at `{` and the stack unwinds at
   # `}`, minified or not, which holds because the build puts no brace in a
-  # string.
+  # string. A selector can hold an escaped one (`.content-\[\'\{\}\'\]`), so a
+  # backslash takes the character after it along.
   def self.each_rule(css)
     enclosing = []
-    css.scan(/([^{};]+)\{|\}/) do |(prelude)|
+    css.scan(/((?:\\.|[^{};\\])+)\{|\}/m) do |(prelude)|
       next enclosing.pop unless prelude
 
       prelude = prelude.strip
@@ -120,29 +149,46 @@ module CssMatchers
     end
   end
 
-  # The class names a selector uses, unescaped (".lg\:p-4" -> "lg:p-4").
+  # The class names a selector uses, unescaped (".lg\:p-4" -> "lg:p-4"). CSS
+  # writes a name that opens with a digit as a hex escape and a space, so
+  # ".\32 xl\:p-4" is 2xl:p-4. Read as a plain escape it came back as "32", and
+  # anything written behind `2xl:` was invisible.
+  CLASS_IN_SELECTOR = /\.((?:\\\h{1,6} ?|\\.|[\w-]|[^\x00-\x7F])+)/m
+  CSS_ESCAPE        = /\\(?:(\h{1,6}) ?|(.))/m
+
   def self.selector_classes(selector)
-    selector.scan(/\.((?:\\.|[\w-])+)/).map { |(name)| name.gsub(/\\(.)/, '\1') }
+    selector.scan(CLASS_IN_SELECTOR).map do |(name)|
+      name.gsub(CSS_ESCAPE) do
+        hex, char = Regexp.last_match.captures
+        hex ? hex.hex.chr(Encoding::UTF_8) : char
+      end
+    end
   end
 
-  # The utilities a compiled stylesheet carries: every class with a rule inside
-  # `@layer utilities`, which is where Tailwind emits them -- its own, daisyUI's
-  # and each @utility this app declares. A variant in front does not make a
-  # different utility (`.hover\:text-stone-muted` compiles text-stone-muted),
-  # and nor does an important.
+  # Every class with a rule inside `@layer utilities`, spelled as the stylesheet
+  # spells it: `dark:from-amber-900/40`, `hidden!`. That layer is where Tailwind
+  # emits what it compiled -- its own utilities, daisyUI's components and each
+  # @utility this app declares -- so this is every class the scanner found,
+  # whatever kind of string carried it there. Comments go first: one sitting in
+  # front of a block becomes part of the name each_rule reads for it.
+  def self.utility_classes(css)
+    names = Set.new
+    each_rule(css.gsub(%r{/\*.*?\*/}m, "")) do |selector, enclosing|
+      names.merge(selector_classes(selector)) if enclosing.include?("@layer utilities")
+    end
+    names
+  end
+
+  # The utilities a compiled stylesheet carries. A variant in front does not
+  # make a different utility (`.hover\:text-stone-muted` compiles
+  # text-stone-muted), and nor does an important.
   #
   # Asking the layer rather than the whole sheet is the point. A hand-written
   # rule can go on naming a class after its utility has stopped compiling:
   # `.ac-option, .ac-filter-chip { transition: none }` kept .ac-filter-chip in
   # the stylesheet for eleven days while the chips it styles rendered bare.
   def self.compiled_utilities(css)
-    names = Set.new
-    each_rule(css) do |selector, enclosing|
-      next unless enclosing.include?("@layer utilities")
-
-      selector_classes(selector).each { |name| names << utility_part(name).delete("!") }
-    end
-    names
+    utility_classes(css).map { |name| utility_part(name).delete("!") }.to_set
   end
 
   # The names a stylesheet's source declares with @utility. Comments go first:

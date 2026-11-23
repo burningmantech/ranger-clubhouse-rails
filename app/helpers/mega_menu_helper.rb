@@ -105,7 +105,7 @@ module MegaMenuHelper
   # its star)
   def mega_category_index_button(category, options = {})
     label = safe_join([
-      fa_icon(category[:icon], :solid, class: "mega-menu-cat-icon", "aria-hidden": "true"),
+      fa_icon(category[:icon], :solid, "aria-hidden": "true"),
       content_tag(:span, class: "mega-menu-cat-text") do
         content_tag(:span, category[:title], class: "mega-menu-item-title") +
           content_tag(:span, category[:description], class: "mega-menu-item-desc")

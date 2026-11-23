@@ -18,6 +18,28 @@ class CssCensusMatchersTest < ActiveSupport::TestCase
     end
   end
 
+  # The patterns once carried their own idea of a variant, which knew no
+  # brackets, slashes or stars, and nothing about an important. Every one of
+  # these compiled and read as clean.
+  test "a palette colour is caught behind any variant, an important or a bracketed opacity" do
+    ["[&_th]:bg-red-500", "has-[:checked]:bg-red-500", "data-[state=open]:bg-red-500",
+     "group-hover/item:text-gray-500", "*:bg-gray-100", "2xl:bg-red-500", "!bg-red-500", "bg-blue-500!",
+     "bg-red-500/[0.5]", "bg-green-500/(--o)"].each do |token|
+      assert CssMatchers.palette?(token), "expected #{token} to read as a palette colour"
+    end
+  end
+
+  test "the newer hues and the shadow and ring colours are palette too" do
+    ["bg-mauve-500", "text-olive-500", "bg-mist-500", "bg-taupe-500", "inset-shadow-red-500",
+     "inset-ring-red-500", "text-shadow-red-500", "drop-shadow-red-500"].each do |token|
+      assert CssMatchers.palette?(token), "expected #{token} to read as a palette colour"
+    end
+
+    ["text-shadow-sm", "inset-shadow-sm", "ring-offset-2", "shadow-sm"].each do |token|
+      assert_not CssMatchers.palette?(token), "expected #{token} to be clean"
+    end
+  end
+
   test "semantic tokens and this app's own names stay clean" do
     ["bg-base-100", "bg-neutral", "text-primary", "border-success/30",
      "ring-signature-edge", "bg-chrome/80", "text-sidebar-content",
@@ -33,6 +55,19 @@ class CssCensusMatchersTest < ActiveSupport::TestCase
 
     ["has-[:checked]:bg-primary", "has-[:checked]:text-primary-content"].each do |token|
       assert_not CssMatchers.arbitrary?(token), "expected #{token} to be a variant, not a value"
+    end
+  end
+
+  # A value is not the only arbitrary thing. A modifier and a whole property
+  # are too, and neither has a `-[` in it. The (--name) shorthand is the house
+  # way to pass a dynamic number, so it stays clean.
+  test "an arbitrary modifier and an arbitrary property count as well" do
+    ["text-base/[1.3]", "bg-red-500/[0.5]", "[mask-type:luminance]", "lg:[--gutter:2rem]"].each do |token|
+      assert CssMatchers.arbitrary?(token), "expected #{token} to count as arbitrary"
+    end
+
+    ["w-(--progress-fill)", "[&_th]:bg-base-200", "top-1/2"].each do |token|
+      assert_not CssMatchers.arbitrary?(token), "expected #{token} to be clean"
     end
   end
 
@@ -69,6 +104,30 @@ class CssCensusMatchersTest < ActiveSupport::TestCase
     end
   end
 
+  # A helper takes class lists under more keys than class:. Reading that one key
+  # left the login field's icon classes -- eight of them, written out five
+  # times -- outside every count.
+  test "a class list is read from any key ending in class" do
+    code = %(f.text_field :email, icon_class: "absolute inset-y-0 text-warning", wrapper_class: 'login-field', class: "login-input")
+
+    assert_equal ["absolute inset-y-0 text-warning", "login-field", "login-input"],
+                 code.scan(CssMatchers::CLASS_KWARG).map(&:last)
+  end
+
+  test "a key that only mentions class is not a class list" do
+    [%q(belongs_to :lead, class_name: "Person"), %q(subclass: "wide"), %q(classy: "flex gap-2")].each do |code|
+      assert_no_match CssMatchers::CLASS_KWARG, code
+    end
+  end
+
+  # A key can end in class and still hold something else: the request log's
+  # filter labels have `status_class: "Outcome"`.
+  test "a value with a capital outside brackets is a label, not a class list" do
+    assert CssMatchers.class_list?("flex gap-2 bg-[#FFF] content-['Hi']")
+    assert_not CssMatchers.class_list?("Outcome")
+    assert_not CssMatchers.class_list?("Request Outcome")
+  end
+
   # The search dialog's filter chips rendered bare for eleven days. The line
   # that built their class glued the name to a placeholder, so Tailwind never
   # read it and @utility ac-filter-chip was not emitted. bin/css_check passed
@@ -95,6 +154,29 @@ class CssCensusMatchersTest < ActiveSupport::TestCase
 
     assert_includes compiled, "text-stone-muted"
     assert_includes compiled, "pt-0"
+  end
+
+  # CompiledStylesheetTest holds its lists by the class as written, so the
+  # variant and the important have to survive -- and a comment in front of the
+  # layer must not hide it, which is how a real build opens.
+  test "a compiled class keeps its variant and its important" do
+    classes = CssMatchers.utility_classes("/*! tailwindcss */#{CHIP_NOT_EMITTED}")
+
+    assert_includes classes, "hover:text-stone-muted"
+    assert_includes classes, "pt-0!"
+    assert_not_includes classes, "ac-filter-chip-active", "a rule outside the utilities layer is not a compiled class"
+  end
+
+  # CSS writes a class that opens with a digit as a hex escape and a space, and
+  # escapes a brace or a semicolon inside an arbitrary value. Read as plain
+  # text, `2xl:bg-red-500` came back as "32" and the other two were cut short,
+  # so nothing written that way could reach a list.
+  test "an escaped selector is read back as the class that was written" do
+    css = <<~'CSS'
+      @layer utilities{.\32 xl\:bg-red-500{color:red}.content-\[\'\{\}\'\]{--tw-content:""}.bg-\[url\(\'\/a\;b\.png\'\)\]{color:red}}
+    CSS
+
+    assert_equal ["2xl:bg-red-500", "content-['{}']", "bg-[url('/a;b.png')]"].to_set, CssMatchers.utility_classes(css)
   end
 
   test "declared utilities come from the source, not from the comments around it" do

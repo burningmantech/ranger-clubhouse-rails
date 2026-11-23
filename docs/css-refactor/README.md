@@ -32,5 +32,6 @@ So a fresh clone gets the reasoning here, and regenerates the data.
 | `bin/css_lint.rb` | The ratchet, against `.css-baseline.json`. `--strict` to fail. A class name built by interpolation fails in any mode, in views, helpers and `app/javascript`. |
 | `bin/css_cascade.js` | Which utilities are losing to first-party CSS. **The harness is blind to CSS-only changes** — no markup moves, so every snapshot matches — and this is the instrument for that gap. Read its header before using it. |
 | `lib/css_matchers.rb` | What counts as a palette colour, an arbitrary value, an `!important`, a class name glued to a JS placeholder — and which utilities a stylesheet declares and which a build compiled. Tested by `test/lib/css_census_matchers_test.rb`. |
+| `test/lib/compiled_stylesheet_test.rb` | Added 2026-11-22, after this record. Builds the stylesheet and holds exact lists of every palette colour, arbitrary value and `!important` compiled into a utility class, so a spelling the census cannot read still fails by name. |
 
 Rules and rationale: [../css-dry-rules.md](../css-dry-rules.md).

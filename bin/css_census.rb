@@ -41,10 +41,17 @@ end.parse!
 # ---------------------------------------------------------------- extraction --
 
 CLASS_ATTR   = /\bclass\s*=\s*(["'])(.*?)\1/m           # class="..." in markup
-CLASS_KWARG  = /\bclass:\s*(["'])(.*?)\1/m              # class: "..." in Ruby / tag helpers
+# class: "..." and wrapper_class: "..." in Ruby and tag helpers are
+# CssMatchers::CLASS_KWARG, where the pattern is tested.
 # style = "regular" in Ruby is an assignment; an HTML attribute has no spaces.
 STYLE_ATTR   = /\bstyle=(["'])(.*?)\1/m
 DYNAMIC      = /<%|#\{|\{\{/                            # ERB / interpolation / mustache
+# Vendored bundles are not this app's markup: 73 of the 97 class strings under
+# app/javascript were theirs. The javascript tree only -- a views or helpers
+# directory that happens to be called vendor is this app's, and has to count.
+VENDORED     = %r{(?:\A|/)javascript/vendor/}
+# A whole-line Ruby comment. `#{` opens an interpolation, not a comment.
+RUBY_COMMENT = /\A\s*#(?!\{)/
 
 # Interpolation that builds a class *name* — invisible to Tailwind's scanner, so
 # the class silently never makes it into the compiled stylesheet.
@@ -71,7 +78,7 @@ files = opts[:roots].flat_map do |root|
   next [] unless Dir.exist?(root)
 
   Dir.glob(File.join(root, "**", "*")).select do |p|
-    File.file?(p) && opts[:exts].any? { |e| p.end_with?(e) }
+    File.file?(p) && !p.match?(VENDORED) && opts[:exts].any? { |e| p.end_with?(e) }
   end
 end.sort
 
@@ -99,13 +106,25 @@ files.each do |path|
     end
   end
 
+  # A Ruby comment is not markup, and Tailwind does not read one either, so an
+  # example quoted in it is neither a duplicate nor an interpolated class name.
+  # ERB, HTML and JS comments are still read: Tailwind compiles what they name.
+  ruby = path.end_with?(".rb")
+  commented = lambda do |offset|
+    ruby && src[((src.rindex("\n", offset) || -1) + 1)...offset].match?(RUBY_COMMENT)
+  end
+
   # Where a class list has already been found, so the bare-string pass below
   # does not count `class: "a b"` a second time.
   claimed = []
 
-  [CLASS_ATTR, CLASS_KWARG].each do |re|
+  [CLASS_ATTR, CssMatchers::CLASS_KWARG].each do |re|
     src.to_enum(:scan, re).each do
       m = Regexp.last_match
+      next if commented.call(m.begin(0))
+      # A key that merely ends in class may hold a label: `status_class: "Outcome"`.
+      next if re == CssMatchers::CLASS_KWARG && !m[2].match?(DYNAMIC) && !CssMatchers.class_list?(m[2])
+
       claimed << (m.begin(2)...m.end(2))
       record.call(m[2].to_s, m.begin(0))
     end
@@ -118,6 +137,7 @@ files.each do |path|
   if path.end_with?(".rb", ".js")
     src.to_enum(:scan, CssMatchers::CODE_STRING).each do
       m = Regexp.last_match
+      next if commented.call(m.begin(0))
       next if claimed.any? { |span| span.cover?(m.begin(2)) }
       next unless CssMatchers.classy?(m[2])
 
@@ -135,7 +155,7 @@ end
 # placeholder there is the same bug in a third spelling. Read whatever --roots
 # says: the lint's roots are views and helpers, and this one rule has to reach
 # JS without moving the numbers the ratchet recorded for those two.
-Dir.glob("app/javascript/**/*.{js,ts}").reject { |path| path.include?("/vendor/") }.sort.each do |path|
+Dir.glob("app/javascript/**/*.{js,ts}").grep_v(VENDORED).sort.each do |path|
   File.foreach(path).with_index(1) do |line, number|
     next unless CssMatchers.glued_js_class?(line)
 
@@ -206,8 +226,8 @@ def offenders(static, &predicate)
   hits.sort_by { |_, v| -v[:count] }
 end
 
-palette   = offenders(static) { |t| t.match?(CssMatchers::PALETTE) }
-bare_bw   = offenders(static) { |t| t.match?(CssMatchers::BARE_BW) }
+palette   = offenders(static) { |t| CssMatchers.palette_hue?(t) }
+bare_bw   = offenders(static) { |t| CssMatchers.black_white?(t) }
 arbitrary = offenders(static) { |t| CssMatchers.arbitrary?(t) }
 bangs     = offenders(static) { |t| CssMatchers.important?(t) }
 

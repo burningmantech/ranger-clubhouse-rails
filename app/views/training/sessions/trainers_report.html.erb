@@ -125,7 +125,7 @@
               <span class="report-years-pill"><%= trainee.years %> <%= "yr".pluralize(trainee.years) %></span>
             <% end %>
           </td>
-          <td class="report-teams">
+          <td>
             <%# The full-day flag leads the teams cell -- in the callsign cell
                 it wraps the glance line to three lines. %>
             <% if @training_session.dirt? && (trainee.is_inactive || trainee.is_retired) %>

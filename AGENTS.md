@@ -260,6 +260,17 @@ the rules it counts by (palette colour, arbitrary value, `!important`, class-sha
 `lib/css_matchers.rb`, tested by `test/lib/css_census_matchers_test.rb`. One rule reaches
 `app/javascript` too, and fails in any mode: a class name glued to a `${}` placeholder.
 
+The lint reads source, so it misses a class written where its patterns do not look: a lone token
+in a hash, a string with a quote in it. `test/lib/compiled_stylesheet_test.rb` asks the build
+instead. Every palette colour, arbitrary value and `!important` that Tailwind compiled into a
+utility class is on a list there by name, with the reason it is allowed or a note that none is on
+record. Adding one means adding its line; removing the last use of one means deleting its line.
+Three limits, spelled out in the test's header: a class named in an ERB, HTML or JavaScript comment
+counts as a use, because Tailwind reads those as text (it skips Ruby `#` comments); a value inside
+`@apply` or an `!important` declaration in a stylesheet is not a class, so stylesheets are outside
+the lists; and Ruby that only spells a class with an important (`rows.filter!`, `if !hidden`) is
+left out of the build in `application.css` rather than listed (the `@source` paragraph below).
+
 `docs/css-refactor/` is the record of the refactor that set those ceilings — unit by unit, with
 what each measured and what was deliberately left alone. Read `plan.md` before assuming a rule is
 stale: several look like dead weight and are load-bearing, and it says which. Two things it
@@ -271,8 +282,10 @@ the instrument for that second gap.
 - **Check for a daisyUI component class before writing utilities.** A hand-rolled
   `inline-flex items-center justify-center rounded-md px-4 py-2` is a `btn`. Check the class
   exists in daisyUI 5 — v4 names like `card-bordered` silently do nothing.
-- **Semantic tokens only in views.** No `bg-white`, `text-gray-*`, `bg-blue-*`. The two
-  surviving palette colours (`profile_photos/crop.html.erb`) are a deliberate exception.
+- **Semantic tokens only in views.** No `bg-white`, `text-gray-*`, `bg-blue-*`. The palette
+  colours that survive are listed, each with its reason, in
+  `test/lib/compiled_stylesheet_test.rb`: the two crop neutrals (`profile_photos/crop.html.erb`)
+  and the progress badge's gradient (`UiProgressBoxHelper`).
 - **Never build a class name by interpolation.** `"icon-#{color}"` and `"bg-#{c}-500"` are
   invisible to the scanner and compile to nothing. Use a frozen lookup hash with `fetch`.
   Gluing counts: in JS, `` `chip${…}` `` hides `chip` itself, so write each name whole.
@@ -287,7 +300,9 @@ Class strings only compile where Tailwind scans: the `@source` list in
 `app/presenters`, `app/controllers` or `app/services`, and never a `.css` file (`@apply` still
 works there). A new home for class strings needs its own `@source` line. One file inside the
 list is left out with `@source not`: the vendored Lexxy bundle (`app/javascript/vendor/lexxy-*.js`),
-whose ordinary words compile into daisyUI classes no page uses.
+whose ordinary words compile into daisyUI classes no page uses. Two tokens are left out by name
+with `@source not inline(...)`: `select!` and `!modal`, Ruby (a bang method, a negation) that the
+scanner read as daisyUI classes with an important.
 
 ### Design Documentation Reference
 
