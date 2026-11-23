@@ -27,4 +27,9 @@ class UiLabelValueHelperTest < ActionView::TestCase
     assert_select "dl.ui-label-value.ui-label-value-fitted > dt + dd", text: "ranger@example.com", count: 1
     assert_select "dl > div", count: 0
   end
+
+  test "an unknown layout, or a label width the layout would ignore, is refused" do
+    assert_raises(ArgumentError) { ui_label_value(layout: "fitted") { |list| list.row "Email", "x" } }
+    assert_raises(ArgumentError) { ui_label_value(layout: :fitted, label_width: "9rem") { |list| list.row "Email", "x" } }
+  end
 end

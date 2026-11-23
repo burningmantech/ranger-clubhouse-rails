@@ -778,7 +778,7 @@ A label/value list: one `<dl>`, a row per `list.row "Label", value` (or a block 
 | Layout | Rows | Use it for |
 |--------|------|------------|
 | `:default` | Label above its value below `lg`, beside it from `lg` up | Most lists |
-| `:fitted` | Side by side at every width; the label column is as wide as its longest label, each label on its value's baseline | A few short labels in a narrow column |
+| `:fitted` | Side by side at every width; the label column is as wide as its longest label (half the list at most), each label on its value's baseline | A few short labels in a narrow column |
 
 ```erb
 <%= ui_label_value layout: :fitted do |list| %>
@@ -789,9 +789,8 @@ A label/value list: one `<dl>`, a row per `list.row "Label", value` (or a block 
 <% end %>
 ```
 
-In `:fitted` a `tap-target-link` takes its extra height out of the row gap, so a row holding a link
-keeps the list's rhythm and two links in adjacent rows still meet without overlapping. `:fitted` suits short
-labels only: a long one takes the width its value needs on a phone.
+`:fitted` suits short labels: the label column stops at half the list's width, and a longer label wraps inside
+it. `label_width:` belongs to the default layout and raises with any other.
 
 **In use:** Person › Overview (`app/views/person/_summary_strip.html.erb`), `:fitted` for its four lists.
 

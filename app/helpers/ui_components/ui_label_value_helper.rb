@@ -43,6 +43,13 @@ module UiComponents
     #     <% end %>
     #   <% end %>
     def ui_label_value(label_width: nil, size: :base, layout: :default, **options, &block)
+      unless LAYOUT_CLASSES.key?(layout)
+        raise ArgumentError, "ui_label_value layout: must be one of #{LAYOUT_CLASSES.keys.inspect}, got #{layout.inspect}"
+      end
+      if label_width && layout != :default
+        raise ArgumentError, "ui_label_value label_width: sets the default layout's column; layout: #{layout.inspect} sizes its own"
+      end
+
       builder = LabelValueBuilder.new(self, size:)
       capture(builder, &block)
 

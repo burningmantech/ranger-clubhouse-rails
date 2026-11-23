@@ -62,8 +62,9 @@
   <%# w-56 holds the longest label, Resend Welcome Message, on one line.
       content-start: from `lg` the rail is as tall as the facts, and its groups
       stay together at the top instead of spreading down it. %>
-  <nav class="flex flex-wrap content-start gap-x-8 gap-y-3 border-t border-base-300 pt-3 lg:w-56 lg:shrink-0 lg:border-s lg:border-t-0 lg:ps-4 lg:pt-0"
-       aria-label="Actions">
+  <%# A group, not a <nav>: half of these act on the account rather than go anywhere. %>
+  <div class="flex flex-wrap content-start gap-x-8 gap-y-3 border-t border-base-300 pt-3 lg:w-56 lg:shrink-0 lg:border-s lg:border-t-0 lg:ps-4 lg:pt-0"
+       role="group" aria-label="Actions">
     <% if can?(:toggle_onsite) %>
       <%= button_link "Mark #{person.on_site ? "Off Site" : "On Site"}",
                       :secondary,
@@ -75,7 +76,9 @@
     <% end %>
 
     <% groups.each do |items| %>
-      <ul class="grow basis-48"><%= safe_join(items) %></ul>
+      <%# max-w-56: a group alone on a row, as Delete Account is on a tablet,
+          stays a column wide instead of becoming a bar across the section. %>
+      <ul class="max-w-56 grow basis-48"><%= safe_join(items) %></ul>
     <% end %>
-  </nav>
+  </div>
 <% end %>

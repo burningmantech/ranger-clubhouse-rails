@@ -9,7 +9,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
   include PersonTestFactory
 
   # The Overview's rail of actions (person/_actions).
-  RAIL = "#person-summary-strip nav[aria-label='Actions']"
+  RAIL = "#person-summary-strip [role='group'][aria-label='Actions']"
 
   setup do
     Rails.cache.clear
@@ -171,6 +171,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     get person_path(@target)
 
     assert_select "#person-summary-strip", count: 1
+    assert_select RAIL, count: 0
     assert_select "#person-summary-strip nav", count: 0
   end
 
