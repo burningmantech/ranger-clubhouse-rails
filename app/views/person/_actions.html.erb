@@ -1,57 +1,70 @@
+<%# locals: (person:) %>
+<%# The Overview's rail: every action this viewer may take on the account, laid
+    open instead of folded into a menu. It stands beside the facts from `lg`
+    and under them below it, where its groups sit as many across as the row
+    holds. No group has a heading: each action is named by its own label. A
+    viewer with no action gets no rail. %>
 <%
-  edit_items = []
+  record = []
   if can_manage_callsign_or_status?
-    edit_items << dropdown_item("Edit Callsign", edit_person_callsign_path(person))
-    edit_items << dropdown_item("Edit Status", edit_person_status_path(person))
-  end
-  manage_items = []
-  if can_manage_banners?
-    manage_items << dropdown_item("Manage Account Banners", person_banners_path(person))
+    record << dropdown_item("Edit Status", edit_person_status_path(person))
+    record << dropdown_item("Edit Callsign", edit_person_callsign_path(person))
   end
   if is_admin? || has_role?(Role::VC)
-    manage_items << dropdown_item("Manage Photo", new_person_photo_path(person))
-    manage_items << dropdown_item("Status History", person_status_history_path(person))
+    record << dropdown_item("Status History", person_status_history_path(person))
   end
+
+  account = []
   if is_admin?
-    manage_items << dropdown_item("Change Password", person_password_path(person))
-  end
-  if person.prospective? && can?(:resend_welcome)
-    manage_items << dropdown_item(
-      "Resend Welcome Message",
-      person_resend_welcome_path(person),
-      data: confirm_modal(message: "Send #{person.callsign} another welcome message with a new login link?",
-                          confirm_label: "Send",
-                          method: :post))
+    account << dropdown_item("Change Password", person_password_path(person))
   end
   if person.on_boarded_at.present? && can?(:reset_onboarding)
-    manage_items << dropdown_item(
+    account << dropdown_item(
       "Reset Onboarding Tour",
       person_reset_onboarding_path(person),
       data: confirm_modal(message: "Show #{person.callsign} the onboarding tour again at their next visit to the dashboard?",
                           confirm_label: "Reset Tour",
                           method: :post))
   end
+  if person.prospective? && can?(:resend_welcome)
+    account << dropdown_item(
+      "Resend Welcome Message",
+      person_resend_welcome_path(person),
+      data: confirm_modal(message: "Send #{person.callsign} another welcome message with a new login link?",
+                          confirm_label: "Send",
+                          method: :post))
+  end
 
-  danger_items = []
+  photo_and_banners = []
+  if is_admin? || has_role?(Role::VC)
+    photo_and_banners << dropdown_item("Manage Photo", new_person_photo_path(person))
+  end
+  if can_manage_banners?
+    photo_and_banners << dropdown_item("Manage Account Banners", person_banners_path(person))
+  end
+
+  danger = []
   if can?(:delete_account)
-    danger_items << dropdown_item("Delete Account",
-                                  person_path(person),
-                                  data: confirm_modal(title: "Delete #{person.callsign}'s Account",
-                                                      message: "Delete #{person.callsign}'s account? This removes the account and everything attached to it. It cannot be undone.",
-                                                      confirm_label: "Delete Account",
-                                                      variant: :error,
-                                                      method: :delete))
+    danger << dropdown_item("Delete Account",
+                            person_path(person),
+                            class: "text-error",
+                            data: confirm_modal(title: "Delete #{person.callsign}'s Account",
+                                                message: "Delete #{person.callsign}'s account? This removes the account and everything attached to it. It cannot be undone.",
+                                                confirm_label: "Delete Account",
+                                                variant: :error,
+                                                method: :delete))
   end
 
-  action_menu_items = []
-  [edit_items, manage_items, danger_items].reject(&:empty?).each do |group|
-    action_menu_items << dropdown_divider if action_menu_items.any?
-    action_menu_items.concat(group)
-  end
+  groups = [record, account, photo_and_banners, danger].reject(&:empty?)
 %>
 
-<% if action_menu_items.any? || can?(:toggle_onsite) %>
-  <div class="flex flex-col gap-2 lg:flex-row lg:items-start">
+<% if groups.any? || can?(:toggle_onsite) %>
+  <%# w-56 holds the longest label, Resend Welcome Message, on one line.
+      content-start: from `lg` the rail is as tall as the facts, and its groups
+      stay together at the top instead of spreading down it. %>
+  <%# A group, not a <nav>: half of these act on the account rather than go anywhere. %>
+  <div class="flex flex-wrap content-start gap-x-8 gap-y-3 border-t border-base-300 pt-3 lg:w-56 lg:shrink-0 lg:border-s lg:border-t-0 lg:ps-4 lg:pt-0"
+       role="group" aria-label="Actions">
     <% if can?(:toggle_onsite) %>
       <%= button_link "Mark #{person.on_site ? "Off Site" : "On Site"}",
                       :secondary,
@@ -59,15 +72,13 @@
                       method: :post,
                       icon: person.on_site ? "moon" : "person-walking",
                       icon_type: :solid,
-                      full_width: true %>
+                      class: "w-full" %>
     <% end %>
 
-    <% if action_menu_items.any? %>
-      <%= dropdown_menu "Actions", class: "dropdown-end w-full lg:w-auto",
-                        summary_class: "w-full justify-between lg:w-auto",
-                        menu_class: "w-full lg:w-64" do %>
-        <%= safe_join(action_menu_items) %>
-      <% end %>
+    <% groups.each do |items| %>
+      <%# max-w-56: a group alone on a row, as Delete Account is on a tablet,
+          stays a column wide instead of becoming a bar across the section. %>
+      <ul class="max-w-56 grow basis-48"><%= safe_join(items) %></ul>
     <% end %>
   </div>
 <% end %>

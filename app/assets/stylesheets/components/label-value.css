@@ -45,4 +45,48 @@
         margin-bottom: 0;
       }
     }
+
+    /*
+     * Fitted (layout: :fitted): label and value stay side by side at every
+     * width, in a label column as wide as its longest label and never more
+     * than half the list, each label on its value's baseline. For a few short labels in a narrow column, where
+     * the default's fixed column would wrap one label or strand another.
+     */
+    .ui-label-value-fitted {
+      grid-template-columns: fit-content(50%) minmax(0, 1fr);
+      align-items: baseline;
+      gap: theme(spacing.2) theme(spacing.3);
+    }
+
+    /*
+     * The layout squeezes a value into less than the list's width, so a value
+     * with no spaces (a long email address) breaks where it must rather than
+     * running out of the box.
+     */
+    .ui-label-value-fitted dd {
+      margin-bottom: 0;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    /*
+     * A date or an aside inside a value is an inline-block, whose baseline is
+     * its LAST line: one that wraps inside itself on a narrow phone would pull
+     * its label down to that line. Asking for the first line keeps the label
+     * beside where the value starts. A browser without the property keeps the
+     * old alignment in that one case.
+     */
+    .ui-label-value-fitted dd > * {
+      baseline-source: first;
+    }
+
+    /*
+     * A row holding a tap-target link (and its copy button) is 36px tall
+     * beside 17px rows, which opens the list up around it. The link gives
+     * half of that extra height back to the row gap. Its tap area is still
+     * 36px, so it reaches a few pixels into the rows above and below.
+     */
+    .ui-label-value-fitted .tap-target-link {
+      margin-block: calc(theme(spacing.5) / -4);
+    }
 }

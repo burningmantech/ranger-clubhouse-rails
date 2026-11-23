@@ -757,6 +757,43 @@ Do not reach for `disabled:` on the link instead: that attribute is inert on an 
 the row clickable, keyboard-reachable, and visually unchanged. Blocking a row in the UI is an
 affordance, not enforcement — the destination action must still refuse on its own.
 
+### ui_label_value
+
+**File:** `app/helpers/ui_components/ui_label_value_helper.rb`
+
+```ruby
+ui_label_value(label_width: nil, size: :base, layout: :default, **options, &block)
+```
+
+A label/value list: one `<dl>`, a row per `list.row "Label", value` (or a block for the value). Its styles are
+`components/label-value.css`.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `label_width:` | String | `nil` | Width of the label column in the default layout, in `rem` (`"9rem"`). Omit it and the column sizes to its content |
+| `size:` | Symbol | `:base` | `:base` or `:sm` |
+| `layout:` | Symbol | `:default` | How the rows are laid out, below. Anything else raises |
+| `class:` | String | `nil` | Layout only: margin, a width, a `basis-*` |
+
+| Layout | Rows | Use it for |
+|--------|------|------------|
+| `:default` | Label above its value below `lg`, beside it from `lg` up | Most lists |
+| `:fitted` | Side by side at every width; the label column is as wide as its longest label (half the list at most), each label on its value's baseline | A few short labels in a narrow column |
+
+```erb
+<%= ui_label_value layout: :fitted do |list| %>
+  <% list.row "Approval", ui_badge("approved", :success) %>
+  <% list.row "Phone" do %>
+    <%= link_to phone_format(person.home_phone), "tel:#{person.home_phone}", class: "tap-target-link" %>
+  <% end %>
+<% end %>
+```
+
+`:fitted` suits short labels: the label column stops at half the list's width, and a longer label wraps inside
+it. `label_width:` belongs to the default layout and raises with any other.
+
+**In use:** Person › Overview (`app/views/person/_summary_strip.html.erb`), `:fitted` for its four lists.
+
 ### ui_progress_bar
 
 **File:** `app/helpers/ui_components/ui_progress_bar_helper.rb`

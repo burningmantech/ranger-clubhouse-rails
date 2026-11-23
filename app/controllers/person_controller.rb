@@ -5,7 +5,7 @@ class PersonController < ApplicationController
 
   # admin: false -- Clubhouse 2's PersonPolicy#delete admits Tech Ninja alone, and
   # that policy has no before hook letting Admin through. The same gate answers the
-  # Delete Account item in person/_actions, so the menu and the guard cannot disagree.
+  # Delete Account item in person/_actions, so the rail and the guard cannot disagree.
   authorize_ability :delete_account,
                     roles: [Role::TECH_NINJA],
                     admin: false,

@@ -85,6 +85,13 @@ module ApplicationHelper
     value.presence || "—"
   end
 
+  # A muted remark beside a value, kept whole where the line wraps: a bracketed
+  # year list, "(3 days ago)". It moves to the next line rather than breaking
+  # mid-phrase, and wraps inside itself only when it is wider than the line.
+  def muted_aside(text)
+    tag.span(text, class: "inline-block text-stone-muted")
+  end
+
   # A team's or position's title, with "(inactive)" appended when it is not
   # active. Records must respond to #active? and #title.
   def title_marking_inactive(record)
