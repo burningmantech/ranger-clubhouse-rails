@@ -226,8 +226,10 @@ explicit user confirmation before implementation.
     - Styling details (Tailwind classes, dark mode support)
 
 **Approved one-offs:** the search bar's segmented radio control (`application/_search_bar_placeholder`, `btn`
-classes on radio labels in a `join`) and the profile photo upload's drag-and-drop dropzone (`profile_photos/new`)
-stay as one-off markup. Either becomes a helper on its second use.
+classes on radio labels in a `join`), the profile photo upload's drag-and-drop dropzone (`profile_photos/new`)
+and the person Overview's rail of actions (`person/_actions`: the page's actions laid open as a `<nav>` of
+`dropdown_item` links beside the facts, chosen from its mockup 2026-11-23) stay as one-off markup. Each becomes a
+helper on its second use.
 
 **Example approval request:**
 

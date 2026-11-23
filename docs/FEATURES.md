@@ -689,7 +689,7 @@ Trap: `period`/`skip_period` filter only ranger/echelon steps (`Dashboard#proces
 Trap: Neither `partial_coverage_test.rb` (file exists) nor `test/lib/dashboard_tasks/*_test.rb` (`check` only) renders, so a partial reading a fact `DashboardFacts` lacks 500s `/me` and Person › Dashboard — use `DashboardRenderTest` or `/me` as a ranger.
 
 ### Onboarding tour (first sign-in)
-Reach it: `GET /me`, on the first visit by anyone whose `person.on_boarded_at` is nil; again at `GET /me?tour=1` → Account › Replay Onboarding; recorded by `PATCH /me/onboarded`; cleared by an Admin or VC at Person › Overview › Actions › Reset Onboarding Tour
+Reach it: `GET /me`, on the first visit by anyone whose `person.on_boarded_at` is nil; again at `GET /me?tour=1` → Account › Replay Onboarding; recorded by `PATCH /me/onboarded`; cleared by an Admin or VC at Person › Overview › Reset Onboarding Tour
 Gate: any signed-in person whose dashboard is the ranger, applicant or auditor shape (`Dashboard#type`): bonked and past-prospective people get no tour (their branch of `me/dashboard/index` renders without it) and no Replay item (`Menus::USER`, `not_status: [:past_prospective?, :is_any_bonked?]`); the Menu step only for a person the navbar offers the menu to (`mega_menu_offered?`) — a Ranger with no roles has no Menu button to point at
 Controller: `app/controllers/me/dashboard_controller.rb` (`index` renders `me/dashboard/_onboarding`; `onboarded`)
 Owner: `app/javascript/controllers/onboarding_controller.js` over the vendored driver.js (`app/javascript/vendor/driver-1.10.1.js`, pinned in `config/importmap.rb`; its sheet `app/assets/stylesheets/driver.css`, re-themed by `app/assets/stylesheets/components/driver.css`); the steps and their copy in `app/views/me/dashboard/_onboarding.html.erb`, varying by `Dashboard#type` and `Person#is_echelon?`
@@ -999,17 +999,18 @@ Trap: `Me::PersonalVehiclesController` skips `authorize_status` and builds no `V
 Every controller includes `PersonConcern`: `set_person` loads `params[:person_id] || params[:id]`; `authorize_role VIEW_ROLES` admits Person › Overview's Gate roles. `authorize_role` is last-call-wins: a controller's own call *replaces* VIEW_ROLES, while `before_action` checks stack on top. No page has a year selector (present year); only `layout "person"` controllers (or `PersonController`) show the Person sidebar (`Menus::PERSON`).
 
 ### Person › Overview
-Reach it: `GET /person/:id` → Person sidebar › Essentials › Overview, and callsign links passing `can_view_person_page?`; Switch to HQ Interface `GET /person/:person_id/redirect_to_hq`; Teams & Positions › View History `GET /person/:person_id/membership/history`; Actions › Resend Welcome Message `POST /person/:person_id/resend_welcome`; Actions › Reset Onboarding Tour `POST /person/:person_id/reset_onboarding`; email banner › Clear Bounce Report / Clear Spam Report `POST /person/:person_id/email-suppression/clear` (also in the HQ shell)
-Gate: `ADMIN`, `EVENT_MANAGEMENT`, `EVENT_MANAGEMENT_ON_PLAYA`, `MENTOR`, `TRAINER`, `VC`, `SHIFT_MANAGEMENT` (PersonConcern::VIEW_ROLES); redirect_to_hq also needs setting HQ_WINDOW_INTERFACE_ENABLED; resend_welcome also needs `ADMIN` or `VC` (`authorize_ability :resend_welcome`, as Clubhouse 2's `PersonPolicy#sendWelcomeEmail`; the Actions item asks `can?(:resend_welcome)`, the same gate; denied → `person_path`), then status prospective; reset_onboarding the same, with its own `authorize_ability` and `can?`, offered only once `person.on_boarded_at` is set; the email clear `ADMIN`, `TECH_NINJA` (its own `authorize_role`, replacing VIEW_ROLES)
+Reach it: `GET /person/:id` → Person sidebar › Essentials › Overview, and callsign links passing `can_view_person_page?`; Switch to HQ Interface `GET /person/:person_id/redirect_to_hq`; Teams & Positions › View History `GET /person/:person_id/membership/history`; the Overview's rail › Resend Welcome Message `POST /person/:person_id/resend_welcome`, Reset Onboarding Tour `POST /person/:person_id/reset_onboarding`; email banner › Clear Bounce Report / Clear Spam Report `POST /person/:person_id/email-suppression/clear` (also in the HQ shell)
+Gate: `ADMIN`, `EVENT_MANAGEMENT`, `EVENT_MANAGEMENT_ON_PLAYA`, `MENTOR`, `TRAINER`, `VC`, `SHIFT_MANAGEMENT` (PersonConcern::VIEW_ROLES); redirect_to_hq also needs setting HQ_WINDOW_INTERFACE_ENABLED; resend_welcome also needs `ADMIN` or `VC` (`authorize_ability :resend_welcome`, as Clubhouse 2's `PersonPolicy#sendWelcomeEmail`; the rail's link asks `can?(:resend_welcome)`, the same gate; denied → `person_path`), then status prospective; reset_onboarding the same, with its own `authorize_ability` and `can?`, offered only once `person.on_boarded_at` is set; the email clear `ADMIN`, `TECH_NINJA` (its own `authorize_role`, replacing VIEW_ROLES)
 Controller: `app/controllers/person_controller.rb` (`show`, `redirect_to_hq`, `resend_welcome`, `reset_onboarding`), `app/controllers/concerns/person_concern.rb`, `app/controllers/person/email_suppressions_controller.rb` (`clear`)
 Owner: `PersonPermissionPresenter#overview_rows` (`app/presenters/person_permission_presenter.rb`), `RoleManager` (`app/lib/role_manager.rb`), `Membership.retrieve_for_person` (`app/lib/membership.rb`), `EmailSuppression` (`app/models/email_suppression.rb`)
 Touches: `person` (w), `person_role`, `role`, `person_position`, `position`, `position_role`, `person_team`, `team`, `team_role`, `person_fka`, `person_photo`, `person_banner`, `email_suppression` (w), `action_logs` (w), `timesheet`, `setting`
 Verify: `test/controllers/person_controller_test.rb`, `test/controllers/person/email_suppressions_controller_test.rb`, `test/presenters/person_permission_presenter_test.rb`, `test/helpers/person/permissions_helper_test.rb`, `test/lib/role_manager_test.rb`, `test/models/role_cache_invalidation_test.rb`
+Trap: the Overview has no Actions menu: `person/_actions` lays every action the viewer may take open as a rail (`nav[aria-label="Actions"]`: Mark On/Off Site, then the links in groups), beside the facts from `lg` and under them below it. Each link keeps the gate it had in the menu, and a viewer with none (Trainer, both Event Management roles) gets no rail. Nothing in the section has a heading, the rail's groups included (owner's ruling 2026-11-23: each field is named by its own label), so the callsign's approval is the row labelled Callsign.
 Trap: `RoleManager.retrieve` is cached per person and year (`person-roles-<year>-<id>`) — writers bypassing `PersonRole.add_ids_to_person`/`remove_ids_from_person` must call `RoleManager.purge_person`; test with `CacheTestHelper#with_cache_store`.
 Trap: the email banner reads `email_suppression` for the person's current address and states only the fact and the date of the last report (see Person pages & HQ Window shell). Its clear deletes that one row and writes an `email-suppression-clear` action log naming the actor, the person, the address and what the row held, then redirects back (`redirect_back_or_to`, falling back to the person page); with no row it writes nothing and says so. A Tech Ninja with none of VIEW_ROLES may clear but opens neither page, so never sees the button. For a `complaint` row, or a `bounce` row with sub-type `OnAccountSuppressionList` (`EmailSuppression#on_ses_list?`), the confirmation says SES's own list holds the address too and only the SES console clears it there; until then SES refuses mail to it and the next broadcast email writes the row again — as a bounce (sub-type `OnAccountSuppressionList`), even where the cleared row was a complaint. Changing the address also clears the banner, since the new one has no row.
 Trap: `PersonController#redirect_to_hq` answers `HQ_WINDOW_INTERFACE_ENABLED` off with a 422 `turbo_stream` that Turbo drops on the hero's plain `back_to` link (`app/views/person/_hero.html.erb`) — add `data: { turbo_stream: true }` or redirect with a flash.
 Trap: `resend_welcome` saves nothing — the link is `person.generate_token_for(:invitation)`, signed and dated for 14 days and stored nowhere, so an earlier link keeps working alongside it and both die when the password is set — never add a `save!`: it runs every-save validations and `before_validation` rewrites, so an older prospective record that fails them gets an error page (`RecordInvalid`, 422) and no email.
-Trap: `reset_onboarding` clears `person.on_boarded_at` with `update_attribute` — no validations, as the resend above, and `audit_model` logs the `person-update` (actor, target, the change). The Onboarding Tour row in the Account group (`person/_summary_strip`, through `person/_timestamp_value` like Last Seen and Created) reads the column for every page viewer; the tour itself is under My Clubhouse › Onboarding tour (first sign-in).
+Trap: `reset_onboarding` clears `person.on_boarded_at` with `update_attribute` — no validations, as the resend above, and `audit_model` logs the `person-update` (actor, target, the change). The Onboarding Tour row (`person/_summary_strip`, through `person/_timestamp_value` like Last Seen and Created) reads the column for every page viewer; the tour itself is under My Clubhouse › Onboarding tour (first sign-in).
 
 ### Mark On Site / Off Site (toggle_onsite)
 Reach it: `POST /person/:person_id/toggle_onsite` → Person › Overview's Mark On Site/Off Site button (`app/views/person/_actions.html.erb`)
@@ -1022,7 +1023,7 @@ Trap: `EVENT_MANAGEMENT`/`EVENT_MANAGEMENT_ON_PLAYA` alone no longer pass (ruled
 Trap: `Person#log_on_site_change` (after_save) writes `person_on_site` rows — bulk `on_site` writes (`update_all`, `update_columns`, `insert_all`) must call `PersonOnSite.reconcile(at:, creator:)`; `test/models/person_on_site_test.rb` enforces it.
 
 ### Delete Account (person#destroy)
-Reach it: `DELETE /person/:id` → Person › Overview › Actions › Delete Account
+Reach it: `DELETE /person/:id` → Person › Overview › Delete Account
 Gate: PersonConcern::VIEW_ROLES, then `TECH_NINJA` alone (`authorize_ability :delete_account`, `admin: false` — Clubhouse 2's `PersonPolicy#delete` has no `before` hook, so `ADMIN` without it is refused); denied → `person_path` (Actions link: `can?(:delete_account)`, the same gate)
 Controller: `app/controllers/person_controller.rb` (`destroy`)
 Owner: `Person` (`app/models/person.rb`, its `dependent:` associations), `ApplicationRecord#audit_destroy` (`app/models/application_record.rb`)
@@ -1051,7 +1052,7 @@ Trap: the pages render Me › Profile's shared `app/views/profile/*` templates �
 Trap: `VIEW_PII` is admitted here but not in VIEW_ROLES, so a View-PII-only viewer opens the profile but its "Overview" back link and the other Person sidebar pages bounce them to /me.
 
 ### Edit Callsign (callsigns + FKA)
-Reach it: `GET /person/:person_id/callsign/edit` → Person › Overview › Actions › Edit Callsign; save `PATCH /person/:person_id/callsign`; release `POST /person/:person_id/callsign/release`; FKA rows `GET /person/:person_id/fka/new`, `POST /person/:person_id/fka`, `GET /person/:person_id/fka/:id/edit`, `PATCH /person/:person_id/fka/:id`, `DELETE /person/:person_id/fka/:id`
+Reach it: `GET /person/:person_id/callsign/edit` → Person › Overview › Edit Callsign; save `PATCH /person/:person_id/callsign`; release `POST /person/:person_id/callsign/release`; FKA rows `GET /person/:person_id/fka/new`, `POST /person/:person_id/fka`, `GET /person/:person_id/fka/:id/edit`, `PATCH /person/:person_id/fka/:id`, `DELETE /person/:person_id/fka/:id`
 Gate: `ADMIN`, `VC`, `MENTOR` (`can_manage_callsign_or_status?` before_action on top of VIEW_ROLES); the `vintage` field `ADMIN` only, `used_vanity_change` `ADMIN`, `VC`; release `ADMIN`, `VC` only (`authorize_ability :release_callsign`, as Clubhouse 2's `PersonPolicy#releaseCallsign`), denied → the edit page (Release box: `can?(:release_callsign)`, the same gate)
 Controller: `app/controllers/person/callsigns_controller.rb` (`edit`, `update`, `release`), `app/controllers/person/fka_controller.rb` (`new`, `create`, `edit`, `update`, `destroy`)
 Owner: `Person` (`app/models/person.rb`: `reset_callsign`, `update_callsign_fka`, `fka_irrelevant_override`), `PersonFka` (`app/models/person_fka.rb`)
@@ -1061,7 +1062,7 @@ Trap: the form's "Callsign approved" checkbox is silently dropped — `Callsigns
 Trap: `Person#update_callsign_fka` (before_save) already records the old callsign as a `person_fka` row on every callsign change (`fka_irrelevant_override` sets searchability) — new code must not create FKA rows itself.
 
 ### Edit Status
-Reach it: `GET /person/:person_id/status/edit` → Person › Overview › Actions › Edit Status; save `PATCH /person/:person_id/status`
+Reach it: `GET /person/:person_id/status/edit` → Person › Overview › Edit Status; save `PATCH /person/:person_id/status`
 Gate: `ADMIN`, `VC`, `MENTOR` (`can_manage_callsign_or_status?` before_action on top of VIEW_ROLES)
 Controller: `app/controllers/person/statuses_controller.rb` (`edit`, `update`)
 Owner: `PersonStatusManagement.change` (`app/lib/person_status_management.rb`), `Person#log_status_change` (`app/models/person.rb`), `StatusChangeWarnings` (`app/lib/status_change_warnings.rb`)
@@ -1071,7 +1072,7 @@ Trap: status side effects (`person_status` row, positions/roles/teams, future si
 Trap: `StatusChangeWarnings` modals are client-side only (`status-warning` Stimulus controller via `Person::StatusesHelper#status_warning_modals_for`) — the PATCH applies any `Person::ALL_STATUSES` status unconfirmed.
 
 ### Status History
-Reach it: `GET /person/:person_id/status-history` → Person › Overview › Actions › Status History (not in the sidebar)
+Reach it: `GET /person/:person_id/status-history` → Person › Overview › Status History (not in the sidebar)
 Gate: `ADMIN`, `VC` (replaces VIEW_ROLES)
 Controller: `app/controllers/person/status_history_controller.rb` (`index`)
 Owner: `PersonStatus.retrieve_all_for_id` (`app/models/person_status.rb`)
@@ -1089,7 +1090,7 @@ Trap: Tech Ninja is always granted with Admin, so it needs no place in the gate 
 Trap: the form posts `role_ids` with a hidden blank so "uncheck everything" arrives; `permission_params` answers 400 for a missing scope or non-id value rather than read an empty list (which would revoke every direct grant).
 
 ### Person › Change Password
-Reach it: `GET /person/:person_id/password` → Person › Overview › Actions › Change Password; save `PATCH /person/:person_id/password`
+Reach it: `GET /person/:person_id/password` → Person › Overview › Change Password; save `PATCH /person/:person_id/password`
 Gate: `ADMIN` (`require_admin` before_action on top of VIEW_ROLES)
 Controller: `app/controllers/person/passwords_controller.rb` (`edit`, `update`)
 Owner: `PersonPasswordForm` (`app/forms/person_password_form.rb`), `Person#password=` and `Person#log_password_change` (`app/models/person.rb`)
@@ -1141,7 +1142,7 @@ Trap: the rows are one section per year, and the Duration column is filled on th
 Trap: a row with `reason` `automatic` (`PersonOnSite#automatic?`, badged Automatic) was made by `OnSiteCleanup` or re-dated by the `RedateBulkOffSiteMarks` migration: its `created_at` is the person's last sign-out or asset return, not when the row was written, and Marked By is whoever ran the cleanup or the old yearly reset.
 
 ### Person › Upload BMID Photo (photos)
-Reach it: `GET /person/:person_id/photos/new` → Person › Overview › Actions › Manage Photo, Person › Profile BMID card; upload `POST /person/:person_id/photos`; crop `GET /person/:person_id/photos/:id/crop`; submit `PATCH /person/:person_id/photos/:id/crop_save`; cancel `DELETE /person/:person_id/photos/:id`
+Reach it: `GET /person/:person_id/photos/new` → Person › Overview › Manage Photo, Person › Profile BMID card; upload `POST /person/:person_id/photos`; crop `GET /person/:person_id/photos/:id/crop`; submit `PATCH /person/:person_id/photos/:id/crop_save`; cancel `DELETE /person/:person_id/photos/:id`
 Gate: `ADMIN`, `VC` (replaces VIEW_ROLES)
 Controller: `app/controllers/person/photos_controller.rb` (path hooks, `after_crop_save`), `app/controllers/concerns/photo_upload_concern.rb` (`new`, `create`, `crop`, `crop_save`, `destroy`)
 Owner: `PhotoUploadConcern` (`app/controllers/concerns/photo_upload_concern.rb`), `PersonPhoto` (`app/models/person_photo.rb`)

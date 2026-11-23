@@ -3,7 +3,7 @@
     group's rows on the person page. %>
 <% if at.present? %>
   <%= datetime_format at, year: true %>
-  <span class="text-stone-muted">(<%= relative_time_in_words at %>)</span>
+  <%= muted_aside "(#{relative_time_in_words at})" %>
 <% else %>
   <span class="text-stone-muted"><%= none %></span>
 <% end %>

@@ -8,6 +8,9 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
   include EmailSuppressionTestHelper
   include PersonTestFactory
 
+  # The Overview's rail of actions (person/_actions).
+  RAIL = "#person-summary-strip nav[aria-label='Actions']"
+
   setup do
     Rails.cache.clear
 
@@ -69,7 +72,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
 
     # Callsign details now live inside the Overview summary strip
     assert_select "#person-summary-strip", text: /Callsign/
-    assert_select "#person-summary-strip", text: /Former callsigns/
+    assert_select "#person-summary-strip", text: /Former Callsigns/
     assert_select "[role='heading']", text: /Contact Details/, count: 1
     assert_select "[role='heading']", text: /Teams & Positions/, count: 1
     assert_select "[role='heading']", text: /Permissions/, count: 1
@@ -140,9 +143,62 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     get person_path(@target)
 
     assert_response :success
-    assert_select "details.dropdown > summary", text: /Actions/
-    assert_select "ul.dropdown-content.dropdown-panel a[href='#{person_banners_path(@target)}']",
-                  text: /Manage Account Banners/
+    assert_select "#{RAIL} a[href='#{person_banners_path(@target)}']", text: /Manage Account Banners/
+  end
+
+  # =========================================================================
+  # The rail of actions (person/_actions)
+  # =========================================================================
+
+  # @pii_viewer holds Admin: everything but the delete, which is Tech Ninja's.
+  test "the rail lays an admin's actions open in order, with no menu and no subsection heading" do
+    @target.update_columns(on_boarded_at: TOUR_TAKEN, on_site: false)
+    sign_in_as(@pii_viewer)
+
+    get person_path(@target)
+
+    assert_equal ["Mark On Site", "Edit Status", "Edit Callsign", "Status History", "Change Password",
+                  "Reset Onboarding Tour", "Manage Photo", "Manage Account Banners"],
+                 css_select("#{RAIL} a").map { |link| link.text.strip }
+    assert_select "#{RAIL} ul", count: 3
+    assert_select "#person-summary-strip details.dropdown", count: 0
+    assert_select "#person-summary-strip h3", count: 0
+  end
+
+  test "a viewer who may change nothing gets no rail" do
+    sign_in_as(@limited_viewer) # a Trainer
+
+    get person_path(@target)
+
+    assert_select "#person-summary-strip", count: 1
+    assert_select "#person-summary-strip nav", count: 0
+  end
+
+  test "Shift Management's rail is the on-site button alone" do
+    ensure_role(Role::SHIFT_MANAGEMENT, "Shift Management")
+    viewer = create_person("ShiftLead")
+    grant_role(viewer, Role::SHIFT_MANAGEMENT)
+    sign_in_as(viewer)
+
+    get person_path(@target)
+
+    assert_equal 1, css_select("#{RAIL} a").size
+    assert_select "#{RAIL} a[href='#{person_toggle_onsite_path(@target)}'][data-turbo-method='post']",
+                  text: /Mark (On|Off) Site/, count: 1
+    assert_select "#{RAIL} ul", count: 0
+  end
+
+  test "the callsign's approval is the row labelled Callsign" do
+    @target.update_column(:callsign_approved, true)
+    sign_in_as(@limited_viewer)
+
+    get person_path(@target)
+    assert_select "#person-summary-strip dt", text: "Callsign", count: 1
+    assert_select "#person-summary-strip dd .badge", text: "approved", count: 1
+
+    @target.update_column(:callsign_approved, false)
+    get person_path(@target)
+    assert_select "#person-summary-strip dd .badge", text: "not approved", count: 1
   end
 
   # =========================================================================
@@ -283,7 +339,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
 
   # Clubhouse 2's PersonPolicy#delete admits Tech Ninja alone -- Admin included, no
   # page role carries it.
-  test "every page role without Tech Ninja is refused the delete and offered no menu item" do
+  test "every page role without Tech Ninja is refused the delete and offered no link to it" do
     Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
 
     PersonConcern::VIEW_ROLES.each do |role_id|
@@ -294,7 +350,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
 
       get person_path(@target)
       assert_response :success, "role #{role_id} should open the page"
-      assert_select "ul.dropdown-content a", text: "Delete Account", count: 0
+      assert_select "a", text: "Delete Account", count: 0
 
       assert_no_difference -> { Person.where(id: @target.id).count }, "role #{role_id} deleted the account" do
         delete person_path(@target)
@@ -313,7 +369,8 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(ninja)
 
     get person_path(@target)
-    assert_select "ul.dropdown-content a[href='#{person_path(@target)}']", text: "Delete Account", count: 1
+    assert_select "#{RAIL} a.text-error[href='#{person_path(@target)}'][data-turbo-method='delete']",
+                  text: "Delete Account", count: 1
 
     assert_difference -> { Person.where(id: @target.id).count }, -1 do
       delete person_path(@target)
@@ -385,7 +442,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Clubhouse 2's PersonPolicy#sendWelcomeEmail admits Admin or VC.
-  test "every page role without Admin or VC is refused the resend and offered no menu item" do
+  test "every page role without Admin or VC is refused the resend and offered no link to it" do
     Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
     prospective = person(:prospective_ranger)
 
@@ -412,7 +469,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(create_vc)
 
     get person_path(prospective)
-    assert_select "ul.dropdown-content a[href='#{person_resend_welcome_path(prospective)}']",
+    assert_select "#{RAIL} a[href='#{person_resend_welcome_path(prospective)}']",
                   text: "Resend Welcome Message", count: 1
 
     get person_path(@target)
@@ -432,7 +489,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(vc)
 
     get person_path(@target)
-    assert_select "ul.dropdown-content a[href='#{person_reset_onboarding_path(@target)}']",
+    assert_select "#{RAIL} a[href='#{person_reset_onboarding_path(@target)}']",
                   text: "Reset Onboarding Tour", count: 1
 
     assert_difference -> { ActionLog.count }, 1 do
@@ -448,7 +505,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     assert_nil log.data.fetch("on_boarded_at").last
   end
 
-  test "every page role without Admin or VC is refused the reset and offered no menu item" do
+  test "every page role without Admin or VC is refused the reset and offered no link to it" do
     Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
     @target.update_column(:on_boarded_at, TOUR_TAKEN)
 
@@ -481,7 +538,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
 
     @target.update_column(:on_boarded_at, TOUR_TAKEN)
     get person_path(@target)
-    assert_select "ul.dropdown-content a[href='#{person_reset_onboarding_path(@target)}'][data-turbo-confirm]",
+    assert_select "#{RAIL} a[href='#{person_reset_onboarding_path(@target)}'][data-turbo-confirm]",
                   text: "Reset Onboarding Tour", count: 1
     assert_select "#person-summary-strip", text: /Onboarding Tour\s+Wed Apr 1, 2026 @ 09:00/
 
