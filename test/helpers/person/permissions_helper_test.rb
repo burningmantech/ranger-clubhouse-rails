@@ -91,6 +91,38 @@ class Person::PermissionsHelperTest < ActionView::TestCase
     assert_select "li", text: /#{STALE_ACTIVE}|#{STALE_INACTIVE}/o, count: 0
   end
 
+  test "one or two plain paths stay in the cell" do
+    assert_not permission_paths_folded?(row(active: true, paths: [Path.new(kind: :manual)]))
+    assert_not permission_paths_folded?(row(active: true, paths: [team("Tech Cadre"), team("Tech Ops Team")]))
+  end
+
+  test "a third path, or any condition, folds the list behind its summary" do
+    assert permission_paths_folded?(row(active: true, paths: [team("Tech Cadre"), team("Tech Ops Team"), team("HQ Window Cadre")]))
+    assert permission_paths_folded?(row(active: false, paths: [unmet_position]))
+  end
+
+  # The line would otherwise wait behind a click, and the paths are its evidence.
+  test "a list with the earlier-grant line is never folded" do
+    assert_not permission_paths_folded?(row(active: true, paths: [unmet_position]))
+  end
+
+  test "the summary counts each kind of path and names the manual grant" do
+    paths = [Path.new(kind: :manual), team("Tech Cadre"), team("Tech Ops Team"), unmet_position,
+             Path.new(kind: :conferred, title: "Trainer Seasonal", setting: "Seasonal Trainer")]
+
+    assert_equal "Granted manually · 2 teams · 1 position · 1 other permission",
+                 permission_paths_summary(row(active: true, paths:))
+    assert_equal "1 team", permission_paths_summary(row(active: true, paths: [team("Tech Cadre")]))
+  end
+
+  test "the detail row's list runs in columns, the cell's does not" do
+    render_paths(row(active: false, paths: [unmet_position]))
+    assert_select "ul.columns-md", count: 0
+
+    render inline: "<%= permission_paths(row, columns: true) %>", locals: { row: row(active: false, paths: [unmet_position]) }
+    assert_select "ul.space-y-1.columns-md > li", text: /Position: HQ Window/
+  end
+
   private
 
   def render_paths(row)
@@ -109,4 +141,6 @@ class Person::PermissionsHelperTest < ActionView::TestCase
     Path.new(kind: :position, title: "HQ Window",
              conditions: [Condition.new(met: false, text: "Not signed in to HQ Window")])
   end
+
+  def team(title) = Path.new(kind: :team, title:)
 end

@@ -21,18 +21,38 @@
       <% next if list.empty? %>
       <% reasons = list.equal?(inactive) %>
       <%= ui_accordion("#{label} (#{pluralize(list.size, "permission")})", open:) do %>
-        <%= ui_table full_width: true do |t| %>
+        <%# Not striped: a long Granted Through list opens in a detail row, and a
+            hidden row still counts toward the stripes (components/tables.css). %>
+        <%= ui_table full_width: true, striped: false do |t| %>
           <%= t.header do %>
-            <%= t.heading "Permission" %>
+            <%# lg:w-px: the column is only as wide as its names, so what follows starts
+                beside them and not half a table away. lg:pe-8 is the gap that leaves. %>
+            <%= t.heading "Permission", class: "lg:w-px lg:pe-8" %>
             <%= t.heading "Why It Is Inactive" if reasons %>
             <%= t.heading "Granted Through" %>
           <% end %>
           <%= t.body do %>
-            <% list.each do |row| %>
+            <% list.each_with_index do |row, index| %>
+              <% folded = permission_paths_folded?(row) %>
+              <% paths_id = "permission-paths-#{label.downcase}-#{index}" %>
               <%= t.row do %>
-                <%= t.row_header row.title %>
+                <%= t.row_header row.title, class: "lg:pe-8" %>
                 <%= t.cell permission_inactive_reasons(row, nda_blocked:) if reasons %>
-                <%= t.cell permission_paths(row) %>
+                <%= t.cell do %>
+                  <% if folded %>
+                    <%# lg:-ms-3 takes back the button's own inset in the table, so its
+                        label starts where the lists in the rows around it do. %>
+                    <%= t.detail_row_toggle permission_paths_summary(row), id: paths_id,
+                                            describing: row.title, class: "lg:-ms-3" %>
+                  <% else %>
+                    <%= permission_paths(row) %>
+                  <% end %>
+                <% end %>
+              <% end %>
+              <% if folded %>
+                <%= t.detail_row id: paths_id, label: row.title do %>
+                  <%= permission_paths(row, columns: true) %>
+                <% end %>
               <% end %>
             <% end %>
           <% end %>

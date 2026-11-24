@@ -5,6 +5,7 @@ require "test_helper"
 class PersonControllerTest < ActionDispatch::IntegrationTest
   include ActiveSupport::Testing::TimeHelpers
   include AuthenticationTestHelper
+  include DomIdTestHelper
   include EmailSuppressionTestHelper
   include PersonTestFactory
 
@@ -84,6 +85,8 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     assert_select "[role='heading'] .badge", text: "2 of 2 active"
     assert_select "th", text: "Granted Through"
     assert_select "td", text: /Granted manually/, count: 2
+    # One plain path each: the lists sit in their cells, with nothing to open.
+    assert_select "td[data-label='Granted Through'] button", count: 0
   end
 
   test "a permission behind unmet position conditions is listed as inactive with the reasons" do
@@ -109,6 +112,10 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     assert_select "td", text: /Has not passed or taught In-Person Training in #{Current.year}/
     assert_select "td", text: /Not signed in to Gated Position/
     assert_select "td[data-label='Why It Is Inactive'] li", text: "Not signed in to Gated Position"
+    # A path with conditions waits behind its summary, in the row's detail row.
+    assert_select "td[data-label='Granted Through'] button[aria-controls='permission-paths-inactive-0']", text: /1 position/
+    assert_select "tr#permission-paths-inactive-0.hidden li", text: "Not signed in to Gated Position"
+    assert_unique_dom_ids
   end
 
   test "an unsigned NDA shows one callout and marks every permission inactive" do
