@@ -6,7 +6,8 @@
 # a class roster is entered on: one line per person, the card number and dates
 # each of them came away with.
 #
-# The only page whose action list is not a constant. Upstream builds this group
+# One of two pages whose action list is not a constant (Bulk Grant Provisions
+# adds its radio groups). Upstream builds this group
 # from the certification table on every request and so does this, because a
 # certification is a record an administrator creates -- a frozen list here would
 # mean a deploy before the newest one could be recorded.

@@ -1,13 +1,18 @@
 # frozen_string_literal: true
 
-# Granting provisions -- meal passes, showers and event radios -- to a pasted
-# list of callsigns.
+# Granting provisions -- meal passes, showers and radios -- to a pasted list of
+# callsigns.
 #
 # The two provision groups of upstream's admin/bulk-upload, still two groups in
 # one select. Earned and allocated are not two flavours of the same grant: an
 # earned provision is credited to the season it was rangered in and lasts
 # several years, an allocated one is handed out for this year only. That split
 # is why the select is grouped and why the two halves take different lines.
+#
+# A third group upstream never had: the shift radio and specialized radio
+# grants (Provision::EVENT_ONLY_TYPES), good for this event only and never
+# allocated. A specialized radio names a radio asset group, so the select
+# offers one action per active group and the list is built per request.
 class Ticketing::BulkProvisionsController < ApplicationController
   include BulkUploadPage
 
@@ -33,15 +38,18 @@ class Ticketing::BulkProvisionsController < ApplicationController
 
   EARNED = "Earned Provisions"
   ALLOCATED = "Allocated Provisions"
+  RADIO_GRANTS = "Shift and Specialized Radios"
 
   HELP_YEARS = "callsign[,source year,expiry year]"
   HELP_RADIO_YEARS = "callsign,count[,source year,expiry year]"
   HELP_CALLSIGN = "callsign"
   HELP_RADIO = "callsign,radio count"
+  HELP_RADIO_GRANT = "callsign[,radio count]"
 
-  # Upstream's ids and upstream's order. The ids are the value the select posts
-  # and the string every history row is written under, so "alloc_" prefixes and
-  # the doubled "event" in event_post_event_eat_pass are kept exactly as spelled.
+  # Upstream's ids and upstream's order, then the shift radio, which upstream
+  # never had. The ids are the value the select posts and the string every
+  # history row is written under, so "alloc_" prefixes and the doubled "event"
+  # in event_post_event_eat_pass are kept exactly as spelled.
   #
   # Only two of the seven meal passes can be earned. That is upstream's list,
   # not an omission: the other five are only ever handed out.
@@ -72,10 +80,28 @@ class Ticketing::BulkProvisionsController < ApplicationController
     BulkUpload::Action.new(id: "alloc_#{Provision::WET_SPOT}", label: "Allocated Wet Spot", group: ALLOCATED,
                            help: HELP_CALLSIGN, handler: BulkUpload::ProvisionHandler),
     BulkUpload::Action.new(id: "alloc_#{Provision::EVENT_RADIO}", label: "Allocated Event Radio", group: ALLOCATED,
-                           help: HELP_RADIO, handler: BulkUpload::ProvisionHandler)
+                           help: HELP_RADIO, handler: BulkUpload::ProvisionHandler),
+
+    BulkUpload::Action.new(id: Provision::RADIO_SHIFT, label: Provision::TYPE_LABELS.fetch(Provision::RADIO_SHIFT),
+                           group: RADIO_GRANTS, help: HELP_RADIO_GRANT, handler: BulkUpload::ProvisionHandler)
   ].freeze
 
   private
 
-  def bulk_actions = ACTIONS
+  # Memoized because it is not a constant: the form, the preview and the apply
+  # each ask for this list. A group retired between the preview and the apply
+  # is no longer on it, so the apply refuses rather than grants from it.
+  def bulk_actions
+    @bulk_actions ||= ACTIONS + radio_groups.map do |group|
+      BulkUpload::Action.new(id: "#{BulkUpload::ProvisionHandler::GROUP_PREFIX}#{group.id}",
+                             label: "#{Provision::TYPE_LABELS.fetch(Provision::RADIO_GROUP)}: #{group.title}",
+                             group: RADIO_GRANTS, help: HELP_RADIO_GRANT, handler: BulkUpload::ProvisionHandler)
+    end
+  end
+
+  # Loaded once and handed to the handler, so the group an action names is the
+  # row this request listed and not a second lookup that could miss it.
+  def radio_groups = @radio_groups ||= BulkUpload::ProvisionHandler.radio_groups.by_title.to_a
+
+  def batch_context = { radio_groups: }
 end

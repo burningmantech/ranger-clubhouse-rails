@@ -39,7 +39,7 @@ module BulkUploadHelper
   end
 
   # The action select. Grouped only when the page's list says so: a flat select
-  # of four vehicle flags needs no headings, and a select of thirteen provisions
+  # of four vehicle flags needs no headings, and a select of every provision
   # is unreadable without them.
   def bulk_upload_action_options(actions, selected)
     selected = selected.to_s
