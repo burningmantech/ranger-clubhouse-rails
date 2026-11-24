@@ -57,6 +57,17 @@ class Ticketing::BulkProvisionsControllerTest < ActionDispatch::IntegrationTest
 
   def granted_to(person) = Provision.where(person_id: person.id).order(:id).last
 
+  def radio_group(title = "Command Operations", **attributes)
+    AssetGroup.create!(type: Asset::TYPE_RADIO, title:, **attributes)
+  end
+
+  def group_action(group) = "radio_group-#{group.id}"
+
+  def existing_radio_grant(person, group, item_count: 1)
+    Provision.create!(person_id: person.id, type: Provision::RADIO_GROUP, status: Provision::AVAILABLE,
+                      source_year: YEAR, expires_on: YEAR, asset_group: group, item_count:)
+  end
+
   # ---------------------------------------------------------------- access
 
   test "an admin reaches the form" do
@@ -87,18 +98,19 @@ class Ticketing::BulkProvisionsControllerTest < ActionDispatch::IntegrationTest
 
   # ----------------------------------------------------------- the select
 
-  test "the select offers all thirteen provisions under their two groups" do
+  test "the select offers every provision under its three groups" do
     get ticketing_bulk_provisions_path
 
     assert_select "select[name=bulk_action] optgroup[label=?]", "Earned Provisions"
     assert_select "select[name=bulk_action] optgroup[label=?]", "Allocated Provisions"
+    assert_select "select[name=bulk_action] optgroup[label=?]", "Shift and Specialized Radios"
 
     offered = css_select("select[name=bulk_action] optgroup option").map { |option| option["value"] }
     assert_equal %w[all_eat_pass event_eat_pass wet_spot event_radio
                     alloc_all_eat_pass alloc_event_eat_pass alloc_pre_event_eat_pass
                     alloc_pre_event_event_eat_pass alloc_pre_post_eat_pass
                     alloc_event_post_event_eat_pass alloc_post_event_eat_pass
-                    alloc_wet_spot alloc_event_radio],
+                    alloc_wet_spot alloc_event_radio radio_shift],
                  offered
   end
 
@@ -171,7 +183,7 @@ class Ticketing::BulkProvisionsControllerTest < ActionDispatch::IntegrationTest
          params: upload_params("#{@target.callsign},lots", action: "event_radio")
 
     assert_response :unprocessable_entity
-    assert_select "tbody tr td", /Item count is not a number/
+    assert_select "tbody tr td", /Radio count is not a number/
   end
 
   test "preview refuses an allocated line carrying anything but a callsign" do
@@ -388,14 +400,14 @@ class Ticketing::BulkProvisionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # The radio count is the column taken first, so a reader who types the source
-  # year in the shape the other twelve actions use lands it in item_count. The
-  # write matches upstream; the preview is what makes it visible.
-  test "preview names the radio count, so a year typed into it is visible" do
+  # year in the shape the other twelve actions use lands it in item_count.
+  # Upstream writes it; here no year fits under the ceiling.
+  test "preview refuses a year typed into the radio count" do
     post ticketing_preview_bulk_provisions_path,
          params: upload_params("#{@target.callsign},2024", action: "event_radio")
 
     assert_response :unprocessable_entity
-    assert_select "tbody tr td", /2024 radios/
+    assert_select "tbody tr td", /Radio count must be 99 or fewer/
   end
 
   test "preview names the count and years of an ordinary radio line" do
@@ -443,5 +455,167 @@ class Ticketing::BulkProvisionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert_select "tbody tr td", /All 2 will be cancelled and replaced/
+  end
+
+  # ------------------------------------------- shift and specialized radios
+
+  test "the select offers a specialized radio for each active radio group only" do
+    tech = radio_group("Tech")
+    command = radio_group("Command Operations")
+    retired = radio_group("Old Pool", active: false)
+    gear = AssetGroup.create!(type: Asset::TYPE_GEAR, title: "Tool Crib")
+
+    get ticketing_bulk_provisions_path
+
+    offered = css_select("select[name=bulk_action] optgroup[label='Shift and Specialized Radios'] option")
+    assert_equal ["radio_shift", group_action(command), group_action(tech)], offered.map { |option| option["value"] }
+    assert_equal ["Additional Shift Radio", "Specialized Radio: Command Operations", "Specialized Radio: Tech"],
+                 offered.map(&:text)
+    assert_select "option[value=?]", group_action(retired), count: 0
+    assert_select "option[value=?]", group_action(gear), count: 0
+    # One format row for every group between them.
+    assert_select "th", text: "Specialized Radio (any radio group)", count: 1
+    assert_select "td", text: "callsign[,radio count]", count: 2
+    assert_unique_dom_ids
+  end
+
+  test "preview names the count, the group and the event of a specialized radio" do
+    group = radio_group("Tech")
+
+    assert_no_difference "Provision.count" do
+      post ticketing_preview_bulk_provisions_path,
+           params: upload_params("#{@target.callsign},2", action: group_action(group))
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "h1", /Specialized Radio: Tech/
+    assert_select "tbody tr td", /2 radios from Tech, for the #{YEAR} event/
+  end
+
+  test "preview refuses a radio grant line carrying years, a bad count or a count below one" do
+    { "#{@target.callsign},2,#{YEAR}" => /takes a callsign and at most a radio count/,
+      "#{@target.callsign},lots" => /Radio count is not a number/,
+      "#{@target.callsign},0" => /Radio count must be 1 or more/,
+      "#{@target.callsign},100" => /Radio count must be 99 or fewer/ }.each do |line, refusal|
+      post ticketing_preview_bulk_provisions_path, params: upload_params(line, action: "radio_shift")
+
+      assert_response :unprocessable_entity
+      assert_select "tbody tr td", refusal
+    end
+  end
+
+  test "an event radio count below one is refused too" do
+    post ticketing_preview_bulk_provisions_path,
+         params: upload_params("#{@target.callsign},-1", action: "event_radio")
+
+    assert_select "tbody tr td", /Radio count must be 1 or more/
+  end
+
+  test "apply grants a shift radio for this event only" do
+    post ticketing_bulk_provisions_path,
+         params: upload_params("#{@target.callsign},2", action: "radio_shift", reason: "extra coverage")
+
+    assert_response :unprocessable_entity
+    provision = granted_to(@target)
+    assert_equal Provision::RADIO_SHIFT, provision.type
+    assert_equal Provision::AVAILABLE, provision.status
+    assert_equal 2, provision.item_count
+    assert_not provision.is_allocated
+    assert_equal YEAR, provision.source_year
+    assert_equal Date.new(YEAR, 9, 15), provision.expires_on
+    assert_nil provision.asset_group_id
+  end
+
+  test "apply grants a specialized radio from the chosen group, one radio by default" do
+    group = radio_group("Tech")
+
+    post ticketing_bulk_provisions_path, params: upload_params(@target.callsign, action: group_action(group))
+
+    provision = granted_to(@target)
+    assert_equal Provision::RADIO_GROUP, provision.type
+    assert_equal group.id, provision.asset_group_id
+    assert_equal 1, provision.item_count
+    assert_equal Date.new(YEAR, 9, 15), provision.expires_on
+
+    log = ActionLog.where(event: "bulk-upload").last
+    assert_equal group_action(group), log.data["action"]
+    assert_match(/1 radio from Tech/, log.data["results"].first["details"])
+  end
+
+  test "apply replaces a grant from the same group and leaves another group's alone" do
+    tech = radio_group("Tech")
+    command = radio_group("Command Operations")
+    held = existing_radio_grant(@target, tech)
+    other = existing_radio_grant(@target, command)
+
+    post ticketing_preview_bulk_provisions_path,
+         params: upload_params("#{@target.callsign},3", action: group_action(tech))
+    assert_select "tbody tr td", /Already has Specialized Radio: Tech \(1 radio\)/
+
+    post ticketing_bulk_provisions_path, params: upload_params("#{@target.callsign},3", action: group_action(tech))
+
+    assert_equal Provision::CANCELLED, held.reload.status
+    assert_equal Provision::AVAILABLE, other.reload.status
+    assert_equal 3, granted_to(@target).item_count
+  end
+
+  test "a radio group that is inactive, not a radio group or gone is not an action" do
+    retired = radio_group("Old Pool", active: false)
+    gear = AssetGroup.create!(type: Asset::TYPE_GEAR, title: "Tool Crib")
+
+    [group_action(retired), group_action(gear), "radio_group-0", "radio_group", "alloc_radio_shift"].each do |action|
+      assert_no_difference "Provision.count" do
+        post ticketing_bulk_provisions_path, params: upload_params(@target.callsign, action:)
+      end
+
+      assert_response :unprocessable_entity
+      assert_match(/choose an action/i, flash[:error])
+    end
+  end
+
+  test "a group retired after the preview is refused by the apply, list intact" do
+    group = radio_group("Tech")
+    post ticketing_preview_bulk_provisions_path, params: upload_params(@target.callsign, action: group_action(group))
+    assert_select "input[type=submit]", 2
+
+    group.update!(active: false)
+
+    assert_no_difference "Provision.count" do
+      post ticketing_bulk_provisions_path, params: upload_params(@target.callsign, action: group_action(group))
+    end
+    assert_match(/choose an action/i, flash[:error])
+    assert_select "textarea[name=records]", text: @target.callsign
+  end
+
+  test "a second, different line for one person is refused and only the first is granted" do
+    records = "#{@target.callsign},1\n#{@target.callsign},2"
+
+    post ticketing_preview_bulk_provisions_path, params: upload_params(records, action: "radio_shift")
+    assert_select "tbody tr td", /Listed more than once with different details/
+
+    assert_difference "Provision.count", 1 do
+      post ticketing_bulk_provisions_path, params: upload_params(records, action: "radio_shift")
+    end
+    assert_equal 1, granted_to(@target).item_count
+  end
+
+  test "a radio grant left over from a past event is not something already held" do
+    group = radio_group("Tech")
+    stale = existing_radio_grant(@target, group)
+    stale.update_columns(expires_on: Date.new(YEAR - 1, 9, 15))
+
+    post ticketing_preview_bulk_provisions_path, params: upload_params(@target.callsign, action: group_action(group))
+    assert_select "tbody tr td", /Will be applied/
+
+    post ticketing_bulk_provisions_path, params: upload_params(@target.callsign, action: group_action(group))
+    assert_equal Provision::AVAILABLE, stale.reload.status
+  end
+
+  test "the handler refuses an id it cannot grant" do
+    ["alloc_radio_shift", "radio_group", "radio_group-0"].each do |id|
+      action = BulkUpload::Action.new(id:, label: id, help: "", handler: BulkUpload::ProvisionHandler)
+
+      assert_raises(ArgumentError) { BulkUpload::ProvisionHandler.new(action:, reason: "test") }
+    end
   end
 end

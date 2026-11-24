@@ -1,10 +1,16 @@
-<%# Thirteen provisions and four line formats between them, so no one sentence
-    under the textarea can be the format. Folded shut because most of the list
-    is "callsign" and a reader who picked an allocated pass needs none of it.
+<%# Fourteen provisions, a specialized radio per radio group and five line
+    formats between them, so no one sentence under the textarea can be the
+    format. Folded shut because most of the list is "callsign" and a reader who
+    picked an allocated pass needs none of it.
+
+    The specialized radios share one format, so they get one row between them
+    rather than a row per group.
 
     The years are printed rather than described: the default source year moves
     in September, and a reader in April would otherwise have to know that. %>
 <% source_year, expiry_year = BulkUpload::ProvisionHandler.default_years %>
+<% group_prefix = BulkUpload::ProvisionHandler::GROUP_PREFIX %>
+<% fixed, grouped = bulk_actions.partition { |provision_action| !provision_action.id.start_with?(group_prefix) } %>
 
 <%= ui_disclosure "What Each Line May Carry", variant: :card, class: "my-4" do %>
   <%= ui_table full_width: true, striped: true do |t| %>
@@ -13,10 +19,16 @@
       <%= t.heading "Line Format" %>
     <% end %>
     <%= t.body do %>
-      <% bulk_actions.each do |provision_action| %>
+      <% fixed.each do |provision_action| %>
         <%= t.row do %>
           <%= t.row_header provision_action.label %>
           <%= t.cell provision_action.help, class: "font-mono" %>
+        <% end %>
+      <% end %>
+      <% if grouped.any? %>
+        <%= t.row do %>
+          <%= t.row_header "#{Provision::TYPE_LABELS.fetch(Provision::RADIO_GROUP)} (any radio group)" %>
+          <%= t.cell grouped.first.help, class: "font-mono" %>
         <% end %>
       <% end %>
     <% end %>
@@ -27,5 +39,7 @@
     earned in <%= source_year %>, expiring <%= expiry_year %>.</strong>
     Allocated provisions ignore both years: they are granted for <%= Current.year %>
     and expire at the end of it, so their lines take no years at all.
+    Shift radios and specialized radios are for the <%= Current.year %> event only
+    and take no years either.
   <% end %>
 <% end %>

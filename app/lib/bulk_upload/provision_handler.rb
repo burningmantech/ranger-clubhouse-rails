@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-# Granting one provision -- a meal pass, a shower, or an event radio -- to every
-# callsign on the list, either earned or allocated.
+# Granting one provision -- a meal pass, a shower, or a radio -- to every
+# callsign on the list: earned, allocated, or good for this event only.
 #
-# Upstream's ProvisionHandler, serving the same thirteen action ids. Earned and
+# Upstream's ProvisionHandler, serving its thirteen action ids plus the two
+# radio grants upstream never had (Provision::EVENT_ONLY_TYPES). Earned and
 # allocated are the same write with two different sets of rules: an earned
 # provision is credited to the season it was rangered in and lasts several
 # years, an allocated one is handed out for this year and dies with it, which is
@@ -19,8 +20,9 @@ class BulkUpload::ProvisionHandler < BulkUpload::Handler
   # The seven meal passes a reader can choose by name, and the three booleans
   # each one actually is.
   #
-  # CONSTRAINT: `provision` has three types, and "all eat pass" is not one of
-  # them. Every pass is a MEALS row plus a combination of period flags, so two
+  # CONSTRAINT: "all eat pass" is not one of `provision`'s types
+  # (Provision::ALL_TYPES). Every pass is a MEALS row plus a combination of
+  # period flags, so two
   # provisions are only the same pass when all three flags match -- which is
   # what the duplicate query below compares, and why it cannot just match on
   # type the way the shower and radio lookups do.
@@ -42,6 +44,26 @@ class BulkUpload::ProvisionHandler < BulkUpload::Handler
   EARNED_LINE_FORMAT = "Unexpected additional data. An earned line takes a callsign and " \
                        "at most a source year and an expiry year."
 
+  EVENT_ONLY_LINE_FORMAT = "Unexpected additional data. A shift radio or specialized radio line " \
+                           "takes a callsign and at most a radio count."
+
+  # Each grant on this page replaces what the person holds, so a second line
+  # for the same person would land beside the first line's grant, not on it.
+  ONE_LINE_PER_PERSON = "Listed more than once with different details. Keep one line for each person."
+
+  # Far above any real grant and below every year, so a year typed into the
+  # count column is refused, and nothing reaches the column it cannot hold.
+  MAX_RADIO_COUNT = 99
+
+  # A specialized radio's action id is this plus its asset_group id: one action
+  # per group, as the certifications page has one per certification.
+  GROUP_PREFIX = "#{Provision::RADIO_GROUP}-"
+
+  # The radio groups this page may grant from. The page lists its actions from
+  # these rows and hands the same rows over as context[:radio_groups], so the
+  # handler never looks a group up a second time and cannot disagree with the list.
+  def self.radio_groups = AssetGroup.active.where(type: Asset::TYPE_RADIO)
+
   # Upstream's comment on the new row, kept verbatim: it is what an admin reading
   # a provision's comments in either application already looks for.
   NEW_PROVISION_COMMENT = "created via bulk uploader"
@@ -56,8 +78,14 @@ class BulkUpload::ProvisionHandler < BulkUpload::Handler
     super
     @allocated = action.id.start_with?(ALLOCATED_PREFIX)
     @kind = action.id.delete_prefix(ALLOCATED_PREFIX)
+    if @kind.start_with?(GROUP_PREFIX)
+      group_id = @kind.delete_prefix(GROUP_PREFIX)
+      @group = context.fetch(:radio_groups, []).find { |group| group.id.to_s == group_id }
+      @kind = Provision::RADIO_GROUP
+    end
     @periods = MEAL_PERIODS[@kind]
-    return if @periods || [Provision::WET_SPOT, Provision::EVENT_RADIO].include?(@kind)
+    @event_only = Provision::EVENT_ONLY_TYPES.include?(@kind)
+    return if servable?
 
     raise ArgumentError, "#{self.class} cannot grant provision [#{action.id}]"
   end
@@ -75,13 +103,21 @@ class BulkUpload::ProvisionHandler < BulkUpload::Handler
     scope = Provision.where(person_id: ids(entries), type: provision_type,
                             status: Provision::CURRENT_STATUSES, is_allocated: @allocated)
     scope = scope.where(@periods) if meals?
+    # A grant from another radio group is a different provision, and stays.
+    scope = scope.where(asset_group_id: @group.id) if @group
+    # A radio grant of a past event that Clean Provisions has not ended yet is
+    # not in force (Provision.radio_grants), so it is not something held.
+    scope = scope.unexpired if @event_only
 
     @existing = scope.order(:id).group_by(&:person_id)
+    @granted = Set.new
   end
 
   def decide(entry)
     grant, problem = read(entry)
     return entry.decide(:invalid, problem) if problem
+    # Set#add? answers nil for a person an earlier line already claimed.
+    return entry.decide(:invalid, ONE_LINE_PER_PERSON) unless @granted.add?(entry.person.id)
 
     existing = existing_for(entry)
     return entry.decide(:replace, "#{replacement_note(existing)} #{summary(grant).upcase_first}.") if existing.any?
@@ -109,7 +145,20 @@ class BulkUpload::ProvisionHandler < BulkUpload::Handler
 
   def meals? = !@periods.nil?
 
-  def event_radio? = @kind == Provision::EVENT_RADIO
+  # The model refuses an allocated radio grant, and a specialized radio is
+  # nothing without its group.
+  def servable?
+    return !@allocated && (@kind == Provision::RADIO_SHIFT || !@group.nil?) if @event_only
+
+    meals? || [Provision::WET_SPOT, Provision::EVENT_RADIO].include?(@kind)
+  end
+
+  def counted? = Provision::COUNTED_TYPES.include?(@kind)
+
+  # Granted for this year, with no years on the line.
+  def this_year_only? = @allocated || @event_only
+
+  def radios(count) = "#{count} #{(count == 1) ? "radio" : "radios"}"
 
   def provision_type = meals? ? Provision::MEALS : @kind
 
@@ -126,14 +175,17 @@ class BulkUpload::ProvisionHandler < BulkUpload::Handler
     # The radio count is taken FIRST, before the allocated check below rejects
     # any column at all. Upstream's ordering, and deliberate: an allocated radio
     # line has no other way to say how many radios it is for.
-    if event_radio? && values.any?
+    if counted? && values.any?
       item_count = whole_number(values.shift)
-      return [nil, "Item count is not a number"] if item_count.nil?
+      return [nil, "Radio count is not a number."] if item_count.nil?
+      return [nil, "Radio count must be 1 or more."] if item_count < 1
+      return [nil, "Radio count must be #{MAX_RADIO_COUNT} or fewer."] if item_count > MAX_RADIO_COUNT
     end
 
     source_year, expiry_year = starting_years
     return [nil, ALLOCATED_ONLY_CALLSIGN] if @allocated && values.any?
-    return [Grant.new(source_year:, expiry_year:, item_count:), nil] if @allocated
+    return [nil, EVENT_ONLY_LINE_FORMAT] if @event_only && values.any?
+    return [Grant.new(source_year:, expiry_year:, item_count:), nil] if this_year_only?
 
     # Refused rather than ignored, as every sibling handler does: a column that
     # is silently dropped is how a reader comes away believing something they
@@ -163,24 +215,26 @@ class BulkUpload::ProvisionHandler < BulkUpload::Handler
     [Grant.new(source_year:, expiry_year:, item_count:), nil]
   end
 
-  # An allocated provision is for this year whatever month it is granted in, and
-  # the model expires it with the year regardless of what is passed
-  # (set_expires_on_for_allocated), which is why the page asks for no years on
-  # an allocated line.
+  # An allocated provision or a radio grant is for this year whatever month it
+  # is granted in, and the model expires it with the year regardless of what is
+  # passed (set_expires_on_for_event_only), which is why the page asks for no
+  # years on those lines.
   def starting_years
     source_year, expiry_year = self.class.default_years
-    @allocated ? [year, expiry_year] : [source_year, expiry_year]
+    this_year_only? ? [year, expiry_year] : [source_year, expiry_year]
   end
 
   # What the line grants, spelled out. Most lines name no years at all, so these
-  # are facts a reader cannot check by reading their own list back -- and the
-  # radio count is where a mistyped year silently lands, because the count is
-  # the column taken first.
+  # are facts a reader cannot check by reading their own list back.
   def summary(grant)
     parts = []
-    parts << "#{grant.item_count} #{(grant.item_count == 1) ? "radio" : "radios"}" if event_radio?
+    # The group is named here, not only in the action's label: this sentence is
+    # also what the commit log keeps, and a group can later be merged away.
+    parts << [radios(grant.item_count), ("from #{@group.title}" if @group)].compact.join(" ") if counted?
     parts << if @allocated
                "allocated for #{year}"
+             elsif @event_only
+               "for the #{year} event"
              else
                "source year #{grant.source_year}, expires #{grant.expiry_year}"
              end
@@ -195,6 +249,9 @@ class BulkUpload::ProvisionHandler < BulkUpload::Handler
   def replacement_note(existing)
     held = if @allocated
              "#{existing.first.type_label} allocated"
+           elsif @event_only
+             # The action's label, which is type_label without a query per row.
+             "#{action.label} (#{radios(existing.map { |item| item.item_count || 1 }.max)})"
            else
              "#{existing.first.type_label} earned in #{existing.map(&:source_year).uniq.sort.join(" and ")}"
            end
@@ -210,8 +267,8 @@ class BulkUpload::ProvisionHandler < BulkUpload::Handler
   def create_provision(person_id, grant)
     provision = Provision.new(person_id:, type: provision_type, status: Provision::AVAILABLE,
                               source_year: grant.source_year, expires_on: grant.expiry_year,
-                              is_allocated: @allocated)
-    provision.item_count = grant.item_count if event_radio?
+                              is_allocated: @allocated, asset_group: @group)
+    provision.item_count = grant.item_count if counted?
     provision.assign_attributes(@periods) if meals?
     provision.additional_comments = NEW_PROVISION_COMMENT
     # Upstream hardcodes its audit reason here and drops whatever the reader

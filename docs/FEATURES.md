@@ -332,7 +332,7 @@ Trap: `AwardManagement.rebuild_all` and `rebuild_for_person_id` are deliberate n
 ### Bulk upload pages (BulkUpload)
 Used by: Agreements › Bulk Record a Signature, People › Bulk Change Status, Certificates › Bulk Record Certifications, Ticketing › Bulk Access Documents and Bulk Provisions, BMID › Bulk BMID Actions, Vehicles › Bulk Vehicle Paperwork, Teams & Positions › Bulk Membership History (each controller includes `BulkUploadPage`; Bulk Team Grant / Revoke and Bulk Position Grant / Revoke do not)
 Owner: `BulkUploadPage` (`app/controllers/concerns/bulk_upload_page.rb`), `BulkUpload::Batch` + `Entry` + `Action` (`app/lib/bulk_upload/`), a `BulkUpload::*Handler` per action family (`app/lib/bulk_upload/`)
-Touches: `person` (w), `person_event` (w), `person_status` (w), `person_position` (w), `person_role` (w), `person_slot` (w), `provision` (w), `access_document` (w), `access_document_changes` (w), `bmid` (w), `person_certification` (w), `person_team_log` (w), `certification`, `action_logs` (w)
+Touches: `person` (w), `person_event` (w), `person_status` (w), `person_position` (w), `person_role` (w), `person_slot` (w), `provision` (w), `asset_group`, `access_document` (w), `access_document_changes` (w), `bmid` (w), `person_certification` (w), `person_team_log` (w), `certification`, `action_logs` (w)
 Verify: `test/controllers/people/bulk_status_controller_test.rb`, `test/controllers/ticketing/bulk_provisions_controller_test.rb`, `test/controllers/agreements/bulk_signature_controller_test.rb`, `test/controllers/teams_positions/bulk_membership_history_controller_test.rb`, `test/controllers/vehicles/bulk_paperwork_controller_test.rb`
 Trap: Every POST (preview, apply, edit) answers 422 because Turbo drops a 200 to a form submission — tests assert `:unprocessable_entity` on success too; apply rebuilds the batch from its own params, not the preview.
 Trap: The action arrives as `params[:bulk_action]` (Rails owns `params[:action]`); `BulkUpload::Batch` blocks `Person::LOCKED_STATUSES` rows before any handler runs, unless the handler's `refuses_locked_statuses?` is false (`BulkUpload::StatusHandler`).
@@ -2975,9 +2975,10 @@ Reach it: `GET /ticketing/bulk-provisions` → Ticketing › Maintenance › Bul
 Gate: `ADMIN`, `EDIT_ACCESS_DOCS`
 Controller: `app/controllers/ticketing/bulk_provisions_controller.rb` (`index`, `preview`, `apply` via `app/controllers/concerns/bulk_upload_page.rb`)
 Owner: `BulkUpload::ProvisionHandler` (`app/lib/bulk_upload/provision_handler.rb`), `BulkUpload::Batch` (`app/lib/bulk_upload/batch.rb`), `BulkUpload::Handler` (`app/lib/bulk_upload/handler.rb`)
-Touches: `person`, `provision` (w), `action_logs` (w)
+Touches: `person`, `provision` (w), `asset_group`, `action_logs` (w)
 Verify: `test/controllers/ticketing/bulk_provisions_controller_test.rb`
-Trap: there is no "no change" verdict: each matching current provision (meal passes match all three period flags plus `is_allocated`) is cancelled with `save!(validate: false)` and replaced, so re-running a list re-creates instead of skipping.
+Trap: the action list is built per request: `ACTIONS` plus one `radio_group-<asset_group.id>` action per group in `BulkUpload::ProvisionHandler.radio_groups` (active, type radio). The shift radio and specialized radio grants take `callsign[,radio count]`, are never allocated, and a retired group's id is refused as an unknown action. The handler takes its group from `batch_context[:radio_groups]`, never a second query.
+Trap: there is no "no change" verdict: each matching current provision (meal passes match all three period flags plus `is_allocated`) is cancelled with `save!(validate: false)` and replaced, so re-running a list re-creates instead of skipping. A second, different line for the same person is refused (`ONE_LINE_PER_PERSON`): `preload` runs once, so it would be granted beside the first, not over it.
 Trap: the action ids in `ACTIONS` (`alloc_*`, the doubled `event_post_event_eat_pass`) key the existing history rows — never rename them.
 
 ### Bulk BMID Actions (hero: Bulk Badge Actions)
