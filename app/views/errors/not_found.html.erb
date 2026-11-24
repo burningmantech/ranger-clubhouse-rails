@@ -1,0 +1,32 @@
+<% content_for :title, "Page Not Found" %>
+<%# Signed in, a page of the Clubhouse like any other: the reader keeps the
+    sidebar, the menu and search, which is how they find the page they meant.
+    Signed out there is no shell to show, so it is a door page (layouts/sessions),
+    built as sessions/forgot is. ErrorsController picks the layout to match. %>
+<% asked_for = tag.p(safe_join(["Address asked for: ", tag.code(truncate(@path, length: 100))]), class: "text-stone-muted") %>
+<% if authenticated? %>
+  <%= hero_panel icon: "link-slash", heading_level: :h1, id: "not-found-header",
+                 title: "Page Not Found", description: "Nothing is at this address." %>
+  <%= ui_section "Find the Page Again", icon: "route", icon_type: :solid do %>
+    <div class="space-y-2">
+      <p><strong>The address may be mistyped, or the record it pointed to has been removed.</strong></p>
+      <p>Links and bookmarks saved in an earlier year often lead nowhere now. Find the page from the menu or the search bar, then save its new address.</p>
+      <%= asked_for %>
+    </div>
+    <div class="mt-4">
+      <%= button_row do %>
+        <%= button_link "Go to Your Dashboard", :primary, me_root_path, icon: "house", icon_type: :solid %>
+      <% end %>
+    </div>
+  <% end %>
+<% else %>
+  <div class="login-panel">
+    <%= render "sessions/heading", title: "Page Not Found", lede: "Nothing is at this address." %>
+    <div class="space-y-2">
+      <p>It may be mistyped, or the record it pointed to has been removed.</p>
+      <p>Sign in, then find the page from your dashboard.</p>
+      <%= asked_for %>
+    </div>
+    <%= button_link "Sign In", :warning, root_path, size: "lg", class: "login-submit-button" %>
+  </div>
+<% end %>
