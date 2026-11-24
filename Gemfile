@@ -113,6 +113,7 @@ end
 group :development do
   gem "rails-hyperdrive", "~> 0.10.1"
   gem "web-console"
+  plugin "bundler-hyperdrive"
 end
 
 group :test do
@@ -121,6 +122,5 @@ group :test do
 end
 
 
-plugin "bundler-hyperdrive"
 
 gem "herb", "~> 0.11.1"
