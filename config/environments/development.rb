@@ -13,8 +13,9 @@ Rails.application.configure do
   # Do not eager load code on boot.
   config.eager_load = false
 
-  # Show full error reports.
-  config.consider_all_requests_local = true
+  # Show full error reports. SHOW_ERROR_PAGES=1 bin/dev shows the pages a reader
+  # gets instead: Page Not Found and the crash page (ErrorPages).
+  config.consider_all_requests_local = ENV["SHOW_ERROR_PAGES"] != "1"
 
   # Enable server timing.
   config.server_timing = true

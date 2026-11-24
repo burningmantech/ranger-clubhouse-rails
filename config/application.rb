@@ -25,11 +25,20 @@ module Clubhouse3
     config.autoload_lib(ignore: %w[assets tasks middleware])
 
     require_relative "../lib/middleware/request_logger"
+    require_relative "../lib/middleware/not_found_page"
     require_relative "../lib/middleware/active_storage_cache_control"
 
-    # Appended, so it runs closest to the application and can still read the
-    # signed-in person off Current.
+    # A failed request is answered by ErrorPages (app/lib): the crash page for a
+    # reader, the static files in public/ for the rest. A lambda, because the
+    # constant is autoloaded and cannot be named while the app boots.
+    config.exceptions_app = ->(env) { ErrorPages.call(env) }
+
+    # Appended, so both run next to the application. RequestLogger can still read
+    # the signed-in person off Current. NotFoundPage, inside it, draws Page Not
+    # Found below the session, flash and cookie middleware, and the request log
+    # records the page the reader was given.
     config.middleware.use RequestLogger
+    config.middleware.use NotFoundPage
     config.middleware.insert_before ActionDispatch::Static, ActiveStorageCacheControl
 
     # Configuration for the application, engines, and railties goes here.

@@ -1,0 +1,78 @@
+<%# The crash page: a whole document, rendered with no layout (CrashController).
+    It leans on the asset pipeline and nothing else. No csrf_meta_tags -- they
+    read the session, which is a database row -- and no importmap: the app's
+    scripts are not needed to say that it stopped. public/500.html is what
+    answers if even this cannot be drawn. %>
+<%# With its zone: the reader may be in another one, and the Tech Cadre matches
+    this against the Error Log. %>
+<% now = Time.current %>
+<% at = "#{log_time_format(now)} #{now.zone}" %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>The Clubhouse Crashed (<%= @status %>)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <%# Without these the browser asks for /favicon.ico, which is not there. %>
+  <%= favicon_link_tag "favicon-light.ico", media: "(prefers-color-scheme: light)" %>
+  <%= favicon_link_tag "favicon.ico", media: "(prefers-color-scheme: dark)" %>
+  <%# The theme, before the first paint: layouts/application's own script. %>
+  <script>
+    try {
+      if (localStorage.getItem("theme") === "dark" ||
+          (!localStorage.getItem("theme") && matchMedia("(prefers-color-scheme: dark)").matches)) {
+        document.documentElement.classList.add("dark")
+        document.documentElement.dataset.theme = "dark"
+      }
+    } catch (e) {}
+  </script>
+  <%# No data-turbo-track, unlike the layouts' link. When Turbo drew this page
+      over a live one, the next visit finds the tracked sheet missing here and
+      loads the page afresh: a clean start after a crash. %>
+  <%= stylesheet_link_tag "tailwind" %>
+</head>
+<body class="bg-base-100 text-body text-base">
+<main class="min-h-dvh grid place-items-center p-5">
+  <%= ui_card class: "w-full max-w-xl" do %>
+    <div class="p-6">
+      <h1 class="text-2xl font-semibold text-heading">
+        <%= fa_icon "triangle-exclamation", :solid, class: "icon-error", end: 2 %>The Clubhouse Crashed
+      </h1>
+      <p class="mt-2">
+        <strong>This is a fault in the Clubhouse, not something you did.</strong>
+        Repeating the same step will most likely fail the same way.
+      </p>
+      <p class="mt-2">
+        For help, email the Tech Cadre at
+        <%= mail_to EmailAddresses::TECH_CADRE, EmailAddresses::TECH_CADRE, subject: "Clubhouse crash",
+                    body: "What I was doing:\n\n\nWhen: #{at}\nPage: #{@path}" %>.
+        Say what you were doing, and include these details:
+      </p>
+      <dl class="mt-3 space-y-1">
+        <% [["When", at], ["Page", tag.code(truncate(@path, length: 100))], ["Error", @status]].each do |label, value| %>
+          <div class="flex gap-2">
+            <dt class="font-semibold w-16 shrink-0"><%= label %></dt>
+            <dd class="break-all"><%= value %></dd>
+          </div>
+        <% end %>
+      </dl>
+      <div class="mt-4">
+        <%= button_row do %>
+          <% if @signed_in %>
+            <%= button_link "Go to Your Dashboard", :primary, me_root_path, icon: "house", icon_type: :solid %>
+          <% else %>
+            <%= button_link "Go to the Sign-In Page", :primary, root_path, icon: "right-to-bracket", icon_type: :solid %>
+          <% end %>
+          <%= button_link "Email the Tech Cadre", :secondary, "mailto:#{EmailAddresses::TECH_CADRE}", icon: "envelope" %>
+        <% end %>
+      </div>
+      <div class="mt-6 pt-3 border-t border-line flex flex-wrap justify-between gap-2 text-sm text-stone-muted">
+        <span>Ranger Secret Clubhouse</span>
+        <span>Error <%= @status %></span>
+      </div>
+    </div>
+  <% end %>
+</main>
+</body>
+</html>

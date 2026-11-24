@@ -61,6 +61,19 @@ Start here:
 - [app/forms/password_update_form.rb](../app/forms/password_update_form.rb)
 - [test/controllers/sessions_controller_test.rb](../test/controllers/sessions_controller_test.rb)
 
+### Error Pages (404, Crash)
+
+Start here:
+
+- [lib/middleware/not_found_page.rb](../lib/middleware/not_found_page.rb) catches a request that ends in a 404 and has Page Not Found drawn
+- [app/controllers/errors_controller.rb](../app/controllers/errors_controller.rb) and [app/views/errors/not_found.html.erb](../app/views/errors/not_found.html.erb)
+- [app/lib/error_pages.rb](../app/lib/error_pages.rb) answers every other failed request, and says what counts as a request for a page
+- [app/controllers/crash_controller.rb](../app/controllers/crash_controller.rb) and [app/views/crash/show.html.erb](../app/views/crash/show.html.erb)
+- `public/*.html`, the static pages for every other status and the fallback
+- [test/integration/error_pages_test.rb](../test/integration/error_pages_test.rb)
+
+See them in development with `SHOW_ERROR_PAGES=1 bin/dev`.
+
 ### New `/me` Feature or Route
 
 Start here:

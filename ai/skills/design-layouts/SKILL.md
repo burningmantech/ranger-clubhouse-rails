@@ -519,8 +519,9 @@ is `login.css` and `sessions/_heading`, not the component library, and they take
 
 ### Pages Outside the App Shell
 
-Print sheets, kiosk and bookmark pages, wall displays (the ROC photo board), the `public/` error
-pages and the test harness have no app shell. Colour tokens, the type floor and Title Case apply to
+Print sheets, kiosk and bookmark pages, wall displays (the ROC photo board), the crash page, the `public/`
+error pages and the test harness have no app shell (Page Not Found is inside it, or on the door
+when no one is signed in). Colour tokens, the type floor and Title Case apply to
 them as to any page (printed paper is `bg-paper` / `print:bg-paper`, never `bg-white`); `hero_panel`, `button_row`, the layout patterns and the page-structure rules
 (hero, back link, sections) do not. Each heads itself with its own `<h1>` or masthead. A print
 sheet's way back sits above the sheet, `print:hidden`, in its area's `_print_screen_nav` partial
