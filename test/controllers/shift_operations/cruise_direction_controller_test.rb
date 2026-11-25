@@ -86,6 +86,16 @@ class ShiftOperations::CruiseDirectionControllerTest < ActionDispatch::Integrati
     assert_redirected_to me_root_path
   end
 
+  # The date lookup answers with a shift's id, so it has to sit behind the gate.
+  test "a role outside the gate learns nothing from a date" do
+    sign_in_as(@outsider)
+
+    get shift_operations_cruise_direction_path(date: "#{YEAR}-08-26 18:30")
+
+    assert_redirected_to me_root_path
+    assert_equal DENY_MESSAGE, flash[:error]
+  end
+
   # --- the shift picker ---
 
   test "the page opens on the shift that is running now" do
@@ -166,6 +176,163 @@ class ShiftOperations::CruiseDirectionControllerTest < ActionDispatch::Integrati
 
     assert_response :success
     assert_no_match(/cruise-direction-board/, response.body)
+  end
+
+  # --- a date in the link ---
+
+  # Noon is an hour into @slot, so landing on the evening shift is the date's
+  # doing rather than the clock's.
+  test "a date opens the shift it lands in" do
+    sign_in_as(@admin)
+
+    get shift_operations_cruise_direction_path(date: "#{YEAR}-08-26 18:30")
+
+    assert_redirected_to shift_operations_cruise_direction_path(slot_id: @later_slot.id, year: YEAR)
+  end
+
+  # The date names its year: nothing else in this request says which one.
+  test "a date in an earlier year opens that year's shift" do
+    earlier = create_slot(@dirt, begins: Time.zone.local(YEAR - 1, 8, 27, 11, 0, 0),
+                          ends: Time.zone.local(YEAR - 1, 8, 27, 17, 0, 0), description: "Last year's dirt")
+    sign_in_as(@admin)
+
+    get shift_operations_cruise_direction_path(date: "#{YEAR - 1}-08-27T12:00")
+
+    assert_redirected_to shift_operations_cruise_direction_path(slot_id: earlier.id, year: YEAR - 1)
+  end
+
+  # No board at all, rather than the running shift's pods under an error about
+  # some other time.
+  test "a date no dirt shift covers says so and shows no board" do
+    Pod.create_shift_pod!(@slot, location: "Esplanade & 3:00")
+    sign_in_as(@admin)
+
+    get shift_operations_cruise_direction_path(date: "#{YEAR}-08-26 03:00")
+
+    assert_response :success
+    assert_equal "No dirt shift was found for Tue Aug 26, #{YEAR} @ 03:00. Pick a shift from the list.",
+                 flash[:error]
+    assert_select "#cruise-direction-board", false
+    assert_match "Pick a shift to see the pods", response.body
+  end
+
+  # A year before the pod tables begin -- with a dirt shift that does cover the
+  # moment -- a day no calendar has, words, and a value that is not text. Each
+  # is told the same thing, and none of them raises or redirects.
+  test "a date this page cannot use is not found either" do
+    create_slot(@dirt, begins: Time.zone.local(2019, 8, 27, 11, 0, 0),
+                ends: Time.zone.local(2019, 8, 27, 17, 0, 0), description: "Before the floor")
+    sign_in_as(@admin)
+
+    {
+      "2019-08-27 12:00" => "Tue Aug 27, 2019 @ 12:00",
+      "#{YEAR}-02-30 12:00" => "that date",
+      "#{YEAR}-08-26 25:00" => "that date",
+      "#{YEAR}-08-26 garbage" => "that date",
+      # Ruby would read this one as the 8th of May.
+      "8/5/#{YEAR} 12:00" => "that date",
+      "next tuesday" => "that date",
+      { a: "b" } => "that date"
+    }.each do |date, stamp|
+      get shift_operations_cruise_direction_path(date:)
+
+      assert_response :success, "date=#{date.inspect}"
+      assert_equal "No dirt shift was found for #{stamp}. Pick a shift from the list.", flash[:error]
+      assert_select "#cruise-direction-board", false
+    end
+  end
+
+  # Real dirt shifts overlap across a handover, and the incoming shift wins.
+  test "a date inside a handover opens the later shift" do
+    incoming = create_slot(@dirt, begins: Time.zone.local(YEAR, 8, 26, 16, 30, 0),
+                           ends: Time.zone.local(YEAR, 8, 26, 22, 0, 0), description: "Incoming dirt")
+    sign_in_as(@admin)
+
+    get shift_operations_cruise_direction_path(date: "#{YEAR}-08-26 16:45")
+
+    assert_redirected_to shift_operations_cruise_direction_path(slot_id: incoming.id, year: YEAR)
+  end
+
+  # Read as midnight, the bare date would open the overnight shift instead.
+  test "a date without a time opens the first shift beginning that day" do
+    create_slot(@dirt, begins: Time.zone.local(YEAR, 8, 25, 22, 0, 0),
+                ends: Time.zone.local(YEAR, 8, 26, 4, 0, 0), description: "Overnight dirt")
+    sign_in_as(@admin)
+
+    get shift_operations_cruise_direction_path(date: "#{YEAR}-08-26")
+
+    assert_redirected_to shift_operations_cruise_direction_path(slot_id: @slot.id, year: YEAR)
+  end
+
+  test "a date without a time on a day no shift begins says so" do
+    sign_in_as(@admin)
+
+    get shift_operations_cruise_direction_path(date: "#{YEAR}-08-24")
+
+    assert_equal "No dirt shift was found for Sun Aug 24, #{YEAR}. Pick a shift from the list.", flash[:error]
+  end
+
+  # A shift's times are wall clock, so the digits decide: converting either of
+  # these by its offset would land on another shift or on none. The last is
+  # what an unescaped "+" arrives as.
+  test "seconds and an offset on a date are ignored" do
+    sign_in_as(@admin)
+
+    ["T18:30:00-04:00", "T18:30:00Z", " 18:30:00 -0700", "T18:30:00.000 00:00"].each do |clock|
+      get shift_operations_cruise_direction_path(date: "#{YEAR}-08-26#{clock}")
+
+      assert_redirected_to shift_operations_cruise_direction_path(slot_id: @later_slot.id, year: YEAR),
+                           "date=#{YEAR}-08-26#{clock}"
+    end
+  end
+
+  test "a date that finds nothing shows no board even beside a shift id" do
+    Pod.create_shift_pod!(@slot, location: "Esplanade & 3:00")
+    sign_in_as(@admin)
+
+    get shift_operations_cruise_direction_path(slot_id: @slot.id, date: "#{YEAR}-08-26 03:00")
+
+    assert_response :success
+    assert_match "No dirt shift was found for", flash[:error]
+    assert_select "#cruise-direction-board", false
+  end
+
+  # "The list" in the message has to be the one the reader was after.
+  test "a date that finds nothing shows its own year's shifts" do
+    earlier = create_slot(@dirt, begins: Time.zone.local(YEAR - 1, 8, 27, 11, 0, 0),
+                          ends: Time.zone.local(YEAR - 1, 8, 27, 17, 0, 0), description: "Last year's dirt")
+    sign_in_as(@admin)
+
+    get shift_operations_cruise_direction_path(date: "#{YEAR - 1}-07-04 12:00")
+
+    assert_response :success
+    assert_equal "No dirt shift was found for Thu Jul 4, #{YEAR - 1} @ 12:00. Pick a shift from the list.",
+                 flash[:error]
+    assert_select "select[name=slot_id] option[value=?]", earlier.id.to_s
+    assert_select "select[name=slot_id] option[value=?]", @slot.id.to_s, false
+    assert_select "select[name=year] option[selected][value=?]", (YEAR - 1).to_s
+  end
+
+  test "a date in a year with no dirt shifts does not point at a list" do
+    sign_in_as(@admin)
+
+    get shift_operations_cruise_direction_path(date: "#{YEAR - 1}-07-04 12:00")
+
+    assert_response :success
+    assert_equal "No dirt shift was found for Thu Jul 4, #{YEAR - 1} @ 12:00.", flash[:error]
+    assert_match "No dirt shifts were scheduled for #{YEAR - 1}", response.body
+  end
+
+  # An Array is not blank and does not answer to_i.
+  test "a shift id that is not text selects nothing rather than raising" do
+    sign_in_as(@admin)
+
+    [["1"], { a: "1" }].each do |slot_id|
+      get shift_operations_cruise_direction_path(slot_id:, year: YEAR)
+
+      assert_response :success, "slot_id=#{slot_id.inspect}"
+      assert_select "#cruise-direction-board", false
+    end
   end
 
   # --- the board ---
