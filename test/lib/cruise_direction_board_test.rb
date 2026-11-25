@@ -49,6 +49,33 @@ class CruiseDirectionBoardTest < ActiveSupport::TestCase
     assert_nil CruiseDirectionBoard.suggested_shift([upcoming])
   end
 
+  # Real dirt shifts overlap by a handover, so a moment inside one is in two
+  # shifts at once.
+  test "a moment lands in the shift covering it, the later one across a handover" do
+    later = create_slot(@dirt, begins: Time.zone.local(YEAR, 8, 26, 16, 45, 0),
+                        ends: Time.zone.local(YEAR, 8, 26, 23, 0, 0), description: "Evening dirt")
+    at = ->(hour, minute = 0) {
+      CruiseDirectionBoard.shift_at(Time.zone.local(YEAR, 8, 26, hour, minute, 0))&.id
+    }
+
+    assert_equal @slot.id, at.call(12)
+    assert_equal later.id, at.call(16, 50), "the later shift wins the overlap"
+    assert_equal @slot.id, at.call(11), "a shift's own start is inside it"
+    assert_nil at.call(23), "and its end is not"
+    assert_nil at.call(3), "nothing covers the small hours"
+  end
+
+  # The overnight shift is still running as the day begins, and is not the answer.
+  test "a day's first shift is the first to begin on it" do
+    create_slot(@dirt, begins: Time.zone.local(YEAR, 8, 25, 22, 0, 0),
+                ends: Time.zone.local(YEAR, 8, 26, 4, 0, 0), description: "Overnight dirt")
+    create_slot(@dirt, begins: Time.zone.local(YEAR, 8, 26, 17, 0, 0),
+                ends: Time.zone.local(YEAR, 8, 26, 23, 0, 0), description: "Evening dirt")
+
+    assert_equal @slot.id, CruiseDirectionBoard.first_shift_on(Date.new(YEAR, 8, 26)).id
+    assert_nil CruiseDirectionBoard.first_shift_on(Date.new(YEAR, 8, 24))
+  end
+
   # --- the board ---
 
   test "the board lists a shift's pods in order with their members" do

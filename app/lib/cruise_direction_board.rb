@@ -65,6 +65,25 @@ class CruiseDirectionBoard
     # to pick a shift themselves.
     def suggested_shift(shifts) = shifts.reverse.find { |shift| shift.has_started && !shift.has_ended }
 
+    # The shift a moment lands in, looked up in that moment's own year. nil
+    # when no dirt shift covers it.
+    #
+    # Shifts overlap across a handover, by a quarter to half an hour, and the
+    # later one wins there -- as it does for "now" in suggested_shift. The
+    # start is inside and the end is not, so a shift's own start opens it.
+    #
+    # Wall clock against wall clock: `begins` and `ends` are the digits the
+    # picker prints, and a date in a link is written the same way. Not the
+    # slot's begins_adjusted, which is for measuring against the real clock.
+    def shift_at(time)
+      shifts_for_year(time.year).reverse.find { |shift| (shift.begins...shift.ends).cover?(time) }
+    end
+
+    # The first shift that begins on a day, for a date given without a time.
+    # Begins, not covers: the overnight shift still running at midnight belongs
+    # to the evening it started on, which is where the picker lists it.
+    def first_shift_on(day) = shifts_for_year(day.year).find { |shift| shift.begins.to_date == day }
+
     # One shift's pods with their members.
     def for_slot(slot)
       pods = Pod.shift_pods_for(slot).to_a
