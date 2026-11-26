@@ -21,7 +21,7 @@
   <strong>Nothing has been sent yet.</strong>
   Sending reaches <%= pluralize(reached, "person") %>:
   <%= @people.count(&:use_sms) %> by text, <%= @people.count(&:use_email) %> by email<%
-  if @form.sends_clubhouse? %>, and <%= @people.size %> by Clubhouse message<% end %>.
+  if @form.sends_clubhouse? %>, and <%= Rbs.clubhouse_recipients(@people).size %> by Clubhouse message<% end %>.
   <%= rbs_unreachable_sentence(@unreached) if @unreached.any? %>
 <% end %>
 

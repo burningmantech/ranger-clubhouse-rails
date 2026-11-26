@@ -1,7 +1,8 @@
 # RBS.php to Ruby Translation Reference
 
 This document maps the PHP `RBS` class (Laravel) to the Ruby `Rbs` class (Rails).
-Use it as a reference when converting other PHP service classes to Ruby.
+**Historical record.** The translation it describes is finished and Clubhouse 2 is no longer consulted
+(`AGENTS.md` > Clubhouse 2). Take behavior from this app's code and tests.
 
 ## Source and Target Files
 

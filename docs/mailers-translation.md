@@ -2,6 +2,9 @@
 
 This document describes the conversion of Laravel 12 mailer classes and Blade templates to Rails 8.1 ActionMailer classes and ERB views.
 
+**Historical record.** The translation it describes is finished and Clubhouse 2 is no longer consulted
+(`AGENTS.md` > Clubhouse 2). Take behavior from this app's code and tests.
+
 ## Overview
 
 | Category | Laravel | Rails |

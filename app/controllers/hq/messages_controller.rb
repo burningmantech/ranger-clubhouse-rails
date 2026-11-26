@@ -15,9 +15,16 @@
 # sets before_action order, and its set_person must run before MessagesConcern's
 # set_message and MessageDirectionConcern's set_direction, both of which read
 # @person. MessageDirectionConcern last: its methods override MessagesConcern's
-# hook defaults, which only works if it is included after.
+# hook defaults, which only works if it is included after. And two callbacks
+# are declared between the includes: MessagesConcern's refuse_applicant, after
+# HqConcern's gate and set_person and before set_message and set_direction,
+# whose refusals redirect with a toast; then the compose pages' shell, after
+# the guard, so a refused applicant's request loads the shell only when the
+# guard draws it (prepare_applicant_notice).
 class Hq::MessagesController < ApplicationController
   include HqConcern
+  before_action :refuse_applicant
+  before_action :load_hq_shell_for_compose_page, only: %i[new create]
   include MessagesConcern
   include MessageDirectionConcern
 
@@ -26,10 +33,12 @@ class Hq::MessagesController < ApplicationController
   # shell loader run on those would silently eat the operator's once-per-person
   # entry warning modal (load_hq_shell consumes session[:hq_warned_person_id]),
   # so it is skipped for all of them, and a new action of MessagesConcern's gets
-  # no shell unless it is named here: a page left out fails loudly (no
-  # @banners), where an answer let in ate the warning unseen. :create keeps the
+  # no shell unless it is named in a wrapper: a page left out fails loudly (no
+  # @banners), where an answer let in ate the warning unseen. HqConcern's own
+  # registration is skipped whole, because it runs ahead of refuse_applicant;
+  # the compose pages load the shell after it (above). :create keeps the
   # shell -- it re-renders :new on a validation error.
-  skip_before_action :load_hq_shell, except: %i[new create]
+  skip_before_action :load_hq_shell
 
   # :index answers the shell page, the folder-switch turbo-stream (the folder
   # tabs carry data-turbo-stream) and the thread page's lazy list frame; :show
@@ -54,6 +63,16 @@ class Hq::MessagesController < ApplicationController
   before_action :load_hq_shell_for_thread_page, only: :show
 
   private
+
+  # The applicant notice renders as a page inside the shell (MessagesConcern#refuse_applicant).
+  def prepare_applicant_notice
+    load_hq_shell
+  end
+
+  # :new is a page, and :create re-renders it on a validation error.
+  def load_hq_shell_for_compose_page
+    load_hq_shell
+  end
 
   # Asks "is this a fragment?" rather than "is this HTML?" on purpose. A client
   # sending Accept: */* (curl, uptime checks, a bare fetch) gets request.format

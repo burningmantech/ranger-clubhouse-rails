@@ -9,6 +9,12 @@ class Person::MessagesController < ApplicationController
   layout "person"
 
   include PersonConcern
+  # Declared between the includes on purpose: both run after set_person and
+  # before MessagesConcern's set_message and MessageDirectionConcern's
+  # set_direction, whose refusals are redirects with a toast. refuse_applicant
+  # is MessagesConcern's.
+  before_action :may_view_messages?
+  before_action :refuse_applicant
   include MessagesConcern
   include MessageDirectionConcern
 
@@ -17,8 +23,6 @@ class Person::MessagesController < ApplicationController
   # without Event Management are denied.
   authorize_role [Role::EVENT_MANAGEMENT, Role::EVENT_MANAGEMENT_ON_PLAYA],
                  message: "Event Management permission is required to view messages."
-
-  before_action :may_view_messages?
 
   private
 

@@ -13,16 +13,128 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
   setup do
     @sender = person(:active_ranger)
     @recipient = person(:ranger_with_custom_gender)
-    @prospective = person(:prospective_ranger)
+    # A fixture member of the Green Dot Cadre. The fixture is a prospective;
+    # here it is a Ranger, because an applicant takes no mail
+    # (Person#messages_barred?) and these tests need a third person who does.
+    # The applicant tests set the status themselves.
+    @third = person(:prospective_ranger)
 
     # Ensure recipients have last_seen_at set (required for messaging_permitted?)
     @recipient.update!(last_seen_at: 1.day.ago)
-    @prospective.update!(last_seen_at: 1.day.ago)
+    @third.update_columns(status: Person::ACTIVE, last_seen_at: 1.day.ago)
 
     sign_in_as(@sender)
     # Ensure Current.person is set for controller actions
     Current.person = @sender
     Current.roles_manager = RoleManager.retrieve(@sender)
+  end
+
+  # --- Applicants (owner's rulings 2026-11-25) ----------------------------------
+
+  test "an applicant's mailbox pages answer the notice in place, with no mail, redirect or toast" do
+    message = create_message(@sender, @third, "Hidden Subject", "Body")
+    sign_in_as(@third)
+
+    [Person::PROSPECTIVE, Person::ALPHA].each do |status|
+      @third.update_columns(status:)
+
+      [
+        me_messages_path,
+        me_messages_path(to: @sender.callsign),
+        me_message_path(message),
+        me_message_path(0),
+        new_me_message_path
+      ].each do |path|
+        get path
+
+        assert_response :success, "#{path} should answer the notice in place for #{status}"
+        assert_empty flash
+        # Information on the applicant's own page, so a note and no alert.
+        assert_select "[role=alert]", text: /Once you become a Ranger/, count: 0
+        assert_select "[role=note]", text: /Once you become a Ranger, you will be able to message your fellow Rangers\./
+        assert_select "[role=note] a[href^='mailto:']", count: 1
+        assert_select "[role=note] a[href='mailto:#{EmailAddresses::VOLUNTEER_COORDINATORS_TEAM}']"
+        assert_select "a[href^='#{new_me_message_path}']", false
+        assert_no_match "Hidden Subject", response.body
+        # The menu leads here; the unread envelope stays a mailbox user's.
+        assert_select "a[href='#{me_messages_path}']", text: /Messages/
+        assert_select "#navbar-messages", false
+      end
+    end
+  end
+
+  test "an applicant's write is answered with the notice at 403, as a page Turbo can draw" do
+    message = create_message(@sender, @third, "Thread Top", "Body")
+    @third.update_columns(status: Person::ALPHA)
+    sign_in_as(@third)
+
+    assert_no_difference "PersonMessage.count" do
+      post me_messages_path, params: { message_form: { callsigns: [@sender.callsign], subject: "Hi", body: "Body" } }
+      assert_response :forbidden
+      assert_select "[role=note]", text: /Once you become a Ranger/
+
+      post create_reply_me_message_path(message), params: { message_reply_form: { reply: "Reply" } }
+      assert_response :forbidden
+    end
+
+    # A form's Accept puts turbo-stream first: the page still goes out as HTML.
+    post toggle_read_me_message_path(message), as: :turbo_stream
+    assert_response :forbidden
+    assert_equal "text/html", response.media_type
+    assert_select "[role=note]", text: /Once you become a Ranger/
+    assert_not message.reload.thread_read?(@third.id)
+  end
+
+  test "an applicant's lookup is refused bare, and a frame request gets the notice in its frame" do
+    message = create_message(@sender, @third, "Thread Top", "Body")
+    @third.update_columns(status: Person::PROSPECTIVE)
+    sign_in_as(@third)
+
+    get suggest_me_messages_path(q: "ran")
+    assert_response :forbidden
+    assert_empty response.body
+
+    get suggest_callsigns_me_messages_path(q: "custom"), as: :json
+    assert_response :forbidden
+
+    { me_messages_path => "messages-conversation-list", me_message_path(message) => "messages-pane" }.each do |path, frame|
+      get path, headers: { "Turbo-Frame" => frame }
+
+      assert_response :success
+      assert_select "turbo-frame##{frame} [role=note]", text: /Once you become a Ranger/
+      assert_no_match "<html", response.body
+      assert_no_match "Thread Top", response.body
+    end
+  end
+
+  test "nobody can send to an applicant, find one to send to, or reply to one" do
+    thread = create_message(@third, @sender, "From before", "Body")
+
+    [Person::PROSPECTIVE, Person::ALPHA].each do |status|
+      @third.update_columns(status:)
+
+      assert_no_difference "PersonMessage.count" do
+        post me_messages_path, params: { message_form: { callsigns: [@third.callsign], subject: "Hi", body: "Body" } }
+        assert_response :unprocessable_entity
+        assert_select "#form-error-summary", text: /You can't message that callsign\./
+
+        post create_reply_me_message_path(thread), params: { message_reply_form: { reply: "Reply" } }, as: :turbo_stream
+        assert_match "has a status that does not allow messages", response.body
+      end
+
+      get suggest_callsigns_me_messages_path(q: "prospective"), as: :json
+      assert_empty response.parsed_body["items"]
+    end
+  end
+
+  test "a team thread leaves out a member who is an applicant" do
+    cadre = teams(:green_dot_cadre)
+    join_team(@sender, cadre)
+    @third.update_columns(status: Person::ALPHA)
+
+    top = create_team_thread(@sender, cadre, @recipient)
+
+    assert_not_includes top.members.pluck(:person_id), @third.id
   end
 
   # Index action tests
@@ -101,9 +213,9 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "every compose step refuses an unknown or unmessageable callsign in the same words" do
-    @prospective.update!(last_seen_at: nil)
+    @third.update!(last_seen_at: nil)
 
-    ["NonexistentCallsign", person(:deceased_ranger).callsign, @prospective.callsign].each do |callsign|
+    ["NonexistentCallsign", person(:deceased_ranger).callsign, @third.callsign].each do |callsign|
       get new_me_message_path(to: callsign)
       assert_response :success
       assert_select "#form-error-summary", text: /You can't message that callsign\. Use Find Recipient to choose someone\./
@@ -119,7 +231,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
 
   test "to names the exact callsign, never one of two that normalize alike" do
     @recipient.update!(callsign: "Fire Fly")
-    @prospective.update!(callsign: "Fire-Fly")
+    @third.update!(callsign: "Fire-Fly")
 
     get new_me_message_path(to: "Fire Fly")
     assert_select "#message_form_callsigns_chips input[name='message_form[callsigns][]'][value=?]", "Fire Fly"
@@ -293,14 +405,14 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should reject toggle_read for a message between two other people" do
-    other_message = create_message(@recipient, @prospective, "Private", "Body")
+    other_message = create_message(@recipient, @third, "Private", "Body")
 
     post toggle_read_me_message_path(other_message), as: :turbo_stream
     assert_redirected_to me_messages_path
     assert_match(/Invalid message id/i, flash[:error].to_s)
 
     other_message.reload
-    assert_not other_message.thread_read?(@prospective.id)
+    assert_not other_message.thread_read?(@third.id)
   end
 
   test "should redirect toggle_read when message not found" do
@@ -350,14 +462,14 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should reject toggle_archive for a message between two other people" do
-    other_message = create_message(@recipient, @prospective, "Private", "Body")
+    other_message = create_message(@recipient, @third, "Private", "Body")
 
     post toggle_archive_me_message_path(other_message), as: :turbo_stream
     assert_redirected_to me_messages_path
     assert_match(/Invalid message id/i, flash[:error].to_s)
 
     other_message.reload
-    assert_not other_message.archived?(@prospective.id)
+    assert_not other_message.archived?(@third.id)
     assert_not other_message.archived?(@recipient.id)
   end
 
@@ -425,7 +537,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "the chip field's suggestions are the callsigns a send accepts, as autocomplete JSON" do
-    @prospective.update!(last_seen_at: nil)
+    @third.update!(last_seen_at: nil)
 
     get suggest_callsigns_me_messages_path(q: "custom"), as: :json
     assert_response :success
@@ -621,17 +733,23 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal %w[navbar-messages live-region], streams.map { |stream| stream["target"] }
   end
 
-  test "a note to self and a message to someone the mailbox is not for announce nothing" do
+  # Until 2026-11-25 an applicant could be sent a message their pages never
+  # announced (they are no Person#mailbox_user?). Now nobody without a mailbox
+  # can be sent one, so the send itself is refused.
+  test "a note to self announces nothing, and a message to an applicant is not sent" do
     assert_no_turbo_stream_broadcasts @sender do
       create_message(@sender, @sender, "Reminder", "Pack goggles")
     end
 
-    assert_no_turbo_stream_broadcasts @prospective do
-      post me_messages_path, params: {
-        message_form: { callsigns: [@prospective.callsign], subject: "Welcome", body: "Hello" }
-      }
+    @third.update_columns(status: Person::PROSPECTIVE)
+    assert_no_turbo_stream_broadcasts @third do
+      assert_no_difference "PersonMessage.count" do
+        post me_messages_path, params: {
+          message_form: { callsigns: [@third.callsign], subject: "Welcome", body: "Hello" }
+        }
+      end
     end
-    assert_equal @prospective.id, PersonMessage.last.person_id
+    assert_response :unprocessable_entity
   end
 
   test "a live announcement that fails is logged, and the message is still sent" do
@@ -761,7 +879,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should reject create_reply for a thread between two other people" do
-    other_thread = create_message(@recipient, @prospective, "Private Thread", "Body")
+    other_thread = create_message(@recipient, @third, "Private Thread", "Body")
 
     assert_no_difference "PersonMessage.count" do
       post create_reply_me_message_path(other_thread), params: {
@@ -1785,7 +1903,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
 
   test "one refused callsign stops the whole send and says which" do
     people = group_recipients
-    @prospective.update!(last_seen_at: nil)
+    @third.update!(last_seen_at: nil)
 
     notified = capture_message_notifies do
       assert_no_difference -> { PersonMessage.count + PersonMessageMember.count } do
@@ -1795,7 +1913,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert_empty notified
-    assert_select "#form-error-summary", text: /#{@prospective.callsign}: You can't message that callsign\./
+    assert_select "#form-error-summary", text: /#{@third.callsign}: You can't message that callsign\./
     assert_select "#form-error-summary li", count: 1
   end
 
@@ -1821,8 +1939,8 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     top = PersonMessage.order(:id).last
     assert top.group?
     assert_equal cadre.id, top.recipient_team_id
-    assert_equal [@sender, @recipient, @prospective].map(&:id).sort, top.members.pluck(:person_id).sort
-    assert_equal [@recipient, @prospective].map(&:id).sort, notified.sort
+    assert_equal [@sender, @recipient, @third].map(&:id).sort, top.members.pluck(:person_id).sort
+    assert_equal [@recipient, @third].map(&:id).sort, notified.sort
   end
 
   test "a send to a Cadre marks its members as the team's, and not a callsign named beside it" do
@@ -1832,7 +1950,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     post me_messages_path, params: { message_form: { team_id: cadre.id, callsigns: [@recipient.callsign],
                                                      subject: "Sanctuary", body: "Friday?" } }
 
-    assert_equal({ @sender.id => cadre.id, @prospective.id => cadre.id, @recipient.id => nil },
+    assert_equal({ @sender.id => cadre.id, @third.id => cadre.id, @recipient.id => nil },
                  team_marks(PersonMessage.order(:id).last))
   end
 
@@ -1853,7 +1971,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_select card, text: replied_as
 
     # The card each member was sent, as they see it (HTML, so the name and the chip are matched apart)
-    member = capture_turbo_stream_broadcasts([@prospective, top]).map(&:to_html).join
+    member = capture_turbo_stream_broadcasts([@third, top]).map(&:to_html).join
     assert_match(/>#{Regexp.escape(@sender.callsign)}</, member)
     assert_match(/Replied as Green Dot Cadre/, member)
     outside = capture_turbo_stream_broadcasts([@recipient, top]).map(&:to_html).join
@@ -1907,7 +2025,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[type=radio][name='message_reply_form[as_team_id]'][value='']:not([checked])"
     assert_select "#messages-reply-form", text: /The team's members still see your callsign\./
 
-    plain = create_group_thread(@sender, @recipient, @prospective)
+    plain = create_group_thread(@sender, @recipient, @third)
     get me_message_path(plain)
     assert_select "input[name='message_reply_form[as_team_id]']", count: 0
 
@@ -1966,8 +2084,8 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/\ATo: Green Dot Cadre/, party_text)
     assert_select card, text: /#{Regexp.escape(@sender.callsign)}\s+Sent as Green Dot Cadre/
 
-    PersonTeam.find_by!(person: @prospective, team: cadre).destroy!
-    sign_in_as(@prospective)
+    PersonTeam.find_by!(person: @third, team: cadre).destroy!
+    sign_in_as(@third)
     get me_message_path(top)
     assert_party "From: Green Dot Cadre"
     assert_select card, text: /Sent as|#{Regexp.escape(@sender.callsign)}/, count: 0
@@ -2014,8 +2132,8 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to me_message_path(top)
     assert_equal [PersonMessage::SENDER_TYPE_TEAM, cadre.id, @sender.id, true],
                  [top.sender_type, top.sender_team_id, top.sender_person_id, top.group?]
-    assert_equal({ @sender.id => cadre.id, @prospective.id => cadre.id, @recipient.id => nil }, team_marks(top))
-    assert_equal [@recipient, @prospective].map(&:id).sort, notified.sort
+    assert_equal({ @sender.id => cadre.id, @third.id => cadre.id, @recipient.id => nil }, team_marks(top))
+    assert_equal [@recipient, @third].map(&:id).sort, notified.sort
     assert_includes PersonMessage.retrieve_for_person(@sender.id, PersonMessage::FOLDER_SENT), top
 
     sign_in_as(@recipient)
@@ -2301,7 +2419,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal expected, party_text
   end
 
-  # A thread sent to the Green Dot Cadre: @sender and @prospective (a fixture
+  # A thread sent to the Green Dot Cadre: @sender and @third (a fixture
   # member) are on it, @recipient is named beside it.
   def create_cadre_thread
     cadre = teams(:green_dot_cadre)
@@ -2313,7 +2431,7 @@ class Me::MessagesControllerTest < ActionDispatch::IntegrationTest
   def group_recipients
     echelon = person(:echelon_ranger)
     echelon.update!(last_seen_at: 1.day.ago)
-    [@recipient, @prospective, echelon]
+    [@recipient, @third, echelon]
   end
 
   def create_message(sender, recipient, subject, body, reply_to_id: nil)

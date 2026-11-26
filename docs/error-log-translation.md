@@ -1,7 +1,8 @@
 # ErrorLog.php to Ruby Translation Reference
 
 This document maps the PHP `ErrorLog` class (Laravel) to the Ruby `ErrorLog` class (Rails).
-Use it as a reference when converting other PHP model classes that interact with ErrorLog methods.
+**Historical record.** The translation it describes is finished and Clubhouse 2 is no longer consulted
+(`AGENTS.md` > Clubhouse 2). Take behavior from this app's code and tests.
 
 ## Source and Target Files
 

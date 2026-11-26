@@ -56,6 +56,24 @@ class Hq::ShiftManageControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to me_root_path
   end
 
+  # An applicant has no mailbox at the window (MessagesConcern#refuse_applicant).
+  test "unread mail raises the callout and the Deliver Messages task, but not for an applicant" do
+    PersonMessage.create!(message_type: PersonMessage::MESSAGE_TYPE_CONTACT, person_id: @subject.id,
+                          creator_person_id: @viewer.id, sender_person_id: @viewer.id,
+                          sender_type: PersonMessage::SENDER_TYPE_PERSON, subject: "Hello", body: "Body")
+
+    get hq_shift_manage_path(@subject)
+    assert_response :success
+    assert_select "a[href='#{hq_messages_path(@subject)}']", text: /Read 1 Message/
+    assert_select "#hq-todo-list [data-hq-shift-target=todoList]", text: /Deliver Messages/
+
+    @subject.update_columns(status: Person::ALPHA)
+    get hq_shift_manage_path(@subject)
+    assert_response :success
+    assert_no_match "Read 1 Message", response.body
+    assert_select "#hq-todo-list [data-hq-shift-target=todoList]", text: /Deliver Messages/, count: 0
+  end
+
   test "renders the shift page with an unverified entry needing review" do
     entry = create_timesheet!(review_status: Timesheet::STATUS_UNVERIFIED)
 

@@ -1,0 +1,21 @@
+<%# locals: (back_link: nil) %>
+<%# What an applicant's mailbox answers in place of the mail and the compose
+    buttons (MessagesConcern#refuse_applicant), for every audience. Self-serve
+    at /me has no @person and speaks to the applicant; the management
+    interfaces set @person and speak about them. The hero is the mailbox's own
+    (common/messages/index), so the page is still Messages. %>
+<div class="mb-2">
+  <% if @person %>
+    <%= hero_panel icon: "comments", heading_level: :h1, id: "messages-header",
+                   description: "Clubhouse messages are not open to applicants.", back_to: back_link do |panel| %>
+      <% panel.title do %>Messages &mdash; <%= @person.callsign %><% end %>
+    <% end %>
+  <% else %>
+    <%= hero_panel icon: "comments", heading_level: :h1, id: "messages-header",
+                   title: "Messages",
+                   description: "Clubhouse messages open once you become a Ranger.",
+                   back_to: :dashboard %>
+  <% end %>
+</div>
+
+<%= render "common/messages/applicant_notice", person: @person %>

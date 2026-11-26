@@ -1,0 +1,6 @@
+<%# locals: (frame_id:, person: nil) %>
+<%# The applicant notice for a request that asked for one frame (the list, the
+    pane), so a mailbox left open shows it where that frame sits. %>
+<%= turbo_frame_tag frame_id do %>
+  <%= render "common/messages/applicant_notice", person: %>
+<% end %>

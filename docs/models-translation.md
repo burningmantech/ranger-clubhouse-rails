@@ -1,7 +1,8 @@
 # Laravel Models to Rails Translation Reference
 
 This document maps Laravel 12 PHP models to Rails 8.1 Ruby models.
-Use it as a reference when converting other PHP model classes to Ruby.
+**Historical record.** The translation it describes is finished and Clubhouse 2 is no longer consulted
+(`AGENTS.md` > Clubhouse 2). Take behavior from this app's code and tests.
 
 ## Source and Target Files
 

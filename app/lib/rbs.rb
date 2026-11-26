@@ -400,8 +400,9 @@ class Rbs
       scope = base_scope(broadcast_type, params, year)
       send_sms, send_email, send_clubhouse = channels_for(attrs, params)
 
-      # Everyone matched receives a Clubhouse message, so no one is narrowed
-      # out. An emergency overrides the choice not to be contacted, and keeps
+      # Everyone matched who has a mailbox receives a Clubhouse message, so the
+      # query narrows no one out (an applicant no other channel reaches is
+      # dropped below). An emergency overrides the choice not to be contacted, and keeps
       # everyone listed, anyone no channel reaches included, so its pages can
       # name them (unreachable).
       unless send_clubhouse || is_emergency
@@ -418,17 +419,38 @@ class Rbs
       suppressed = EmailSuppression.suppressed(rows.map { |row| row[RECIPIENT_EMAIL] })
       people = rows.map { |row| build_recipient(row, send_sms:, send_email:, is_emergency:, suppressed:) }
 
-      unless send_clubhouse || is_emergency
-        people = people.select { |person| person.use_sms || person.use_email }
+      # A Clubhouse message reaches everyone listed who has a mailbox (mailbox?).
+      unless is_emergency
+        people = people.select { |person| person.use_sms || person.use_email || (send_clubhouse && mailbox?(person)) }
       end
 
       people
     end
 
     #
+    # The people on a broadcast's list who get its Clubhouse message: everyone
+    # but an applicant, who has no mailbox to read it in (owner's ruling
+    # 2026-11-25; chosen by Claude for the broadcasts, reversible here). An
+    # applicant stays on the list only for a text or an email
+    # (retrieve_recipients).
+    #
+    # @param people [Array<Recipient>]
+    # @return [Array<Recipient>]
+    #
+    def clubhouse_recipients(people)
+      people.select { |person| mailbox?(person) }
+    end
+
+    # Does this recipient's status have a Clubhouse mailbox?
+    def mailbox?(person)
+      Person::APPLICANT_STATUSES.exclude?(person.status)
+    end
+
+    #
     # The people on a broadcast's list whom no channel reaches, in list order.
     # Only an emergency lists any: every other broadcast drops them
-    # (retrieve_recipients), and a Clubhouse message reaches everyone listed.
+    # (retrieve_recipients), and a Clubhouse message reaches everyone listed
+    # but an applicant, who is listed only with a text or an email.
     # The pages name them, and leave them out of every count of who the
     # broadcast reaches; a count of the list keeps them.
     #
@@ -500,8 +522,9 @@ class Rbs
 
       clubhouse_messages = 0
       if send_clubhouse
-        clubhouse_messages = people.size
-        RbsTransmitClubhouseMessageJob.perform_later(broadcast.id, sender.id, people.map(&:id),
+        inboxes = clubhouse_recipients(people)
+        clubhouse_messages = inboxes.size
+        RbsTransmitClubhouseMessageJob.perform_later(broadcast.id, sender.id, inboxes.map(&:id),
                                                      subject.to_s, message[:message].to_s,
                                                      expires_at&.to_s)
       end

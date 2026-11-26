@@ -1,0 +1,20 @@
+<%# locals: (person: nil) %>
+<%# The words of the applicant notice (MessagesConcern#refuse_applicant). With a
+    person it tells a manager or the HQ window what to do, as an error; without
+    one it tells the applicant, on their own page, when messages open, which is
+    information and no alert. The status prints as stored. The list addresses
+    are long, so they wrap as _messages_panel's do. %>
+<% if person %>
+  <%= ui_callout_box :error do %>
+    <strong>Applicants are not allowed to send or receive messages.</strong>
+    <%= person.callsign %>'s status is <%= person.status %>. Direct them to the Mentor Shack, or have them
+    email the Mentor Cadre at <%= mail_to EmailAddresses::MENTOR_CADRE, nil, class: "wrap-anywhere" %> or the
+    Volunteer Coordinators at <%= mail_to EmailAddresses::VOLUNTEER_COORDINATORS_TEAM, nil, class: "wrap-anywhere" %>.
+  <% end %>
+<% else %>
+  <%= ui_callout_box :info, role: "note" do %>
+    <strong>Once you become a Ranger, you will be able to message your fellow Rangers.</strong>
+    Until then, email the Volunteer Coordinators at
+    <%= mail_to EmailAddresses::VOLUNTEER_COORDINATORS_TEAM, nil, class: "wrap-anywhere" %> with any questions.
+  <% end %>
+<% end %>
