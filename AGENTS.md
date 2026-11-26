@@ -135,6 +135,10 @@ See `docs/UI-COMPONENTS.md` for complete API reference and `docs/DESIGN-GUIDE.md
 - Use shorthand hash syntax / keyword punning (e.g., instead of func(name: name) use func(name:) )
 - ActiveRecord joins/where instead of raw SQL joins
 - Singular database table names (not plural)
+- A new table is `utf8mb4` / `utf8mb4_unicode_ci` without its migration saying so: `create_table` names the pair
+  (`config/initializers/active_record_extensions.rb`), because the databases do not share a default and the one
+  the servers' tables took was latin1. `test/lib/table_charset_test.rb` fails for a table in any other collation
+  (`radio_log`, `utf8mb4_general_ci`, is the one it lets through); a table is converted, never added to its list
 - Confirm with user before installing new gems or packages
 - Start new `.rb` files with `# frozen_string_literal: true` and a blank line (nearly every file has it; the gap is pre-convention core files)
 - Strong params: Rails 8 `params.expect(x: [...])` for a form's scope, `params.expect(:x)` for one required value — no `require`/`required` call remains. A nested list of hashes needs `[[...]]` (single brackets silently drop its rows), and `expect` answers 400 when nothing permitted is left
