@@ -166,8 +166,7 @@ class Role < ApplicationRecord
 
         new_role = create!(
           id: role_id,
-          title: "ART #{title} #{suffix}",
-          new_user_eligible: false
+          title: "ART #{title} #{suffix}"
         )
 
         added << {

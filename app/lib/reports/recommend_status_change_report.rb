@@ -86,11 +86,12 @@ class RecommendStatusChangeReport
       key: RETIRED,
       title: "Convert to Retired",
       meaning: "Rangers with no shift in the last five events.",
-      consequence: "Retiring a person removes every team membership, and cuts their positions and roles " \
-                   "back to what a brand new account holds.",
+      consequence: "Retiring a person removes every team membership and directly granted permission, and " \
+                   "cuts their positions back to what a brand new account holds.",
       confirm: { title: "Confirm Retired Status",
-                 message: "Set the checked people to retired status? Every team membership is removed, " \
-                          "and their positions and roles are cut back to a new account's.",
+                 message: "Set the checked people to retired status? Every team membership and directly " \
+                          "granted permission is removed, and their positions are cut back to a new " \
+                          "account's.",
                  confirm_label: "Set Retired" },
       action: BulkUpload::Action.new(id: Person::RETIRED, label: "Convert to Retired",
                                      help: "callsign", handler: BulkUpload::StatusHandler)

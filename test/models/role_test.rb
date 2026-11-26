@@ -35,8 +35,7 @@ class RoleTest < ActiveSupport::TestCase
   test "create_art_roles fills in a missing role without raising" do
     position = Position.create!(id: Position::GREEN_DOT_TRAINING, title: "Green Dot Training",
                                 type: Position::TYPE_TRAINING, active: true)
-    Role.create!(id: Role::ART_TRAINER_BASE | position.id, title: "ART Green Dot Interface",
-                 new_user_eligible: false)
+    Role.create!(id: Role::ART_TRAINER_BASE | position.id, title: "ART Green Dot Interface")
 
     added, existing = Role.create_art_roles(position.id)
 
@@ -56,11 +55,9 @@ class RoleTest < ActiveSupport::TestCase
     Role.delete_all
     position = Position.create!(id: Position::GREEN_DOT_TRAINING, title: "Green Dot Training",
                                 type: Position::TYPE_TRAINING, active: true)
-    Role.create!(id: Role::EDIT_SWAG, title: "Edit Swag Records", new_user_eligible: false)
-    Role.create!(id: Role::ART_TRAINER_BASE | position.id, title: "ART Green Dot Interface",
-                 new_user_eligible: false)
-    Role.create!(id: Role::ART_GRADUATE_BASE | position.id, title: "ART Green Dot Graduate",
-                 new_user_eligible: false)
+    Role.create!(id: Role::EDIT_SWAG, title: "Edit Swag Records")
+    Role.create!(id: Role::ART_TRAINER_BASE | position.id, title: "ART Green Dot Interface")
+    Role.create!(id: Role::ART_GRADUATE_BASE | position.id, title: "ART Green Dot Graduate")
 
     named, groups = Role.catalog
 
@@ -78,7 +75,7 @@ class RoleTest < ActiveSupport::TestCase
     Role.delete_all
     Position.where(id: Position::GREEN_DOT_TRAINING).delete_all
     Role.create!(id: Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING,
-                 title: "ART Green Dot Interface", new_user_eligible: false)
+                 title: "ART Green Dot Interface")
 
     _named, groups = Role.catalog
 
@@ -96,7 +93,7 @@ class RoleTest < ActiveSupport::TestCase
   end
 
   test "renaming a role is written to the audit log" do
-    role = Role.create!(id: Role::EDIT_SWAG, title: "Edit Swag Records", new_user_eligible: false)
+    role = Role.create!(id: Role::EDIT_SWAG, title: "Edit Swag Records")
     ActionLog.delete_all
 
     role.update!(title: "Edit Swag")

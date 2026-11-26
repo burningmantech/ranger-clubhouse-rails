@@ -507,7 +507,6 @@ class ProspectiveClubhouseAccountFromApplication
   # Converted accounts get all of this from Person's own status-change hook.
   def bootstrap_new_account(person)
     PersonStatus.record(person.id, "", Person::PROSPECTIVE, APPLICATION_APPROVED_MESSAGE, Current.person_id)
-    PersonRole.reset_roles(person.id, APPLICATION_APPROVED_MESSAGE, Person::ADD_NEW_USER)
     PersonPosition.reset_positions(person.id, APPLICATION_APPROVED_MESSAGE, Person::ADD_NEW_USER)
   end
 

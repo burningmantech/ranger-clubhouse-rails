@@ -5,12 +5,7 @@
 
 <%= t.row do %>
   <%= t.cell permission.id, right: true, class: "whitespace-nowrap" %>
-  <%= t.row_header do %>
-    <%= permission.title %>
-    <% if permission.new_user_eligible? %>
-      <%= ui_badge "New user eligible", :primary, size: "xs" %>
-    <% end %>
-  <% end %>
+  <%= t.row_header permission.title %>
   <% if show_type %>
     <%= t.cell value_or_dash(permission.art_role_title) %>
   <% end %>

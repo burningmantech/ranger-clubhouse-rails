@@ -23,7 +23,6 @@ class PersonStatusManagementTest < ActiveSupport::TestCase
     @new_user_position = create_position("New User Pos", new_user_eligible: true)
     @special_position = create_position("Special Pos")
 
-    @new_user_role = create_role("New User Role", new_user_eligible: true)
     @special_role = create_role("Special Role")
   end
 
@@ -46,7 +45,6 @@ class PersonStatusManagementTest < ActiveSupport::TestCase
     assert PersonPosition.have_position?(person.id, @all_rangers_position.id)
     assert PersonPosition.have_position?(person.id, Position::DIRT_SHINY_PENNY)
     assert_not PersonPosition.have_position?(person.id, Position::ALPHA)
-    assert_includes PersonRole.find_role_ids_for_person(person.id), @new_user_role.id
   end
 
   test "active to bonked removes positions and future signups" do
@@ -61,7 +59,7 @@ class PersonStatusManagementTest < ActiveSupport::TestCase
     assert_not PersonSlot.have_slot?(person.id, slot.id)
   end
 
-  test "active to retired removes teams and keeps new user defaults" do
+  test "active to retired removes teams and permissions and keeps new user positions" do
     person = person(:ranger_with_custom_gender)
     PersonTeam.create!(person_id: person.id, team_id: teams(:green_dot_cadre).id)
     PersonPosition.create!(person_id: person.id, position_id: @special_position.id)
@@ -74,9 +72,34 @@ class PersonStatusManagementTest < ActiveSupport::TestCase
     assert_empty PersonTeam.where(person_id: person.id)
     assert PersonPosition.have_position?(person.id, @new_user_position.id)
     assert_not PersonPosition.have_position?(person.id, @special_position.id)
-    assert_includes PersonRole.find_role_ids_for_person(person.id), @new_user_role.id
-    assert_not_includes PersonRole.find_role_ids_for_person(person.id), @special_role.id
+    assert_empty PersonRole.find_role_ids_for_person(person.id)
     assert_not PersonSlot.have_slot?(person.id, slot.id)
+  end
+
+  test "active to auditor removes permissions and keeps new user positions" do
+    person = person(:ranger_with_custom_gender)
+    PersonPosition.create!(person_id: person.id, position_id: @special_position.id)
+    PersonRole.create!(person_id: person.id, role_id: @special_role.id)
+
+    person.status = Person::AUDITOR
+    PersonStatusManagement.change(person:, old_status: Person::ACTIVE, reason: "stepped back")
+
+    assert_empty PersonRole.find_role_ids_for_person(person.id)
+    assert PersonPosition.have_position?(person.id, @new_user_position.id)
+    assert_not PersonPosition.have_position?(person.id, @special_position.id)
+  end
+
+  # An Echelon applying to become a Ranger keeps what they hold.
+  test "echelon to prospective keeps permissions and positions" do
+    person = person(:ranger_with_custom_gender)
+    PersonPosition.create!(person_id: person.id, position_id: @special_position.id)
+    PersonRole.create!(person_id: person.id, role_id: @special_role.id)
+
+    person.status = Person::PROSPECTIVE
+    PersonStatusManagement.change(person:, old_status: Person::ECHELON, reason: "applying")
+
+    assert_includes PersonRole.find_role_ids_for_person(person.id), @special_role.id
+    assert PersonPosition.have_position?(person.id, @special_position.id)
   end
 
   test "prospective to past prospective removes roles, positions, teams, and future signups" do
@@ -198,7 +221,7 @@ class PersonStatusManagementTest < ActiveSupport::TestCase
   end
 
   def create_role(title, **attributes)
-    Role.create!({ title: title, new_user_eligible: false }.merge(attributes))
+    Role.create!(title:, **attributes)
   end
 
   def create_future_signup(person, position)

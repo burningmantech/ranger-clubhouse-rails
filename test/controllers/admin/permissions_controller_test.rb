@@ -20,8 +20,7 @@ class Admin::PermissionsControllerTest < ActionDispatch::IntegrationTest
     grant_role(@tech_ninja, Role::ADMIN)
     grant_role(@tech_ninja, Role::TECH_NINJA)
 
-    @permission = Role.create!(id: Role::EDIT_SWAG, title: "Edit Swag Records",
-                               new_user_eligible: false)
+    @permission = Role.create!(id: Role::EDIT_SWAG, title: "Edit Swag Records")
     @team = teams(:dirt_team)
     TeamRole.create!(team: @team, role_id: @permission.id)
 
@@ -41,7 +40,7 @@ class Admin::PermissionsControllerTest < ActionDispatch::IntegrationTest
 
   test "admin sees the catalog split into named and composed permissions" do
     Role.create!(id: Role::ART_TRAINER_BASE | @training.id,
-                 title: "ART Green Dot Interface", new_user_eligible: false)
+                 title: "ART Green Dot Interface")
 
     sign_in_as(@admin)
 
@@ -68,7 +67,7 @@ class Admin::PermissionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a permission nothing grants says so rather than showing an empty cell" do
-    Role.create!(id: Role::PAYROLL, title: "Payroll", new_user_eligible: false)
+    Role.create!(id: Role::PAYROLL, title: "Payroll")
 
     sign_in_as(@admin)
 
@@ -115,7 +114,7 @@ class Admin::PermissionsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@tech_ninja)
 
     patch admin_permission_path(@permission),
-          params: { role: { title: "Edit Swag", new_user_eligible: "0" } }
+          params: { role: { title: "Edit Swag" } }
 
     assert_redirected_to admin_permissions_path
     assert_equal "Edit Swag", @permission.reload.title
@@ -125,7 +124,7 @@ class Admin::PermissionsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@tech_ninja)
 
     patch admin_permission_path(@permission),
-          params: { role: { title: "Edit Swag", new_user_eligible: "0" } }
+          params: { role: { title: "Edit Swag" } }
 
     assert ActionLog.where(event: "role-update").exists?
   end
@@ -134,7 +133,7 @@ class Admin::PermissionsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@tech_ninja)
 
     patch admin_permission_path(@permission),
-          params: { role: { title: "", new_user_eligible: "0" } }
+          params: { role: { title: "" } }
 
     assert_response :unprocessable_entity
     assert_select "body", text: /Enter a title for the permission/
@@ -145,7 +144,7 @@ class Admin::PermissionsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@admin)
 
     patch admin_permission_path(@permission),
-          params: { role: { title: "Something else", new_user_eligible: "0" } }
+          params: { role: { title: "Something else" } }
 
     assert_redirected_to admin_permissions_path
     assert_equal "You are not authorized to change permissions.", flash[:error]
@@ -205,7 +204,7 @@ class Admin::PermissionsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@tech_ninja)
 
     patch admin_permission_path(Role::ADMIN),
-          params: { role: { title: "Admin (Full Access)", new_user_eligible: "0" } }
+          params: { role: { title: "Admin (Full Access)" } }
 
     assert_redirected_to admin_permissions_path
     assert_equal "Admin (Full Access)", Role.find(Role::ADMIN).title
@@ -254,7 +253,7 @@ class Admin::PermissionsControllerTest < ActionDispatch::IntegrationTest
 
   test "creating the ART permissions reports the ones that already existed" do
     Role.create!(id: Role::ART_TRAINER_BASE | @training.id,
-                 title: "ART Green Dot Interface", new_user_eligible: false)
+                 title: "ART Green Dot Interface")
 
     sign_in_as(@tech_ninja)
 
