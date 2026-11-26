@@ -34,7 +34,7 @@
           </tr>
           <tr>
             <th>Handle</th>
-            <th>Name</th>
+            <% if mentoring_personal_details? %><th>Name</th><% end %>
             <th>Status</th>
             <th>Mentor Result</th>
             <th>T-Shirt</th>
@@ -47,7 +47,7 @@
             <% person = entry.person %>
             <tr class="alpha-apparel-row">
               <td class="alpha-callsign"><%= person.callsign %></td>
-              <td><%= person.desired_full_name %></td>
+              <% if mentoring_personal_details? %><td><%= person.desired_full_name %></td><% end %>
               <td><%= person.status %></td>
               <td><%= entry.mentor_status %></td>
               <td><%= ShirtTotals.title_for(person, :tshirt_swag) %></td>

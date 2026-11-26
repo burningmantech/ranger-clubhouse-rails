@@ -28,7 +28,7 @@ class Mentoring::PotentialAlphasController < ApplicationController
   before_action :setup_year
 
   # Upstream Gate isMentor.
-  authorize_role [Role::ADMIN, Role::MENTOR],
+  authorize_role [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT],
                  message: "Admin or Mentor role required to view potential Alphas."
 
   # Cohort first, then the severity groups within each. group_by preserves
@@ -116,14 +116,17 @@ class Mentoring::PotentialAlphasController < ApplicationController
 
   # Writable, like upstream: filing a mentor note is the point of the page.
   # Which teams a viewer may actually write for is decided by
-  # Person::IntakeNotesController::PERMISSION_ROLE_FOR_TYPE, so a Mentor gets
-  # the Mentor team only -- upstream's @mentorNotesOnly, reached through the
-  # role map instead of a flag. An Admin keeps all four teams here, which
+  # Person::IntakeNotesController::PERMISSION_ROLE_FOR_TYPE, so a Mentor or a
+  # Mentor Interface Event holder gets the Mentor team only -- upstream's
+  # @mentorNotesOnly, reached through the role map instead of a flag. An Admin
+  # keeps all four teams here, which
   # upstream's flag would have withheld; they can write them from the person
   # page regardless, so hiding the buttons would only add a detour.
   def unified_flagging_read_only?
     false
   end
+
+  def unified_flagging_show_names? = helpers.mentoring_personal_details?
 
   def unified_flagging_origin
     { origin: "mentoring" }

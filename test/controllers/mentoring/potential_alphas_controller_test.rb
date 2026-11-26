@@ -60,6 +60,23 @@ class Mentoring::PotentialAlphasControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "the list prints real names only for readers who hold View Personal Info" do
+    sign_in_as(@mentor)
+    get mentoring_potential_alphas_path(person: @prospective.id)
+    assert_match "Prospect Newbie", response.body
+
+    holder = person(:active_ranger)
+    ensure_role(Role::MENTOR_INTERFACE_EVENT, "Mentor Interface Event")
+    grant_role(holder, Role::MENTOR_INTERFACE_EVENT)
+    Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
+    sign_in_as(holder)
+
+    get mentoring_potential_alphas_path(person: @prospective.id)
+    assert_response :success
+    assert_match @prospective.callsign, response.body
+    assert_no_match(/Prospect Newbie/, response.body)
+  end
+
   # The VC role opens the /vc twin but has no business on the mentor page.
   test "a role outside the gate is turned away" do
     sign_in_as(@outsider)

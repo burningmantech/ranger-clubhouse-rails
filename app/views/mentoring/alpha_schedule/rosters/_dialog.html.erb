@@ -23,7 +23,7 @@
       <%= ui_table full_width: true, responsive: false do |t| %>
         <%= t.header do %>
           <%= t.heading "Callsign" %>
-          <%= t.heading "Name" %>
+          <%= t.heading "Name" if mentoring_personal_details? %>
           <%= t.heading "Status" %>
           <%= t.heading "Add" %>
         <% end %>
@@ -31,7 +31,7 @@
           <% results.each do |found| %>
             <%= t.row do %>
               <%= t.row_header found.callsign %>
-              <%= t.cell found.desired_full_name %>
+              <%= t.cell found.desired_full_name if mentoring_personal_details? %>
               <%= t.cell found.status %>
               <%= t.cell do %>
                 <% if AlphaShiftRoster.addable?(found) %>

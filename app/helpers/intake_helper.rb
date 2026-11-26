@@ -235,6 +235,6 @@ module IntakeHelper
   # duplicating the role table.
   def can_write_intake_notes?(type)
     role = Person::IntakeNotesController::PERMISSION_ROLE_FOR_TYPE.fetch(type, Role::INTAKE)
-    has_role?([Role::ADMIN, role])
+    has_role?([Role::ADMIN, *role])
   end
 end

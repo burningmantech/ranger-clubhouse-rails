@@ -32,7 +32,7 @@
           <%= t.header do %>
             <%= t.heading check_label, width: "1%" %>
             <%= t.heading "Callsign" %>
-            <%= t.heading "Name" %>
+            <%= t.heading "Name" if mentoring_personal_details? %>
             <%= t.heading "Status" %>
             <%= t.heading "Mentor Verdict" %>
             <%= t.heading "Mentors" %>
@@ -55,7 +55,7 @@
                 <%= t.row_header do %>
                   <%= callsign_link person %>
                 <% end %>
-                <%= t.cell person.desired_full_name %>
+                <%= t.cell person.desired_full_name if mentoring_personal_details? %>
                 <%= t.cell person.status %>
                 <%= t.cell alpha_verdict_badge(row.verdict) %>
                 <%= t.cell do %>

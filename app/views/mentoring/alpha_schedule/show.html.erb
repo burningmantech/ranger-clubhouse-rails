@@ -60,11 +60,11 @@
   <%= ui_table full_width: true, striped: true do |t| %>
     <%= t.header do %>
       <%= t.heading "Callsign" %>
-      <%= t.heading "Name" %>
+      <%= t.heading "Name" if mentoring_personal_details? %>
       <%= t.heading "Gender" %>
       <%= t.heading "Signed In" %>
       <%= t.heading "Training" %>
-      <%= t.heading "Home" %>
+      <%= t.heading "Home" if mentoring_personal_details? %>
       <%= t.heading "Action" %>
     <% end %>
     <%= t.body do %>
@@ -87,7 +87,7 @@
               </div>
             <% end %>
           <% end %>
-          <%= t.cell person.desired_full_name %>
+          <%= t.cell person.desired_full_name if mentoring_personal_details? %>
           <%= t.cell gender_format(person) %>
           <%= t.cell do %>
             <% if entry.signed_in? %>
@@ -107,7 +107,7 @@
               <% end %>
             <% end %>
           <% end %>
-          <%= t.cell [person.city, person.state, person.country].compact_blank.join(" ") %>
+          <%= t.cell [person.city, person.state, person.country].compact_blank.join(" ") if mentoring_personal_details? %>
           <%= t.cell do %>
             <%= delete_button mentoring_alpha_schedule_roster_person_path(slot, person), "Remove from Shift",
                               variant: :secondary, size: "sm",

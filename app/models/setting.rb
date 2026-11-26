@@ -570,7 +570,7 @@ class Setting < ApplicationRecord
       type: TYPE_EMAIL
     },
     EVENT_MANAGEMENT_ON_PLAYA_ENABLED => {
-      description: "Enables Event Management (E.M.) On Playa role AND allows E.M. Year Round to view Emergency Contact Info plus read Clubhouse Messages",
+      description: "Enables the Event Management (E.M.) On Playa, Megaphone Team/Emergency On Playa and Mentor Interface Event roles AND allows E.M. Year Round to view Emergency Contact Info plus read Clubhouse Messages",
       type: TYPE_BOOL
     }
   }.freeze

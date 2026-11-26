@@ -81,7 +81,7 @@ module Communication::SurveysHelper
   # with a refusal.
   def survey_feedback_path(survey)
     if survey.type == Survey::ALPHA
-      return has_role?([Role::ADMIN, Role::MENTOR]) ? mentoring_surveys_path : nil
+      return has_role?(Mentoring::SurveysController.authorized_roles) ? mentoring_surveys_path : nil
     end
 
     training = survey.feedback_training_position

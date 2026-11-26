@@ -26,7 +26,7 @@
     <%= ui_table full_width: true, striped: false, responsive: false do |t| %>
       <%= t.header do %>
         <%= t.heading "Callsign" %>
-        <%= t.heading "Name" %>
+        <%= t.heading "Name" if mentoring_personal_details? %>
         <%= t.heading "Mentor Shift" %>
         <%= t.heading "Mentor 1" %>
         <%= t.heading "Mentor 2" %>
@@ -37,7 +37,7 @@
         <% @entries.each do |entry| %>
           <%= t.row do %>
             <%= t.row_header entry.person.callsign %>
-            <%= t.cell entry.person.desired_full_name %>
+            <%= t.cell entry.person.desired_full_name if mentoring_personal_details? %>
             <%= t.cell do %>
               <% if entry.alpha_slots.empty? %>
                 &mdash;

@@ -27,7 +27,9 @@
               aria: { current: (selected ? "true" : nil), controls: "uf-pane" } do %>
     <span class="flex flex-wrap items-center gap-x-2 min-w-0 flex-1">
       <span class="font-semibold text-heading"><%= person.callsign %></span>
-      <span class="text-stone-muted"><%= person.first_name %> <%= person.last_name %></span>
+      <% if unified_flagging_show_names? %>
+        <span class="text-stone-muted"><%= person.first_name %> <%= person.last_name %></span>
+      <% end %>
       <%# Only an exception earns a word here; "Trained" is the expected state.
           A nil status -- training does not concern this person, which only
           /people/unified-flagging says of anyone -- earns none either. %>

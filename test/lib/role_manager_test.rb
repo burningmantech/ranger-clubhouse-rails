@@ -123,6 +123,20 @@ class RoleManagerTest < ActiveSupport::TestCase
     assert RoleManager.retrieve(@person).has_role?(Role::SHIFT_MANAGEMENT_SELF)
   end
 
+  test "Mentor Interface Event is dropped while Event Management On Playa is off" do
+    ensure_role(Role::MENTOR_INTERFACE_EVENT, "Mentor Interface Event")
+    grant_role(@person, Role::MENTOR_INTERFACE_EVENT)
+
+    roles = RoleManager.retrieve(@person)
+    assert_not roles.has_role?(Role::MENTOR_INTERFACE_EVENT)
+    assert_includes roles.granted_roles, Role::MENTOR_INTERFACE_EVENT
+
+    set_on_playa(true)
+    roles = RoleManager.retrieve(@person)
+    assert roles.has_role?(Role::MENTOR_INTERFACE_EVENT)
+    assert_not roles.has_role?(Role::EVENT_MANAGEMENT), "it opens the Mentoring pages, not Event Management"
+  end
+
   test "a position that requires training and sign-in confers its permission only to someone trained and signed in" do
     pin_clock_mid_year
     training, position = gated_position

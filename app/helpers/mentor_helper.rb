@@ -114,6 +114,13 @@ module MentorHelper
                 icon: "clipboard-check", icon_type: :solid
   end
 
+  # May this reader see a real name or a home town on the Mentoring pages?
+  # Admin and Mentor Interface hold View Personal Info; Mentor Interface Event
+  # does not, so those pages show its holders callsigns only. The one switch
+  # for every such field there (chosen 2026-11-25 fixing a review finding;
+  # answer true to show them to everyone the pages admit).
+  def mentoring_personal_details? = can_view_pii?
+
   private
 
   # " for 2019" for the usual single Alpha year; nothing for several, which

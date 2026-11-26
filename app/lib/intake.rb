@@ -102,6 +102,14 @@ class Intake
                   .where_year("created_at", year).distinct.pluck(:person_id).to_set
     end
 
+    # Is, or has ever been, a Prospective or an Alpha: someone a Mentoring page
+    # lists in one year or another. Person::IntakeNotesController keeps a
+    # Mentor Interface Event holder to these people.
+    def pipeline_person?(person)
+      PNV_STATUSES.include?(person.status) ||
+        PersonStatus.where(person_id: person.id, new_status: PNV_STATUSES).exists?
+    end
+
     # The year's Prospective/Alpha class for /mentoring/post-season-summary,
     # with the five viewed-year mentor facts a collapsed summary does not carry.
     #

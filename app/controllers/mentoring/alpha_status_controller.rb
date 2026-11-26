@@ -32,7 +32,7 @@ class Mentoring::AlphaStatusController < ApplicationController
   before_action :setup_year
 
   # Upstream Gate isMentor.
-  authorize_role [Role::ADMIN, Role::MENTOR],
+  authorize_role [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT],
                  message: "Admin or Mentor role required to view Alpha status."
 
   def index
@@ -126,6 +126,8 @@ class Mentoring::AlphaStatusController < ApplicationController
   def unified_flagging_read_only?
     true
   end
+
+  def unified_flagging_show_names? = helpers.mentoring_personal_details?
 
   def unified_flagging_origin
     {}

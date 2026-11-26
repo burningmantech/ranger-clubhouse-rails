@@ -60,7 +60,8 @@ module UnifiedFlaggingConcern
   included do
     helper_method :unified_flagging_path, :unified_flagging_detail_path,
                   :unified_flagging_read_only?, :unified_flagging_origin,
-                  :unified_flagging_writable_teams, :unified_flagging_group_meta
+                  :unified_flagging_writable_teams, :unified_flagging_group_meta,
+                  :unified_flagging_show_names?
   end
 
   def index
@@ -210,6 +211,13 @@ module UnifiedFlaggingConcern
   # Intake's groups whatever the titles say.
   def unified_flagging_group_meta
     UnifiedFlaggingHelper::GROUP_META
+  end
+
+  # Whether the list and the pane print real names beside callsigns. Yes, unless
+  # a page says otherwise: the Mentoring pages keep them for readers who hold
+  # View Personal Info (MentorHelper#mentoring_personal_details?).
+  def unified_flagging_show_names?
+    true
   end
 
   # Which teams this viewer may file notes for on this page. Read-only pages
