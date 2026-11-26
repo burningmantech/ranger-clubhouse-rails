@@ -58,6 +58,10 @@ class Role < ApplicationRecord
   # and 132, no shared database ever held this row; migration
   # 20261013000001_add_pog_management_role adds it.
   POG_MANAGEMENT = 133
+  # Opens the Mentoring pages beside MENTOR, but only while the
+  # EventManagementOnPlayaEnabled setting is on (RoleManager::SETTING_GATED_ROLES).
+  # Migration 20261125000001_add_mentor_interface_event_role adds the row.
+  MENTOR_INTERFACE_EVENT = 134
   TECH_NINJA = 1000
 
   # Deleting either of these takes admin access away from everyone who holds it,

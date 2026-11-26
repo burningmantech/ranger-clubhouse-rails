@@ -25,7 +25,7 @@ class Mentoring::AlphaMentorAssignmentsController < ApplicationController
   before_action :setup_year
 
   # Upstream Gate isMentor.
-  authorize_role [Role::ADMIN, Role::MENTOR],
+  authorize_role [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT],
                  message: "Admin or Mentor role required to record mentor assignments."
 
   ALL_FILTER = AlphaMentorAssignment::ALL_FILTER

@@ -15,7 +15,7 @@ class Mentoring::AlphaPods::BaseController < ApplicationController
   # `except:` list names an action the controller does not define, and only
   # the page controller has the slotless index to exclude.
 
-  authorize_role [Role::ADMIN, Role::MENTOR],
+  authorize_role [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT],
                  message: "Admin or Mentor role required to manage Alpha pods."
 
   # The pod tables hold nothing before 2023, matching upstream's YearSelect.

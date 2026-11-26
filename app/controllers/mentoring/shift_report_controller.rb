@@ -22,7 +22,7 @@ class Mentoring::ShiftReportController < ApplicationController
   before_action :setup_year
 
   # Upstream Gate isMentor.
-  authorize_role [Role::ADMIN, Role::MENTOR],
+  authorize_role [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT],
                  message: "Admin or Mentor role required to view the shift report."
 
   # The year selector's floor, matching upstream's YearSelect minYear.

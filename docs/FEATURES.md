@@ -141,7 +141,7 @@ Owner: `Scheduling::Signup` (`app/lib/scheduling/signup.rb`; `Signup::Bulk`, `Ac
 Touches: `person_slot` (w), `slot` (w), `action_logs` (w), `person` (w), `person_position`, `position`, `person_event`, `person_online_course`, `document`, `setting`
 Verify: `test/lib/scheduling/signup_characterization_test.rb`, `test/lib/scheduling/capacity_characterization_test.rb`, `test/lib/scheduling/signup_bulk_characterization_test.rb`, `test/lib/scheduling/verdict_test.rb`, `test/controllers/me/available_sign_ups_controller_test.rb`
 Trap: `slot.signed_up` is a counter only `Scheduling::ActiveRecordSlotStore` maintains — a direct `PersonSlot.create!` (tests too) leaves it stale; reports count `person_slot` rows instead.
-Trap: `can_force_schedule_change` reads the actor's roles (`Current.has_role?`), not the subject's: Admin anywhere, Mentor on Alpha slots, the composed ART trainer role on ART slots; In-Person Training: Trainer force-adds, Trainer or Training Seasonal force-removes.
+Trap: `can_force_schedule_change` reads the actor's roles (`Current.has_role?`), not the subject's: Admin anywhere, Mentor or Mentor Interface Event on Alpha slots, the composed ART trainer role on ART slots; In-Person Training: Trainer force-adds, Trainer or Training Seasonal force-removes.
 Trap: Person › Schedule Audit Log badges the `data` flags of the `person-slot-add` / `person-slot-remove` rows; renaming or adding one is covered under that entry.
 
 ### Schedule queries (Scheduling::Query, Permission, Summaries)
@@ -1266,7 +1266,7 @@ Trap: `app/views/person/unified_flagging/_training_notes.html.erb` is read-only 
 
 ### Person › Add Note / Rank (intake notes)
 Reach it: `GET /person/:person_id/unified-flagging/notes/new?type=` → Person › Unified Flagging "Add Note / Rank" and the pipeline detail frame (`app/views/common/unified_flagging/detail.html.erb`); `POST /person/:person_id/unified-flagging/notes`; `PATCH /person/:person_id/unified-flagging/notes/:id`; `DELETE /person/:person_id/unified-flagging/notes/:id`
-Gate: `ADMIN`, `INTAKE`, `REGIONAL_MANAGEMENT`, `VC`, `MENTOR` (replaces PersonConcern's list), then `check_intake_permissions!` per team: vc → `VC`, mentor → `MENTOR`, personnel → `ADMIN`, rrn → `REGIONAL_MANAGEMENT` (`ADMIN` always passes)
+Gate: `ADMIN`, `INTAKE`, `REGIONAL_MANAGEMENT`, `VC`, `MENTOR`, `MENTOR_INTERFACE_EVENT` (replaces PersonConcern's list), then `check_intake_permissions!` per team: vc → `VC`, mentor → `MENTOR` or `MENTOR_INTERFACE_EVENT`, personnel → `ADMIN`, rrn → `REGIONAL_MANAGEMENT` (`ADMIN` always passes)
 Controller: `app/controllers/person/intake_notes_controller.rb` (`new`, `create`, `edit`, `update`, `destroy`)
 Owner: `IntakeNoteForm` (`app/forms/intake_note_form.rb`), `PersonIntakeNote` (`app/models/person_intake_note.rb`), `PersonIntake` (`app/models/person_intake.rb`)
 Touches: `person_intake_note` (w), `person_intake` (w), `action_logs` (w), `person_mentor`, `slot`, `person_slot`, `trainee_status`, `trainee_note`, `trainer_status`, `timesheet`, `person_status`
@@ -1459,7 +1459,7 @@ Owner: `Scheduling::Signup` (`app/lib/scheduling/signup.rb`), `Scheduling::Permi
 Touches: `person_slot` (w), `slot` (w), `person` (w), `action_logs` (w), `position`, `person_position`, `person_event`, `person_online_course`, `person_photo`, `setting`
 Verify: `test/controllers/person/scheduling_controller_test.rb`, `test/controllers/hq/available_sign_ups_controller_test.rb`, `test/controllers/me/available_sign_ups_controller_test.rb`, `test/lib/scheduling/permission_test.rb`, `test/lib/scheduling/signup_characterization_test.rb`
 Trap: In the present year `retrieve_permission_and_recommendation` redirects every action to the schedule on an unmet `Scheduling::Permission` requirement, even for an admin, and `create` never forces (`Scheduling::Signup.add(@person, @slot, false)`).
-Trap: `destroy` forces (`Scheduling::Signup.remove(@person, @slot, true)`), so an admin, or a Trainer/Mentor on an in-person training/Alpha slot (`can_force_schedule_change`), removes started or ended shifts unconfirmed, unlike `ScheduleConcern#destroy`.
+Trap: `destroy` forces (`Scheduling::Signup.remove(@person, @slot, true)`), so an admin, or a Trainer on an in-person training slot, or a Mentor or Mentor Interface Event holder on an Alpha slot (`can_force_schedule_change`), removes started or ended shifts unconfirmed, unlike `ScheduleConcern#destroy`.
 Trap: `show` prints the position's sign-up page header by the subject's status (`Position#scheduling_header_for`, see Me › Available Sign-Ups): an operator sees what the member sees.
 Trap: the index row's upcoming/past ledger follows Me › Available Sign-Ups -- present year only; a past year keeps the plain shift count.
 
@@ -1882,11 +1882,13 @@ Trap: A `summarize_rating` question reports via `report.summarized_ratings`, not
 
 ## Mentoring: prospectives & alphas
 
-Every page uses `layout "mentoring"` behind `authorize_role [Role::ADMIN, Role::MENTOR]`; the four roster pages include `UnifiedFlaggingConcern` for the lazy `detail` frame (not `MentoringConcern`, which backs Me › Mentoring and Person › Mentoring). Only Post Season Summary (floor 2008) and Mentor Shift Report (floor 2010) read `?year=`, Alpha Surveys lists every year, and the rest override `setup_year` to pin `Current.year`.
+Every page uses `layout "mentoring"` behind `authorize_role [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT]`; the four roster pages include `UnifiedFlaggingConcern` for the lazy `detail` frame (not `MentoringConcern`, which backs Me › Mentoring and Person › Mentoring). Only Post Season Summary (floor 2008) and Mentor Shift Report (floor 2010) read `?year=`, Alpha Surveys lists every year, and the rest override `setup_year` to pin `Current.year`.
+
+Trap: `MENTOR_INTERFACE_EVENT` counts only while setting `EVENT_MANAGEMENT_ON_PLAYA_ENABLED` is on (`RoleManager::SETTING_GATED_ROLES`) — a test granting it must create that setting row or be redirected home. It also forces Alpha sign-ups (`Scheduling::Signup.can_force_schedule_change`) and writes Mentor notes, but opens no person page. The 12 gates and `Menus::MENTORING` keep the list inline; `test/lib/mentoring_menu_test.rb` holds them together.
 
 ### Potential Alphas
 Reach it: `GET /mentoring/potential-alphas` → Mentoring › Pre-Event › Potential Alphas; `?person=:id` fills the review pane (`unified_flagging_path` drops `:year`: the roster is current standing); detail `GET /mentoring/potential-alphas/:person_id`
-Gate: `ADMIN`, `MENTOR`; note writes re-checked per team by `Person::IntakeNotesController::PERMISSION_ROLE_FOR_TYPE` (Mentor writes mentor notes only)
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`; note writes re-checked per team by `Person::IntakeNotesController::PERMISSION_ROLE_FOR_TYPE` (Mentor writes mentor notes only)
 Controller: `app/controllers/mentoring/potential_alphas_controller.rb` (`index`, `detail` from `app/controllers/concerns/unified_flagging_concern.rb`); notes: `app/controllers/person/intake_notes_controller.rb` (origin `mentoring`)
 Owner: `Intake.retrieve_current_potentials` (`app/lib/intake.rb`), `UnifiedFlaggingConcern` (`app/controllers/concerns/unified_flagging_concern.rb`), `Mentoring::PotentialAlphasHelper` (`app/helpers/mentoring/potential_alphas_helper.rb`)
 Touches: `person`, `person_fka`, `person_intake` (w), `person_intake_note` (w), `action_logs` (w), `person_mentor`, `person_slot`, `slot`, `trainee_status`, `trainee_note`, `person_status`, `timesheet`, `trainer_status`
@@ -1896,7 +1898,7 @@ Trap: The with-issues stat boxes count the unfiltered roster by `Mentoring::Pote
 
 ### Convert Prospectives
 Reach it: `GET /mentoring/convert-prospectives` → Mentoring › Pre-Event › Convert Prospectives; convert `POST /mentoring/convert-prospectives`; detail `GET /mentoring/convert-prospectives/:person_id`
-Gate: `ADMIN`, `MENTOR`; note writes re-checked per team by `Person::IntakeNotesController::PERMISSION_ROLE_FOR_TYPE` (Mentor writes mentor notes only)
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`; note writes re-checked per team by `Person::IntakeNotesController::PERMISSION_ROLE_FOR_TYPE` (Mentor writes mentor notes only)
 Controller: `app/controllers/mentoring/convert_prospectives_controller.rb` (`index`, `convert`, `detail` from `UnifiedFlaggingConcern`); notes: `app/controllers/person/intake_notes_controller.rb` (origin `mentoring_convert`)
 Owner: `ProspectiveConversion` (`app/lib/prospective_conversion.rb`), `Intake.retrieve_trained_prospectives` (`app/lib/intake.rb`), `PersonStatusManagement` (`app/lib/person_status_management.rb`)
 Touches: `person` (w), `person_status` (w), `person_position` (w), `person_position_log` (w), `action_logs` (w), `person_intake_note` (w), `person_intake` (w), `trainee_status`, `trainee_note`, `trainer_status`, `slot`, `person_slot`, `person_mentor`, `person_fka`, `timesheet`
@@ -1906,7 +1908,7 @@ Trap: Person's `after_save :log_status_change` → `PersonStatusManagement.chang
 
 ### Alpha Status
 Reach it: `GET /mentoring/alpha-status` → Mentoring › Pre-Event › Alpha Status; `?person=:id` fills the read-only review pane (`unified_flagging_path` drops `:year`); detail `GET /mentoring/alpha-status/:person_id`
-Gate: `ADMIN`, `MENTOR`
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`
 Controller: `app/controllers/mentoring/alpha_status_controller.rb` (`index`, `detail` from `UnifiedFlaggingConcern`; `unified_flagging_read_only?` is true)
 Owner: `Intake.retrieve_year_class` + `Intake.became_alpha_ids` (`app/lib/intake.rb`), `Mentoring::AlphaStatusHelper` (`app/helpers/mentoring/alpha_status_helper.rb`), `UnifiedFlaggingConcern` (`app/controllers/concerns/unified_flagging_concern.rb`)
 Touches: `person_status`, `person`, `person_fka`, `person_intake`, `person_intake_note`, `person_mentor`, `person_slot`, `slot`, `trainee_status`, `trainee_note`, `timesheet`, `trainer_status`
@@ -1916,7 +1918,7 @@ Trap: The roster is `Intake.retrieve_year_class` (entered the year's class, minu
 
 ### Mentor Shift Report
 Reach it: `GET /mentoring/shift-report` → Mentoring › Scheduling › Shift Report; shift `?slot_id=`, on-duty mode `?on_duty=1`
-Gate: `ADMIN`, `MENTOR`
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`
 Controller: `app/controllers/mentoring/shift_report_controller.rb` (`index`)
 Owner: `MentorShiftReport` (`app/lib/reports/mentor_shift_report.rb`; top-level, as `app/lib/reports` is an autoload root), `AlphaShiftRoster.shifts_for_year` (`app/lib/alpha_shift_roster.rb`)
 Touches: `slot`, `person_slot`, `person`, `position`, `timesheet`, `person_mentor`
@@ -1925,28 +1927,26 @@ Trap: The viewed year only fills the shift picker — `MentorShiftReport.on_duty
 Trap: `MentorShiftReport::HOURS_PRIOR`/`HOURS_AFTER` (1h before, 3h after, active slots only) differ from `AlphaSignOut::HOURS_PRIOR`/`HOURS_AFTER` (1h before, 2h after) — don't unify them.
 
 ### Convert Alphas
-Reach it: `GET /mentoring/alphas-convert` → Mentoring › Alpha Management › Convert Alphas (declared, not rendered; see Trap); convert `POST /mentoring/alphas-convert` with `target=active|bonked`
-Gate: `ADMIN`, `MENTOR`
+Reach it: `GET /mentoring/alphas-convert` → Mentoring › Alpha Management › Convert Alphas; convert `POST /mentoring/alphas-convert` with `target=active|bonked`
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`
 Controller: `app/controllers/mentoring/alphas_convert_controller.rb` (`index`, `convert`)
 Owner: `AlphaConversion` (`app/lib/alpha_conversion.rb`), `PersonStatusManagement` (`app/lib/person_status_management.rb`)
 Touches: `person_mentor`, `person` (w), `person_status` (w), `person_position` (w), `person_position_log` (w), `person_role` (w), `person_slot` (w), `slot` (w), `action_logs` (w)
 Verify: `test/controllers/mentoring/alphas_convert_controller_test.rb`, `test/lib/person_status_management_test.rb`, `test/lib/alpha_conversion_test.rb` (verdicts read Alpha rows only)
-Trap: `Menus::MENTORING`'s "Alpha Management" (`app/lib/menus.rb`) lists its five pages under `sections:`, not `items:`, so `MenuBuilder.build_sections` drops them and the empty section — no sidebar, mega menu or other link reaches this page.
 Trap: Disagreeing same-year `person_mentor` rows are settled by `PersonMentor.year_verdict` (`PersonMentor::VERDICT_PRECEDENCE`: bonk, self-bonk, not-completed, abstain, pass, pending; the two ART-only verdicts never sit on an Alpha row), here in `AlphaConversion.verdicts_for_year` and in `PersonMentor.retrieve_all_mentors_for_ids`, which every mentor history reads — `MIN(status)` and `order(:status).first` disagree on that ENUM and can mint a self-bonked Alpha.
 
 ### Alpha Sign-Out
-Reach it: `GET /mentoring/alpha-signout` → Mentoring › Alpha Management › Alpha Sign-Out (declared, not rendered; see Trap); shift `?slot_id=`, every Alpha on duty `?on_duty=1`; sign out `POST /mentoring/alpha-signout`
-Gate: `ADMIN`, `MENTOR`; the POST also needs `SHIFT_MANAGEMENT` or `TIMESHEET_MANAGEMENT` (ADMIN passes) via `authorize_ability :sign_out_alphas`; the view hides the button with `can?(:sign_out_alphas)`
+Reach it: `GET /mentoring/alpha-signout` → Mentoring › Alpha Management › Alpha Sign-Out; shift `?slot_id=`, every Alpha on duty `?on_duty=1`; sign out `POST /mentoring/alpha-signout`
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`; the POST also needs `SHIFT_MANAGEMENT` or `TIMESHEET_MANAGEMENT` (ADMIN passes) via `authorize_ability :sign_out_alphas`; the view hides the button with `can?(:sign_out_alphas)`
 Controller: `app/controllers/mentoring/alpha_signout_controller.rb` (`index`, `sign_out`)
 Owner: `AlphaSignOut` (`app/lib/alpha_sign_out.rb`), `ShiftManage.sign_off` (`app/lib/shift_manage.rb`), `AlphaShiftRoster.shifts_for_year` (`app/lib/alpha_shift_roster.rb`)
 Touches: `timesheet` (w), `timesheet_log` (w), `person_pod` (w), `pod` (w), `person_event` (w), `person` (w), `action_logs` (w), `slot`, `person_slot`, `position`
 Verify: `test/controllers/mentoring/alpha_signout_controller_test.rb`, `test/lib/shift_manage_test.rb`, `test/lib/alpha_shift_roster_test.rb`, `test/models/pod_test.rb`
-Trap: Like Convert Alphas, this page sits under the "Alpha Management" `sections:` key in `app/lib/menus.rb`, which `MenuBuilder.build_sections` drops — no menu shows it and nothing links to it.
 Trap: `AlphaSignOut.sign_out` calls `ShiftManage.sign_off` per entry, untransacted, re-checking `position_id: Position::ALPHA` and the open shift — not via `ShiftManageConcern#end_shift`, whose too-short-shift modal can't interrupt a bulk loop.
 
 ### Post Season Summary
 Reach it: `GET /mentoring/post-season-summary` → Mentoring › Post Event › Post Season Summary; `?person=:id` fills the review pane (mentors and verdict live there, the Alpha-shift state on the line); detail `GET /mentoring/post-season-summary/:person_id`
-Gate: `ADMIN`, `MENTOR`; note writes re-checked per team by `Person::IntakeNotesController::PERMISSION_ROLE_FOR_TYPE` (Mentor writes mentor notes only)
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`; note writes re-checked per team by `Person::IntakeNotesController::PERMISSION_ROLE_FOR_TYPE` (Mentor writes mentor notes only)
 Controller: `app/controllers/mentoring/post_season_summary_controller.rb` (`index`, `detail` from `UnifiedFlaggingConcern`); notes: `app/controllers/person/intake_notes_controller.rb` (origin `mentoring_post_season`)
 Owner: `Intake.retrieve_post_season_class` (`app/lib/intake.rb`; not `retrieve_year_class`), `Mentoring::PostSeasonSummaryHelper` (`app/helpers/mentoring/post_season_summary_helper.rb`), `UnifiedFlaggingConcern` (`app/controllers/concerns/unified_flagging_concern.rb`)
 Touches: `person_status`, `person`, `person_fka`, `person_mentor`, `person_intake` (w), `person_intake_note` (w), `action_logs` (w), `person_slot`, `slot`, `trainee_status`, `trainee_note`, `timesheet`, `trainer_status`
@@ -1958,7 +1958,7 @@ Trap: `unified_flagging_origin` sends its own `mentoring_post_season` token with
 
 ### Alpha Surveys
 Reach it: `GET /mentoring/surveys` → Mentoring › Post Event › Alpha Surveys; report `GET /mentoring/surveys/:survey_id/reports/:report_id`; per-mentor `GET /mentoring/surveys/:survey_id/mentors/:person_id`
-Gate: `ADMIN`, `MENTOR`, plus `Survey.can_manage_surveys?(person, Position::ALPHA)` (Admin, or the composed `SURVEY_MANAGEMENT_BASE | Position::ALPHA` role) via `authorize_survey_management` (index) and `authorize_survey_report` (reports) (menu: `ADMIN`, `MENTOR`)
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`, plus `Survey.can_manage_surveys?(person, Position::ALPHA)` (Admin, or the composed `SURVEY_MANAGEMENT_BASE | Position::ALPHA` role) via `authorize_survey_management` (index) and `authorize_survey_report` (reports) (menu: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`)
 Controller: `app/controllers/mentoring/surveys_controller.rb` (`index`; `report`, `trainer` from `app/controllers/concerns/survey_reporting_concern.rb`, HTML and CSV)
 Owner: `SurveyReportingConcern` (`app/controllers/concerns/survey_reporting_concern.rb`), `SurveyBuilder` (`app/lib/survey_builder.rb`), `Survey` (`app/models/survey.rb`)
 Touches: `survey`, `survey_group`, `survey_question`, `survey_answer`, `person`, `slot`, `position`
@@ -1968,11 +1968,11 @@ Trap: `SurveyReportingConcern`'s `included` block registers `load_survey` → `a
 
 ## Mentoring: the alpha shift
 
-`authorize_role [Role::ADMIN, Role::MENTOR]` sits on both `Base` controllers, Acceptance Sheets and Mentor Assignments. Alpha Schedule (`year_floor` 2008) and Alpha Pods (2023) read the year via `setup_year`, but `load_slot` finds an Alpha slot of any year; Sheets and Assignments pin the present year. `Menus::MENTORING` nests "Alpha Management" under `sections:`, not `items:`, so `MenuBuilder.build_sections` drops it and no menu links Sheets, Assignments or Pods.
+`authorize_role [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT]` sits on both `Base` controllers, Acceptance Sheets and Mentor Assignments. Alpha Schedule (`year_floor` 2008) and Alpha Pods (2023) read the year via `setup_year`, but `load_slot` finds an Alpha slot of any year; Sheets and Assignments pin the present year.
 
 ### Alpha Schedule
 Reach it: `GET /mentoring/alpha-schedule` → Mentoring › Scheduling › Alpha Schedule; shift `GET /mentoring/alpha-schedule/:slot_id`; sheets `GET /mentoring/alpha-schedule/:slot_id/signup-sheet`, `GET /mentoring/alpha-schedule/:slot_id/info-sheet`, `GET /mentoring/alpha-schedule/:slot_id/apparel`; dialog `GET /mentoring/alpha-schedule/:slot_id/no-alphas`
-Gate: `ADMIN`, `MENTOR`; `require_signed_in_alphas` redirects `info_sheet` and `apparel` to the shift page until someone is signed in
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`; `require_signed_in_alphas` redirects `info_sheet` and `apparel` to the shift page until someone is signed in
 Controller: `app/controllers/mentoring/alpha_schedule_controller.rb` (`index`, `show`, `no_alphas`, `signup_sheet`, `info_sheet`, `apparel`), base `app/controllers/mentoring/alpha_schedule/base_controller.rb` (gate, `setup_year`, `load_slot`)
 Owner: `AlphaShiftRoster` (`app/lib/alpha_shift_roster.rb`), `ShirtTotals` (`app/lib/shirt_totals.rb`)
 Touches: `slot`, `person_slot`, `person`, `timesheet`, `person_intake`, `person_intake_note`, `person_mentor`, `trainee_status`, `person_status`, `trainee_note`, `swag`
@@ -1982,7 +1982,7 @@ Trap: `AlphaShiftRoster.for_slot` caps intake, notes and training history, and r
 
 ### Alpha Schedule › Add Person (shift roster)
 Reach it: `GET /mentoring/alpha-schedule/:slot_id/people/new` → Alpha Schedule shift page › Add Person; add `POST /mentoring/alpha-schedule/:slot_id/people`; remove `DELETE /mentoring/alpha-schedule/:slot_id/people/:person_id`
-Gate: `ADMIN`, `MENTOR`
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`
 Controller: `app/controllers/mentoring/alpha_schedule/rosters_controller.rb` (`new`, `create`, `destroy`), base `app/controllers/mentoring/alpha_schedule/base_controller.rb`
 Owner: `Scheduling::Signup` (`app/lib/scheduling/signup.rb`), `AlphaShiftRoster.addable?` (`app/lib/alpha_shift_roster.rb`), `PersonSearch` (`app/lib/person_search.rb`)
 Touches: `person_slot` (w), `slot` (w), `action_logs` (w), `person` (w), `person_fka`, `email_history`, `person_position`
@@ -1991,8 +1991,8 @@ Trap: `create` runs `AlphaShiftRoster.addable?` (`Person::ALPHA`/`Person::PROSPE
 Trap: `destroy` always calls `Scheduling::Signup.remove(person, @slot, true)` so mentors can edit a started shift's roster (test-pinned) — do not "correct" `want_to_force` to `false`.
 
 ### Alpha Pod Management
-Reach it: `GET /mentoring/alpha-pods` → Mentoring › Alpha Management › Alpha Pods (not rendered, see intro); board `GET /mentoring/alpha-pods/:slot_id`; print `GET /mentoring/alpha-pods/:slot_id/print`; add pod `POST /mentoring/alpha-pods/:slot_id/pods`; delete `DELETE /mentoring/alpha-pods/:slot_id/pods/:id`; reorder `PATCH /mentoring/alpha-pods/:slot_id/pods/:id/move`
-Gate: `ADMIN`, `MENTOR`
+Reach it: `GET /mentoring/alpha-pods` → Mentoring › Alpha Management › Alpha Pods; board `GET /mentoring/alpha-pods/:slot_id`; print `GET /mentoring/alpha-pods/:slot_id/print`; add pod `POST /mentoring/alpha-pods/:slot_id/pods`; delete `DELETE /mentoring/alpha-pods/:slot_id/pods/:id`; reorder `PATCH /mentoring/alpha-pods/:slot_id/pods/:id/move`
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`
 Controller: `app/controllers/mentoring/alpha_pods_controller.rb` (`index`, `show`, `print_sheet`), `app/controllers/mentoring/alpha_pods/pods_controller.rb` (`create`, `destroy`, `move`), base `app/controllers/mentoring/alpha_pods/base_controller.rb` (gate, `load_slot`, `render_board`, `render_refusal`)
 Owner: `AlphaPodBoard` (`app/lib/alpha_pod_board.rb`), `Pod` (`app/models/pod.rb`: `create_alpha_set!`, `destroy_set!`, `move!`) (not `CruiseDirectionBoard`: its `shift` pods share the table)
 Touches: `pod` (w), `person_pod` (w), `action_logs` (w), `slot`, `person_slot`, `timesheet`, `person`, `person_mentor`
@@ -2002,7 +2002,7 @@ Trap: `AlphaPodBoard.unassigned_alphas` is every signed-in Alpha (`Timesheet.ret
 
 ### Alpha Pod Management › Pod members
 Reach it: `GET /mentoring/alpha-pods/:slot_id/pods/:pod_id/people/new` → Alpha Pod Management board › pod card › Add; add `POST /mentoring/alpha-pods/:slot_id/pods/:pod_id/people`; edit `GET /mentoring/alpha-pods/:slot_id/pods/:pod_id/people/:person_id/edit`; update `PATCH /mentoring/alpha-pods/:slot_id/pods/:pod_id/people/:person_id`; remove `DELETE /mentoring/alpha-pods/:slot_id/pods/:pod_id/people/:person_id`
-Gate: `ADMIN`, `MENTOR`
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`
 Controller: `app/controllers/mentoring/alpha_pods/people_controller.rb` (`new`, `create`, `edit`, `update`, `destroy`), base `app/controllers/mentoring/alpha_pods/base_controller.rb` (`render_board`, `render_refusal`)
 Owner: `Pod` (`app/models/pod.rb`: `add_person!`, `remove_person!`, `relocate_person!`, `move_person!`), `AlphaPodBoard.pools_for` (`app/lib/alpha_pod_board.rb`), `PersonPod` (`app/models/person_pod.rb`)
 Touches: `person_pod` (w), `pod` (w), `action_logs` (w), `person`, `timesheet`, `position`, `person_position`, `person_mentor`, `slot`
@@ -2011,8 +2011,8 @@ Trap: Only `removed_at` (set by `Pod#remove_person!`, no delete) ends a membersh
 Trap: A `new`/`edit` guard that redirects swaps in the layout's empty `modal` frame, showing nothing — use `render_refusal`, which renders `mentoring/alpha_pods/unavailable` on `turbo_frame_request?`.
 
 ### Alpha Acceptance Sheets
-Reach it: `GET /mentoring/alpha-acceptance-sheets` → Mentoring › Alpha Management › Acceptance Sheets (not rendered, see intro); print `GET /mentoring/alpha-acceptance-sheets/print`
-Gate: `ADMIN`, `MENTOR`
+Reach it: `GET /mentoring/alpha-acceptance-sheets` → Mentoring › Alpha Management › Acceptance Sheets; print `GET /mentoring/alpha-acceptance-sheets/print`
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`
 Controller: `app/controllers/mentoring/alpha_acceptance_sheets_controller.rb` (`index`, `print_sheets`; shift/issues filters inline)
 Owner: `AlphaAcceptanceSheets` (`app/lib/alpha_acceptance_sheets.rb`)
 Touches: `person`, `person_photo`, `person_fka`, `person_intake`, `person_intake_note`, `person_slot`, `slot`, `trainee_status`, `person_status`, `trainee_note`, `person_mentor`
@@ -2021,8 +2021,8 @@ Trap: `setup_year` is overridden to `@year = Current.year`, so `?year=` is ignor
 Trap: `Entry#trainings` is the whole Dirt training history, but `Entry#trained` (the `NOT_TRAINED` issue) needs a pass in a present-year session — never derive "trained" from `trainings`.
 
 ### Alpha Mentor Assignments
-Reach it: `GET /mentoring/alpha-mentor-assignments` → Mentoring › Alpha Management › Mentor Assignments (not rendered, see intro; also linked from Convert Alphas); save `POST /mentoring/alpha-mentor-assignments`; pod fill `POST /mentoring/alpha-mentor-assignments/pod-prefill`; print `GET /mentoring/alpha-mentor-assignments/print`
-Gate: `ADMIN`, `MENTOR`
+Reach it: `GET /mentoring/alpha-mentor-assignments` → Mentoring › Alpha Management › Mentor Assignments (also linked from Convert Alphas); save `POST /mentoring/alpha-mentor-assignments`; pod fill `POST /mentoring/alpha-mentor-assignments/pod-prefill`; print `GET /mentoring/alpha-mentor-assignments/print`
+Gate: `ADMIN`, `MENTOR`, `MENTOR_INTERFACE_EVENT`
 Controller: `app/controllers/mentoring/alpha_mentor_assignments_controller.rb` (`index`, `save`, `pod_prefill`, `print_sheet`; filters and `submitted_rows` parsing inline)
 Owner: `AlphaMentorAssignment` (`app/lib/alpha_mentor_assignment.rb`), `PersonMentor` (`app/models/person_mentor.rb`)
 Touches: `person_mentor` (w), `action_logs` (w), `person`, `person_position`, `person_slot`, `slot`, `timesheet`, `pod`, `person_pod`

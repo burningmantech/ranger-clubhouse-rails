@@ -28,7 +28,7 @@ class Mentoring::PotentialAlphasController < ApplicationController
   before_action :setup_year
 
   # Upstream Gate isMentor.
-  authorize_role [Role::ADMIN, Role::MENTOR],
+  authorize_role [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT],
                  message: "Admin or Mentor role required to view potential Alphas."
 
   # Cohort first, then the severity groups within each. group_by preserves

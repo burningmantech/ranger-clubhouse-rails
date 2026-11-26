@@ -11,12 +11,12 @@ class Person::IntakeNotesController < ApplicationController
 
   include PersonConcern
 
-  authorize_role [Role::ADMIN, Role::INTAKE, Role::REGIONAL_MANAGEMENT, Role::VC, Role::MENTOR],
+  authorize_role [Role::ADMIN, Role::INTAKE, Role::REGIONAL_MANAGEMENT, Role::VC, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT],
                  message: "You are not authorized to manage intake notes."
 
   PERMISSION_ROLE_FOR_TYPE = {
     "vc" => Role::VC,
-    "mentor" => Role::MENTOR,
+    "mentor" => [Role::MENTOR, Role::MENTOR_INTERFACE_EVENT],
     "personnel" => Role::ADMIN,
     "rrn" => Role::REGIONAL_MANAGEMENT
   }.freeze
@@ -135,7 +135,7 @@ class Person::IntakeNotesController < ApplicationController
   # Port of IntakeController::checkIntakePermissions.
   def check_intake_permissions!(type)
     role = PERMISSION_ROLE_FOR_TYPE.fetch(type, Role::INTAKE)
-    return true if has_role?([Role::ADMIN, role])
+    return true if has_role?([Role::ADMIN, *role])
 
     redirect_to intake_notes_return_path, error: "Not authorized"
     false

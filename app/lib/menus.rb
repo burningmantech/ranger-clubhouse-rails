@@ -461,7 +461,7 @@ module Menus
     title: "Mentoring",
     description: "Potential Alphas and the mentor cadre",
     icon: "handshake-angle",
-    visible_if: { roles: [Role::ADMIN, Role::MENTOR] },
+    visible_if: { roles: [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT] },
     sections: [
       {
         title: "Pre-Event",

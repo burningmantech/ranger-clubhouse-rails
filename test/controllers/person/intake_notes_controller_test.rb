@@ -84,6 +84,28 @@ class Person::IntakeNotesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "a Mentor Interface Event holder writes Mentor notes and no other team's" do
+    holder = person(:inactive_ranger)
+    ensure_role(Role::MENTOR_INTERFACE_EVENT, "Mentor Interface Event")
+    grant_role(holder, Role::MENTOR_INTERFACE_EVENT)
+    Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
+    sign_in_as(holder)
+
+    assert_difference -> { PersonIntakeNote.where(type: "mentor").count }, 1 do
+      post person_intake_notes_path(@target), params: {
+        intake_note_form: { type: "mentor", year: 2023, note: "Walked well.", ranking: "" }
+      }
+    end
+    assert_equal "Note saved.", flash[:success]
+
+    assert_no_difference -> { PersonIntakeNote.count } do
+      post person_intake_notes_path(@target), params: {
+        intake_note_form: { type: "vc", year: 2023, note: "Should not save.", ranking: "" }
+      }
+    end
+    assert_equal NOT_AUTHORIZED, flash[:error]
+  end
+
   # --- create: note only ---------------------------------------------------
 
   test "a non-hash note param is refused on create and update rather than raising" do

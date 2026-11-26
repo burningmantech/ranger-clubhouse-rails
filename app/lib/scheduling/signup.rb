@@ -350,7 +350,7 @@ module Scheduling
           is_trainer = true
         end
       elsif slot.position_id == Position::ALPHA
-        role_can_force = Role::MENTOR
+        role_can_force = [Role::MENTOR, Role::MENTOR_INTERFACE_EVENT]
       end
 
       if role_can_force && Current.has_role?(role_can_force)
