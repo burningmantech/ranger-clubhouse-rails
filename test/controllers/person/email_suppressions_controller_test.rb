@@ -16,8 +16,8 @@ class Person::EmailSuppressionsControllerTest < ActionDispatch::IntegrationTest
     Current.reset
 
     @target = person(:active_ranger)
-    [[Role::ADMIN, "Admin"], [Role::TECH_NINJA, "Tech Ninja"], [Role::VC, "VC"],
-     [Role::MENTOR, "Mentor"]].each { |id, title| ensure_role(id, title) }
+    [[Role::ADMIN, "Admin"], [Role::TECH_NINJA, "Tech Ninja"], [Role::VC_INTERFACE, "VC"],
+     [Role::MENTOR_INTERFACE, "Mentor"]].each { |id, title| ensure_role(id, title) }
   end
 
   teardown do
@@ -72,7 +72,7 @@ class Person::EmailSuppressionsControllerTest < ActionDispatch::IntegrationTest
   test "any other person-page role is refused, and the row stays" do
     suppress_email(@target.email)
 
-    [Role::VC, Role::MENTOR].each do |role_id|
+    [Role::VC_INTERFACE, Role::MENTOR_INTERFACE].each do |role_id|
       viewer("Viewer#{role_id}", role_id)
 
       assert_no_difference -> { EmailSuppression.count } do
@@ -86,8 +86,8 @@ class Person::EmailSuppressionsControllerTest < ActionDispatch::IntegrationTest
   test "the clear button shows to an admin and a tech ninja only" do
     suppress_email(@target.email)
 
-    { [Role::ADMIN] => 1, [Role::MENTOR, Role::TECH_NINJA] => 1, [Role::VC] => 0,
-      [Role::MENTOR] => 0 }.each do |roles, count|
+    { [Role::ADMIN] => 1, [Role::MENTOR_INTERFACE, Role::TECH_NINJA] => 1, [Role::VC_INTERFACE] => 0,
+      [Role::MENTOR_INTERFACE] => 0 }.each do |roles, count|
       viewer("Viewer#{roles.join("x")}", *roles)
 
       get person_path(@target)

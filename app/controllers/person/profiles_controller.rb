@@ -10,7 +10,7 @@ class Person::ProfilesController < ApplicationController
 
   authorize_role [
     Role::ADMIN,
-    Role::VC,
+    Role::VC_INTERFACE,
     Role::EVENT_MANAGEMENT,
     Role::EVENT_MANAGEMENT_ON_PLAYA,
     Role::VIEW_PII

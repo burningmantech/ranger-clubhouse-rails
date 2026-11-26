@@ -13,7 +13,7 @@ class PersonMenuTest < ActiveSupport::TestCase
     Rails.cache.clear
     Current.reset
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     ensure_role(Role::EVENT_MANAGEMENT_ON_PLAYA, "Event Management On Playa")
   end
@@ -35,7 +35,7 @@ class PersonMenuTest < ActiveSupport::TestCase
     # RoleManager keeps the on-playa role only while its setting is on.
     Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
     assert_includes titles_for(person(:retired_ranger), Role::EVENT_MANAGEMENT_ON_PLAYA), SITE_LOG
-    assert_not_includes titles_for(person(:ranger_with_custom_gender), Role::MENTOR), SITE_LOG
+    assert_not_includes titles_for(person(:ranger_with_custom_gender), Role::MENTOR_INTERFACE), SITE_LOG
   end
 
   private

@@ -37,11 +37,11 @@ class People::UnifiedFlaggingControllerTest < ActionDispatch::IntegrationTest
     @intake = person(:active_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "Volunteer Coordinator")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
     ensure_role(Role::INTAKE, "Intake")
 
     grant_role(@admin, Role::ADMIN)
-    grant_role(@vc, Role::VC)
+    grant_role(@vc, Role::VC_INTERFACE)
     grant_role(@intake, Role::INTAKE)
 
     Current.person = @admin

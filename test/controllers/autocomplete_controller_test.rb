@@ -432,8 +432,8 @@ class AutocompleteControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "mode=swag person matches navigate to the person swag page" do
-    ensure_role(Role::QUARTERMASTER, "Quartermaster")
-    grant_role(@person, Role::QUARTERMASTER)
+    ensure_role(Role::QUARTERMASTER_INTERFACE, "Quartermaster")
+    grant_role(@person, Role::QUARTERMASTER_INTERFACE)
     target = person(:active_ranger)
 
     get autocomplete_search_url, params: { q: "TestRanger", mode: "swag" }, as: :json

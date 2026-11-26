@@ -6,7 +6,7 @@ class TeamRoleTest < ActiveSupport::TestCase
   setup do
     @person = person(:active_ranger)
     @team = teams(:mentor_cadre)
-    @role = Role.find_or_create_by!(id: Role::TRAINER) { |r| r.title = "Trainer" }
+    @role = Role.find_or_create_by!(id: Role::TRAINING_INTERFACE) { |r| r.title = "Trainer" }
 
     TeamRole.find_or_create_by!(team_id: @team.id, role_id: @role.id)
   end

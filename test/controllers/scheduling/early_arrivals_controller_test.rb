@@ -36,14 +36,14 @@ class Scheduling::EarlyArrivalsControllerTest < ActionDispatch::IntegrationTest
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::EDIT_ACCESS_DOCS, "Edit Access Documents")
     ensure_role(Role::TIMESHEET_MANAGEMENT, "Timesheet Management")
-    ensure_role(Role::VC, "Volunteer Coordinator")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
 
     @admin = person(:active_ranger)
     @doc_editor = person(:echelon_ranger)
     @outsider = person(:inactive_ranger)
     grant_role(@admin, Role::ADMIN)
     grant_role(@doc_editor, Role::EDIT_ACCESS_DOCS)
-    grant_role(@outsider, Role::VC)
+    grant_role(@outsider, Role::VC_INTERFACE)
 
     @setup_position = Position.create!(title: "Pre-Event Setup", active: true)
     @training_position = Position.create!(title: "Setup Training",

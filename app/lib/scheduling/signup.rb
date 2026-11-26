@@ -340,17 +340,17 @@ module Scheduling
         elsif is_signup
           # Per TA 2023 - T.A. cadre members now only have the Trainer role, all other trainers have Training Seasonal.
           # Allow the real Training role to force add trainees.
-          if Current.has_role?(Role::TRAINER)
+          if Current.has_role?(Role::TRAINING_INTERFACE)
             return [true, true]
           end
         else
           # Per request from TA 2020 - In-Person Trainers may NOT manually add trainees BUT
           # are allowed to remove trainees.
-          role_can_force = [Role::TRAINER, Role::TRAINER_SEASONAL]
+          role_can_force = [Role::TRAINING_INTERFACE, Role::TRAINING_INTERFACE_SEASONAL]
           is_trainer = true
         end
       elsif slot.position_id == Position::ALPHA
-        role_can_force = [Role::MENTOR, Role::MENTOR_INTERFACE_EVENT]
+        role_can_force = [Role::MENTOR_INTERFACE, Role::MENTOR_INTERFACE_EVENT]
       end
 
       if role_can_force && Current.has_role?(role_can_force)

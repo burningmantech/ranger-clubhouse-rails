@@ -206,8 +206,8 @@ class ShiftOperations::PayrollMissingIdControllerTest < ActionDispatch::Integrat
   # External IDs admits Admin only, so a reader who may open person pages but
   # not that one gets the person page -- a link to External IDs would bounce.
   test "a payroll clerk who may open person pages gets the person page" do
-    ensure_role(Role::MENTOR, "Mentor")
-    grant_role(@clerk, Role::MENTOR)
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
+    grant_role(@clerk, Role::MENTOR_INTERFACE)
     target = create_person("Linkable")
     sign_up(target)
 

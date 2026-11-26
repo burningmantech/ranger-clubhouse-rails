@@ -18,9 +18,9 @@ class People::RetentionReportControllerTest < ActionDispatch::IntegrationTest
     @outsider = person(:ranger_with_custom_gender)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "VC")
+    ensure_role(Role::VC_INTERFACE, "VC")
     grant_role(@admin, Role::ADMIN)
-    grant_role(@vc, Role::VC)
+    grant_role(@vc, Role::VC_INTERFACE)
 
     @ood = positions(:ood_position)
     @years = RetentionReport.years(Current.year)

@@ -6,7 +6,7 @@
 class Communication::PersonBannersController < ApplicationController
   layout "communication"
 
-  authorize_role [Role::ADMIN, Role::VC],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE],
                  message: "Admin or VC role required to review account banners."
 
   # The filter-bar convention: "all" means the filter is inactive.

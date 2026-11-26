@@ -131,14 +131,14 @@ module Menus
           path: :communication_person_banners_path,
           active_prefix: true,
           description: "Review the banner messages shown on Ranger accounts",
-          visible_if: { roles: [Role::ADMIN, Role::VC] }
+          visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] }
         },
         {
           title: "Email Templates",
           path: :communication_mail_templates_path,
           active_prefix: true,
           description: "Edit what the emails the Clubhouse sends actually say",
-          visible_if: { roles: [Role::ADMIN, Role::VC] }
+          visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] }
         },
         {
           title: "Ranger Broadcast",
@@ -309,7 +309,7 @@ module Menus
           { title: "People by Location", path: :people_by_location_path,
             active_prefix: true, year_scoped: true,
             description: "Where everyone lives, grouped by country and state",
-            visible_if: { roles: [Role::ADMIN, Role::MENTOR, Role::TRAINER, Role::VC] } },
+            visible_if: { roles: [Role::ADMIN, Role::MENTOR_INTERFACE, Role::TRAINING_INTERFACE, Role::VC_INTERFACE] } },
           { title: "People by Status", path: :people_by_status_path,
             active_prefix: true,
             description: "Every account, grouped by the status it holds right now",
@@ -317,11 +317,11 @@ module Menus
           { title: "People Search", path: :people_search_path,
             active_prefix: true,
             description: "Find accounts by status, history, training, photo, and ticketing progress",
-            visible_if: { roles: [Role::ADMIN, Role::VC] } },
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] } },
           { title: "Retention Report", path: :people_retention_report_path,
             active_prefix: true,
             description: "Rangers who rangered any of the last five events, for the post-event survey",
-            visible_if: { roles: [Role::ADMIN, Role::VC] } },
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] } },
           { title: "Unified Flagging", path: :people_unified_flagging_path,
             active_prefix: true, year_scoped: true,
             description: "Everyone the intake teams noted, ranked, flagged, or bonked in a year",
@@ -397,27 +397,27 @@ module Menus
         items: [
           { title: "BPGUID Lookup", path: :vc_bpguid_path, active_prefix: true,
             description: "Find a person's Burner Profile in Salesforce and link it to their account",
-            visible_if: { roles: [Role::ADMIN, Role::VC] } },
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] } },
           { title: "Handle Checker", path: :vc_handle_checker_path, active_prefix: true,
             description: "Check a proposed handle for conflicts",
-            visible_if: { roles: [Role::ADMIN, Role::VC] } },
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] } },
           { title: "Photo Review", path: :vc_photos_review_path, active_prefix: true,
             description: "Approve or reject submitted BMID photos",
-            visible_if: { roles: [Role::ADMIN, Role::VC] } },
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] } },
           { title: "Photos", path: :vc_photos_path, active_prefix: true,
             description: "Browse all Clubhouse photos",
-            visible_if: { roles: [Role::ADMIN, Role::VC] } },
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] } },
           # Edit Handle Reservations is the role that may change the list; VC
           # alone reads it (see the controller's manage_reserved_handles gate).
           { title: "Reserved Handles", path: :vc_reserved_handles_path, active_prefix: true,
             description: "Manage handles that must not be issued as callsigns",
-            visible_if: { roles: [Role::ADMIN, Role::VC, Role::EDIT_HANDLE_RESERVATIONS] } },
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE, Role::EDIT_HANDLE_RESERVATIONS] } },
           { title: "Spigot Flow Report", path: :vc_spigot_flow_report_path, active_prefix: true, year_scoped: true,
             description: "Daily counts of applicants moving through intake milestones",
-            visible_if: { roles: [Role::ADMIN, Role::VC] } },
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] } },
           { title: "Unified Flagging", path: :vc_unified_flagging_path, active_prefix: true, year_scoped: true,
             description: "Applicant pipeline with every team's ranks, flags, and notes",
-            visible_if: { roles: [Role::ADMIN, Role::VC, Role::INTAKE] } }
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE, Role::INTAKE] } }
         ]
       },
       {
@@ -425,7 +425,7 @@ module Menus
         items: [
           { title: "Applications", path: :vc_applications_path, root: true, active_prefix: true, year_scoped: true,
             description: "Review and process volunteer applications",
-            visible_if: { roles: [Role::ADMIN, Role::VC] } },
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] } },
           { title: "Application Import", path: :vc_application_import_path, active_prefix: true,
             description: "Import Ranger applications from Salesforce",
             visible_if: { roles: [Role::ADMIN, Role::SALESFORCE_IMPORT] }
@@ -441,13 +441,13 @@ module Menus
         items: [
           { title: "Maintenance", path: :vc_maintenance_path, active_prefix: true,
             description: "Bulk reset applicant statuses and callsigns after the event",
-            visible_if: { roles: [Role::ADMIN, Role::VC] } },
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] } },
           { title: "Shiny Penny Report", path: :vc_shiny_penny_report_path, active_prefix: true, year_scoped: true,
             description: "Rangers who passed training and mentoring in a given year",
-            visible_if: { roles: [Role::ADMIN, Role::VC] } },
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] } },
           { title: "Thank You Cards", path: :vc_thank_you_cards_path, active_prefix: true, year_scoped: true,
             description: "Mailing addresses for everyone who rangered during a given year",
-            visible_if: { roles: [Role::ADMIN, Role::VC] } }
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] } }
         ]
       }
     ]
@@ -461,7 +461,7 @@ module Menus
     title: "Mentoring",
     description: "Potential Alphas and the mentor cadre",
     icon: "handshake-angle",
-    visible_if: { roles: [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT] },
+    visible_if: { roles: [Role::ADMIN, Role::MENTOR_INTERFACE, Role::MENTOR_INTERFACE_EVENT] },
     sections: [
       {
         title: "Pre-Event",
@@ -896,24 +896,24 @@ module Menus
           # Not year_scoped: the report filters on status alone, so it ignores ?year=.
           { title: "Alpha Shirts", path: :quartermaster_alpha_shirts_path, active_prefix: true,
             description: "Shirt sizes and order counts for the current Prospectives and Alphas",
-            visible_if: { roles: [Role::ADMIN, Role::QUARTERMASTER, Role::MENTOR] } },
+            visible_if: { roles: [Role::ADMIN, Role::QUARTERMASTER_INTERFACE, Role::MENTOR_INTERFACE] } },
           # Year-scoped: the report counts hours for the selected event year.
           # Timesheet Management is carried over from upstream's policy-wide
           # grant, as Events Rangered does.
           { title: "Potential Shirts", path: :quartermaster_potential_shirts_path, active_prefix: true,
             year_scoped: true,
             description: "Who may earn a t-shirt or long sleeve this year, and the shirts to order",
-            visible_if: { roles: [Role::ADMIN, Role::QUARTERMASTER, Role::TIMESHEET_MANAGEMENT] } },
+            visible_if: { roles: [Role::ADMIN, Role::QUARTERMASTER_INTERFACE, Role::TIMESHEET_MANAGEMENT] } },
           # Not year_scoped: the milestone is all-time. Only the sign-up column
           # has a year, and it always asks about the current one.
           { title: "Potential Swag", path: :quartermaster_potential_swag_path, active_prefix: true,
             description: "Who might earn a service pin or patch at the coming event",
-            visible_if: { roles: [Role::ADMIN, Role::QUARTERMASTER, Role::EDIT_SWAG] } },
+            visible_if: { roles: [Role::ADMIN, Role::QUARTERMASTER_INTERFACE, Role::EDIT_SWAG] } },
           # year_scoped: the report is per-event-year (with its own All option).
           { title: "Swag Distribution", path: :quartermaster_swag_distribution_path,
             active_prefix: true, year_scoped: true,
             description: "What shirts, pins, and patches were handed out during an event",
-            visible_if: { roles: [Role::ADMIN, Role::QUARTERMASTER] } }
+            visible_if: { roles: [Role::ADMIN, Role::QUARTERMASTER_INTERFACE] } }
         ]
       },
       {
@@ -923,13 +923,13 @@ module Menus
           # has a year, and it always asks about the current one.
           { title: "Events Rangered", path: :quartermaster_events_rangered_path, active_prefix: true,
             description: "Years of service for everyone who has rangered, and who has signed up",
-            visible_if: { roles: [Role::ADMIN, Role::QUARTERMASTER, Role::TIMESHEET_MANAGEMENT] } },
+            visible_if: { roles: [Role::ADMIN, Role::QUARTERMASTER_INTERFACE, Role::TIMESHEET_MANAGEMENT] } },
           # Not year_scoped: service years are all-time. active_prefix: the
           # per-group rosters hang off this path. No Timesheet Management here,
           # unlike Events Rangered -- upstream gates this one on AwardPolicy.
           { title: "Freaking Years", path: :quartermaster_freaking_years_path, active_prefix: true,
             description: "Active Rangers grouped by total service years",
-            visible_if: { roles: [Role::ADMIN, Role::QUARTERMASTER] } }
+            visible_if: { roles: [Role::ADMIN, Role::QUARTERMASTER_INTERFACE] } }
         ]
       },
       {
@@ -1264,7 +1264,7 @@ module Menus
         submenu: true,
         items: [
           { title: "Applications", path: :person_applications_path, active_prefix: true,
-            visible_if: { roles: [Role::ADMIN, Role::VC] } },
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] } },
           { title: "Mentoring", path: :person_mentoring_path, active_prefix: true },
           { title: "Training / ARTs", path: :person_training_path, active_prefix: true },
           { title: "Unified Flagging", path: :person_unified_flagging_path, active_prefix: true,
@@ -1286,7 +1286,7 @@ module Menus
             visible_if: { roles: [Role::ADMIN] } },
           { title: "Mail Log", path: :person_mail_log_path, active_prefix: true,
             description: "Emails sent to or from this account, and email address changes",
-            visible_if: { roles: [Role::ADMIN, Role::VC] } },
+            visible_if: { roles: [Role::ADMIN, Role::VC_INTERFACE] } },
           { title: "Passkeys", path: :person_passkeys_path, active_prefix: true,
             description: "The passkeys that can sign in as this person",
             visible_if: { roles: [Role::ADMIN] } },

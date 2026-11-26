@@ -21,11 +21,11 @@ class Quartermaster::SwagDistributionControllerTest < ActionDispatch::Integratio
     @outsider = person(:inactive_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::QUARTERMASTER, "Quartermaster")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::QUARTERMASTER_INTERFACE, "Quartermaster")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     grant_role(@admin, Role::ADMIN)
-    grant_role(@quartermaster, Role::QUARTERMASTER)
-    grant_role(@mentor, Role::MENTOR)
+    grant_role(@quartermaster, Role::QUARTERMASTER_INTERFACE)
+    grant_role(@mentor, Role::MENTOR_INTERFACE)
 
     @shirts = person(:plate_collision_ranger)       # RANGER1
     @decorated = person(:active_ranger)             # TestRanger

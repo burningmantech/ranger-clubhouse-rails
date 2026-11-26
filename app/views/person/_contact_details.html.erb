@@ -1,5 +1,5 @@
 <%# locals: (person:) %>
-<%= ui_section "Contact Details", icon: "address-card", edit_link: has_role?([Role::ADMIN, Role::VC]) ? person_profile_path(person) : nil do %>
+<%= ui_section "Contact Details", icon: "address-card", edit_link: has_role?([Role::ADMIN, Role::VC_INTERFACE]) ? person_profile_path(person) : nil do %>
   <%= ui_label_value label_width: "9rem", class: "space-y-1" do |list| %>
     <% list.row "Camp" do %>
       <% if can_view_emergency_contact? %>

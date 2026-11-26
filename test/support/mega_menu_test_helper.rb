@@ -12,7 +12,7 @@ module MegaMenuTestHelper
   include TimesheetAdminTestHelper
 
   def offer_mega_menu_to(person)
-    ensure_role(Role::MENTOR, "Mentor")
-    grant_role(person, Role::MENTOR)
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
+    grant_role(person, Role::MENTOR_INTERFACE)
   end
 end

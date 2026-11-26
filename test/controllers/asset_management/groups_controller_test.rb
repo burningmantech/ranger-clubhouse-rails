@@ -16,11 +16,11 @@ class AssetManagement::GroupsControllerTest < ActionDispatch::IntegrationTest
 
     ensure_role(Role::EDIT_ASSETS, "Edit Assets")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
 
     grant_role(@editor, Role::EDIT_ASSETS)
     grant_role(@event_manager, Role::EVENT_MANAGEMENT)
-    grant_role(@unauthorized, Role::TRAINER)
+    grant_role(@unauthorized, Role::TRAINING_INTERFACE)
 
     @ops = AssetGroup.create!(type: Asset::TYPE_RADIO, title: "Command Operations")
     @dupe = AssetGroup.create!(type: Asset::TYPE_RADIO, title: "Cmmd Ops", active: false, notes: "A typo")

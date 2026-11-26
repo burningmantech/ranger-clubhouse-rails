@@ -20,11 +20,11 @@ class Person::AgreementsControllerTest < ActionDispatch::IntegrationTest
 
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
 
     grant_role(@admin, Role::ADMIN)
     grant_role(@event_manager, Role::EVENT_MANAGEMENT)
-    grant_role(@viewer, Role::MENTOR)
+    grant_role(@viewer, Role::MENTOR_INTERFACE)
 
     PersonEvent.where(person_id: @target.id).delete_all
     @target.update_columns(behavioral_agreement: false)

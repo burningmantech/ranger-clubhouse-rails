@@ -11,8 +11,8 @@ class PersonTeamTest < ActiveSupport::TestCase
   test "destroying a membership leaves the team's roles alone" do
     team = teams(:council_cadre)
     membership = PersonTeam.create!(person: person(:ranger_with_custom_gender), team:)
-    ensure_role(Role::MENTOR, "Mentor")
-    TeamRole.create!(team:, role_id: Role::MENTOR)
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
+    TeamRole.create!(team:, role_id: Role::MENTOR_INTERFACE)
 
     assert_difference -> { PersonTeam.count }, -1 do
       assert_no_difference -> { TeamRole.where(team:).count } do

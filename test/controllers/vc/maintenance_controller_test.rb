@@ -17,9 +17,9 @@ class Vc::MaintenanceControllerTest < ActionDispatch::IntegrationTest
     @outsider = person(:inactive_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "Volunteer Coordinator")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
     grant_role(@admin, Role::ADMIN)
-    grant_role(@vc, Role::VC)
+    grant_role(@vc, Role::VC_INTERFACE)
 
     # The applicant pipeline the reset sweeps -- one fixture per in-scope status.
     # (Person::PROSPECTIVE_WAITLIST is deliberately unrepresented: it is not a

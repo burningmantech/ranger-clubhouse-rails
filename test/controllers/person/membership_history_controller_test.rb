@@ -21,9 +21,9 @@ class Person::MembershipHistoryControllerTest < ActionDispatch::IntegrationTest
     @mentor = person(:ranger_with_custom_gender)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     grant_role(@admin, Role::ADMIN)
-    grant_role(@mentor, Role::MENTOR)
+    grant_role(@mentor, Role::MENTOR_INTERFACE)
 
     # No log fixtures exist; the history under test is built here.
     PersonTeamLog.create!(person_id: @target.id, team_id: teams(:council_cadre).id, joined_on: Date.new(2024, 3, 1))

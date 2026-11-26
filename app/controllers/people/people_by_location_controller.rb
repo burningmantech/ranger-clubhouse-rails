@@ -12,7 +12,7 @@ class People::PeopleByLocationController < ApplicationController
 
   # The four roles that plan, train, and recruit -- the people who need to know
   # where the Rangers are coming from.
-  authorize_role [Role::ADMIN, Role::MENTOR, Role::TRAINER, Role::VC],
+  authorize_role [Role::ADMIN, Role::MENTOR_INTERFACE, Role::TRAINING_INTERFACE, Role::VC_INTERFACE],
                  message: "Admin, Mentor, Trainer, or VC role required to view people by location."
 
   before_action :setup_year

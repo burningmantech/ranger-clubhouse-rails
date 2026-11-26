@@ -27,11 +27,11 @@ class Vehicles::PaperworkControllerTest < ActionDispatch::IntegrationTest
 
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     ensure_role(Role::VEHICLE_INFO_UPDATE, "Vehicle Info Update")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
 
     grant_role(@event_manager, Role::EVENT_MANAGEMENT)
     grant_role(@vehicle_editor, Role::VEHICLE_INFO_UPDATE)
-    grant_role(@unauthorized, Role::TRAINER)
+    grant_role(@unauthorized, Role::TRAINING_INTERFACE)
   end
 
   teardown do

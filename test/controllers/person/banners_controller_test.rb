@@ -14,12 +14,12 @@ class Person::BannersControllerTest < ActionDispatch::IntegrationTest
     @trainer = person(:ranger_with_custom_gender)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "Volunteer Coordinator")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
 
     grant_role(@admin, Role::ADMIN)
-    grant_role(@vc, Role::VC)
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@vc, Role::VC_INTERFACE)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
 
     @permanent_banner = @target.person_banner.create!(
       is_permanent: true,

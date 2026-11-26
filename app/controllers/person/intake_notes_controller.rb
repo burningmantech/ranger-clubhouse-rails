@@ -11,12 +11,12 @@ class Person::IntakeNotesController < ApplicationController
 
   include PersonConcern
 
-  authorize_role [Role::ADMIN, Role::INTAKE, Role::REGIONAL_MANAGEMENT, Role::VC, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT],
+  authorize_role [Role::ADMIN, Role::INTAKE, Role::REGIONAL_MANAGEMENT, Role::VC_INTERFACE, Role::MENTOR_INTERFACE, Role::MENTOR_INTERFACE_EVENT],
                  message: "You are not authorized to manage intake notes."
 
   PERMISSION_ROLE_FOR_TYPE = {
-    "vc" => Role::VC,
-    "mentor" => [Role::MENTOR, Role::MENTOR_INTERFACE_EVENT],
+    "vc" => Role::VC_INTERFACE,
+    "mentor" => [Role::MENTOR_INTERFACE, Role::MENTOR_INTERFACE_EVENT],
     "personnel" => Role::ADMIN,
     "rrn" => Role::REGIONAL_MANAGEMENT
   }.freeze

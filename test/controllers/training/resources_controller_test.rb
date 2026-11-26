@@ -22,7 +22,7 @@ class Training::ResourcesControllerTest < ActionDispatch::IntegrationTest
                                   team_id: teams(:green_dot_cadre).id)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
     ensure_role(Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING, "ART Green Dot Interface")
     ensure_role(Role::TRAINER_RESOURCE_MANAGEMENT_BASE | Position::TRAINING, "Training Resrc Mgmt")
     ensure_role(Role::TRAINER_RESOURCE_MANAGEMENT_BASE | Position::GREEN_DOT_TRAINING,
@@ -35,8 +35,8 @@ class Training::ResourcesControllerTest < ActionDispatch::IntegrationTest
     @outsider = person(:inactive_ranger)
 
     grant_role(@admin, Role::ADMIN)
-    grant_role(@trainer, Role::TRAINER)
-    grant_role(@resource_manager, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
+    grant_role(@resource_manager, Role::TRAINING_INTERFACE)
     grant_role(@resource_manager, Role::TRAINER_RESOURCE_MANAGEMENT_BASE | Position::TRAINING)
     grant_role(@art_trainer, Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING)
   end

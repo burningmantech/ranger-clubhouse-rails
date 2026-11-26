@@ -24,7 +24,7 @@ class Mentoring::SurveysController < ApplicationController
 
   # Upstream Gate isMentor, which reaches the page. Reading it needs the survey
   # role below -- holding Mentor is not the same as managing Alpha surveys.
-  authorize_role [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT],
+  authorize_role [Role::ADMIN, Role::MENTOR_INTERFACE, Role::MENTOR_INTERFACE_EVENT],
                  message: "Admin or Mentor role required to view Alpha surveys."
 
   # Only the index needs its own gate: the report pages run the same check

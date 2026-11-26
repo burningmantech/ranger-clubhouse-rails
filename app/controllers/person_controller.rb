@@ -17,7 +17,7 @@ class PersonController < ApplicationController
   # prospective check. The same gate answers the Resend Welcome Message item in
   # person/_actions.
   authorize_ability :resend_welcome,
-                    roles: [Role::VC],
+                    roles: [Role::VC_INTERFACE],
                     only: :resend_welcome,
                     deny_to: :overview_path,
                     message: "Admin or Volunteer Coordinator role required to resend the welcome message."
@@ -35,7 +35,7 @@ class PersonController < ApplicationController
   # (Me::DashboardController#onboarded sets it). Admin or VC, as the resend; the
   # same gate answers the Reset Onboarding Tour item in person/_actions.
   authorize_ability :reset_onboarding,
-                    roles: [Role::VC],
+                    roles: [Role::VC_INTERFACE],
                     only: :reset_onboarding,
                     deny_to: :overview_path,
                     message: "Admin or Volunteer Coordinator role required to reset the onboarding tour."

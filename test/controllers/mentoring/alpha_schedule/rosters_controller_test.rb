@@ -40,10 +40,10 @@ class Mentoring::AlphaSchedule::RostersControllerTest < ActionDispatch::Integrat
     @outsider = person(:inactive_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::MENTOR, "Mentor")
-    ensure_role(Role::VC, "Volunteer Coordinator")
-    grant_role(@mentor, Role::MENTOR)
-    grant_role(@outsider, Role::VC)
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
+    grant_role(@mentor, Role::MENTOR_INTERFACE)
+    grant_role(@outsider, Role::VC_INTERFACE)
 
     Current.person = @mentor
   end

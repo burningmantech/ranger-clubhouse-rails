@@ -15,7 +15,7 @@ class Quartermaster::FreakingYearsController < ApplicationController
   # the policy's #before. Timesheet Management is NOT carried over the way
   # Events Rangered carries it -- that grant was TimesheetPolicy's, and this
   # report never lived there.
-  authorize_role [Role::ADMIN, Role::QUARTERMASTER],
+  authorize_role [Role::ADMIN, Role::QUARTERMASTER_INTERFACE],
                  message: "Admin or Quartermaster role required to view service years."
 
   # Upstream's columns, for both exports.

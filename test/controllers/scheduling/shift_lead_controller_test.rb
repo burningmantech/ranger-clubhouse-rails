@@ -43,10 +43,10 @@ class Scheduling::ShiftLeadControllerTest < ActionDispatch::IntegrationTest
 
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
-    ensure_role(Role::VC, "Volunteer Coordinator")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
     grant_role(@admin, Role::ADMIN)
     grant_role(@event_manager, Role::EVENT_MANAGEMENT)
-    grant_role(@outsider, Role::VC)
+    grant_role(@outsider, Role::VC_INTERFACE)
 
     Current.person = @admin
   end

@@ -18,7 +18,7 @@ class TeamsPositions::PositionRecordsControllerTest < ActionDispatch::Integratio
     ensure_role(Role::TECH_NINJA, "Tech Ninja")
     # The index INNER JOINs position_role to role, so every granted role must
     # exist or the permission column silently stays empty.
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     ensure_role(Role::EDIT_SLOTS, "Edit Slots")
     grant_role(@admin, Role::ADMIN)
     grant_role(@tech_ninja, Role::TECH_NINJA)
@@ -29,7 +29,7 @@ class TeamsPositions::PositionRecordsControllerTest < ActionDispatch::Integratio
 
     # Built here rather than in test/fixtures: a global position_role fixture
     # would point at roles that only exist once a test calls ensure_role.
-    PositionRole.create!(position_id: @position.id, role_id: Role::MENTOR)
+    PositionRole.create!(position_id: @position.id, role_id: Role::MENTOR_INTERFACE)
     PositionRole.create!(position_id: @position.id, role_id: Role::EDIT_SLOTS)
 
     sign_in_as(@admin)
@@ -189,7 +189,7 @@ class TeamsPositions::PositionRecordsControllerTest < ActionDispatch::Integratio
   end
 
   test "index filters by a specific permission grant" do
-    get teams_positions_position_records_path(role: Role::MENTOR.to_s)
+    get teams_positions_position_records_path(role: Role::MENTOR_INTERFACE.to_s)
 
     assert_response :success
     assert_select "tr#position-#{@position.id}"
@@ -220,7 +220,7 @@ class TeamsPositions::PositionRecordsControllerTest < ActionDispatch::Integratio
     get teams_positions_position_records_path
 
     assert_response :success
-    assert_select "select[name=role] option[value=?]", Role::MENTOR.to_s
+    assert_select "select[name=role] option[value=?]", Role::MENTOR_INTERFACE.to_s
     assert_select "select[name=role] option[value=?]", Role::VIEW_PII.to_s, false,
                   "an ungranted role must not be offered"
   end
@@ -233,7 +233,7 @@ class TeamsPositions::PositionRecordsControllerTest < ActionDispatch::Integratio
   end
 
   test "an applied filter draws a chip naming its value" do
-    get teams_positions_position_records_path(role: Role::MENTOR.to_s)
+    get teams_positions_position_records_path(role: Role::MENTOR_INTERFACE.to_s)
 
     assert_response :success
     assert_select "*", text: /Permission grant: Mentor/
@@ -463,9 +463,9 @@ class TeamsPositions::PositionRecordsControllerTest < ActionDispatch::Integratio
 
     patch teams_positions_position_record_path(@position),
           params: { position: { title: @position.title, type: @position.type,
-                                role_ids: [Role::MENTOR.to_s] } }
+                                role_ids: [Role::MENTOR_INTERFACE.to_s] } }
 
-    assert_equal [Role::MENTOR], PositionRole.where(position_id: @position.id).pluck(:role_id)
+    assert_equal [Role::MENTOR_INTERFACE], PositionRole.where(position_id: @position.id).pluck(:role_id)
   end
 
   test "a plain admin sees an explainer instead of the checkboxes" do
@@ -502,7 +502,7 @@ class TeamsPositions::PositionRecordsControllerTest < ActionDispatch::Integratio
     patch teams_positions_position_record_path(@position),
           params: { position: { title: @position.title, type: @position.type, role_ids: [] } }
 
-    assert_equal [Role::MENTOR, Role::EDIT_SLOTS].sort,
+    assert_equal [Role::MENTOR_INTERFACE, Role::EDIT_SLOTS].sort,
                  PositionRole.where(position_id: @position.id).pluck(:role_id).sort
   end
 

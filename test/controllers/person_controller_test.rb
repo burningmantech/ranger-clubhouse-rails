@@ -23,12 +23,12 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     ensure_role(Role::VIEW_PII, "View PII")
     ensure_role(Role::VIEW_EMAIL, "View Email")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
-    ensure_role(Role::MENTOR, "Mentor")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
 
     grant_role(@pii_viewer, Role::ADMIN)
     grant_role(@pii_viewer, Role::VIEW_PII)
-    grant_role(@limited_viewer, Role::TRAINER)
+    grant_role(@limited_viewer, Role::TRAINING_INTERFACE)
 
     grant_role(@target, Role::EVENT_MANAGEMENT)
     grant_role(@target, Role::VIEW_EMAIL)
@@ -372,7 +372,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
   test "a Tech Ninja is offered Delete Account and deletes the account" do
     ensure_role(Role::TECH_NINJA, "Tech Ninja")
     ninja = create_person("Ninja")
-    grant_role(ninja, Role::MENTOR)
+    grant_role(ninja, Role::MENTOR_INTERFACE)
     grant_role(ninja, Role::TECH_NINJA)
     sign_in_as(ninja)
 
@@ -454,7 +454,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
     prospective = person(:prospective_ranger)
 
-    (PersonConcern::VIEW_ROLES - [Role::ADMIN, Role::VC]).each do |role_id|
+    (PersonConcern::VIEW_ROLES - [Role::ADMIN, Role::VC_INTERFACE]).each do |role_id|
       ensure_role(role_id, "Role #{role_id}")
       viewer = create_person("Viewer#{role_id}")
       grant_role(viewer, role_id)
@@ -517,7 +517,7 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
     Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
     @target.update_column(:on_boarded_at, TOUR_TAKEN)
 
-    (PersonConcern::VIEW_ROLES - [Role::ADMIN, Role::VC]).each do |role_id|
+    (PersonConcern::VIEW_ROLES - [Role::ADMIN, Role::VC_INTERFACE]).each do |role_id|
       ensure_role(role_id, "Role #{role_id}")
       viewer = create_person("Viewer#{role_id}")
       grant_role(viewer, role_id)
@@ -568,9 +568,9 @@ class PersonControllerTest < ActionDispatch::IntegrationTest
 
   # A viewer holding the Volunteer Coordinator role and nothing else.
   def create_vc
-    ensure_role(Role::VC, "Volunteer Coordinator")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
     vc = create_person("Coordinator")
-    grant_role(vc, Role::VC)
+    grant_role(vc, Role::VC_INTERFACE)
     vc
   end
 

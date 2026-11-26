@@ -28,18 +28,18 @@ class Mentoring::SurveysControllerTest < ActionDispatch::IntegrationTest
                              type: Position::TYPE_TRAINING, active: true)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     ensure_role(Role::SURVEY_MANAGEMENT_BASE | Position::ALPHA, "Alpha Surveys")
     ensure_role(Role::ART_TRAINER_BASE | Position::ALPHA, "Alpha Trainer")
 
     # Survey manager: reaches the index and every report.
     @manager = person(:echelon_ranger)
-    grant_role(@manager, Role::MENTOR)
+    grant_role(@manager, Role::MENTOR_INTERFACE)
     grant_role(@manager, Role::SURVEY_MANAGEMENT_BASE | Position::ALPHA)
 
     # Plain mentor: reaches the Mentoring section, but not the surveys.
     @plain_mentor = person(:retired_ranger)
-    grant_role(@plain_mentor, Role::MENTOR)
+    grant_role(@plain_mentor, Role::MENTOR_INTERFACE)
 
     @outsider = person(:inactive_ranger)
   end

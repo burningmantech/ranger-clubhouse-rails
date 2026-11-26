@@ -12,7 +12,7 @@ class Mentoring::AlphaSchedule::BaseController < ApplicationController
   # `except:` list names an action the controller does not define, and only
   # the page controller has the slotless index to exclude.
 
-  authorize_role [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT],
+  authorize_role [Role::ADMIN, Role::MENTOR_INTERFACE, Role::MENTOR_INTERFACE_EVENT],
                  message: "Admin or Mentor role required to view the Alpha schedule."
 
   # The year selector's floor, matching upstream's YearSelect minYear.

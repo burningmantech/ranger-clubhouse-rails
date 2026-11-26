@@ -15,7 +15,7 @@ class Vc::BpguidController < ApplicationController
 
   layout "vc"
 
-  authorize_role [Role::ADMIN, Role::VC],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE],
                  message: "Admin or Volunteer Coordinator role required to link Burner Profiles."
   # D10: the training server's database is a redacted copy, but a build that
   # skipped the redaction, or credentials typed back in there, would reach the

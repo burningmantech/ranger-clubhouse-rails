@@ -36,7 +36,7 @@ class SearchBarPolicy
   # Roles that enable the "Timesheet" and "Swag" search modes -- the same gates
   # as the person timesheet / swag pages those modes navigate to.
   TIMESHEET_MODE_ROLES = [Role::ADMIN, Role::TIMESHEET_MANAGEMENT].freeze
-  SWAG_MODE_ROLES = [Role::ADMIN, Role::QUARTERMASTER].freeze
+  SWAG_MODE_ROLES = [Role::ADMIN, Role::QUARTERMASTER_INTERFACE].freeze
 
   # On-duty position subtypes that default the bar into HQ mode. Position#subtype
   # yields the position type verbatim for non-mentoring positions (so an HQ shift

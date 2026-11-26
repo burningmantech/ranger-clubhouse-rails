@@ -23,7 +23,7 @@ class SchedulingMenuTest < ActiveSupport::TestCase
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     ensure_role(Role::EDIT_SLOTS, "Edit Slots")
-    ensure_role(Role::VC, "Volunteer Coordinator")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
     @person = person(:active_ranger)
   end
 
@@ -73,7 +73,7 @@ class SchedulingMenuTest < ActiveSupport::TestCase
   end
 
   test "a role outside the schedule by callsign gate does not see it" do
-    titles = titles_for(Role::VC)
+    titles = titles_for(Role::VC_INTERFACE)
 
     assert_not_includes titles, SCHEDULE_ITEM
   end
@@ -95,7 +95,7 @@ class SchedulingMenuTest < ActiveSupport::TestCase
   # The category carries no gate of its own, so an item without one would show
   # for everyone signed in.
   test "a role outside the HQ forecast gate does not see it" do
-    assert_not_includes titles_for(Role::VC), FORECAST_ITEM
+    assert_not_includes titles_for(Role::VC_INTERFACE), FORECAST_ITEM
   end
 
   # --- Sandman Qualifications, the section's last item ---------------------

@@ -24,8 +24,8 @@ class Training::OnlineCourseProgressControllerTest < ActionDispatch::Integration
                      type: Position::TYPE_TRAINING, active: true)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     ensure_role(Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Interface")
 
     @trainer = person(:echelon_ranger)
@@ -33,8 +33,8 @@ class Training::OnlineCourseProgressControllerTest < ActionDispatch::Integration
     @art_trainer = person(:retired_ranger)
     @outsider = person(:inactive_ranger)
 
-    grant_role(@trainer, Role::TRAINER)
-    grant_role(@mentor, Role::MENTOR)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
+    grant_role(@mentor, Role::MENTOR_INTERFACE)
     grant_role(@art_trainer, Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING)
 
     # The report reads this one table; the shared fixtures pre-enroll
@@ -182,7 +182,7 @@ class Training::OnlineCourseProgressControllerTest < ActionDispatch::Integration
 
   test "an ART tree shows its own empty report, never In-Person's data" do
     enroll(person(:active_ranger), enrolled_at: Time.zone.local(YEAR, 1, 18, 9, 14))
-    grant_role(@art_trainer, Role::TRAINER)
+    grant_role(@art_trainer, Role::TRAINING_INTERFACE)
 
     sign_in_as(@art_trainer)
     get training_online_course_progress_path("green-dot", year: YEAR)

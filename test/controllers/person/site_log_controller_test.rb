@@ -16,7 +16,7 @@ class Person::SiteLogControllerTest < ActionDispatch::IntegrationTest
     @manager = person(:echelon_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     ensure_role(Role::EVENT_MANAGEMENT_ON_PLAYA, "Event Management On Playa")
     grant_role(@manager, Role::EVENT_MANAGEMENT)
@@ -72,7 +72,7 @@ class Person::SiteLogControllerTest < ActionDispatch::IntegrationTest
   # A Mentor passes PersonConcern's broad gate, which this page replaces.
   test "a mentor is turned away" do
     mentor = person(:ranger_with_custom_gender)
-    grant_role(mentor, Role::MENTOR)
+    grant_role(mentor, Role::MENTOR_INTERFACE)
     sign_in_as(mentor)
 
     get person_site_log_path(@target)

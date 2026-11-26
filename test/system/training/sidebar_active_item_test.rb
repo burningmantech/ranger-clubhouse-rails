@@ -11,9 +11,9 @@ class Training::SidebarActiveItemTest < ApplicationSystemTestCase
 
   setup do
     Position.create!(id: Position::TRAINING, title: "Training", type: Position::TYPE_TRAINING, active: true)
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
     @trainer = person(:echelon_ranger)
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     sign_in(@trainer)
   end
 

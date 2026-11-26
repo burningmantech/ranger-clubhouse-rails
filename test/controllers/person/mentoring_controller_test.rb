@@ -22,7 +22,7 @@ class Person::MentoringControllerTest < ActionDispatch::IntegrationTest
     Current.reset
     setup_art_mentoring
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
 
     @mentee = create_person("Tinsel", last_seen_at: 1.day.ago)
     @mentor = create_person("Ferrous")
@@ -140,7 +140,7 @@ class Person::MentoringControllerTest < ActionDispatch::IntegrationTest
 
   test "a Mentor without the ART's trainer role gets the walk but no Verdicts link" do
     mentor = person(:echelon_ranger)
-    grant_role(mentor, Role::MENTOR)
+    grant_role(mentor, Role::MENTOR_INTERFACE)
     sign_in_as(mentor)
 
     get person_mentoring_path(@mentee)

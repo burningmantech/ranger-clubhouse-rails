@@ -29,7 +29,7 @@ class Training::MenteesControllerTest < ActionDispatch::IntegrationTest
                                   type: "Frontline", active: true)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
     ensure_role(Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Interface")
     ensure_role(Role::ART_GRADUATE_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Graduate")
 
@@ -39,7 +39,7 @@ class Training::MenteesControllerTest < ActionDispatch::IntegrationTest
 
     grant_role(@admin, Role::ADMIN)
     grant_role(@art_trainer, Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING)
-    grant_role(@dirt_trainer, Role::TRAINER)
+    grant_role(@dirt_trainer, Role::TRAINING_INTERFACE)
 
     @alpha = person(:active_ranger)
     @beta = person(:inactive_ranger)

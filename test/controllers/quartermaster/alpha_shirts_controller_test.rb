@@ -15,10 +15,10 @@ class Quartermaster::AlphaShirtsControllerTest < ActionDispatch::IntegrationTest
     @outsider = person(:inactive_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::QUARTERMASTER, "Quartermaster")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::QUARTERMASTER_INTERFACE, "Quartermaster")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     grant_role(@admin, Role::ADMIN)
-    grant_role(@mentor, Role::MENTOR)
+    grant_role(@mentor, Role::MENTOR_INTERFACE)
 
     @alpha = person(:alpha_ranger)
     @prospective = person(:prospective_ranger)
@@ -42,7 +42,7 @@ class Quartermaster::AlphaShirtsControllerTest < ActionDispatch::IntegrationTest
 
   test "admin, quartermaster, and mentor may all view the report" do
     quartermaster = @outsider
-    grant_role(quartermaster, Role::QUARTERMASTER)
+    grant_role(quartermaster, Role::QUARTERMASTER_INTERFACE)
 
     [@admin, @mentor, quartermaster].each do |viewer|
       sign_in_as(viewer)

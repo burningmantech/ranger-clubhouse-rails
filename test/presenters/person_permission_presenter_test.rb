@@ -17,7 +17,7 @@ class PersonPermissionPresenterTest < ActiveSupport::TestCase
     # Creating the NDA document writes an audit row, which needs someone acting.
     Current.person = person(:auditor_ranger)
     ensure_role(Role::VIEW_EMAIL, "View Email")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     ensure_role(Role::EVENT_MANAGEMENT_ON_PLAYA, "Event Management On Playa")
 
@@ -157,7 +157,7 @@ class PersonPermissionPresenterTest < ActiveSupport::TestCase
   end
 
   test "rows are ordered by permission title" do
-    grant_role(@person, Role::MENTOR)
+    grant_role(@person, Role::MENTOR_INTERFACE)
 
     assert_equal ["Mentor", "View Email"], rows.map(&:title)
   end
@@ -229,7 +229,7 @@ class PersonPermissionPresenterTest < ActiveSupport::TestCase
   # Status comes from RoleManager's cached set, so the rows must not lose or
   # invent a permission when fresh paths disagree with it.
   test "a permission RoleManager has in effect gets a row even with no current grant" do
-    row = overview(cached_role_manager(roles: [Role::MENTOR], granted: [Role::MENTOR])).find { |r| r.title == "Mentor" }
+    row = overview(cached_role_manager(roles: [Role::MENTOR_INTERFACE], granted: [Role::MENTOR_INTERFACE])).find { |r| r.title == "Mentor" }
 
     assert row, "a permission in effect went unlisted"
     assert row.active
@@ -250,7 +250,7 @@ class PersonPermissionPresenterTest < ActiveSupport::TestCase
 
   test "an unsigned NDA turns every row inactive and names no setting for ungated ones" do
     grant_role(@person, Role::EVENT_MANAGEMENT)
-    grant_role(@person, Role::MENTOR)
+    grant_role(@person, Role::MENTOR_INTERFACE)
     create_nda
 
     role_manager = RoleManager.retrieve(@person)

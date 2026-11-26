@@ -5,7 +5,7 @@
 class Vc::PhotosReviewController < ApplicationController
   layout "vc"
 
-  authorize_role [Role::ADMIN, Role::VC],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE],
                  message: "Admin or Volunteer Coordinator role required to review photos."
 
   # Provides the crop -> save -> return flow (crop, crop_save, destroy).

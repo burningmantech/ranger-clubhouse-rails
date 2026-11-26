@@ -30,7 +30,7 @@ class Training::AllNotesControllerTest < ActionDispatch::IntegrationTest
                                         type: "Frontline", active: true)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
     ensure_role(Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Interface")
 
     @admin = person(:auditor_ranger)
@@ -39,7 +39,7 @@ class Training::AllNotesControllerTest < ActionDispatch::IntegrationTest
 
     grant_role(@admin, Role::ADMIN)
     grant_role(@art_trainer, Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING)
-    grant_role(@dirt_trainer, Role::TRAINER)
+    grant_role(@dirt_trainer, Role::TRAINING_INTERFACE)
 
     @session = create_slot(@green_dot, begins: Time.zone.local(YEAR, 6, 1, 9, 0, 0),
                                        description: "Grass Valley, California")

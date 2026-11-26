@@ -25,7 +25,7 @@ class Mentoring::AlphaSignoutController < ApplicationController
   before_action :setup_year
 
   # Upstream Gate isMentor.
-  authorize_role [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT],
+  authorize_role [Role::ADMIN, Role::MENTOR_INTERFACE, Role::MENTOR_INTERFACE_EVENT],
                  message: "Admin or Mentor role required to open Alpha Sign-Out."
 
   # Backs both the POST guard and the can?(:sign_out_alphas) affordance the view

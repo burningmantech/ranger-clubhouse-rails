@@ -159,7 +159,7 @@ class Person::SwagController < ApplicationController
   end
 
   def swag_manager?
-    Current.admin? || has_role?(Role::QUARTERMASTER)
+    Current.admin? || has_role?(Role::QUARTERMASTER_INTERFACE)
   end
 
 

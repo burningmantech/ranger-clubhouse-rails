@@ -13,9 +13,9 @@ class Person::PasswordsControllerTest < ActionDispatch::IntegrationTest
     @non_admin = person(:ranger_with_custom_gender)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
     grant_role(@admin, Role::ADMIN)
-    grant_role(@non_admin, Role::TRAINER)
+    grant_role(@non_admin, Role::TRAINING_INTERFACE)
 
     @target.password = "password"
     @target.save!(validate: false)

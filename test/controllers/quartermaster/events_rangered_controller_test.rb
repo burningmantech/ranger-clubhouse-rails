@@ -16,10 +16,10 @@ class Quartermaster::EventsRangeredControllerTest < ActionDispatch::IntegrationT
     @outsider = person(:inactive_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::QUARTERMASTER, "Quartermaster")
+    ensure_role(Role::QUARTERMASTER_INTERFACE, "Quartermaster")
     ensure_role(Role::TIMESHEET_MANAGEMENT, "Timesheet Management")
     grant_role(@admin, Role::ADMIN)
-    grant_role(@quartermaster, Role::QUARTERMASTER)
+    grant_role(@quartermaster, Role::QUARTERMASTER_INTERFACE)
     grant_role(@timesheet_manager, Role::TIMESHEET_MANAGEMENT)
 
     # The census reads every Person, so the fixtures are cleared and only the

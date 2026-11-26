@@ -25,11 +25,11 @@ class Person::AssetsControllerTest < ActionDispatch::IntegrationTest
 
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
 
     grant_role(@admin, Role::ADMIN)
     grant_role(@event_manager, Role::EVENT_MANAGEMENT)
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
 
     Current.person = @admin
     PersonEvent.where(person_id: @target.id).delete_all

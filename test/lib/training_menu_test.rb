@@ -83,7 +83,7 @@ class TrainingMenuTest < ActiveSupport::TestCase
     dirt = Position.new(id: Position::TRAINING, title: "Training")
     green_dot = Position.new(id: Position::GREEN_DOT_TRAINING, title: "Green Dot Training")
 
-    assert_equal [Role::ADMIN, Role::TRAINER, Role::MENTOR, Role::VC],
+    assert_equal [Role::ADMIN, Role::TRAINING_INTERFACE, Role::MENTOR_INTERFACE, Role::VC_INTERFACE],
                  TrainingMenu.definition(dirt)[:visible_if][:roles]
     assert_equal [Role::ADMIN, Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING],
                  TrainingMenu.definition(green_dot)[:visible_if][:roles]

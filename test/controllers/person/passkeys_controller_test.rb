@@ -15,10 +15,10 @@ class Person::PasskeysControllerTest < ActionDispatch::IntegrationTest
     @non_admin = person(:echelon_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "Volunteer Coordinator")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
     grant_role(@admin, Role::ADMIN)
     # Admitted to the person pages, and still not to this one.
-    grant_role(@non_admin, Role::VC)
+    grant_role(@non_admin, Role::VC_INTERFACE)
 
     @admin.password = "admin-password"
     @admin.save!(validate: false)

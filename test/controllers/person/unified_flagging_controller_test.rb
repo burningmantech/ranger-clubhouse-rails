@@ -29,14 +29,14 @@ class Person::UnifiedFlaggingControllerTest < ActionDispatch::IntegrationTest
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::INTAKE, "Intake")
     ensure_role(Role::REGIONAL_MANAGEMENT, "Regional Management")
-    ensure_role(Role::VC, "Volunteer Coordinator")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
 
     grant_role(@admin, Role::ADMIN)
     grant_role(@intake_and_vc, Role::INTAKE)
-    grant_role(@intake_and_vc, Role::VC)
+    grant_role(@intake_and_vc, Role::VC_INTERFACE)
     grant_role(@regional_only, Role::REGIONAL_MANAGEMENT)
-    grant_role(@role_less_viewer, Role::MENTOR)
+    grant_role(@role_less_viewer, Role::MENTOR_INTERFACE)
 
     Current.person = @admin
   end

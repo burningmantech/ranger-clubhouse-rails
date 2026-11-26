@@ -30,14 +30,14 @@ class Training::UntrainedPeopleControllerTest < ActionDispatch::IntegrationTest
                                        no_training_required: false)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
     ensure_role(Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Interface")
 
     @trainer = person(:echelon_ranger)
     @art_trainer = person(:retired_ranger)
     @outsider = person(:inactive_ranger)
 
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     grant_role(@art_trainer, Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING)
 
     @shift = create_slot(@shift_position, begins: Time.zone.local(YEAR, 8, 25, 18, 0, 0),

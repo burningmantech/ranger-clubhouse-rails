@@ -20,10 +20,10 @@ class Quartermaster::PotentialSwagControllerTest < ActionDispatch::IntegrationTe
     @outsider = person(:plate_collision_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::QUARTERMASTER, "Quartermaster")
+    ensure_role(Role::QUARTERMASTER_INTERFACE, "Quartermaster")
     ensure_role(Role::EDIT_SWAG, "Edit Swag")
     grant_role(@admin, Role::ADMIN)
-    grant_role(@quartermaster, Role::QUARTERMASTER)
+    grant_role(@quartermaster, Role::QUARTERMASTER_INTERFACE)
     grant_role(@swag_editor, Role::EDIT_SWAG)
 
     # See PotentialSwagReportTest for why both year columns are set directly.

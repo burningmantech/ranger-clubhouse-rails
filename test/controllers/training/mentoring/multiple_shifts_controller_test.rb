@@ -80,8 +80,8 @@ class Training::Mentoring::MultipleShiftsControllerTest < ActionDispatch::Integr
   end
 
   test "an In-Person trainer cannot open an ART's multiple shifts" do
-    ensure_role(Role::TRAINER, "Trainer")
-    grant_role(person(:echelon_ranger), Role::TRAINER)
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
+    grant_role(person(:echelon_ranger), Role::TRAINING_INTERFACE)
     sign_in_as(person(:echelon_ranger))
 
     get multiple_shifts_path

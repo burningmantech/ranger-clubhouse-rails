@@ -18,7 +18,7 @@ class Communication::SurveysHelperTest < ActionView::TestCase
       assert_equal mentoring_surveys_path, survey_feedback_path(survey), "role #{role} opens the page"
     end
 
-    @roles = [Role::VC]
+    @roles = [Role::VC_INTERFACE]
     assert_nil survey_feedback_path(survey)
   end
 end

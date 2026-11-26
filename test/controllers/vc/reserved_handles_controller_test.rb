@@ -16,10 +16,10 @@ class Vc::ReservedHandlesControllerTest < ActionDispatch::IntegrationTest
     @outsider = person(:inactive_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "VC")
+    ensure_role(Role::VC_INTERFACE, "VC")
     ensure_role(Role::EDIT_HANDLE_RESERVATIONS, "Edit Handle Reservations")
     grant_role(@admin, Role::ADMIN)
-    grant_role(@vc, Role::VC)
+    grant_role(@vc, Role::VC_INTERFACE)
     grant_role(@editor, Role::EDIT_HANDLE_RESERVATIONS)
 
     @khaki = handle_reservation(:ranger_term)

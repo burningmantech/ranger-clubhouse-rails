@@ -25,9 +25,9 @@ class Training::SessionsControllerTest < ActionDispatch::IntegrationTest
                                           type: Position::TYPE_TRAINING, active: true)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
-    ensure_role(Role::MENTOR, "Mentor")
-    ensure_role(Role::VC, "VC")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
+    ensure_role(Role::VC_INTERFACE, "VC")
     ensure_role(Role::ART_TRAINER, "ART Trainer")
     ensure_role(Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Interface")
 
@@ -37,7 +37,7 @@ class Training::SessionsControllerTest < ActionDispatch::IntegrationTest
     @outsider = person(:inactive_ranger)
 
     grant_role(@admin, Role::ADMIN)
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     grant_role(@art_trainer, Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING)
   end
 
@@ -65,7 +65,7 @@ class Training::SessionsControllerTest < ActionDispatch::IntegrationTest
     get training_path("in-person")
     assert_response :success
 
-    [Role::MENTOR, Role::VC].each do |role|
+    [Role::MENTOR_INTERFACE, Role::VC_INTERFACE].each do |role|
       viewer = person(:prospective_ranger)
       PersonRole.where(person_id: viewer.id).delete_all
       grant_role(viewer, role)

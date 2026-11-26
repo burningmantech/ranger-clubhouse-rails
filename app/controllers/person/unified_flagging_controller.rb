@@ -16,7 +16,7 @@ class Person::UnifiedFlaggingController < ApplicationController
   def show
     @rrn_only = rrn_only?
     @history = Intake.history_for_person(@person, Current.year, rrn_only: @rrn_only)
-    @can_edit_known_folks = has_role?([Role::ADMIN, Role::VC, Role::INTAKE])
+    @can_edit_known_folks = has_role?([Role::ADMIN, Role::VC_INTERFACE, Role::INTAKE])
   end
 
   def update_known_folks
@@ -36,7 +36,7 @@ class Person::UnifiedFlaggingController < ApplicationController
   end
 
   def ensure_can_update_known_folks
-    return if has_role?([Role::ADMIN, Role::VC, Role::INTAKE])
+    return if has_role?([Role::ADMIN, Role::VC_INTERFACE, Role::INTAKE])
 
     redirect_to person_unified_flagging_path(@person), error: "Not authorized"
   end
