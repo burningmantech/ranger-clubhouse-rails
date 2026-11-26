@@ -77,7 +77,7 @@ class Training::BaseController < ApplicationController
     if Training.art?(@training)
       has_role?([Role::ADMIN, Role::ART_TRAINER_BASE | @training.id])
     else
-      has_role?([Role::ADMIN, Role::TRAINER])
+      has_role?([Role::ADMIN, Role::TRAINING_INTERFACE])
     end
   end
 
@@ -90,7 +90,7 @@ class Training::BaseController < ApplicationController
     if Training.art?(@training)
       has_role?(Role::ART_TRAINER_BASE | @training.id)
     else
-      Current.roles_manager&.has_directly_assigned_role?(Role::TRAINER) || false
+      Current.roles_manager&.has_directly_assigned_role?(Role::TRAINING_INTERFACE) || false
     end
   end
 

@@ -21,7 +21,7 @@ class Scheduling::ScheduleByCallsignControllerTest < ActionDispatch::Integration
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     ensure_role(Role::EDIT_SLOTS, "Edit Slots")
-    ensure_role(Role::VC, "Volunteer Coordinator")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
 
     @admin = person(:active_ranger)
     @event_manager = person(:echelon_ranger)
@@ -32,7 +32,7 @@ class Scheduling::ScheduleByCallsignControllerTest < ActionDispatch::Integration
     grant_role(@admin, Role::ADMIN)
     grant_role(@event_manager, Role::EVENT_MANAGEMENT)
     grant_role(@slot_editor, Role::EDIT_SLOTS)
-    grant_role(@outsider, Role::VC)
+    grant_role(@outsider, Role::VC_INTERFACE)
 
     @dirt = positions(:ood_position)
     @retired_position = positions(:council_manager)

@@ -20,10 +20,10 @@ class Person::MessagesControllerTest < ActionDispatch::IntegrationTest
     @other.update!(last_seen_at: 1.day.ago)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     ensure_role(Role::EVENT_MANAGEMENT_ON_PLAYA, "Event Management On Playa")
-    ensure_role(Role::VC, "VC")
+    ensure_role(Role::VC_INTERFACE, "VC")
 
     # Current#can_view_messages?: the mailbox opens to Event Management only
     # while the on-playa setting is on. Admins and VCs are not held to it.
@@ -132,7 +132,7 @@ class Person::MessagesControllerTest < ActionDispatch::IntegrationTest
 
   test "an admin or a VC holding event management can view the mailbox while the on-playa setting is off" do
     set_on_playa(false)
-    { Role::ADMIN => person(:auditor_ranger), Role::VC => person(:retired_ranger) }.each do |role, holder|
+    { Role::ADMIN => person(:auditor_ranger), Role::VC_INTERFACE => person(:retired_ranger) }.each do |role, holder|
       grant_role(holder, Role::EVENT_MANAGEMENT)
       grant_role(holder, role)
       sign_in_as(holder)
@@ -176,7 +176,7 @@ class Person::MessagesControllerTest < ActionDispatch::IntegrationTest
 
   test "mentor without event management is denied" do
     mentor = person(:auditor_ranger)
-    grant_role(mentor, Role::MENTOR)
+    grant_role(mentor, Role::MENTOR_INTERFACE)
     sign_in_as(mentor)
 
     get person_messages_path(@target)

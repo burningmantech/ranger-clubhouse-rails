@@ -20,9 +20,9 @@ module PersonConcern
     Role::ADMIN,
     Role::EVENT_MANAGEMENT,
     Role::EVENT_MANAGEMENT_ON_PLAYA,
-    Role::MENTOR,
-    Role::TRAINER,
-    Role::VC,
+    Role::MENTOR_INTERFACE,
+    Role::TRAINING_INTERFACE,
+    Role::VC_INTERFACE,
     Role::SHIFT_MANAGEMENT
   ].freeze
 
@@ -52,7 +52,7 @@ module PersonConcern
   end
 
   def can_manage_callsign_or_status?
-    has_role? [Role::ADMIN, Role::VC, Role::MENTOR]
+    has_role? [Role::ADMIN, Role::VC_INTERFACE, Role::MENTOR_INTERFACE]
   end
 
   def can_see_contact_info?
@@ -68,7 +68,7 @@ module PersonConcern
   end
 
   def can_manage_banners?
-    has_role? [Role::ADMIN, Role::VC]
+    has_role? [Role::ADMIN, Role::VC_INTERFACE]
   end
 
   # Answers the YearGate/RoleGate authorization context for the person pages that

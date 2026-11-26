@@ -80,13 +80,13 @@ class Bmid::ManageControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Admin or Edit BMIDs role required to manage BMIDs.", flash[:error]
   end
 
-  # PRD section 2 records a deliberate deviation: upstream let Role::VC read this
+  # PRD section 2 records a deliberate deviation: upstream let Role::VC_INTERFACE read this
   # listing and this port does not. A denial test that only signs in as somebody
   # with no roles at all proves "no one gets in", not "a VC does not" -- adding
-  # Role::VC to the gate would keep it green and silently reverse the decision.
+  # Role::VC_INTERFACE to the gate would keep it green and silently reverse the decision.
   test "the roster is refused for a VC" do
-    ensure_role(Role::VC, "VC")
-    grant_role(@outsider, Role::VC)
+    ensure_role(Role::VC_INTERFACE, "VC")
+    grant_role(@outsider, Role::VC_INTERFACE)
     sign_in_as(@outsider)
 
     get bmid_manage_path
@@ -939,12 +939,12 @@ class Bmid::ManageControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Shift Lead", saved_badge(@admin).title1
   end
 
-  # The write half of the recorded Role::VC deviation (PRD section 2): a VC may
+  # The write half of the recorded Role::VC_INTERFACE deviation (PRD section 2): a VC may
   # not read this listing, and must certainly not save it.
   test "a bulk save is refused for a VC" do
     badge(@admin, title1: "Shift Lead")
-    ensure_role(Role::VC, "VC")
-    grant_role(@outsider, Role::VC)
+    ensure_role(Role::VC_INTERFACE, "VC")
+    grant_role(@outsider, Role::VC_INTERFACE)
     sign_in_as(@outsider)
 
     patch_rows(@admin.id => { title1: "Operations Manager" })

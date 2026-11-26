@@ -38,7 +38,7 @@ class People::SearchControllerTest < ActionDispatch::IntegrationTest
     @outsider = person(:inactive_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "Volunteer Coordinator")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
     grant_role(@admin, Role::ADMIN)
 
     sign_in_as(@admin)
@@ -62,7 +62,7 @@ class People::SearchControllerTest < ActionDispatch::IntegrationTest
 
   test "a volunteer coordinator reaches the index" do
     vc = create_person("Coordinator")
-    grant_role(vc, Role::VC)
+    grant_role(vc, Role::VC_INTERFACE)
     sign_in_as(vc)
 
     get people_search_path

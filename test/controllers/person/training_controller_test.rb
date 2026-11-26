@@ -21,9 +21,9 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
     @past_year = Current.year - 1
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
     ensure_role(Role::TECH_NINJA, "Tech Ninja")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
 
     Current.person = @admin
   end
@@ -38,7 +38,7 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
 
   test "a trainer sees the online course management form" do
     setup_training_position
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     sign_in_as(@trainer)
 
     get person_training_path(@target, year: Current.year)
@@ -60,7 +60,7 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
 
   test "a non-manager viewer is view-only (no manage form)" do
     setup_training_position
-    grant_role(@viewer, Role::MENTOR)
+    grant_role(@viewer, Role::MENTOR_INTERFACE)
     sign_in_as(@viewer)
 
     get person_training_path(@target, year: Current.year)
@@ -81,7 +81,7 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
   # --- update_online_course ---------------------------------------------------
 
   test "a trainer switches the assigned online course" do
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     sign_in_as(@trainer)
     new_course = online_course(:training_returning_2026)
 
@@ -94,7 +94,7 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "assigning a course from another position is rejected" do
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     sign_in_as(@trainer)
     wrong_course = online_course(:other_position_2026) # position_id 9
     original_id = person_online_course(:active_ranger_training_2026).online_course_id
@@ -123,7 +123,7 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a non-manager viewer cannot switch the course" do
-    grant_role(@viewer, Role::MENTOR)
+    grant_role(@viewer, Role::MENTOR_INTERFACE)
     sign_in_as(@viewer)
 
     patch person_training_online_course_path(@target, year: Current.year),
@@ -136,7 +136,7 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
   # --- mark_online_course_completed -------------------------------------------
 
   test "a trainer force-marks the online course completed" do
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     sign_in_as(@trainer)
     assert_nil person_online_course(:active_ranger_training_2026).completed_at
 
@@ -148,7 +148,7 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "force-marking an already-completed course is rejected" do
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     person_online_course(:active_ranger_training_2026).update!(completed_at: Current.time)
     sign_in_as(@trainer)
 
@@ -159,7 +159,7 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "force-mark completed is denied outside the current year" do
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     sign_in_as(@trainer)
 
     post person_training_mark_completed_path(@target, year: @past_year)
@@ -173,7 +173,7 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
   # --- Moodle-API actions -----------------------------------------------------
 
   test "sync reports a not-set-up flash when the person has no Moodle Account" do
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     sign_in_as(@trainer)
     assert @target.lms_id.blank?
 
@@ -184,7 +184,7 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "reset password reports a not-set-up flash when the person has no Moodle Account" do
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     sign_in_as(@trainer)
     assert @target.lms_id.blank?
 
@@ -196,7 +196,7 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
 
   test "a Moodle outage surfaces an error flash" do
     @target.update!(lms_id: 8_675_309)
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     sign_in_as(@trainer)
 
     stub_moodle_request_web_service(Moodle::DownForMaintenanceError) do
@@ -209,7 +209,7 @@ class Person::TrainingControllerTest < ActionDispatch::IntegrationTest
 
   test "a refused Moodle write surfaces its reason as an error flash" do
     @target.update!(lms_id: 8_675_309)
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     sign_in_as(@trainer)
 
     stub_moodle_request_web_service(Moodle::WriteRefusedError) do

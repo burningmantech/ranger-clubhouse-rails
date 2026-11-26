@@ -26,7 +26,7 @@ class VcMenuTest < ActiveSupport::TestCase
     Rails.cache.clear
     Current.reset
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "VC")
+    ensure_role(Role::VC_INTERFACE, "VC")
     ensure_role(Role::INTAKE, "Intake")
     ensure_role(Role::EDIT_HANDLE_RESERVATIONS, "Edit Handle Reservations")
     ensure_role(Role::SALESFORCE_IMPORT, "Salesforce Import")
@@ -91,7 +91,7 @@ class VcMenuTest < ActiveSupport::TestCase
 
   # VC reads the reserved list but may not change it, so the item is theirs too.
   test "a vc sees their own pages but not the import pages" do
-    titles = titles_for(Role::VC, person(:active_ranger))
+    titles = titles_for(Role::VC_INTERFACE, person(:active_ranger))
 
     assert_includes titles, APPLICATIONS
     assert_includes titles, RESERVED_HANDLES

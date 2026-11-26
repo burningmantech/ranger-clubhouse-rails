@@ -29,8 +29,8 @@ class Training::UnifiedFlaggingControllerTest < ActionDispatch::IntegrationTest
 
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::INTAKE, "Intake")
-    ensure_role(Role::TRAINER, "Trainer")
-    ensure_role(Role::VC, "Volunteer Coordinator")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
     ensure_role(Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Interface")
 
     # Carries the full multi-year intake history in the fixtures, including a
@@ -48,9 +48,9 @@ class Training::UnifiedFlaggingControllerTest < ActionDispatch::IntegrationTest
     @art_trainer = person(:retired_ranger)
 
     grant_role(@admin, Role::ADMIN)
-    grant_role(@intake_trainer, Role::TRAINER)
+    grant_role(@intake_trainer, Role::TRAINING_INTERFACE)
     grant_role(@intake_trainer, Role::INTAKE)
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     grant_role(@intake_only, Role::INTAKE)
     grant_role(@art_trainer, Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING)
     grant_role(@art_trainer, Role::INTAKE)

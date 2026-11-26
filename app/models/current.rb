@@ -72,15 +72,15 @@ class Current < ActiveSupport::CurrentAttributes
   end
 
   def can_view_pii?
-    has_role? [Role::ADMIN, Role::MENTOR, Role::VC, Role::VIEW_PII]
+    has_role? [Role::ADMIN, Role::MENTOR_INTERFACE, Role::VC_INTERFACE, Role::VIEW_PII]
   end
 
   def can_view_email?
-    has_role? [Role::ADMIN, Role::MENTOR, Role::VC, Role::VIEW_EMAIL]
+    has_role? [Role::ADMIN, Role::MENTOR_INTERFACE, Role::VC_INTERFACE, Role::VIEW_EMAIL]
   end
 
   def can_view_emergency_contact?
-    return true if has_role? [Role::ADMIN, Role::VC]
+    return true if has_role? [Role::ADMIN, Role::VC_INTERFACE]
     Setting.get_value(Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED) && has_role?([Role::EVENT_MANAGEMENT_ON_PLAYA, Role::EVENT_MANAGEMENT])
   end
 
@@ -89,7 +89,7 @@ class Current < ActiveSupport::CurrentAttributes
   end
 
   def can_view_messages?
-    return true if has_role? [Role::ADMIN, Role::VC]
+    return true if has_role? [Role::ADMIN, Role::VC_INTERFACE]
     Setting.get_value(Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED) && has_role?([Role::EVENT_MANAGEMENT_ON_PLAYA, Role::EVENT_MANAGEMENT])
   end
 

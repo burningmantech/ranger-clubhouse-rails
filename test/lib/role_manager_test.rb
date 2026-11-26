@@ -13,13 +13,13 @@ class RoleManagerTest < ActiveSupport::TestCase
     Current.reset
     # Creating the NDA document writes an audit row, which needs someone acting.
     Current.person = person(:auditor_ranger)
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     ensure_role(Role::EVENT_MANAGEMENT_ON_PLAYA, "Event Management On Playa")
 
     @person = person(:active_ranger)
     PersonEvent.where(person_id: @person.id).delete_all
-    grant_role(@person, Role::MENTOR)
+    grant_role(@person, Role::MENTOR_INTERFACE)
     set_on_playa(false)
   end
 
@@ -35,7 +35,7 @@ class RoleManagerTest < ActiveSupport::TestCase
     roles = RoleManager.retrieve(@person)
 
     assert_not roles.has_role?([Role::EVENT_MANAGEMENT_ON_PLAYA, Role::EVENT_MANAGEMENT])
-    assert roles.has_role?(Role::MENTOR)
+    assert roles.has_role?(Role::MENTOR_INTERFACE)
     assert_includes roles.granted_roles, Role::EVENT_MANAGEMENT_ON_PLAYA
   end
 
@@ -61,7 +61,7 @@ class RoleManagerTest < ActiveSupport::TestCase
     roles = RoleManager.retrieve(@person)
 
     assert roles.has_role?(Role::EVENT_MANAGEMENT)
-    assert roles.has_role?(Role::MENTOR)
+    assert roles.has_role?(Role::MENTOR_INTERFACE)
   end
 
   test "an Event Manager the NDA wiped is asked to sign it, and signing gives the roles back" do
@@ -94,20 +94,20 @@ class RoleManagerTest < ActiveSupport::TestCase
   end
 
   test "Training Interface Seasonal brings Training Interface Year Round only while its setting is on" do
-    ensure_role(Role::TRAINER, "Trainer")
-    ensure_role(Role::TRAINER_SEASONAL, "Trainer Seasonal")
-    grant_role(@person, Role::TRAINER_SEASONAL)
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE_SEASONAL, "Trainer Seasonal")
+    grant_role(@person, Role::TRAINING_INTERFACE_SEASONAL)
 
     set_setting(Setting::TRAINING_SEASONAL_ROLE_ENABLED, false)
     roles = RoleManager.retrieve(@person)
-    assert_not roles.has_role?(Role::TRAINER)
-    assert_not roles.has_role?(Role::TRAINER_SEASONAL), "the seasonal permission itself is off with its setting"
+    assert_not roles.has_role?(Role::TRAINING_INTERFACE)
+    assert_not roles.has_role?(Role::TRAINING_INTERFACE_SEASONAL), "the seasonal permission itself is off with its setting"
 
     set_setting(Setting::TRAINING_SEASONAL_ROLE_ENABLED, true)
     roles = RoleManager.retrieve(@person)
-    assert roles.has_role?(Role::TRAINER)
-    assert roles.has_role?(Role::TRAINER_SEASONAL)
-    assert_not_includes roles.granted_roles, Role::TRAINER, "a conferred permission is not a grant"
+    assert roles.has_role?(Role::TRAINING_INTERFACE)
+    assert roles.has_role?(Role::TRAINING_INTERFACE_SEASONAL)
+    assert_not_includes roles.granted_roles, Role::TRAINING_INTERFACE, "a conferred permission is not a grant"
   end
 
   test "Shift Management Self is dropped while its setting is off" do
@@ -210,7 +210,7 @@ class RoleManagerTest < ActiveSupport::TestCase
     original = Rails.cache
     Rails.cache = Class.new(ActiveSupport::Cache::MemoryStore) { def exist?(*) = true }.new
 
-    assert RoleManager.retrieve(@person).has_role?(Role::MENTOR)
+    assert RoleManager.retrieve(@person).has_role?(Role::MENTOR_INTERFACE)
   ensure
     Rails.cache = original
   end

@@ -15,8 +15,8 @@ class Person::DashboardControllerTest < ActionDispatch::IntegrationTest
     Current.reset
 
     @trainer = person(:retired_ranger)
-    ensure_role(Role::TRAINER, "Trainer")
-    grant_role(@trainer, Role::TRAINER)
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
   end
 
   teardown do

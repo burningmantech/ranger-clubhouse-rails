@@ -21,7 +21,7 @@ class Quartermaster::PotentialSwagController < ApplicationController
   # before() granting Admin and Edit Swag. Note this is NOT the Events Rangered
   # gate: Timesheet Management belonged to TimesheetPolicy, which this report
   # never lived on.
-  authorize_role [Role::ADMIN, Role::QUARTERMASTER, Role::EDIT_SWAG],
+  authorize_role [Role::ADMIN, Role::QUARTERMASTER_INTERFACE, Role::EDIT_SWAG],
                  message: "Admin, Quartermaster, or Edit Swag role required " \
                           "to view potential swag."
 

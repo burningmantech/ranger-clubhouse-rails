@@ -12,7 +12,7 @@ class Quartermaster::AlphaShirtsController < ApplicationController
 
   layout "quartermaster"
 
-  authorize_role [Role::ADMIN, Role::QUARTERMASTER, Role::MENTOR],
+  authorize_role [Role::ADMIN, Role::QUARTERMASTER_INTERFACE, Role::MENTOR_INTERFACE],
                  message: "Admin, Quartermaster, or Mentor role required to view Alpha shirt sizes."
 
   ROSTER_HEADER = ["Callsign", "Status", "First Name", "Last Name", "Email",

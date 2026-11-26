@@ -25,14 +25,14 @@ class Person::AwardsControllerTest < ActionDispatch::IntegrationTest
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::AWARD_MANAGEMENT, "Award Management")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
 
     grant_role(@admin, Role::ADMIN)
     # AWARD_MANAGEMENT is not one of the roles PersonConcern admits to the person pages,
     # so the manager needs a viewing role on top of it to reach the controller at all.
     grant_role(@award_manager, Role::EVENT_MANAGEMENT)
     grant_role(@award_manager, Role::AWARD_MANAGEMENT)
-    grant_role(@viewer, Role::MENTOR)
+    grant_role(@viewer, Role::MENTOR_INTERFACE)
 
     Current.person = @admin
   end

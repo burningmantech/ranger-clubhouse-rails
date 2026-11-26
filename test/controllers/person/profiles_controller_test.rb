@@ -16,12 +16,12 @@ class Person::ProfilesControllerTest < ActionDispatch::IntegrationTest
     @no_one = person(:inactive_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "Volunteer Coordinator")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     ensure_role(Role::VIEW_PII, "View PII")
 
     grant_role(@admin, Role::ADMIN)
-    grant_role(@vc, Role::VC)
+    grant_role(@vc, Role::VC_INTERFACE)
     grant_role(@em, Role::EVENT_MANAGEMENT)
     grant_role(@view_pii_user, Role::VIEW_PII)
 

@@ -3,7 +3,7 @@
 class Vc::ReservedHandlesController < ApplicationController
   layout "vc"
 
-  authorize_role [Role::ADMIN, Role::VC, Role::EDIT_HANDLE_RESERVATIONS],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE, Role::EDIT_HANDLE_RESERVATIONS],
                  message: "Admin, VC, or Edit Handle Reservations role required to view reserved handles."
 
   # VC alone gets a read-only view, matching the upstream policy where only

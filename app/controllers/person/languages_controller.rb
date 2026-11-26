@@ -5,7 +5,7 @@ class Person::LanguagesController < ApplicationController
 
   include PersonConcern
 
-  authorize_role [Role::ADMIN, Role::VC, Role::EVENT_MANAGEMENT, Role::EVENT_MANAGEMENT_ON_PLAYA]
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE, Role::EVENT_MANAGEMENT, Role::EVENT_MANAGEMENT_ON_PLAYA]
 
   before_action :require_edit_permission, only: %i[new create edit update destroy]
   before_action :set_language, only: %i[edit update destroy]
@@ -17,7 +17,7 @@ class Person::LanguagesController < ApplicationController
   def language_edit_url(language) = edit_person_profile_language_path(@person, language)
   def language_new_url = new_person_profile_language_path(@person)
   def languages_index_url = person_profile_languages_path(@person)
-  def can_edit_languages? = has_role?([Role::ADMIN, Role::VC])
+  def can_edit_languages? = has_role?([Role::ADMIN, Role::VC_INTERFACE])
 
   def index
     render template: "profile_languages/index", locals: { person: @person }

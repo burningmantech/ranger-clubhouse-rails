@@ -769,7 +769,7 @@ class Person < ApplicationRecord
 
   def only_basic_pii_required?
     ONLY_BASIC_PII_REQUIRED_STATUSES.include?(status) &&
-      (Current.person.nil? || Current.has_role?([Role::ADMIN, Role::VC]))
+      (Current.person.nil? || Current.has_role?([Role::ADMIN, Role::VC_INTERFACE]))
   end
 
   def clear_custom_fields

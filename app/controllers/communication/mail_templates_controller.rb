@@ -9,7 +9,7 @@
 class Communication::MailTemplatesController < ApplicationController
   layout "admin"
 
-  authorize_role [Role::ADMIN, Role::VC]
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE]
 
   before_action :set_mail_template, only: [:edit, :update]
   before_action :refuse_unless_may_edit, only: [:edit, :update]

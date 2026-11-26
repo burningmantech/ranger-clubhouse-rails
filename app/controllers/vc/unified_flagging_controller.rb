@@ -18,7 +18,7 @@ class Vc::UnifiedFlaggingController < ApplicationController
 
   before_action :setup_year
 
-  authorize_role [Role::ADMIN, Role::VC, Role::INTAKE],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE, Role::INTAKE],
                  message: "Admin, Volunteer Coordinator, or Intake role required to view unified flagging."
 
   private

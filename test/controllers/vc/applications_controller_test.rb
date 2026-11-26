@@ -16,8 +16,8 @@ class Vc::ApplicationsControllerTest < ActionDispatch::IntegrationTest
     @plain = person(:ranger_with_custom_gender)
     @application = prospective_application(:pending_qualified)
 
-    ensure_role(Role::VC, "Volunteer Coordinator")
-    grant_role(@vc, Role::VC)
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
+    grant_role(@vc, Role::VC_INTERFACE)
 
     ActionMailer::Base.deliveries.clear
   end

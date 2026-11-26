@@ -17,9 +17,9 @@ class Scheduling::SlotsControllerTest < ActionDispatch::IntegrationTest
     @outsider = person(:echelon_ranger)
 
     ensure_role(Role::EDIT_SLOTS, "Edit Slots")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     grant_role(@editor, Role::EDIT_SLOTS)
-    grant_role(@outsider, Role::MENTOR)
+    grant_role(@outsider, Role::MENTOR_INTERFACE)
 
     @position = positions(:training_lead)
     @other_position = positions(:ood_position)

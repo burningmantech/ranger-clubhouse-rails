@@ -14,7 +14,7 @@ class Person::CallsignsController < ApplicationController
   # so a Mentor edits the callsign but cannot release it. The same gate answers the
   # Release box on the edit page.
   authorize_ability :release_callsign,
-                    roles: [Role::VC],
+                    roles: [Role::VC_INTERFACE],
                     only: :release,
                     deny_to: :release_deny_path,
                     message: "Admin or VC role required to release a callsign."
@@ -54,7 +54,7 @@ class Person::CallsignsController < ApplicationController
   private
 
   def can_manage_vanity?
-    has_role? [Role::ADMIN, Role::VC]
+    has_role? [Role::ADMIN, Role::VC_INTERFACE]
   end
 
   def release_deny_path

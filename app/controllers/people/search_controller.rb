@@ -20,7 +20,7 @@ class People::SearchController < ApplicationController
 
   layout "people"
 
-  authorize_role [Role::ADMIN, Role::VC],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE],
                  message: "Admin or Volunteer Coordinator role required to search all accounts."
 
   CSV_HEADER = ["Callsign", "First Name", "Last Name", "Email"].freeze

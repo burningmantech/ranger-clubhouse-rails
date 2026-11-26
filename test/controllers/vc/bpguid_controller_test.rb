@@ -40,12 +40,12 @@ class Vc::BpguidControllerTest < ActionDispatch::IntegrationTest
     @outsider = person(:inactive_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "Volunteer Coordinator")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
 
     grant_role(@admin, Role::ADMIN)
     # VC and nothing else, so the role is proved on its own.
-    grant_role(@vc, Role::VC)
+    grant_role(@vc, Role::VC_INTERFACE)
     grant_role(@event_manager, Role::EVENT_MANAGEMENT)
 
     # After the role grants, so their audit rows do not stand in for the page's.

@@ -97,7 +97,7 @@ class Training::Sessions::RostersControllerTest < ActionDispatch::IntegrationTes
     # direct person_role assignment.
     seasonal = person(:alpha_ranger)
     seasonal_position = Position.create!(title: "Trainer Seasonal", active: true)
-    PositionRole.create!(position_id: seasonal_position.id, role_id: Role::TRAINER)
+    PositionRole.create!(position_id: seasonal_position.id, role_id: Role::TRAINING_INTERFACE)
     PersonPosition.create!(person_id: seasonal.id, position_id: seasonal_position.id)
     RoleManager.purge_person(seasonal.id)
     sign_in_as(seasonal)

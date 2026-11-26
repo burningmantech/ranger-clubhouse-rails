@@ -18,9 +18,9 @@ class TeamsPositions::TeamRecordsControllerTest < ActionDispatch::IntegrationTes
     ensure_role(Role::TECH_NINJA, "Tech Ninja")
     # The index INNER JOINs team_role to role, so every granted role must exist
     # or the Role grants column silently stays empty.
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     ensure_role(Role::EDIT_SLOTS, "Edit Slots")
-    ensure_role(Role::VC, "VC")
+    ensure_role(Role::VC_INTERFACE, "VC")
     grant_role(@admin, Role::ADMIN)
     grant_role(@tech_ninja, Role::TECH_NINJA)
 
@@ -33,7 +33,7 @@ class TeamsPositions::TeamRecordsControllerTest < ActionDispatch::IntegrationTes
     # ensure_role, and PersonMembershipPresenter sorts those rows by role title.
     # Without them the index's Role grants and Managers columns are only ever
     # rendered empty.
-    TeamRole.create!(team_id: @team.id, role_id: Role::MENTOR)
+    TeamRole.create!(team_id: @team.id, role_id: Role::MENTOR_INTERFACE)
     TeamRole.create!(team_id: @team.id, role_id: Role::EDIT_SLOTS)
     TeamManager.create!(team_id: @team.id, person_id: @admin.id)
     TeamManager.create!(team_id: @team.id, person_id: person(:retired_ranger).id)
@@ -152,7 +152,7 @@ class TeamsPositions::TeamRecordsControllerTest < ActionDispatch::IntegrationTes
   end
 
   test "index filters by a specific role grant" do
-    get teams_positions_team_records_path(role: Role::MENTOR.to_s)
+    get teams_positions_team_records_path(role: Role::MENTOR_INTERFACE.to_s)
 
     assert_response :success
     assert_select "tr#team-#{@team.id}"
@@ -184,13 +184,13 @@ class TeamsPositions::TeamRecordsControllerTest < ActionDispatch::IntegrationTes
     get teams_positions_team_records_path
 
     assert_response :success
-    assert_select "select[name=role] option[value=?]", Role::MENTOR.to_s
+    assert_select "select[name=role] option[value=?]", Role::MENTOR_INTERFACE.to_s
     assert_select "select[name=role] option[value=?]", Role::VIEW_PII.to_s, false,
                   "an ungranted role must not be offered"
   end
 
   test "an applied role filter draws a chip naming the role" do
-    get teams_positions_team_records_path(role: Role::MENTOR.to_s)
+    get teams_positions_team_records_path(role: Role::MENTOR_INTERFACE.to_s)
 
     assert_response :success
     assert_select "*", text: /Role grant: Mentor/
@@ -278,9 +278,9 @@ class TeamsPositions::TeamRecordsControllerTest < ActionDispatch::IntegrationTes
 
     patch teams_positions_team_record_path(@team),
           params: { team: { title: @team.title, type: @team.type, active: "1",
-                            role_ids: ["", Role::MENTOR.to_s, Role::VC.to_s] } }
+                            role_ids: ["", Role::MENTOR_INTERFACE.to_s, Role::VC_INTERFACE.to_s] } }
 
-    assert_equal [Role::MENTOR, Role::VC].sort, TeamRole.where(team_id: @team.id).pluck(:role_id).sort
+    assert_equal [Role::MENTOR_INTERFACE, Role::VC_INTERFACE].sort, TeamRole.where(team_id: @team.id).pluck(:role_id).sort
     assert ActionLog.exists?(event: "team-role-add")
 
     patch teams_positions_team_record_path(@team),
@@ -308,7 +308,7 @@ class TeamsPositions::TeamRecordsControllerTest < ActionDispatch::IntegrationTes
 
     sign_in_as(@tech_ninja)
     get teams_positions_edit_team_record_path(@team)
-    assert_select "input[name=?][value=?]", "team[role_ids][]", Role::MENTOR.to_s
+    assert_select "input[name=?][value=?]", "team[role_ids][]", Role::MENTOR_INTERFACE.to_s
     # The whole row must be the label, or the 36px tap target is not clickable.
     assert_select "label.min-h-9 input[name=?]", "team[role_ids][]"
   end
@@ -337,7 +337,7 @@ class TeamsPositions::TeamRecordsControllerTest < ActionDispatch::IntegrationTes
   # attach no awards, logs, or managers to this cadre.
   test "deleting a team removes its memberships and logs the deletion" do
     assert PersonTeam.exists?(team_id: @cadre.id), "fixture expectation: council_cadre has members"
-    TeamRole.create!(team_id: @cadre.id, role_id: Role::MENTOR)
+    TeamRole.create!(team_id: @cadre.id, role_id: Role::MENTOR_INTERFACE)
     TeamManager.create!(team_id: @cadre.id, person_id: @admin.id)
     PersonTeamLog.create!(team_id: @cadre.id, person_id: @admin.id, joined_on: 1.year.ago)
     PersonAward.create!(team_id: @cadre.id, person_id: @admin.id, year: 2024,

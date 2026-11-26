@@ -20,13 +20,13 @@ class Person::VehiclesControllerTest < ActionDispatch::IntegrationTest
 
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::VEHICLE_MANAGEMENT, "Vehicle Management")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
 
     grant_role(@admin, Role::ADMIN)
     grant_role(@vehicle_manager, Role::EVENT_MANAGEMENT)
     grant_role(@vehicle_manager, Role::VEHICLE_MANAGEMENT)
-    grant_role(@viewer, Role::MENTOR)
+    grant_role(@viewer, Role::MENTOR_INTERFACE)
 
     Current.person = @admin
     PersonEvent.where(person_id: @target.id).delete_all

@@ -24,13 +24,13 @@ class Person::IntakeNotesControllerTest < ActionDispatch::IntegrationTest
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::INTAKE, "Intake")
     ensure_role(Role::REGIONAL_MANAGEMENT, "Regional Management")
-    ensure_role(Role::VC, "Volunteer Coordinator")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
 
     grant_role(@admin, Role::ADMIN)
     grant_role(@rrn_writer, Role::REGIONAL_MANAGEMENT)
-    grant_role(@vc_writer, Role::VC)
-    grant_role(@mentor_writer, Role::MENTOR)
+    grant_role(@vc_writer, Role::VC_INTERFACE)
+    grant_role(@mentor_writer, Role::MENTOR_INTERFACE)
 
     Current.person = @admin
   end

@@ -10,7 +10,7 @@
     record << dropdown_item("Edit Status", edit_person_status_path(person))
     record << dropdown_item("Edit Callsign", edit_person_callsign_path(person))
   end
-  if is_admin? || has_role?(Role::VC)
+  if is_admin? || has_role?(Role::VC_INTERFACE)
     record << dropdown_item("Status History", person_status_history_path(person))
   end
 
@@ -36,7 +36,7 @@
   end
 
   photo_and_banners = []
-  if is_admin? || has_role?(Role::VC)
+  if is_admin? || has_role?(Role::VC_INTERFACE)
     photo_and_banners << dropdown_item("Manage Photo", new_person_photo_path(person))
   end
   if can_manage_banners?

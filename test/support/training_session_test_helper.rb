@@ -27,10 +27,10 @@ module TrainingSessionTestHelper
                                                    type: Position::TYPE_TRAINING, active: true)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
-    ensure_role(Role::MENTOR, "Mentor")
-    ensure_role(Role::VC, "VC")
-    ensure_role(Role::TRAINER_SEASONAL, "Trainer Seasonal")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
+    ensure_role(Role::VC_INTERFACE, "VC")
+    ensure_role(Role::TRAINING_INTERFACE_SEASONAL, "Trainer Seasonal")
     ensure_role(Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Interface")
     ensure_role(Role::ART_GRADUATE_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Graduate")
 
@@ -40,9 +40,9 @@ module TrainingSessionTestHelper
     @mentor = person(:inactive_ranger)
 
     grant_role(@admin, Role::ADMIN)
-    grant_role(@dirt_trainer, Role::TRAINER)
+    grant_role(@dirt_trainer, Role::TRAINING_INTERFACE)
     grant_role(@art_trainer, Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING)
-    grant_role(@mentor, Role::MENTOR)
+    grant_role(@mentor, Role::MENTOR_INTERFACE)
 
     @dirt_slot = create_slot(@dirt, begins: Time.zone.local(YEAR, 8, 8, 9, 0, 0),
                              description: "Bright Eyes")

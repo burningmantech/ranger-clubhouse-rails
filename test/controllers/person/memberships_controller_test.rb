@@ -15,11 +15,11 @@ class Person::MembershipsControllerTest < ActionDispatch::IntegrationTest
     @manager = person(:echelon_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
     ensure_role(Role::TECH_NINJA, "Tech Ninja")
 
     grant_role(@admin, Role::ADMIN)
-    grant_role(@manager, Role::TRAINER)
+    grant_role(@manager, Role::TRAINING_INTERFACE)
 
     TeamManager.find_or_create_by!(person_id: @manager.id, team_id: teams(:mentor_cadre).id)
     TeamManager.find_or_create_by!(person_id: @manager.id, team_id: teams(:green_dot_cadre).id)

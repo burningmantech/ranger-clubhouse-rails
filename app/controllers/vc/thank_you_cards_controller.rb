@@ -15,7 +15,7 @@ class Vc::ThankYouCardsController < ApplicationController
   # and no way to pick another year.
   self.year_floor = 2008
 
-  authorize_role [Role::ADMIN, Role::VC],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE],
                  message: "Admin or Volunteer Coordinator role required to view the Thank You Cards list."
 
   def index

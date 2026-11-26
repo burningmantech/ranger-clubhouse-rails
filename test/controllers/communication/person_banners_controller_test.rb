@@ -15,9 +15,9 @@ class Communication::PersonBannersControllerTest < ActionDispatch::IntegrationTe
     @outsider = person(:inactive_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "VC")
+    ensure_role(Role::VC_INTERFACE, "VC")
     grant_role(@admin, Role::ADMIN)
-    grant_role(@vc, Role::VC)
+    grant_role(@vc, Role::VC_INTERFACE)
 
     @vintage = person_banner(:vintage_callsign)
     @no_creator = person_banner(:no_creator_banner)

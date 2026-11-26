@@ -298,7 +298,7 @@ class Survey < ApplicationRecord
   end
 
   def is_trainer_for_survey?(user)
-    Survey.has_role_for_position?(user, Role::TRAINER, Role::ART_TRAINER_BASE, position_id)
+    Survey.has_role_for_position?(user, Role::TRAINING_INTERFACE, Role::ART_TRAINER_BASE, position_id)
   end
 
   def self.can_manage_surveys?(user, position_id)

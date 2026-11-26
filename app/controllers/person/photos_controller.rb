@@ -5,7 +5,7 @@ class Person::PhotosController < ApplicationController
 
   include PersonConcern
 
-  authorize_role [Role::ADMIN, Role::VC]
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE]
 
   include PhotoUploadConcern
 

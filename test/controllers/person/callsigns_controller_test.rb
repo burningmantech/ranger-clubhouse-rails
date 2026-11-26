@@ -30,9 +30,9 @@ class Person::CallsignsControllerTest < ActionDispatch::IntegrationTest
   # Clubhouse 2's PersonPolicy#releaseCallsign is Admin or VC: a Mentor edits the
   # callsign but may not release it.
   test "a Mentor is offered no Release box and is refused the release" do
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     mentor = create_person("Guide")
-    grant_role(mentor, Role::MENTOR)
+    grant_role(mentor, Role::MENTOR_INTERFACE)
     sign_in_as(mentor)
 
     get edit_person_callsign_path(@target)
@@ -47,9 +47,9 @@ class Person::CallsignsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a VC is offered the Release box and releases the callsign" do
-    ensure_role(Role::VC, "VC")
+    ensure_role(Role::VC_INTERFACE, "VC")
     coordinator = create_person("Coordinator")
-    grant_role(coordinator, Role::VC)
+    grant_role(coordinator, Role::VC_INTERFACE)
     sign_in_as(coordinator)
 
     get edit_person_callsign_path(@target)

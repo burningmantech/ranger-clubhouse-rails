@@ -14,9 +14,9 @@ class Communication::MailTemplatesControllerTest < ActionDispatch::IntegrationTe
     @outsider = person(:active_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "VC")
+    ensure_role(Role::VC_INTERFACE, "VC")
     grant_role(@admin, Role::ADMIN)
-    grant_role(@vc, Role::VC)
+    grant_role(@vc, Role::VC_INTERFACE)
 
     @template = MailTemplate.find_by!(tag: "password_reset_mailer/notify")
     @piece = MailTemplate.find_by!(tag: "shared/mailer/do_not_reply")

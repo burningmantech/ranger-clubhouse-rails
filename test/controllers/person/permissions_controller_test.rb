@@ -17,9 +17,9 @@ class Person::PermissionsControllerTest < ActionDispatch::IntegrationTest
 
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::VIEW_PII, "View Personal Info")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
     ensure_role(Role::TECH_NINJA, "Tech Ninja")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
 
     grant_role(@admin, Role::ADMIN)
     # Tech ninjas reach person management via their admin role; grant both.
@@ -31,7 +31,7 @@ class Person::PermissionsControllerTest < ActionDispatch::IntegrationTest
 
   test "non-privileged user is redirected away" do
     sign_in_as(person(:active_ranger))
-    grant_role(@target, Role::TRAINER) # give viewer a management role so PersonConcern lets them in
+    grant_role(@target, Role::TRAINING_INTERFACE) # give viewer a management role so PersonConcern lets them in
 
     get person_permissions_path(@target)
 
@@ -43,7 +43,7 @@ class Person::PermissionsControllerTest < ActionDispatch::IntegrationTest
   # only the Tech Ninja box, so they could grant Admin -- to themselves, too.
   test "a Tech Ninja without Admin is refused the editor and changes no grant" do
     lone_ninja = create_person("LoneNinja")
-    grant_role(lone_ninja, Role::MENTOR) # a page role, so PersonConcern lets them in
+    grant_role(lone_ninja, Role::MENTOR_INTERFACE) # a page role, so PersonConcern lets them in
     grant_role(lone_ninja, Role::TECH_NINJA)
     sign_in_as(lone_ninja)
 
@@ -56,7 +56,7 @@ class Person::PermissionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_no_changes -> { PersonRole.find_role_ids_for_person(lone_ninja.id).sort } do
       patch person_permissions_path(lone_ninja),
-            params: { person_permission_form: { role_ids: [Role::ADMIN, Role::TECH_NINJA, Role::MENTOR].map(&:to_s) + [""] } }
+            params: { person_permission_form: { role_ids: [Role::ADMIN, Role::TECH_NINJA, Role::MENTOR_INTERFACE].map(&:to_s) + [""] } }
     end
     assert_redirected_to person_path(lone_ninja)
     assert_equal "You do not have permission to edit permissions.", flash[:error]
@@ -71,16 +71,16 @@ class Person::PermissionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "admin sees a checkbox per role with current grants checked" do
-    grant_role(@target, Role::TRAINER)
+    grant_role(@target, Role::TRAINING_INTERFACE)
     sign_in_as(@admin)
 
     get person_permissions_path(@target)
 
     assert_response :success
-    assert_select "input[type=checkbox]#role-#{Role::TRAINER}[checked]"
+    assert_select "input[type=checkbox]#role-#{Role::TRAINING_INTERFACE}[checked]"
     assert_select "input[type=checkbox]#role-#{Role::ADMIN}:not([checked])"
-    assert_select "label[for=role-#{Role::TRAINER}] > input[name=?][value=?]",
-                  "person_permission_form[role_ids][]", Role::TRAINER.to_s
+    assert_select "label[for=role-#{Role::TRAINING_INTERFACE}] > input[name=?][value=?]",
+                  "person_permission_form[role_ids][]", Role::TRAINING_INTERFACE.to_s
     assert_select "input[type=hidden][name=?]", "person_permission_form[role_ids][]", count: 1
   end
 
@@ -93,7 +93,7 @@ class Person::PermissionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update adds and removes roles to match the submission" do
-    grant_role(@target, Role::TRAINER)
+    grant_role(@target, Role::TRAINING_INTERFACE)
     sign_in_as(@admin)
 
     patch person_permissions_path(@target),
@@ -102,11 +102,11 @@ class Person::PermissionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to person_path(@target)
     ids = PersonRole.find_role_ids_for_person(@target.id)
     assert_includes ids, Role::ADMIN
-    assert_not_includes ids, Role::TRAINER
+    assert_not_includes ids, Role::TRAINING_INTERFACE
   end
 
   test "clearing all roles removes every grant" do
-    grant_role(@target, Role::TRAINER)
+    grant_role(@target, Role::TRAINING_INTERFACE)
     sign_in_as(@admin)
 
     patch person_permissions_path(@target),
@@ -116,7 +116,7 @@ class Person::PermissionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a scope that is not a list of roles is refused rather than clearing every grant" do
-    grant_role(@target, Role::TRAINER)
+    grant_role(@target, Role::TRAINING_INTERFACE)
     sign_in_as(@admin)
 
     [{}, { person_permission_form: "x" }, { person_permission_form: { role_ids: Role::ADMIN.to_s } }].each do |params|
@@ -124,28 +124,28 @@ class Person::PermissionsControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :bad_request, params.inspect
     end
-    assert_includes PersonRole.find_role_ids_for_person(@target.id), Role::TRAINER
+    assert_includes PersonRole.find_role_ids_for_person(@target.id), Role::TRAINING_INTERFACE
   end
 
   # Dropped, the junk would read as "fewer roles" and revoke every grant.
   test "a list holding something that is not a role id is refused rather than revoking" do
-    grant_role(@target, Role::TRAINER)
+    grant_role(@target, Role::TRAINING_INTERFACE)
     sign_in_as(@admin)
 
     patch person_permissions_path(@target), params: { person_permission_form: { role_ids: ["", "abc"] } }
 
     assert_response :bad_request
-    assert_includes PersonRole.find_role_ids_for_person(@target.id), Role::TRAINER
+    assert_includes PersonRole.find_role_ids_for_person(@target.id), Role::TRAINING_INTERFACE
   end
 
   test "non tech ninja cannot remove an existing tech ninja grant" do
     grant_role(@target, Role::TECH_NINJA)
-    grant_role(@target, Role::TRAINER)
+    grant_role(@target, Role::TRAINING_INTERFACE)
     sign_in_as(@admin)
 
     # The disabled Tech Ninja box never posts; only Trainer is submitted.
     patch person_permissions_path(@target),
-          params: { person_permission_form: { role_ids: [Role::TRAINER.to_s, ""] } }
+          params: { person_permission_form: { role_ids: [Role::TRAINING_INTERFACE.to_s, ""] } }
 
     assert_includes PersonRole.find_role_ids_for_person(@target.id), Role::TECH_NINJA
   end
@@ -160,16 +160,16 @@ class Person::PermissionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a save error redirects back to the editor and rolls back" do
-    grant_role(@target, Role::TRAINER)
+    grant_role(@target, Role::TRAINING_INTERFACE)
     sign_in_as(@admin)
 
     # 987654 has no Role row, so add_ids_to_person's create! raises inside the
     # transaction, exercising the form's rescue and the controller's error path.
     patch person_permissions_path(@target),
-          params: { person_permission_form: { role_ids: [Role::TRAINER.to_s, "987654", ""] } }
+          params: { person_permission_form: { role_ids: [Role::TRAINING_INTERFACE.to_s, "987654", ""] } }
 
     assert_redirected_to person_permissions_path(@target)
-    assert_includes PersonRole.find_role_ids_for_person(@target.id), Role::TRAINER
+    assert_includes PersonRole.find_role_ids_for_person(@target.id), Role::TRAINING_INTERFACE
   end
 
   test "tech ninja editor can grant the tech ninja role" do

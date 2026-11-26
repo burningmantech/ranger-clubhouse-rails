@@ -31,20 +31,20 @@ class Training::SurveysControllerTest < ActionDispatch::IntegrationTest
     @green_dot, @gd_mentor = @training, @mentor_position
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
     ensure_role(Role::SURVEY_MANAGEMENT_TRAINING, "Survey Management")
     ensure_role(Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Interface")
     ensure_role(Role::SURVEY_MANAGEMENT_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Surveys")
 
     # Survey manager: sees the index and every report.
     @manager = person(:echelon_ranger)
-    grant_role(@manager, Role::TRAINER)
+    grant_role(@manager, Role::TRAINING_INTERFACE)
     grant_role(@manager, Role::SURVEY_MANAGEMENT_TRAINING)
 
     # Plain trainer: reaches the interface and a training survey's reports,
     # but neither the survey index nor trainer-on-trainer feedback.
     @plain_trainer = person(:retired_ranger)
-    grant_role(@plain_trainer, Role::TRAINER)
+    grant_role(@plain_trainer, Role::TRAINING_INTERFACE)
 
     @outsider = person(:inactive_ranger)
 

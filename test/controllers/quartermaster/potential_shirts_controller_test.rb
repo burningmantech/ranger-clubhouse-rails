@@ -23,9 +23,9 @@ class Quartermaster::PotentialShirtsControllerTest < ActionDispatch::Integration
     @outsider = person(:bonked_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::QUARTERMASTER, "Quartermaster")
+    ensure_role(Role::QUARTERMASTER_INTERFACE, "Quartermaster")
     grant_role(@admin, Role::ADMIN)
-    grant_role(@quartermaster, Role::QUARTERMASTER)
+    grant_role(@quartermaster, Role::QUARTERMASTER_INTERFACE)
 
     Setting.create!(name: Setting::SHIRT_SHORT_SLEEVE_HOURS_THRESHOLD, value: SS_HOURS.to_s)
     Setting.create!(name: Setting::SHIRT_LONG_SLEEVE_HOURS_THRESHOLD, value: LS_HOURS.to_s)

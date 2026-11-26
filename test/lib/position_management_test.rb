@@ -12,7 +12,7 @@ class PositionManagementTest < ActiveSupport::TestCase
     @admin = person(:active_ranger)
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::TECH_NINJA, "Tech Ninja")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     grant_role(@admin, Role::ADMIN)
     Current.person = @admin
 
@@ -136,15 +136,15 @@ class PositionManagementTest < ActiveSupport::TestCase
   # ------------------------------------------------------- permission grants
 
   test "save syncs permission grants for a tech ninja" do
-    assert PositionManagement.save(@position, role_ids: [Role::MENTOR], is_tech_ninja: true)
-    assert_equal [Role::MENTOR], PositionRole.where(position_id: @position.id).pluck(:role_id)
+    assert PositionManagement.save(@position, role_ids: [Role::MENTOR_INTERFACE], is_tech_ninja: true)
+    assert_equal [Role::MENTOR_INTERFACE], PositionRole.where(position_id: @position.id).pluck(:role_id)
 
     assert PositionManagement.save(@position, role_ids: [], is_tech_ninja: true)
     assert_empty PositionRole.where(position_id: @position.id)
   end
 
   test "save ignores submitted grants when the actor is not a tech ninja" do
-    PositionManagement.save(@position, role_ids: [Role::MENTOR], is_tech_ninja: false)
+    PositionManagement.save(@position, role_ids: [Role::MENTOR_INTERFACE], is_tech_ninja: false)
 
     assert_empty PositionRole.where(position_id: @position.id)
   end
@@ -237,7 +237,7 @@ class PositionManagementTest < ActiveSupport::TestCase
     position = create_position(awards_eligible: true)
     PersonPosition.create!(person_id: @admin.id, position_id: position.id)
     PersonAward.create!(person_id: @admin.id, position_id: position.id, year: 2024, notes: "")
-    PositionRole.create!(position_id: position.id, role_id: Role::MENTOR)
+    PositionRole.create!(position_id: position.id, role_id: Role::MENTOR_INTERFACE)
     lineup = PositionLineup.create!(description: "Test Lineup")
     PositionLineupMember.create!(position_lineup_id: lineup.id, position_id: position.id)
 

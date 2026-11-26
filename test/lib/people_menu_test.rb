@@ -20,9 +20,9 @@ class PeopleMenuTest < ActiveSupport::TestCase
     Rails.cache.clear
     Current.reset
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
-    ensure_role(Role::MENTOR, "Mentor")
-    ensure_role(Role::VC, "VC")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
+    ensure_role(Role::VC_INTERFACE, "VC")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
   end
 
@@ -71,7 +71,7 @@ class PeopleMenuTest < ActiveSupport::TestCase
   # The positive half keeps the absence honest: with the category gone entirely
   # the list is empty and the negative assertion would pass for the wrong reason.
   test "a reader of the location report is not offered the admin-only pages" do
-    titles = titles_for(Role::TRAINER, person(:echelon_ranger))
+    titles = titles_for(Role::TRAINING_INTERFACE, person(:echelon_ranger))
 
     assert_includes titles, BY_LOCATION
     assert_not_includes titles, BULK_STATUS

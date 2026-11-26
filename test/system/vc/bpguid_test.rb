@@ -16,8 +16,8 @@ class Vc::BpguidTest < ApplicationSystemTestCase
 
   setup do
     vc = person(:echelon_ranger)
-    ensure_role(Role::VC, "Volunteer Coordinator")
-    grant_role(vc, Role::VC)
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
+    grant_role(vc, Role::VC_INTERFACE)
     sign_in(vc)
   end
 

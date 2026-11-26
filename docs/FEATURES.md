@@ -1663,7 +1663,7 @@ Controller: `app/controllers/training/sessions/rosters_controller.rb` (`new`, `c
 Owner: `Scheduling::Signup` (`app/lib/scheduling/signup.rb`), `PersonSearch` (`app/lib/person_search.rb`), `TrainingSession#trainer_groups` (`app/lib/training_session.rb`)
 Touches: `person_slot` (w), `slot` (w), `action_logs` (w), `person` (w), `person_fka`, `email_history`, `person_position`, `position`
 Verify: `test/controllers/training/sessions/rosters_controller_test.rb`, `test/lib/scheduling/signup_characterization_test.rb`, `test/lib/person_search_test.rb`
-Trap: `has_role?(Role::TRAINER)` also admits the Trainer Seasonal masquerade, which `can_adjust_roster?` refuses — In-Person roster checks use `Current.roles_manager.has_directly_assigned_role?(Role::TRAINER)`.
+Trap: `has_role?(Role::TRAINING_INTERFACE)` also admits the Trainer Seasonal masquerade, which `can_adjust_roster?` refuses — In-Person roster checks use `Current.roles_manager.has_directly_assigned_role?(Role::TRAINING_INTERFACE)`.
 Trap: Forms in the "modal" frame that redirect to the session page (add, Add Anyway, Remove From Session) need `data: { turbo_frame: "_top" }` or only the modal swaps and the roster looks stale; blocked verdicts still return 422 turbo-streams.
 
 ### Graduate Trainees
@@ -1883,7 +1883,7 @@ Trap: A `summarize_rating` question reports via `report.summarized_ratings`, not
 
 ## Mentoring: prospectives & alphas
 
-Every page uses `layout "mentoring"` behind `authorize_role [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT]`; the four roster pages include `UnifiedFlaggingConcern` for the lazy `detail` frame (not `MentoringConcern`, which backs Me › Mentoring and Person › Mentoring). Only Post Season Summary (floor 2008) and Mentor Shift Report (floor 2010) read `?year=`, Alpha Surveys lists every year, and the rest override `setup_year` to pin `Current.year`.
+Every page uses `layout "mentoring"` behind `authorize_role [Role::ADMIN, Role::MENTOR_INTERFACE, Role::MENTOR_INTERFACE_EVENT]`; the four roster pages include `UnifiedFlaggingConcern` for the lazy `detail` frame (not `MentoringConcern`, which backs Me › Mentoring and Person › Mentoring). Only Post Season Summary (floor 2008) and Mentor Shift Report (floor 2010) read `?year=`, Alpha Surveys lists every year, and the rest override `setup_year` to pin `Current.year`.
 
 Trap: `MENTOR_INTERFACE_EVENT` counts only while setting `EVENT_MANAGEMENT_ON_PLAYA_ENABLED` is on (`RoleManager::SETTING_GATED_ROLES`) — a test granting it must create that setting row or be redirected home. It also forces Alpha sign-ups (`Scheduling::Signup.can_force_schedule_change`) and writes Mentor notes, but opens no person page. The 12 gates and `Menus::MENTORING` keep the list inline; `test/lib/mentoring_menu_test.rb` holds them together.
 Trap: Real names and home towns on these pages print only for a reader who passes `MentorHelper#mentoring_personal_details?` (`can_view_pii?`: Admin and Mentor Interface do, Mentor Interface Event does not); the shared list and pane ask `unified_flagging_show_names?`, true on every other pipeline page. Printed sheets keep the label and leave the value blank. Chosen by Claude 2026-11-25 fixing a review finding; reversible in that one helper. A new name or address field on a Mentoring page takes the same check.
@@ -1970,7 +1970,7 @@ Trap: `SurveyReportingConcern`'s `included` block registers `load_survey` → `a
 
 ## Mentoring: the alpha shift
 
-`authorize_role [Role::ADMIN, Role::MENTOR, Role::MENTOR_INTERFACE_EVENT]` sits on both `Base` controllers, Acceptance Sheets and Mentor Assignments. Alpha Schedule (`year_floor` 2008) and Alpha Pods (2023) read the year via `setup_year`, but `load_slot` finds an Alpha slot of any year; Sheets and Assignments pin the present year.
+`authorize_role [Role::ADMIN, Role::MENTOR_INTERFACE, Role::MENTOR_INTERFACE_EVENT]` sits on both `Base` controllers, Acceptance Sheets and Mentor Assignments. Alpha Schedule (`year_floor` 2008) and Alpha Pods (2023) read the year via `setup_year`, but `load_slot` finds an Alpha slot of any year; Sheets and Assignments pin the present year.
 
 ### Alpha Schedule
 Reach it: `GET /mentoring/alpha-schedule` → Mentoring › Scheduling › Alpha Schedule; shift `GET /mentoring/alpha-schedule/:slot_id`; sheets `GET /mentoring/alpha-schedule/:slot_id/signup-sheet`, `GET /mentoring/alpha-schedule/:slot_id/info-sheet`, `GET /mentoring/alpha-schedule/:slot_id/apparel`; dialog `GET /mentoring/alpha-schedule/:slot_id/no-alphas`

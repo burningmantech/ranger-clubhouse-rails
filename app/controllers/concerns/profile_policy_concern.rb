@@ -29,19 +29,19 @@ module ProfilePolicyConcern
   end
 
   def can_edit_profile?
-    viewing_self? || has_role?([Role::ADMIN, Role::VC])
+    viewing_self? || has_role?([Role::ADMIN, Role::VC_INTERFACE])
   end
 
   def can_view_identity_basics?
-    viewing_self? || has_role?([Role::ADMIN, Role::VC]) || Current.event_management?
+    viewing_self? || has_role?([Role::ADMIN, Role::VC_INTERFACE]) || Current.event_management?
   end
 
   def can_view_contact_methods?
-    viewing_self? || has_role?([Role::ADMIN, Role::VC])
+    viewing_self? || has_role?([Role::ADMIN, Role::VC_INTERFACE])
   end
 
   def can_view_mailing_address?
-    viewing_self? || has_role?([Role::ADMIN, Role::VC, Role::VIEW_PII])
+    viewing_self? || has_role?([Role::ADMIN, Role::VC_INTERFACE, Role::VIEW_PII])
   end
 
   def can_view_camp?
@@ -61,7 +61,7 @@ module ProfilePolicyConcern
   end
 
   def can_view_emergency_contact_section?
-    viewing_self? || has_role?([Role::ADMIN, Role::VC]) || Current.can_view_emergency_contact?
+    viewing_self? || has_role?([Role::ADMIN, Role::VC_INTERFACE]) || Current.can_view_emergency_contact?
   end
 
   def should_show_emergency_contact_denial?
@@ -77,6 +77,6 @@ module ProfilePolicyConcern
   end
 
   def can_upload_bmid_photo?
-    viewing_self? || has_role?([Role::ADMIN, Role::VC])
+    viewing_self? || has_role?([Role::ADMIN, Role::VC_INTERFACE])
   end
 end

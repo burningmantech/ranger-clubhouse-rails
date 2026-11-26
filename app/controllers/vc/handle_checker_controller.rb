@@ -4,7 +4,7 @@
 class Vc::HandleCheckerController < ApplicationController
   layout "vc"
 
-  authorize_role [Role::ADMIN, Role::VC],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE],
                  message: "Admin or Volunteer Coordinator role required to check handles."
 
   def index

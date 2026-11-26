@@ -22,7 +22,7 @@ class Quartermaster::PotentialShirtsController < ApplicationController
   # Admin and Timesheet Management app-wide. That last one is incidental --
   # the report lives on Timesheet's policy -- but dropping it would be an
   # access regression, so it is carried over, as Events Rangered does.
-  authorize_role [Role::ADMIN, Role::QUARTERMASTER, Role::TIMESHEET_MANAGEMENT],
+  authorize_role [Role::ADMIN, Role::QUARTERMASTER_INTERFACE, Role::TIMESHEET_MANAGEMENT],
                  message: "Admin, Quartermaster, or Timesheet Management role required " \
                           "to view potential shirts."
 

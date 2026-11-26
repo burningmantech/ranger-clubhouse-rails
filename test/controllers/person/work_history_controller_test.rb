@@ -22,12 +22,12 @@ class Person::WorkHistoryControllerTest < ActionDispatch::IntegrationTest
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     ensure_role(Role::TIMESHEET_MANAGEMENT, "Timesheet Management")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
 
     grant_role(@admin, Role::ADMIN)
     grant_role(@event_manager, Role::EVENT_MANAGEMENT)
     grant_role(@timesheet_manager, Role::TIMESHEET_MANAGEMENT)
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
 
     Current.person = @admin
   end

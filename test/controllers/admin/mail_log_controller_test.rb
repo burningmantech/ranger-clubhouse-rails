@@ -19,9 +19,9 @@ class Admin::MailLogControllerTest < ActionDispatch::IntegrationTest
     @recipient = person(:auditor_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "Volunteer Coordinator")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
     grant_role(@admin, Role::ADMIN)
-    grant_role(@vc, Role::VC)
+    grant_role(@vc, Role::VC_INTERFACE)
   end
 
   teardown do

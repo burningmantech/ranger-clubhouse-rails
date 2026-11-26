@@ -16,7 +16,7 @@ class Quartermaster::EventsRangeredController < ApplicationController
   # Admin and Timesheet Management. That last one is incidental -- the report
   # lived on TimesheetController -- but dropping it would be an access
   # regression, so it is carried over.
-  authorize_role [Role::ADMIN, Role::QUARTERMASTER, Role::TIMESHEET_MANAGEMENT],
+  authorize_role [Role::ADMIN, Role::QUARTERMASTER_INTERFACE, Role::TIMESHEET_MANAGEMENT],
                  message: "Admin, Quartermaster, or Timesheet Management role required " \
                           "to view years of service."
 

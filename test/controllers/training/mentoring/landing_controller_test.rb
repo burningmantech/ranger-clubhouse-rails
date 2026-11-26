@@ -20,12 +20,12 @@ class Training::Mentoring::LandingControllerTest < ActionDispatch::IntegrationTe
     Current.reset
     setup_art_mentoring
 
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
     ensure_role(Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Interface")
     @art_trainer = person(:retired_ranger)
     @dirt_trainer = person(:echelon_ranger)
     grant_role(@art_trainer, Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING)
-    grant_role(@dirt_trainer, Role::TRAINER)
+    grant_role(@dirt_trainer, Role::TRAINING_INTERFACE)
   end
 
   teardown do

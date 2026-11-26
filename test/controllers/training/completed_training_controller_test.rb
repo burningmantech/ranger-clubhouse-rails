@@ -25,7 +25,7 @@ class Training::CompletedTrainingControllerTest < ActionDispatch::IntegrationTes
                                   type: Position::TYPE_TRAINING, active: true)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
     ensure_role(Role::VIEW_EMAIL, "View Email")
     ensure_role(Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Interface")
 
@@ -33,7 +33,7 @@ class Training::CompletedTrainingControllerTest < ActionDispatch::IntegrationTes
     @art_trainer = person(:retired_ranger)
     @outsider = person(:inactive_ranger)
 
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
     grant_role(@art_trainer, Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING)
   end
 

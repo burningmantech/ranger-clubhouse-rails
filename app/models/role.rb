@@ -12,21 +12,21 @@ class Role < ApplicationRecord
   ADMIN = 1
   VIEW_PII = 2
   VIEW_EMAIL = 3
-  GRANT_POSITION = 4
+  # GRANT_POSITION = 4 - superseded by the team management interface
   EDIT_ACCESS_DOCS = 5
   EDIT_BMIDS = 6
   EDIT_SLOTS = 7
   EVENT_MANAGEMENT = 12
   INTAKE = 13
-  MENTOR = 101
-  TRAINER = 102
-  VC = 103
+  MENTOR_INTERFACE = 101
+  TRAINING_INTERFACE = 102
+  VC_INTERFACE = 103
   ART_TRAINER = 104
   MEGAPHONE = 105
   TIMESHEET_MANAGEMENT = 106
   SURVEY_MANAGEMENT_TRAINING = 107
   EVENT_MANAGEMENT_ON_PLAYA = 108
-  TRAINER_SEASONAL = 109
+  TRAINING_INTERFACE_SEASONAL = 109
   CERTIFICATION_MGMT = 110
   EDIT_ASSETS = 111
   EDIT_SWAG = 112
@@ -41,7 +41,7 @@ class Role < ApplicationRecord
   MEGAPHONE_TEAM_ONPLAYA = 121
   MEGAPHONE_EMERGENCY_ONPLAYA = 122
   ANNOUNCEMENT_MANAGEMENT = 123
-  QUARTERMASTER = 124
+  QUARTERMASTER_INTERFACE = 124
   SHIFT_MANAGEMENT = 125
   POD_MANAGEMENT = 126
   AWARD_MANAGEMENT = 127
@@ -58,7 +58,7 @@ class Role < ApplicationRecord
   # and 132, no shared database ever held this row; migration
   # 20261013000001_add_pog_management_role adds it.
   POG_MANAGEMENT = 133
-  # Opens the Mentoring pages beside MENTOR, but only while the
+  # Opens the Mentoring pages beside MENTOR_INTERFACE, but only while the
   # EventManagementOnPlayaEnabled setting is on (RoleManager::SETTING_GATED_ROLES).
   # Migration 20261125000001_add_mentor_interface_event_role adds the row.
   MENTOR_INTERFACE_EVENT = 134

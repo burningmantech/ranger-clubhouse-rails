@@ -20,7 +20,7 @@
 class Vc::MaintenanceController < ApplicationController
   layout "vc"
 
-  authorize_role [Role::ADMIN, Role::VC],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE],
                  message: "Admin or Volunteer Coordinator role required to run maintenance tasks."
 
   # Everyone still somewhere in this year's applicant pipeline. The waitlist

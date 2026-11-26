@@ -33,7 +33,7 @@ class Person::MentoringController < ApplicationController
   def mentor_year_statuses = PersonMentor::ALPHA_VERDICTS
 
   def can_update_mentoring?
-    has_role? [Role::ADMIN, Role::MENTOR]
+    has_role? [Role::ADMIN, Role::MENTOR_INTERFACE]
   end
 
   def ensure_can_view

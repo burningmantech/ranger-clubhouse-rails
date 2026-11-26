@@ -9,7 +9,7 @@ class People::RetentionReportController < ApplicationController
 
   layout "people"
 
-  authorize_role [Role::ADMIN, Role::VC],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE],
                  message: "Admin or VC role required to view the retention report."
 
   ALL = UiComponents::FilterBarHelper::ALL_FILTER

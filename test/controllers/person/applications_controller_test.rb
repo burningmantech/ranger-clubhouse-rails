@@ -24,12 +24,12 @@ class Person::ApplicationsControllerTest < ActionDispatch::IntegrationTest
     @no_applications = person(:inactive_ranger)
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::VC, "Volunteer Coordinator")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::VC_INTERFACE, "Volunteer Coordinator")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
 
     grant_role(@admin, Role::ADMIN)
-    grant_role(@vc, Role::VC)
-    grant_role(@mentor, Role::MENTOR)
+    grant_role(@vc, Role::VC_INTERFACE)
+    grant_role(@mentor, Role::MENTOR_INTERFACE)
   end
 
   teardown do

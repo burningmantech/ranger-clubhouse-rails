@@ -24,7 +24,7 @@ class Quartermaster::SwagDistributionController < ApplicationController
 
   # Exactly upstream's PersonSwagPolicy#before: Admin and Quartermaster. No
   # incidental third role this time.
-  authorize_role [Role::ADMIN, Role::QUARTERMASTER],
+  authorize_role [Role::ADMIN, Role::QUARTERMASTER_INTERFACE],
                  message: "Admin or Quartermaster role required to view swag distribution."
 
   ALL = UiComponents::FilterBarHelper::ALL_FILTER

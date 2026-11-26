@@ -20,12 +20,12 @@ class Person::PogsControllerTest < ActionDispatch::IntegrationTest
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
     ensure_role(Role::SHIFT_MANAGEMENT, "Shift Management")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
 
     grant_role(@admin, Role::ADMIN)
     # Pog writes gate on EVENT_MANAGEMENT, as Clubhouse 2's PersonPogPolicy has it.
     grant_role(@event_manager, Role::EVENT_MANAGEMENT)
-    grant_role(@trainer, Role::TRAINER)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
 
     Current.person = @admin
 

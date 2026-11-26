@@ -14,9 +14,9 @@ class People::PeopleByLocationControllerTest < ActionDispatch::IntegrationTest
     Current.reset
 
     ensure_role(Role::ADMIN, "Admin")
-    ensure_role(Role::TRAINER, "Trainer")
-    ensure_role(Role::VC, "VC")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
+    ensure_role(Role::VC_INTERFACE, "VC")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
 
     @admin = person(:active_ranger)
     @trainer = person(:echelon_ranger)
@@ -24,9 +24,9 @@ class People::PeopleByLocationControllerTest < ActionDispatch::IntegrationTest
     @outsider = person(:inactive_ranger)
     @mentor = person(:bonked_ranger)
     grant_role(@admin, Role::ADMIN)
-    grant_role(@trainer, Role::TRAINER)
-    grant_role(@vc, Role::VC)
-    grant_role(@mentor, Role::MENTOR)
+    grant_role(@trainer, Role::TRAINING_INTERFACE)
+    grant_role(@vc, Role::VC_INTERFACE)
+    grant_role(@mentor, Role::MENTOR_INTERFACE)
 
     # Two countries: one that breaks down into states, one that does not.
     @admin.update!(country: "US", state: "NV", city: "Gerlach", zip: "89412")

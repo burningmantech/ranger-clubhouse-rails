@@ -148,7 +148,7 @@ class Training
       if art?(position)
         [Role::ADMIN, Role::ART_TRAINER_BASE | position.id]
       else
-        [Role::ADMIN, Role::TRAINER, Role::MENTOR, Role::VC]
+        [Role::ADMIN, Role::TRAINING_INTERFACE, Role::MENTOR_INTERFACE, Role::VC_INTERFACE]
       end
     end
 
@@ -161,7 +161,7 @@ class Training
     # @param position [Position]
     # @return [Array<Integer>]
     def online_course_progress_roles(_position)
-      [Role::ADMIN, Role::TRAINER]
+      [Role::ADMIN, Role::TRAINING_INTERFACE]
     end
 
     # The Unified Flagging rule as a role list: Admin or Intake, matching the

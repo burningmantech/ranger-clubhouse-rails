@@ -24,12 +24,12 @@ class AssetManagement::AssetHistoryControllerTest < ActionDispatch::IntegrationT
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::EDIT_ASSETS, "Edit Assets")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
-    ensure_role(Role::TRAINER, "Trainer")
+    ensure_role(Role::TRAINING_INTERFACE, "Trainer")
 
     grant_role(@admin, Role::ADMIN)
     grant_role(@editor, Role::EDIT_ASSETS)
     grant_role(@event_manager, Role::EVENT_MANAGEMENT)
-    grant_role(@unauthorized, Role::TRAINER)
+    grant_role(@unauthorized, Role::TRAINING_INTERFACE)
   end
 
   teardown do

@@ -8,7 +8,7 @@ class Person::MailLogController < ApplicationController
   include PersonConcern
 
   # Narrows the broad person-page gate applied by PersonConcern.
-  authorize_role [Role::ADMIN, Role::VC],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE],
                  message: "Admin or Volunteer Coordinator role required to view the mail log."
 
   def index

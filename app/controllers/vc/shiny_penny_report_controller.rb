@@ -6,7 +6,7 @@ class Vc::ShinyPennyReportController < ApplicationController
 
   layout "vc"
 
-  authorize_role [Role::ADMIN, Role::VC],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE],
                  message: "Admin or Volunteer Coordinator role required to view the Shiny Penny report."
 
   def index

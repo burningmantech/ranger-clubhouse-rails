@@ -19,12 +19,12 @@ class Person::CertificationsControllerTest < ActionDispatch::IntegrationTest
     ensure_role(Role::ADMIN, "Admin")
     ensure_role(Role::CERTIFICATION_MGMT, "Certification Management")
     ensure_role(Role::EVENT_MANAGEMENT, "Event Management")
-    ensure_role(Role::MENTOR, "Mentor")
+    ensure_role(Role::MENTOR_INTERFACE, "Mentor")
 
     grant_role(@admin, Role::ADMIN)
     grant_role(@cert_manager, Role::EVENT_MANAGEMENT)
     grant_role(@cert_manager, Role::CERTIFICATION_MGMT)
-    grant_role(@viewer, Role::MENTOR)
+    grant_role(@viewer, Role::MENTOR_INTERFACE)
 
     Current.person = @admin
   end

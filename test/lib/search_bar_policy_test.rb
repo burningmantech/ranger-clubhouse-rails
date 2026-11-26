@@ -105,7 +105,7 @@ class SearchBarPolicyTest < ActiveSupport::TestCase
   end
 
   test "mode_options adds the Swag mode for the quartermaster" do
-    stub_roles([Role::QUARTERMASTER])
+    stub_roles([Role::QUARTERMASTER_INTERFACE])
 
     options = SearchBarPolicy.mode_options
     assert_equal %w[person_manage swag], options.map { |o| o[:value] }
@@ -127,7 +127,7 @@ class SearchBarPolicyTest < ActiveSupport::TestCase
   end
 
   test "path_template_for only answers for modes the viewer holds" do
-    stub_roles([Role::QUARTERMASTER])
+    stub_roles([Role::QUARTERMASTER_INTERFACE])
 
     assert_equal "/person/:id/swag", SearchBarPolicy.path_template_for("swag")
     assert_nil SearchBarPolicy.path_template_for("timesheet"),

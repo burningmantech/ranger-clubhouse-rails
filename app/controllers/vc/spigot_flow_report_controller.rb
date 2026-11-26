@@ -6,7 +6,7 @@ class Vc::SpigotFlowReportController < ApplicationController
 
   layout "vc"
 
-  authorize_role [Role::ADMIN, Role::VC],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE],
                  message: "Admin or Volunteer Coordinator role required to view the Spigot Flow report."
 
   # Export labels match the upstream Ember CSV, keyed by stage so the columns

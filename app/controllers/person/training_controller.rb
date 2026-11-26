@@ -16,7 +16,7 @@ class Person::TrainingController < ApplicationController
   before_action :setup_year
 
   authorize_ability :manage_online_course,
-                    roles: [Role::TECH_NINJA, Role::TRAINER],
+                    roles: [Role::TECH_NINJA, Role::TRAINING_INTERFACE],
                     admin: false,
                     only: %i[update_online_course mark_online_course_completed
                              sync_online_course_info reset_online_course_password],

@@ -4,7 +4,7 @@
 class Vc::ApplicationNotesController < ApplicationController
   layout "vc"
 
-  authorize_role [Role::ADMIN, Role::VC],
+  authorize_role [Role::ADMIN, Role::VC_INTERFACE],
                  message: "Admin or Volunteer Coordinator role required to manage applications."
 
   before_action :set_application
