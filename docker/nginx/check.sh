@@ -115,6 +115,7 @@ for p in /wp-admin/install.php /wp/ /wp2/ /wordpress/ /blog/wp-json/batch/v1 /wp
   expect 400 "$B$p"
 done
 for p in /api/v1/config /pub/old /~bob/ /%7Ebob/; do expect 410 "$B$p"; done
+for p in /client /client/ /client/login /client/me/schedule; do expect 302 "$B$p"; done
 
 # --- PHP exploit probes: runtime options (CVE-2024-4577), ThinkPHP, Xdebug, executables
 for p in "/php-cgi/php-cgi.exe?%ADd+allow_url_include%3d1" "/?-d+allow_url_include%3d1" "/?x=auto_prepend_file%3dphp://input" \
