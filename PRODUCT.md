@@ -40,16 +40,16 @@ spreadsheets on the side.
 
 It is the Rangers' system of record, not a generic volunteer-management tool. Its shape comes from
 domain rules no off-the-shelf product encodes: a person's status lifecycle, position-derived
-permissions, year-scoped everything, parent/child slot capacity, position credits, and a shared
-database still co-owned with the Laravel application it is being ported from.
+permissions, year-scoped everything, parent/child slot capacity, position credits, and a database
+inherited from the Laravel application it replaced.
 
 ## Operating Context
 
-- The application is a translation of a Laravel/PHP + EmberJS predecessor (Clubhouse 2). The upstream
-  source is authority on behavior, and the MariaDB database is shared with it — singular table names,
-  no app-domain foreign keys, and values that must stay frozen for the other stack.
-- **Port license: port the function, redesign the interface.** Every upstream capability and data rule
-  is preserved; the interface is free to be materially better than Clubhouse 2 rather than tracing it.
+- The application replaced a Laravel/PHP + EmberJS predecessor (Clubhouse 2), which is now a historical
+  reference only: its source is not consulted. Behavior is defined by this codebase, its tests and
+  `docs/FEATURES.md`. The MariaDB database came from it, which is why table names are singular.
+- **Keep the function, redesign the interface.** Every capability and data rule the application has is
+  preserved; the interface is free to be materially better than what it replaces.
 - Nearly everything is scoped to an operating year, and the viewed year is independent of the request
   clock. Production can also be pinned to a fixed instant (Groundhog Day mode).
 - Work is seasonal and spiky: a long quiet administrative off-season, then an intense on-playa week
@@ -82,7 +82,8 @@ the incumbent world rather than a fixed identity handed down from outside.
 - `docs/DESIGN-GUIDE.md`, `docs/UI-COMPONENTS.md`, `docs/form_helper.md` — the incumbent design system,
   helper APIs, and form builder, as built.
 - `AGENTS.md` and the `design-*` skills — the standing rules the codebase is actually held to.
-- The upstream Laravel API at `~/rangers/src/clubhouse2/api` — behavioral authority for ported features.
+- `docs/FEATURES.md` — every page's route, owner, tables, tests and traps; with the code and its tests,
+  the authority on behavior. Clubhouse 2's source is not evidence: it is history and is not consulted.
 - A development database carrying real production data and live third-party credentials. There are no
   invented testimonials, customers, benchmarks, or pricing to draw on; this product has no marketing
   surface and none should be fabricated.
@@ -92,8 +93,8 @@ the incumbent world rather than a fixed identity handed down from outside.
 1. **Four scenes, one interface.** Every surface is reachable in dust on a phone and in a spreadsheet-
    grade admin session. When they conflict, name the trade rather than quietly optimizing for the
    comfortable one.
-2. **Function is inherited; the interface is not.** Upstream behavior and data rules are preserved
-   exactly. Upstream layout is evidence of what the page must do, never a target to reproduce.
+2. **Function is kept; the interface is not.** The behavior and data rules the application has are
+   preserved exactly. A page's current layout is evidence of what it must do, never a target to reproduce.
 3. **The domain's words, unaltered.** Statuses, callsigns, positions, and years print as the system
    stores them. Prettifying a domain value is a defect.
 4. **Permission-shaped, not persona-shaped.** A page serves whoever holds the capability, often several

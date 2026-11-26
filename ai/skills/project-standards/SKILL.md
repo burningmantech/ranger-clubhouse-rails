@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: Coding standards, development philosophy, and critical rules for Clubhouse 3 development. Use when writing code, reviewing solutions, translating code, making architectural decisions, or implementing features.
+description: Coding standards, development philosophy, and critical rules for Clubhouse 3 development. Use when writing code, reviewing solutions, making architectural decisions, or implementing features.
 ---
 
 # Clubhouse 3 - Project Standards
@@ -40,8 +40,8 @@ Prioritize solutions with:
 | **Use ActiveRecord methodology** | When rewriting raw SQL statements, use ActiveRecord instead |
 | **Use ActiveRecord where/joins** | When encountering raw SQL with joins, rewrite using ActiveRecord join associations and where clauses |
 | **Singular database table names** | ActiveRecord models use singular table names, not plural unless stated otherwise |
-| **Use Ruby on Rails paradigms** | When creating, modifying, or translating code, use Ruby on Rails paradigms unless this leads to unreadability |
-| **Use double quotes** | When creating, modifying, or translating code, use double quoted strings unless it doesn't make sense to do so |
+| **Use Ruby on Rails paradigms** | When creating or modifying code, use Ruby on Rails paradigms unless this leads to unreadability |
+| **Use double quotes** | When creating or modifying code, use double quoted strings unless it doesn't make sense to do so |
 | **Render transient POST results at 422** | Results a GET cannot re-derive (export ledgers, maintenance run results) render their view from the POST with `status: :unprocessable_entity` — Turbo silently drops a 200 form response. Start the view with the scroll-to-top marker (`<div data-controller="scroll-to-top" hidden></div>`); form re-renders with validation errors keep preserved scroll and must not have it. See `design-layouts` |
 
 ### Browser Testing Rules
@@ -51,12 +51,6 @@ Prioritize solutions with:
 | **Browser testing for layout** | Inspect the actual loaded page in browser before making layout changes |
 | **Verify browser state** | After resizing browser (desktop/mobile view), confirm the browser is in the desired view before proceeding |
 | **Browser automation required** | Use browser automation tooling when inspecting web pages. Abort processing immediately if browser automation cannot be established. Do not continue with any workflow in progress |
-
-### Code Translation Rules
-
-| Rule | Description |
-|------|-------------|
-| **Assume Laravel 12 when translating PHP code** | When translating Laravel to Ruby on Rails code, assume the code is written using Laravel version 12 and PHP version 8.4. Do not attempt to modify existing ActiveRecord models. Assume any required method will be added later |
 
 ## Tech Stack
 

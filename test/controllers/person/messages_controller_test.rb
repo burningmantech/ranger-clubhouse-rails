@@ -37,6 +37,69 @@ class Person::MessagesControllerTest < ActionDispatch::IntegrationTest
     Current.reset
   end
 
+  # --- Applicants (owner's ruling 2026-11-25) -----------------------------------
+
+  test "an applicant's mailbox pages answer the notice in place, with no mail, redirect or toast" do
+    message = create_message(@other, @target, "Hidden Subject", "Body")
+
+    [Person::PROSPECTIVE, Person::ALPHA].each do |status|
+      @target.update_columns(status:)
+
+      [
+        person_messages_path(@target),
+        person_message_path(@target, message),
+        person_message_path(@target, 0),
+        new_person_message_path(@target, direction: "to"),
+        new_person_message_path(@target, direction: "from")
+      ].each do |path|
+        get path
+
+        assert_response :success, "#{path} should answer the notice in place for #{status}"
+        assert_empty flash
+        assert_select "[role=alert]", text: /Applicants are not allowed to send or receive messages\..*Mentor Shack/m
+        assert_select "[role=alert]", text: /#{Regexp.escape(@target.callsign)}'s status is #{status}\./
+        assert_select "[role=alert] a[href='mailto:#{EmailAddresses::MENTOR_CADRE}']"
+        assert_select "[role=alert] a[href='mailto:#{EmailAddresses::VOLUNTEER_COORDINATORS_TEAM}']"
+        assert_select "a[href^='#{new_person_message_path(@target)}']", false
+        assert_no_match "Hidden Subject", response.body
+      end
+    end
+  end
+
+  test "an applicant's write is answered with the notice at 403, and a lookup bare" do
+    message = create_message(@other, @target, "Thread Top", "Body")
+    @target.update_columns(status: Person::ALPHA)
+
+    assert_no_difference "PersonMessage.count" do
+      post person_messages_path(@target, direction: "from"),
+           params: { message_form: { callsigns: [@other.callsign], subject: "Hi", body: "Body" } }
+      assert_response :forbidden
+
+      post create_reply_person_message_path(@target, message), params: { message_reply_form: { reply: "Reply" } }
+      assert_response :forbidden
+    end
+
+    post toggle_read_person_message_path(@target, message), as: :turbo_stream
+    assert_response :forbidden
+    assert_not message.reload.thread_read?(@target.id)
+
+    get suggest_person_messages_path(@target, q: "ran")
+    assert_response :forbidden
+    assert_empty response.body
+
+    get person_messages_path(@target), headers: { "Turbo-Frame" => "messages-conversation-list" }
+    assert_response :success
+    assert_select "turbo-frame#messages-conversation-list [role=alert]", text: /Applicants are not allowed/
+  end
+
+  test "a viewer without the mailbox permission is turned away before the applicant notice" do
+    @target.update_columns(status: Person::ALPHA)
+    set_on_playa(false)
+
+    get person_messages_path(@target)
+    assert_redirected_to person_path(@target)
+  end
+
   # --- Team threads (.scratch/team-messaging/PRD.md, ruling R2) ---------------
 
   test "a team member's mailbox shows the manager who wrote a reply as the team, and offers the choice" do

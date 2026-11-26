@@ -22,6 +22,9 @@ module MessagesConcern
   # oldest with a fourth, and #search_chips reads no more than this.
   MAX_SEARCH_WITH = 3
 
+  # The pages an applicant's mailbox answers with the notice (#refuse_applicant).
+  APPLICANT_NOTICE_PAGES = %w[index show new].freeze
+
   # Over the people the search field suggests: what taking one does.
   SUGGESTED_PEOPLE = "People — Add as a Filter"
 
@@ -288,7 +291,42 @@ module MessagesConcern
 
   private
 
+  # A Prospective or an Alpha has no mailbox in any of the three interfaces
+  # (owner's rulings 2026-11-25): no mail to read and nothing to send. Each
+  # controller registers this itself, after the callback that loads the owner
+  # and ahead of set_message and its own redirecting gates, because the answer
+  # is never a redirect or a toast:
+  #   - a page (APPLICANT_NOTICE_PAGES) answers the notice at 200;
+  #   - a write, which only a stale tab can send (the notice has no form),
+  #     answers it at 403, and Turbo draws that in place of the stale page;
+  #   - a request for one frame (the list, the pane) gets the notice in that
+  #     frame, where the whole page would read "Content missing";
+  #   - a lookup (a GET: the suggestions, the recipient modal) is refused bare:
+  #     it answers JSON or a stream, and the suggestions skip build_menu_items,
+  #     which the layout needs.
+  # Always HTML: a form's Accept puts turbo-stream first, and a page sent as
+  # one is thrown away.
+  def refuse_applicant
+    return unless message_owner.is_applicant?
+
+    page = action_name.in?(APPLICANT_NOTICE_PAGES)
+    return head(:forbidden) if !page && (request.get? || request.head?)
+
+    status = page ? :ok : :forbidden
+    if turbo_frame_request?
+      render partial: "common/messages/applicant_frame", formats: :html, status:,
+             locals: { frame_id: turbo_frame_request_id, person: @person }
+    else
+      prepare_applicant_notice
+      render :applicant, formats: :html, status:
+    end
+  end
+
   # --- Namespace hooks: including controllers override these -----------------
+
+  # What the layout needs before the applicant notice renders as a page: the
+  # HQ window loads its shell.
+  def prepare_applicant_notice; end
 
   # Whose mailbox is being viewed and acted on.
   def message_owner

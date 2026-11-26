@@ -8,10 +8,14 @@
 class Me::MessagesController < ApplicationController
   layout "me"
 
+  # MessagesConcern's, declared ahead of the include on purpose: it runs before
+  # set_message and require_mailbox_user, whose refusals are redirects with a toast.
+  before_action :refuse_applicant
   include MessagesConcern
 
   # Only mailbox users (Person#mailbox_user?, the rule behind the Messages menu)
-  # start a message; anyone sent one can still read and reply to it.
+  # start a message; anyone else sent one can still read and reply to it, except
+  # an applicant (MessagesConcern#refuse_applicant).
   before_action :require_mailbox_user, only: %i[new create find_recipient search_callsigns suggest_callsigns select_callsign]
 
   # /me/messages?to=CALLSIGN opens the compose page addressed to that callsign.

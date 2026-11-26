@@ -10,10 +10,12 @@ module Menus
     items: [
       { title: "Clubhouse Dashboard", path: :me_root_path, root: true,
         description: "Your tasks, deadlines, and event updates at a glance" },
-      # The navbar's unread envelope asks the same Person#mailbox_user?.
+      # The navbar's unread envelope asks Person#mailbox_user? alone. An
+      # applicant sees the item too: their page says when messages open
+      # (MessagesConcern#refuse_applicant; chosen by Claude 2026-11-25, reversible).
       { title: "Messages", path: :me_messages_path,
         description: "Read and send Clubhouse messages",
-        visible_if: { status: [:mailbox_user?] } },
+        visible_if: { status: [:mailbox_user?, :is_applicant?] } },
       # Past prospectives reach only the dashboard and their profile
       # (ApplicationController#confine_past_prospective), so this item and the
       # Pre-Event and Communication sections hide from them.

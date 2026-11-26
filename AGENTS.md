@@ -7,7 +7,8 @@ This file provides guidance to LLMs when working with code in this repository.
 Clubhouse 3 is a Ruby on Rails 8.1 volunteer coordination application for the Black Rock Rangers volunteer organization.
 Ruby 4.0 is the language target.
 
-The application is being translated from a Laravel/PHP codebase.
+It replaces Clubhouse 2, a Laravel/PHP API with an EmberJS client. Clubhouse 2 is a historical reference only and is
+not to be consulted (see Code Standards > Clubhouse 2).
 
 ## Tech Stack
 
@@ -86,7 +87,8 @@ bin/rails db:migrate
 - Never `source` an `env*.sh` at the repo root: they hold live credentials, and are gitignored for that reason
 - Ruby is pinned in `mise.toml`. A non-interactive shell may not activate it: if `ruby -v` differs from the
   pin, run app commands as `mise exec -- bin/rails ...`
-- `port/` and `.scratch/` are untracked: they exist only in the main checkout, never in a worktree
+- `port/` and `.scratch/` are untracked: they exist only in the main checkout, never in a worktree. `port/` holds
+  Clubhouse 2 files and is not to be read (Code Standards > Clubhouse 2)
 
 ## Architecture
 
@@ -152,19 +154,18 @@ See `docs/UI-COMPONENTS.md` for complete API reference and `docs/DESIGN-GUIDE.md
 - `.erb` is excluded from RuboCop — never pass `.erb` paths as explicit CLI args, RuboCop lints explicit args past `Exclude` and dies parsing ERB tags. The `herb` gem is the only ERB parser: `bundle exec herb analyze app/views` parses every template, and nothing in CI runs it (`herb actionview check` needs a `.herb.yml` with `framework: actionview`)
 - `standard` is in the Gemfile but unused — no `.standard.yml`, and `bin/rubocop` runs RuboCop
 
-### When Translating Laravel/PHP Code
-- Assume Laravel 12 and PHP 8.4
-- Source files staged for translation live in `port/` (untracked)
-- Do not modify existing ActiveRecord models during translation
-- Assume any required model methods will be added later. Flag these.
-- Clubhouse 2 (`burningmantech/ranger-clubhouse-api` and `ranger-clubhouse-web`, checked out beside the main
-  checkout at `../clubhouse2/`) is a
-  retired code base: read it as the source of behavior, but do not update it -- no edits, branches, commits, migrations
-  or test runs -- unless explicitly told to. It will not run against this app's database schema.
-
-### When Translating EmberJS code
-- Assume EmberJS v5.6
-- Source files staged for translation live in `port/` (untracked)
+### Clubhouse 2 (Historical Reference Only)
+- Clubhouse 2 (`burningmantech/ranger-clubhouse-api`, Laravel/PHP, and `ranger-clubhouse-web`, EmberJS) is the
+  retired application this one replaced. It is a historical reference only: do not consult it. Do not read, search
+  or list its checkout (`../clubhouse2/` beside the main checkout) or the copies of its files in `port/`, and do not
+  port from it
+- Behavior comes from the request in hand and from this repository: its code, its tests and `docs/FEATURES.md`.
+  When those do not settle a question, ask
+- A comment or a `docs/FEATURES.md` trap that says what Clubhouse 2, "upstream", Laravel or Ember did records
+  history. Read it where it stands; it is not a pointer to follow. The `docs/*-translation.md` files are records of
+  finished translations
+- Never update it: no edits, branches, commits, migrations or test runs. It does not run against this app's
+  database schema
 
 ### Testing
 - Tests use fixtures from `test/fixtures/*.yml`

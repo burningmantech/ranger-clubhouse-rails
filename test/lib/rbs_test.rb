@@ -764,6 +764,33 @@ class RbsTest < ActiveSupport::TestCase
     end
   end
 
+  # An applicant has no Clubhouse mailbox to read it in (owner's ruling
+  # 2026-11-25; Rbs.clubhouse_recipients): the channel skips them, and they are
+  # on a broadcast's list only for a text or an email.
+  test "a broadcast's Clubhouse message skips an applicant, listed only with another channel" do
+    ranger = listening("Listener")
+    alpha = listening("Hopeful")
+    alpha.update_columns(status: Person::ALPHA)
+    statuses = [Person::ACTIVE, Person::ALPHA]
+    sandbox_off(Setting::BROADCAST_CLUBHOUSE_SANDBOX)
+
+    clubhouse_only = listener_criteria(send_clubhouse: true).merge(statuses:)
+    assert_equal [ranger.id], Rbs.retrieve_recipients(Broadcast::TYPE_POSITION, clubhouse_only).map(&:id)
+
+    with_email = listener_criteria(send_email: true, send_clubhouse: true).merge(statuses:)
+    perform_enqueued_jobs(only: RbsTransmitClubhouseMessageJob) do
+      result = Rbs.transmit(type: Broadcast::TYPE_POSITION, sender: @sender, criteria: with_email,
+                            message: { sms_message: nil, subject: "Hello", message: "Body", expires_at: nil })
+
+      assert_equal [ranger.id, alpha.id].sort, result.people.map(&:id).sort
+      assert_equal 2, result.emails_queued
+      assert_equal 1, result.clubhouse_messages
+      assert_equal [ranger.id], PersonMessage.where(broadcast_id: result.broadcast.id).pluck(:person_id)
+      assert_equal [ranger.id], BroadcastMessage.where(broadcast_id: result.broadcast.id, address_type: "clubhouse")
+                                                .pluck(:person_id)
+    end
+  end
+
   # PersonMessage#announce_to_recipient runs for the copies the job saves too,
   # and renders nothing from Current: the job runs here with nobody in it.
   test "each Clubhouse copy of a broadcast updates its recipient's navbar live" do

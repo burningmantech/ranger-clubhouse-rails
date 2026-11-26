@@ -354,6 +354,96 @@ class Hq::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes PersonMessage.unread_for_person(@subject.id), top
   end
 
+  # --- Applicants (owner's ruling 2026-11-25) -----------------------------------
+
+  test "an applicant's mailbox pages answer the notice in the shell, with no mail, redirect or toast" do
+    message = create_message(@other, @subject, "Hidden Subject", "Body")
+
+    [Person::PROSPECTIVE, Person::ALPHA].each do |status|
+      @subject.update_columns(status:)
+
+      [
+        hq_messages_path(@subject),
+        hq_message_path(@subject, message),
+        hq_message_path(@subject, 0),
+        new_hq_message_path(@subject, direction: "to"),
+        new_hq_message_path(@subject, direction: "from")
+      ].each do |path|
+        get path
+
+        assert_response :success, "#{path} should answer the notice in place for #{status}"
+        assert_empty flash
+        assert_select "[role=alert]", text: /Applicants are not allowed to send or receive messages\..*Mentor Shack/m
+        # The status prints as stored.
+        assert_select "[role=alert]", text: /#{Regexp.escape(@subject.callsign)}'s status is #{status}\./
+        assert_select "[role=alert] a[href='mailto:#{EmailAddresses::MENTOR_CADRE}']"
+        assert_select "[role=alert] a[href='mailto:#{EmailAddresses::VOLUNTEER_COORDINATORS_TEAM}']"
+        assert_match "Switch to Person Manage", response.body
+        assert_select "a[href^='#{new_hq_message_path(@subject)}']", false
+        assert_no_match "Hidden Subject", response.body
+      end
+    end
+  end
+
+  test "an applicant's write is answered with the notice at 403 in the shell, and a lookup bare" do
+    message = create_message(@other, @subject, "Thread Top", "Body")
+    @subject.update_columns(status: Person::ALPHA)
+
+    assert_no_difference "PersonMessage.count" do
+      post hq_messages_path(@subject, direction: "from"),
+           params: { message_form: { callsigns: [@other.callsign], subject: "Hi", body: "Body" } }
+      assert_response :forbidden
+      assert_select "[role=alert]", text: /Applicants are not allowed to send or receive messages\./
+      assert_match "Switch to Person Manage", response.body
+
+      post create_reply_hq_message_path(@subject, message), params: { message_reply_form: { reply: "Reply" } }
+      assert_response :forbidden
+    end
+
+    post toggle_read_hq_message_path(@subject, message), as: :turbo_stream
+    assert_response :forbidden
+    assert_equal "text/html", response.media_type
+    assert_not message.reload.thread_read?(@subject.id)
+
+    get suggest_hq_messages_path(@subject, q: "ran")
+    assert_response :forbidden
+    assert_empty response.body
+  end
+
+  # The shell's loader sets the once-per-person entry warning as shown, so a
+  # request that draws no shell must not run it.
+  test "an applicant's frame request gets the notice in its frame, and leaves the entry warning unshown" do
+    message = create_message(@other, @subject, "Thread Top", "Body")
+    @subject.update_columns(status: Person::PROSPECTIVE)
+
+    { hq_messages_path(@subject) => "messages-conversation-list",
+      hq_message_path(@subject, message) => "messages-pane" }.each do |path, frame|
+      get path, headers: { "Turbo-Frame" => frame }
+
+      assert_response :success
+      assert_select "turbo-frame##{frame} [role=alert]", text: /Applicants are not allowed/
+      assert_no_match "Switch to Person Manage", response.body
+    end
+
+    post hq_messages_path(@subject, direction: "from"), headers: { "Turbo-Frame" => "messages-pane" },
+                                                        params: { message_form: { callsigns: [@other.callsign], subject: "Hi", body: "Body" } }
+    assert_response :forbidden
+    assert_nil session[:hq_warned_person_id]
+  end
+
+  test "an applicant cannot be named as the sender or the recipient in someone else's mailbox" do
+    @other.update_columns(status: Person::ALPHA)
+
+    %w[to from].each do |direction|
+      assert_no_difference "PersonMessage.count" do
+        post hq_messages_path(@subject, direction:),
+             params: { message_form: { callsigns: [@other.callsign], subject: "Hi", body: "Body" } }
+      end
+      assert_response :unprocessable_entity
+      assert_select "#form-error-summary", text: /Person may not be messaged\./
+    end
+  end
+
   private
 
   def create_message(sender, recipient, subject, body)

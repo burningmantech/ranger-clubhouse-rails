@@ -76,6 +76,16 @@ class Person < ApplicationRecord
     RESIGNED, SUSPENDED, UBERBONKED
   ].freeze
 
+  # The applicants (#is_applicant?).
+  APPLICANT_STATUSES = [PROSPECTIVE, ALPHA].freeze
+
+  # Statuses with no Clubhouse mailbox: no mail from a person or a team reaches
+  # them and none is sent in their name (#messages_barred?, .messageable). The
+  # applicants are among them by the owner's ruling of 2026-11-25. Broadcasts
+  # and announcements ask NO_MESSAGES_STATUSES, so an applicant still gets a
+  # broadcast's email and text (Rbs.mailbox?).
+  NO_MAILBOX_STATUSES = [*NO_MESSAGES_STATUSES, *APPLICANT_STATUSES].freeze
+
   CALLSIGN_MAX_LENGTH = 64
 
   # Status not allowed to be found for contact searches -- but exclusion
@@ -293,7 +303,7 @@ class Person < ApplicationRecord
   scope :live, -> { where(status: LIVE_STATUSES) }
   scope :locked, -> { where(status: LOCKED_STATUSES) }
   # #messaging_permitted? in SQL: change both together.
-  scope :messageable, -> { where.not(status: NO_MESSAGES_STATUSES).where.not(last_seen_at: nil) }
+  scope :messageable, -> { where.not(status: NO_MAILBOX_STATUSES).where.not(last_seen_at: nil) }
   scope :by_callsign, ->(callsign) { where(callsign_normalized: normalize_callsign(callsign)).first }
   scope :by_status, ->(statuses) { where(status: Array(statuses)) }
   scope :basic_info, -> { select("id", "callsign", "status") }
@@ -468,7 +478,7 @@ class Person < ApplicationRecord
   end
 
   def is_applicant?
-    [PROSPECTIVE, ALPHA].include?(status)
+    APPLICANT_STATUSES.include?(status)
   end
 
   # Upstream name for a Prospective New Volunteer; ported templates call this.
@@ -691,9 +701,9 @@ class Person < ApplicationRecord
     last_seen_at && !messages_barred?
   end
 
-  # Does the person's status take no messages (NO_MESSAGES_STATUSES)?
+  # Does the person's status take no messages (NO_MAILBOX_STATUSES)?
   def messages_barred?
-    NO_MESSAGES_STATUSES.include?(status)
+    NO_MAILBOX_STATUSES.include?(status)
   end
 
   # =========================================================================

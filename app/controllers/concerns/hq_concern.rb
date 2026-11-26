@@ -81,7 +81,11 @@ module HqConcern
     # The one shell ivar deliberately left unprefixed: MessagesHelper memoizes
     # into this same name, and on Hq::MessagesController its message_owner IS
     # @person, so the two values are identical and the sharing saves a query.
-    @unread_message_count = PersonMessage.count_unread(@person.id)
+    # For an applicant it is what the window may hand over, which is nothing
+    # (MessagesConcern#refuse_applicant, where the helper is never
+    # reached): the shift page then shows no unread callout and no Deliver
+    # Messages task.
+    @unread_message_count = @person.is_applicant? ? 0 : PersonMessage.count_unread(@person.id)
     @photo = PersonPhoto.retrieve_info(@person)
     @hq_summary = build_timesheet_summary(year)
 
