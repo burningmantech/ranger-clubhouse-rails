@@ -401,7 +401,6 @@ class AutocompleteControllerTest < ActionDispatch::IntegrationTest
   def grant_view_email(person)
     role = Role.find_or_initialize_by(id: Role::VIEW_EMAIL)
     role.title = "View Email"
-    role.new_user_eligible = false
     role.save!
 
     PersonRole.find_or_create_by!(person_id: person.id, role_id: Role::VIEW_EMAIL)

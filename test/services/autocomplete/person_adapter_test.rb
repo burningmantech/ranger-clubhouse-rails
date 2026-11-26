@@ -524,7 +524,6 @@ class Autocomplete::PersonAdapterTest < ActiveSupport::TestCase
   def grant_view_role(person, role_id, title)
     role = Role.find_or_initialize_by(id: role_id)
     role.title = title
-    role.new_user_eligible = false
     role.save!
 
     PersonRole.find_or_create_by!(person_id: person.id, role_id:)

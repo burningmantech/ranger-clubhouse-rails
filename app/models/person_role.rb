@@ -21,29 +21,6 @@ class PersonRole < ApplicationRecord
       where(person_id: person_id).pluck(:role_id)
     end
 
-    # Remove all roles from a person in response to status change, add back
-    # the default roles if requested.
-    def reset_roles(person_id, reason, action)
-      remove_ids = find_role_ids_for_person(person_id)
-
-      if action == Person::ADD_NEW_USER
-        add_ids = []
-        eligible_ids = Role.where(new_user_eligible: true).pluck(:id)
-
-        eligible_ids.each do |role_id|
-          if remove_ids.include?(role_id)
-            remove_ids.delete(role_id)
-          else
-            add_ids << role_id
-          end
-        end
-
-        add_ids_to_person(person_id, add_ids, reason)
-      end
-
-      remove_ids_from_person(person_id, remove_ids, reason)
-    end
-
     # Remove roles from a person. Log the action.
     def remove_ids_from_person(person_id, ids, reason = nil)
       return if ids.blank?

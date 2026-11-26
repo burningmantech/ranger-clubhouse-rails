@@ -648,7 +648,6 @@ class Person::MessagesControllerTest < ActionDispatch::IntegrationTest
   def ensure_role(id, title)
     role = Role.find_or_initialize_by(id: id)
     role.title = title
-    role.new_user_eligible = false
     role.save!
   end
 

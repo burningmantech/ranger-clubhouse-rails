@@ -1,6 +1,6 @@
 <%= hero_panel icon: "key", heading_level: :h1, id: "permission-form-header",
                title: "Edit Permission",
-               description: "Change what this permission is called, and whether a new account may hold it.",
+               description: "Change what this permission is called.",
                back_to: ["Permissions", admin_permissions_path] %>
 
 <%= ui_section "Permission ##{@permission.id}", icon: "circle-info", icon_type: :solid do %>
@@ -27,7 +27,6 @@
 <%= ui_form(@permission, admin_permission_path(@permission)) do |f| %>
   <%= f.fieldset "Permission", icon: "key", icon_type: :solid do %>
     <%= f.text_field :title, label: "Title", required: true, maxlength: 40 %>
-    <%= f.check_box :new_user_eligible, label: "A brand new account may hold this permission" %>
   <% end %>
 
   <%= button_row do %>

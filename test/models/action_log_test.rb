@@ -85,7 +85,7 @@ class ActionLogTest < ActiveSupport::TestCase
 
   test "find_for_query normalizes plural role and team enrichment data" do
     actor = person(:active_ranger)
-    role = Role.create!(id: 44_444, title: "Action Log Role", new_user_eligible: false)
+    role = Role.create!(id: 44_444, title: "Action Log Role")
     team = teams(:mentor_cadre)
 
     ActionLog.create!(

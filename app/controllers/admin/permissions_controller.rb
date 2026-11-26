@@ -82,7 +82,7 @@ class Admin::PermissionsController < ApplicationController
   end
 
   def permission_params
-    params.expect(role: [:title, :new_user_eligible])
+    params.expect(role: [:title])
   end
 
   def art_params
