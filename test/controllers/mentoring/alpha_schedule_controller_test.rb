@@ -165,6 +165,31 @@ class Mentoring::AlphaScheduleControllerTest < ActionDispatch::IntegrationTest
 
   # --- the shift page ---
 
+  # Admin and Mentor Interface hold View Personal Info; Mentor Interface Event
+  # does not (MentorHelper#mentoring_personal_details?).
+  test "the shift page keeps real names and home towns for readers who hold View Personal Info" do
+    holder = create_person("ScheduleEventMentor", last_name: "Eventer", city: "Elsewhere")
+    ensure_role(Role::MENTOR_INTERFACE_EVENT, "Mentor Interface Event")
+    grant_role(holder, Role::MENTOR_INTERFACE_EVENT)
+    Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
+
+    sign_in_as(@mentor)
+    get mentoring_alpha_schedule_shift_path(@day_slot)
+    assert_match "AlphaSignedIn Shifter", response.body
+    assert_match "Test City", response.body
+
+    sign_in_as(holder)
+    get mentoring_alpha_schedule_shift_path(@day_slot)
+    assert_response :success
+    assert_match "AlphaSignedIn", response.body
+    assert_no_match(/Shifter|Test City/, response.body)
+
+    get mentoring_alpha_schedule_signup_sheet_path(@day_slot)
+    assert_response :success
+    assert_match "Real name", response.body
+    assert_no_match(/Shifter|Test City/, response.body)
+  end
+
   test "the shift page lists its sign-ups by callsign" do
     sign_in_as(@mentor)
 

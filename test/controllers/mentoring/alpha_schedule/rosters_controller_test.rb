@@ -255,6 +255,22 @@ class Mentoring::AlphaSchedule::RostersControllerTest < ActionDispatch::Integrat
     assert_not signed_up?(@signed_up)
   end
 
+  test "a Mentor Interface Event holder adds an Alpha through the blocked-then-confirm flow" do
+    holder = create_person("RosterEventAdder")
+    ensure_role(Role::MENTOR_INTERFACE_EVENT, "Mentor Interface Event")
+    grant_role(holder, Role::MENTOR_INTERFACE_EVENT)
+    Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
+    sign_in_as(holder)
+
+    post mentoring_alpha_schedule_roster_path(@slot), params: { person_id: @alpha.id }
+    assert_response :unprocessable_entity
+    assert_not signed_up?(@alpha)
+
+    post mentoring_alpha_schedule_roster_path(@slot), params: { person_id: @alpha.id, force: "1" }
+    assert_redirected_to mentoring_alpha_schedule_shift_path(@slot)
+    assert signed_up?(@alpha)
+  end
+
   # The page gate and the force rule both name the permission, and RoleManager
   # drops it while its setting is off.
   test "a Mentor Interface Event holder removes someone after the shift has started, only while Event Management On Playa is on" do

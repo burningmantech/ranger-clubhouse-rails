@@ -61,7 +61,7 @@
 
         <div class="acceptance-line">
           <div class="acceptance-label">Real Name:</div>
-          <div class="acceptance-value"><%= person.desired_full_name %></div>
+          <div class="acceptance-value"><%= person.desired_full_name if mentoring_personal_details? %></div>
         </div>
 
         <div class="acceptance-line">

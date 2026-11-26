@@ -127,6 +127,8 @@ class Mentoring::AlphaStatusController < ApplicationController
     true
   end
 
+  def unified_flagging_show_names? = helpers.mentoring_personal_details?
+
   def unified_flagging_origin
     {}
   end

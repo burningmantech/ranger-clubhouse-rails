@@ -115,7 +115,7 @@
                 <div class="text-sm text-stone-muted">&lt;<%= person.status %>&gt;</div>
               <% end %>
               <%= t.cell do %>
-                <%= person.first_name %> <%= person.last_name %>
+                <%= "#{person.first_name} #{person.last_name}" if mentoring_personal_details? %>
                 <%# Reads the preloaded association rather than
                     Person#formerly_known_as_array, which re-queries per row.
                     is_irrelevant is the stored verdict and is authoritative. %>

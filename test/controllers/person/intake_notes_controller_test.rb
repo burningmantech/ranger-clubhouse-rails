@@ -58,16 +58,17 @@ class Person::IntakeNotesControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference -> { PersonIntakeNote.count } do
       wrong_attempts.each do |type, writer|
         sign_in_as(writer)
+        refused_to = writer == @vc_writer ? person_path(@target) : person_unified_flagging_path(@target)
 
         get new_person_intake_note_path(@target, type: type)
-        assert_redirected_to person_unified_flagging_path(@target), "new(#{type}) should have denied #{writer.callsign}"
+        assert_redirected_to refused_to, "new(#{type}) should have denied #{writer.callsign}"
         assert_equal NOT_AUTHORIZED, flash[:error]
         follow_redirect!
 
         post person_intake_notes_path(@target), params: {
           intake_note_form: { type: type, year: 2026, note: "Should not save.", ranking: "" }
         }
-        assert_redirected_to person_unified_flagging_path(@target), "create(#{type}) should have denied #{writer.callsign}"
+        assert_redirected_to refused_to, "create(#{type}) should have denied #{writer.callsign}"
         assert_equal NOT_AUTHORIZED, flash[:error]
         follow_redirect!
       end
@@ -84,18 +85,17 @@ class Person::IntakeNotesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # Mentor Interface Event opens the Mentoring pages and no person page, so its
+  # holder files Mentor notes from there and is sent back there.
   test "a Mentor Interface Event holder writes Mentor notes and no other team's" do
-    holder = person(:inactive_ranger)
-    ensure_role(Role::MENTOR_INTERFACE_EVENT, "Mentor Interface Event")
-    grant_role(holder, Role::MENTOR_INTERFACE_EVENT)
-    Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
-    sign_in_as(holder)
+    sign_in_as(event_mentor)
 
     assert_difference -> { PersonIntakeNote.where(type: "mentor").count }, 1 do
       post person_intake_notes_path(@target), params: {
         intake_note_form: { type: "mentor", year: 2023, note: "Walked well.", ranking: "" }
       }
     end
+    assert_redirected_to mentoring_potential_alphas_path(person: @target.id)
     assert_equal "Note saved.", flash[:success]
 
     assert_no_difference -> { PersonIntakeNote.count } do
@@ -103,7 +103,56 @@ class Person::IntakeNotesControllerTest < ActionDispatch::IntegrationTest
         intake_note_form: { type: "vc", year: 2023, note: "Should not save.", ranking: "" }
       }
     end
+    assert_redirected_to mentoring_potential_alphas_path(person: @target.id)
     assert_equal NOT_AUTHORIZED, flash[:error]
+  end
+
+  test "a Mentor Interface Event holder is refused while Event Management On Playa is off" do
+    holder = event_mentor
+    Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "false")
+    sign_in_as(holder)
+
+    get new_person_intake_note_path(@target, type: "mentor")
+
+    assert_redirected_to me_root_path
+  end
+
+  # The gate replaces the person pages' own, so without this an event mentor
+  # could read and write Mentor notes on anyone by typing an id.
+  test "a Mentor Interface Event holder reaches only people who have been Prospectives or Alphas" do
+    sign_in_as(event_mentor)
+    never_applied = person(:active_ranger)
+    assert_not Intake.pipeline_person?(never_applied), "the fixture has an intake history; nothing to prove"
+
+    assert_no_difference -> { PersonIntakeNote.count } do
+      get new_person_intake_note_path(never_applied, type: "mentor")
+      assert_redirected_to mentoring_potential_alphas_path(person: never_applied.id)
+      assert_equal NOT_AUTHORIZED, flash[:error]
+
+      post person_intake_notes_path(never_applied), params: {
+        intake_note_form: { type: "mentor", year: 2026, note: "Should not save.", ranking: "" }
+      }
+      assert_redirected_to mentoring_potential_alphas_path(person: never_applied.id)
+    end
+
+    # A Mentor keeps the reach the person pages already give them.
+    sign_in_as(@mentor_writer)
+    get new_person_intake_note_path(never_applied, type: "mentor")
+    assert_response :success
+  end
+
+  test "the note form gives a Mentor Interface Event holder the Mentoring sidebar, not the person's" do
+    sign_in_as(event_mentor)
+
+    get new_person_intake_note_path(@target, type: "mentor")
+
+    assert_response :success
+    assert_select "a[href=?]", mentoring_alpha_status_path
+    assert_select "a[href=?]", person_mentoring_path(@target), count: 0
+
+    sign_in_as(@mentor_writer)
+    get new_person_intake_note_path(@target, type: "mentor")
+    assert_select "a[href=?]", person_mentoring_path(@target)
   end
 
   # --- create: note only ---------------------------------------------------
@@ -160,7 +209,7 @@ class Person::IntakeNotesControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to person_unified_flagging_path(@target)
+    assert_redirected_to person_path(@target)
 
     intake.reload
     assert_equal 1, intake.mentor_rank
@@ -184,7 +233,7 @@ class Person::IntakeNotesControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to person_unified_flagging_path(@target)
+    assert_redirected_to person_path(@target)
 
     intake.reload
     assert_equal 1, intake.vc_rank
@@ -303,7 +352,7 @@ class Person::IntakeNotesControllerTest < ActionDispatch::IntegrationTest
 
     patch person_intake_note_path(@target, note), params: { person_intake_note: { note: "hacked" } }
 
-    assert_redirected_to person_unified_flagging_path(@target)
+    assert_redirected_to person_path(@target)
     assert_equal NOT_AUTHORIZED, flash[:error]
     assert_not_equal "hacked", note.reload.note
   end
@@ -340,7 +389,7 @@ class Person::IntakeNotesControllerTest < ActionDispatch::IntegrationTest
 
     delete person_intake_note_path(@target, note)
 
-    assert_redirected_to person_unified_flagging_path(@target)
+    assert_redirected_to person_path(@target)
     assert_equal NOT_AUTHORIZED, flash[:error]
     assert PersonIntakeNote.exists?(note.id)
   end
@@ -407,6 +456,15 @@ class Person::IntakeNotesControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  # Holds Mentor Interface Event and nothing else, with its setting on.
+  def event_mentor
+    holder = person(:inactive_ranger)
+    ensure_role(Role::MENTOR_INTERFACE_EVENT, "Mentor Interface Event")
+    grant_role(holder, Role::MENTOR_INTERFACE_EVENT)
+    Setting.find_or_initialize_by(name: Setting::EVENT_MANAGEMENT_ON_PLAYA_ENABLED).update!(value: "true")
+    holder
+  end
 
   def ensure_role(id, title)
     role = Role.find_or_initialize_by(id: id)

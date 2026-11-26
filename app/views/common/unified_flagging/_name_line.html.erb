@@ -7,7 +7,9 @@
 <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
   <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
     <%= callsign_link person, class: "font-semibold text-lg" %>
-    <span class="text-body"><%= person.first_name %> <%= person.last_name %></span>
+    <% if unified_flagging_show_names? %>
+      <span class="text-body"><%= person.first_name %> <%= person.last_name %></span>
+    <% end %>
     <span class="text-sm text-stone-muted"><%= person.status %></span>
     <%# Reads the preloaded association rather than Person#formerly_known_as_array,
         which plucks and so re-queries once per row. is_irrelevant is the stored

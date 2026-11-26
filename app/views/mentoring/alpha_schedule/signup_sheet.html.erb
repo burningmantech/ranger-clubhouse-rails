@@ -71,7 +71,7 @@
           <tr class="alpha-write-row">
             <td>
               <span class="alpha-fill">Real name</span>
-              <span class="alpha-value"><%= person.desired_full_name %></span>
+              <span class="alpha-value"><%= person.desired_full_name if mentoring_personal_details? %></span>
             </td>
             <td>
               <span class="alpha-fill">Long sleeve</span>
@@ -79,7 +79,7 @@
             </td>
             <td>
               <span class="alpha-fill">Home</span>
-              <span class="alpha-value"><%= [person.city, person.state, person.country].compact_blank.join(" ") %></span>
+              <span class="alpha-value"><%= [person.city, person.state, person.country].compact_blank.join(" ") if mentoring_personal_details? %></span>
             </td>
           </tr>
           <tr class="alpha-write-row alpha-block-end">

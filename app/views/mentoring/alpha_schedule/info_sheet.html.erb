@@ -79,7 +79,7 @@
           </td>
           <td class="alpha-info-home">
             <span class="alpha-fill">Home</span>
-            <span class="alpha-value"><%= person.city %> <%= person.state %> <%= person.country %></span>
+            <span class="alpha-value"><%= [person.city, person.state, person.country].join(" ") if mentoring_personal_details? %></span>
           </td>
         </tr>
         <tr>

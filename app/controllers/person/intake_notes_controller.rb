@@ -7,7 +7,7 @@
 # per-team write permission is enforced by check_intake_permissions!, which
 # mirrors IntakeController::checkIntakePermissions.
 class Person::IntakeNotesController < ApplicationController
-  layout "person"
+  layout :notes_layout
 
   include PersonConcern
 
@@ -43,6 +43,7 @@ class Person::IntakeNotesController < ApplicationController
                                  year_scoped: true, selects: true }
   }.freeze
 
+  before_action :keep_event_mentor_to_the_pipeline
   before_action :set_person_intake_note, only: %i[edit update destroy]
 
   helper_method :intake_notes_return_path, :intake_notes_origin_params, :intake_notes_return_label
@@ -112,16 +113,26 @@ class Person::IntakeNotesController < ApplicationController
   # no year of its own and ignores it on the way back.
   def intake_notes_origin_params
     origin = params[:origin]
+    # An event mentor opens no person page, so with no token they go back to
+    # the Mentoring page that lists this person.
+    origin = "mentoring" if !ORIGIN_RETURNS.key?(origin) && event_mentor_only?
     return {} unless ORIGIN_RETURNS.key?(origin)
 
     { origin: origin, origin_year: params[:origin_year].presence || Current.year }
   end
 
-  # No origin (opened from the person's own page) returns there.
+  # No origin (opened from the person's own page) returns there: Unified
+  # Flagging for a writer who can open it, else the person page. Sending a VC or
+  # a Mentor to a page that refuses them swapped this action's message for that
+  # page's refusal.
   def intake_notes_return_path
     origin = intake_notes_origin_params
     entry = ORIGIN_RETURNS[origin[:origin]]
-    return person_unified_flagging_path(@person) unless entry
+    unless entry
+      return person_unified_flagging_path(@person) if has_role?(Person::UnifiedFlaggingController.authorized_roles)
+
+      return person_path(@person)
+    end
 
     args = entry[:selects] ? { person: @person.id } : { anchor: "person-#{@person.id}" }
     args[:year] = origin[:origin_year] if entry[:year_scoped]
@@ -130,6 +141,25 @@ class Person::IntakeNotesController < ApplicationController
 
   def intake_notes_return_label
     ORIGIN_RETURNS.dig(intake_notes_origin_params[:origin], :label) || @person.callsign
+  end
+
+  # Admitted on Mentor Interface Event alone. Every other role in the gate also
+  # opens a person page; this one opens the Mentoring pages only.
+  def event_mentor_only?
+    !has_role?(self.class.authorized_roles - [Role::MENTOR_INTERFACE_EVENT])
+  end
+
+  # The person sidebar would be a column of links that all refuse an event mentor.
+  def notes_layout
+    event_mentor_only? ? "mentoring" : "person"
+  end
+
+  # An event mentor reaches the people the Mentoring pages list -- anyone who
+  # is, or has been, a Prospective or an Alpha -- and nobody else by typing an id.
+  def keep_event_mentor_to_the_pipeline
+    return if !event_mentor_only? || Intake.pipeline_person?(@person)
+
+    redirect_to intake_notes_return_path, error: "Not authorized"
   end
 
   # Port of IntakeController::checkIntakePermissions.

@@ -86,7 +86,7 @@
           <%= t.header do %>
             <%= t.heading "Select", width: "1%" %>
             <%= t.heading "Callsign" %>
-            <%= t.heading "Name" %>
+            <%= t.heading "Name" if mentoring_personal_details? %>
             <%= t.heading "Training" %>
             <%= t.heading "Mentor Shift" %>
             <%= t.heading "Issues" %>
@@ -105,7 +105,7 @@
                                            aria_label: "Print an acceptance form for #{person.callsign}" %>
                 <% end %>
                 <%= t.row_header callsign_link(person) %>
-                <%= t.cell person.desired_full_name %>
+                <%= t.cell person.desired_full_name if mentoring_personal_details? %>
                 <%= t.cell do %>
                   <% if entry.trainings.empty? %>
                     &mdash;

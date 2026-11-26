@@ -181,11 +181,13 @@ class Mentoring::PostSeasonSummaryController < ApplicationController
 
   # Writable, like upstream: recording what the Mentors concluded is the point
   # of the review. Which teams a viewer may actually write for is decided by
-  # Person::IntakeNotesController::PERMISSION_ROLE_FOR_TYPE, so a Mentor gets
-  # the Mentor team only.
+  # Person::IntakeNotesController::PERMISSION_ROLE_FOR_TYPE, so a Mentor or a
+  # Mentor Interface Event holder gets the Mentor team only.
   def unified_flagging_read_only?
     false
   end
+
+  def unified_flagging_show_names? = helpers.mentoring_personal_details?
 
   # Its own token, not the sibling pages' "mentoring": that one returns to
   # /mentoring/potential-alphas, a current-standing roster that cannot hold a

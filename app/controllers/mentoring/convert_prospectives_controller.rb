@@ -76,11 +76,14 @@ class Mentoring::ConvertProspectivesController < ApplicationController
 
   # Writable: a mentor sizing someone up here often has a note to leave. Which
   # teams they may actually write for is decided by
-  # Person::IntakeNotesController::PERMISSION_ROLE_FOR_TYPE -- a Mentor gets the
-  # Mentor team only, upstream's mentorNotesOnly reached through the role map.
+  # Person::IntakeNotesController::PERMISSION_ROLE_FOR_TYPE -- a Mentor or a
+  # Mentor Interface Event holder gets the Mentor team only, upstream's
+  # mentorNotesOnly reached through the role map.
   def unified_flagging_read_only?
     false
   end
+
+  def unified_flagging_show_names? = helpers.mentoring_personal_details?
 
   def unified_flagging_origin
     { origin: "mentoring_convert" }
