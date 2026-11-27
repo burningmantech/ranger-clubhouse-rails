@@ -178,6 +178,9 @@ class TeamsPositions::TeamRecordsController < ApplicationController
     @type_options = TeamManagement::TYPE_LABELS.invert.to_a
     @roles = Role.order(:title)
     @is_tech_ninja = tech_ninja?
+    # The checklist only a Tech Ninja is offered. Everyone else gets the
+    # read-only list, which reads @roles.
+    @system_groups, @art_groups = Role.grant_groups(@roles) if @is_tech_ninja
     # Only an actor who may change grants gets their submission echoed back.
     # Otherwise a rejected form would show the read-only panel whatever grants
     # were posted -- inventing ones the team lacks and hiding the real ones,

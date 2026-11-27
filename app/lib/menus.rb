@@ -1147,7 +1147,7 @@ module Menus
           # Year-scoped: the inventory is per-event-year. active_prefix without
           # root: so the item stays lit on the record pages beneath it -- root:
           # would short-circuit prefix matching and light nothing at all there.
-          { title: "Asset Inventory", path: :asset_management_records_path,
+          { title: "Asset Records", path: :asset_management_records_path,
             active_prefix: true, year_scoped: true,
             description: "Every barcoded asset for the year — add, edit, and export the inventory" },
           # Not year-scoped: a group spans years.

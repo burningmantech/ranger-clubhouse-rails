@@ -11,7 +11,7 @@
       <%= render partial: "person/photo", locals: { photo: photo, person: person } %>
 
       <div class="flex min-w-0 grow basis-80 flex-col gap-3">
-        <div class="flex flex-wrap gap-x-8 gap-y-4">
+        <div class="grid gap-4">
           <% if can_view_email? || can_view_pii? %>
             <%= render layout: "person/summary_group" do %>
               <%= ui_label_value layout: :fitted do |list| %>

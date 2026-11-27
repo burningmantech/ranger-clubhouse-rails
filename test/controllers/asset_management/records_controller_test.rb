@@ -37,7 +37,7 @@ class AssetManagement::RecordsControllerTest < ActionDispatch::IntegrationTest
     Rails.cache.clear
   end
 
-  test "unauthorized user is redirected from asset inventory" do
+  test "unauthorized user is redirected from asset records" do
     sign_in_as(@unauthorized)
 
     get asset_management_records_path
@@ -52,7 +52,7 @@ class AssetManagement::RecordsControllerTest < ActionDispatch::IntegrationTest
 
     get asset_management_records_path
     assert_response :success
-    assert_select "body", text: /Asset Inventory/
+    assert_select "body", text: /Asset Records/
 
     get asset_management_records_type_path(asset.type, year: asset.year)
     assert_response :success
@@ -74,7 +74,7 @@ class AssetManagement::RecordsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "aside[aria-label='Sidebar navigation'] a[href^='#{asset_management_records_path}']",
-                  text: /Asset Inventory/
+                  text: /Asset Records/
   end
 
   test "index renders empty state without a synthetic year selector" do
@@ -161,7 +161,7 @@ class AssetManagement::RecordsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "body", text: /RAD-100/
     assert_select "body", text: /GEAR-100/, count: 0
-    assert_select "a[href=?]", asset_management_records_path(year: Current.year), text: /Asset Inventory/
+    assert_select "a[href=?]", asset_management_records_path(year: Current.year), text: /Asset Records/
 
     get asset_management_records_type_path(Asset::TYPE_RADIO, year: Current.year,
                                                              asset_group_id: asset_group("SITE").id)

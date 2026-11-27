@@ -588,7 +588,7 @@ class AssetManagement::RadioAssetsControllerTest < ActionDispatch::IntegrationTe
     assert_not_equal by_other, response.headers["Content-Disposition"]
   end
 
-  test "the export filename does not collide with the Asset Inventory radio export" do
+  test "the export filename does not collide with the Asset Records radio export" do
     create_radio(barcode: "101")
 
     sign_in_as(@admin)

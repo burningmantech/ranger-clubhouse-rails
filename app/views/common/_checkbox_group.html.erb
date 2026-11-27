@@ -1,0 +1,21 @@
+<%# locals: (title:, id:, body_class: nil) %>
+<%# A titled card holding one group of common/checkbox_row boxes, for a long
+    checklist filed in groups. Rendered with `render layout:`: the caller's
+    block is the rows. Not common/checkbox_tile, which is the bordered box
+    around a single checkbox.
+
+    The title names the group for a screen reader (role="group"), which is
+    what says whose "Interface" a box is when its rows carry short labels. It
+    is an <h4>, one level under the subheading the cards sit beneath. Not a
+    <fieldset>: components/forms.css gives every fieldset inside a form the
+    blue rule and gradient of f.fieldset.
+
+    The card carries no spacing of its own: the wrapper that flows the cards
+    sets the gap under each and keeps one from splitting across two columns
+    (teams_positions/_role_grants). id: is the heading's id and has to be
+    unique on the page. body_class: lays the rows out, as "grid grid-cols-2"
+    does for a card of short labels. %>
+<%= ui_card shadow: :none, role: "group", aria: { labelledby: id } do %>
+  <h4 id="<%= id %>" class="heading-title text-heading px-3 py-2 border-b border-line"><%= title %></h4>
+  <div class="<%= class_names("px-2 py-1", body_class) %>"><%= yield %></div>
+<% end %>

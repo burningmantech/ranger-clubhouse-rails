@@ -4,6 +4,7 @@ require "test_helper"
 
 class TeamsPositions::PositionRecordsControllerTest < ActionDispatch::IntegrationTest
   include AuthenticationTestHelper
+  include DomIdTestHelper
   include TimesheetAdminTestHelper # ensure_role / grant_role
 
   setup do
@@ -468,6 +469,61 @@ class TeamsPositions::PositionRecordsControllerTest < ActionDispatch::Integratio
     assert_equal [Role::MENTOR_INTERFACE], PositionRole.where(position_id: @position.id).pluck(:role_id)
   end
 
+  # Saving replaces the whole grant list with the boxes posted, so a permission
+  # the checklist leaves out would be revoked by the next save. Every one has
+  # to be offered, exactly once, wherever it is filed.
+  test "the permission checklist offers every permission exactly once" do
+    create_filed_and_unfiled_permissions
+    sign_in_as(@tech_ninja)
+
+    get teams_positions_edit_position_record_path(@position)
+
+    assert_response :success
+    offered = css_select("input[type=checkbox][name='position[role_ids][]']").map { |box| box["value"].to_i }
+    assert_equal Role.pluck(:id).sort, offered.sort
+    assert_select "input[type=checkbox][name='position[role_ids][]'][checked]", 2
+    assert_unique_dom_ids
+  end
+
+  test "the permission checklist files each permission in its group's card" do
+    create_filed_and_unfiled_permissions
+    sign_in_as(@tech_ninja)
+
+    get teams_positions_edit_position_record_path(@position)
+
+    assert_response :success
+    # A system permission keeps its title, in the card of the group it is filed
+    # under. assert_includes, because nothing clears the role table between runs.
+    assert_includes checklist_card("Mentoring"), "Mentor"
+    # An ART's permissions share a card named for its training position. They
+    # read by type, in base order: the title already says which ART.
+    assert_equal %w[Interface Graduate], checklist_card("Green Dot Training")
+    # Composed from In-Person Training, which is no ART: both sit with their
+    # subject under their own titles, and no second card is titled "Training".
+    assert_includes checklist_card("Training"), "T.A. Resource Mgmt"
+    assert_includes checklist_card("Training"), "In-Person Survey Mgmt"
+    assert_equal 1, css_select(".card-standard[role=group] h4").count { |heading| heading.text.strip == "Training" }
+    # No group names it, and it is still offered.
+    assert_includes checklist_card("Other"), "Not Filed Anywhere"
+    # A card is a group its heading names, which is what tells a screen reader
+    # whose "Interface" a box is.
+    css_select(".card-standard[role=group]").each do |card|
+      assert_equal card.at_css("h4")["id"], card["aria-labelledby"]
+    end
+  end
+
+  test "the permission checklist has no ART heading without an ART permission" do
+    # Nothing clears the role table between runs, so start from none composed.
+    Role.where(id: Role::ART_TRAINER_BASE..).delete_all
+    sign_in_as(@tech_ninja)
+
+    get teams_positions_edit_position_record_path(@position)
+
+    assert_response :success
+    assert_select "h3", text: "System Permissions"
+    assert_select "h3", text: "ART Permissions", count: 0
+  end
+
   test "a plain admin sees an explainer instead of the checkboxes" do
     get teams_positions_edit_position_record_path(@position)
 
@@ -617,5 +673,29 @@ class TeamsPositions::PositionRecordsControllerTest < ActionDispatch::Integratio
     assert_response :success
     confirm = css_select("a[data-turbo-confirm]").map { |link| link["data-turbo-confirm"] }.join
     assert_includes confirm, "It is also taken out of 1 shift type and 2 posts in Shift Coverage."
+  end
+
+  private
+
+  # The labels of the boxes in the checklist card with this title, in order.
+  def checklist_card(title)
+    card = css_select(".card-standard[role=group]").find { |group| group.at_css("h4").text.strip == title }
+    assert card, "no checklist card is titled #{title}"
+
+    card.css("label").map { |label| label.text.strip }
+  end
+
+  # One permission of each kind the checklist files beyond setup's named ones:
+  # an ART's pair, two composed from In-Person Training (which is no ART), and
+  # one no group names. Returns the ART's training position.
+  def create_filed_and_unfiled_permissions
+    art = Position.create!(id: Position::GREEN_DOT_TRAINING, title: "Green Dot Training",
+                           type: Position::TYPE_TRAINING, active: true)
+    ensure_role(Role::ART_TRAINER_BASE | art.id, "ART Green Dot Interface")
+    ensure_role(Role::ART_GRADUATE_BASE | art.id, "ART Green Dot Graduate")
+    ensure_role(Role::TRAINER_RESOURCE_MANAGEMENT_BASE | Position::TRAINING, "T.A. Resource Mgmt")
+    ensure_role(Role::SURVEY_MANAGEMENT_BASE | Position::TRAINING, "In-Person Survey Mgmt")
+    ensure_role(900, "Not Filed Anywhere")
+    art
   end
 end

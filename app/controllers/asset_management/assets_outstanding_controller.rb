@@ -29,7 +29,7 @@ class AssetManagement::AssetsOutstandingController < ApplicationController
 
   private
 
-  # Years come from the asset records themselves, matching the Asset Inventory
+  # Years come from the asset records themselves, matching the Asset Records
   # sibling: every year holding inventory is browsable. (2020 and 2021 have no
   # asset rows at all, so the pandemic skips itself.)
   def load_report

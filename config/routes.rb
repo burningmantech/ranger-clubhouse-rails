@@ -524,7 +524,7 @@ Rails.application.routes.draw do
     end
   end
 
-  # Asset inventory administration (radios, vehicles, gear). Kept off /assets,
+  # Asset records administration (radios, vehicles, gear). Kept off /assets,
   # which Propshaft owns -- its middleware 404s an unknown path under that
   # prefix instead of falling through to the router.
   namespace :asset_management, path: "asset-management" do

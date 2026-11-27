@@ -4,6 +4,7 @@ require "test_helper"
 
 class TeamsPositions::TeamRecordsControllerTest < ActionDispatch::IntegrationTest
   include AuthenticationTestHelper
+  include DomIdTestHelper
   include TimesheetAdminTestHelper # ensure_role / grant_role
 
   setup do
@@ -311,6 +312,27 @@ class TeamsPositions::TeamRecordsControllerTest < ActionDispatch::IntegrationTes
     assert_select "input[name=?][value=?]", "team[role_ids][]", Role::MENTOR_INTERFACE.to_s
     # The whole row must be the label, or the 36px tap target is not clickable.
     assert_select "label.min-h-9 input[name=?]", "team[role_ids][]"
+  end
+
+  # Saving replaces the team's whole grant list with the boxes posted, so a
+  # permission the checklist leaves out would be revoked by the next save. The
+  # checklist is Position Records' own, which is where its filing is tested.
+  test "the role grant checklist offers every permission exactly once" do
+    art = Position.create!(id: Position::GREEN_DOT_TRAINING, title: "Green Dot Training",
+                           type: Position::TYPE_TRAINING, active: true)
+    ensure_role(Role::ART_TRAINER_BASE | art.id, "ART Green Dot Interface")
+    ensure_role(900, "Not Filed Anywhere")
+    sign_in_as(@tech_ninja)
+
+    get teams_positions_edit_team_record_path(@team)
+
+    assert_response :success
+    offered = css_select("input[type=checkbox][name='team[role_ids][]']").map { |box| box["value"].to_i }
+    assert_equal Role.pluck(:id).sort, offered.sort
+    art_card = css_select(".card-standard[role=group]").find { |group| group.at_css("h4").text.strip == art.title }
+    assert art_card, "no checklist card is titled #{art.title}"
+    assert_equal ["Interface"], art_card.css("label").map { |label| label.text.strip }
+    assert_unique_dom_ids
   end
 
   # --------------------------------------------------------------- destroy

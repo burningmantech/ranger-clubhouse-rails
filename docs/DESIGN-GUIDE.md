@@ -2692,6 +2692,9 @@ with many text inputs.
 `ui_disclosure variant: :card` categories laid out with `form_row`, and its status checkboxes are one flat list with
 no group wrapper; `test/controllers/people/search_controller_test.rb` pins both.
 
+**Exception:** a long checklist filed in groups is not a fieldset per group. Each group is a
+`common/checkbox_group` card: see Long Checklists below.
+
 **Styling** (`components/forms.css`, on every `form fieldset`): a 4px `border-primary` rule on the start edge over a
 `from-primary/5` gradient, `rounded-r-lg`, `ps-4`; the legend is `text-lg font-semibold` over a `border-base-200`
 underline. This is the theme's look for a group of fields; with the hero stats' flame (the hero's own look), the
@@ -2775,6 +2778,26 @@ Best for card-based grouping with generous whitespace and ADHD-friendly design:
 <% end %>
 <% end %>
 ```
+
+#### Long Checklists: Cards of Checkbox Rows
+
+A list of checkboxes posting into one array parameter that runs past a few dozen boxes is filed in groups. Each
+group is a `common/checkbox_group` card: a `ui_card` with no shadow, a left-aligned `<h4>` title
+(`heading-title text-heading`) over a `border-line` rule, and its `common/checkbox_row` rows beneath.
+
+- **Accessibility:** the card is `role="group"`, named by its title (`aria-labelledby`), so a row may carry a
+  short label when the title says the rest ("Interface" under "Green Dot Training"). Every row is its own 36px
+  label. It is not a `<fieldset>`: every fieldset inside a form takes the `f.fieldset` rule and gradient.
+- **Layout:** the cards flow in a `columns-2xs gap-x-4` wrapper, as many 18rem columns as fit: one on a phone,
+  two on a tablet, three on a laptop, with no breakpoint. Each card sits in a bare `<div>` that the wrapper pads
+  underneath and keeps whole (`*:pb-4 *:break-inside-avoid`). Padding, never a margin: Safari carries a margin
+  cut off by a column break to the top of the next column.
+- **Completeness:** a form that replaces the whole list on save draws every option, wherever it is filed, with
+  a last "Other" card for what nothing files.
+
+In use on the Position Records and Team Records forms (`app/views/teams_positions/_role_grants.html.erb`). The
+locals, an example, and how to choose among `checkbox_row`, `checkbox_tile`, `checkbox_grid` and
+`checkbox_group` are in `docs/UI-COMPONENTS.md` > Checkbox lists.
 
 ### Error States
 
@@ -3671,7 +3694,7 @@ counts. Just the categories and how big each one is.
 - Adding the level-2 action to the controller does not gate it. Add it to the
   `authorize_ability ... only:` list in the same edit.
 
-**Existing pages:** Asset Inventory (`asset-management/records`), Slots
+**Existing pages:** Asset Records (`asset-management/records`), Slots
 (`scheduling/slots`), Available Sign-Ups, Position Credits, Swag
 
 > Every one of these carries its level-2 totals in a body `ui_stat_row`, as shown above.

@@ -198,6 +198,9 @@ sit in `ui_disclosure variant: :card` categories laid out with `form_row`, and i
 checkboxes are one flat list with no group wrapper; `test/controllers/people/search_controller_test.rb`
 pins both.
 
+**Exception:** a long checklist filed in groups is not a fieldset per group. Each group is a
+`common/checkbox_group` card: see Long Checklists below.
+
 **Styling** (`components/forms.css`): a 4px `border-primary` start rule over a `from-primary/5`
 gradient, `rounded-r-lg`; the legend `text-lg font-semibold` over a `border-base-200` underline.
 
@@ -248,6 +251,42 @@ Best for card-based grouping with generous whitespace and ADHD-friendly design:
   <% end %>
 <% end %>
 ```
+
+### Long Checklists: Cards of Checkbox Rows
+
+Four partials draw checkboxes that post into one array parameter: `common/checkbox_row` (one borderless row),
+`common/checkbox_tile` (a bordered box around one checkbox), `common/checkbox_grid` (a ready-made grid of those
+tiles from `[[value, label], ...]`) and `common/checkbox_group` (a titled card holding several rows). In each the
+whole label is the 36px tap target. A plain list of options is a `checkbox_grid`, or rows you lay out yourself.
+Past a few dozen boxes, file them in groups: each group is a `common/checkbox_group` card, and the cards flow in
+a column wrapper.
+
+```erb
+<div class="columns-2xs gap-x-4 *:break-inside-avoid *:pb-4">
+  <% groups.each do |title, permissions| %>
+    <div>
+      <%= render layout: "common/checkbox_group", locals: { title:, id: "grant-group-#{permissions.first.id}" } do %>
+        <%# one common/checkbox_row per permission %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+```
+
+- **Columns by width, not by breakpoint.** `columns-2xs` gives as many 18rem columns as fit: one on a phone,
+  two on a tablet, three on a laptop. A fixed `lg:columns-3` leaves a tablet with one column three screens tall.
+- **The flow spaces the cards, with padding.** A column flow has no row gap, so each card sits in a bare
+  `<div>` that the flow pads underneath (`*:pb-4`) and keeps whole (`*:break-inside-avoid`). Never a margin:
+  Safari carries a margin cut off by a column break to the top of the next column, which then starts 16px low.
+  Check a column flow in the iPad simulator, not in Chrome alone.
+- **Never a `<fieldset>` per group.** Every fieldset inside a form takes the `f.fieldset` rule and gradient.
+  The card is `role="group"`, named by its title.
+- **Short labels inside a card** are fine when the title says the rest: "Interface" under "Green Dot Training".
+- **A form that replaces the whole list on save draws every option**, wherever it is filed. Give the grouping
+  a last "Other" card for what nothing files, and test that the boxes offered equal the options that exist.
+
+Reference: `app/views/teams_positions/_role_grants.html.erb` (Position Records, Team Records). Full API:
+`docs/UI-COMPONENTS.md` > Checkbox lists.
 
 ---
 

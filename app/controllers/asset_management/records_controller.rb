@@ -163,7 +163,7 @@ class AssetManagement::RecordsController < ApplicationController
   end
 
   def type_records_label(type)
-    type.blank? ? "Asset inventory" : "#{helpers.asset_type_label(type)} assets"
+    type.blank? ? "Asset Records" : "#{helpers.asset_type_label(type)} assets"
   end
 
   def load_years

@@ -962,6 +962,68 @@ form_error_summary(model)
 |-----------|------|---------|-------------|
 | `model` | Object | required | ActiveRecord model with errors |
 
+### Checkbox lists (`common/checkbox_row`, `common/checkbox_tile`, `common/checkbox_grid`, `common/checkbox_group`)
+
+**Files:** `app/views/common/_checkbox_row.html.erb`, `app/views/common/_checkbox_tile.html.erb`,
+`app/views/common/_checkbox_grid.html.erb`, `app/views/common/_checkbox_group.html.erb`
+
+Four partials draw checkboxes that post into one array parameter. In each, the whole label is the 36px tap target.
+
+| Partial | Is | Reach for it when |
+|---------|----|-------------------|
+| `common/checkbox_row` | One borderless row: the box and its label | The list is rows you lay out yourself (CSS columns, a grid), or each row needs its own content |
+| `common/checkbox_tile` | A bordered box around one checkbox you supply | Each option stands alone as a tile |
+| `common/checkbox_grid` | A ready-made grid of `checkbox_tile`s from `[[value, label], ...]` | The options are a plain list of values and labels |
+| `common/checkbox_group` | A titled card (`ui_card`) holding several `checkbox_row`s | A long list is filed in groups |
+
+`checkbox_row`, `checkbox_tile` and `checkbox_group` are rendered with `render layout:` (the block is the label,
+the box, or the group's rows); `checkbox_grid` with a plain `render` and locals `name:`, `options:`, `selected:`,
+`id_prefix:` and an optional `align:`. The locals of the row and the group:
+
+| Local | Partial | Default | Description |
+|-------|---------|---------|-------------|
+| `name:` | row | required | The array parameter, trailing `[]` included |
+| `value:`, `checked:`, `id:` | row | required | The box's value, its state and its unique id |
+| `data:` | row | `nil` | Data attributes for the checkbox (a Stimulus picker's hooks) |
+| `title:` | group | required | The card's heading, an `<h4>`. It names the group for a screen reader (`role="group"`) |
+| `id:` | group | required | The heading's id, unique on the page |
+| `body_class:` | group | `nil` | Lays the rows out: `"grid grid-cols-2"` for a card of short labels |
+
+A long list filed in groups:
+
+```erb
+<%# Sent whatever the boxes say, so clearing them all arrives as a choice. %>
+<%= hidden_field_tag "position[role_ids][]", "" %>
+<div class="columns-2xs gap-x-4 *:break-inside-avoid *:pb-4">
+  <% groups.each do |title, permissions| %>
+    <div>
+      <%= render layout: "common/checkbox_group", locals: { title:, id: "grant-group-#{permissions.first.id}" } do %>
+        <% permissions.each do |permission| %>
+          <%= render layout: "common/checkbox_row",
+                     locals: { name: "position[role_ids][]", value: permission.id,
+                               checked: granted.include?(permission.id), id: "grant-#{permission.id}" } do %>
+            <%= permission.title %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+```
+
+The group cards flow in CSS columns, never a grid: `columns-2xs` gives as many 18rem columns as fit (one on a
+phone, two on a tablet, three on a laptop) with no breakpoint. A column flow has no row gap, so each card sits in a
+bare `<div>` that the flow pads underneath (`*:pb-4`) and keeps whole (`*:break-inside-avoid`); the card carries
+no spacing of its own. **Padding, never a margin**: Safari carries a margin cut off by a column break over to
+the top of the next column, which then starts 16px below its neighbour (seen on the iPad simulator; Chrome
+drops the margin, so it looks right there). A group card is not a `<fieldset>` either: `components/forms.css`
+gives every fieldset inside a form the rule and gradient of `f.fieldset`. A row inside a card may carry a short
+label when the card's title says the rest ("Interface" under "Green Dot Training").
+
+A form that replaces the whole list on save must draw every option, wherever it is filed: give the grouping a
+last card for what nothing files. In use on the Position Records and Team Records forms
+(`app/views/teams_positions/_role_grants.html.erb`, filed by `Role.grant_groups`).
+
 ## Autocomplete Field (`autocomplete_field`)
 
 Renders a JSON-powered autocomplete search field with grouped results, filter chips, keyboard navigation, and metadata writeback.
