@@ -4,6 +4,10 @@ require "support/system_test_helpers"
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   driven_by :selenium, using: :headless_chrome, screen_size: [1400, 1400]
 
+  # Chrome 158 refuses the call Capybara 3.40.0 ends every reset with. The
+  # module says what stands in for it, and when it can go.
+  Capybara::Selenium::Driver::ChromeDriver.prepend(ChromeResetWithoutWildcardOrigin)
+
   include SystemTestHelpers
 
   # The navbar binds its hotkeys for the client's platform
