@@ -114,7 +114,7 @@ class Role < ApplicationRecord
     "Quartermaster Management" => [
       EDIT_SWAG,
       EDIT_CLOTHING,
-      QUARTERMASTER_INTERFACE,
+      QUARTERMASTER_INTERFACE
     ],
     "People and Records" => [
       AWARD_MANAGEMENT,
@@ -141,7 +141,7 @@ class Role < ApplicationRecord
     "Gear and Vehicles" => [
       EDIT_ASSETS,
       VEHICLE_MANAGEMENT,
-      VEHICLE_INFO_UPDATE,
+      VEHICLE_INFO_UPDATE
     ],
     "Volunteer Coordination / Ticketing" => [
       VC_INTERFACE,
@@ -149,7 +149,7 @@ class Role < ApplicationRecord
       EDIT_BMIDS,
       EDIT_HANDLE_RESERVATIONS,
       SALESFORCE_IMPORT
-    ],
+    ]
   }.freeze
   OTHER_GROUP = "Other"
 
