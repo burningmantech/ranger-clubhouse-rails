@@ -4,6 +4,17 @@
     decoration only: the footer names the organisation in words. %>
 <div class="login-backdrop" aria-hidden="true"></div>
 
+<% if Current.is_staging? %>
+  <%= hero_panel icon: "flag", heading_level: :h1, id: "staging-warning",
+                 title: "WARNING: Not The Real Clubhouse" do |panel| %>
+    <% panel.description class: "text-xl" do %>
+      <p class="mb-2">
+        This is a staging server for testing only. Do not use it for real work.
+      </p>
+      The real Clubhouse is at <a href="ranger-clubhouse.burningman.org">ranger-clubhouse.burningman.org</a>
+    <% end %>
+  <% end %>
+<% end %>
 <%# The door and the other doors: side by side from lg up, the doors under the
     panel below it. %>
 <div class="login-columns">
@@ -44,7 +55,7 @@
   <nav class="login-doors" aria-label="Audit Training? Want to be a Ranger?">
     <h2 class="login-doors-title">Audit Training? Want to be a Ranger?</h2>
     <ul class="login-doors-list">
-       <li>
+      <li>
         <%= fa_icon "chalkboard-user", :solid %>
         <div>
           <%= link_to safe_join(["Auditing a Training? Create an Account", fa_icon("arrow-right", :solid, start: 2)]),
