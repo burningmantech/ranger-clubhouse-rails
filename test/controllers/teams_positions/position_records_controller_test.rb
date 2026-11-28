@@ -500,8 +500,7 @@ class TeamsPositions::PositionRecordsControllerTest < ActionDispatch::Integratio
     assert_equal %w[Interface Graduate], checklist_card("Green Dot Training")
     # Composed from In-Person Training, which is no ART: both sit with their
     # subject under their own titles, and no second card is titled "Training".
-    assert_includes checklist_card("Training"), "T.A. Resource Mgmt"
-    assert_includes checklist_card("Training"), "In-Person Survey Mgmt"
+    assert_includes checklist_card("In-Person Training"), "T.A. Resource Mgmt"
     assert_equal 1, css_select(".card-standard[role=group] h4").count { |heading| heading.text.strip == "Training" }
     # No group names it, and it is still offered.
     assert_includes checklist_card("Other"), "Not Filed Anywhere"

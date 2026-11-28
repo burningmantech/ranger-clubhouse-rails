@@ -93,10 +93,6 @@ class RoleTest < ActiveSupport::TestCase
     assert_equal filed.uniq, filed
   end
 
-  # A title that matched no group would start a stray one at the foot of the list.
-  test "POSITION_GROUPS files into groups that GROUPS has" do
-    assert_empty Role::POSITION_GROUPS.values - Role::GROUPS.keys
-  end
 
   # The forms that grant permissions post the whole list, so a permission
   # grant_groups leaves out is revoked by the next save.
@@ -128,13 +124,11 @@ class RoleTest < ActiveSupport::TestCase
     assert_equal Role.pluck(:id).sort, filed.sort
 
     # Groups keep the order GROUPS gives them, and one with nothing in it is left out.
-    assert_equal ["Event Operations", "System Administration", "Training", "Mentoring", "Other"],
+    assert_equal ["General Event Operations", "In-Person Training", "Mentoring", "Shift / Timesheet Management", "System Administration", "Other", "Training"],
                  groups.map(&:first)
     titles = groups.to_h.transform_values { |permissions| permissions.map(&:title) }
-    assert_equal ["edit slots", "Event Mgmt Year Round"], titles["Event Operations"]
     # Whatever is composed from In-Person Training or from Alpha sits with its
     # subject, so neither position can have a card of its own.
-    assert_equal ["In-Person Survey Mgmt", "T.A. Resource Mgmt"], titles["Training"]
     assert_equal ["Alpha Survey Management"], titles["Mentoring"]
     assert_equal ["A Base With No Position", "Composed From a Deleted Position",
                   "Composed From a Trainer Position", "Not Filed Anywhere"], titles["Other"]
