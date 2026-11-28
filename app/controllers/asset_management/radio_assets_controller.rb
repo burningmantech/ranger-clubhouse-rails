@@ -241,7 +241,7 @@ class AssetManagement::RadioAssetsController < ApplicationController
              (duration unless duration == ALL_FILTER),
              (description_slug(description) unless description == ALL_FILTER),
              (SUMMARY_VIEW if @summary_view),
-             # Not "radio-assets.csv": the Asset Inventory type page exports
+             # Not "radio-assets.csv": the Asset Records type page exports
              # "#{year}-#{type}-assets.csv", which for type=radio is exactly
              # "#{year}-radio-assets.csv" -- a different report with eleven
              # columns under the same name.

@@ -142,16 +142,9 @@
       <%= f.check_box :require_signin_for_roles,
                       label: "Permissions are only granted while signed into this position" %>
 
-      <%= hidden_field_tag "position[role_ids][]", "" %>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-x-1 mt-3">
-        <% @roles.each do |role| %>
-          <%= render layout: "common/checkbox_row",
-                     locals: { name: "position[role_ids][]", value: role.id,
-                               checked: @role_ids.include?(role.id), id: "position-role-#{role.id}" } do %>
-            <%= role.title %>
-          <% end %>
-        <% end %>
-      </div>
+      <%= render "teams_positions/role_grants", name: "position[role_ids][]", id_prefix: "position-role",
+                                                role_ids: @role_ids, system_groups: @system_groups,
+                                                art_groups: @art_groups %>
     <% else %>
       <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
         <strong>Only the Tech Team can change permission grants.</strong>

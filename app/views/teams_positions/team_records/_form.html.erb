@@ -61,16 +61,9 @@
         <dd>Admin and Tech Ninja hand every member full access, so you can only grant them if you hold them yourself. Granting Admin or View Personal Info needs prior approval by the Ranger Council.</dd>
       </dl>
 
-      <%= hidden_field_tag "team[role_ids][]", "" %>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-x-1">
-        <% @roles.each do |role| %>
-          <%= render layout: "common/checkbox_row",
-                     locals: { name: "team[role_ids][]", value: role.id,
-                               checked: @role_ids.include?(role.id), id: "team-role-#{role.id}" } do %>
-            <%= role.title %>
-          <% end %>
-        <% end %>
-      </div>
+      <%= render "teams_positions/role_grants", name: "team[role_ids][]", id_prefix: "team-role",
+                                                role_ids: @role_ids, system_groups: @system_groups,
+                                                art_groups: @art_groups %>
     <% else %>
       <%= ui_callout_box :info, icon: "circle-info", icon_type: :solid do %>
         <strong>Only the Tech Team can change role grants.</strong>

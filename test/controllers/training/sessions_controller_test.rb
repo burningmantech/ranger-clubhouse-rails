@@ -28,7 +28,6 @@ class Training::SessionsControllerTest < ActionDispatch::IntegrationTest
     ensure_role(Role::TRAINING_INTERFACE, "Trainer")
     ensure_role(Role::MENTOR_INTERFACE, "Mentor")
     ensure_role(Role::VC_INTERFACE, "VC")
-    ensure_role(Role::ART_TRAINER, "ART Trainer")
     ensure_role(Role::ART_TRAINER_BASE | Position::GREEN_DOT_TRAINING, "Green Dot Interface")
 
     @admin = person(:active_ranger)
@@ -84,16 +83,6 @@ class Training::SessionsControllerTest < ActionDispatch::IntegrationTest
 
     get training_path("in-person")
     assert_redirected_to me_root_path
-  end
-
-  test "dirt roles and the plain ART Trainer role grant nothing on an ART" do
-    grant_role(@trainer, Role::ART_TRAINER)
-    sign_in_as(@trainer)
-
-    get training_path("green-dot")
-
-    assert_redirected_to me_root_path
-    assert_match(/not authorized/, flash[:error])
   end
 
   test "a person with no training roles is turned away" do

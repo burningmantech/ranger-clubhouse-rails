@@ -176,7 +176,7 @@ records fall into a small, stable set of categories:
    the export is scoped by the filters, so it belongs on the control that sets them. A category
    index has no filter bar, so its export stays in the `button_row` beside New Record
 
-**Reference implementations:** Asset Inventory (`asset-management/records`), Slots
+**Reference implementations:** Asset Records (`asset-management/records`), Slots
 (`scheduling/slots`). Assets Outstanding (`asset-management/assets-outstanding`) is the
 counter-example: it reads across every type on purpose, so it stays flat.
 

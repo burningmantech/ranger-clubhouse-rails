@@ -21,7 +21,7 @@ class Role < ApplicationRecord
   MENTOR_INTERFACE = 101
   TRAINING_INTERFACE = 102
   VC_INTERFACE = 103
-  ART_TRAINER = 104
+  # ART_TRAINER = 104 -- replaced by ART_TRAINER_BASE
   MEGAPHONE = 105
   TIMESHEET_MANAGEMENT = 106
   SURVEY_MANAGEMENT_TRAINING = 107
@@ -86,6 +86,79 @@ class Role < ApplicationRecord
     TRAINER_RESOURCE_MANAGEMENT_BASE => "Resrc Mgmt"
   }.freeze
 
+  # Where a permission is filed on the forms that grant them, in the order the
+  # groups are drawn. A new constant belongs in one of these lists; until it is
+  # in one, grant_groups files its row under OTHER_GROUP instead of losing it.
+  GROUPS = {
+    "General Event Operations" => [
+      EVENT_MANAGEMENT,
+      EVENT_MANAGEMENT_ON_PLAYA,
+      FULL_REPORT_ACCESS,
+      POG_MANAGEMENT,
+      TEAM_RESOURCE_MANAGEMENT
+    ],
+    "Communication" => [
+      ANNOUNCEMENT_MANAGEMENT,
+      MEGAPHONE,
+      MEGAPHONE_TEAM_ONPLAYA,
+      MEGAPHONE_EMERGENCY_ONPLAYA,
+      MESSAGE_MANAGEMENT
+    ],
+    "In-Person Training" => [
+      TRAINING_INTERFACE,
+      TRAINING_INTERFACE_SEASONAL,
+      SURVEY_MANAGEMENT_TRAINING,
+      TRAINER_RESOURCE_MANAGEMENT_BASE | Position::TRAINING
+    ],
+    "Mentoring" => [MENTOR_INTERFACE, MENTOR_INTERFACE_EVENT],
+    "Quartermaster Management" => [
+      EDIT_SWAG,
+      EDIT_CLOTHING,
+      QUARTERMASTER_INTERFACE
+    ],
+    "People and Records" => [
+      AWARD_MANAGEMENT,
+      CERTIFICATION_MGMT,
+      EDIT_EMERGENCY_CONTACT,
+      INTAKE,
+      REGIONAL_MANAGEMENT,
+      VIEW_EMAIL,
+      VIEW_PII
+    ],
+    "Shift / Timesheet Management" => [
+      CAN_FORCE_SHIFT,
+      EDIT_SLOTS,
+      PAYROLL,
+      POD_MANAGEMENT,
+      SHIFT_MANAGEMENT,
+      SHIFT_MANAGEMENT_SELF,
+      TIMESHEET_MANAGEMENT
+    ],
+    "System Administration" => [
+      ADMIN,
+      TECH_NINJA
+    ],
+    "Gear and Vehicles" => [
+      EDIT_ASSETS,
+      VEHICLE_MANAGEMENT,
+      VEHICLE_INFO_UPDATE
+    ],
+    "Volunteer Coordination / Ticketing" => [
+      VC_INTERFACE,
+      EDIT_ACCESS_DOCS,
+      EDIT_BMIDS,
+      EDIT_HANDLE_RESERVATIONS,
+      SALESFORCE_IMPORT
+    ]
+  }.freeze
+  OTHER_GROUP = "Other"
+
+  # Two positions have permissions composed from them and are no ART: In-Person
+  # Training and Alpha. Whatever is composed from either is filed with its
+  # subject, under its own title, and never in a card of the position's own,
+  # which for In-Person Training would be a second card titled "Training".
+  POSITION_GROUPS = { Position::TRAINING => "Training", Position::ALPHA => "Mentoring" }.freeze
+
   # Associations
   has_many :person_roles, dependent: :delete_all
   has_many :team_roles, dependent: :delete_all
@@ -114,15 +187,53 @@ class Role < ApplicationRecord
 
     titles = Position.where(id: composed.map(&:art_position_id)).pluck(:id, :title).to_h
 
-    groups = composed.group_by(&:art_position_id)
-                     .map do |position_id, roles|
-                       [titles[position_id] || "Position ##{position_id}",
-                        roles.sort_by { |role| role.id & ROLE_BASE_MASK }]
-                     end
-                     .sort_by { |title, _| title.downcase }
-
-    [named, groups]
+    [named, by_position(composed, titles)]
   end
+
+  # Every permission, filed for a form that grants them:
+  # [[[group_title, permissions], ...], [[art_title, permissions], ...]].
+  #
+  # The first list is the groups, each A to Z by title: what GROUPS names,
+  # whatever is composed from a position in POSITION_GROUPS, and under
+  # OTHER_GROUP the rest -- a named permission no group claims, or one composed
+  # from a position that is gone or is no ART. The second holds the ARTs, each
+  # with the permissions composed from it in base order.
+  #
+  # Together the two lists hold each permission exactly once, and the forms
+  # rely on it: they post the whole list, so a permission they do not draw is
+  # revoked by the next save.
+  def self.grant_groups(roles = ordered_by_title)
+    roles = roles.to_a
+    by_id = roles.index_by(&:id)
+    positions = Position.where(id: roles.filter_map(&:art_position_id)).index_by(&:id)
+
+    filed = GROUPS.transform_values { |ids| by_id.values_at(*ids).compact }
+    of_arts, rest = (roles - filed.values.flatten).partition do |role|
+      position = positions[role.art_position_id]
+      position && Training.training_position?(position) && Training.art?(position)
+    end
+    rest.each { |role| (filed[POSITION_GROUPS.fetch(role.art_position_id, OTHER_GROUP)] ||= []) << role }
+
+    groups = filed.reject { |_title, permissions| permissions.empty? }
+                  .map { |title, permissions| [title, permissions.sort_by { |role| role.title.downcase }] }
+
+    [groups, by_position(of_arts, positions.transform_values(&:title))]
+  end
+
+  # Composed permissions under the position each was built from:
+  # [[position_title, permissions], ...], A to Z by title. Each group runs in
+  # the order of the bases its permissions were built from, so one type sits in
+  # one place under every position.
+  def self.by_position(composed, titles)
+    composed.group_by(&:art_position_id)
+            .map do |position_id, roles|
+      [titles[position_id] || "Position ##{position_id}",
+       roles.sort_by { |role| role.id & ROLE_BASE_MASK }]
+    end
+            .sort_by { |title, _| title.downcase }
+  end
+
+  private_class_method :by_position
 
   def self.find_for_query(query = {})
     scope = ordered_by_title
@@ -199,6 +310,13 @@ class Role < ApplicationRecord
   def art_position_title
     return nil if (id & ROLE_BASE_MASK) == 0
     Position.where(id: id & ~ROLE_BASE_MASK).pick(:title)
+  end
+
+  # What a composed permission is called inside its ART's own card: its type
+  # alone, the card's title having named the ART. A base the code has no name
+  # for keeps its whole title, so a box never reads as a number.
+  def art_type_label
+    ART_ROLE_SUFFIXES.fetch(id & ROLE_BASE_MASK, title)
   end
 
   def art_role_title

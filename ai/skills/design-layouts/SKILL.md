@@ -374,7 +374,7 @@ how big each one is.
 - Adding the level-2 action to the controller does not gate it. Add it to the
   `authorize_ability ... only:` list in the same edit.
 
-**Existing pages:** Asset Inventory (`asset-management/records`), Slots
+**Existing pages:** Asset Records (`asset-management/records`), Slots
 (`scheduling/slots`), Available Sign-Ups, Position Credits, Swag
 
 > Every one of these carries its level-2 totals in a body `ui_stat_row`, as shown

@@ -1,0 +1,48 @@
+<%# locals: (name:, id_prefix:, role_ids:, system_groups:, art_groups:) %>
+<%# Every permission as a checkbox, filed in cards: the system permissions by
+    subject, then one card per ART for the permissions composed from it.
+    Shared by the Position Records and Team Records forms.
+
+    It draws what Role.grant_groups returns and nothing else, and it has to
+    draw all of it: saving replaces the whole grant list with the boxes
+    posted, so a permission left off this list is revoked by the next save.
+
+    name: is the array parameter, trailing [] included. id_prefix: starts
+    every id here; a box's id is "<prefix>-<permission id>", and a card's
+    heading takes the id of the first permission in it, which no other card
+    holds. %>
+<%# Sent whatever the boxes say, so clearing them all arrives as a choice. %>
+<%= hidden_field_tag name, "" %>
+
+<%# The two families are drawn alike but for one thing: an ART's card sets its
+    boxes two across and labels each by type, because its title already names
+    the ART. %>
+<% [["System Permissions", system_groups, false], ["ART Permissions", art_groups, true]].each do |heading, groups, by_type| %>
+  <%# No heading over nothing: a database need not hold a composed permission. %>
+  <% next if groups.empty? %>
+
+  <%= ui_subheading heading %>
+  <%# As many 18rem columns as fit (one on a phone, two on a tablet, three on a
+      laptop) and not a breakpoint: any narrower and a card wraps its labels.
+      A column flow has no row gap, so each card sits in a wrapper that is
+      padded underneath and never split across two columns. Padding, not a
+      margin: Safari carries a margin cut off by a column break over to the
+      top of the next column, which then starts 16px below its neighbour. %>
+  <div class="columns-1xs lg:columns-2 gap-x-4 *:break-inside-avoid *:pb-4">
+    <% groups.each do |title, permissions| %>
+      <div>
+        <%= render layout: "common/checkbox_group",
+                   locals: { title:, id: "#{id_prefix}-group-#{permissions.first.id}",
+                             body_class: ("grid grid-cols-2" if by_type) } do %>
+          <% permissions.each do |permission| %>
+            <%= render layout: "common/checkbox_row",
+                       locals: { name:, value: permission.id, checked: role_ids.include?(permission.id),
+                                 id: "#{id_prefix}-#{permission.id}" } do %>
+              <%= by_type ? permission.art_type_label : permission.title %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
