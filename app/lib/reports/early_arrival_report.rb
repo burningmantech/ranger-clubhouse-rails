@@ -45,8 +45,11 @@ class EarlyArrivalReport
   # answered with today's values.
   # `radios_allowed` counts event radios alone. `group_radios` is the radio
   # group provisions beside them: group title => how many, in title order.
+  # `vehicles` is the person's approved vehicle requests for the report's year,
+  # oldest first.
   Row = Struct.new(:person, :sap_date, :bmid_status, :first_shift,
-                   :radio_agreement, :radios_allowed, :group_radios, :radios, :live) do
+                   :radio_agreement, :radios_allowed, :group_radios, :radios,
+                   :vehicles, :live) do
     def person_id = person.id
     def callsign = person.callsign
 
@@ -183,6 +186,12 @@ class EarlyArrivalReport
       issued = radios_issued(year:, person_ids:, allowed:)
       signed = PersonEvent.where(year:, person_id: person_ids, asset_authorized: true)
                           .pluck(:person_id).to_set
+      # A vehicle is stamped with its event year, so unlike a pass it can be
+      # read back for an earlier event. A pending or denied request has nothing
+      # to issue, and a fleet vehicle belongs to no person.
+      vehicles = Vehicle.for_year(year)
+                        .where(status: Vehicle::APPROVED, person_id: person_ids)
+                        .order(:id).group_by(&:person_id)
 
       person_ids.filter_map { |person_id|
         person = people[person_id]
@@ -193,7 +202,7 @@ class EarlyArrivalReport
         Row.new(person, sap_date_for(saps[person_id]), bmids[person_id],
                 shifts[person_id], signed.include?(person_id),
                 grants[nil].to_i, group_radios(grants),
-                issued[person_id] || [], live)
+                issued[person_id] || [], vehicles[person_id] || [], live)
       }.sort_by { |row|
         # person_id breaks ties so two people sharing a callsign keep a stable
         # order -- sort_by is not stable on its own, and the page and its export
