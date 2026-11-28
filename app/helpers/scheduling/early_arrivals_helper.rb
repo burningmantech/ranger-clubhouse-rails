@@ -150,6 +150,50 @@ module Scheduling::EarlyArrivalsHelper
     row.group_radios.map { |title, count| "#{title}: #{count}" }
   end
 
+  # The column's heading, which the page's card quotes when it explains it.
+  VEHICLE_ITEMS_HEADING = "Vehicle Items"
+
+  # What an approved vehicle can be issued, in the order a packet lists them:
+  # what the page calls each, the list that words its values, and the value
+  # that means the vehicle gets none of it.
+  VEHICLE_ITEMS = {
+    driving_sticker: ["Driving permit", Vehicle::DRIVING_STICKER_OPTIONS, Vehicle::DRIVING_STICKER_NONE],
+    fuel_chit: ["Fuel chit", Vehicle::FUEL_CHIT_OPTIONS, Vehicle::FUEL_CHIT_NONE],
+    ranger_logo: ["Ranger logo", Vehicle::RANGER_LOGO_OPTIONS, Vehicle::LOGO_NONE],
+    amber_light: ["Amber light", Vehicle::AMBER_LIGHT_OPTIONS, Vehicle::AMBER_LIGHT_NONE]
+  }.freeze
+
+  # The export's heading for each item, in the same order.
+  VEHICLE_ITEM_HEADERS = VEHICLE_ITEMS.values.map { |name, *| name.titleize }.freeze
+
+  # How one item reads for one vehicle, or nil when the vehicle gets none of
+  # it. A value no option offers reads the same way: there is nothing to issue.
+  def early_arrival_vehicle_item(vehicle, column)
+    _name, options, none = VEHICLE_ITEMS.fetch(column)
+    value = vehicle[column]
+
+    options.rassoc(value)&.first unless value == none
+  end
+
+  # One group of lines per approved vehicle, one line per item it gets.
+  def early_arrival_vehicles_cell(row)
+    groups = row.vehicles.filter_map { |vehicle|
+      lines = VEHICLE_ITEMS.filter_map { |column, (name, *)|
+        label = early_arrival_vehicle_item(vehicle, column)
+        tag.div("#{name}: #{label}") if label
+      }
+      tag.div(safe_join(lines)) if lines.any?
+    }
+    return value_or_dash(nil) if groups.empty?
+
+    tag.div(safe_join(groups), class: "space-y-2")
+  end
+
+  # One item across all of a person's vehicles, a line for each that gets it.
+  def early_arrival_vehicle_export(row, column)
+    row.vehicles.filter_map { |vehicle| early_arrival_vehicle_item(vehicle, column) }.join("\n")
+  end
+
   # The one summary line above the table. "of N" appears only while a filter is
   # narrowing the list, so an unfiltered page does not say "131 of 131".
   def early_arrival_summary_count(shown:, total:)

@@ -133,7 +133,9 @@ class Scheduling::EarlyArrivalsController < ApplicationController
   def csv_rows
     header = ["Callsign", "SAP", "First Pre-Event Position", "Shift Start",
               "Shift Description", "BMID Status", "On Site", "Radio Agreement",
-              "Radio Count", "Radio Barcode", "Radio Type", "Specialized Radios"]
+              "Radio Count", "Radio Barcode", "Radio Type", "Specialized Radios",
+              # Newest columns last, as above.
+              *Scheduling::EarlyArrivalsHelper::VEHICLE_ITEM_HEADERS]
 
     @report.rows.each_with_object([header]) do |row, rows|
       shift = row.first_shift
@@ -157,7 +159,10 @@ class Scheduling::EarlyArrivalsController < ApplicationController
                # One line per radio group the person holds a provision for,
                # the way the barcodes are listed: "DPW/SITE: 2". Last, so the
                # columns a sheet already reads by position stay where they were.
-               helpers.early_arrival_group_radio_lines(row).join("\n")]
+               helpers.early_arrival_group_radio_lines(row).join("\n"),
+               *Scheduling::EarlyArrivalsHelper::VEHICLE_ITEMS.keys.map { |column|
+                 helpers.early_arrival_vehicle_export(row, column)
+               }]
     end
   end
 end

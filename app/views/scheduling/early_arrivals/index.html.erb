@@ -34,8 +34,8 @@
         Arrival passes, radio allowances, and who is on playa are only recorded
         as they stand today, so they cannot be read back for an earlier event.
         This page therefore lists whoever held a pre-event shift in
-        <%= @year %>, alongside the badges, agreements, and radios recorded at
-        the time. Pick <%= Current.year %> for the full picture.
+        <%= @year %>, alongside the badges, agreements, radios, and vehicle
+        items recorded at the time. Pick <%= Current.year %> for the full picture.
       </p>
     <% end %>
   <% end %>
@@ -102,11 +102,20 @@
           Each row carries what a SITE Setup arrival packet needs:
           <% if @report.live? %>
             when the person may arrive, the first shift they stand, their BMID status,
-            and the radios they may draw against the ones they are already holding.
+            the radios they may draw against the ones they are already holding,
+            and the items approved for their vehicles.
           <% else %>
-            the first shift they stand, their BMID status, and the radios issued to
-            them.
+            the first shift they stand, their BMID status, the radios issued to
+            them, and the items approved for their vehicles.
           <% end %>
+        </dd>
+
+        <dt>What does <%= Scheduling::EarlyArrivalsHelper::VEHICLE_ITEMS_HEADING %> list?</dt>
+        <dd>
+          The driving permit, fuel chit, Ranger logo, and amber light approved
+          for each vehicle the person requested for <%= @year %>. A request
+          that is pending or denied is left out, and so is any item a vehicle
+          is not getting.
         </dd>
 
         <dt>What needs chasing?</dt>
@@ -198,6 +207,7 @@
           <%= t.heading "Location" %>
           <%= t.heading "Radio Agreement" %>
           <%= t.heading "Radios" %>
+          <%= t.heading Scheduling::EarlyArrivalsHelper::VEHICLE_ITEMS_HEADING %>
         <% end %>
         <%= t.body do %>
           <% @rows.each do |row| %>
@@ -233,6 +243,7 @@
                 <% end %>
               <% end %>
               <%= t.cell early_arrival_radios_cell(row) %>
+              <%= t.cell early_arrival_vehicles_cell(row) %>
             <% end %>
           <% end %>
         <% end %>

@@ -416,7 +416,8 @@ class Scheduling::EarlyArrivalsControllerTest < ActionDispatch::IntegrationTest
     lines = response.body.split("\n")
     assert_equal "Callsign,SAP,First Pre-Event Position,Shift Start," \
                  "Shift Description,BMID Status,On Site,Radio Agreement," \
-                 "Radio Count,Radio Barcode,Radio Type,Specialized Radios",
+                 "Radio Count,Radio Barcode,Radio Type,Specialized Radios," \
+                 "Driving Permit,Fuel Chit,Ranger Logo,Amber Light",
                  lines.first
 
     # Both people, though the URL asked for only the any-time one.
@@ -501,7 +502,7 @@ class Scheduling::EarlyArrivalsControllerTest < ActionDispatch::IntegrationTest
     get scheduling_early_arrivals_path(year: PAST_YEAR)
     purpose = card_answer(PURPOSE_QUESTION)
     assert_no_match(/may arrive|may draw/, purpose)
-    assert_match(/, and the radios issued to them\.\z/, purpose)
+    assert_match(/, the radios issued to them, and the items approved for their vehicles\.\z/, purpose)
 
     chasing = card_answer(CHASING_QUESTION)
     assert_no_match(/arrival pass/, chasing)
@@ -637,8 +638,9 @@ class Scheduling::EarlyArrivalsControllerTest < ActionDispatch::IntegrationTest
     assert_select "td", text: %r{R-910 \(DPW/SITE\)}
 
     get scheduling_early_arrivals_path(year: YEAR, format: :csv)
-    # The group column comes last, after the columns the export already had.
-    assert_match(%r{,"R-910\nR-911\nR-912","DPW/SITE\nevent\nshift",DPW/SITE: 1$}, response.body)
+    # The group column follows the columns the export already had, and the
+    # four vehicle columns, empty here, follow it.
+    assert_match(%r{,"R-910\nR-911\nR-912","DPW/SITE\nevent\nshift",DPW/SITE: 1,,,,$}, response.body)
   end
 
   # Only validation gives a radio group provision its group, and a row written
@@ -687,6 +689,78 @@ class Scheduling::EarlyArrivalsControllerTest < ActionDispatch::IntegrationTest
     # Both barcodes ride in one quoted cell, newline separated.
     assert_match(/"R-900\nR-902"/, response.body)
     assert_match(/"shift\nevent"/, response.body)
+  end
+
+  # --- vehicle items ----------------------------------------------------------
+
+  # An approved personal vehicle request. Every item defaults to none.
+  def vehicle_for(person, status: Vehicle::APPROVED, year: YEAR, **items)
+    Vehicle.create!({ type: Vehicle::PERSONAL, person_id: person.id, status:,
+                      event_year: year, vehicle_make: "Subaru",
+                      vehicle_model: "Outback", vehicle_color: "Blue" }.merge(items))
+  end
+
+  # Each row's vehicle cell: its lines joined, or the cell's own text when it
+  # holds no lines.
+  def vehicle_cells
+    css_select("tbody tr td:last-child").map { |cell|
+      cell.css("div").select { |div| div.element_children.empty? }
+          .map(&:text).join(" | ").presence || cell.text.squish
+    }
+  end
+
+  test "an approved vehicle lists the items it gets and none of the ones it does not" do
+    person = pass_holder("Driver", any_time: true)
+    vehicle_for(person, driving_sticker: Vehicle::DRIVING_STICKER_STAFF,
+                        fuel_chit: Vehicle::FUEL_CHIT_EVENT)
+    pass_holder("Walker", any_time: true)
+
+    get scheduling_early_arrivals_path(year: YEAR)
+    assert_equal ["Driving permit: Staff | Fuel chit: Event", "—"], vehicle_cells
+    assert_match(/approved for each vehicle the person requested for #{YEAR}\./,
+                 card_answer("What does Vehicle Items list?"))
+
+    get scheduling_early_arrivals_path(year: YEAR, format: :csv)
+    lines = response.body.split("\n")
+    assert_match(/,Staff,Event,,\z/, lines[1])
+    assert_match(/,,,,\z/, lines[2])
+  end
+
+  test "a pending or denied request and another year's vehicle are left out" do
+    person = pass_holder("Driver", any_time: true)
+    staff = { driving_sticker: Vehicle::DRIVING_STICKER_STAFF }
+    vehicle_for(person, status: Vehicle::PENDING, **staff)
+    vehicle_for(person, status: Vehicle::REJECTED, **staff)
+    vehicle_for(person, year: YEAR - 1, **staff)
+
+    get scheduling_early_arrivals_path(year: YEAR)
+    assert_empty assigns_rows.first.vehicles
+    assert_equal ["—"], vehicle_cells
+  end
+
+  test "two approved vehicles are listed apart, and the export lists both" do
+    person = pass_holder("Driver", any_time: true)
+    vehicle_for(person, driving_sticker: Vehicle::DRIVING_STICKER_STAFF,
+                        amber_light: Vehicle::AMBER_LIGHT_ALREADY_HAS)
+    vehicle_for(person, driving_sticker: Vehicle::DRIVING_STICKER_PREPOST)
+
+    get scheduling_early_arrivals_path(year: YEAR)
+    assert_select "tbody tr td:last-child .space-y-2 > div", count: 2
+    assert_equal ["Driving permit: Staff | Amber light: Already Has | " \
+                  "Driving permit: Pre-Event / Post-Event"], vehicle_cells
+
+    get scheduling_early_arrivals_path(year: YEAR, format: :csv)
+    assert_match(%r{,"Staff\nPre-Event / Post-Event",,,Already Has\z}, response.body)
+  end
+
+  test "an earlier year reads its own vehicles" do
+    cutoff = past_event_dates
+    person = shift_holder("Setup", begins: at(cutoff - 2), year: PAST_YEAR)
+    vehicle_for(person, year: PAST_YEAR, ranger_logo: Vehicle::LOGO_EVENT)
+    vehicle_for(person, fuel_chit: Vehicle::FUEL_CHIT_EVENT)
+
+    get scheduling_early_arrivals_path(year: PAST_YEAR)
+    assert_equal ["Ranger logo: Event"], vehicle_cells
   end
 
   test "the export refuses a year whose event dates are missing" do
